@@ -7,15 +7,15 @@
 from pathlib import Path
 from subprocess import check_output
 
-import python3_pip_skeleton
+import ophyd_epics_devices
 
 # -- General configuration ------------------------------------------------
 
 # General information about the project.
-project = "python3-pip-skeleton"
+project = "ophyd-epics-devices"
 
 # The full version, including alpha/beta/rc tags.
-release = python3_pip_skeleton.__version__
+release = ophyd_epics_devices.__version__
 
 # The short X.Y version.
 if "+" in release:
@@ -125,7 +125,7 @@ copybutton_prompt_is_regexp = True
 #
 html_theme = "pydata_sphinx_theme"
 github_repo = project
-github_user = "DiamondLightSource"
+github_user = "bluesky"
 
 # Theme options for pydata_sphinx_theme
 html_theme_options = dict(
