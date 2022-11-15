@@ -3,14 +3,8 @@ ophyd-epics-devices
 
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
-.. note::
-
-    This project contains template code only. For documentation on how to
-    adopt this skeleton project see
-    https://bluesky.github.io/ophyd-epics-devices-cli
-
-This is where you should write a short paragraph that describes what your module does,
-how it does it, and why people should use it.
+Ophyd EPICS Devices contains cross-site Devices using the EPICS Control
+System implemented in Ophyd for the Bluesky ecosystem.
 
 ============== ==============================================================
 PyPI           ``pip install ophyd-epics-devices``
