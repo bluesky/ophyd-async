@@ -3,11 +3,12 @@ import time
 from typing import Callable, List, Optional
 
 from bluesky.protocols import Movable, Stoppable
-from ophyd.v2.core import AsyncStatus, SimpleDevice
+
+from ophyd.v2.core import AsyncStatus, StandardReadable
 from ophyd.v2.epics import EpicsSignalR, EpicsSignalRW, EpicsSignalX
 
 
-class Motor(SimpleDevice, Movable, Stoppable):
+class Motor(StandardReadable, Movable, Stoppable):
     """Device that moves a motor record"""
 
     def __init__(self, prefix: str, name="") -> None:

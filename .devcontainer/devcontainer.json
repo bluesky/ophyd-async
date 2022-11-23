@@ -37,5 +37,5 @@
     "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
     "workspaceFolder": "${localWorkspaceFolder}",
     // After the container is created, install the python project in editable form
-    "postCreateCommand": "pip install -e .[dev]"
+    "postCreateCommand": "pip install -e .[dev] -e ophyd[dev] --config-settings editable_mode=compat"
 }
