@@ -3,7 +3,7 @@ ophyd-epics-devices
 
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
-Ophyd EPICS Devices contains cross-site Devices using the EPICS Control
+Ophyd EPICS Devices contains cross-institution Devices using the EPICS Control
 System implemented in Ophyd for the Bluesky ecosystem.
 
 ============== ==============================================================
@@ -13,19 +13,10 @@ Documentation  https://bluesky.github.io/ophyd-epics-devices
 Releases       https://github.com/bluesky/ophyd-epics-devices/releases
 ============== ==============================================================
 
-This is where you should put some images or code snippets that illustrate
-some relevant examples. If it is a library then you might put some
-introductory code here:
+Some of the Devices supported:
 
-.. code-block:: python
-
-    from ophyd_epics_devices import __version__
-
-    print(f"Hello ophyd_epics_devices {__version__}")
-
-Or if it is a commandline tool then you might put some example commands here::
-
-    $ python -m ophyd_epics_devices --version
+- Motor record
+- areaDetector
 
 .. |code_ci| image:: https://github.com/bluesky/ophyd-epics-devices/actions/workflows/code.yml/badge.svg?branch=main
     :target: https://github.com/bluesky/ophyd-epics-devices/actions/workflows/code.yml

@@ -1,4 +1,4 @@
-// For format details, see https://aka.ms/devcontainer.json
+// For format details, see https://containers.dev/implementors/json_reference/
 {
     "name": "Python 3 Developer Container",
     "build": {
@@ -12,24 +12,37 @@
     "remoteEnv": {
         "DISPLAY": "${localEnv:DISPLAY}"
     },
+    // Add the URLs of features you want added when the container is built.
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:1": {
+            "username": "none",
+            "upgradePackages": false
+        }
+    },
     // Set *default* container specific settings.json values on container create.
     "settings": {
         "python.defaultInterpreterPath": "/venv/bin/python"
     },
-    // Add the IDs of extensions you want installed when the container is created.
-    "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance"
-    ],
+    "customizations": {
+        "vscode": {
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "ms-python.python",
+                "tamasfe.even-better-toml",
+                "redhat.vscode-yaml",
+                "ryanluker.vscode-coverage-gutters"
+            ]
+        }
+    },
     // Make sure the files we are mapping into the container exist on the host
     "initializeCommand": "bash -c 'for i in $HOME/.inputrc; do [ -f $i ] || touch $i; done'",
     "runArgs": [
         "--net=host",
-        "--security-opt=label=type:container_runtime_t",
-        "-v=${localEnv:HOME}/.ssh:/root/.ssh",
-        "-v=${localEnv:HOME}/.inputrc:/root/.inputrc"
+        "--security-opt=label=type:container_runtime_t"
     ],
     "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind",
+        "source=${localEnv:HOME}/.inputrc,target=/root/.inputrc,type=bind",
         // map in home directory - not strictly necessary but useful
         "source=${localEnv:HOME},target=${localEnv:HOME},type=bind,consistency=cached"
     ],
