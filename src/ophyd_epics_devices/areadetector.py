@@ -256,6 +256,7 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
             self.hdf.num_capture.set(0),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
+        self._compose_datum = None
 
     def stage(self) -> List[Any]:
         self._stage_task = asyncio.create_task(self._stage())

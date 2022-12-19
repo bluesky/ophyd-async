@@ -13,7 +13,11 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 description = "Cross-institution EPICS Devices for Ophyd"
-dependencies = ["ophyd", "bluesky", "event-model"]
+dependencies = [
+    "ophyd @ git+https://github.com/bluesky/ophyd",
+    "bluesky",
+    "event-model",
+]
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.rst"
