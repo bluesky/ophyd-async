@@ -3,7 +3,6 @@ import time
 from typing import Callable, List, Optional
 
 from bluesky.protocols import Movable, Stoppable
-
 from ophyd.v2.core import AsyncStatus, StandardReadable
 from ophyd.v2.epics import EpicsSignalR, EpicsSignalRW, EpicsSignalX
 

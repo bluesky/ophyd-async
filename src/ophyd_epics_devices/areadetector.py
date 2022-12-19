@@ -26,7 +26,6 @@ from bluesky.protocols import (
     WritesExternalAssets,
 )
 from event_model import compose_resource, compose_stream_resource
-
 from ophyd.v2.core import (
     AsyncReadable,
     AsyncStatus,
@@ -239,7 +238,9 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
         # Define some plugins
         self.drv = ADDriver("CAM:")
         self.hdf = NDFileHDF("HDF5:")
-        self._asset_docs: Deque[Asset] = collections.deque()
+        # TODO add support to bluesky.protocols for StreamDatum and StreamResource
+        # then the following type ignore can be removed
+        self._asset_docs = collections.deque()  # type: ignore
         self._stage_task: Optional[asyncio.Task] = None
         self._capture_status: Optional[AsyncStatus] = None
         self._start_status: Optional[AsyncStatus] = None

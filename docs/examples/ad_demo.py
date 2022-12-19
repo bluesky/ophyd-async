@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from bluesky import RunEngine
 from bluesky.callbacks.best_effort import BestEffortCallback
 from bluesky.utils import ProgressBarManager, register_transform
-
 from ophyd.v2.core import DeviceCollector
+
 from ophyd_epics_devices import areadetector
 
 # Create a run engine, with plotting, progressbar and transform
@@ -37,9 +37,9 @@ def fly_det3(num: int):
     yield from bps.mov(det3.drv.num_images, num)
     yield from bps.kickoff(det3, wait=True)
     status = yield from bps.complete(det3, wait=False, group="complete")
-    while not status.done:
+    while status and not status.done:
         yield from bps.collect(det3, stream=True, return_payload=False)
         yield from bps.sleep(0.1)
+    yield from bps.wait(group="complete")
     # One last one
     yield from bps.collect(det3, stream=True, return_payload=False)
-    yield from bps.wait(group="complete")
