@@ -3,6 +3,12 @@ ophyd-epics-devices
 
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
+.. note::
+
+    This repository is at an early state of development, it acts as a preview
+    of what Ophyd.v2 Devices may look like, and should not be used in production
+    yet.
+
 Ophyd EPICS Devices contains cross-institution Devices using the EPICS Control
 System implemented in Ophyd for the Bluesky ecosystem.
 
