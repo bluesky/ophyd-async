@@ -33,5 +33,5 @@ COPY --from=build /venv/ /venv/
 ENV PATH=/venv/bin:$PATH
 
 # change this entrypoint if it is not the same as the repo
-ENTRYPOINT ["ophyd-epics-devices"]
+ENTRYPOINT ["python", "-m", "ophyd_epics_devices"]
 CMD ["--version"]
