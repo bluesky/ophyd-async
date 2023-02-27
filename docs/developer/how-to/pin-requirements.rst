@@ -32,7 +32,7 @@ Every release of the project will have a set of requirements files published
 as release assets.
 
 For example take a look at the release page for python3-pip-skeleton-cli here:
-https://DiamondLightSource.github.io/python3-pip-skeleton-cli/releases/tag/3.3.0
+https://github.com/bluesky/python3-pip-skeleton-cli/releases/tag/3.3.0
 
 There is a list of requirements*.txt files showing as assets on the release.
 
