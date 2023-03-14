@@ -2,18 +2,7 @@ import asyncio
 import collections
 import time
 from enum import Enum
-from typing import (
-    Any,
-    AsyncIterator,
-    Callable,
-    Deque,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sized,
-    Type,
-)
+from typing import AsyncIterator, Callable, Deque, Dict, Iterator, Optional, Sized, Type
 
 from bluesky.protocols import (
     Asset,
@@ -77,7 +66,6 @@ class MySingleTriggerSim(StandardReadable, Triggerable):
         # Define some plugins
         self.drv = ADDriver("CAM:")
         self.stats = NDPluginStats("STAT:")
-        self._stage_task: Optional[asyncio.Task] = None
         super().__init__(
             prefix,
             name,
@@ -87,20 +75,16 @@ class MySingleTriggerSim(StandardReadable, Triggerable):
             config=[self.drv.acquire_time],
         )
 
-    async def _stage(self) -> None:
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
         await asyncio.gather(
             self.drv.image_mode.set(ImageMode.single),
             self.drv.wait_for_plugins.set(True),
         )
-
-    def stage(self) -> List[Any]:
-        self._stage_task = asyncio.create_task(self._stage())
-        return super().stage()
+        super().stage()
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        assert self._stage_task, "Stage not called yet"
-        await self._stage_task
         await self.drv.acquire.set(1)
 
 
@@ -179,7 +163,6 @@ class MyHDFWritingSim(StandardReadable, Triggerable, WritesExternalAssets):
         self.drv = ADDriver("CAM:")
         self.hdf = NDFileHDF("HDF5:")
         self.resource = HDFResource(self.hdf)
-        self._stage_task: Optional[asyncio.Task] = None
         self._capture_status: Optional[asyncio.Task] = None
         self._asset_docs: Deque[Asset] = collections.deque()
         self._datum: Optional[Datum] = None
@@ -187,7 +170,8 @@ class MyHDFWritingSim(StandardReadable, Triggerable, WritesExternalAssets):
             prefix, name, primary=self.resource, config=[self.drv.acquire_time]
         )
 
-    async def _stage(self) -> None:
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
         await asyncio.gather(
             self.drv.image_mode.set(ImageMode.single),
             self.drv.wait_for_plugins.set(True),
@@ -198,15 +182,10 @@ class MyHDFWritingSim(StandardReadable, Triggerable, WritesExternalAssets):
         # Do this separately just to make sure it takes
         await self.hdf.num_capture.set(0)
         self._capture_status = self.hdf.capture.set(1)
-
-    def stage(self) -> List[Any]:
-        self._stage_task = asyncio.create_task(self._stage())
-        return super().stage()
+        super().stage()
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        assert self._stage_task, "Stage not run"
-        await self._stage_task
         await self.drv.acquire.set(1)
         async for asset in self.resource.create_asset_docs():
             self._asset_docs.append(asset)
@@ -215,18 +194,13 @@ class MyHDFWritingSim(StandardReadable, Triggerable, WritesExternalAssets):
         while self._asset_docs:
             yield self._asset_docs.popleft()
 
-    async def _unstage(self) -> None:
-        assert self._stage_task, "Stage not run"
-        await self._stage_task
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
         # Already done a caput callback in _capture_status, so can't do one here
         await self.hdf.capture.set(0, wait=False)
         assert self._capture_status, "Trigger not run"
         await self._capture_status
-
-    def unstage(self) -> List[Any]:
-        # TODO: where do we put this task?
-        asyncio.create_task(self._unstage())
-        return super().unstage()
+        super().unstage()
 
 
 # How long in seconds to wait between flushes of HDF datasets
@@ -241,13 +215,13 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
         # TODO add support to bluesky.protocols for StreamDatum and StreamResource
         # then the following type ignore can be removed
         self._asset_docs = collections.deque()  # type: ignore
-        self._stage_task: Optional[asyncio.Task] = None
         self._capture_status: Optional[AsyncStatus] = None
         self._start_status: Optional[AsyncStatus] = None
         self._compose_datum: Optional[Callable] = None
         super().__init__(prefix, name, config=[self.drv.acquire_time])
 
-    async def _stage(self) -> None:
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
         await asyncio.gather(
             self.drv.image_mode.set(ImageMode.multiple),
             self.drv.wait_for_plugins.set(True),
@@ -257,10 +231,7 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
         self._compose_datum = None
-
-    def stage(self) -> List[Any]:
-        self._stage_task = asyncio.create_task(self._stage())
-        return super().stage()
+        super().stage()
 
     async def describe_collect(self) -> Dict[str, Dict[str, Descriptor]]:
         desc: Descriptor = dict(
@@ -279,8 +250,6 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        assert self._stage_task, "Stage not run"
-        await self._stage_task
         self._capture_status = self.hdf.capture.set(1)
         # Wait for up to 1s it actually to start
         wait_for_value(self.hdf.capture, True, timeout=1)
@@ -328,15 +297,10 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
         return
         yield
 
-    async def _unstage(self) -> None:
-        assert self._stage_task, "Stage not run"
-        await self._stage_task
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
         # Already done a caput callback in _capture_status, so can't do one here
         await self.hdf.capture.set(0, wait=False)
         assert self._capture_status, "Kickoff not run"
         await self._capture_status
-
-    def unstage(self) -> List[Any]:
-        # TODO: where do we put this task?
-        asyncio.create_task(self._unstage())
-        return super().unstage()
+        super().unstage()
