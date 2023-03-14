@@ -317,7 +317,9 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
             last_emitted = await self._flush_and_publish(last_emitted)
             # TODO: add stalled timeout
             assert self._start_status, "Kickoff not run"
-            done, _ = await asyncio.wait((self._start_status,), timeout=FLUSH_PERIOD)
+            done, _ = await asyncio.wait(
+                (self._start_status.task,), timeout=FLUSH_PERIOD
+            )
         # One last flush and we're done
         await self._flush_and_publish(last_emitted)
 
