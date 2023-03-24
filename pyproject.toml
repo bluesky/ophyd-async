@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "python3-pip-skeleton"
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -34,6 +34,7 @@ dev = [
     "sphinx-design",
     "tox-direct",
     "types-mock",
+    "numpydoc"
 ]
 
 [project.scripts]
@@ -77,9 +78,6 @@ addopts = """
 filterwarnings = "error"
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
-
-[tool.coverage.run]
-data_file = "/tmp/python3_pip_skeleton.coverage"
 
 [tool.coverage.paths]
 # Tests are run from installed location, map back to the src directory

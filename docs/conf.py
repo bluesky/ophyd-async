@@ -44,7 +44,13 @@ extensions = [
     "sphinx_copybutton",
     # For the card element
     "sphinx_design",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.githubpages",
 ]
+
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
 
 # If true, Sphinx will warn about all references where the target cannot
 # be found.
@@ -96,9 +102,17 @@ exclude_patterns = ["_build"]
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 
+# Example configuration for intersphinx: refer to the Python standard library.
 # This means you can link things like `str` and `asyncio` to the relevant
 # docs in the python documentation.
-intersphinx_mapping = dict(python=("https://docs.python.org/3/", None))
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "cachetools": ("https://cachetools.readthedocs.io/en/stable/", None),
+    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "jsonschema": ("https://python-jsonschema.readthedocs.io/en/stable/", None),
+}
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
 inheritance_graph_attrs = dict(rankdir="TB")

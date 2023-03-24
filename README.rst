@@ -49,9 +49,9 @@ Or if it is a commandline tool then you might put some example commands here::
     :target: https://pypi.org/project/python3-pip-skeleton
     :alt: Latest PyPI version
 
-.. |license| image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
-    :target: https://opensource.org/licenses/Apache-2.0
-    :alt: Apache License
+.. |license| image:: https://img.shields.io/badge/License-BSD-blue.svg
+    :target: https://opensource.org/license/bsd-3-clause/
+    :alt: BSD License
 
 ..
     Anything below this line is used when viewing README.rst and will be replaced
