@@ -13,11 +13,13 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 description = "One line description of your module"
-dependencies = [] # Add project dependencies here, e.g. ["click", "numpy"]
+dependencies = [
+    "typing-extensions;python_version<'3.8'",
+] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.7"
 
 [project.optional-dependencies]
 dev = [
@@ -35,7 +37,7 @@ dev = [
     "sphinx-design",
     "tox-direct",
     "types-mock",
-    "numpydoc"
+    "numpydoc",
 ]
 
 [project.scripts]
