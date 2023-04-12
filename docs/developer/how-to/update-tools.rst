@@ -13,4 +13,4 @@ conflicts with the setup of the current module. Check the `closed pull requests
 <https://github.com/bluesky/python3-pip-skeleton/pulls?q=is%3Apr+is%3Aclosed>`_
 of the skeleton module for more details.
 
-.. _python3-pip-skeleton: https://blueskyproject.github.io/python3-pip-skeleton
+.. _python3-pip-skeleton: https://blueskyproject.io/python3-pip-skeleton

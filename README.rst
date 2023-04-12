@@ -7,7 +7,7 @@ python3-pip-skeleton
 
     This project contains template code only. For documentation on how to
     adopt this skeleton project see
-    https://blueskyproject.github.io/python3-pip-skeleton-cli
+    https://blueskyproject.io/python3-pip-skeleton-cli
 
 This is where you should write a short paragraph that describes what your module does,
 how it does it, and why people should use it.
@@ -15,7 +15,7 @@ how it does it, and why people should use it.
 ============== ==============================================================
 PyPI           ``pip install python3-pip-skeleton``
 Source code    https://github.com/bluesky/python3-pip-skeleton
-Documentation  https://blueskyproject.github.io/python3-pip-skeleton
+Documentation  https://blueskyproject.io/python3-pip-skeleton
 Releases       https://github.com/bluesky/python3-pip-skeleton/releases
 ============== ==============================================================
 
@@ -57,4 +57,4 @@ Or if it is a commandline tool then you might put some example commands here::
     Anything below this line is used when viewing README.rst and will be replaced
     when included in index.rst
 
-See https://blueskyproject.github.io/python3-pip-skeleton for more detailed documentation.
+See https://blueskyproject.io/python3-pip-skeleton for more detailed documentation.
