@@ -248,6 +248,7 @@ class PandA(Device):
             ], f"Expected PandA to only contain blocks, got {block_pvi}"
             await self._make_block(block_name, block_pvi["d"], sim=sim)
 
+        self.set_name(self.name)
         await connect_children(self, prefix, sim)
 
 
@@ -255,8 +256,5 @@ class PandA(Device):
 
 # # todo: let DeviceCollector have separate order for naming/connecting?
 # # In this case, can only name after connect.
-# with DeviceCollector(set_name=False, sim=True):
+# with DeviceCollector(sim=True):
 #     somepanda = PandA("PANDAQSRV")
-
-# somepanda.set_name("somepanda")
-# print("aha")
