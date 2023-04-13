@@ -7,17 +7,10 @@
         // Only upgrade pip, we will install the project below
         "args": {
             "PIP_OPTIONS": "--upgrade pip"
-        }
+        },
     },
     "remoteEnv": {
         "DISPLAY": "${localEnv:DISPLAY}"
-    },
-    // Add the URLs of features you want added when the container is built.
-    "features": {
-        "ghcr.io/devcontainers/features/common-utils:1": {
-            "username": "none",
-            "upgradePackages": false
-        }
     },
     // Set *default* container specific settings.json values on container create.
     "settings": {
@@ -50,5 +43,5 @@
     "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
     "workspaceFolder": "${localWorkspaceFolder}",
     // After the container is created, install the python project in editable form
-    "postCreateCommand": "pip install -e .[dev] -e ophyd[dev] --config-settings editable_mode=compat"
+    "postCreateCommand": "pip install -e .[dev] --config-settings editable_mode=compat"
 }
