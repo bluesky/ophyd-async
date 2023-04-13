@@ -7,7 +7,7 @@ python3-pip-skeleton
 
     This project contains template code only. For documentation on how to
     adopt this skeleton project see
-    https://blueskyproject.io/python3-pip-skeleton-cli
+    https://DiamondLightSource.github.io/python3-pip-skeleton-cli
 
 This is where you should write a short paragraph that describes what your module does,
 how it does it, and why people should use it.
