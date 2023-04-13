@@ -1,4 +1,6 @@
 import asyncio
+import subprocess
+import time
 
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
@@ -22,3 +24,17 @@ def RE(request):
 
     request.addfinalizer(clean_event_loop)
     return RE
+
+
+@pytest.fixture(scope="session")
+def pva():
+    process = subprocess.Popen(
+        ["softIocPVA", "-d", "tests/db/panda.db"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    time.sleep(2)
+    assert not process.poll(), process.stdout.read().decode("utf-8")
+    yield process
+
+    process.terminate()

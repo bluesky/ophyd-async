@@ -3,7 +3,8 @@
 # The devcontainer should use the build target and run as root with podman
 # or docker with user namespaces.
 #
-FROM python:3.8 as build
+#FROM python:3.8 as build
+FROM ghcr.io/epics-containers/epics-base-linux-developer:23.3.1 as build
 
 ARG PIP_OPTIONS
 
@@ -13,10 +14,6 @@ ARG PIP_OPTIONS
 #     desired-packages \
 #     && rm -rf /var/lib/apt/lists/*
 
-# set up a virtual environment and put it in PATH
-RUN python -m venv /venv
-ENV PATH=/venv/bin:$PATH
-
 # Copy any required context for the pip install over
 COPY . /context
 WORKDIR /context
@@ -24,7 +21,7 @@ WORKDIR /context
 # install python package into /venv
 RUN pip install ${PIP_OPTIONS}
 
-FROM python:3.8-slim as runtime
+FROM ghcr.io/epics-containers/epics-base-linux-runtime:23.3.1 as runtime
 
 # Add apt-get system dependecies for runtime here if needed
 
