@@ -7,7 +7,6 @@ from typing import (
     Tuple,
     Type,
     TypedDict,
-    cast,
     get_args,
     get_origin,
     get_type_hints,
@@ -15,16 +14,8 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from ophyd.v2.core import (
-    Device,
-    DeviceVector,
-    DeviceCollector,
-    connect_children,
-    get_device_children,
-)
+from ophyd.v2.core import Device, DeviceVector, connect_children, get_device_children
 from ophyd.v2.epics import EpicsSignalR, EpicsSignalRW, EpicsSignalW, EpicsSignalX
-from bluesky import RunEngine
-
 from p4p.client.thread import Context
 
 ctxt = Context("pva")
@@ -250,11 +241,3 @@ class PandA(Device):
 
         self.set_name(self.name)
         await connect_children(self, prefix, sim)
-
-
-# RE = RunEngine()
-
-# # todo: let DeviceCollector have separate order for naming/connecting?
-# # In this case, can only name after connect.
-# with DeviceCollector(sim=True):
-#     somepanda = PandA("PANDAQSRV")
