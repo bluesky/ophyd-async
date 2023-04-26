@@ -15,28 +15,21 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 from ophyd.v2.core import Device, DeviceVector, connect_children, get_device_children
-from ophyd.v2.epics import EpicsSignalR, EpicsSignalRW, EpicsSignalW, EpicsSignalX
+from ophyd.v2.core import SignalRW, SignalR, SignalW, SignalX
+from ophyd.v2.epics import (
+    epics_signal_r,
+    epics_signal_rw,
+    epics_signal_w,
+    epics_signal_x,
+)
 from p4p.client.thread import Context
 
 ctxt = Context("pva")
 
 
 class PulseBlock(Device):
-    delay: EpicsSignalRW[float]
-    width: EpicsSignalRW[float]
-
-    _name = ""
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str):
-        if name and not self._name:
-            self._name = name
-
-    async def connect(self, prefix: str = "", sim=False):
-        await connect_children(self, prefix, sim)
+    delay: SignalRW[float]
+    width: SignalRW[float]
 
 
 class SeqTrigger(Enum):
@@ -76,35 +69,11 @@ class SeqTable(TypedDict):
 
 
 class SeqBlock(Device):
-    table: EpicsSignalRW[SeqTable]
-
-    _name: str = ""
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str):
-        if name and not self._name:
-            self._name = name
-
-    async def connect(self, prefix: str = "", sim=False):
-        await connect_children(self, prefix, sim)
+    table: SignalRW[SeqTable]
 
 
 class PcapBlock(Device):
-    _name: str = ""
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str):
-        if name and not self._name:
-            self._name = name
-
-    async def connect(self, prefix: str = "", sim=False):
-        await connect_children(self, prefix, sim)
+    ...
 
 
 class PVIEntry(TypedDict, total=False):
@@ -210,28 +179,30 @@ class PandA(Device):
         block_pvi = await pvi_get(block_pv)
         for field_name, field_pvi in block_pvi.items():
             if "x" in field_pvi:
-                check_anno(EpicsSignalX, field_annos, field_name)
-                signal = EpicsSignalX(field_pvi["x"])
+                check_anno(SignalX, field_annos, field_name)
+                signal = epics_signal_x("pva://" + field_pvi["x"])
             elif "rw" in field_pvi:
-                typ = check_anno(EpicsSignalRW, field_annos, field_name)
-                signal = EpicsSignalRW(typ, field_pvi["rw"])
+                typ = check_anno(SignalRW, field_annos, field_name)
+                signal = epics_signal_rw(typ, "pva://" + field_pvi["rw"])
             elif "r" in field_pvi and "w" in field_pvi:
-                typ = check_anno(EpicsSignalRW, field_annos, field_name)
-                signal = EpicsSignalRW(typ, field_pvi["r"], field_pvi["w"])
+                typ = check_anno(SignalRW, field_annos, field_name)
+                signal = epics_signal_rw(
+                    typ, "pva://" + field_pvi["r"], "pva://" + field_pvi["w"]
+                )
             elif "r" in field_pvi:
-                typ = check_anno(EpicsSignalR, field_annos, field_name)
-                signal = EpicsSignalR(typ, field_pvi["r"])
+                typ = check_anno(SignalR, field_annos, field_name)
+                signal = epics_signal_r(typ, "pva://" + field_pvi["r"])
             elif "w" in field_pvi:
-                typ = check_anno(EpicsSignalW, field_annos, field_name)
-                signal = EpicsSignalW(typ, field_pvi["w"])
+                typ = check_anno(SignalW, field_annos, field_name)
+                signal = epics_signal_w(typ, "pva://" + field_pvi["w"])
             else:
                 raise ValueError(
                     f"Can't make {block_name}.{field_name} from {field_pvi}"
                 )
             setattr(block, field_name, signal)
 
-    async def connect(self, prefix: str = "", sim=False):
-        panda_pvi = await pvi_get(self._init_prefix + prefix + ":PVI")
+    async def connect(self, sim=False):
+        panda_pvi = await pvi_get(self._init_prefix + ":PVI")
 
         for block_name, block_pvi in panda_pvi.items():
             assert list(block_pvi) == [
@@ -240,4 +211,4 @@ class PandA(Device):
             await self._make_block(block_name, block_pvi["d"], sim=sim)
 
         self.set_name(self.name)
-        await connect_children(self, prefix, sim)
+        await connect_children(self, sim)
