@@ -5,8 +5,7 @@ from unittest.mock import Mock, call
 import pytest
 from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
-from ophyd.v2.core import DeviceCollector
-from ophyd.v2.epics import ChannelSim
+from ophyd.v2.core import DeviceCollector, set_sim_value, set_sim_put_proceeds
 
 from ophyd_epics_devices import motor
 
@@ -22,19 +21,14 @@ async def sim_motor():
         # Signals connected here
 
     assert sim_motor.name == "sim_motor"
-    units = cast(ChannelSim, sim_motor.units.read_channel)
-    units.set_value("mm")
-    precision = cast(ChannelSim, sim_motor.precision.read_channel)
-    precision.set_value(3)
-    velocity = cast(ChannelSim, sim_motor.velocity.read_channel)
-    velocity.set_value(1)
+    set_sim_value(sim_motor.units, "mm")
+    set_sim_value(sim_motor.precision, 3)
+    set_sim_value(sim_motor.velocity, 1)
     yield sim_motor
 
 
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
-    setpoint = cast(ChannelSim, sim_motor.setpoint.write_channel)
-    setpoint.put_proceeds.clear()
-    readback = cast(ChannelSim, sim_motor.readback.read_channel)
+    set_sim_put_proceeds(sim_motor.setpoint, False)
     s = sim_motor.set(0.55)
     watcher = Mock()
     s.watch(watcher)
@@ -52,10 +46,10 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
     watcher.reset_mock()
-    assert setpoint._value == 0.55
+    assert 0.55 == await sim_motor.setpoint.get_value()
     assert not s.done
     await asyncio.sleep(0.1)
-    readback.set_value(0.1)
+    set_sim_value(sim_motor.readback, 0.1)
     assert watcher.call_count == 1
     assert watcher.call_args == call(
         name="sim_motor",
@@ -66,21 +60,20 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
-    setpoint.put_proceeds.set()
+    set_sim_put_proceeds(sim_motor.setpoint, True)
     await asyncio.sleep(A_BIT)
     assert s.done
     done.assert_called_once_with(s)
 
 
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
-    setpoint = cast(ChannelSim, sim_motor.setpoint.write_channel)
-    setpoint.put_proceeds.clear()
+    set_sim_put_proceeds(sim_motor.setpoint, False)
     s = sim_motor.set(1.5)
     s.add_callback(Mock())
     await asyncio.sleep(0.2)
     assert not s.done
     await sim_motor.stop()
-    setpoint.put_proceeds.set()
+    set_sim_put_proceeds(sim_motor.setpoint, True)
     await asyncio.sleep(A_BIT)
     assert s.done
     assert s.success is False
@@ -94,12 +87,11 @@ async def test_read_motor(sim_motor: motor.Motor):
     ] == "sim://BLxxI-MO-TABLE-01:X.RBV"
     assert (await sim_motor.read_configuration())["sim_motor-velocity"]["value"] == 1
     assert (await sim_motor.describe_configuration())["sim_motor-units"]["shape"] == []
-    readback = cast(ChannelSim, sim_motor.readback.read_channel)
-    readback.set_value(0.5)
+    set_sim_value(sim_motor.readback, 0.5)
     assert (await sim_motor.read())["sim_motor"]["value"] == 0.5
     sim_motor.unstage()
     # Check we can still read and describe when not staged
-    readback.set_value(0.1)
+    set_sim_value(sim_motor.readback, 0.1)
     assert (await sim_motor.read())["sim_motor"]["value"] == 0.1
     assert await sim_motor.describe()
 
@@ -120,8 +112,7 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
     assert q.empty()
 
 
-def test_motor_in_re(sim_motor: motor.Motor) -> None:
-    RE = RunEngine()
+def test_motor_in_re(sim_motor: motor.Motor, RE) -> None:
     sim_motor.move(0)
 
     def my_plan():
