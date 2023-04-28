@@ -18,19 +18,22 @@ from event_model import compose_resource, compose_stream_resource
 from ophyd.v2.core import (
     AsyncReadable,
     AsyncStatus,
+    Device,
+    SignalR,
+    SignalRW,
     StandardReadable,
     T,
     wait_for_value,
 )
-from ophyd.v2.epics import EpicsSignalR, EpicsSignalRW, EpicsSignalX
+from ophyd.v2.epics import epics_signal_r, epics_signal_rw
 
 
-def ad_rw(datatype: Type[T], suffix: str) -> EpicsSignalRW[T]:
-    return EpicsSignalRW(datatype, suffix + "_RBV", suffix)
+def ad_rw(datatype: Type[T], prefix: str) -> SignalRW[T]:
+    return epics_signal_rw(datatype, prefix + "_RBV", prefix)
 
 
-def ad_r(datatype: Type[T], suffix: str) -> EpicsSignalR[T]:
-    return EpicsSignalR(datatype, suffix + "_RBV")
+def ad_r(datatype: Type[T], prefix: str) -> SignalR[T]:
+    return epics_signal_r(datatype, prefix + "_RBV")
 
 
 class ImageMode(Enum):
@@ -39,35 +42,32 @@ class ImageMode(Enum):
     continuous = "Continuous"
 
 
-class ADDriver(StandardReadable):
-    def __init__(self, prefix: str, name="") -> None:
+class ADDriver(Device):
+    def __init__(self, prefix: str) -> None:
         # Define some signals
-        self.acquire = ad_rw(int, "Acquire")
-        self.acquire_time = ad_rw(float, "AcquireTime")
-        self.num_images = ad_rw(int, "NumImages")
-        self.image_mode = ad_rw(ImageMode, "ImageMode")
-        self.array_counter = ad_rw(int, "ArrayCounter")
-        self.array_size_x = ad_r(int, "ArraySizeX")
-        self.array_size_y = ad_r(int, "ArraySizeY")
+        self.acquire = ad_rw(bool, prefix + "Acquire")
+        self.acquire_time = ad_rw(float, prefix + "AcquireTime")
+        self.num_images = ad_rw(int, prefix + "NumImages")
+        self.image_mode = ad_rw(ImageMode, prefix + "ImageMode")
+        self.array_counter = ad_rw(int, prefix + "ArrayCounter")
+        self.array_size_x = ad_r(int, prefix + "ArraySizeX")
+        self.array_size_y = ad_r(int, prefix + "ArraySizeY")
         # There is no _RBV for this one
-        self.wait_for_plugins = EpicsSignalRW(bool, "WaitForPlugins")
-        super().__init__(prefix, name)
+        self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
 
 
-class NDPluginStats(StandardReadable):
-    def __init__(self, prefix: str, name="") -> None:
+class NDPluginStats(Device):
+    def __init__(self, prefix: str) -> None:
         # Define some signals
-        self.unique_id = ad_r(int, "UniqueId")
-        super().__init__(prefix, name)
+        self.unique_id = ad_r(int, prefix + "UniqueId")
 
 
 class MySingleTriggerSim(StandardReadable, Triggerable):
     def __init__(self, prefix: str, name="") -> None:
         # Define some plugins
-        self.drv = ADDriver("CAM:")
-        self.stats = NDPluginStats("STAT:")
+        self.drv = ADDriver(prefix + "CAM:")
+        self.stats = NDPluginStats(prefix + "STAT:")
         super().__init__(
-            prefix,
             name,
             # Can't subscribe to read signals as race between monitor coming back and
             # caput callback on acquire
@@ -88,28 +88,28 @@ class MySingleTriggerSim(StandardReadable, Triggerable):
         await self.drv.acquire.set(1)
 
 
-class FileWriteMode(Enum):
+class FileWriteMode(str, Enum):
     single = "Single"
     capture = "Capture"
     stream = "Stream"
 
 
-class NDFileHDF(StandardReadable):
-    def __init__(self, prefix: str, name="") -> None:
+class NDFileHDF(Device):
+    def __init__(self, prefix: str) -> None:
         # Define some signals
-        self.file_path = ad_rw(str, "FilePath")
-        self.file_name = ad_rw(str, "FileName")
-        self.file_template = ad_rw(str, "FileTemplate")
-        self.full_file_name = ad_r(str, "FullFileName")
-        self.file_write_mode = ad_rw(FileWriteMode, "FileWriteMode")
-        self.num_capture = ad_rw(int, "NumCapture")
-        self.num_captured = ad_r(int, "NumCaptured")
-        self.lazy_open = ad_rw(bool, "LazyOpen")
-        self.capture = ad_rw(int, "Capture")
-        self.flush_now = EpicsSignalX("FlushNow", write_value=1)
-        self.array_size0 = ad_r(int, "ArraySize0")
-        self.array_size1 = ad_r(int, "ArraySize1")
-        super().__init__(prefix, name)
+        self.file_path = ad_rw(str, prefix + "FilePath")
+        self.file_name = ad_rw(str, prefix + "FileName")
+        self.file_template = ad_rw(str, prefix + "FileTemplate")
+        self.full_file_name = ad_r(str, prefix + "FullFileName")
+        self.file_write_mode = ad_rw(FileWriteMode, prefix + "FileWriteMode")
+        self.num_capture = ad_rw(int, prefix + "NumCapture")
+        self.num_captured = ad_r(int, prefix + "NumCaptured")
+        self.swmr_mode = ad_rw(bool, prefix + "SWMRMode")
+        self.lazy_open = ad_rw(bool, prefix + "LazyOpen")
+        self.capture = ad_rw(bool, prefix + "Capture")
+        self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
+        self.array_size0 = ad_r(int, prefix + "ArraySize0")
+        self.array_size1 = ad_r(int, prefix + "ArraySize1")
 
 
 class HDFResource(AsyncReadable):
@@ -160,15 +160,13 @@ class HDFResource(AsyncReadable):
 class MyHDFWritingSim(StandardReadable, Triggerable, WritesExternalAssets):
     def __init__(self, prefix: str, name="") -> None:
         # Define some plugins
-        self.drv = ADDriver("CAM:")
-        self.hdf = NDFileHDF("HDF5:")
+        self.drv = ADDriver(prefix + "CAM:")
+        self.hdf = NDFileHDF(prefix + "HDF5:")
         self.resource = HDFResource(self.hdf)
         self._capture_status: Optional[asyncio.Task] = None
         self._asset_docs: Deque[Asset] = collections.deque()
         self._datum: Optional[Datum] = None
-        super().__init__(
-            prefix, name, primary=self.resource, config=[self.drv.acquire_time]
-        )
+        super().__init__(name, primary=self.resource, config=[self.drv.acquire_time])
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -176,6 +174,7 @@ class MyHDFWritingSim(StandardReadable, Triggerable, WritesExternalAssets):
             self.drv.image_mode.set(ImageMode.single),
             self.drv.wait_for_plugins.set(True),
             self.hdf.lazy_open.set(True),
+            self.hdf.swmr_mode.set(True),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
         # Go forever
@@ -210,15 +209,15 @@ FLUSH_PERIOD = 0.5
 class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
     def __init__(self, prefix: str, name="") -> None:
         # Define some plugins
-        self.drv = ADDriver("CAM:")
-        self.hdf = NDFileHDF("HDF5:")
+        self.drv = ADDriver(prefix + "CAM:")
+        self.hdf = NDFileHDF(prefix + "HDF5:")
         # TODO add support to bluesky.protocols for StreamDatum and StreamResource
         # then the following type ignore can be removed
         self._asset_docs = collections.deque()  # type: ignore
         self._capture_status: Optional[AsyncStatus] = None
         self._start_status: Optional[AsyncStatus] = None
         self._compose_datum: Optional[Callable] = None
-        super().__init__(prefix, name, config=[self.drv.acquire_time])
+        super().__init__(name, config=[self.drv.acquire_time])
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -226,6 +225,7 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
             self.drv.image_mode.set(ImageMode.multiple),
             self.drv.wait_for_plugins.set(True),
             self.hdf.lazy_open.set(True),
+            self.hdf.swmr_mode.set(True),
             # Go forever
             self.hdf.num_capture.set(0),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
@@ -235,7 +235,7 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
 
     async def describe_collect(self) -> Dict[str, Dict[str, Descriptor]]:
         desc: Descriptor = dict(
-            source=self._init_prefix,
+            source=self.hdf.file_path.source,
             shape=await asyncio.gather(
                 self.hdf.array_size1.get_value(), self.hdf.array_size0.get_value()
             ),
@@ -252,8 +252,9 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
     async def kickoff(self) -> None:
         self._capture_status = self.hdf.capture.set(1)
         # Wait for up to 1s it actually to start
-        wait_for_value(self.hdf.capture, True, timeout=1)
-        self._start_status = self.drv.acquire.set(1)
+        await wait_for_value(self.hdf.capture, True, timeout=1)
+        # TODO: calculate sensible timeout here
+        self._start_status = self.drv.acquire.set(1, timeout=100)
 
     async def _flush_and_publish(self, last_emitted: int) -> int:
         num_captured = await self.hdf.num_captured.get_value()
@@ -275,7 +276,7 @@ class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
                 last_emitted = num_captured
                 self._asset_docs.append(("stream_datum", datum_doc))
             # Make sure the file is flushed to show the frames
-            await self.hdf.flush_now.execute()
+            await self.hdf.flush_now.set(1)
         return num_captured
 
     @AsyncStatus.wrap

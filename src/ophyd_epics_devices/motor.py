@@ -4,7 +4,7 @@ from typing import Callable, List, Optional
 
 from bluesky.protocols import Movable, Stoppable
 from ophyd.v2.core import AsyncStatus, StandardReadable
-from ophyd.v2.epics import EpicsSignalR, EpicsSignalRW, EpicsSignalX
+from ophyd.v2.epics import epics_signal_r, epics_signal_rw, epics_signal_x
 
 
 class Motor(StandardReadable, Movable, Stoppable):
@@ -12,18 +12,17 @@ class Motor(StandardReadable, Movable, Stoppable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        self.setpoint = EpicsSignalRW(float, ".VAL")
-        self.readback = EpicsSignalR(float, ".RBV")
-        self.velocity = EpicsSignalRW(float, ".VELO")
-        self.units = EpicsSignalR(str, ".EGU")
-        self.precision = EpicsSignalR(int, ".PREC")
+        self.setpoint = epics_signal_rw(float, prefix + ".VAL")
+        self.readback = epics_signal_r(float, prefix + ".RBV")
+        self.velocity = epics_signal_rw(float, prefix + ".VELO")
+        self.units = epics_signal_r(str, prefix + ".EGU")
+        self.precision = epics_signal_r(int, prefix + ".PREC")
         # Signals that collide with standard methods should have a trailing underscore
-        self.stop_ = EpicsSignalX(".STOP", write_value=1, wait=False)
+        self.stop_ = epics_signal_x(prefix + ".STOP")
         # Whether set() should complete successfully or not
         self._set_success = True
-        # Set prefix, name, and signals for read() and read_configuration()
+        # Set name, and signals for read() and read_configuration()
         super().__init__(
-            prefix=prefix,
             name=name,
             primary=self.readback,
             config=[self.velocity, self.units],
@@ -73,4 +72,6 @@ class Motor(StandardReadable, Movable, Stoppable):
 
     async def stop(self, success=False):
         self._set_success = success
-        await self.stop_.execute()
+        # Put with completion will never complete as we are waiting for completion on the
+        # move above, so need to pass wait=False
+        await self.stop_.execute(wait=False)
