@@ -1,5 +1,3 @@
-from typing import cast
-
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import bluesky.preprocessors as bpp

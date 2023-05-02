@@ -72,6 +72,6 @@ class Motor(StandardReadable, Movable, Stoppable):
 
     async def stop(self, success=False):
         self._set_success = success
-        # Put with completion will never complete as we are waiting for completion on the
-        # move above, so need to pass wait=False
+        # Put with completion will never complete as we are waiting for completion on
+        # the move above, so need to pass wait=False
         await self.stop_.execute(wait=False)
