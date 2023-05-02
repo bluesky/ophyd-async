@@ -143,9 +143,6 @@ if not check_switcher:
 
 # Theme options for pydata_sphinx_theme
 html_theme_options = dict(
-    logo=dict(
-        text=project,
-    ),
     use_edit_page_button=True,
     github_url=f"https://github.com/{github_user}/{github_repo}",
     icon_links=[
@@ -184,5 +181,5 @@ html_show_sphinx = False
 html_show_copyright = False
 
 # Logo
-html_logo = "images/dls-logo.svg"
-html_favicon = "images/dls-favicon.ico"
+html_logo = "images/bluesky_ophyd_epics_devices_logo.svg"
+html_favicon = "images/ophyd_favicon.svg"
