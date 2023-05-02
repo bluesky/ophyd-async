@@ -1,11 +1,10 @@
 import asyncio
-from typing import Dict, cast
+from typing import Dict
 from unittest.mock import Mock, call
 
 import pytest
 from bluesky.protocols import Reading
-from bluesky.run_engine import RunEngine
-from ophyd.v2.core import DeviceCollector, set_sim_value, set_sim_put_proceeds
+from ophyd.v2.core import DeviceCollector, set_sim_put_proceeds, set_sim_value
 
 from ophyd_epics_devices import motor
 
