@@ -16,8 +16,8 @@ async def sim_panda():
 
 
 def test_panda_names_correct(pva, sim_panda: PandA):
-    assert sim_panda.seq[1].name == "sim_panda-seq1"
-    assert sim_panda.pulse[1].name == "sim_panda-pulse1"
+    assert sim_panda.seq[1].name == "sim_panda-seq-1"
+    assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
 
 
 async def test_panda_children_connected(pva, sim_panda: PandA):
@@ -30,8 +30,8 @@ async def test_panda_children_connected(pva, sim_panda: PandA):
             SeqTrigger.IMMEDIATE,
             SeqTrigger.IMMEDIATE,
         ),
-        position=np.array([3222, -565, 0, 0]).astype(np.int32),
-        time1=np.array([5, 0, 10, 10]).astype(np.uint32),
+        position=np.array([3222, -565, 0, 0], dtype=np.int32),
+        time1=np.array([5, 0, 10, 10]).astype(np.uint32),  # TODO: change below syntax.
         outa1=np.array([1, 0, 0, 1]).astype(np.bool_),
         outb1=np.array([0, 0, 1, 1]).astype(np.bool_),
         outc1=np.array([0, 1, 1, 0]).astype(np.bool_),

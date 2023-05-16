@@ -1,3 +1,4 @@
+import asyncio
 import re
 from enum import Enum
 from typing import (
@@ -14,8 +15,15 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from ophyd.v2.core import Device, DeviceVector, connect_children, get_device_children
-from ophyd.v2.core import SignalRW, SignalR, SignalW, SignalX
+from ophyd.v2.core import (
+    Device,
+    DeviceCollector,
+    DeviceVector,
+    SignalR,
+    SignalRW,
+    SignalW,
+    connect_children,
+)
 from ophyd.v2.epics import (
     epics_signal_r,
     epics_signal_rw,
@@ -103,7 +111,7 @@ async def pvi_get(pv: str, timeout: float = 5.0) -> Dict[str, PVIEntry]:
     result = {}
 
     for attr_name, attr_info in pv_info.items():
-        result[attr_name] = PVIEntry(**attr_info)
+        result[attr_name] = PVIEntry(**attr_info)  # type: ignore
     return result
 
 
@@ -123,63 +131,31 @@ def check_anno(
 
 
 class PandA(Device):
-    _name = ""
-    # Attribute interface for selected blocks
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
-    # All blocks available with numbered names, e.g. self.seq[1], self.pcap
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self._init_prefix = prefix
-        # doesn't make sense calling set_name as no child devices setup initially.
-        # this all happens after connect() has been called...
 
-    @property
-    def name(self) -> str:
-        return self._name
-
-    # TODO: getattr instead
-    def set_name(self, name: str = ""):
-        self._name = name
-        for child_name, child in get_device_children(self):
-            child.set_name(f"{name}-{child_name.rstrip('_')}")
-            child.parent = self
-            # for block_name, block in self.blocks.items():
-            #     block.set_name(f"{name}-{block_name.lower()}")
-            #     block.parent = self
-
-    async def _make_block(self, block_name: str, block_pv: str, sim: bool):
-        name, num = block_name_number(block_name)
+    async def _make_block(self, name: str, num: int, block_pv: str, sim: bool):
         anno = get_type_hints(self).get(name)
-        if anno:
-            # We know what type it should be, so make one
-            args = get_args(anno)
-            if args:
-                # Anno is Tuple(block_cls,)
-                block = args[0]()
-                # Make dict if it doesn't already exist, and add block to it
-                self.__dict__.setdefault(name, {})[num] = block
-            else:
-                # Anno is just the block class
-                assert num == 1, f"Only expected one {name} block, got {num}"
-                block = anno()
-            field_annos = get_type_hints(block)
-        else:
-            # Make a generic device
-            block = Device()
-            field_annos = {}
-        assert not hasattr(
-            self, block_name
-        ), f"Name clash, self.{block_name} = {getattr(self, block_name)}"
-        setattr(self, block_name, block)
 
-        # self now has 'block1' and 'block[1]' PulseBlocks.
-        # pvi_get gets you a dict of [str, PVIEntry]
+        block: Device = Device()
+        field_annos = {}
+
+        if anno:
+            type_args = get_args(anno)
+            block = type_args[0]() if type_args else anno()
+
+            if not type_args:
+                assert num == 1, f"Only expected one {name} block, got {num}"
+
+            field_annos = get_type_hints(block)
+
         block_pvi = await pvi_get(block_pv)
         for field_name, field_pvi in block_pvi.items():
             if "x" in field_pvi:
-                check_anno(SignalX, field_annos, field_name)
                 signal = epics_signal_x("pva://" + field_pvi["x"])
             elif "rw" in field_pvi:
                 typ = check_anno(SignalRW, field_annos, field_name)
@@ -197,9 +173,11 @@ class PandA(Device):
                 signal = epics_signal_w(typ, "pva://" + field_pvi["w"])
             else:
                 raise ValueError(
-                    f"Can't make {block_name}.{field_name} from {field_pvi}"
+                    f"Can't make {name}{num}.{field_name} from {field_pvi}"
                 )
             setattr(block, field_name, signal)
+
+        return block
 
     async def connect(self, sim=False):
         panda_pvi = await pvi_get(self._init_prefix + ":PVI")
@@ -208,7 +186,27 @@ class PandA(Device):
             assert list(block_pvi) == [
                 "d"
             ], f"Expected PandA to only contain blocks, got {block_pvi}"
-            await self._make_block(block_name, block_pvi["d"], sim=sim)
+            name, num = block_name_number(block_name)
+            block = await self._make_block(name, num, block_pvi["d"], sim=sim)
+
+            anno = get_type_hints(self).get(name)
+
+            if (anno == DeviceVector[PulseBlock]) or (anno == DeviceVector[SeqBlock]):
+                self.__dict__.setdefault(name, DeviceVector())[num] = block
+            else:
+                setattr(self, name, block)
 
         self.set_name(self.name)
         await connect_children(self, sim)
+
+
+async def make_panda():
+    async with DeviceCollector():
+        sim_panda = PandA("PANDAQSRV")
+
+    print("ah")
+    print(sim_panda)
+
+
+if __name__ == "__main__":
+    asyncio.run(make_panda())
