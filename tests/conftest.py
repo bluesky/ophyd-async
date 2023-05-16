@@ -5,11 +5,9 @@ import time
 from pathlib import Path
 
 import pytest
+from bluesky.run_engine import RunEngine, TransitionError
 
 RECORD = str(Path(__file__).parent / "db" / "panda.db")
-
-import pytest
-from bluesky.run_engine import RunEngine, TransitionError
 
 
 @pytest.fixture(scope="function")
@@ -32,7 +30,7 @@ def RE(request):
     return RE
 
 
-@pytest.fixture(scope="module", params=["pva", "ca"])
+@pytest.fixture(scope="module", params=["pva"])
 def pva():
     process = subprocess.Popen(
         [
