@@ -1,11 +1,8 @@
-from typing import cast
-
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import bluesky.preprocessors as bpp
 import pytest
-from ophyd.v2.core import DeviceCollector
-from ophyd.v2.epics import ChannelSim
+from ophyd.v2.core import DeviceCollector, set_sim_value
 
 from ophyd_epics_devices.areadetector import (
     FileWriteMode,
@@ -22,12 +19,9 @@ async def single_trigger_sim():
         single_trigger_sim = MySingleTriggerSim(prefix="PREFIX")
 
     assert single_trigger_sim.name == "single_trigger_sim"
-    acquire_time = cast(ChannelSim, single_trigger_sim.drv.acquire_time.read_channel)
-    acquire_time.set_value(0.5)
-    array_counter = cast(ChannelSim, single_trigger_sim.drv.array_counter.read_channel)
-    array_counter.set_value(1)
-    unique_id = cast(ChannelSim, single_trigger_sim.stats.unique_id.read_channel)
-    unique_id.set_value(3)
+    set_sim_value(single_trigger_sim.drv.acquire_time, 0.5)
+    set_sim_value(single_trigger_sim.drv.array_counter, 1)
+    set_sim_value(single_trigger_sim.stats.unique_id, 3)
     yield single_trigger_sim
 
 
@@ -37,12 +31,9 @@ async def hdf_writing_sim():
         hdf_writing_sim = MyHDFWritingSim(prefix="PREFIX")
 
     assert hdf_writing_sim.name == "hdf_writing_sim"
-    num_captured = cast(ChannelSim, hdf_writing_sim.hdf.num_captured.read_channel)
-    num_captured.set_value(1)
-    full_file_name = cast(ChannelSim, hdf_writing_sim.hdf.full_file_name.read_channel)
-    full_file_name.set_value("/tmp/tempfile")
-    acquire_time = cast(ChannelSim, hdf_writing_sim.drv.acquire_time.read_channel)
-    acquire_time.set_value(0.5)
+    set_sim_value(hdf_writing_sim.hdf.num_captured, 1)
+    set_sim_value(hdf_writing_sim.hdf.full_file_name, "/tmp/tempfile")
+    set_sim_value(hdf_writing_sim.drv.acquire_time, 0.5)
     yield hdf_writing_sim
 
 
@@ -52,23 +43,17 @@ async def hdf_flyer_sim():
         hdf_flyer_sim = MyHDFFlyerSim(prefix="PREFIX")
 
     assert hdf_flyer_sim.name == "hdf_flyer_sim"
-    num_captured = cast(ChannelSim, hdf_flyer_sim.hdf.num_captured.read_channel)
-    num_captured.set_value(1)
-    full_file_name = cast(ChannelSim, hdf_flyer_sim.hdf.full_file_name.read_channel)
-    full_file_name.set_value("/tmp/tempfile")
-    acquire_time = cast(ChannelSim, hdf_flyer_sim.drv.acquire_time.read_channel)
-    acquire_time.set_value(0.5)
+    set_sim_value(hdf_flyer_sim.hdf.num_captured, 1)
+    set_sim_value(hdf_flyer_sim.hdf.full_file_name, "/tmp/tempfile")
+    set_sim_value(hdf_flyer_sim.drv.acquire_time, 0.5)
     yield hdf_flyer_sim
 
 
-async def test_single_write_sim(single_trigger_sim, RE):
+async def test_single_write_sim(single_trigger_sim: MySingleTriggerSim, RE):
     det = single_trigger_sim
-    acquire = cast(ChannelSim, det.drv.acquire.write_channel)
-    acquire.set_value(0)
-    image_mode = cast(ChannelSim, det.drv.image_mode.write_channel)
-    image_mode.set_value(ImageMode.multiple)
-    wait_for_plugins = cast(ChannelSim, det.drv.wait_for_plugins.write_channel)
-    wait_for_plugins.set_value(False)
+    set_sim_value(det.drv.acquire, 0)
+    set_sim_value(det.drv.image_mode, ImageMode.multiple)
+    set_sim_value(det.drv.wait_for_plugins, False)
 
     docs = []
 
@@ -77,9 +62,9 @@ async def test_single_write_sim(single_trigger_sim, RE):
 
     RE(bp.count([det]), append_callback)
 
-    assert (await acquire.get_value()) == 1
-    assert (await image_mode.get_value()) == ImageMode.single
-    assert await wait_for_plugins.get_value()
+    assert (await det.drv.acquire.get_value()) == 1
+    assert (await det.drv.image_mode.get_value()) == ImageMode.single
+    assert await det.drv.wait_for_plugins.get_value()
 
     _, (_, descriptor), (_, event), _ = docs
 
@@ -94,18 +79,13 @@ async def test_single_write_sim(single_trigger_sim, RE):
     assert event["data"]["single_trigger_sim-stats-unique_id"] == 3
 
 
-async def test_hdf_writing_sim(hdf_writing_sim, RE):
+async def test_hdf_writing_sim(hdf_writing_sim: MyHDFWritingSim, RE):
     det = hdf_writing_sim
-    acquire = cast(ChannelSim, det.drv.acquire.write_channel)
-    acquire.set_value(0)
-    image_mode = cast(ChannelSim, det.drv.image_mode.write_channel)
-    image_mode.set_value(ImageMode.multiple)
-    wait_for_plugins = cast(ChannelSim, det.drv.wait_for_plugins.write_channel)
-    wait_for_plugins.set_value(False)
-    lazy_open = cast(ChannelSim, det.hdf.lazy_open.write_channel)
-    lazy_open.set_value(False)
-    file_write_mode = cast(ChannelSim, det.hdf.file_write_mode.write_channel)
-    file_write_mode.set_value(FileWriteMode.single)
+    set_sim_value(det.drv.acquire, 0)
+    set_sim_value(det.drv.image_mode, ImageMode.multiple)
+    set_sim_value(det.drv.wait_for_plugins, False)
+    set_sim_value(det.hdf.lazy_open, False)
+    set_sim_value(det.hdf.file_write_mode, FileWriteMode.single)
 
     docs = []
 
@@ -114,11 +94,11 @@ async def test_hdf_writing_sim(hdf_writing_sim, RE):
 
     RE(bp.count([det]), append_callback)
 
-    assert (await acquire.get_value()) == 1
-    assert (await image_mode.get_value()) == ImageMode.single
-    assert await wait_for_plugins.get_value()
-    assert await lazy_open.get_value()
-    assert (await file_write_mode.get_value()) == FileWriteMode.stream
+    assert (await det.drv.acquire.get_value()) == 1
+    assert (await det.drv.image_mode.get_value()) == ImageMode.single
+    assert await det.drv.wait_for_plugins.get_value()
+    assert await det.hdf.lazy_open.get_value()
+    assert (await det.hdf.file_write_mode.get_value()) == FileWriteMode.stream
 
     _, (_, descriptor), (_, resourse), (_, datum), _, _ = docs
 
@@ -132,20 +112,14 @@ async def test_hdf_writing_sim(hdf_writing_sim, RE):
     assert datum["datum_kwargs"]["point_number"] == 1
 
 
-async def test_hdf_flyer_sim(hdf_flyer_sim, RE):
+async def test_hdf_flyer_sim(hdf_flyer_sim: MyHDFFlyerSim, RE):
     det = hdf_flyer_sim
-    num_images = cast(ChannelSim, det.drv.num_images.write_channel)
-    num_images.set_value(0)
-    acquire = cast(ChannelSim, det.drv.acquire.write_channel)
-    acquire.set_value(0)
-    image_mode = cast(ChannelSim, det.drv.image_mode.write_channel)
-    image_mode.set_value(ImageMode.single)
-    wait_for_plugins = cast(ChannelSim, det.drv.wait_for_plugins.write_channel)
-    wait_for_plugins.set_value(False)
-    lazy_open = cast(ChannelSim, det.hdf.lazy_open.write_channel)
-    lazy_open.set_value(False)
-    file_write_mode = cast(ChannelSim, det.hdf.file_write_mode.write_channel)
-    file_write_mode.set_value(FileWriteMode.single)
+    set_sim_value(det.drv.num_images, 0)
+    set_sim_value(det.drv.acquire, 0)
+    set_sim_value(det.drv.image_mode, ImageMode.single)
+    set_sim_value(det.drv.wait_for_plugins, False)
+    set_sim_value(det.hdf.lazy_open, False)
+    set_sim_value(det.hdf.file_write_mode, FileWriteMode.single)
 
     docs = []
 
@@ -169,18 +143,18 @@ async def test_hdf_flyer_sim(hdf_flyer_sim, RE):
 
     (
         _,
+        (_, descriptor),
         (_, stream_resource),
         _,
-        (_, descriptor),
         _,
     ) = docs
 
-    assert (await num_images.get_value()) == 5
-    assert (await acquire.get_value()) == 1
-    assert (await image_mode.get_value()) == ImageMode.multiple
-    assert await wait_for_plugins.get_value()
-    assert await lazy_open.get_value()
-    assert await file_write_mode.get_value() == FileWriteMode.stream
+    assert (await det.drv.num_images.get_value()) == 5
+    assert (await det.drv.acquire.get_value()) == 1
+    assert (await det.drv.image_mode.get_value()) == ImageMode.multiple
+    assert await det.drv.wait_for_plugins.get_value()
+    assert await det.hdf.lazy_open.get_value()
+    assert await det.hdf.file_write_mode.get_value() == FileWriteMode.stream
 
     assert (
         descriptor["configuration"]["hdf_flyer_sim"]["data"][
