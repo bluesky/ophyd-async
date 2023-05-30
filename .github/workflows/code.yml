@@ -110,7 +110,7 @@ jobs:
   release:
     # upload to PyPI and make a release on every tag
     needs: [lint, dist, test]
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     env:
       HAS_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN != '' }}
