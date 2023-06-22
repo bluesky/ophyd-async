@@ -168,6 +168,11 @@ class PandA(Device):
         return block
 
     async def _make_block(self, name: str, num: int, block_pv: str, sim: bool = False):
+        """Makes a block given a block name containing relevant signals.
+
+        Loops through the signals in the block (found using type hints), if not in
+        sim mode then does a pvi call, and identifies this signal from the pvi call.
+        """
         block = self.verify_block(name, num)
         try:
             field_annos = get_type_hints(block)
@@ -189,7 +194,9 @@ class PandA(Device):
         for sig_name, sig_type in field_annos.items():
             origin = get_origin(sig_type)
 
+            # if not in sim mode,
             if block_pvi:
+                # try to get this block in the pvi.
                 entry: Optional[PVIEntry] = block_pvi.get(sig_name)
                 if entry is None:
                     raise Exception(
@@ -223,6 +230,9 @@ class PandA(Device):
 
             setattr(block, sig_name, signal)
 
+            # TODO: make more arbitrary blocks if they're in PVI but not this class?
+            # that sounds kind of dumb though. It's already handled in the previous
+            # step.
         return block
 
     def set_attribute(self, name, num, block):
@@ -238,13 +248,18 @@ class PandA(Device):
 
         This method loops through all properties of this class (pulse, seq and pcap)
         and for each one works out a pv name. By default it is set to "sim://" because
-        the initial idea was you could have a panda block with some sim blocks.
-        This doesn't actually work when connecting children though.
+        the initial idea was you could have a panda block with some sim blocks. But it
+        tries to query pvi and get that info for the 1st block.
+
+        Then it checks if pvi has any more blocks other than just 1, and sets those up.
+
+        simulated and non-simulated blocks are connected accordingly.
         """
         pvi = await pvi_get(self._init_prefix + ":PVI") if not sim else None
         hints = get_type_hints(self)
         sim_blocks = []
 
+        # set up bare minimum blocks,
         for block_name in hints.keys():
             pv = "sim://"
 
@@ -269,34 +284,16 @@ class PandA(Device):
             if pv.startswith("sim"):
                 sim_blocks.append(block_name)
 
+        # check for more from pvi info (if available)
         if pvi:
             for block_name, block_pvi in pvi.items():
                 name, num = block_name_number(block_name)
                 if getattr(self, name).get(num) is None:
                     block = await self._make_block(name, num, block_pvi["d"])
                     self.set_attribute(name, num, block)
-                # if not getattr(self, )
 
-        # if sim:
-        #     hints = get_type_hints(self)
-        #     for key in hints.keys():
-        #         block = await self._make_block(key, 1, "pva://", sim=True)
-        #         self.set_attribute(key, 1, block)
-
-        # else:
-        #     panda_pvi = await pvi_get(self._init_prefix + ":PVI")
-
-        #     for block_name, block_pvi in panda_pvi.items():
-        #         assert list(block_pvi) == [
-        #             "d"
-        #         ], f"Expected PandA to only contain blocks, got {block_pvi}"
-        #         name, num = block_name_number(block_name)
-        #         block = await self._make_block(name, num, block_pvi["d"])
-        #         self.set_attribute(name, num, block)
-
+        # set name and connect
         self.set_name(self.name)
-
-        # only connect non-sim blocks if not sim, and
         if not sim:
             non_sim_coros = {
                 name: child_device.connect(False)
@@ -326,4 +323,5 @@ if __name__ == "__main__":
 
 # TALK TO TOM ABOUT:
 # 1. fleshing out PcapBlock...
-# 2. Adding something to test.db that includes a pcap block.
+# 2. Adding something to test.db that includes a pcap block?
+# 3. if the above looks good, i.e. order of loops.
