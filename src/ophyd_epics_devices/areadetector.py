@@ -1,12 +1,12 @@
 import asyncio
 import collections
+import tempfile
 import time
 from enum import Enum
-from typing import AsyncIterator, Callable, Deque, Dict, Iterator, Optional, Sized, Type
+from typing import Callable, Dict, Iterator, Optional, Sequence, Sized, Type
 
 from bluesky.protocols import (
     Asset,
-    Datum,
     Descriptor,
     Flyable,
     PartialEvent,
@@ -14,16 +14,17 @@ from bluesky.protocols import (
     Triggerable,
     WritesExternalAssets,
 )
-from event_model import compose_resource, compose_stream_resource
+from bluesky.utils import new_uid
+from event_model import compose_stream_resource
 from ophyd.v2.core import (
-    AsyncReadable,
+    DEFAULT_TIMEOUT,
     AsyncStatus,
     Device,
     SignalR,
     SignalRW,
     StandardReadable,
     T,
-    wait_for_value,
+    set_and_wait_for_value,
 )
 from ophyd.v2.epics import epics_signal_r, epics_signal_rw
 
@@ -56,24 +57,33 @@ class ADDriver(Device):
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
 
 
-class NDPluginStats(Device):
+class NDPlugin(Device):
+    pass
+
+
+class NDPluginStats(NDPlugin):
     def __init__(self, prefix: str) -> None:
         # Define some signals
         self.unique_id = ad_r(int, prefix + "UniqueId")
 
 
-class MySingleTriggerSim(StandardReadable, Triggerable):
-    def __init__(self, prefix: str, name="") -> None:
-        # Define some plugins
-        self.drv = ADDriver(prefix + "CAM:")
-        self.stats = NDPluginStats(prefix + "STAT:")
-        super().__init__(
-            name,
+class SingleTriggerDet(StandardReadable, Triggerable):
+    def __init__(
+        self,
+        drv: ADDriver,
+        read_uncached: Sequence[SignalR] = (),
+        name="",
+        **plugins: NDPlugin,
+    ) -> None:
+        self.drv = drv
+        self.__dict__.update(plugins)
+        self.set_readable_signals(
             # Can't subscribe to read signals as race between monitor coming back and
             # caput callback on acquire
-            read_uncached=[self.drv.array_counter, self.stats.unique_id],
+            read_uncached=[self.drv.array_counter] + list(read_uncached),
             config=[self.drv.acquire_time],
         )
+        super().__init__(name=name)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -81,7 +91,7 @@ class MySingleTriggerSim(StandardReadable, Triggerable):
             self.drv.image_mode.set(ImageMode.single),
             self.drv.wait_for_plugins.set(True),
         )
-        super().stage()
+        await super().stage()
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
@@ -112,196 +122,158 @@ class NDFileHDF(Device):
         self.array_size1 = ad_r(int, prefix + "ArraySize1")
 
 
-class HDFResource(AsyncReadable):
-    def __init__(self, hdf: NDFileHDF):
-        self.hdf = hdf
+class _HDFResource:
+    def __init__(self) -> None:
+        # TODO: set to Deque[Asset] after protocols updated for stream*
+        #   https://github.com/bluesky/bluesky/issues/1558
+        self.asset_docs = collections.deque()  # type: ignore
+        self._last_emitted = 0
+        self._last_flush = time.monotonic()
         self._compose_datum: Optional[Callable] = None
-        self._datum: Optional[Datum] = None
 
-    async def create_asset_docs(self) -> AsyncIterator[Asset]:
-        num_captured = await self.hdf.num_captured.get_value()
-        if num_captured == 1:
-            # First frame, get filename and make resource from it
-            resource_doc, self._compose_datum, _ = compose_resource(
-                # AD_HDF5 means primary dataset must be /entry/data/data
-                spec="AD_HDF5",
-                root="/",
-                resource_path=await self.hdf.full_file_name.get_value(),
-                resource_kwargs=dict(frame_per_point=1),
-            )
-            yield "resource", resource_doc
-        assert self._compose_datum, "We haven't made a resource yet"
-        self._datum = self._compose_datum(datum_kwargs=dict(point_number=num_captured))
-        assert self._datum, "That went wrong"
-        yield "datum", self._datum
-
-    async def describe(self) -> Dict[str, Descriptor]:
-        # This will be called after trigger, so a frame will have been pushed through
-        # and the array size PVs are valid
-        descriptor: Descriptor = dict(
-            source=self.hdf.full_file_name.source,
-            shape=await asyncio.gather(
-                self.hdf.array_size1.get_value(), self.hdf.array_size0.get_value()
-            ),
-            dtype="array",
-            external="FILESTORE:",
+    def _append_resource(self, full_file_name: str):
+        resource_doc, (self._compose_datum,) = compose_stream_resource(
+            spec="AD_HDF5_SWMR_SLICE",
+            root="/",
+            resource_path=full_file_name,
+            resource_kwargs={},
+            stream_names=["primary"],
         )
-        return {"": descriptor}
+        self.asset_docs.append(("stream_resource", resource_doc))
 
-    async def read(self) -> Dict[str, Reading]:
-        assert self._datum, "Trigger not called yet"
-        reading: Reading = dict(
-            value=self._datum["datum_id"],
-            timestamp=time.time(),
+    def _append_datum(self, event_count: int):
+        assert self._compose_datum, "Resource not emitted yet"
+        datum_doc = self._compose_datum(
+            datum_kwargs={},
+            event_offset=self._last_emitted,
+            event_count=event_count,
         )
-        return {"": reading}
+        self._last_emitted += event_count
+        self.asset_docs.append(("stream_datum", datum_doc))
+
+    async def flush_and_publish(self, hdf: NDFileHDF):
+        num_captured = await hdf.num_captured.get_value()
+        if num_captured:
+            if self._compose_datum is None:
+                self._append_resource(await hdf.full_file_name.get_value())
+            event_count = num_captured - self._last_emitted
+            if event_count:
+                self._append_datum(event_count)
+                await hdf.flush_now.set(1)
+                self._last_flush = time.monotonic()
+        if time.monotonic() - self._last_flush > FRAME_TIMEOUT:
+            raise TimeoutError(f"{hdf.name}: writing stalled on frame {num_captured}")
 
 
-class MyHDFWritingSim(StandardReadable, Triggerable, WritesExternalAssets):
-    def __init__(self, prefix: str, name="") -> None:
-        # Define some plugins
-        self.drv = ADDriver(prefix + "CAM:")
-        self.hdf = NDFileHDF(prefix + "HDF5:")
-        self.resource = HDFResource(self.hdf)
-        self._capture_status: Optional[asyncio.Task] = None
-        self._asset_docs: Deque[Asset] = collections.deque()
-        self._datum: Optional[Datum] = None
-        super().__init__(name, primary=self.resource, config=[self.drv.acquire_time])
+class HDFNamer:
+    def __init__(self) -> None:
+        self.directory: Optional[str] = None
 
-    @AsyncStatus.wrap
-    async def stage(self) -> None:
-        await asyncio.gather(
-            self.drv.image_mode.set(ImageMode.single),
-            self.drv.wait_for_plugins.set(True),
-            self.hdf.lazy_open.set(True),
-            self.hdf.swmr_mode.set(True),
-            self.hdf.file_write_mode.set(FileWriteMode.stream),
-        )
-        # Go forever
-        # Do this separately just to make sure it takes
-        await self.hdf.num_capture.set(0)
-        self._capture_status = self.hdf.capture.set(1)
-        super().stage()
+    def need_directory(self) -> str:
+        if self.directory is None:
+            self.directory = tempfile.mkdtemp()
+        return self.directory
 
-    @AsyncStatus.wrap
-    async def trigger(self) -> None:
-        await self.drv.acquire.set(1)
-        async for asset in self.resource.create_asset_docs():
-            self._asset_docs.append(asset)
-
-    def collect_asset_docs(self) -> Iterator[Asset]:
-        while self._asset_docs:
-            yield self._asset_docs.popleft()
-
-    @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        # Already done a caput callback in _capture_status, so can't do one here
-        await self.hdf.capture.set(0, wait=False)
-        assert self._capture_status, "Trigger not run"
-        await self._capture_status
-        super().unstage()
+    def done_with_directory(self) -> None:
+        self.directory = None
 
 
 # How long in seconds to wait between flushes of HDF datasets
 FLUSH_PERIOD = 0.5
 
+# How long to wait for new frames before timing out
+FRAME_TIMEOUT = 120
 
-class MyHDFFlyerSim(StandardReadable, Flyable, WritesExternalAssets):
-    def __init__(self, prefix: str, name="") -> None:
-        # Define some plugins
-        self.drv = ADDriver(prefix + "CAM:")
-        self.hdf = NDFileHDF(prefix + "HDF5:")
-        # TODO add support to bluesky.protocols for StreamDatum and StreamResource
-        # then the following type ignore can be removed
-        self._asset_docs = collections.deque()  # type: ignore
+
+class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
+    def __init__(self, drv: ADDriver, hdf: NDFileHDF, namer: HDFNamer, name="") -> None:
+        self.drv = drv
+        self.hdf = hdf
+        self._namer = namer
+        self._resource = _HDFResource()
         self._capture_status: Optional[AsyncStatus] = None
         self._start_status: Optional[AsyncStatus] = None
-        self._compose_datum: Optional[Callable] = None
-        super().__init__(name, config=[self.drv.acquire_time])
+        self.set_readable_signals(config=[self.drv.acquire_time])
+        self.set_name(name)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
+        # Make a new resource for the new HDF file we're going to open
+        self._resource = _HDFResource()
+        directory = self._namer.need_directory()
+        file_name = f"{self.name}-{new_uid()}"
+        file_template = "%s/%s.h5"
         await asyncio.gather(
-            self.drv.image_mode.set(ImageMode.multiple),
             self.drv.wait_for_plugins.set(True),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
+            self.hdf.file_path.set(directory),
+            self.hdf.file_name.set(file_name),
+            self.hdf.file_template.set(file_template),
             # Go forever
             self.hdf.num_capture.set(0),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
-        self._compose_datum = None
-        super().stage()
+        # Wait for up to 1s it actually to start
+        self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
+        await super().stage()
 
-    async def describe_collect(self) -> Dict[str, Dict[str, Descriptor]]:
-        desc: Descriptor = dict(
-            source=self.hdf.file_path.source,
+    async def describe(self) -> Dict[str, Descriptor]:
+        descriptor = Descriptor(
+            source=self.hdf.full_file_name.source,
             shape=await asyncio.gather(
-                self.hdf.array_size1.get_value(), self.hdf.array_size0.get_value()
+                self.drv.array_size_y.get_value(),
+                self.drv.array_size_x.get_value(),
             ),
             dtype="array",
             external="STREAM:",
         )
-        return {"primary": {self.name: desc}}
+        return {self.name: descriptor}
+
+    # For step scan, take a single frame
+    @AsyncStatus.wrap
+    async def trigger(self):
+        await self.drv.image_mode.set(ImageMode.single)
+        frame_timeout = DEFAULT_TIMEOUT + await self.drv.acquire_time.get_value()
+        await self.drv.acquire.set(1, timeout=frame_timeout)
+
+    async def read(self) -> Dict[str, Reading]:
+        # All data goes in the asset docs
+        await self._resource.flush_and_publish(self.hdf)
+        return {}
 
     def collect_asset_docs(self) -> Iterator[Asset]:
-        while self._asset_docs:
-            yield self._asset_docs.popleft()
+        while self._resource.asset_docs:
+            yield self._resource.asset_docs.popleft()
 
+    # For flyscan, take the number of frames we wanted
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        self._capture_status = self.hdf.capture.set(1)
-        # Wait for up to 1s it actually to start
-        await wait_for_value(self.hdf.capture, True, timeout=1)
-        # TODO: calculate sensible timeout here
-        self._start_status = self.drv.acquire.set(1, timeout=100)
+        await self.drv.image_mode.set(ImageMode.multiple)
+        self._start_status = await set_and_wait_for_value(self.drv.acquire, 1)
 
-    async def _flush_and_publish(self, last_emitted: int) -> int:
-        num_captured = await self.hdf.num_captured.get_value()
-        if num_captured:
-            if self._compose_datum is None:
-                resource_doc, (self._compose_datum,) = compose_stream_resource(
-                    spec="AD_HDF5_SWMR_SLICE",
-                    root="/",
-                    resource_path=await self.hdf.full_file_name.get_value(),
-                    resource_kwargs={},
-                    stream_names=["primary"],
-                )
-                self._asset_docs.append(("stream_resource", resource_doc))
-            event_count = num_captured - last_emitted
-            if event_count:
-                datum_doc = self._compose_datum(
-                    datum_kwargs={}, event_count=event_count, event_offset=last_emitted
-                )
-                last_emitted = num_captured
-                self._asset_docs.append(("stream_datum", datum_doc))
-            # Make sure the file is flushed to show the frames
-            await self.hdf.flush_now.set(1)
-        return num_captured
+    # Do the same thing for flyscans and step scans
+    async def describe_collect(self) -> Dict[str, Dict[str, Descriptor]]:
+        return {self.name: await self.describe()}
+
+    def collect(self) -> Iterator[PartialEvent]:
+        yield from iter([])
 
     @AsyncStatus.wrap
     async def complete(self) -> None:
         done: Sized = ()
-        last_emitted = 0
         while not done:
-            last_emitted = await self._flush_and_publish(last_emitted)
-            # TODO: add stalled timeout
             assert self._start_status, "Kickoff not run"
             done, _ = await asyncio.wait(
                 (self._start_status.task,), timeout=FLUSH_PERIOD
             )
-        # One last flush and we're done
-        await self._flush_and_publish(last_emitted)
-
-    def collect(self) -> Iterator[PartialEvent]:
-        # TODO: make this optional now
-        return
-        yield
+            await self._resource.flush_and_publish(self.hdf)
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
+        self._namer.done_with_directory()
         # Already done a caput callback in _capture_status, so can't do one here
         await self.hdf.capture.set(0, wait=False)
-        assert self._capture_status, "Kickoff not run"
+        assert self._capture_status, "Stage not run"
         await self._capture_status
-        super().unstage()
+        await super().unstage()

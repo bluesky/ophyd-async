@@ -21,16 +21,21 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.stop_ = epics_signal_x(prefix + ".STOP")
         # Whether set() should complete successfully or not
         self._set_success = True
-        # Set name, and signals for read() and read_configuration()
-        super().__init__(
-            name=name,
-            primary=self.readback,
+        # Set name and signals for read() and read_configuration()
+        self.set_readable_signals(
+            read=[self.readback],
             config=[self.velocity, self.units],
         )
+        super().__init__(name=name)
+
+    def set_name(self, name: str):
+        super().set_name(name)
+        # Readback should be named the same as its parent in read()
+        self.readback.set_name(name)
 
     async def _move(self, new_position: float, watchers: List[Callable] = []):
         self._set_success = True
-        start = time.time()
+        start = time.monotonic()
         old_position, units, precision = await asyncio.gather(
             self.setpoint.get_value(),
             self.units.get_value(),
@@ -46,7 +51,7 @@ class Motor(StandardReadable, Movable, Stoppable):
                     target=new_position,
                     unit=units,
                     precision=precision,
-                    time_elapsed=time.time() - start,
+                    time_elapsed=time.monotonic() - start,
                 )
 
         self.readback.subscribe_value(update_watchers)
