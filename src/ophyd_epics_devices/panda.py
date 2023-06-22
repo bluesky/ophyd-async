@@ -2,15 +2,19 @@ import asyncio
 import re
 from enum import Enum
 from typing import (
+    Any,
+    Callable,
     Dict,
     Optional,
     Sequence,
     Tuple,
     Type,
     TypedDict,
+    cast,
     get_args,
     get_origin,
     get_type_hints,
+    KeysView,
 )
 
 import numpy as np
@@ -19,9 +23,11 @@ from ophyd.v2.core import (
     Device,
     DeviceCollector,
     DeviceVector,
+    Signal,
     SignalR,
     SignalRW,
     SignalW,
+    SignalX,
     connect_children,
 )
 from ophyd.v2.epics import (
@@ -38,6 +44,10 @@ ctxt = Context("pva")
 class PulseBlock(Device):
     delay: SignalRW[float]
     width: SignalRW[float]
+
+    @classmethod
+    def make_block(self):
+        pass
 
 
 class SeqTrigger(Enum):
@@ -81,6 +91,7 @@ class SeqBlock(Device):
 
 
 class PcapBlock(Device):
+    test: SignalR[int]
     ...
 
 
@@ -90,6 +101,9 @@ class PVIEntry(TypedDict, total=False):
     rw: str
     w: str
     x: str
+
+
+PVIEntryKeys = KeysView[PVIEntry]
 
 
 def block_name_number(block_name: str) -> Tuple[str, int]:
@@ -130,6 +144,9 @@ def check_anno(
     return None
 
 
+from ophyd.v2.core import get_device_children, wait_for_connection
+
+
 class PandA(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
@@ -138,11 +155,11 @@ class PandA(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self._init_prefix = prefix
 
-    async def _make_block(self, name: str, num: int, block_pv: str, sim: bool):
+    def verify_block(self, name: str, num: int):
+        """Given a block name and number, return information about a block."""
         anno = get_type_hints(self).get(name)
 
         block: Device = Device()
-        field_annos = {}
 
         if anno:
             type_args = get_args(anno)
@@ -151,62 +168,166 @@ class PandA(Device):
             if not type_args:
                 assert num == 1, f"Only expected one {name} block, got {num}"
 
-            field_annos = get_type_hints(block)
+        return block
 
-        block_pvi = await pvi_get(block_pv)
-        for field_name, field_pvi in block_pvi.items():
-            if "x" in field_pvi:
-                signal = epics_signal_x("pva://" + field_pvi["x"])
-            elif "rw" in field_pvi:
-                typ = check_anno(SignalRW, field_annos, field_name)
-                signal = epics_signal_rw(typ, "pva://" + field_pvi["rw"])
-            elif "r" in field_pvi and "w" in field_pvi:
-                typ = check_anno(SignalRW, field_annos, field_name)
-                signal = epics_signal_rw(
-                    typ, "pva://" + field_pvi["r"], "pva://" + field_pvi["w"]
-                )
-            elif "r" in field_pvi:
-                typ = check_anno(SignalR, field_annos, field_name)
-                signal = epics_signal_r(typ, "pva://" + field_pvi["r"])
-            elif "w" in field_pvi:
-                typ = check_anno(SignalW, field_annos, field_name)
-                signal = epics_signal_w(typ, "pva://" + field_pvi["w"])
+    async def _make_block(self, name: str, num: int, block_pv: str, sim: bool = False):
+        block = self.verify_block(name, num)
+        try:
+            field_annos = get_type_hints(block)
+        except NameError:
+            # this only happens because if you try to get_type_hints on a pcap block,
+            # as its empty it'll complain. I need to actually populate it...
+            return None
+
+        pvi_mapping: Dict[str, Tuple[Type[Signal], Callable[..., Signal]]] = {
+            "rw": (SignalRW, lambda dtype, rpv, wpv: epics_signal_rw(dtype, rpv, wpv)),
+            "r": (SignalR, lambda dtype, rpv, wpv: epics_signal_r(dtype, rpv)),
+            "w": (SignalW, lambda dtype, rpv, wpv: epics_signal_w(dtype, wpv)),
+            "x": (SignalX, lambda dtype, rpv, wpv: epics_signal_x(wpv)),
+        }
+
+        block_pvi = await pvi_get(block_pv) if not sim else None
+
+        # finds which fields this class actually has, e.g. delay, width...
+        for sig_name, sig_type in field_annos.items():
+            origin = get_origin(sig_type)
+
+            if block_pvi:
+                entry: Optional[PVIEntry] = block_pvi.get(sig_name)
+                if entry is None:
+                    raise Exception(
+                        f"{self.__class__.__name__} has a {name} block containing a "
+                        + f"{sig_name} signal which has not been retrieved by PVI."
+                    )
+
+                for key, value in entry.items():
+                    typed_value = cast(str, value)
+                    signal_type, signal_factory = pvi_mapping[key]
+                    annotation = check_anno(signal_type, field_annos, sig_name)
+                    signal = signal_factory(
+                        annotation, "pva://" + typed_value, "pva://" + typed_value
+                    )
+
+                if entry.keys() == {"r", "w"}:
+                    signal = epics_signal_rw(
+                        check_anno(SignalRW, field_annos, sig_name),
+                        "pva://" + entry["r"],
+                        "pva://" + entry["w"],
+                    )
             else:
-                raise ValueError(
-                    f"Can't make {name}{num}.{field_name} from {field_pvi}"
-                )
-            setattr(block, field_name, signal)
+                if not origin:
+                    signal = epics_signal_x("pva://")
+                else:
+                    pvi_equivalent = origin.__name__.lower().split("signal")[-1]
+                    dtype = get_args(sig_type)[0]
+
+                    signal_factory = pvi_mapping[pvi_equivalent][1]
+                    signal = signal_factory(dtype, "pva://", "pva://")
+
+            setattr(block, sig_name, signal)
 
         return block
 
-    async def connect(self, sim=False):
-        panda_pvi = await pvi_get(self._init_prefix + ":PVI")
+    def set_attribute(self, name, num, block):
+        anno = get_type_hints(self).get(name)
 
-        for block_name, block_pvi in panda_pvi.items():
-            assert list(block_pvi) == [
-                "d"
-            ], f"Expected PandA to only contain blocks, got {block_pvi}"
-            name, num = block_name_number(block_name)
-            block = await self._make_block(name, num, block_pvi["d"], sim=sim)
+        if (anno == DeviceVector[PulseBlock]) or (anno == DeviceVector[SeqBlock]):
+            self.__dict__.setdefault(name, DeviceVector())[num] = block
+        else:
+            setattr(self, name, block)
 
-            anno = get_type_hints(self).get(name)
+    async def connect(self, sim=False) -> None:
+        """Initialises all blocks and connects them.
 
-            if (anno == DeviceVector[PulseBlock]) or (anno == DeviceVector[SeqBlock]):
-                self.__dict__.setdefault(name, DeviceVector())[num] = block
-            else:
-                setattr(self, name, block)
+        This method loops through all properties of this class (pulse, seq and pcap)
+        and for each one works out a pv name. By default it is set to "sim://" because
+        the initial idea was you could have a panda block with some sim blocks.
+        This doesn't actually work when connecting children though.
+        """
+        pvi = await pvi_get(self._init_prefix + ":PVI") if not sim else None
+        hints = get_type_hints(self)
+        sim_blocks = []
+
+        for block_name in hints.keys():
+            pv = "sim://"
+
+            if pvi is not None:
+                entry: Optional[PVIEntry] = pvi.get(block_name + "1")
+
+                if entry is None:
+                    print(
+                        "ERROR: This PVIEntry does not contain required block: "
+                        + f"{block_name}. Using simulated block."
+                    )
+                else:
+                    assert list(entry) == [
+                        "d"
+                    ], f"Expected PandA to only contain blocks, got {entry}"
+                    pv = entry["d"]
+
+            block = await self._make_block(
+                block_name, 1, pv, sim=True if pv == "sim://" else False
+            )
+            self.set_attribute(block_name, 1, block)
+            if pv.startswith("sim"):
+                sim_blocks.append(block_name)
+
+        if pvi:
+            for block_name, block_pvi in pvi.items():
+                name, num = block_name_number(block_name)
+                if getattr(self, name).get(num) is None:
+                    block = await self._make_block(name, num, block_pvi["d"])
+                    self.set_attribute(name, num, block)
+                # if not getattr(self, )
+
+        # if sim:
+        #     hints = get_type_hints(self)
+        #     for key in hints.keys():
+        #         block = await self._make_block(key, 1, "pva://", sim=True)
+        #         self.set_attribute(key, 1, block)
+
+        # else:
+        #     panda_pvi = await pvi_get(self._init_prefix + ":PVI")
+
+        #     for block_name, block_pvi in panda_pvi.items():
+        #         assert list(block_pvi) == [
+        #             "d"
+        #         ], f"Expected PandA to only contain blocks, got {block_pvi}"
+        #         name, num = block_name_number(block_name)
+        #         block = await self._make_block(name, num, block_pvi["d"])
+        #         self.set_attribute(name, num, block)
 
         self.set_name(self.name)
-        await connect_children(self, sim)
+
+        # only connect non-sim blocks if not sim, and
+        if not sim:
+            non_sim_coros = {
+                name: child_device.connect(False)
+                for name, child_device in get_device_children(self)
+                if name not in sim_blocks
+            }
+            sim_coros = {
+                name: child_device.connect(True)
+                for name, child_device in get_device_children(self)
+                if name in sim_blocks
+            }
+            await wait_for_connection(**non_sim_coros, **sim_coros)
+        else:
+            await super().connect(True)
+        # await connect_children(self, sim)
 
 
 async def make_panda():
-    async with DeviceCollector():
+    async with DeviceCollector(sim=False):
         sim_panda = PandA("PANDAQSRV")
 
-    print("ah")
     print(sim_panda)
 
 
 if __name__ == "__main__":
     asyncio.run(make_panda())
+
+
+# TALK TO TOM ABOUT:
+# 1. fleshing out PcapBlock...
+# 2. Adding something to test.db that includes a pcap block.
