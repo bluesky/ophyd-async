@@ -2,9 +2,9 @@ import asyncio
 import re
 from enum import Enum
 from typing import (
-    Any,
     Callable,
     Dict,
+    KeysView,
     Optional,
     Sequence,
     Tuple,
@@ -14,7 +14,6 @@ from typing import (
     get_args,
     get_origin,
     get_type_hints,
-    KeysView,
 )
 
 import numpy as np
@@ -28,7 +27,8 @@ from ophyd.v2.core import (
     SignalRW,
     SignalW,
     SignalX,
-    connect_children,
+    get_device_children,
+    wait_for_connection,
 )
 from ophyd.v2.epics import (
     epics_signal_r,
@@ -142,9 +142,6 @@ def check_anno(
         if args:
             return args[0]
     return None
-
-
-from ophyd.v2.core import get_device_children, wait_for_connection
 
 
 class PandA(Device):
@@ -314,7 +311,6 @@ class PandA(Device):
             await wait_for_connection(**non_sim_coros, **sim_coros)
         else:
             await super().connect(True)
-        # await connect_children(self, sim)
 
 
 async def make_panda():
