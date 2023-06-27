@@ -8,6 +8,8 @@ import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
 RECORD = str(Path(__file__).parent / "db" / "panda.db")
+INCOMPLETE_RECORD = str(Path(__file__).parent / "db" / "incomplete_panda.db")
+EXTRA_BLOCKS_RECORD = str(Path(__file__).parent / "db" / "extra_blocks_panda.db")
 
 
 @pytest.fixture(scope="function")
@@ -32,35 +34,26 @@ def RE(request):
 
 @pytest.fixture(scope="module", params=["pva"])
 def pva():
-    process = subprocess.Popen(
-        [
-            sys.executable,
-            "-m",
-            "epicscorelibs.ioc",
-            "-d",
-            RECORD,
-        ],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        universal_newlines=True,
-    )
+    processes = [
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "epicscorelibs.ioc",
+                "-d",
+                record,
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        )
+        for record in [RECORD, INCOMPLETE_RECORD, EXTRA_BLOCKS_RECORD]
+    ]
     time.sleep(2)
-    assert not process.poll(), process.stdout.read().decode("utf-8")
-    yield process
 
-    process.terminate()
+    for p in processes:
+        assert not p.poll(), p.stdout.read().decode("utf-8")
 
-
-# @pytest.fixture(scope="session")
-# def pva():
-#     process = subprocess.Popen(
-#         ["softIocPVA", "-d", "tests/db/panda.db"],
-#         stdout=subprocess.PIPE,
-#         stderr=subprocess.STDOUT,
-#     )
-#     time.sleep(2)
-#     assert not process.poll(), process.stdout.read().decode("utf-8")
-#     yield process
-
-#     process.terminate()
+    yield processes
+    [p.terminate() for p in processes]

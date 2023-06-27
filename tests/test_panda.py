@@ -54,3 +54,16 @@ async def test_panda_children_connected(pva, sim_panda: PandA):
 
     assert readback_pulse == 20.0
     assert readback_seq == table
+
+
+async def test_panda_with_missing_blocks(pva):
+    sim_panda = PandA("PANDAQSRVI")
+    with pytest.raises(AssertionError):
+        await sim_panda.connect()
+
+
+async def test_panda_with_extra_blocks(pva):
+    sim_panda = PandA("PANDAQSRVE")
+    await sim_panda.connect()
+
+    assert sim_panda.extra, "extra device has not been instantiated"
