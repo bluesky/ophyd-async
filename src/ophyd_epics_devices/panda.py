@@ -1,4 +1,3 @@
-import asyncio
 import re
 from enum import Enum
 from typing import (
@@ -19,7 +18,6 @@ import numpy as np
 import numpy.typing as npt
 from ophyd.v2.core import (
     Device,
-    DeviceCollector,
     DeviceVector,
     Signal,
     SignalRW,
@@ -142,9 +140,7 @@ def check_anno(
 class PandA(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
-    # pcap: PcapBlock
-
-    # still want panda to be aware of blocks that haven't been defined here.
+    pcap: PcapBlock
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self._init_prefix = prefix
@@ -301,20 +297,3 @@ class PandA(Device):
 
         self.set_name(self.name)
         await super().connect(sim)
-
-
-async def make_panda():
-    async with DeviceCollector(sim=False):
-        sim_panda = PandA("PANDAQSRV")
-
-    print(sim_panda)
-
-
-if __name__ == "__main__":
-    asyncio.run(make_panda())
-
-
-# TALK TO TOM ABOUT:
-# 1. fleshing out PcapBlock...
-# 2. Adding something to test.db that includes a pcap block?
-# 3. if the above looks good, i.e. order of loops.
