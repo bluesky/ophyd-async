@@ -2,15 +2,16 @@ import asyncio
 import collections
 import tempfile
 import time
+from abc import abstractmethod
 from enum import Enum
-from typing import Callable, Dict, Iterator, Optional, Sequence, Sized, Type
+from pathlib import Path
+from typing import Callable, Dict, Iterator, Optional, Protocol, Sequence, Sized, Type
 
 from bluesky.protocols import (
     Asset,
     Descriptor,
     Flyable,
     PartialEvent,
-    Reading,
     Triggerable,
     WritesExternalAssets,
 )
@@ -165,17 +166,18 @@ class _HDFResource:
             raise TimeoutError(f"{hdf.name}: writing stalled on frame {num_captured}")
 
 
-class HDFNamer:
+class DirectoryProvider(Protocol):
+    @abstractmethod
+    async def get_directory(self) -> Path:
+        ...
+
+
+class TmpDirectoryProvider(DirectoryProvider):
     def __init__(self) -> None:
-        self.directory: Optional[str] = None
+        self._directory = Path(tempfile.mkdtemp())
 
-    def need_directory(self) -> str:
-        if self.directory is None:
-            self.directory = tempfile.mkdtemp()
-        return self.directory
-
-    def done_with_directory(self) -> None:
-        self.directory = None
+    async def get_directory(self) -> Path:
+        return self._directory
 
 
 # How long in seconds to wait between flushes of HDF datasets
@@ -186,40 +188,42 @@ FRAME_TIMEOUT = 120
 
 
 class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
-    def __init__(self, drv: ADDriver, hdf: NDFileHDF, namer: HDFNamer, name="") -> None:
+    def __init__(
+        self, drv: ADDriver, hdf: NDFileHDF, dp: DirectoryProvider, name=""
+    ) -> None:
         self.drv = drv
         self.hdf = hdf
-        self._namer = namer
+        self._dp = dp
         self._resource = _HDFResource()
         self._capture_status: Optional[AsyncStatus] = None
         self._start_status: Optional[AsyncStatus] = None
         self.set_readable_signals(config=[self.drv.acquire_time])
-        self.set_name(name)
+        super().__init__(name)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
         # Make a new resource for the new HDF file we're going to open
         self._resource = _HDFResource()
-        directory = self._namer.need_directory()
-        file_name = f"{self.name}-{new_uid()}"
-        file_template = "%s/%s.h5"
         await asyncio.gather(
             self.drv.wait_for_plugins.set(True),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
-            self.hdf.file_path.set(directory),
-            self.hdf.file_name.set(file_name),
-            self.hdf.file_template.set(file_template),
+            self.hdf.file_path.set(str(await self._dp.get_directory())),
+            self.hdf.file_name.set(f"{self.name}-{new_uid()}"),
+            self.hdf.file_template.set("%s/%s.h5"),
             # Go forever
             self.hdf.num_capture.set(0),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
-        # Wait for up to 1s it actually to start
+        # Wait for it to start, stashing the status that tells us when it finishes
         self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
         await super().stage()
 
     async def describe(self) -> Dict[str, Descriptor]:
-        descriptor = Descriptor(
+        datakeys = await super().describe()
+        # Insert a descriptor for the HDF resource, this will not appear
+        # in read() as it describes StreamResource outputs only
+        datakeys[self.name] = Descriptor(
             source=self.hdf.full_file_name.source,
             shape=await asyncio.gather(
                 self.drv.array_size_y.get_value(),
@@ -228,7 +232,7 @@ class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
             dtype="array",
             external="STREAM:",
         )
-        return {self.name: descriptor}
+        return datakeys
 
     # For step scan, take a single frame
     @AsyncStatus.wrap
@@ -236,11 +240,7 @@ class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
         await self.drv.image_mode.set(ImageMode.single)
         frame_timeout = DEFAULT_TIMEOUT + await self.drv.acquire_time.get_value()
         await self.drv.acquire.set(1, timeout=frame_timeout)
-
-    async def read(self) -> Dict[str, Reading]:
-        # All data goes in the asset docs
         await self._resource.flush_and_publish(self.hdf)
-        return {}
 
     def collect_asset_docs(self) -> Iterator[Asset]:
         while self._resource.asset_docs:
@@ -250,7 +250,8 @@ class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
         await self.drv.image_mode.set(ImageMode.multiple)
-        self._start_status = await set_and_wait_for_value(self.drv.acquire, 1)
+        # Wait for it to start, stashing the status that tells us when it finishes
+        self._start_status = await set_and_wait_for_value(self.drv.acquire, True)
 
     # Do the same thing for flyscans and step scans
     async def describe_collect(self) -> Dict[str, Dict[str, Descriptor]]:
@@ -271,7 +272,6 @@ class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        self._namer.done_with_directory()
         # Already done a caput callback in _capture_status, so can't do one here
         await self.hdf.capture.set(0, wait=False)
         assert self._capture_status, "Stage not run"

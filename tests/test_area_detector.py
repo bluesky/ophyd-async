@@ -11,12 +11,12 @@ from ophyd.v2.core import DeviceCollector, set_sim_put_proceeds, set_sim_value
 from ophyd_epics_devices.areadetector import (
     ADDriver,
     FileWriteMode,
-    HDFNamer,
     HDFStreamerDet,
     ImageMode,
     NDFileHDF,
     NDPluginStats,
     SingleTriggerDet,
+    TmpDirectoryProvider,
 )
 
 
@@ -31,6 +31,8 @@ async def single_trigger_det():
     assert det.name == "det"
     assert stats.name == "det-stats"
     # Set non-default values to check they are set back
+    # These are using set_sim_value to simulate the backend IOC being setup
+    # in a particular way, rather than values being set by the Ophyd signals
     set_sim_value(det.drv.acquire_time, 0.5)
     set_sim_value(det.drv.array_counter, 1)
     set_sim_value(det.drv.image_mode, ImageMode.continuous)
@@ -60,23 +62,27 @@ async def test_single_trigger_det(single_trigger_det: SingleTriggerDet, RE):
     assert d.names == ["start", "descriptor", "event", "stop"]
     _, descriptor, event, _ = d.docs
     assert descriptor["configuration"]["det"]["data"]["det-drv-acquire_time"] == 0.5
+    assert (
+        descriptor["data_keys"]["det-stats-unique_id"]["source"]
+        == "sim://PREFIX:STATSUniqueId_RBV"
+    )
     assert event["data"]["det-drv-array_counter"] == 1
     assert event["data"]["det-stats-unique_id"] == 3
 
 
 @pytest.fixture
 async def hdf_streamer_dets():
-    namer = HDFNamer()
+    dp = TmpDirectoryProvider()
     async with DeviceCollector(sim=True):
         deta = HDFStreamerDet(
             drv=ADDriver(prefix="PREFIX1:DET"),
             hdf=NDFileHDF("PREFIX1:HDF"),
-            namer=namer,
+            dp=dp,
         )
         detb = HDFStreamerDet(
             drv=ADDriver(prefix="PREFIX1:DET"),
             hdf=NDFileHDF("PREFIX1:HDF"),
-            namer=namer,
+            dp=dp,
         )
 
     assert deta.name == "deta"
@@ -84,14 +90,15 @@ async def hdf_streamer_dets():
     assert deta.drv.name == "deta-drv"
     assert deta.hdf.name == "deta-hdf"
 
-    for det in (deta, detb):
-        set_sim_value(det.drv.acquire_time, 0.8)
+    # Simulate backend IOCs being in slightly different states
+    for i, det in enumerate((deta, detb)):
+        set_sim_value(det.drv.acquire_time, 0.8 + i)
         set_sim_value(det.drv.image_mode, ImageMode.continuous)
         set_sim_value(det.hdf.num_capture, 1000)
         set_sim_value(det.hdf.num_captured, 1)
         set_sim_value(det.hdf.full_file_name, f"/tmp/123456/{det.name}.h5")
-        set_sim_value(det.drv.array_size_x, 1024)
-        set_sim_value(det.drv.array_size_y, 768)
+        set_sim_value(det.drv.array_size_x, 1024 + i)
+        set_sim_value(det.drv.array_size_y, 768 + i)
     yield deta, detb
 
 
@@ -122,7 +129,9 @@ async def test_hdf_streamer_dets_step(hdf_streamer_dets: List[HDFStreamerDet], R
     ]
     _, descriptor, sra, sda, srb, sdb, event, _ = d.docs
     assert descriptor["configuration"]["deta"]["data"]["deta-drv-acquire_time"] == 0.8
-    assert descriptor["configuration"]["detb"]["data"]["detb-drv-acquire_time"] == 0.8
+    assert descriptor["configuration"]["detb"]["data"]["detb-drv-acquire_time"] == 1.8
+    assert descriptor["data_keys"]["deta"]["shape"] == [768, 1024]
+    assert descriptor["data_keys"]["detb"]["shape"] == [769, 1025]
     assert sra["resource_path"] == "/tmp/123456/deta.h5"
     assert srb["resource_path"] == "/tmp/123456/detb.h5"
     assert sda["stream_resource"] == sra["uid"]
@@ -192,7 +201,9 @@ async def test_hdf_streamer_dets_fly_different_streams(
     _, sra, sda, descriptora, srb, sdb, descriptorb, _ = d.docs
 
     assert descriptora["configuration"]["deta"]["data"]["deta-drv-acquire_time"] == 0.8
-    assert descriptorb["configuration"]["detb"]["data"]["detb-drv-acquire_time"] == 0.8
+    assert descriptorb["configuration"]["detb"]["data"]["detb-drv-acquire_time"] == 1.8
+    assert descriptora["data_keys"]["deta"]["shape"] == [768, 1024]
+    assert descriptorb["data_keys"]["detb"]["shape"] == [769, 1025]
     assert sra["resource_path"] == "/tmp/123456/deta.h5"
     assert srb["resource_path"] == "/tmp/123456/detb.h5"
     assert sda["stream_resource"] == sra["uid"]
