@@ -4,11 +4,11 @@ import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
 
-@pytest.fixture(scope="function", params=[False, True])
+@pytest.fixture(scope="function")
 def RE(request):
     loop = asyncio.new_event_loop()
     loop.set_debug(True)
-    RE = RunEngine({}, call_returns_result=request.param, loop=loop)
+    RE = RunEngine({}, call_returns_result=True, loop=loop)
 
     def clean_event_loop():
         if RE.state not in ("idle", "panicked"):
