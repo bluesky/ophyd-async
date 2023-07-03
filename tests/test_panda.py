@@ -57,23 +57,23 @@ async def test_panda_children_connected(pva, sim_panda: PandA):
 
 
 async def test_panda_with_missing_blocks(pva):
-    sim_panda = PandA("PANDAQSRVI")
+    panda = PandA("PANDAQSRVI")
     with pytest.raises(AssertionError):
-        await sim_panda.connect()
+        await panda.connect()
 
 
 async def test_panda_with_extra_blocks(pva):
-    sim_panda = PandA("PANDAQSRVE")
-    await sim_panda.connect()
+    panda = PandA("PANDAQSRV")
+    await panda.connect()
 
-    assert sim_panda.extra, "extra device has not been instantiated"  # type: ignore
+    assert panda.extra, "extra device has not been instantiated"  # type: ignore
 
 
 async def test_panda_block_missing_signals(pva):
-    sim_panda = PandA("PANDAQSRVIB")
+    panda = PandA("PANDAQSRVIB")
 
     with pytest.raises(Exception) as exc:
-        await sim_panda.connect()
+        await panda.connect()
         assert (
             exc.__str__
             == "PandA has a pulse block containing a width signal which has not been "
