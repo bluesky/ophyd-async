@@ -17,6 +17,7 @@ dependencies = [
     "ophyd[ca] @ git+https://github.com/bluesky/ophyd.git",
     "bluesky",
     "event-model",
+    "p4p",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -39,7 +40,6 @@ dev = [
     "sphinx-design",
     "tox-direct",
     "types-mock",
-    "p4p",
 ]
 
 [project.urls]
