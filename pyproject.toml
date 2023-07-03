@@ -17,6 +17,7 @@ dependencies = [
     "ophyd[ca] @ git+https://github.com/bluesky/ophyd.git",
     "bluesky",
     "event-model",
+    "p4p",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -52,7 +53,8 @@ name = "Tom Cobb"
 write_to = "src/ophyd_epics_devices/_version.py"
 
 [tool.mypy]
-ignore_missing_imports = true # Ignore missing stubs in imported modules
+ignore_missing_imports = true        # Ignore missing stubs in imported modules
+plugins = "numpy.typing.mypy_plugin"
 
 [tool.isort]
 float_to_top = true

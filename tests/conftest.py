@@ -1,7 +1,18 @@
 import asyncio
+import subprocess
+import sys
+import time
+from pathlib import Path
 
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
+
+RECORD = str(Path(__file__).parent / "db" / "panda.db")
+INCOMPLETE_BLOCK_RECORD = str(
+    Path(__file__).parent / "db" / "incomplete_block_panda.db"
+)
+INCOMPLETE_RECORD = str(Path(__file__).parent / "db" / "incomplete_panda.db")
+EXTRA_BLOCKS_RECORD = str(Path(__file__).parent / "db" / "extra_blocks_panda.db")
 
 
 @pytest.fixture(scope="function")
@@ -22,3 +33,36 @@ def RE(request):
 
     request.addfinalizer(clean_event_loop)
     return RE
+
+
+@pytest.fixture(scope="module", params=["pva"])
+def pva():
+    processes = [
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "epicscorelibs.ioc",
+                "-m",
+                macros,
+                "-d",
+                RECORD,
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        )
+        for macros in [
+            "INCLUDE_EXTRA_BLOCK=",
+            "EXCLUDE_WIDTH=#,IOC_NAME=PANDAQSRVIB",
+            "EXCLUDE_PCAP=#,IOC_NAME=PANDAQSRVI",
+        ]
+    ]
+    time.sleep(2)
+
+    for p in processes:
+        assert not p.poll(), p.stdout.read().decode("utf-8")
+
+    yield processes
+    [p.terminate() for p in processes]
