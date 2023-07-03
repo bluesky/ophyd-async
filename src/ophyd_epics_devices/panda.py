@@ -7,7 +7,6 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    Type,
     TypedDict,
     get_args,
     get_origin,
@@ -38,10 +37,6 @@ ctxt = Context("pva")
 class PulseBlock(Device):
     delay: SignalRW[float]
     width: SignalRW[float]
-
-    @classmethod
-    def make_block(self):
-        pass
 
 
 class SeqTrigger(Enum):
@@ -117,24 +112,6 @@ async def pvi_get(pv: str, timeout: float = 5.0) -> Dict[str, PVIEntry]:
     for attr_name, attr_info in pv_info.items():
         result[attr_name] = PVIEntry(**attr_info)  # type: ignore
     return result
-
-
-def check_anno(
-    signal_cls: Type, field_annos: Dict[str, Type], field_name
-) -> Optional[Type]:
-    field_anno = field_annos.get(field_name)
-    if field_anno:
-        anno_signal_cls = get_origin(field_anno)
-        if anno_signal_cls is None:
-            return None
-
-        assert (
-            signal_cls == anno_signal_cls
-        ), f"Expected {anno_signal_cls}, got {signal_cls}"
-        args = get_args(field_anno)
-        if args:
-            return args[0]
-    return None
 
 
 class PandA(Device):
