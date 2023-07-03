@@ -43,19 +43,20 @@ def pva():
                 sys.executable,
                 "-m",
                 "epicscorelibs.ioc",
+                "-m",
+                macros,
                 "-d",
-                record,
+                RECORD,
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         )
-        for record in [
-            RECORD,
-            INCOMPLETE_BLOCK_RECORD,
-            INCOMPLETE_RECORD,
-            EXTRA_BLOCKS_RECORD,
+        for macros in [
+            "INCLUDE_EXTRA_BLOCK=",
+            "EXCLUDE_WIDTH=#,IOC_NAME=PANDAQSRVIB",
+            "EXCLUDE_PCAP=#,IOC_NAME=PANDAQSRVI",
         ]
     ]
     time.sleep(2)

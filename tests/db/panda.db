@@ -1,9 +1,9 @@
-record(ao, "PANDAQSRV:PULSE1:DELAY")
+record(ao, "$(IOC_NAME=PANDAQSRV):PULSE1:DELAY")
 {
     field(EGU,  "us")
     # Add to PULSE1:PVI PVA structure
     info(Q:group, {
-        "PANDAQSRV:PULSE1:PVI": {
+        "$(IOC_NAME=PANDAQSRV):PULSE1:PVI": {
             "pvi.delay.rw": {
                 "+channel": "NAME",
                 "+type": "plain"
@@ -12,19 +12,21 @@ record(ao, "PANDAQSRV:PULSE1:DELAY")
     })
 }
 
-record(ao, "PANDAQSRV:PULSE1:WIDTH")
-{
-    field(EGU,  "us")
-    info(Q:group, {
-        # Add to PULSE1:PVI PVA structure
-        "PANDAQSRV:PULSE1:PVI": {
-            "pvi.width.rw": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}
+
+#if EXCLUDE_WIDTH is set to "#", this bit is commented out.
+$(EXCLUDE_WIDTH=)record(ao, "$(IOC_NAME=PANDAQSRV):PULSE1:WIDTH")
+$(EXCLUDE_WIDTH=){
+$(EXCLUDE_WIDTH=)    field(EGU,  "us")
+$(EXCLUDE_WIDTH=)    info(Q:group, {
+$(EXCLUDE_WIDTH=)        # Add to PULSE1:PVI PVA structure
+$(EXCLUDE_WIDTH=)        "$(IOC_NAME=PANDAQSRV):PULSE1:PVI": {
+$(EXCLUDE_WIDTH=)            "pvi.width.rw": {
+$(EXCLUDE_WIDTH=)                "+channel": "NAME",
+$(EXCLUDE_WIDTH=)                "+type": "plain"
+$(EXCLUDE_WIDTH=)            }
+$(EXCLUDE_WIDTH=)        }
+$(EXCLUDE_WIDTH=)    })
+$(EXCLUDE_WIDTH=)}
 
 record(waveform, "BOOL:PLEASE")
 {
@@ -34,15 +36,15 @@ record(waveform, "BOOL:PLEASE")
     info(Q:form, "Binary")
 }
 
-# We want to add PANDAQSRV:PULSE1 to PANDAQSRV:PVI
+# We want to add $(IOC_NAME=PANDAQSRV):PULSE1 to $(IOC_NAME=PANDAQSRV):PVI
 # structure, but we can't create a record called
-# PANDAQSRV:PVI as it will shadow the QSRV created structure.
+# $(IOC_NAME=PANDAQSRV):PVI as it will shadow the QSRV created structure.
 # We make a different PV and use its input link to hack around this
-record(stringin, "PANDAQSRV:PULSE1:_PVI")
+record(stringin, "$(IOC_NAME=PANDAQSRV):PULSE1:_PVI")
 {
-    field(VAL,  "PANDAQSRV:PULSE1:PVI")
+    field(VAL,  "$(IOC_NAME=PANDAQSRV):PULSE1:PVI")
     info(Q:group, {
-        "PANDAQSRV:PVI": {
+        "$(IOC_NAME=PANDAQSRV):PVI": {
             "pvi.pulse1.d": {
                 "+channel": "VAL",
                 "+type": "plain"
@@ -51,12 +53,12 @@ record(stringin, "PANDAQSRV:PULSE1:_PVI")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:LABELS") {
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:LABELS") {
     field(FTVL, "STRING")
     field(NELM, "64")
     field(INP , {const:["Repeats", "Trigger", "Position", "Time1", "OutA1", "OutB1", "OutC1", "OutD1", "OutE1", "OutF1", "Time2", "OutA2", "OutB2", "OutC2", "OutD2", "OutE2", "OutF2"]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "+id": "epics:nt/NTTable:1.0",
             "labels": {
                 "+type": "plain",
@@ -66,13 +68,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:LABELS") {
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:REPEATS")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:REPEATS")
 {
     field(FTVL, "USHORT")
     field(NELM, "4096")
     field(INP, {const:[1, 1, 1, 32]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.repeats": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -82,13 +84,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:REPEATS")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:TRIGGER")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:TRIGGER")
 {
     field(FTVL, "STRING")
     field(NELM, "4096")
     field(INP, {const:["POSA>=POSITION", "POSA<=POSITION", "Immediate", "Immediate"]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.trigger": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -98,13 +100,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:TRIGGER")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:POSITION")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:POSITION")
 {
     field(FTVL, "LONG")
     field(NELM, "4096")
     field(INP, {const:["3222", "-565", "0", "0"]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.position": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -114,13 +116,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:POSITION")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:TIME1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:TIME1")
 {
     field(FTVL, "ULONG")
     field(NELM, "4096")
     field(INP, {const:["5", "0", "10", "10"]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.time1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -130,13 +132,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:TIME1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTA1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTA1")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, false, false, true]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outa1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -146,13 +148,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTA1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTB1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTB1")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[false, false, true, true]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outb1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -162,13 +164,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTB1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTC1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTC1")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[false, true, true, false]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outc1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -178,13 +180,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTC1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTD1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTD1")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, true, false, true]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outd1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -194,13 +196,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTD1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTE1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTE1")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, false, true, false]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.oute1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -210,13 +212,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTE1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTF1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTF1")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, false, false, false]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outf1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -226,13 +228,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTF1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:TIME2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:TIME2")
 {
     field(FTVL, "ULONG")
     field(NELM, "4096")
     field(INP, {const:["0", "10", "10", "11"]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.time2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -242,13 +244,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:TIME2")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTA2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTA2")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, false, false, true]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outa2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -258,13 +260,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTA2")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTB2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTB2")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[false, false, true, true]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outb2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -274,13 +276,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTB2")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTC2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTC2")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[false, true, true, false]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outc2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -290,13 +292,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTC2")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTD2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTD2")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, true, false, true]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outd2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -306,13 +308,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTD2")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTE2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTE2")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, false, true, false]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.oute2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -323,13 +325,13 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTE2")
 }
 
 # Last column has metadata
-record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTF2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTF2")
 {
     field(FTVL, "UCHAR")
     field(NELM, "4096")
     field(INP, {const:[true, false, false, false]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:TABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE": {
             "value.outf2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -342,11 +344,11 @@ record(waveform, "PANDAQSRV:SEQ1:TABLE:OUTF2")
 
 # Again, SEQ1:TABLE is QSRV only, so need to make a fake PV to put it in 
 # SEQ1:PVI
-record(stringin, "PANDAQSRV:SEQ1:TABLE:_PVI")
+record(stringin, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:_PVI")
 {
-    field(VAL,  "PANDAQSRV:SEQ1:TABLE")
+    field(VAL,  "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE")
     info(Q:group, {
-        "PANDAQSRV:SEQ1:PVI": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
             "pvi.table.rw": {
                 "+channel": "VAL",
                 "+type": "plain",
@@ -357,11 +359,11 @@ record(stringin, "PANDAQSRV:SEQ1:TABLE:_PVI")
 }
 
 
-record(stringin, "PANDAQSRV:SEQ1:_PVI")
+record(stringin, "$(IOC_NAME=PANDAQSRV):SEQ1:_PVI")
 {
-    field(VAL,  "PANDAQSRV:SEQ1:PVI")
+    field(VAL,  "$(IOC_NAME=PANDAQSRV):SEQ1:PVI")
     info(Q:group, {
-        "PANDAQSRV:PVI": {
+        "$(IOC_NAME=PANDAQSRV):PVI": {
             "pvi.seq1.d": {
                 "+channel": "VAL",
                 "+type": "plain",
@@ -373,12 +375,12 @@ record(stringin, "PANDAQSRV:SEQ1:_PVI")
 
 
 
-record(waveform, "PANDAQSRV:SEQ1:STRTABLE:LABELS") {
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:STRTABLE:LABELS") {
     field(FTVL, "STRING")
     field(NELM, "64")
     field(INP , {const:["Col1", "Col2"]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:STRTABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:STRTABLE": {
             "+id": "epics:nt/NTTable:1.0",
             "labels": {
                 "+type": "plain",
@@ -388,13 +390,13 @@ record(waveform, "PANDAQSRV:SEQ1:STRTABLE:LABELS") {
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:STRTABLE:COL1")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:STRTABLE:COL1")
 {
     field(FTVL, "STRING")
     field(NELM, "64")
     field(INP, {const:["Foo", "Bar"]})
     info(Q:group, {
-        "PANDAQSRV:SEQ1:STRTABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:STRTABLE": {
             "value.col1": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -404,14 +406,14 @@ record(waveform, "PANDAQSRV:SEQ1:STRTABLE:COL1")
     })
 }
 
-record(waveform, "PANDAQSRV:SEQ1:STRTABLE:COL2")
+record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:STRTABLE:COL2")
 {
     field(FTVL, "STRING")
     field(NELM, "64")
     field(INP, {const:["Bat", "Baz"]})
     field(PINI, "YES")
     info(Q:group, {
-        "PANDAQSRV:SEQ1:STRTABLE": {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:STRTABLE": {
             "value.col2": {
                 "+type": "plain",
                 "+channel": "VAL",
@@ -423,28 +425,55 @@ record(waveform, "PANDAQSRV:SEQ1:STRTABLE:COL2")
 }
 
 
-record(ao, "PANDAQSRV:PCAP:ARM")
-{
-    info(Q:group, {
-        "PANDAQSRV:PCAP:PVI": {
-            "pvi.arm.x": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}
+$(EXCLUDE_PCAP=)record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:ARM")
+$(EXCLUDE_PCAP=){
+$(EXCLUDE_PCAP=)    info(Q:group, {
+$(EXCLUDE_PCAP=)        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
+$(EXCLUDE_PCAP=)            "pvi.arm.x": {
+$(EXCLUDE_PCAP=)                "+channel": "NAME",
+$(EXCLUDE_PCAP=)                "+type": "plain"
+$(EXCLUDE_PCAP=)            }
+$(EXCLUDE_PCAP=)        }
+$(EXCLUDE_PCAP=)    })
+$(EXCLUDE_PCAP=)}
+$(EXCLUDE_PCAP=)
+$(EXCLUDE_PCAP=)
+$(EXCLUDE_PCAP=)record(stringin, "$(IOC_NAME=PANDAQSRV):PCAP:_PVI")
+$(EXCLUDE_PCAP=){
+$(EXCLUDE_PCAP=)    field(VAL,  "$(IOC_NAME=PANDAQSRV):PCAP:PVI")
+$(EXCLUDE_PCAP=)    info(Q:group, {
+$(EXCLUDE_PCAP=)        "$(IOC_NAME=PANDAQSRV):PVI": {
+$(EXCLUDE_PCAP=)            "pvi.pcap.d": {
+$(EXCLUDE_PCAP=)                "+channel": "VAL",
+$(EXCLUDE_PCAP=)                "+type": "plain"
+$(EXCLUDE_PCAP=)            }
+$(EXCLUDE_PCAP=)        }
+$(EXCLUDE_PCAP=)    })
+$(EXCLUDE_PCAP=)}
 
 
-record(stringin, "PANDAQSRV:PCAP:_PVI")
-{
-    field(VAL,  "PANDAQSRV:PCAP:PVI")
-    info(Q:group, {
-        "PANDAQSRV:PVI": {
-            "pvi.pcap.d": {
-                "+channel": "VAL",
-                "+type": "plain"
-            }
-        }
-    })
-}
+$(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA:ARM")
+$(INCLUDE_EXTRA_BLOCK=#){
+$(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
+$(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):EXTRA:PVI": {
+$(INCLUDE_EXTRA_BLOCK=#)            "pvi.arm.x": {
+$(INCLUDE_EXTRA_BLOCK=#)                "+channel": "NAME",
+$(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
+$(INCLUDE_EXTRA_BLOCK=#)            }
+$(INCLUDE_EXTRA_BLOCK=#)        }
+$(INCLUDE_EXTRA_BLOCK=#)    })
+$(INCLUDE_EXTRA_BLOCK=#)}
+$(INCLUDE_EXTRA_BLOCK=#)
+$(INCLUDE_EXTRA_BLOCK=#)
+$(INCLUDE_EXTRA_BLOCK=#)record(stringin, "$(IOC_NAME=PANDAQSRV):EXTRA:_PVI")
+$(INCLUDE_EXTRA_BLOCK=#){
+$(INCLUDE_EXTRA_BLOCK=#)    field(VAL,  "$(IOC_NAME=PANDAQSRV):EXTRA:PVI")
+$(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
+$(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):PVI": {
+$(INCLUDE_EXTRA_BLOCK=#)            "pvi.extra.d": {
+$(INCLUDE_EXTRA_BLOCK=#)                "+channel": "VAL",
+$(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
+$(INCLUDE_EXTRA_BLOCK=#)            }
+$(INCLUDE_EXTRA_BLOCK=#)        }
+$(INCLUDE_EXTRA_BLOCK=#)    })
+$(INCLUDE_EXTRA_BLOCK=#)}
