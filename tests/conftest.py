@@ -8,6 +8,9 @@ import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
 RECORD = str(Path(__file__).parent / "db" / "panda.db")
+INCOMPLETE_BLOCK_RECORD = str(
+    Path(__file__).parent / "db" / "incomplete_block_panda.db"
+)
 INCOMPLETE_RECORD = str(Path(__file__).parent / "db" / "incomplete_panda.db")
 EXTRA_BLOCKS_RECORD = str(Path(__file__).parent / "db" / "extra_blocks_panda.db")
 
@@ -48,7 +51,12 @@ def pva():
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         )
-        for record in [RECORD, INCOMPLETE_RECORD, EXTRA_BLOCKS_RECORD]
+        for record in [
+            RECORD,
+            INCOMPLETE_BLOCK_RECORD,
+            INCOMPLETE_RECORD,
+            EXTRA_BLOCKS_RECORD,
+        ]
     ]
     time.sleep(2)
 

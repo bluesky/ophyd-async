@@ -66,4 +66,16 @@ async def test_panda_with_extra_blocks(pva):
     sim_panda = PandA("PANDAQSRVE")
     await sim_panda.connect()
 
-    assert sim_panda.extra, "extra device has not been instantiated"
+    assert sim_panda.extra, "extra device has not been instantiated"  # type: ignore
+
+
+async def test_panda_block_missing_signals(pva):
+    sim_panda = PandA("PANDAQSRVIB")
+
+    with pytest.raises(Exception) as exc:
+        await sim_panda.connect()
+        assert (
+            exc.__str__
+            == "PandA has a pulse block containing a width signal which has not been "
+            + "retrieved by PVI."
+        )
