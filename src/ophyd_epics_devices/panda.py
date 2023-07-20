@@ -1,3 +1,4 @@
+import asyncio
 import re
 from enum import Enum
 from typing import (
@@ -22,6 +23,7 @@ from ophyd.v2.core import (
     SignalRW,
     SignalX,
     SimSignalBackend,
+    DeviceCollector,
 )
 from ophyd.v2.epics import (
     epics_signal_r,
@@ -192,6 +194,19 @@ class PandA(Device):
 
             setattr(block, sig_name, signal)
 
+        # make any extra signals that aren't typed in this class...
+        for attr, attr_pvi in block_pvi.items():
+            if not hasattr(block, attr):
+                signal_factory = self.pvi_mapping[frozenset(attr_pvi.keys())]
+                # TODO: get the type of argument you need for the signal_factory...
+                signal = signal_factory(
+                    args[0] if len(args) > 0 else None,
+                    "pva://" + read_pv,
+                    "pva://" + write_pv,
+                )
+                setattr(block, attr, signal)
+                # make it!
+
         return block
 
     async def _make_untyped_block(self, block_pv: str):
@@ -274,3 +289,13 @@ class PandA(Device):
 
         self.set_name(self.name)
         await super().connect(sim)
+
+
+async def make_device():
+    async with DeviceCollector():
+        panda = PandA("PANDAQSRV")
+    return panda
+
+
+if __name__ == "__main__":
+    panda = asyncio.run(make_device())
