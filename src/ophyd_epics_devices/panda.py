@@ -1,4 +1,3 @@
-import asyncio
 import re
 from enum import Enum
 from typing import (
@@ -8,6 +7,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypedDict,
     get_args,
     get_origin,
@@ -23,13 +23,13 @@ from ophyd.v2.core import (
     SignalRW,
     SignalX,
     SimSignalBackend,
-    DeviceCollector,
 )
 from ophyd.v2.epics import (
     epics_signal_r,
     epics_signal_rw,
     epics_signal_w,
     epics_signal_x,
+    SignalR,
 )
 from p4p.client.thread import Context
 
@@ -82,7 +82,7 @@ class SeqBlock(Device):
 
 
 class PcapBlock(Device):
-    arm: SignalX
+    active: SignalR[bool]
 
 
 class PVIEntry(TypedDict, total=False):
@@ -100,13 +100,11 @@ def block_name_number(block_name: str) -> Tuple[str, int]:
     return name, int(num or 1)
 
 
-# in sim mode, this should be called with a timeout of 0.0.
 async def pvi_get(pv: str, timeout: float = 5.0) -> Dict[str, PVIEntry]:
     pv_info: Dict[str, Dict[str, str]] = {}
     try:
         pv_info = ctxt.get(pv, timeout=timeout).get("pvi").todict()
     except TimeoutError:
-        # log here that it couldn't access it.
         raise Exception("Cannot get the PV.")
 
     result = {}
@@ -171,22 +169,11 @@ class PandA(Device):
                 entry: Optional[PVIEntry] = block_pvi.get(sig_name)
                 if entry is None:
                     raise Exception(
-                        f"{self.__class__.__name__} has a {name} block containing a "
-                        + f"{sig_name} signal which has not been retrieved by PVI."
+                        f"{self.__class__.__name__} has a {name} block containing a/"
+                        + f"an {sig_name} signal which has not been retrieved by PVI."
                     )
 
-                pvs = [entry[i] for i in frozenset(entry.keys())]  # type: ignore
-                if len(pvs) == 1:
-                    read_pv = write_pv = pvs[0]
-                else:
-                    read_pv, write_pv = pvs
-
-                signal_factory = self.pvi_mapping[frozenset(entry.keys())]
-                signal = signal_factory(
-                    args[0] if len(args) > 0 else None,
-                    "pva://" + read_pv,
-                    "pva://" + write_pv,
-                )
+                signal = self._make_signal(entry, args[0] if len(args) > 0 else None)
 
             else:
                 backend = SimSignalBackend(args[0] if len(args) > 0 else None, block_pv)
@@ -194,18 +181,13 @@ class PandA(Device):
 
             setattr(block, sig_name, signal)
 
-        # make any extra signals that aren't typed in this class...
-        for attr, attr_pvi in block_pvi.items():
-            if not hasattr(block, attr):
-                signal_factory = self.pvi_mapping[frozenset(attr_pvi.keys())]
-                # TODO: get the type of argument you need for the signal_factory...
-                signal = signal_factory(
-                    args[0] if len(args) > 0 else None,
-                    "pva://" + read_pv,
-                    "pva://" + write_pv,
-                )
-                setattr(block, attr, signal)
-                # make it!
+        # checks for any extra pvi information not contained in this class
+        if block_pvi:
+            for attr, attr_pvi in block_pvi.items():
+                if not hasattr(block, attr):
+                    # makes any extra signals
+                    signal = self._make_signal(attr_pvi)
+                    setattr(block, attr, signal)
 
         return block
 
@@ -219,19 +201,24 @@ class PandA(Device):
         block_pvi = await pvi_get(block_pv)
 
         for signal_name, signal_pvi in block_pvi.items():
-            signal_factory = self.pvi_mapping[frozenset(signal_pvi.keys())]
-
-            pvs = [signal_pvi[i] for i in frozenset(signal_pvi.keys())]  # type: ignore
-            if len(pvs) == 1:
-                read_pv = write_pv = pvs[0]
-            else:
-                read_pv, write_pv = pvs
-
-            signal = signal_factory(None, "pva://" + read_pv, "pva://" + write_pv)
-
+            signal = self._make_signal(signal_pvi)
             setattr(block, signal_name, signal)
 
         return block
+
+    def _make_signal(self, signal_pvi: PVIEntry, dtype: Optional[Type] = None):
+        """Make a signal.
+
+        This assumes datatype is None so it can be used to create dynamic signals.
+        """
+        operations = frozenset(signal_pvi.keys())
+        pvs = [signal_pvi[i] for i in operations]  # type: ignore
+        signal_factory = self.pvi_mapping[operations]
+
+        write_pv = pvs[0]
+        read_pv = write_pv if len(pvs) == 1 else pvs[1]
+
+        return signal_factory(dtype, "pva://" + read_pv, "pva://" + write_pv)
 
     def set_attribute(self, name, num, block):
         anno = get_type_hints(self).get(name)
@@ -266,10 +253,9 @@ class PandA(Device):
 
                 self.set_attribute(name, num, block)
 
-        # then check if the ones defined in this class are at least made.
+        # then check if the ones defined in this class are in the pvi info
+        # make them if there is no pvi info, i.e. sim mode.
         for block_name in hints.keys():
-            pv = "sim://"
-
             if pvi is not None:
                 pvi_name = block_name
 
@@ -283,19 +269,8 @@ class PandA(Device):
                     "d"
                 ], f"Expected PandA to only contain blocks, got {entry}"
             else:
-                # or, if there's no pvi info, just make the minimum blocks needed
-                block = await self._make_block(block_name, 1, pv, sim=sim)
+                block = await self._make_block(block_name, 1, "sim://", sim=sim)
                 self.set_attribute(block_name, 1, block)
 
         self.set_name(self.name)
         await super().connect(sim)
-
-
-async def make_device():
-    async with DeviceCollector():
-        panda = PandA("PANDAQSRV")
-    return panda
-
-
-if __name__ == "__main__":
-    panda = asyncio.run(make_device())
