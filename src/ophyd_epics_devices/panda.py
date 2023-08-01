@@ -25,11 +25,11 @@ from ophyd.v2.core import (
     SimSignalBackend,
 )
 from ophyd.v2.epics import (
+    SignalR,
     epics_signal_r,
     epics_signal_rw,
     epics_signal_w,
     epics_signal_x,
-    SignalR,
 )
 from p4p.client.thread import Context
 
