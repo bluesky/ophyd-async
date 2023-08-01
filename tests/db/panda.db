@@ -436,6 +436,19 @@ $(EXCLUDE_PCAP=)            }
 $(EXCLUDE_PCAP=)        }
 $(EXCLUDE_PCAP=)    })
 $(EXCLUDE_PCAP=)}
+
+$(INCLUDE_EXTRA_SIGNAL=#)record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:ARM2")
+$(INCLUDE_EXTRA_SIGNAL=#){
+$(INCLUDE_EXTRA_SIGNAL=#)    info(Q:group, {
+$(INCLUDE_EXTRA_SIGNAL=#)        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
+$(INCLUDE_EXTRA_SIGNAL=#)            "pvi.arm2.x": {
+$(INCLUDE_EXTRA_SIGNAL=#)                "+channel": "NAME",
+$(INCLUDE_EXTRA_SIGNAL=#)                "+type": "plain"
+$(INCLUDE_EXTRA_SIGNAL=#)            }
+$(INCLUDE_EXTRA_SIGNAL=#)        }
+$(INCLUDE_EXTRA_SIGNAL=#)    })
+$(INCLUDE_EXTRA_SIGNAL=#)}
+
 $(EXCLUDE_PCAP=)
 $(EXCLUDE_PCAP=)
 $(EXCLUDE_PCAP=)record(stringin, "$(IOC_NAME=PANDAQSRV):PCAP:_PVI")

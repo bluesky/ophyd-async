@@ -54,7 +54,7 @@ def pva():
             universal_newlines=True,
         )
         for macros in [
-            "INCLUDE_EXTRA_BLOCK=",
+            "INCLUDE_EXTRA_BLOCK=,INCLUDE_EXTRA_SIGNAL=",
             "EXCLUDE_WIDTH=#,IOC_NAME=PANDAQSRVIB",
             "EXCLUDE_PCAP=#,IOC_NAME=PANDAQSRVI",
         ]
