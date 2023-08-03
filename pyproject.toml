@@ -14,7 +14,7 @@ classifiers = [
 ]
 description = "Cross-institution EPICS Devices for Ophyd"
 dependencies = [
-    "ophyd[ca] @ git+https://github.com/bluesky/ophyd.git",
+    "ophyd @ git+https://github.com/bluesky/ophyd.git@sim-backend-numpy-typing",
     "bluesky",
     "event-model",
     "p4p",
