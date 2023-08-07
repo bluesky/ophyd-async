@@ -1,3 +1,4 @@
+import atexit
 import re
 from enum import Enum
 from typing import (
@@ -30,8 +31,6 @@ from ophyd.v2.epics import (
     epics_signal_x,
 )
 from p4p.client.thread import Context
-
-ctxt = Context("pva")
 
 
 class PulseBlock(Device):
@@ -98,8 +97,7 @@ def block_name_number(block_name: str) -> Tuple[str, int]:
     return name, int(num or 1)
 
 
-# in sim mode, this should be called with a timeout of 0.0.
-async def pvi_get(pv: str, timeout: float = 5.0) -> Dict[str, PVIEntry]:
+async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
     pv_info: Dict[str, Dict[str, str]] = {}
     try:
         pv_info = ctxt.get(pv, timeout=timeout).get("pvi").todict()
@@ -115,13 +113,14 @@ async def pvi_get(pv: str, timeout: float = 5.0) -> Dict[str, PVIEntry]:
 
 
 class PandA(Device):
+    _ctxt: Optional[Context] = None
+
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self._init_prefix = prefix
-
         self.pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
             frozenset({"r", "w"}): lambda dtype, rpv, wpv: epics_signal_rw(
                 dtype, rpv, wpv
@@ -131,6 +130,20 @@ class PandA(Device):
             frozenset({"w"}): lambda dtype, rpv, wpv: epics_signal_w(dtype, wpv),
             frozenset({"x"}): lambda dtype, rpv, wpv: epics_signal_x(wpv),
         }
+
+    @property
+    def ctxt(self) -> Context:
+        if PandA._ctxt is None:
+            PandA._ctxt = Context("pva", nt=False)
+
+            @atexit.register
+            def _del_ctxt():
+                # If we don't do this we get messages like this on close:
+                #   Error in sys.excepthook:
+                #   Original exception was:
+                PandA._ctxt = None
+
+        return PandA._ctxt
 
     def verify_block(self, name: str, num: int):
         """Given a block name and number, return information about a block."""
@@ -156,7 +169,7 @@ class PandA(Device):
         block = self.verify_block(name, num)
 
         field_annos = get_type_hints(block)
-        block_pvi = await pvi_get(block_pv) if not sim else None
+        block_pvi = await pvi_get(block_pv, self.ctxt) if not sim else None
 
         # finds which fields this class actually has, e.g. delay, width...
         for sig_name, sig_type in field_annos.items():
@@ -201,7 +214,7 @@ class PandA(Device):
         included dynamically anyway.
         """
         block = Device()
-        block_pvi = await pvi_get(block_pv)
+        block_pvi = await pvi_get(block_pv, self.ctxt)
 
         for signal_name, signal_pvi in block_pvi.items():
             signal_factory = self.pvi_mapping[frozenset(signal_pvi.keys())]
@@ -236,8 +249,12 @@ class PandA(Device):
         If there's no pvi information, that's because we're in sim mode. In that case,
         makes all required blocks.
         """
-        pvi = await pvi_get(self._init_prefix + ":PVI") if not sim else None
-        hints = get_type_hints(self)
+        pvi = await pvi_get(self._init_prefix + ":PVI", self.ctxt) if not sim else None
+        hints = {
+            attr_name: attr_type
+            for attr_name, attr_type in get_type_hints(self).items()
+            if not attr_name.startswith("_")
+        }
 
         # create all the blocks pvi says it should have,
         if pvi:
