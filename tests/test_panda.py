@@ -62,11 +62,12 @@ async def test_panda_with_missing_blocks(pva):
         await panda.connect()
 
 
-async def test_panda_with_extra_blocks(pva):
+async def test_panda_with_extra_blocks_and_signals(pva):
     panda = PandA("PANDAQSRV")
     await panda.connect()
 
     assert panda.extra, "extra device has not been instantiated"  # type: ignore
+    assert panda.pcap.arm2, "extra signal not instantiated"  # type: ignore
 
 
 async def test_panda_block_missing_signals(pva):
