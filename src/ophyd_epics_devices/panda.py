@@ -8,6 +8,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypedDict,
     get_args,
     get_origin,
@@ -25,6 +26,7 @@ from ophyd.v2.core import (
     SimSignalBackend,
 )
 from ophyd.v2.epics import (
+    SignalR,
     epics_signal_r,
     epics_signal_rw,
     epics_signal_w,
@@ -79,7 +81,7 @@ class SeqBlock(Device):
 
 
 class PcapBlock(Device):
-    arm: SignalX
+    active: SignalR[bool]
 
 
 class PVIEntry(TypedDict, total=False):
@@ -177,28 +179,25 @@ class PandA(Device):
                 entry: Optional[PVIEntry] = block_pvi.get(sig_name)
                 if entry is None:
                     raise Exception(
-                        f"{self.__class__.__name__} has a {name} block containing a "
-                        + f"{sig_name} signal which has not been retrieved by PVI."
+                        f"{self.__class__.__name__} has a {name} block containing a/"
+                        + f"an {sig_name} signal which has not been retrieved by PVI."
                     )
 
-                pvs = [entry[i] for i in frozenset(entry.keys())]  # type: ignore
-                if len(pvs) == 1:
-                    read_pv = write_pv = pvs[0]
-                else:
-                    read_pv, write_pv = pvs
-
-                signal_factory = self.pvi_mapping[frozenset(entry.keys())]
-                signal = signal_factory(
-                    args[0] if len(args) > 0 else None,
-                    "pva://" + read_pv,
-                    "pva://" + write_pv,
-                )
+                signal = self._make_signal(entry, args[0] if len(args) > 0 else None)
 
             else:
                 backend = SimSignalBackend(args[0] if len(args) > 0 else None, block_pv)
                 signal = SignalX(backend) if not origin else origin(backend)
 
             setattr(block, sig_name, signal)
+
+        # checks for any extra pvi information not contained in this class
+        if block_pvi:
+            for attr, attr_pvi in block_pvi.items():
+                if not hasattr(block, attr):
+                    # makes any extra signals
+                    signal = self._make_signal(attr_pvi)
+                    setattr(block, attr, signal)
 
         return block
 
@@ -212,19 +211,24 @@ class PandA(Device):
         block_pvi = await pvi_get(block_pv, self.ctxt)
 
         for signal_name, signal_pvi in block_pvi.items():
-            signal_factory = self.pvi_mapping[frozenset(signal_pvi.keys())]
-
-            pvs = [signal_pvi[i] for i in frozenset(signal_pvi.keys())]  # type: ignore
-            if len(pvs) == 1:
-                read_pv = write_pv = pvs[0]
-            else:
-                read_pv, write_pv = pvs
-
-            signal = signal_factory(None, "pva://" + read_pv, "pva://" + write_pv)
-
+            signal = self._make_signal(signal_pvi)
             setattr(block, signal_name, signal)
 
         return block
+
+    def _make_signal(self, signal_pvi: PVIEntry, dtype: Optional[Type] = None):
+        """Make a signal.
+
+        This assumes datatype is None so it can be used to create dynamic signals.
+        """
+        operations = frozenset(signal_pvi.keys())
+        pvs = [signal_pvi[i] for i in operations]  # type: ignore
+        signal_factory = self.pvi_mapping[operations]
+
+        write_pv = pvs[0]
+        read_pv = write_pv if len(pvs) == 1 else pvs[1]
+
+        return signal_factory(dtype, "pva://" + read_pv, "pva://" + write_pv)
 
     def set_attribute(self, name, num, block):
         anno = get_type_hints(self).get(name)
@@ -263,10 +267,9 @@ class PandA(Device):
 
                 self.set_attribute(name, num, block)
 
-        # then check if the ones defined in this class are at least made.
+        # then check if the ones defined in this class are in the pvi info
+        # make them if there is no pvi info, i.e. sim mode.
         for block_name in hints.keys():
-            pv = "sim://"
-
             if pvi is not None:
                 pvi_name = block_name
 
@@ -280,8 +283,7 @@ class PandA(Device):
                     "d"
                 ], f"Expected PandA to only contain blocks, got {entry}"
             else:
-                # or, if there's no pvi info, just make the minimum blocks needed
-                block = await self._make_block(block_name, 1, pv, sim=sim)
+                block = await self._make_block(block_name, 1, "sim://", sim=sim)
                 self.set_attribute(block_name, 1, block)
 
         self.set_name(self.name)
