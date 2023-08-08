@@ -110,66 +110,6 @@ jobs:
         # If more than one module in src/ replace with module name to test
         run: python -m $(ls src | head -1) --version
 
-  container:
-    needs: [lint, dist, test]
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      # image names must be all lower case
-      - name: Generate image repo name
-        run: echo IMAGE_REPOSITORY=ghcr.io/$(tr '[:upper:]' '[:lower:]' <<< "${{ github.repository }}") >> $GITHUB_ENV
-
-      - name: Download wheel and lockfiles
-        uses: actions/download-artifact@v3
-        with:
-          path: .devcontainer
-
-      - name: Log in to GitHub Docker Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.IMAGE_REPOSITORY }}
-          tags: |
-            type=ref,event=tag
-            type=raw,value=latest
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build runtime image
-        uses: docker/build-push-action@v3
-        with:
-          build-args: |
-            PIP_OPTIONS=-r lockfiles/requirements.txt dist/*.whl
-          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
-          load: ${{ ! (github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          context: .devcontainer
-          # If you have a long docker build, uncomment the following to turn on caching
-          # For short build times this makes it a little slower
-          #cache-from: type=gha
-          #cache-to: type=gha,mode=max
-
-      - name: Test cli works in runtime image
-        run: docker run ${{ env.IMAGE_REPOSITORY }} --version
-
   release:
     # upload to PyPI and make a release on every tag
     needs: [lint, dist, test]
