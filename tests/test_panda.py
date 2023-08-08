@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from ophyd.v2.core import DeviceCollector
 
-from ophyd_epics_devices.panda import PandA, SeqTable, SeqTrigger
+from ophyd_epics_devices.panda import PandA, SeqTable, SeqTrigger, pvi_get
 
 
 @pytest.fixture

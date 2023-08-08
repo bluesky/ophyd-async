@@ -98,12 +98,7 @@ def block_name_number(block_name: str) -> Tuple[str, int]:
 
 
 async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
-    pv_info: Dict[str, Dict[str, str]] = {}
-    try:
-        pv_info = ctxt.get(pv, timeout=timeout).get("pvi").todict()
-    except TimeoutError:
-        # log here that it couldn't access it.
-        raise Exception("Cannot get the PV.")
+    pv_info = ctxt.get(pv, timeout=timeout).get("pvi").todict()
 
     result = {}
 
