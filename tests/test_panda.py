@@ -15,12 +15,12 @@ async def sim_panda():
     yield sim_panda
 
 
-def test_panda_names_correct(pva, sim_panda: PandA):
+def test_panda_names_correct(sim_panda: PandA):
     assert sim_panda.seq[1].name == "sim_panda-seq-1"
     assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
 
 
-async def test_panda_children_connected(pva, sim_panda: PandA):
+async def test_panda_children_connected(sim_panda: PandA):
     # try to set and retrieve from simulated values...
     table = SeqTable(
         repeats=np.array([1, 1, 1, 32]).astype(np.uint16),
