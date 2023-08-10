@@ -92,11 +92,22 @@ class PVIEntry(TypedDict, total=False):
     x: str
 
 
-def block_name_number(block_name: str) -> Tuple[str, int]:
-    m = re.match("^([a-z]+)([0-9]*)$", block_name)
-    assert m, f"Expected '<block_name><block_num>', got '{block_name}'"
-    name, num = m.groups()
-    return name, int(num or 1)
+def block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
+    """Maps a panda block name to a block and number.
+
+    There are exceptions to this rule; some blocks like pcap do not contain numbers.
+    Other blocks may contain numbers and letters, but no numbers at the end.
+
+    Such block names will only return the block name, and not a number.
+
+    If this function returns both a block name and number, it should be instantiated
+    into a device vector."""
+    m = re.match("^([0-9a-z_-]*)([0-9]+)$", block_name)
+    if m is not None:
+        name, num = m.groups()
+        return name, int(num or 1)  # just to pass type checks.
+
+    return block_name, None
 
 
 async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
@@ -142,7 +153,7 @@ class PandA(Device):
 
         return PandA._ctxt
 
-    def verify_block(self, name: str, num: int):
+    def verify_block(self, name: str, num: Optional[int]):
         """Given a block name and number, return information about a block."""
         anno = get_type_hints(self).get(name)
 
@@ -153,11 +164,13 @@ class PandA(Device):
             block = type_args[0]() if type_args else anno()
 
             if not type_args:
-                assert num == 1, f"Only expected one {name} block, got {num}"
+                assert num is None, f"Only expected one {name} block, got {num}"
 
         return block
 
-    async def _make_block(self, name: str, num: int, block_pv: str, sim: bool = False):
+    async def _make_block(
+        self, name: str, num: Optional[int], block_pv: str, sim: bool = False
+    ):
         """Makes a block given a block name containing relevant signals.
 
         Loops through the signals in the block (found using type hints), if not in
@@ -230,11 +243,21 @@ class PandA(Device):
 
         return signal_factory(dtype, "pva://" + read_pv, "pva://" + write_pv)
 
-    def set_attribute(self, name, num, block):
+    # TODO redo to set_panda_block? confusing name
+    def set_attribute(self, name: str, num: Optional[int], block: Device):
+        """Set a block on the panda.
+
+        Need to be able to set device vectors on the panda as well, e.g. if num is not
+        None, need to be able to make a new device vector and start populating it...
+        """
         anno = get_type_hints(self).get(name)
 
-        # get_origin to see if it's a device vector.
-        if (anno == DeviceVector[PulseBlock]) or (anno == DeviceVector[SeqBlock]):
+        # TODO this should not check specifically for pulse or seq block... just that
+        # it's a device vector.
+
+        # if it's an annotated device vector, or it isn't but we've got a number then
+        # make a DeviceVector on the class
+        if get_origin(anno) == DeviceVector or (not anno and num is not None):
             self.__dict__.setdefault(name, DeviceVector())[num] = block
         else:
             setattr(self, name, block)
@@ -283,8 +306,9 @@ class PandA(Device):
                     "d"
                 ], f"Expected PandA to only contain blocks, got {entry}"
             else:
-                block = await self._make_block(block_name, 1, "sim://", sim=sim)
-                self.set_attribute(block_name, 1, block)
+                num = 1 if get_origin(hints[block_name]) == DeviceVector else None
+                block = await self._make_block(block_name, num, "sim://", sim=sim)
+                self.set_attribute(block_name, num, block)
 
         self.set_name(self.name)
         await super().connect(sim)
