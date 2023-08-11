@@ -282,7 +282,7 @@ class PandA(Device):
         #   both 'pcap' and 'pcap1' are in PVI, remove 'pcap1'.
         pvi_keys = set(pvi.keys())
         for k in pvi_keys:
-            kn = re.sub("\d*$", "", k)
+            kn = re.sub(r"\d*$", "", k)
             if kn and k != kn and kn in pvi_keys:
                 del pvi[k]
 
