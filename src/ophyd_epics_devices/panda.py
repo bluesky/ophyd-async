@@ -278,6 +278,14 @@ class PandA(Device):
             if not attr_name.startswith("_")
         }
 
+        # Remove 'fake' numbered blocks if non-numbered block is in PVI, e.g. if
+        #   both 'pcap' and 'pcap1' are in PVI, remove 'pcap1'.
+        pvi_keys = set(pvi.keys())
+        for k in pvi_keys:
+            kn = re.sub("\d*$", "", k)
+            if kn and k != kn and kn in pvi_keys:
+                del pvi[k]
+
         # create all the blocks pvi says it should have,
         if pvi:
             for block_name, block_pvi in pvi.items():
