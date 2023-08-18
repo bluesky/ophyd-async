@@ -252,9 +252,6 @@ class PandA(Device):
         """
         anno = get_type_hints(self).get(name)
 
-        # TODO this should not check specifically for pulse or seq block... just that
-        # it's a device vector.
-
         # if it's an annotated device vector, or it isn't but we've got a number then
         # make a DeviceVector on the class
         if get_origin(anno) == DeviceVector or (not anno and num is not None):
@@ -278,16 +275,16 @@ class PandA(Device):
             if not attr_name.startswith("_")
         }
 
-        # Remove 'fake' numbered blocks if non-numbered block is in PVI, e.g. if
-        #   both 'pcap' and 'pcap1' are in PVI, remove 'pcap1'.
-        pvi_keys = set(pvi.keys())
-        for k in pvi_keys:
-            kn = re.sub(r"\d*$", "", k)
-            if kn and k != kn and kn in pvi_keys:
-                del pvi[k]
-
         # create all the blocks pvi says it should have,
         if pvi:
+            # Remove 'fake' numbered blocks if non-numbered block is in PVI, e.g. if
+            # both 'pcap' and 'pcap1' are in PVI, remove 'pcap1'.
+            pvi_keys = set(pvi.keys())
+            for k in pvi_keys:
+                kn = re.sub(r"\d*$", "", k)
+                if kn and k != kn and kn in pvi_keys:
+                    del pvi[k]
+
             for block_name, block_pvi in pvi.items():
                 name, num = block_name_number(block_name)
 
