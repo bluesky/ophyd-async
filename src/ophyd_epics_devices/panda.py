@@ -323,4 +323,5 @@ class PandA(Device):
                 block = await self._make_block(block_name, num, "sim://", sim=sim)
                 self.set_attribute(block_name, num, block)
 
+        self.set_name(self.name)
         await super().connect(sim)
