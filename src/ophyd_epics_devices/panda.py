@@ -143,8 +143,8 @@ class PandA(Device):
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
 
-    def __init__(self, prefix: str, name: str = "") -> None:
-        self._init_prefix = prefix
+    def __init__(self, pv: str) -> None:
+        self._init_prefix = pv
         self.pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
             frozenset({"r", "w"}): lambda dtype, rpv, wpv: epics_signal_rw(
                 dtype, rpv, wpv
@@ -323,5 +323,4 @@ class PandA(Device):
                 block = await self._make_block(block_name, num, "sim://", sim=sim)
                 self.set_attribute(block_name, num, block)
 
-        self.set_name(self.name)
         await super().connect(sim)
