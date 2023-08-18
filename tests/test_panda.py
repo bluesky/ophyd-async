@@ -1,9 +1,36 @@
 """Test file specifying how we want to eventually interact with the panda..."""
+import copy
+from typing import Dict
+
 import numpy as np
 import pytest
 from ophyd.v2.core import DeviceCollector
 
-from ophyd_epics_devices.panda import PandA, SeqTable, SeqTrigger
+from ophyd_epics_devices.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi_get
+
+
+class DummyDict:
+    def __init__(self, dict) -> None:
+        self.dict = dict
+
+    def todict(self):
+        return self.dict
+
+
+class MockPvi:
+    def __init__(self, pvi: Dict[str, PVIEntry]) -> None:
+        self.pvi = pvi
+
+    def get(self, item: str):
+        return DummyDict(self.pvi)
+
+
+class MockCtxt:
+    def __init__(self, pvi: Dict[str, PVIEntry]) -> None:
+        self.pvi = copy.copy(pvi)
+
+    def get(self, pv: str, timeout: float = 0.0):
+        return MockPvi(self.pvi)
 
 
 @pytest.fixture
@@ -18,6 +45,21 @@ async def sim_panda():
 def test_panda_names_correct(sim_panda: PandA):
     assert sim_panda.seq[1].name == "sim_panda-seq-1"
     assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
+
+
+async def test_pvi_get_for_inconsistent_blocks():
+    dummy_pvi = {
+        "pcap": {},
+        "pcap1": {},
+        "pulse1": {},
+        "pulse2": {},
+        "sfp3_sync_out1": {},
+        "sfp3_sync_out": {},
+    }
+
+    resulting_pvi = await pvi_get("", MockCtxt(dummy_pvi))
+    assert "sfp3_sync_out1" not in resulting_pvi
+    assert "pcap1" not in resulting_pvi
 
 
 async def test_panda_children_connected(sim_panda: PandA):
@@ -69,7 +111,7 @@ async def test_panda_with_extra_blocks_and_signals(pva):
     assert panda.extra  # type: ignore
     assert panda.extra[1]  # type: ignore
     assert panda.extra[2]  # type: ignore
-    assert panda.pcap.arm2  # type: ignore
+    assert panda.pcap.newsignal  # type: ignore
 
 
 async def test_panda_block_missing_signals(pva):

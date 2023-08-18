@@ -110,6 +110,21 @@ def block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
     return block_name, None
 
 
+def _remove_inconsistent_blocks(pvi: Dict[str, PVIEntry]) -> None:
+    """Remove blocks from pvi information.
+
+    This is needed because some pandas have 'pcap' and 'pcap1' blocks, which are
+    inconsistent with the assumption that pandas should only have a 'pcap' block,
+    for example.
+
+    """
+    pvi_keys = set(pvi.keys())
+    for k in pvi_keys:
+        kn = re.sub(r"\d*$", "", k)
+        if kn and k != kn and kn in pvi_keys:
+            del pvi[k]
+
+
 async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
     pv_info = ctxt.get(pv, timeout=timeout).get("pvi").todict()
 
@@ -117,6 +132,7 @@ async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVI
 
     for attr_name, attr_info in pv_info.items():
         result[attr_name] = PVIEntry(**attr_info)  # type: ignore
+    _remove_inconsistent_blocks(result)
     return result
 
 
@@ -277,14 +293,6 @@ class PandA(Device):
 
         # create all the blocks pvi says it should have,
         if pvi:
-            # Remove 'fake' numbered blocks if non-numbered block is in PVI, e.g. if
-            # both 'pcap' and 'pcap1' are in PVI, remove 'pcap1'.
-            pvi_keys = set(pvi.keys())
-            for k in pvi_keys:
-                kn = re.sub(r"\d*$", "", k)
-                if kn and k != kn and kn in pvi_keys:
-                    del pvi[k]
-
             for block_name, block_pvi in pvi.items():
                 name, num = block_name_number(block_name)
 
