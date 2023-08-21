@@ -1,0 +1,14 @@
+# show coverage in CI status, not as a comment.
+comment: false
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.1%
+    patch:
+      default:
+        target: auto
+        threshold: 0.1%
+github_checks:
+  annotations: false
