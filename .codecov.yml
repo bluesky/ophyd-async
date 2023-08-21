@@ -5,10 +5,10 @@ coverage:
     project:
       default:
         target: auto
-        threshold: 0.1%
+        threshold: 0.05%
     patch:
       default:
         target: auto
-        threshold: 0.1%
+        threshold: 0.05%
 github_checks:
   annotations: false
