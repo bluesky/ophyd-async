@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import re
 from enum import Enum
@@ -171,7 +173,7 @@ class PandA(Device):
 
     def verify_block(self, name: str, num: Optional[int]):
         """Given a block name and number, return information about a block."""
-        anno = get_type_hints(self).get(name)
+        anno = get_type_hints(self, globalns=globals()).get(name)
 
         block: Device = Device()
 
@@ -194,7 +196,7 @@ class PandA(Device):
         """
         block = self.verify_block(name, num)
 
-        field_annos = get_type_hints(block)
+        field_annos = get_type_hints(block, globalns=globals())
         block_pvi = await pvi_get(block_pv, self.ctxt) if not sim else None
 
         # finds which fields this class actually has, e.g. delay, width...
@@ -266,7 +268,7 @@ class PandA(Device):
         Need to be able to set device vectors on the panda as well, e.g. if num is not
         None, need to be able to make a new device vector and start populating it...
         """
-        anno = get_type_hints(self).get(name)
+        anno = get_type_hints(self, globalns=globals()).get(name)
 
         # if it's an annotated device vector, or it isn't but we've got a number then
         # make a DeviceVector on the class
@@ -287,7 +289,7 @@ class PandA(Device):
         pvi = await pvi_get(self._init_prefix + ":PVI", self.ctxt) if not sim else None
         hints = {
             attr_name: attr_type
-            for attr_name, attr_type in get_type_hints(self).items()
+            for attr_name, attr_type in get_type_hints(self, globalns=globals()).items()
             if not attr_name.startswith("_")
         }
 
