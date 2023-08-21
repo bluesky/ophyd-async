@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import re
 from enum import Enum
@@ -92,11 +94,37 @@ class PVIEntry(TypedDict, total=False):
     x: str
 
 
-def block_name_number(block_name: str) -> Tuple[str, int]:
-    m = re.match("^([a-z]+)([0-9]*)$", block_name)
-    assert m, f"Expected '<block_name><block_num>', got '{block_name}'"
-    name, num = m.groups()
-    return name, int(num or 1)
+def block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
+    """Maps a panda block name to a block and number.
+
+    There are exceptions to this rule; some blocks like pcap do not contain numbers.
+    Other blocks may contain numbers and letters, but no numbers at the end.
+
+    Such block names will only return the block name, and not a number.
+
+    If this function returns both a block name and number, it should be instantiated
+    into a device vector."""
+    m = re.match("^([0-9a-z_-]*)([0-9]+)$", block_name)
+    if m is not None:
+        name, num = m.groups()
+        return name, int(num or 1)  # just to pass type checks.
+
+    return block_name, None
+
+
+def _remove_inconsistent_blocks(pvi: Dict[str, PVIEntry]) -> None:
+    """Remove blocks from pvi information.
+
+    This is needed because some pandas have 'pcap' and 'pcap1' blocks, which are
+    inconsistent with the assumption that pandas should only have a 'pcap' block,
+    for example.
+
+    """
+    pvi_keys = set(pvi.keys())
+    for k in pvi_keys:
+        kn = re.sub(r"\d*$", "", k)
+        if kn and k != kn and kn in pvi_keys:
+            del pvi[k]
 
 
 async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
@@ -106,6 +134,7 @@ async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVI
 
     for attr_name, attr_info in pv_info.items():
         result[attr_name] = PVIEntry(**attr_info)  # type: ignore
+    _remove_inconsistent_blocks(result)
     return result
 
 
@@ -116,8 +145,8 @@ class PandA(Device):
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
 
-    def __init__(self, prefix: str, name: str = "") -> None:
-        self._init_prefix = prefix
+    def __init__(self, pv: str) -> None:
+        self._init_prefix = pv
         self.pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
             frozenset({"r", "w"}): lambda dtype, rpv, wpv: epics_signal_rw(
                 dtype, rpv, wpv
@@ -142,9 +171,9 @@ class PandA(Device):
 
         return PandA._ctxt
 
-    def verify_block(self, name: str, num: int):
+    def verify_block(self, name: str, num: Optional[int]):
         """Given a block name and number, return information about a block."""
-        anno = get_type_hints(self).get(name)
+        anno = get_type_hints(self, globalns=globals()).get(name)
 
         block: Device = Device()
 
@@ -153,11 +182,13 @@ class PandA(Device):
             block = type_args[0]() if type_args else anno()
 
             if not type_args:
-                assert num == 1, f"Only expected one {name} block, got {num}"
+                assert num is None, f"Only expected one {name} block, got {num}"
 
         return block
 
-    async def _make_block(self, name: str, num: int, block_pv: str, sim: bool = False):
+    async def _make_block(
+        self, name: str, num: Optional[int], block_pv: str, sim: bool = False
+    ):
         """Makes a block given a block name containing relevant signals.
 
         Loops through the signals in the block (found using type hints), if not in
@@ -165,7 +196,7 @@ class PandA(Device):
         """
         block = self.verify_block(name, num)
 
-        field_annos = get_type_hints(block)
+        field_annos = get_type_hints(block, globalns=globals())
         block_pvi = await pvi_get(block_pv, self.ctxt) if not sim else None
 
         # finds which fields this class actually has, e.g. delay, width...
@@ -230,11 +261,18 @@ class PandA(Device):
 
         return signal_factory(dtype, "pva://" + read_pv, "pva://" + write_pv)
 
-    def set_attribute(self, name, num, block):
-        anno = get_type_hints(self).get(name)
+    # TODO redo to set_panda_block? confusing name
+    def set_attribute(self, name: str, num: Optional[int], block: Device):
+        """Set a block on the panda.
 
-        # get_origin to see if it's a device vector.
-        if (anno == DeviceVector[PulseBlock]) or (anno == DeviceVector[SeqBlock]):
+        Need to be able to set device vectors on the panda as well, e.g. if num is not
+        None, need to be able to make a new device vector and start populating it...
+        """
+        anno = get_type_hints(self, globalns=globals()).get(name)
+
+        # if it's an annotated device vector, or it isn't but we've got a number then
+        # make a DeviceVector on the class
+        if get_origin(anno) == DeviceVector or (not anno and num is not None):
             self.__dict__.setdefault(name, DeviceVector())[num] = block
         else:
             setattr(self, name, block)
@@ -251,7 +289,7 @@ class PandA(Device):
         pvi = await pvi_get(self._init_prefix + ":PVI", self.ctxt) if not sim else None
         hints = {
             attr_name: attr_type
-            for attr_name, attr_type in get_type_hints(self).items()
+            for attr_name, attr_type in get_type_hints(self, globalns=globals()).items()
             if not attr_name.startswith("_")
         }
 
@@ -283,8 +321,9 @@ class PandA(Device):
                     "d"
                 ], f"Expected PandA to only contain blocks, got {entry}"
             else:
-                block = await self._make_block(block_name, 1, "sim://", sim=sim)
-                self.set_attribute(block_name, 1, block)
+                num = 1 if get_origin(hints[block_name]) == DeviceVector else None
+                block = await self._make_block(block_name, num, "sim://", sim=sim)
+                self.set_attribute(block_name, num, block)
 
         self.set_name(self.name)
         await super().connect(sim)
