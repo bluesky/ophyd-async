@@ -5,10 +5,11 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional, Tuple, Type
 
-from .core import SignalBackend, SignalR, SignalRW, SignalW, SignalX, T, get_unique
+from ..utils import T, get_unique
+from .signal import SignalBackend, SignalR, SignalRW, SignalW, SignalX
 
 try:
-    from ._aioca import CaSignalBackend
+    from ..backends._aioca import CaSignalBackend
 except ImportError as ca_error:
 
     class CaSignalBackend:  # type: ignore
@@ -17,7 +18,7 @@ except ImportError as ca_error:
 
 
 try:
-    from ._p4p import PvaSignalBackend
+    from ..backends._p4p import PvaSignalBackend
 except ImportError as pva_error:
 
     class PvaSignalBackend:  # type: ignore

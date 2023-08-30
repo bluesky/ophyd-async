@@ -13,7 +13,7 @@ import pytest
 from bluesky import FailedStatus, RunEngine
 from bluesky.protocols import Movable, Reading, Status
 
-from ophyd_async.core.core import (
+from ophyd_async.core import (
     AsyncStatus,
     Device,
     DeviceCollector,
@@ -212,9 +212,9 @@ def test_get_device_children():
     for idx, (name, child) in enumerate(get_device_children(parent)):
         assert name == names[idx]
         assert (
-            type(child) == DummyBaseDevice
+            type(child) is DummyBaseDevice
             if name.startswith("child")
-            else type(child) == DeviceVector
+            else type(child) is DeviceVector
         )
 
 

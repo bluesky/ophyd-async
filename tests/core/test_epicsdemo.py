@@ -7,7 +7,7 @@ from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import epicsdemo
-from ophyd_async.core.core import (
+from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
     set_sim_callback,
@@ -136,7 +136,7 @@ async def test_mover_disconncted():
 
 
 async def test_sensor_disconncted():
-    with patch("ophyd_async.core.core.logging") as mock_logging:
+    with patch("ophyd_async.core.device_collector.logging") as mock_logging:
         with pytest.raises(NotConnected, match="Not all Devices connected"):
             async with DeviceCollector(timeout=0.1):
                 s = epicsdemo.Sensor("ca://PRE:", name="sensor")

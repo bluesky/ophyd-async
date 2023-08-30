@@ -8,10 +8,10 @@ from typing import Any, Dict, Optional, Sequence, Type, Union
 from bluesky.protocols import Descriptor, Dtype, Reading
 from p4p.client.asyncio import Context, Subscription
 
-from .core import (
+from ..signals.signal import SignalBackend
+from ..utils import (
     NotConnected,
     ReadingValueCallback,
-    SignalBackend,
     T,
     get_dtype,
     get_unique,
@@ -76,7 +76,9 @@ class PvaEnumConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(source=source, dtype="string", shape=[], choices=choices)  # type: ignore
+        return dict(
+            source=source, dtype="string", shape=[], choices=choices
+        )  # type: ignore
 
 
 class PvaEnumBoolConverter(PvaConverter):
@@ -145,7 +147,9 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
                 raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
             enum_class = datatype
         else:
-            enum_class = Enum("GeneratedChoices", {x: x for x in pv_choices}, type=str)  # type: ignore
+            enum_class = Enum(  # type: ignore
+                "GeneratedChoices", {x: x for x in pv_choices}, type=str
+            )
         return PvaEnumConverter(enum_class)
     elif "NTScalar" in typeid:
         if datatype and not issubclass(typ, datatype):

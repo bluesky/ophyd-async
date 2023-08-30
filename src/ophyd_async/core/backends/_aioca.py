@@ -17,10 +17,10 @@ from aioca.types import AugmentedValue, Dbr, Format
 from bluesky.protocols import Descriptor, Dtype, Reading
 from epicscorelibs.ca import dbr
 
-from .core import (
+from ..signals.signal import SignalBackend
+from ..utils import (
     NotConnected,
     ReadingValueCallback,
-    SignalBackend,
     T,
     get_dtype,
     get_unique,
@@ -79,7 +79,9 @@ class CaEnumConverter(CaConverter):
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(source=source, dtype="string", shape=[], choices=choices)  # type: ignore
+        return dict(
+            source=source, dtype="string", shape=[], choices=choices
+        )  # type: ignore
 
 
 class DisconnectedCaConverter(CaConverter):
@@ -113,7 +115,7 @@ def make_converter(
                 raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
         return CaArrayConverter(pv_dbr, None)
     elif pv_dbr == dbr.DBR_ENUM and datatype is bool:
-        # Database can't do bools, so are often representated as enums, CA can do int tho
+        # Database can't do bools, so are often representated as enums, CA can do int
         pv_choices_len = get_unique(
             {k: len(v.enums) for k, v in values.items()}, "number of choices"
         )
@@ -133,14 +135,17 @@ def make_converter(
                 raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
             enum_class = datatype
         else:
-            enum_class = Enum("GeneratedChoices", {x: x for x in pv_choices}, type=str)  # type: ignore
+            enum_class = Enum(  # type: ignore
+                "GeneratedChoices", {x: x for x in pv_choices}, type=str
+            )
         return CaEnumConverter(dbr.DBR_STRING, None, enum_class)
     else:
         value = list(values.values())[0]
         # Done the dbr check, so enough to check one of the values
         if datatype and not isinstance(value, datatype):
             raise TypeError(
-                f"{pv} has type {type(value).__name__.replace('ca_', '')} not {datatype.__name__}"
+                f"{pv} has type {type(value).__name__.replace('ca_', '')} "
+                + f"not {datatype.__name__}"
             )
         return CaConverter(pv_dbr, None)
 

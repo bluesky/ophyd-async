@@ -16,8 +16,8 @@ import pytest
 from aioca import purge_channel_caches
 from bluesky.protocols import Reading
 
-from ophyd_async.core.core import NotConnected, SignalBackend, T, get_dtype
-from ophyd_async.core.epics import EpicsTransport, _make_backend
+from ophyd_async.core import NotConnected, SignalBackend, T, get_dtype
+from ophyd_async.core.signals.epics import EpicsTransport, _make_backend
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
@@ -192,13 +192,14 @@ async def test_backend_get_put_monitor(
     dtype = get_dtype(datatype)
     if ioc.protocol == "ca" and dtype and dtype.type in ca_dtype_mapping:
         if dtype == np.int8:
-            # CA maps uint8 onto int8 rather than upcasting, so we need to change initial
-            # array
+            # CA maps uint8 onto int8 rather than upcasting, so we need to change
+            # initial array
             initial_value, put_value = [  # type: ignore
                 np.array(x).astype(np.uint8) for x in (initial_value, put_value)
             ]
         datatype = npt.NDArray[ca_dtype_mapping[dtype.type]]  # type: ignore
-    # With the given datatype, check we have the correct initial value and putting works
+    # With the given datatype, check we have the correct initial value and putting
+    # works
     await assert_monitor_then_put(
         ioc, suffix, descriptor(initial_value), initial_value, put_value, datatype
     )

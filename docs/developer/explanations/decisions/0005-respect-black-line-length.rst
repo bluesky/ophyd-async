@@ -1,5 +1,5 @@
-2. Adopt ophyd_async for project structure
-==========================================
+5. Respect black line length
+============================
 
 Date: 2023-08-30
 
