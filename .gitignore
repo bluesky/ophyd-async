@@ -8,7 +8,6 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
-.venv
 build/
 develop-eggs/
 dist/
@@ -67,3 +66,22 @@ venv*
 # further build artifacts
 lockfiles/
 
+# Origional File
+*.pyc
+*.swp
+*.bak
+
+# IDE Configs
+.idea/
+.ropeproject
+.vscode/
+
+# notebook checkpoints
+.ipynb_checkpoints
+
+# generated docs
+docs/*/generated
+docs/savefig
+
+# generated version number
+ophyd/_version.py

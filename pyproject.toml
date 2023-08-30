@@ -12,32 +12,65 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-description = "One line description of your module"
+description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
     "typing-extensions;python_version<'3.8'",
+    "networkx>=2.0",
+    "numpy",
+    "packaging",
+    "pint"
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [project.optional-dependencies]
+ca = [
+    "aioca>=1.6"
+]
+pva = [
+    "p4p"
+]
 dev = [
+    "ophyd_async[pva]",
+    "ophyd_async[ca]",
+    "attrs>=19.3.0",
     "black",
-    "mypy",
+    "bluesky>=1.11.0",
+    "caproto[standard] >=0.4.2rc1",
+    "pytest-codecov",
+    "databroker>=1.0.0b1",
+    "doctr",
+    "epics-pypdb",
+    "flake8",
     "flake8-isort",
     "Flake8-pyproject",
+    "h5py",
+    "inflection",
+    "ipython",
+    "ipywidgets",
+    "matplotlib",
+    "mypy",
+    "myst-parser",
+    "numpydoc",
+    "ophyd",
     "pipdeptree",
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
+    "pyepics>=3.4.2",
+    "pyside6",
     "pytest",
+    "pytest-asyncio",
     "pytest-cov",
+    "pytest-faulthandler",
+    "pytest-rerunfailures",
+    "pytest-timeout",
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-design",
     "tox-direct",
     "types-mock",
-    "numpydoc",
 ]
 
 [project.scripts]
@@ -56,6 +89,7 @@ write_to = "src/ophyd_async/_version.py"
 
 [tool.mypy]
 ignore_missing_imports = true # Ignore missing stubs in imported modules
+plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.isort]
 float_to_top = true
@@ -66,6 +100,8 @@ extend-ignore = [
     "E203", # See https://github.com/PyCQA/pycodestyle/issues/373
     "F811", # support typing.overload decorator
     "F722", # allow Annotated[typ, some_func("some string")]
+    "W504",
+    "W503",
 ]
 max-line-length = 88 # Respect black's line length (default 88),
 exclude = [".tox", "venv"]
@@ -74,12 +110,24 @@ exclude = [".tox", "venv"]
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
 addopts = """
-    --tb=native -vv --doctest-modules --doctest-glob="*.rst"
-    """
+    --tb=native -vv --strict-markers --doctest-modules --doctest-glob="*.rst"
+    --ignore=docs/user/examples
+    --cov=src/ophyd_async --cov-report term --cov-report xml:cov.xml
+"""
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
+timeout = 20
+log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
+log_date_format = "%H:%M:%S"
+
+markers = [
+    "motorsim: require the motorsim IOC to be running",
+    "adsim: require the ADsim IOC to be running",
+]
+asyncio_mode = "auto"
+
 
 [tool.coverage.paths]
 # Tests are run from installed location, map back to the src directory

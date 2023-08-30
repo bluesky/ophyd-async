@@ -1,3 +1,8 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
 Installation
 ============
 
@@ -25,14 +30,14 @@ Installing the library
 
 You can now use ``pip`` to install the library and its dependencies::
 
-    $ python3 -m pip install ophyd_async
+    $ python3 -m pip install ophyd
 
 If you require a feature that is not currently released you can also install
 from github::
 
-    $ python3 -m pip install git+https://github.com/bluesky/ophyd_async.git
+    $ python3 -m pip install git+https://github.com/bluesky/ophyd.git
 
 The library should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing::
 
-    $ ophyd_async --version
+    $ python3 -m ophyd --version

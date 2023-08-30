@@ -1,3 +1,8 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
 User Guide
 ==========
 
@@ -14,6 +19,7 @@ side-bar.
             :maxdepth: 1
 
             tutorials/installation
+            tutorials/using-existing-devices
 
         +++
 
@@ -25,7 +31,7 @@ side-bar.
             :caption: How-to Guides
             :maxdepth: 1
 
-            how-to/run-container
+            how-to/make-a-simple-device
 
         +++
 

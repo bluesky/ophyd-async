@@ -4,11 +4,8 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import sys
 from pathlib import Path
 from subprocess import check_output
-
-import requests
 
 import ophyd_async
 
@@ -16,6 +13,7 @@ import ophyd_async
 
 # General information about the project.
 project = "ophyd_async"
+copyright = "2014, Brookhaven National Lab"
 
 # The full version, including alpha/beta/rc tags.
 release = ophyd_async.__version__
@@ -32,6 +30,7 @@ else:
 extensions = [
     # Use this for generating API docs
     "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
     # This can parse google style docstrings
     "sphinx.ext.napoleon",
     # For linking to external sphinx documentation
@@ -47,6 +46,11 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.mathjax",
     "sphinx.ext.githubpages",
+    "IPython.sphinxext.ipython_directive",
+    "IPython.sphinxext.ipython_console_highlighting",
+    "matplotlib.sphinxext.plot_directive",
+    "myst_parser",
+    "numpydoc",
 ]
 
 napoleon_google_docstring = False
@@ -54,7 +58,7 @@ napoleon_numpy_docstring = True
 
 # If true, Sphinx will warn about all references where the target cannot
 # be found.
-nitpicky = True
+# nitpicky = True
 
 # A list of (type, target) tuples (by default empty) that should be ignored when
 # generating warnings in "nitpicky mode". Note that type should include the
@@ -102,16 +106,16 @@ exclude_patterns = ["_build"]
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 
+
 # Example configuration for intersphinx: refer to the Python standard library.
 # This means you can link things like `str` and `asyncio` to the relevant
 # docs in the python documentation.
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3/", None),
-    "cachetools": ("https://cachetools.readthedocs.io/en/stable/", None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    "jsonschema": ("https://python-jsonschema.readthedocs.io/en/stable/", None),
+    "python": ("https://docs.python.org/3", None),
+    "bluesky": ("https://blueskyproject.io/bluesky/", None),
+    "numpy": ("https://numpy.org/devdocs/", None),
+    "databroker": ("https://blueskyproject.io/databroker/", None),
+    "event-model": ("https://blueskyproject.io/event-model/main", None),
 }
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
@@ -143,30 +147,10 @@ copybutton_prompt_is_regexp = True
 html_theme = "pydata_sphinx_theme"
 github_repo = project
 github_user = "bluesky"
-switcher_json = f"https://{github_user}.github.io/{github_repo}/switcher.json"
-switcher_exists = requests.get(switcher_json).ok
-if not switcher_exists:
-    print(
-        "*** Can't read version switcher, is GitHub pages enabled? \n"
-        "    Once Docs CI job has successfully run once, set the "
-        "Github pages source branch to be 'gh-pages' at:\n"
-        f"    https://github.com/{github_user}/{github_repo}/settings/pages",
-        file=sys.stderr,
-    )
+
 
 # Theme options for pydata_sphinx_theme
-# We don't check switcher because there are 3 possible states for a repo:
-# 1. New project, docs are not published so there is no switcher
-# 2. Existing project with latest skeleton, switcher exists and works
-# 3. Existing project with old skeleton that makes broken switcher,
-#    switcher exists but is broken
-# Point 3 makes checking switcher difficult, because the updated skeleton
-# will fix the switcher at the end of the docs workflow, but never gets a chance
-# to complete as the docs build warns and fails.
 html_theme_options = dict(
-    logo=dict(
-        text=project,
-    ),
     use_edit_page_button=True,
     github_url=f"https://github.com/{github_user}/{github_repo}",
     icon_links=[
@@ -174,29 +158,32 @@ html_theme_options = dict(
             name="PyPI",
             url=f"https://pypi.org/project/{project}",
             icon="fas fa-cube",
-        )
+        ),
+        dict(
+            name="Gitter",
+            url="https://gitter.im/NSLS-II/DAMA",
+            icon="fas fa-person-circle-question",
+        ),
     ],
-    switcher=dict(
-        json_url=switcher_json,
-        version_match=version,
-    ),
-    check_switcher=False,
-    navbar_end=["theme-switcher", "icon-links", "version-switcher"],
     external_links=[
         dict(
-            name="Release Notes",
-            url=f"https://github.com/{github_user}/{github_repo}/releases",
+            name="Bluesky Project",
+            url="https://blueskyproject.io",
         )
     ],
 )
+
 
 # A dictionary of values to pass into the template engine’s context for all pages
 html_context = dict(
     github_user=github_user,
     github_repo=project,
-    github_version=version,
+    github_version="master",
     doc_path="docs",
 )
+
+html_logo = "images/bluesky_ophyd_logo.svg"
+html_favicon = "images/ophyd_favicon.svg"
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
@@ -204,6 +191,18 @@ html_show_sphinx = False
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = False
 
-# Logo
-html_logo = "images/dls-logo.svg"
-html_favicon = "images/dls-favicon.ico"
+# If False and a module has the __all__ attribute set, autosummary documents
+# every member listed in __all__ and no others. Default is True
+autosummary_ignore_module_all = False
+
+# Look for signatures in the first line of the docstring (used for C functions)
+autodoc_docstring_signature = True
+
+# numpydoc config
+numpydoc_show_class_members = False
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
+
+# Where to put Ipython savefigs
+ipython_savefig_dir = "../build/savefig"

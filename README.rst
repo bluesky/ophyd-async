@@ -1,64 +1,61 @@
-ophyd_async
-===========================
+***********
+Ophyd Async
+***********
 
-|code_ci| |docs_ci| |coverage| |pypi_version| |license|
+|build_status| |coverage| |pypi_version| |license|
 
-.. note::
+Ophyd is a Python library for interfacing with hardware. It provides an
+abstraction layer that enables experiment orchestration and data acquisition
+code to operate above the specifics of particular devices and control systems.
 
-    This project contains template code only. For documentation on how to
-    adopt this skeleton project see
-    https://blueskyproject.github.io/python3-pip-skeleton-cli
+Ophyd is typically used with the `Bluesky Run Engine`_ for experiment
+orchestration and data acquisition. It is also sometimes used in a stand-alone
+fashion.
 
-This is where you should write a short paragraph that describes what your module does,
-how it does it, and why people should use it.
+Many facilities use ophyd to integrate with control systems that use `EPICS`_ ,
+but ophyd's design and some of its objects are also used to integrate with
+other control systems.
+
+* Put the details specific to a device or control system behind a **high-level
+  interface** with methods like ``trigger()``, ``read()``, and ``set(...)``.
+* **Group** individual control channels (such as EPICS V3 PVs) into logical
+  "Devices" to be configured and used as units with internal coordination.
+* Assign readings with **names meaningful for data analysis** that will
+  propagate into metadata.
+* **Categorize** readings by "kind" (primary reading, configuration,
+  engineering/debugging) which can be read selectively.
 
 ============== ==============================================================
-PyPI           ``pip install ophyd_async``
-Source code    https://github.com/bluesky/ophyd_async
-Documentation  https://blueskyproject.github.io/ophyd_async
-Releases       https://github.com/bluesky/ophyd_async/releases
-Source code    https://github.com/bluesky/ophyd_async
-Documentation  https://blueskyproject.io/ophyd_async
-Releases       https://github.com/bluesky/ophyd_async/releases
+PyPI           ``pip install ophyd``
+Conda          ``conda install -c conda-forge ophyd``
+Source code    https://github.com/bluesky/ophyd
+Documentation  https://blueskyproject.io/ophyd
 ============== ==============================================================
 
-This is where you should put some images or code snippets that illustrate
-some relevant examples. If it is a library then you might put some
-introductory code here:
+See the tutorials for usage examples.
 
-.. code-block:: python
+.. |build_status| image:: https://github.com/bluesky/ophyd/workflows/Unit%20Tests/badge.svg?branch=master
+    :target: https://github.com/bluesky/ophyd/actions?query=workflow%3A%22Unit+Tests%22
+    :alt: Build Status
 
-    from ophyd_async import __version__
-
-    print(f"Hello ophyd_async {__version__}")
-
-Or if it is a commandline tool then you might put some example commands here::
-
-    $ python -m ophyd_async --version
-
-.. |code_ci| image:: https://github.com/bluesky/ophyd_async/actions/workflows/code.yml/badge.svg?branch=main
-    :target: https://github.com/bluesky/ophyd_async/actions/workflows/code.yml
-    :alt: Code CI
-
-.. |docs_ci| image:: https://github.com/bluesky/ophyd_async/actions/workflows/docs.yml/badge.svg?branch=main
-    :target: https://github.com/bluesky/ophyd_async/actions/workflows/docs.yml
-    :alt: Docs CI
-
-.. |coverage| image:: https://codecov.io/gh/bluesky/ophyd_async/branch/main/graph/badge.svg
-    :target: https://codecov.io/gh/bluesky/ophyd_async
+.. |coverage| image:: https://codecov.io/gh/bluesky/ophyd/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/bluesky/ophyd
     :alt: Test Coverage
 
-.. |pypi_version| image:: https://img.shields.io/pypi/v/ophyd_async.svg
-    :target: https://pypi.org/project/ophyd_async
+.. |pypi_version| image:: https://img.shields.io/pypi/v/ophyd.svg
+    :target: https://pypi.org/project/ophyd
     :alt: Latest PyPI version
 
-.. |license| image:: https://img.shields.io/badge/License-BSD-blue.svg
-    :target: https://opensource.org/license/bsd-3-clause/
-    :alt: BSD License
+.. |license| image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
+    :target: https://opensource.org/licenses/BSD-3-Clause
+    :alt: BSD 3-Clause License
+
+.. _Bluesky Run Engine: http://blueskyproject.io/bluesky
+
+.. _EPICS: http://www.aps.anl.gov/epics/
 
 ..
     Anything below this line is used when viewing README.rst and will be replaced
     when included in index.rst
 
-See https://blueskyproject.github.io/ophyd_async for more detailed documentation.
-See https://blueskyproject.io/ophyd_async for more detailed documentation.
+See https://blueskyproject.io/ophyd-async for more detailed documentation.
