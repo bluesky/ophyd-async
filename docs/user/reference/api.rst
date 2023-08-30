@@ -1,14 +1,14 @@
 API
 ===
 
-.. automodule:: python3_pip_skeleton
+.. automodule:: ophyd_async
 
-    ``python3_pip_skeleton``
+    ``ophyd_async``
     -----------------------------------
 
-This is the internal API reference for python3_pip_skeleton
+This is the internal API reference for ophyd_async
 
-.. data:: python3_pip_skeleton.__version__
+.. data:: ophyd_async.__version__
     :type: str
 
     Version number as calculated by https://github.com/pypa/setuptools_scm

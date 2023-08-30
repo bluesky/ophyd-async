@@ -10,15 +10,15 @@ from subprocess import check_output
 
 import requests
 
-import python3_pip_skeleton
+import ophyd_async
 
 # -- General configuration ------------------------------------------------
 
 # General information about the project.
-project = "python3-pip-skeleton"
+project = "ophyd_async"
 
 # The full version, including alpha/beta/rc tags.
-release = python3_pip_skeleton.__version__
+release = ophyd_async.__version__
 
 # The short X.Y version.
 if "+" in release:
