@@ -4,12 +4,11 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 from bluesky.protocols import Reading
-from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import epicsdemo
 from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
+    epicsdemo,
     set_sim_callback,
     set_sim_value,
 )
@@ -183,8 +182,7 @@ async def test_assembly_renaming() -> None:
     assert thing.x.stop_.name == "foo-x-stop"
 
 
-def test_mover_in_re(sim_mover: epicsdemo.Mover) -> None:
-    RE = RunEngine()
+def test_mover_in_re(sim_mover: epicsdemo.Mover, RE) -> None:
     sim_mover.move(0)
 
     def my_plan():
