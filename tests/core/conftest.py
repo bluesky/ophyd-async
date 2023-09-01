@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, Coroutine
+from typing import Any, Callable
 
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
@@ -26,7 +26,7 @@ def RE(request):
 
 
 @pytest.fixture
-async def normal_coroutine() -> Callable[[None], Coroutine]:
+async def normal_coroutine() -> Callable[[], Any]:
     async def inner_coroutine():
         await asyncio.sleep(0.01)
 
@@ -34,7 +34,7 @@ async def normal_coroutine() -> Callable[[None], Coroutine]:
 
 
 @pytest.fixture
-async def failing_coroutine() -> Callable[[None], Coroutine]:
+async def failing_coroutine() -> Callable[[], Any]:
     async def inner_coroutine():
         await asyncio.sleep(0.01)
         raise ValueError()
