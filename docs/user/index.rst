@@ -32,6 +32,7 @@ side-bar.
             :maxdepth: 1
 
             how-to/make-a-simple-device
+            how-to/run-container
 
         +++
 

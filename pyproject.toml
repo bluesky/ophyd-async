@@ -18,20 +18,20 @@ dependencies = [
     "networkx>=2.0",
     "numpy",
     "packaging",
-    "pint"
+    "pint",
+    "bluesky",
+    "event-model",
+    "p4p",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
+
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.rst"
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-ca = [
-    "aioca>=1.6"
-]
-pva = [
-    "p4p"
-]
+ca = ["aioca>=1.6"]
+pva = ["p4p"]
 dev = [
     "ophyd_async[pva]",
     "ophyd_async[ca]",
@@ -77,18 +77,18 @@ dev = [
 ophyd_async = "ophyd_async.__main__:main"
 
 [project.urls]
-GitHub = "https://github.com/bluesky/ophyd_async"
+GitHub = "https://github.com/bluesky/ophyd-async"
 
 [[project.authors]] # Further authors may be added by duplicating this section
-email = "rose.yemelyanova@diamond.ac.uk"
-name = "Rose Yemelyanova"
+email = "tom.cobb@diamond.ac.uk"
+name = "Tom Cobb"
 
 
 [tool.setuptools_scm]
 write_to = "src/ophyd_async/_version.py"
 
 [tool.mypy]
-ignore_missing_imports = true # Ignore missing stubs in imported modules
+ignore_missing_imports = true          # Ignore missing stubs in imported modules
 plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.isort]
@@ -106,12 +106,11 @@ extend-ignore = [
 max-line-length = 88 # Respect black's line length (default 88),
 exclude = [".tox", "venv"]
 
-
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
 addopts = """
     --tb=native -vv --strict-markers --doctest-modules --doctest-glob="*.rst"
-    --ignore=docs/user/examples
+    --ignore=docs/user/examples --ignore=docs/examples
     --cov=src/ophyd_async --cov-report term --cov-report xml:cov.xml
 """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
@@ -127,6 +126,8 @@ markers = [
 ]
 asyncio_mode = "auto"
 
+[tool.coverage.run]
+data_file = "/tmp/ophyd_async.coverage"
 
 [tool.coverage.paths]
 # Tests are run from installed location, map back to the src directory

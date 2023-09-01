@@ -28,6 +28,7 @@ from .signals import (
     wait_for_value,
 )
 from .utils import (
+    DEFAULT_TIMEOUT,
     Callback,
     NotConnected,
     ReadingValueCallback,
@@ -65,6 +66,7 @@ __all__ = [
     "set_sim_put_proceeds",
     "set_sim_value",
     "wait_for_value",
+    "DEFAULT_TIMEOUT",
     "Callback",
     "NotConnected",
     "ReadingValueCallback",
