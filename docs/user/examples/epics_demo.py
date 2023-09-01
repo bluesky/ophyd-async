@@ -8,7 +8,7 @@ from bluesky.utils import ProgressBarManager, register_transform
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
 
 from ophyd_async.core import epicsdemo
-from ophyd_async.core.core import DeviceCollector
+from ophyd_async.core.device_collector import DeviceCollector
 
 # Create a run engine, with plotting, progressbar and transform
 RE = RunEngine({}, call_returns_result=True)

@@ -4,8 +4,11 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import sys
 from pathlib import Path
 from subprocess import check_output
+
+import requests
 
 import ophyd_async
 
@@ -147,7 +150,17 @@ copybutton_prompt_is_regexp = True
 html_theme = "pydata_sphinx_theme"
 github_repo = project
 github_user = "bluesky"
-
+switcher_json = f"https://{github_user}.github.io/{github_repo}/switcher.json"
+# Don't check switcher if it doesn't exist, but warn in a non-failing way
+check_switcher = requests.get(switcher_json).ok
+if not check_switcher:
+    print(
+        "*** Can't read version switcher, is GitHub pages enabled? \n"
+        "    Once Docs CI job has successfully run once, set the "
+        "Github pages source branch to be 'gh-pages' at:\n"
+        f"    https://github.com/{github_user}/{github_repo}/settings/pages",
+        file=sys.stderr,
+    )
 
 # Theme options for pydata_sphinx_theme
 html_theme_options = dict(

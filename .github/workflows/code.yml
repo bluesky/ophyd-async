@@ -103,3 +103,37 @@ jobs:
       - name: Test module --version works using the installed wheel
         # If more than one module in src/ replace with module name to test
         run: python -m $(ls src | head -1) --version
+
+  release:
+    # upload to PyPI and make a release on every tag
+    needs: [lint, dist, test]
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+    runs-on: ubuntu-latest
+    env:
+      HAS_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN != '' }}
+
+    steps:
+      - uses: actions/download-artifact@v3
+
+      - name: Fixup blank lockfiles
+        # Github release artifacts can't be blank
+        run: for f in lockfiles/*; do [ -s $f ] || echo '# No requirements' >> $f; done
+
+      - name: Github Release
+        # We pin to the SHA, not the tag, for security reasons.
+        # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
+        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5 # v0.1.14
+        with:
+          prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
+          files: |
+            dist/*
+            lockfiles/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to PyPI
+        if: ${{ env.HAS_PYPI_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}

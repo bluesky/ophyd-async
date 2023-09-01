@@ -10,7 +10,7 @@ Clone the repository
 First clone the repository locally using `Git
 <https://git-scm.com/downloads>`_::
 
-    $ git clone git://github.com/bluesky/ophyd_async.git
+    $ git clone git://github.com/bluesky/ophyd-async.git
 
 Install dependencies
 --------------------
@@ -25,7 +25,7 @@ requires python 3.8 or later) or to run in a container under `VSCode
 
         .. code::
 
-            $ cd ophyd_async
+            $ cd ophyd-async
             $ python3 -m venv venv
             $ source venv/bin/activate
             $ pip install -e '.[dev]'
@@ -34,7 +34,7 @@ requires python 3.8 or later) or to run in a container under `VSCode
 
         .. code::
 
-            $ vscode ophyd_async
+            $ vscode ophyd-async
             # Click on 'Reopen in Container' when prompted
             # Open a new terminal
 

@@ -72,16 +72,11 @@ During this process, the folder structure should incrementally be changed to
     │   └── devices
     └── ...
 
-The :python:`__init__.py` files of each submodule (core, devices.epics and devices.tango) will
+The `__init__.py` files of each submodule (core, devices.epics and devices.tango) will
 be modified such that end users experience little disruption to how they use Ophyd Async.
-For such users, lines like
+For such users, `from ophyd.v2.core import ...` can be replaced with 
+`from ophyd_async.core import ...`.
 
-.. code:: python
-    from ophyd.v2.core import ...
-
-will be replaced with
-.. code:: python
-    from ophyd_async.core import ...
 
 Consequences
 ------------
