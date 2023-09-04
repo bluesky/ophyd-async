@@ -22,6 +22,7 @@ import numpy.typing as npt
 from p4p.client.thread import Context
 
 from ophyd_async.core.backends import SimSignalBackend
+from ophyd_async.core.backends.signal_backend import SignalBackend
 from ophyd_async.core.devices import Device, DeviceVector
 from ophyd_async.core.signals import (
     Signal,
@@ -215,7 +216,9 @@ class PandA(Device):
                 signal = self._make_signal(entry, args[0] if len(args) > 0 else None)
 
             else:
-                backend = SimSignalBackend(args[0] if len(args) > 0 else None, block_pv)
+                backend: SignalBackend = SimSignalBackend(
+                    args[0] if len(args) > 0 else None, block_pv
+                )
                 signal = SignalX(backend) if not origin else origin(backend)
 
             setattr(block, sig_name, signal)

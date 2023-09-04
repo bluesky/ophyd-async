@@ -96,7 +96,7 @@ class SingleTriggerDet(StandardReadable, Triggerable):
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        await self.drv.acquire.set(1)
+        await self.drv.acquire.set(True)
 
 
 class FileWriteMode(str, Enum):
@@ -160,7 +160,7 @@ class _HDFResource:
             event_count = num_captured - self._last_emitted
             if event_count:
                 self._append_datum(event_count)
-                await hdf.flush_now.set(1)
+                await hdf.flush_now.set(True)
                 self._last_flush = time.monotonic()
         if time.monotonic() - self._last_flush > FRAME_TIMEOUT:
             raise TimeoutError(f"{hdf.name}: writing stalled on frame {num_captured}")
@@ -273,7 +273,7 @@ class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         # Already done a caput callback in _capture_status, so can't do one here
-        await self.hdf.capture.set(0, wait=False)
+        await self.hdf.capture.set(False, wait=False)
         assert self._capture_status, "Stage not run"
         await self._capture_status
         await super().unstage()

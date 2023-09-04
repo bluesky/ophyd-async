@@ -4,8 +4,8 @@ from typing import Dict
 
 import numpy as np
 import pytest
-from ophyd_async.core.device_collector import DeviceCollector
 
+from ophyd_async.core.device_collector import DeviceCollector
 from ophyd_async.devices.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi_get
 
 
