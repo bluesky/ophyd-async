@@ -55,24 +55,40 @@ During this process, the folder structure should incrementally be changed to
     │       │   ├── __init__.py
     │       │   ├── backends
     │       │   │   ├── __init__.py
-    │       │   │   ├── _aioca.py
-    │       │   │   └── _p4p.py
+    │       │   │   ├── signal_backend.py
+    │       │   │   └── sim.py
     │       │   ├── devices
-    │       │   ├── signals
+    │       │   │   ├── __init__.py
+    │       │   │   ├── device_collector.py
+    │       │   │   └── ...
     │       │   ├── epicsdemo
+    │       │   │   └── ...
+    │       │   ├── signal.py
     │       │   ├── async_status.py
-    │       │   ├── device_collector.py
     │       │   └── utils.py
-    │       └── devices
-    │           ├── epics
-    │           └── tango
+    │       ├── epics
+    │       │   ├── backends
+    │       │   │   ├── __init__.py
+    │       │   │   ├── _p4p.py
+    │       │   │   └── _aioca.py
+    │       │   ├── areadetector
+    │       │   │   ├── __init__.py
+    │       │   │   ├── ad_driver.py
+    │       │   │   └── ...
+    │       │   ├── signal
+    │       │   │   └── ...
+    │       │   └── motion
+    │       │       ├── __init__.py
+    │       │       └── motor.py
+    │       └── panda
+    │           └── ...
     ├── tests
     │   ├── core
     │   │   └── ...
-    │   └── devices
+    │   └── epics
     └── ...
 
-The `__init__.py` files of each submodule (core, devices.epics and devices.tango) will
+The `__init__.py` files of each submodule (core, epics, panda and eventually tango) will
 be modified such that end users experience little disruption to how they use Ophyd Async.
 For such users, `from ophyd.v2.core import ...` can be replaced with 
 `from ophyd_async.core import ...`.

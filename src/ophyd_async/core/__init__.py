@@ -1,25 +1,20 @@
 from .async_status import AsyncStatus
 from .backends import SignalBackend, SimSignalBackend
-from .device_collector import DeviceCollector
 from .devices import (
     Device,
+    DeviceCollector,
     DeviceVector,
     StandardReadable,
     connect_children,
     get_device_children,
     name_children,
 )
-from .signals import (
-    EpicsTransport,
+from .signal import (
     Signal,
     SignalR,
     SignalRW,
     SignalW,
     SignalX,
-    epics_signal_r,
-    epics_signal_rw,
-    epics_signal_w,
-    epics_signal_x,
     observe_value,
     set_and_wait_for_value,
     set_sim_callback,
@@ -50,16 +45,11 @@ __all__ = [
     "connect_children",
     "get_device_children",
     "name_children",
-    "EpicsTransport",
     "Signal",
     "SignalR",
     "SignalW",
     "SignalRW",
     "SignalX",
-    "epics_signal_r",
-    "epics_signal_w",
-    "epics_signal_rw",
-    "epics_signal_x",
     "observe_value",
     "set_and_wait_for_value",
     "set_sim_callback",

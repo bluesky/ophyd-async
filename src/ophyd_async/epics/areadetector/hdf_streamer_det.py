@@ -1,126 +1,33 @@
 import asyncio
 import collections
-import tempfile
 import time
-from abc import abstractmethod
-from enum import Enum
-from pathlib import Path
-from typing import Callable, Dict, Iterator, Optional, Protocol, Sequence, Sized, Type
+from typing import Callable, Dict, Iterator, Optional, Sized
 
 from bluesky.protocols import (
     Asset,
     Descriptor,
     Flyable,
     PartialEvent,
-    Triggerable,
     WritesExternalAssets,
 )
 from bluesky.utils import new_uid
 from event_model import compose_stream_resource
 
 from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.devices import Device, StandardReadable
-from ophyd_async.core.signals import (
-    SignalR,
-    SignalRW,
-    epics_signal_r,
-    epics_signal_rw,
-    set_and_wait_for_value,
-)
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, T
+from ophyd_async.core.devices import StandardReadable
+from ophyd_async.core.signal import set_and_wait_for_value
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
+from .ad_driver import ADDriver
+from .directory_provider import DirectoryProvider
+from .nd_file_hdf import NDFileHDF
+from .utils import FileWriteMode, ImageMode
 
-def ad_rw(datatype: Type[T], prefix: str) -> SignalRW[T]:
-    return epics_signal_rw(datatype, prefix + "_RBV", prefix)
+# How long in seconds to wait between flushes of HDF datasets
+FLUSH_PERIOD = 0.5
 
-
-def ad_r(datatype: Type[T], prefix: str) -> SignalR[T]:
-    return epics_signal_r(datatype, prefix + "_RBV")
-
-
-class ImageMode(Enum):
-    single = "Single"
-    multiple = "Multiple"
-    continuous = "Continuous"
-
-
-class ADDriver(Device):
-    def __init__(self, prefix: str) -> None:
-        # Define some signals
-        self.acquire = ad_rw(bool, prefix + "Acquire")
-        self.acquire_time = ad_rw(float, prefix + "AcquireTime")
-        self.num_images = ad_rw(int, prefix + "NumImages")
-        self.image_mode = ad_rw(ImageMode, prefix + "ImageMode")
-        self.array_counter = ad_rw(int, prefix + "ArrayCounter")
-        self.array_size_x = ad_r(int, prefix + "ArraySizeX")
-        self.array_size_y = ad_r(int, prefix + "ArraySizeY")
-        # There is no _RBV for this one
-        self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
-
-
-class NDPlugin(Device):
-    pass
-
-
-class NDPluginStats(NDPlugin):
-    def __init__(self, prefix: str) -> None:
-        # Define some signals
-        self.unique_id = ad_r(int, prefix + "UniqueId")
-
-
-class SingleTriggerDet(StandardReadable, Triggerable):
-    def __init__(
-        self,
-        drv: ADDriver,
-        read_uncached: Sequence[SignalR] = (),
-        name="",
-        **plugins: NDPlugin,
-    ) -> None:
-        self.drv = drv
-        self.__dict__.update(plugins)
-        self.set_readable_signals(
-            # Can't subscribe to read signals as race between monitor coming back and
-            # caput callback on acquire
-            read_uncached=[self.drv.array_counter] + list(read_uncached),
-            config=[self.drv.acquire_time],
-        )
-        super().__init__(name=name)
-
-    @AsyncStatus.wrap
-    async def stage(self) -> None:
-        await asyncio.gather(
-            self.drv.image_mode.set(ImageMode.single),
-            self.drv.wait_for_plugins.set(True),
-        )
-        await super().stage()
-
-    @AsyncStatus.wrap
-    async def trigger(self) -> None:
-        await self.drv.acquire.set(1)
-
-
-class FileWriteMode(str, Enum):
-    single = "Single"
-    capture = "Capture"
-    stream = "Stream"
-
-
-class NDFileHDF(Device):
-    def __init__(self, prefix: str) -> None:
-        # Define some signals
-        self.file_path = ad_rw(str, prefix + "FilePath")
-        self.file_name = ad_rw(str, prefix + "FileName")
-        self.file_template = ad_rw(str, prefix + "FileTemplate")
-        self.full_file_name = ad_r(str, prefix + "FullFileName")
-        self.file_write_mode = ad_rw(FileWriteMode, prefix + "FileWriteMode")
-        self.num_capture = ad_rw(int, prefix + "NumCapture")
-        self.num_captured = ad_r(int, prefix + "NumCaptured")
-        self.swmr_mode = ad_rw(bool, prefix + "SWMRMode")
-        self.lazy_open = ad_rw(bool, prefix + "LazyOpen")
-        self.capture = ad_rw(bool, prefix + "Capture")
-        self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
-        self.array_size0 = ad_r(int, prefix + "ArraySize0")
-        self.array_size1 = ad_r(int, prefix + "ArraySize1")
+# How long to wait for new frames before timing out
+FRAME_TIMEOUT = 120
 
 
 class _HDFResource:
@@ -160,31 +67,10 @@ class _HDFResource:
             event_count = num_captured - self._last_emitted
             if event_count:
                 self._append_datum(event_count)
-                await hdf.flush_now.set(1)
+                await hdf.flush_now.set(True)
                 self._last_flush = time.monotonic()
         if time.monotonic() - self._last_flush > FRAME_TIMEOUT:
             raise TimeoutError(f"{hdf.name}: writing stalled on frame {num_captured}")
-
-
-class DirectoryProvider(Protocol):
-    @abstractmethod
-    async def get_directory(self) -> Path:
-        ...
-
-
-class TmpDirectoryProvider(DirectoryProvider):
-    def __init__(self) -> None:
-        self._directory = Path(tempfile.mkdtemp())
-
-    async def get_directory(self) -> Path:
-        return self._directory
-
-
-# How long in seconds to wait between flushes of HDF datasets
-FLUSH_PERIOD = 0.5
-
-# How long to wait for new frames before timing out
-FRAME_TIMEOUT = 120
 
 
 class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
@@ -273,7 +159,7 @@ class HDFStreamerDet(StandardReadable, Flyable, WritesExternalAssets):
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         # Already done a caput callback in _capture_status, so can't do one here
-        await self.hdf.capture.set(0, wait=False)
+        await self.hdf.capture.set(False, wait=False)
         assert self._capture_status, "Stage not run"
         await self._capture_status
         await super().unstage()

@@ -3,7 +3,7 @@ from typing import Dict, Sequence, Tuple
 from bluesky.protocols import Configurable, Descriptor, Readable, Reading, Stageable
 
 from ..async_status import AsyncStatus
-from ..signals import SignalR
+from ..signal import SignalR
 from ..utils import merge_gathered_dicts
 from .device import Device
 

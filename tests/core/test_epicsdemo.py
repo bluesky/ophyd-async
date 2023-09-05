@@ -134,8 +134,8 @@ async def test_mover_disconncted():
     assert m.name == "mover"
 
 
-async def test_sensor_disconncted():
-    with patch("ophyd_async.core.device_collector.logging") as mock_logging:
+async def test_sensor_disconnected():
+    with patch("ophyd_async.core.devices.device_collector.logging") as mock_logging:
         with pytest.raises(NotConnected, match="Not all Devices connected"):
             async with DeviceCollector(timeout=0.1):
                 s = epicsdemo.Sensor("ca://PRE:", name="sensor")

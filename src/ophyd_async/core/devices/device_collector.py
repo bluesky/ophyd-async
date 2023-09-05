@@ -6,8 +6,8 @@ from typing import Any, Dict, Set
 
 from bluesky.run_engine import call_in_bluesky_event_loop
 
-from .devices import Device
-from .utils import NotConnected
+from ..utils import NotConnected
+from .device import Device
 
 
 class DeviceCollector:

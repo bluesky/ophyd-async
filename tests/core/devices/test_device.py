@@ -3,8 +3,8 @@ import traceback
 
 import pytest
 
-from ophyd_async.core.device_collector import DeviceCollector
 from ophyd_async.core.devices import Device, DeviceVector, get_device_children
+from ophyd_async.core.devices.device_collector import DeviceCollector
 from ophyd_async.core.utils import wait_for_connection
 
 

@@ -5,7 +5,7 @@ import time
 import pytest
 
 from ophyd_async.core.backends import SimSignalBackend
-from ophyd_async.core.signals import (
+from ophyd_async.core.signal import (
     Signal,
     SignalRW,
     set_and_wait_for_value,

@@ -4,10 +4,10 @@ from unittest.mock import Mock, call
 
 import pytest
 from bluesky.protocols import Reading
-from ophyd_async.core.device_collector import DeviceCollector
-from ophyd_async.core.signals import set_sim_put_proceeds, set_sim_value
 
-from ophyd_async.devices import motor
+from ophyd_async.core.devices.device_collector import DeviceCollector
+from ophyd_async.core.signal import set_sim_put_proceeds, set_sim_value
+from ophyd_async.epics.motion import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run

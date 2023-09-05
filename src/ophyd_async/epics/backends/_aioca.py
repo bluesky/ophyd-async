@@ -17,8 +17,8 @@ from aioca.types import AugmentedValue, Dbr, Format
 from bluesky.protocols import Descriptor, Dtype, Reading
 from epicscorelibs.ca import dbr
 
-from ..signals.signal import SignalBackend
-from ..utils import (
+from ophyd_async.core.signal import SignalBackend
+from ophyd_async.core.utils import (
     NotConnected,
     ReadingValueCallback,
     T,

@@ -4,9 +4,9 @@ from typing import Dict
 
 import numpy as np
 import pytest
-from ophyd_async.core.device_collector import DeviceCollector
 
-from ophyd_async.devices.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi_get
+from ophyd_async.core.devices.device_collector import DeviceCollector
+from ophyd_async.panda.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi
 
 
 class DummyDict:
@@ -57,7 +57,7 @@ async def test_pvi_get_for_inconsistent_blocks():
         "sfp3_sync_out": {},
     }
 
-    resulting_pvi = await pvi_get("", MockCtxt(dummy_pvi))
+    resulting_pvi = await pvi("", MockCtxt(dummy_pvi))
     assert "sfp3_sync_out1" not in resulting_pvi
     assert "pcap1" not in resulting_pvi
 

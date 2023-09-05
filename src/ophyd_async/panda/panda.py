@@ -12,6 +12,7 @@ from typing import (
     Tuple,
     Type,
     TypedDict,
+    cast,
     get_args,
     get_origin,
     get_type_hints,
@@ -21,18 +22,16 @@ import numpy as np
 import numpy.typing as npt
 from p4p.client.thread import Context
 
-from ophyd_async.core.backends import SimSignalBackend
+from ophyd_async.core.backends import SignalBackend, SimSignalBackend
 from ophyd_async.core.devices import Device, DeviceVector
-from ophyd_async.core.signals import (
-    Signal,
-    SignalR,
-    SignalRW,
-    SignalX,
+from ophyd_async.core.signal import Signal, SignalR, SignalRW, SignalX
+from ophyd_async.epics.signal import (
     epics_signal_r,
     epics_signal_rw,
     epics_signal_w,
     epics_signal_x,
 )
+from ophyd_async.epics.signal.pvi_get import pvi_get
 
 
 class PulseBlock(Device):
@@ -110,7 +109,7 @@ def block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
     return block_name, None
 
 
-def _remove_inconsistent_blocks(pvi: Dict[str, PVIEntry]) -> None:
+def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
     """Remove blocks from pvi information.
 
     This is needed because some pandas have 'pcap' and 'pcap1' blocks, which are
@@ -118,20 +117,15 @@ def _remove_inconsistent_blocks(pvi: Dict[str, PVIEntry]) -> None:
     for example.
 
     """
-    pvi_keys = set(pvi.keys())
+    pvi_keys = set(pvi_info.keys())
     for k in pvi_keys:
         kn = re.sub(r"\d*$", "", k)
         if kn and k != kn and kn in pvi_keys:
-            del pvi[k]
+            del pvi_info[k]
 
 
-async def pvi_get(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
-    pv_info = ctxt.get(pv, timeout=timeout).get("pvi").todict()
-
-    result = {}
-
-    for attr_name, attr_info in pv_info.items():
-        result[attr_name] = PVIEntry(**attr_info)  # type: ignore
+async def pvi(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
+    result = await pvi_get(pv, ctxt, timeout=timeout)
     _remove_inconsistent_blocks(result)
     return result
 
@@ -195,7 +189,7 @@ class PandA(Device):
         block = self.verify_block(name, num)
 
         field_annos = get_type_hints(block, globalns=globals())
-        block_pvi = await pvi_get(block_pv, self.ctxt) if not sim else None
+        block_pvi = await pvi(block_pv, self.ctxt) if not sim else None
 
         # finds which fields this class actually has, e.g. delay, width...
         for sig_name, sig_type in field_annos.items():
@@ -204,6 +198,7 @@ class PandA(Device):
 
             # if not in sim mode,
             if block_pvi:
+                block_pvi = cast(Dict[str, PVIEntry], block_pvi)
                 # try to get this block in the pvi.
                 entry: Optional[PVIEntry] = block_pvi.get(sig_name)
                 if entry is None:
@@ -215,7 +210,9 @@ class PandA(Device):
                 signal = self._make_signal(entry, args[0] if len(args) > 0 else None)
 
             else:
-                backend = SimSignalBackend(args[0] if len(args) > 0 else None, block_pv)
+                backend: SignalBackend = SimSignalBackend(
+                    args[0] if len(args) > 0 else None, block_pv
+                )
                 signal = SignalX(backend) if not origin else origin(backend)
 
             setattr(block, sig_name, signal)
@@ -237,7 +234,7 @@ class PandA(Device):
         included dynamically anyway.
         """
         block = Device()
-        block_pvi = await pvi_get(block_pv, self.ctxt)
+        block_pvi: Dict[str, PVIEntry] = await pvi(block_pv, self.ctxt)
 
         for signal_name, signal_pvi in block_pvi.items():
             signal = self._make_signal(signal_pvi)
@@ -284,7 +281,7 @@ class PandA(Device):
         If there's no pvi information, that's because we're in sim mode. In that case,
         makes all required blocks.
         """
-        pvi = await pvi_get(self._init_prefix + ":PVI", self.ctxt) if not sim else None
+        pvi_info = await pvi(self._init_prefix + ":PVI", self.ctxt) if not sim else None
         hints = {
             attr_name: attr_type
             for attr_name, attr_type in get_type_hints(self, globalns=globals()).items()
@@ -292,8 +289,9 @@ class PandA(Device):
         }
 
         # create all the blocks pvi says it should have,
-        if pvi:
-            for block_name, block_pvi in pvi.items():
+        if pvi_info:
+            pvi_info = cast(Dict[str, PVIEntry], pvi_info)
+            for block_name, block_pvi in pvi_info.items():
                 name, num = block_name_number(block_name)
 
                 if name in hints:
@@ -306,13 +304,13 @@ class PandA(Device):
         # then check if the ones defined in this class are in the pvi info
         # make them if there is no pvi info, i.e. sim mode.
         for block_name in hints.keys():
-            if pvi is not None:
+            if pvi_info is not None:
                 pvi_name = block_name
 
                 if get_origin(hints[block_name]) == DeviceVector:
                     pvi_name += "1"
 
-                entry: Optional[PVIEntry] = pvi.get(pvi_name)
+                entry: Optional[PVIEntry] = pvi_info.get(pvi_name)
 
                 assert entry, f"Expected PandA to contain {block_name} block."
                 assert list(entry) == [
