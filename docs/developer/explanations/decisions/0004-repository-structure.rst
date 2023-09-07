@@ -61,8 +61,6 @@ During this process, the folder structure should incrementally be changed to
     │       │   │   ├── __init__.py
     │       │   │   ├── device_collector.py
     │       │   │   └── ...
-    │       │   ├── epicsdemo
-    │       │   │   └── ...
     │       │   ├── signal.py
     │       │   ├── async_status.py
     │       │   └── utils.py
@@ -77,9 +75,11 @@ During this process, the folder structure should incrementally be changed to
     │       │   │   └── ...
     │       │   ├── signal
     │       │   │   └── ...
-    │       │   └── motion
-    │       │       ├── __init__.py
-    │       │       └── motor.py
+    │       │   ├── motion
+    │       │   │   ├── __init__.py
+    │       │   │   └── motor.py
+    │       │   └── demo
+    │       │       └── ...
     │       └── panda
     │           └── ...
     ├── tests
