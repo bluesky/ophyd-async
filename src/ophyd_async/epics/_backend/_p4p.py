@@ -8,10 +8,10 @@ from typing import Any, Dict, Optional, Sequence, Type, Union
 from bluesky.protocols import Descriptor, Dtype, Reading
 from p4p.client.asyncio import Context, Subscription
 
-from ophyd_async.core.signal import SignalBackend
-from ophyd_async.core.utils import (
+from ophyd_async.core import (
     NotConnected,
     ReadingValueCallback,
+    SignalBackend,
     T,
     get_dtype,
     get_unique,

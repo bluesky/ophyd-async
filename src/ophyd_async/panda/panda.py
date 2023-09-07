@@ -22,16 +22,23 @@ import numpy as np
 import numpy.typing as npt
 from p4p.client.thread import Context
 
-from ophyd_async.core.backends import SignalBackend, SimSignalBackend
-from ophyd_async.core.devices import Device, DeviceVector
-from ophyd_async.core.signal import Signal, SignalR, SignalRW, SignalX
+from ophyd_async.core import (
+    Device,
+    DeviceVector,
+    Signal,
+    SignalBackend,
+    SignalR,
+    SignalRW,
+    SignalX,
+    SimSignalBackend,
+)
 from ophyd_async.epics.signal import (
     epics_signal_r,
     epics_signal_rw,
     epics_signal_w,
     epics_signal_x,
+    pvi_get,
 )
-from ophyd_async.epics.signal.pvi_get import pvi_get
 
 
 class PulseBlock(Device):
@@ -91,7 +98,7 @@ class PVIEntry(TypedDict, total=False):
     x: str
 
 
-def block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
+def _block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
     """Maps a panda block name to a block and number.
 
     There are exceptions to this rule; some blocks like pcap do not contain numbers.
@@ -292,7 +299,7 @@ class PandA(Device):
         if pvi_info:
             pvi_info = cast(Dict[str, PVIEntry], pvi_info)
             for block_name, block_pvi in pvi_info.items():
-                name, num = block_name_number(block_name)
+                name, num = _block_name_number(block_name)
 
                 if name in hints:
                     block = await self._make_block(name, num, block_pvi["d"])

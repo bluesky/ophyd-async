@@ -1,8 +1,7 @@
 import bluesky.plans as bp
 import pytest
 
-from ophyd_async.core.devices.device_collector import DeviceCollector
-from ophyd_async.core.signal import set_sim_value
+from ophyd_async.core import DeviceCollector, set_sim_value
 from ophyd_async.epics.areadetector import (
     ADDriver,
     ImageMode,

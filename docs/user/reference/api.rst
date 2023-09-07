@@ -24,9 +24,12 @@ This is the internal API reference for ophyd_async
     :template: custom-module-template.rst
     :recursive:
 
-    ophyd_async.core.backends
-    ophyd_async.core.devices
-    ophyd_async.core.epicsdemo
-    ophyd_async.core.signal
+    ophyd_async.core._device
     ophyd_async.core.async_status
     ophyd_async.core.utils
+    ophyd_async.epics.areadetector
+    ophyd_async.epics.demo
+    ophyd_async.epics.motion
+    ophyd_async.epics.signal
+    ophyd_async.epics._backend
+    ophyd_async.panda

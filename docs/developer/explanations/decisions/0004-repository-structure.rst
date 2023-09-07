@@ -1,7 +1,7 @@
 4. Repository Structure
 =======================
 
-Date: 2023-08-30
+Date: 2023-09-07
 
 Status
 ------
@@ -53,19 +53,22 @@ During this process, the folder structure should incrementally be changed to
     │   └── ophyd_async
     │       ├── core
     │       │   ├── __init__.py
-    │       │   ├── backends
+    │       │   ├── _device
     │       │   │   ├── __init__.py
-    │       │   │   ├── signal_backend.py
-    │       │   │   └── sim.py
-    │       │   ├── devices
-    │       │   │   ├── __init__.py
+    │       │   │   ├── _backend
+    │       │   │   │   ├── __init__.py
+    │       │   │   │   ├── signal_backend.py
+    │       │   │   │   └── sim.py
+    │       │   │   ├── _signal
+    │       │   │   │   ├── __init__.py
+    │       │   │   │   └── signal.py
     │       │   │   ├── device_collector.py
+    │       │   │   ├── device_vector.py
     │       │   │   └── ...
-    │       │   ├── signal.py
     │       │   ├── async_status.py
     │       │   └── utils.py
     │       ├── epics
-    │       │   ├── backends
+    │       │   ├── _backend
     │       │   │   ├── __init__.py
     │       │   │   ├── _p4p.py
     │       │   │   └── _aioca.py

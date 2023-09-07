@@ -6,7 +6,7 @@
 Make a Simple Device
 ====================
 
-.. currentmodule:: ophyd_async.core.core
+.. currentmodule:: ophyd_async.core
 
 To make a simple device, you need to subclass from the
 `StandardReadable` class, create some `Signal` instances, and optionally implement

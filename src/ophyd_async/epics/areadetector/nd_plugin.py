@@ -1,4 +1,4 @@
-from ophyd_async.core.devices import Device
+from ophyd_async.core import Device
 
 from .utils import ad_r
 

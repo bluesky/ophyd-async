@@ -154,7 +154,7 @@ There is also an "energy mode" that can be changed to modify the ``det`` output.
     In [1]: <rd(det.mode)
 
 Although this is an :class:`~enum.Enum` and programmatic code should import and
-use instances of :class:`~ophyd_async.core.epicsdemo.EnergyMode`, we can set it using a
+use instances of :class:`~ophyd_async.epics.demo.EnergyMode`, we can set it using a
 string value on the commandline:
 
 .. ipython::

@@ -7,8 +7,7 @@ import pytest
 from bluesky.protocols import Movable, Status
 from bluesky.utils import FailedStatus
 
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.devices import Device
+from ophyd_async.core import AsyncStatus, Device
 
 
 async def test_async_status_success():

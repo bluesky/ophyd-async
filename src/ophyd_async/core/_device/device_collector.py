@@ -1,3 +1,4 @@
+"""Interface for connecting and naming multiple devices"""
 import asyncio
 import logging
 import sys

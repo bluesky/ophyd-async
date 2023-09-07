@@ -8,9 +8,7 @@ import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
-from ophyd_async.core.backends import SignalBackend, SimSignalBackend
-from ophyd_async.core.signal import Signal
-from ophyd_async.core.utils import T
+from ophyd_async.core import SignalBackend, SimSignalBackend, Signal, T
 
 
 class MyEnum(str, Enum):
