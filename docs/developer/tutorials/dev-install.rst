@@ -16,7 +16,7 @@ Install dependencies
 --------------------
 
 You can choose to either develop on the host machine using a `venv` (which
-requires python 3.8 or later) or to run in a container under `VSCode
+requires python 3.9 or later) or to run in a container under `VSCode
 <https://code.visualstudio.com/>`_
 
 .. tab-set::
