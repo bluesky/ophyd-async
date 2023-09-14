@@ -1,0 +1,6 @@
+ophyd\_async.core.soft\_signal\_r\_and\_backend
+===============================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: soft_signal_r_and_backend

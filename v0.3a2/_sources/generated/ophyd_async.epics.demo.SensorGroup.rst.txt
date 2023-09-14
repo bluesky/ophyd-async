@@ -1,0 +1,47 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.demo.SensorGroup
+===================================
+
+.. currentmodule:: ophyd_async.epics.demo
+
+.. autoclass:: SensorGroup
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SensorGroup.children
+      ~SensorGroup.connect
+      ~SensorGroup.describe
+      ~SensorGroup.describe_configuration
+      ~SensorGroup.read
+      ~SensorGroup.read_configuration
+      ~SensorGroup.set_name
+      ~SensorGroup.set_readable_signals
+      ~SensorGroup.stage
+      ~SensorGroup.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SensorGroup.name
+      ~SensorGroup.parent
+   
+   

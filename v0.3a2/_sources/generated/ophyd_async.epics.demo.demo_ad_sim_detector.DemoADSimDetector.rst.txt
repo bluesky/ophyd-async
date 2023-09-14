@@ -1,0 +1,55 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.demo.demo\_ad\_sim\_detector.DemoADSimDetector
+=================================================================
+
+.. currentmodule:: ophyd_async.epics.demo.demo_ad_sim_detector
+
+.. autoclass:: DemoADSimDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~DemoADSimDetector.children
+      ~DemoADSimDetector.collect_asset_docs
+      ~DemoADSimDetector.complete
+      ~DemoADSimDetector.connect
+      ~DemoADSimDetector.describe
+      ~DemoADSimDetector.describe_collect
+      ~DemoADSimDetector.describe_configuration
+      ~DemoADSimDetector.get_index
+      ~DemoADSimDetector.kickoff
+      ~DemoADSimDetector.prepare
+      ~DemoADSimDetector.read
+      ~DemoADSimDetector.read_configuration
+      ~DemoADSimDetector.set_name
+      ~DemoADSimDetector.stage
+      ~DemoADSimDetector.trigger
+      ~DemoADSimDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DemoADSimDetector.controller
+      ~DemoADSimDetector.name
+      ~DemoADSimDetector.parent
+      ~DemoADSimDetector.writer
+   
+   

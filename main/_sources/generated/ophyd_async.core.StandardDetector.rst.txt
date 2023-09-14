@@ -1,0 +1,55 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.StandardDetector
+==================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: StandardDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~StandardDetector.children
+      ~StandardDetector.collect_asset_docs
+      ~StandardDetector.complete
+      ~StandardDetector.connect
+      ~StandardDetector.describe
+      ~StandardDetector.describe_collect
+      ~StandardDetector.describe_configuration
+      ~StandardDetector.get_index
+      ~StandardDetector.kickoff
+      ~StandardDetector.prepare
+      ~StandardDetector.read
+      ~StandardDetector.read_configuration
+      ~StandardDetector.set_name
+      ~StandardDetector.stage
+      ~StandardDetector.trigger
+      ~StandardDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~StandardDetector.controller
+      ~StandardDetector.name
+      ~StandardDetector.parent
+      ~StandardDetector.writer
+   
+   

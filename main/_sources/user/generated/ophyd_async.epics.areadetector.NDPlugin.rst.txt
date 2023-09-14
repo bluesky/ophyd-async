@@ -1,0 +1,39 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.areadetector.NDPlugin
+========================================
+
+.. currentmodule:: ophyd_async.epics.areadetector
+
+.. autoclass:: NDPlugin
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~NDPlugin.children
+      ~NDPlugin.connect
+      ~NDPlugin.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~NDPlugin.name
+      ~NDPlugin.parent
+   
+   

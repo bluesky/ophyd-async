@@ -1,0 +1,6 @@
+ophyd\_async.epics.pvi.create\_children\_from\_annotations
+==========================================================
+
+.. currentmodule:: ophyd_async.epics.pvi
+
+.. autofunction:: create_children_from_annotations

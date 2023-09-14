@@ -1,0 +1,50 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.demo.Mover
+=============================
+
+.. currentmodule:: ophyd_async.epics.demo
+
+.. autoclass:: Mover
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Mover.children
+      ~Mover.connect
+      ~Mover.describe
+      ~Mover.describe_configuration
+      ~Mover.move
+      ~Mover.read
+      ~Mover.read_configuration
+      ~Mover.set
+      ~Mover.set_name
+      ~Mover.set_readable_signals
+      ~Mover.stage
+      ~Mover.stop
+      ~Mover.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Mover.name
+      ~Mover.parent
+   
+   

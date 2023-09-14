@@ -1,0 +1,48 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.HardwareTriggeredFlyable
+==========================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: HardwareTriggeredFlyable
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~HardwareTriggeredFlyable.children
+      ~HardwareTriggeredFlyable.complete
+      ~HardwareTriggeredFlyable.connect
+      ~HardwareTriggeredFlyable.describe_configuration
+      ~HardwareTriggeredFlyable.kickoff
+      ~HardwareTriggeredFlyable.prepare
+      ~HardwareTriggeredFlyable.read_configuration
+      ~HardwareTriggeredFlyable.set_name
+      ~HardwareTriggeredFlyable.stage
+      ~HardwareTriggeredFlyable.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~HardwareTriggeredFlyable.name
+      ~HardwareTriggeredFlyable.parent
+      ~HardwareTriggeredFlyable.trigger_logic
+   
+   

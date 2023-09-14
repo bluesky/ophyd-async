@@ -1,0 +1,6 @@
+ophyd\_async.core.connect\_children
+===================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: connect_children

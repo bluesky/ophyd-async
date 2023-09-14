@@ -1,0 +1,6 @@
+ophyd\_async.core.name\_children
+================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: name_children

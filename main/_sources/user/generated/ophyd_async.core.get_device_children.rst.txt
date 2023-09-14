@@ -1,0 +1,6 @@
+ophyd\_async.core.get\_device\_children
+=======================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: get_device_children

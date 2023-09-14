@@ -1,0 +1,39 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.areadetector.NDFileHDF
+=========================================
+
+.. currentmodule:: ophyd_async.epics.areadetector
+
+.. autoclass:: NDFileHDF
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~NDFileHDF.children
+      ~NDFileHDF.connect
+      ~NDFileHDF.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~NDFileHDF.name
+      ~NDFileHDF.parent
+   
+   

@@ -1,0 +1,44 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.SimSignalBackend
+==================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: SimSignalBackend
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SimSignalBackend.connect
+      ~SimSignalBackend.get_descriptor
+      ~SimSignalBackend.get_reading
+      ~SimSignalBackend.get_setpoint
+      ~SimSignalBackend.get_value
+      ~SimSignalBackend.put
+      ~SimSignalBackend.set_callback
+      ~SimSignalBackend.source
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SimSignalBackend.datatype
+   
+   

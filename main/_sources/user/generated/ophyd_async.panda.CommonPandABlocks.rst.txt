@@ -1,0 +1,42 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.panda.CommonPandABlocks
+====================================
+
+.. currentmodule:: ophyd_async.panda
+
+.. autoclass:: CommonPandABlocks
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CommonPandABlocks.children
+      ~CommonPandABlocks.connect
+      ~CommonPandABlocks.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CommonPandABlocks.name
+      ~CommonPandABlocks.parent
+      ~CommonPandABlocks.pulse
+      ~CommonPandABlocks.seq
+      ~CommonPandABlocks.pcap
+   
+   

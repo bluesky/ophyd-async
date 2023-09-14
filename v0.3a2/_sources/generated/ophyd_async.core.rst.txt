@@ -1,0 +1,94 @@
+﻿.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core
+=================
+
+.. automodule:: ophyd_async.core
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      soft_signal_r_and_backend
+      soft_signal_rw
+      observe_value
+      set_and_wait_for_value
+      set_sim_callback
+      set_sim_put_proceeds
+      set_sim_value
+      wait_for_value
+      get_dtype
+      get_unique
+      merge_gathered_dicts
+      wait_for_connection
+      get_signal_values
+      load_from_yaml
+      save_to_yaml
+      set_signal_values
+      walk_rw_signals
+      load_device
+      save_device
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      SignalBackend
+      SimSignalBackend
+      DetectorControl
+      DetectorTrigger
+      DetectorWriter
+      StandardDetector
+      Device
+      DeviceCollector
+      DeviceVector
+      Signal
+      SignalR
+      SignalW
+      SignalRW
+      SignalX
+      AsyncStatus
+      DirectoryInfo
+      DirectoryProvider
+      NameProvider
+      ShapeProvider
+      StaticDirectoryProvider
+      StandardReadable
+      TriggerInfo
+      TriggerLogic
+      HardwareTriggeredFlyable
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      NotConnected
+   
+   
+
+
+

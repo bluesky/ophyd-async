@@ -1,0 +1,51 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.SignalRW
+==========================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: SignalRW
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SignalRW.children
+      ~SignalRW.clear_sub
+      ~SignalRW.connect
+      ~SignalRW.describe
+      ~SignalRW.get_value
+      ~SignalRW.locate
+      ~SignalRW.read
+      ~SignalRW.set
+      ~SignalRW.set_name
+      ~SignalRW.stage
+      ~SignalRW.subscribe
+      ~SignalRW.subscribe_value
+      ~SignalRW.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SignalRW.name
+      ~SignalRW.parent
+      ~SignalRW.source
+   
+   

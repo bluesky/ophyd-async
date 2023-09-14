@@ -1,0 +1,52 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.areadetector.HDFStreamerDet
+==============================================
+
+.. currentmodule:: ophyd_async.epics.areadetector
+
+.. autoclass:: HDFStreamerDet
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~HDFStreamerDet.children
+      ~HDFStreamerDet.collect
+      ~HDFStreamerDet.collect_asset_docs
+      ~HDFStreamerDet.complete
+      ~HDFStreamerDet.connect
+      ~HDFStreamerDet.describe
+      ~HDFStreamerDet.describe_collect
+      ~HDFStreamerDet.describe_configuration
+      ~HDFStreamerDet.kickoff
+      ~HDFStreamerDet.read
+      ~HDFStreamerDet.read_configuration
+      ~HDFStreamerDet.set_name
+      ~HDFStreamerDet.set_readable_signals
+      ~HDFStreamerDet.stage
+      ~HDFStreamerDet.trigger
+      ~HDFStreamerDet.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~HDFStreamerDet.name
+      ~HDFStreamerDet.parent
+   
+   
