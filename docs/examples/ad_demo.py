@@ -9,7 +9,7 @@ from bluesky.callbacks.best_effort import BestEffortCallback
 from bluesky.utils import ProgressBarManager, register_transform
 from ophyd.v2.core import DeviceCollector
 
-from ophyd_async.epics.areadetector import areadetector
+from ophyd_async.epics import areadetector
 
 # Create a run engine, with plotting, progressbar and transform
 RE = RunEngine({}, call_returns_result=True)
@@ -25,9 +25,7 @@ pv_prefix = "pc0105-AD-SIM-01:"
 
 # Create v2 devices
 with DeviceCollector():
-    det1 = areadetector.MySingleTriggerSim(pv_prefix)
-    det2 = areadetector.MyHDFWritingSim(pv_prefix)
-    det3 = areadetector.MyHDFFlyerSim(pv_prefix)
+    det3 = areadetector.HDFStreamerDet(pv_prefix)
 
 
 # And a plan

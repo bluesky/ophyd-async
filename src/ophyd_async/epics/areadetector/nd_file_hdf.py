@@ -1,6 +1,6 @@
-from ophyd_async.core.devices import Device
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.core import Device
 
+from ..signal.signal import epics_signal_rw
 from .utils import FileWriteMode, ad_r, ad_rw
 
 

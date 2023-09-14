@@ -6,9 +6,9 @@
 API
 ===
 
-.. automodule:: ophyd_async.core
+.. automodule:: ophyd_async
 
-    ``ophyd_async.core``
+    ``ophyd_async``
     -----------------------------------
 
 This is the internal API reference for ophyd_async
@@ -24,9 +24,6 @@ This is the internal API reference for ophyd_async
     :template: custom-module-template.rst
     :recursive:
 
-    ophyd_async.core.backends
-    ophyd_async.core.devices
-    ophyd_async.core.epicsdemo
-    ophyd_async.core.signal
-    ophyd_async.core.async_status
-    ophyd_async.core.utils
+    core
+    epics
+    panda

@@ -17,7 +17,7 @@ from aioca import purge_channel_caches
 from bluesky.protocols import Reading
 
 from ophyd_async.core import NotConnected, SignalBackend, T, get_dtype
-from ophyd_async.epics.signal.epics_transport import EpicsTransport
+from ophyd_async.epics.signal._epics_transport import EpicsTransport
 from ophyd_async.epics.signal.signal import _make_backend
 
 RECORDS = str(Path(__file__).parent / "test_records.db")

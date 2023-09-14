@@ -1,3 +1,5 @@
+"""Dictionary which can contain mappings between integers and devices."""
+
 from typing import Dict, TypeVar
 
 from ..utils import wait_for_connection

@@ -86,18 +86,3 @@ async def failing_coroutine() -> Callable[[], Any]:
         raise ValueError()
 
     return inner_coroutine
-
-
-class DocHolder:
-    def __init__(self):
-        self.names = []
-        self.docs = []
-
-    def append(self, name, doc):
-        self.names.append(name)
-        self.docs.append(doc)
-
-
-@pytest.fixture
-def doc_holder() -> DocHolder:
-    return DocHolder()

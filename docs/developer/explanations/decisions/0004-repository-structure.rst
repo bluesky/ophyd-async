@@ -1,7 +1,13 @@
+.. role:: bash(code)
+   :language: bash
+
+.. role:: python(code)
+   :language: python
+
 4. Repository Structure
 =======================
 
-Date: 2023-08-30
+Date: 2023-09-07
 
 Status
 ------
@@ -53,21 +59,22 @@ During this process, the folder structure should incrementally be changed to
     │   └── ophyd_async
     │       ├── core
     │       │   ├── __init__.py
-    │       │   ├── backends
+    │       │   ├── _device
     │       │   │   ├── __init__.py
-    │       │   │   ├── signal_backend.py
-    │       │   │   └── sim.py
-    │       │   ├── devices
-    │       │   │   ├── __init__.py
+    │       │   │   ├── _backend
+    │       │   │   │   ├── __init__.py
+    │       │   │   │   ├── signal_backend.py
+    │       │   │   │   └── sim.py
+    │       │   │   ├── _signal
+    │       │   │   │   ├── __init__.py
+    │       │   │   │   └── signal.py
     │       │   │   ├── device_collector.py
+    │       │   │   ├── device_vector.py
     │       │   │   └── ...
-    │       │   ├── epicsdemo
-    │       │   │   └── ...
-    │       │   ├── signal.py
     │       │   ├── async_status.py
     │       │   └── utils.py
     │       ├── epics
-    │       │   ├── backends
+    │       │   ├── _backend
     │       │   │   ├── __init__.py
     │       │   │   ├── _p4p.py
     │       │   │   └── _aioca.py
@@ -77,9 +84,11 @@ During this process, the folder structure should incrementally be changed to
     │       │   │   └── ...
     │       │   ├── signal
     │       │   │   └── ...
-    │       │   └── motion
-    │       │       ├── __init__.py
-    │       │       └── motor.py
+    │       │   ├── motion
+    │       │   │   ├── __init__.py
+    │       │   │   └── motor.py
+    │       │   └── demo
+    │       │       └── ...
     │       └── panda
     │           └── ...
     ├── tests
@@ -88,10 +97,10 @@ During this process, the folder structure should incrementally be changed to
     │   └── epics
     └── ...
 
-The `__init__.py` files of each submodule (core, epics, panda and eventually tango) will
+The :bash:`__init__.py` files of each submodule (core, epics, panda and eventually tango) will
 be modified such that end users experience little disruption to how they use Ophyd Async.
-For such users, `from ophyd.v2.core import ...` can be replaced with 
-`from ophyd_async.core import ...`.
+For such users, :python:`from ophyd.v2.core import ...` can be replaced with 
+:python:`from ophyd_async.core import ...`.
 
 
 Consequences

@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 
 try:
-    from ..backends._aioca import CaSignalBackend
+    from .._backend._aioca import CaSignalBackend
 except ImportError as ca_error:
 
     class CaSignalBackend:  # type: ignore
@@ -14,7 +14,7 @@ except ImportError as ca_error:
 
 
 try:
-    from ..backends._p4p import PvaSignalBackend
+    from .._backend._p4p import PvaSignalBackend
 except ImportError as pva_error:
 
     class PvaSignalBackend:  # type: ignore

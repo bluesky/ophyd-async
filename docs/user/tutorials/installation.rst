@@ -9,7 +9,7 @@ Installation
 Check your version of python
 ----------------------------
 
-You will need python 3.8 or later. You can check your version of python by
+You will need python 3.9 or later. You can check your version of python by
 typing into a terminal::
 
     $ python3 --version
@@ -30,7 +30,7 @@ Installing the library
 
 You can now use ``pip`` to install the library and its dependencies::
 
-    $ python3 -m pip install ophyd_async
+    $ python3 -m pip install ophyd-async
 
 If you require a feature that is not currently released you can also install
 from github::
@@ -40,4 +40,4 @@ from github::
 The library should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing::
 
-    $ ophyd_async --version
+    $ ophyd-async --version

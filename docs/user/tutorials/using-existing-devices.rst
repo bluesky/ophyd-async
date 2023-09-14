@@ -41,7 +41,7 @@ that you can mix Ophyd and Ophyd Async devices in the same RunEngine:
     :start-after: # Create ophyd devices
     :end-before: # Create ophyd-async devices
 
-Finally we create the Ophyd Async devices imported from the `epicsdemo` module:
+Finally we create the Ophyd Async devices imported from the `epics.demo` module:
 
 .. literalinclude:: ../examples/epics_demo.py
     :language: python
@@ -154,7 +154,7 @@ There is also an "energy mode" that can be changed to modify the ``det`` output.
     In [1]: <rd(det.mode)
 
 Although this is an :class:`~enum.Enum` and programmatic code should import and
-use instances of :class:`~ophyd_async.core.epicsdemo.EnergyMode`, we can set it using a
+use instances of :class:`~ophyd_async.epics.demo.EnergyMode`, we can set it using a
 string value on the commandline:
 
 .. ipython::

@@ -4,9 +4,9 @@ from typing import Callable, List, Optional
 
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.devices import StandardReadable
-from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw, epics_signal_x
+from ophyd_async.core import AsyncStatus, StandardReadable
+
+from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
 
 class Motor(StandardReadable, Movable, Stoppable):

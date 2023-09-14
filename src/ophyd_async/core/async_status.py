@@ -1,3 +1,5 @@
+"""Equivalent of bluesky.protols.Status for asynchronous tasks."""
+
 import asyncio
 import functools
 from typing import Awaitable, Callable, Coroutine, List, Optional, cast

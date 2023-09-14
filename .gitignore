@@ -84,4 +84,4 @@ docs/*/generated
 docs/savefig
 
 # generated version number
-ophyd/_version.py
+ophyd_async/_version.py

@@ -1,15 +1,22 @@
 """Demo EPICS Devices for the tutorial"""
 
 import asyncio
+import atexit
+import random
+import string
+import subprocess
+import sys
 import time
 from enum import Enum
+from pathlib import Path
 from typing import Callable, List, Optional
 
 import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import AsyncStatus, Device, StandardReadable, observe_value
-from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw, epics_signal_x
+
+from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
 
 class EnergyMode(Enum):
@@ -123,12 +130,6 @@ def start_ioc_subprocess() -> str:
     """Start an IOC subprocess with EPICS database for sample stage and sensor
     with the same pv prefix
     """
-    import atexit
-    import random
-    import string
-    import subprocess
-    import sys
-    from pathlib import Path
 
     pv_prefix = "".join(random.choice(string.ascii_uppercase) for _ in range(12)) + ":"
     here = Path(__file__).absolute().parent

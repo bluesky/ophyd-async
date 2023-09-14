@@ -1,3 +1,5 @@
+"""Base device"""
+
 from typing import Generator, Optional, Tuple
 
 from bluesky.protocols import HasName

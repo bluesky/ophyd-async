@@ -8,10 +8,10 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
-    epicsdemo,
     set_sim_callback,
     set_sim_value,
 )
+from ophyd_async.epics import demo
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -21,7 +21,7 @@ A_WHILE = 0.001
 @pytest.fixture
 async def sim_mover():
     async with DeviceCollector(sim=True):
-        sim_mover = epicsdemo.Mover("BLxxI-MO-TABLE-01:X:")
+        sim_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
         # Signals connected here
 
     assert sim_mover.name == "sim_mover"
@@ -34,14 +34,14 @@ async def sim_mover():
 @pytest.fixture
 async def sim_sensor():
     async with DeviceCollector(sim=True):
-        sim_sensor = epicsdemo.Sensor("SIM:SENSOR:")
+        sim_sensor = demo.Sensor("SIM:SENSOR:")
         # Signals connected here
 
     assert sim_sensor.name == "sim_sensor"
     yield sim_sensor
 
 
-async def test_mover_moving_well(sim_mover: epicsdemo.Mover) -> None:
+async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
     s = sim_mover.set(0.55)
     watcher = Mock()
     s.watch(watcher)
@@ -85,7 +85,7 @@ async def test_mover_moving_well(sim_mover: epicsdemo.Mover) -> None:
     done2.assert_called_once_with(s)
 
 
-async def test_mover_stopped(sim_mover: epicsdemo.Mover):
+async def test_mover_stopped(sim_mover: demo.Mover):
     callbacks = []
     set_sim_callback(sim_mover.stop_, lambda r, v: callbacks.append(v))
 
@@ -94,7 +94,7 @@ async def test_mover_stopped(sim_mover: epicsdemo.Mover):
     assert callbacks == [None, None]
 
 
-async def test_read_mover(sim_mover: epicsdemo.Mover):
+async def test_read_mover(sim_mover: demo.Mover):
     await sim_mover.stage()
     assert (await sim_mover.read())["sim_mover"]["value"] == 0.0
     assert (await sim_mover.describe())["sim_mover"][
@@ -111,7 +111,7 @@ async def test_read_mover(sim_mover: epicsdemo.Mover):
     assert await sim_mover.describe()
 
 
-async def test_set_velocity(sim_mover: epicsdemo.Mover) -> None:
+async def test_set_velocity(sim_mover: demo.Mover) -> None:
     v = sim_mover.velocity
     assert (await v.describe())["sim_mover-velocity"][
         "source"
@@ -130,15 +130,15 @@ async def test_set_velocity(sim_mover: epicsdemo.Mover) -> None:
 async def test_mover_disconncted():
     with pytest.raises(NotConnected, match="Not all Devices connected"):
         async with DeviceCollector(timeout=0.1):
-            m = epicsdemo.Mover("ca://PRE:", name="mover")
+            m = demo.Mover("ca://PRE:", name="mover")
     assert m.name == "mover"
 
 
 async def test_sensor_disconnected():
-    with patch("ophyd_async.core.devices.device_collector.logging") as mock_logging:
+    with patch("ophyd_async.core._device.device_collector.logging") as mock_logging:
         with pytest.raises(NotConnected, match="Not all Devices connected"):
             async with DeviceCollector(timeout=0.1):
-                s = epicsdemo.Sensor("ca://PRE:", name="sensor")
+                s = demo.Sensor("ca://PRE:", name="sensor")
         mock_logging.error.assert_called_once_with(
             """\
 1 Devices did not connect:
@@ -149,7 +149,7 @@ async def test_sensor_disconnected():
     assert s.name == "sensor"
 
 
-async def test_read_sensor(sim_sensor: epicsdemo.Sensor):
+async def test_read_sensor(sim_sensor: demo.Sensor):
     sim_sensor.stage()
     assert (await sim_sensor.read())["sim_sensor-value"]["value"] == 0
     assert (await sim_sensor.describe())["sim_sensor-value"][
@@ -157,19 +157,19 @@ async def test_read_sensor(sim_sensor: epicsdemo.Sensor):
     ] == "sim://SIM:SENSOR:Value"
     assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
         "value"
-    ] == epicsdemo.EnergyMode.low
+    ] == demo.EnergyMode.low
     desc = (await sim_sensor.describe_configuration())["sim_sensor-mode"]
     assert desc["dtype"] == "string"
     assert desc["choices"] == ["Low Energy", "High Energy"]  # type: ignore
-    set_sim_value(sim_sensor.mode, epicsdemo.EnergyMode.high)
+    set_sim_value(sim_sensor.mode, demo.EnergyMode.high)
     assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
         "value"
-    ] == epicsdemo.EnergyMode.high
+    ] == demo.EnergyMode.high
     await sim_sensor.unstage()
 
 
 async def test_assembly_renaming() -> None:
-    thing = epicsdemo.SampleStage("PRE")
+    thing = demo.SampleStage("PRE")
     await thing.connect(sim=True)
     assert thing.x.name == ""
     assert thing.x.velocity.name == ""
@@ -182,7 +182,7 @@ async def test_assembly_renaming() -> None:
     assert thing.x.stop_.name == "foo-x-stop"
 
 
-def test_mover_in_re(sim_mover: epicsdemo.Mover, RE) -> None:
+def test_mover_in_re(sim_mover: demo.Mover, RE) -> None:
     sim_mover.move(0)
 
     def my_plan():
