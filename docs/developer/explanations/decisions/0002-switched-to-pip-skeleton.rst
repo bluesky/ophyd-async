@@ -1,4 +1,4 @@
-2. Adopt ophyd_async for project structure
+2. Adopt ophyd-async for project structure
 ==========================================
 
 Date: 2022-02-18
@@ -11,7 +11,7 @@ Accepted
 Context
 -------
 
-We should use the following `pip-skeleton <https://github.com/bluesky/ophyd_async>`_.
+We should use the following `pip-skeleton <https://github.com/bluesky/ophyd-async>`_.
 The skeleton will ensure consistency in developer
 environments and package management.
 
@@ -23,7 +23,7 @@ We have switched to using the skeleton.
 Consequences
 ------------
 
-This module will use a fixed set of tools as developed in ophyd_async
+This module will use a fixed set of tools as developed in ophyd-async
 and can pull from this skeleton to update the packaging to the latest techniques.
 
 As such, the developer environment may have changed, the following could be
