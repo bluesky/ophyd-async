@@ -18,7 +18,7 @@ import ophyd_async
 sys.path.insert(0, os.path.abspath("../../src"))
 
 # General information about the project.
-project = "ophyd_async"
+project = "ophyd-async"
 copyright = "2014, Brookhaven National Lab"
 
 # The full version, including alpha/beta/rc tags.

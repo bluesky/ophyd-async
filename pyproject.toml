@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ophyd_async"
+name = "ophyd-async"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: BSD License",
@@ -73,7 +73,7 @@ dev = [
 ]
 
 [project.scripts]
-ophyd_async = "ophyd_async.__main__:main"
+ophyd-async = "ophyd_async.__main__:main"
 
 [project.urls]
 GitHub = "https://github.com/bluesky/ophyd-async"
