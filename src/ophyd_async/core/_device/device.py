@@ -25,7 +25,7 @@ class Device(HasName):
     def name(self) -> str:
         """Return the name of the Device"""
         return self._name
-    
+
     def children(self) -> Iterator[Tuple[str, Device]]:
         for attr_name, attr in self.__dict__.items():
             if attr_name != "parent" and isinstance(attr, Device):
