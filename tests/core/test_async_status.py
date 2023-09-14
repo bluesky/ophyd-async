@@ -7,8 +7,7 @@ import pytest
 from bluesky.protocols import Movable, Status
 from bluesky.utils import FailedStatus
 
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.devices import Device
+from ophyd_async.core import AsyncStatus, Device
 
 
 async def test_async_status_success():
@@ -131,3 +130,9 @@ async def test_status_propogates_traceback_under_RE(RE) -> None:
     assert expected_call_stack == [
         x.name for x in traceback.extract_tb(exception.__traceback__)
     ]
+
+
+async def test_async_status_exception_timeout():
+    st = AsyncStatus(asyncio.sleep(0.1))
+    with pytest.raises(Exception):
+        st.exception(timeout=1.0)

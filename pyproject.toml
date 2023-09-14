@@ -3,11 +3,10 @@ requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ophyd_async"
+name = "ophyd-async"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -27,7 +26,7 @@ dependencies = [
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 ca = ["aioca>=1.6"]
@@ -74,7 +73,7 @@ dev = [
 ]
 
 [project.scripts]
-ophyd_async = "ophyd_async.__main__:main"
+ophyd-async = "ophyd_async.__main__:main"
 
 [project.urls]
 GitHub = "https://github.com/bluesky/ophyd-async"

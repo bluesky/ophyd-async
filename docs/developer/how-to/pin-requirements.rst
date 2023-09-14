@@ -46,7 +46,7 @@ of the dependencies and sub-dependencies with pinned versions.
 You can download any of these files by clicking on them. It is best to use
 the one that ran with the lowest Python version as this is more likely to
 be compatible with all the versions of Python in the test matrix.
-i.e. ``requirements-test-ubuntu-latest-3.8.txt`` in this example.
+i.e. ``requirements-test-ubuntu-latest-3.9.txt`` in this example.
 
 Applying the lock file
 ----------------------
