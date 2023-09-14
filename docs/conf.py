@@ -4,6 +4,7 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
 import sys
 from pathlib import Path
 from subprocess import check_output
@@ -13,6 +14,8 @@ import requests
 import ophyd_async
 
 # -- General configuration ------------------------------------------------
+# Source code dir relative to this file
+sys.path.insert(0, os.path.abspath("../../src"))
 
 # General information about the project.
 project = "ophyd_async"
@@ -208,14 +211,17 @@ html_show_copyright = False
 # every member listed in __all__ and no others. Default is True
 autosummary_ignore_module_all = False
 
+# Turn on sphinx.ext.autosummary
+autosummary_generate = True
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
+
 # Look for signatures in the first line of the docstring (used for C functions)
 autodoc_docstring_signature = True
 
 # numpydoc config
 numpydoc_show_class_members = False
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
 
 # Where to put Ipython savefigs
 ipython_savefig_dir = "../build/savefig"

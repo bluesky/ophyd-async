@@ -30,11 +30,11 @@ class StandardReadable(Device, Readable, Configurable, Stageable):
         Parameters
         ----------
         read:
-            Signals to make up `read()`
+            Signals to make up :meth:`~StandardReadable.read`
         conf:
-            Signals to make up `read_configuration()`
+            Signals to make up :meth:`~StandardReadable.read_configuration`
         read_uncached:
-            Signals to make up `read()` that won't be cached
+            Signals to make up :meth:`~StandardReadable.read` that won't be cached
         """
         self._read_signals = tuple(read)
         self._configuration_signals = tuple(config)

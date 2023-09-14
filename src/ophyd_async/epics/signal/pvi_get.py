@@ -1,6 +1,6 @@
 from typing import Dict, TypedDict
 
-from p4p.client.thread import Context
+from p4p.client.asyncio import Context
 
 
 class PVIEntry(TypedDict, total=False):

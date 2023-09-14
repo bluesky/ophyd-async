@@ -18,6 +18,21 @@ from ophyd_async.epics.areadetector import (
 )
 
 
+class DocHolder:
+    def __init__(self):
+        self.names = []
+        self.docs = []
+
+    def append(self, name, doc):
+        self.names.append(name)
+        self.docs.append(doc)
+
+
+@pytest.fixture
+def doc_holder():
+    return DocHolder()
+
+
 @pytest.fixture
 async def hdf_streamer_dets():
     dp = TmpDirectoryProvider()
@@ -51,9 +66,9 @@ async def hdf_streamer_dets():
 
 
 async def test_hdf_streamer_dets_step(
-    hdf_streamer_dets: List[HDFStreamerDet], RE, doc_holder
+    hdf_streamer_dets: List[HDFStreamerDet], RE, doc_holder: DocHolder
 ):
-    RE(bp.count(hdf_streamer_dets), doc_holder.append)  # type: ignore
+    RE(bp.count(hdf_streamer_dets), doc_holder.append)
 
     drv = hdf_streamer_dets[0].drv
     assert 1 == await drv.acquire.get_value()
@@ -66,7 +81,7 @@ async def test_hdf_streamer_dets_step(
     assert 0 == await hdf.num_capture.get_value()
     assert FileWriteMode.stream == await hdf.file_write_mode.get_value()
 
-    assert doc_holder.names == [  # type: ignore
+    assert doc_holder.names == [
         "start",
         "descriptor",
         "stream_resource",
@@ -76,7 +91,7 @@ async def test_hdf_streamer_dets_step(
         "event",
         "stop",
     ]
-    _, descriptor, sra, sda, srb, sdb, event, _ = doc_holder.docs  # type: ignore
+    _, descriptor, sra, sda, srb, sdb, event, _ = doc_holder.docs
     assert descriptor["configuration"]["deta"]["data"]["deta-drv-acquire_time"] == 0.8
     assert descriptor["configuration"]["detb"]["data"]["detb-drv-acquire_time"] == 1.8
     assert descriptor["data_keys"]["deta"]["shape"] == [768, 1024]
@@ -94,7 +109,7 @@ async def test_hdf_streamer_dets_step(
 # TODO: write test where they are in the same stream after
 #   https://github.com/bluesky/bluesky/issues/1558
 async def test_hdf_streamer_dets_fly_different_streams(
-    hdf_streamer_dets: List[HDFStreamerDet], RE, doc_holder
+    hdf_streamer_dets: List[HDFStreamerDet], RE, doc_holder: DocHolder
 ):
     deta, detb = hdf_streamer_dets
 
@@ -121,10 +136,10 @@ async def test_hdf_streamer_dets_fly_different_streams(
                 yield from bps.collect(det, stream=True, return_payload=False)
         yield from bps.wait(group="complete")
 
-    RE(fly_det(5), doc_holder.append)  # type: ignore
+    RE(fly_det(5), doc_holder.append)
 
     # TODO: stream_* will come after descriptor soon
-    assert doc_holder.names == [  # type: ignore
+    assert doc_holder.names == [
         "start",
         "stream_resource",
         "stream_datum",
@@ -146,7 +161,7 @@ async def test_hdf_streamer_dets_fly_different_streams(
     assert 0 == await hdf.num_capture.get_value()
     assert FileWriteMode.stream == await hdf.file_write_mode.get_value()
 
-    _, sra, sda, descriptora, srb, sdb, descriptorb, _ = doc_holder.docs  # type: ignore
+    _, sra, sda, descriptora, srb, sdb, descriptorb, _ = doc_holder.docs
 
     assert descriptora["configuration"]["deta"]["data"]["deta-drv-acquire_time"] == 0.8
     assert descriptorb["configuration"]["detb"]["data"]["detb-drv-acquire_time"] == 1.8

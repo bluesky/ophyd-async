@@ -1,3 +1,9 @@
+.. role:: bash(code)
+   :language: bash
+
+.. role:: python(code)
+   :language: python
+
 4. Repository Structure
 =======================
 
@@ -91,10 +97,10 @@ During this process, the folder structure should incrementally be changed to
     │   └── epics
     └── ...
 
-The `__init__.py` files of each submodule (core, epics, panda and eventually tango) will
+The :bash:`__init__.py` files of each submodule (core, epics, panda and eventually tango) will
 be modified such that end users experience little disruption to how they use Ophyd Async.
-For such users, `from ophyd.v2.core import ...` can be replaced with 
-`from ophyd_async.core import ...`.
+For such users, :python:`from ophyd.v2.core import ...` can be replaced with 
+:python:`from ophyd_async.core import ...`.
 
 
 Consequences
