@@ -13,7 +13,7 @@ from ._device._signal.signal import (
     set_sim_value,
     wait_for_value,
 )
-from ._device.device import Device, connect_children, get_device_children, name_children
+from ._device.device import Device
 from ._device.device_collector import DeviceCollector
 from ._device.device_vector import DeviceVector
 from ._device.standard_readable import StandardReadable
@@ -45,9 +45,6 @@ __all__ = [
     "set_sim_value",
     "wait_for_value",
     "Device",
-    "connect_children",
-    "get_device_children",
-    "name_children",
     "DeviceCollector",
     "DeviceVector",
     "StandardReadable",
