@@ -3,13 +3,7 @@ import traceback
 
 import pytest
 
-from ophyd_async.core import (
-    Device,
-    DeviceCollector,
-    DeviceVector,
-    get_device_children,
-    wait_for_connection,
-)
+from ophyd_async.core import Device, DeviceCollector, DeviceVector, wait_for_connection
 
 
 class DummyBaseDevice(Device):
@@ -35,15 +29,25 @@ def parent() -> DummyDeviceGroup:
     return DummyDeviceGroup("parent")
 
 
-def test_get_device_children(parent: DummyDeviceGroup):
+def test_device_children(parent: DummyDeviceGroup):
     names = ["child1", "child2", "dict_with_children"]
-    for idx, (name, child) in enumerate(get_device_children(parent)):
+    for idx, (name, child) in enumerate(parent.children()):
         assert name == names[idx]
         assert (
             type(child) is DummyBaseDevice
             if name.startswith("child")
             else type(child) is DeviceVector
         )
+        assert child.parent == parent
+
+
+def test_device_vector_children():
+    parent = DummyDeviceGroup("root")
+
+    device_vector_children = [
+        (name, child) for name, child in parent.dict_with_children.children()
+    ]
+    assert device_vector_children == [("123", parent.dict_with_children[123])]
 
 
 async def test_children_of_device_have_set_names_and_get_connected(
