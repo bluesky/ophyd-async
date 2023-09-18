@@ -15,6 +15,7 @@ from ._device._signal.signal import (
 )
 from ._device.device import Device
 from ._device.device_collector import DeviceCollector
+from ._device.device_save_loader import save_device
 from ._device.device_vector import DeviceVector
 from ._device.standard_readable import StandardReadable
 from .async_status import AsyncStatus
@@ -59,5 +60,4 @@ __all__ = [
     "merge_gathered_dicts",
     "wait_for_connection",
     "save_device",
-    "load_device",
 ]
