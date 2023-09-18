@@ -71,6 +71,8 @@ dev = [
     "sphinx-design",
     "tox-direct",
     "types-mock",
+    "pyyaml",
+    "types-pyyaml",
 ]
 
 [project.scripts]
