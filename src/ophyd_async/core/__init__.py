@@ -85,4 +85,6 @@ __all__ = [
     "get_unique",
     "merge_gathered_dicts",
     "wait_for_connection",
+    "save_device",
+    "load_device",
 ]
