@@ -282,6 +282,10 @@ class PvaSignalBackend(SignalBackend[T]):
         value = await self.ctxt.get(self.read_pv, request=request)
         return self.converter.value(value)
 
+    async def get_setpoint(self) -> T:
+        value = await self.ctxt.get(self.write_pv, "field(value)")
+        return self.converter.value(value)
+
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
         if callback:
             assert (

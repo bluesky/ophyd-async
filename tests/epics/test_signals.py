@@ -254,6 +254,12 @@ async def test_backend_put_enum_string(ioc: IOC) -> None:
     assert MyEnum.c == await backend.get_value()
 
 
+async def test_backend_get_setpoint(ioc: IOC) -> None:
+    backend = await ioc.make_backend(MyEnum, "enum2")
+    await backend.put("Ccc")
+    assert await backend.get_setpoint() == MyEnum.c
+
+
 def approx_table(table):
     return {k: pytest.approx(v) for k, v in table.items()}
 

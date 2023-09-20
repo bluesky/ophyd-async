@@ -36,5 +36,9 @@ class SignalBackend(Generic[T]):
         """The current value"""
 
     @abstractmethod
+    async def get_setpoint(self) -> T:
+        """The current setpoint"""
+
+    @abstractmethod
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
         """Observe changes to the current value, timestamp and severity"""

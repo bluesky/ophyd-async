@@ -201,29 +201,10 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
 class SignalW(Signal[T], Movable):
     """Signal that can be set"""
 
-    _cache: Optional[_SignalCache] = None
-
-    def _backend_or_cache(
-        self, cached: Optional[bool]
-    ) -> Union[_SignalCache, SignalBackend]:
-        # If cached is None then calculate it based on whether we already have a cache
-        if cached is None:
-            cached = self._cache is not None
-        if cached:
-            assert self._cache, f"{self.source} not being monitored"
-            return self._cache
-        else:
-            return self._backend
-
     def set(self, value: T, wait=True, timeout=None) -> AsyncStatus:
         """Set the value and return a status saying when it's done"""
         coro = self._backend.put(value, wait=wait, timeout=timeout or self._timeout)
         return AsyncStatus(coro)
-
-    @_add_timeout
-    async def get_setpoint(self, cached: Optional[bool] = None) -> T:
-        """The current value"""
-        return await self._backend_or_cache(cached).get_value()
 
 
 class SignalRW(SignalR[T], SignalW[T], Locatable):
@@ -231,7 +212,7 @@ class SignalRW(SignalR[T], SignalW[T], Locatable):
 
     async def locate(self) -> Location:
         location: Location = {
-            "setpoint": await self.get_setpoint(),
+            "setpoint": await self._backend.get_setpoint(),
             "readback": await self.get_value(),
         }
         return location

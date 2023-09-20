@@ -224,6 +224,15 @@ class CaSignalBackend(SignalBackend[T]):
         value = await self._caget(FORMAT_RAW)
         return self.converter.value(value)
 
+    async def get_setpoint(self) -> T:
+        value = await caget(
+            self.write_pv,
+            datatype=self.converter.read_dbr,
+            format=FORMAT_RAW,
+            timeout=None,
+        )
+        return self.converter.value(value)
+
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
         if callback:
             assert (
