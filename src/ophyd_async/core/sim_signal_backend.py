@@ -161,6 +161,9 @@ class SimSignalBackend(SignalBackend[T]):
     async def get_value(self) -> T:
         return self.converter.value(self._value)
 
+    async def get_setpoint(self) -> T:
+        return self.converter.value(self._value)
+
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
         if callback:
             assert not self.callback, "Cannot set a callback when one is already set"
