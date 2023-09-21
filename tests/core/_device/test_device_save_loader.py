@@ -9,10 +9,7 @@ import yaml
 from bluesky import RunEngine
 
 from ophyd_async.core import Device, SignalR, SignalRW
-from ophyd_async.core._device.device_save_loader import (
-    get_signal_RWs_from_device,
-    save_device,
-)
+from ophyd_async.core._device.device_save_loader import save_device, walk_rw_signals
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
@@ -63,7 +60,7 @@ async def device_with_phases() -> DummyDeviceGroup:
 
 
 def test_get_signal_RWs_from_device(device):
-    signalRWS = get_signal_RWs_from_device(device, "")
+    signalRWS = walk_rw_signals(device)
     assert list(signalRWS.keys()) == [
         "child1.sig1",
         "child2.sig1",
