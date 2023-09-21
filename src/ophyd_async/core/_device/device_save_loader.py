@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 from bluesky import Msg
@@ -8,8 +8,8 @@ from numpy import ndarray
 from ophyd_async.core import Device, SignalRW
 
 
-def get_signal_RWs_from_device(
-    device: Device, path_prefix: str = "", signalRWs: Dict[str, SignalRW] = {}
+def walk_rw_signals(
+    device: Device, path_prefix: Optional[str] = None
 ) -> Dict[str, SignalRW]:
     """
     Get all the SignalRWs from a device and store them with their dotted attribute
@@ -23,10 +23,6 @@ def get_signal_RWs_from_device(
     path_prefix : str
         For internal use, leave blank when calling the method.
 
-    SignalRWs : dict
-        A dictionary matching the string attribute path of a SignalRW with the
-        signal itself. Leave blank when calling the method.
-
     Returns
     -------
     SignalRWs : dict
@@ -34,20 +30,20 @@ def get_signal_RWs_from_device(
         signal itself.
     """
 
+    if not path_prefix:
+        path_prefix = ""
+
+    signals: Dict[str, SignalRW] = {}
     for attr_name, attr in device.children():
-        dot = ""
-        # Place a dot inbetween the upper and lower class.
-        # Don't do this for highest level class.
-        if path_prefix:
-            dot = "."
-        dot_path = f"{path_prefix}{dot}{attr_name}"
+        dot_path = f"{path_prefix}{attr_name}"
         if type(attr) is SignalRW:
-            signalRWs[dot_path] = attr
-        get_signal_RWs_from_device(attr, path_prefix=dot_path)
-    return signalRWs
+            signals[dot_path] = attr
+        attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
+        signals.update(attr_signals)
+    return signals
 
 
-def save_device(device: Device, savename: str, ignore: List[str] = []):
+def save_device(device: Device, savename: str, ignore: Optional[List[str]] = None):
     """
     Plan to save the setup of a device by getting a list of its signals and their
     readback values.
@@ -76,7 +72,10 @@ def save_device(device: Device, savename: str, ignore: List[str] = []):
     :func:`sort_signal_by_phase`
     """
 
-    signalRWs: Dict[str, SignalRW] = get_signal_RWs_from_device(device, "")
+    if not ignore:
+        ignore = []
+
+    signalRWs: Dict[str, SignalRW] = walk_rw_signals(device, "")
 
     # Get list of signalRWs ordered by phase
     phase_dicts: List[Dict[str, SignalRW]] = []
