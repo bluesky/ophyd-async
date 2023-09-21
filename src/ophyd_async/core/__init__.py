@@ -35,7 +35,7 @@ from .standard_readable import StandardReadable
 =======
 from ._device.device import Device
 from ._device.device_collector import DeviceCollector
-from ._device.device_save_loader import save_device
+from ._device.device_save_loader import get_signal_values, save_device, walk_rw_signals
 from ._device.device_vector import DeviceVector
 from ._device.standard_readable import StandardReadable
 from .async_status import AsyncStatus

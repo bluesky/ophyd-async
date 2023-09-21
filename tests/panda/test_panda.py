@@ -7,7 +7,7 @@ import pytest
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi
-
+from ophyd_async.core import walk_rw_signals, get_signal_values
 
 class DummyDict:
     def __init__(self, dict) -> None:
@@ -124,3 +124,11 @@ async def test_panda_block_missing_signals(pva):
             == "PandA has a pulse block containing a width signal which has not been "
             + "retrieved by PVI."
         )
+        
+def test_save_panda(sim_panda: PandA, tmp_path):
+    #Serves as an example of how device specific save plans should look
+    
+    #Signals = walk_rw_signals() ->Dict[str, SignalRW]
+    #Values = get_signal_values() -> Dict[str, value]
+    #sort_panda_sigs_to_phases
+    
