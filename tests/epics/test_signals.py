@@ -5,6 +5,7 @@ import string
 import subprocess
 import sys
 import time
+from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -300,6 +301,45 @@ async def test_pva_table(ioc: IOC) -> None:
             await q.assert_updates(approx_table(p))
         finally:
             q.close()
+
+
+async def test_pva_ntdarray(ioc: IOC):
+    if ioc.protocol == "ca":
+        # CA can't do ndarray
+        return
+
+    put = np.array([1, 2, 3, 4, 5, 6], dtype=np.int64).reshape((2, 3))
+    initial = np.zeros_like(put)
+
+    backend = await ioc.make_backend(npt.NDArray[np.int64], "ntndarray")
+
+    # Backdoor into the "raw" data underlying the NDArray in QSrv
+    # not supporting direct writes to NDArray at the moment.
+    raw_data_backend = await ioc.make_backend(npt.NDArray[np.int64], "ntndarray:data")
+
+    # Make a monitor queue that will monitor for updates
+    for i, p in [(initial, put), (put, initial)]:
+        with closing(MonitorQueue(backend)) as q:
+            assert {
+                "source": backend.source,
+                "dtype": "array",
+                "shape": [2, 3],
+            } == await backend.get_descriptor()
+            # Check initial value
+            await q.assert_updates(pytest.approx(i))
+            await raw_data_backend.put(p.flatten())
+            await q.assert_updates(pytest.approx(p))
+
+
+async def test_writing_to_ndarray_raises_typeerror(ioc: IOC):
+    if ioc.protocol == "ca":
+        # CA can't do ndarray
+        return
+
+    backend = await ioc.make_backend(npt.NDArray[np.int64], "ntndarray")
+
+    with pytest.raises(TypeError):
+        await backend.put(np.zeros((6,), dtype=np.int64))
 
 
 async def test_non_existant_errors(ioc: IOC):

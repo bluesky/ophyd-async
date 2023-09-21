@@ -3,9 +3,10 @@ import atexit
 from asyncio import CancelledError
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Sequence, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 from bluesky.protocols import Descriptor, Dtype, Reading
+from p4p import Value
 from p4p.client.asyncio import Context, Subscription
 
 from ophyd_async.core import (
@@ -55,10 +56,52 @@ class PvaConverter:
         dtype = specifier_to_dtype[value.type().aspy("value")]
         return dict(source=source, dtype=dtype, shape=[])
 
+    def metadata_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for metadata.
+        """
+        return ["alarm", "timeStamp"]
+
+    def value_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for the value.
+        """
+        return ["value"]
+
 
 class PvaArrayConverter(PvaConverter):
     def descriptor(self, source: str, value) -> Descriptor:
         return dict(source=source, dtype="array", shape=[len(value["value"])])
+
+
+class PvaNDArrayConverter(PvaConverter):
+    def metadata_fields(self) -> List[str]:
+        return super().metadata_fields() + ["dimension"]
+
+    def _get_dimensions(self, value) -> List[int]:
+        dimensions: List[Value] = value["dimension"]
+        dims = [dim.size for dim in dimensions]
+        # Note: dimensions in NTNDArray are in fortran-like order
+        # with first index changing fastest.
+        #
+        # Therefore we need to reverse the order of the dimensions
+        # here to get back to a more usual C-like order with the
+        # last index changing fastest.
+        return dims[::-1]
+
+    def value(self, value):
+        dims = self._get_dimensions(value)
+        return value["value"].reshape(dims)
+
+    def descriptor(self, source: str, value) -> Descriptor:
+        dims = self._get_dimensions(value)
+        return dict(source=source, dtype="array", shape=dims)
+
+    def write_value(self, value):
+        # No clear use-case for writing directly to an NDArray, and some
+        # complexities around flattening to 1-D - e.g. dimension-order.
+        # Don't support this for now.
+        raise TypeError("Writing to NDArray not supported")
 
 
 @dataclass
@@ -112,7 +155,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         if datatype and datatype != Sequence[str]:
             raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
         return PvaArrayConverter()
-    elif "NTScalarArray" in typeid:
+    elif "NTScalarArray" in typeid or "NTNDArray" in typeid:
         pv_dtype = get_unique(
             {k: v["value"].dtype for k, v in values.items()}, "dtypes"
         )
@@ -124,7 +167,10 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
                 raise TypeError(f"{pv} has type [{pv_dtype}] not {datatype.__name__}")
             if dtype != pv_dtype:
                 raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
-        return PvaArrayConverter()
+        if "NTNDArray" in typeid:
+            return PvaNDArrayConverter()
+        else:
+            return PvaArrayConverter()
     elif "NTEnum" in typeid and datatype is bool:
         # Wanted a bool, but database represents as an enum
         pv_choices_len = get_unique(
@@ -217,14 +263,23 @@ class PvaSignalBackend(SignalBackend[T]):
         value = await self.ctxt.get(self.read_pv)
         return self.converter.descriptor(self.source, value)
 
+    def _pva_request_string(self, fields: List[str]) -> str:
+        """
+        Converts a list of requested fields into a PVA request string which can be
+        passed to p4p.
+        """
+        return f"field({','.join(fields)})"
+
     async def get_reading(self) -> Reading:
-        value = await self.ctxt.get(
-            self.read_pv, request="field(value,alarm,timestamp)"
+        request: str = self._pva_request_string(
+            self.converter.value_fields() + self.converter.metadata_fields()
         )
+        value = await self.ctxt.get(self.read_pv, request=request)
         return self.converter.reading(value)
 
     async def get_value(self) -> T:
-        value = await self.ctxt.get(self.read_pv, "field(value)")
+        request: str = self._pva_request_string(self.converter.value_fields())
+        value = await self.ctxt.get(self.read_pv, request=request)
         return self.converter.value(value)
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
@@ -236,8 +291,12 @@ class PvaSignalBackend(SignalBackend[T]):
             async def async_callback(v):
                 callback(self.converter.reading(v), self.converter.value(v))
 
+            request: str = self._pva_request_string(
+                self.converter.value_fields() + self.converter.metadata_fields()
+            )
+
             self.subscription = self.ctxt.monitor(
-                self.read_pv, async_callback, request="field(value,alarm,timestamp)"
+                self.read_pv, async_callback, request=request
             )
         else:
             if self.subscription:
