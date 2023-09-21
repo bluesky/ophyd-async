@@ -242,3 +242,42 @@ record(waveform, "$(P)table:enum")
         }
     })
 }
+
+record(longout, "$(P)ntndarray:ArraySize0_RBV") {
+    field(VAL, "3")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(P)ntndarray":{
+            "dimension[0].size":{+channel:"VAL", +type:"plain", +putorder:0}
+        }
+    })
+}
+
+record(longout, "$(P)ntndarray:ArraySize1_RBV") {
+    field(VAL, "2")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(P)ntndarray":{
+            "dimension[1].size":{+channel:"VAL", +type:"plain", +putorder:0}
+        }
+    })
+}
+
+record(waveform, "$(P)ntndarray:data")
+{
+  field(FTVL, "INT64")
+  field(NELM, "6")
+  field(INP, {const:[0, 0, 0, 0, 0, 0]})
+  field(PINI, "YES")
+  info(Q:group, {
+        "$(P)ntndarray":{
+            +id:"epics:nt/NTNDArray:1.0",
+            "value":{
+                +type:"any",
+                +channel:"VAL",
+                +trigger:"*",
+            },
+            "": {+type:"meta", +channel:"SEVR"}
+        }
+    })
+}
