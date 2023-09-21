@@ -8,6 +8,27 @@ from numpy import ndarray
 from ophyd_async.core import Device, SignalRW
 
 
+def get_signal_values(signals: Dict[str, SignalRW], ignore=None) -> Dict[str, Any]:
+    """_summary_
+
+    Args:
+        signals (Dict[str, SignalRW]): _description_
+        ignore (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        Dict[str, Any]: _description_
+
+    Yields:
+        Iterator[Dict[str, Any]]: _description_
+    """
+    values = yield Msg("locate", *signals)
+    values = [value["setpoint"] for value in signals]
+    signal_name_to_val: Dict[str, Any] = {}
+    for index, key in enumerate(signals.keys()):
+        signal_name_to_val[key] = values[index]
+    return signal_name_to_val
+
+
 def walk_rw_signals(
     device: Device, path_prefix: Optional[str] = None
 ) -> Dict[str, SignalRW]:
@@ -101,6 +122,7 @@ def save_device(device: Device, savename: str, ignore: Optional[List[str]] = Non
                         value[inner_key] = inner_value.tolist()
             # Convert enums to their values
             elif isinstance(signal_values[index], Enum):
+                assert isinstance(value.value, str)
                 signal_values[index] = value.value
 
         # For each phase, save a dictionary containing the phases'
