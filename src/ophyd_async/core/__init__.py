@@ -35,7 +35,7 @@ from .standard_readable import StandardReadable
 =======
 from ._device.device import Device
 from ._device.device_collector import DeviceCollector
-from ._device.device_save_loader import get_signal_values, save_device, walk_rw_signals
+from ._device.device_save_loader import get_signal_values, save_to_yaml, walk_rw_signals
 from ._device.device_vector import DeviceVector
 from ._device.standard_readable import StandardReadable
 from .async_status import AsyncStatus
@@ -94,5 +94,7 @@ __all__ = [
     "get_unique",
     "merge_gathered_dicts",
     "wait_for_connection",
-    "save_device",
+    "save_to_yaml",
+    "get_signal_values",
+    "walk_rw_signals",
 ]
