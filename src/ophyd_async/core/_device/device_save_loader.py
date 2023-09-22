@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generator, List, Optional, Union
 
 import yaml
 from bluesky import Msg
@@ -8,23 +8,45 @@ from numpy import ndarray
 from ophyd_async.core import Device, SignalRW
 
 
-def get_signal_values(signals: Dict[str, SignalRW], ignore=None) -> Dict[str, Any]:
-    """_summary_
+def get_signal_values(
+    signals: Dict[str, SignalRW], ignore: Optional[List[str]] = None
+) -> Union[Generator[Dict[str, Any], None, None], Dict[str, Any]]:
+    """
+    Read the values of SignalRW's, to be used alongside `walk_rw_signals`. Used as part
+    of saving a device
+    Parameters
+    ----------
+        signals : Dict[str, SignalRW]: A dictionary matching the string attribute path
+        of a SignalRW to the signal itself
 
-    Args:
-        signals (Dict[str, SignalRW]): _description_
-        ignore (_type_, optional): _description_. Defaults to None.
+        ignore : List of strings: . A list of string attribute paths to the SignalRW's
+        to be ignored. Defaults to None.
 
-    Returns:
-        Dict[str, Any]: _description_
+    Returns
+    ----------
+        Dict[str, Any]: A dictionary matching the string attribute path of a SignalRW
+        to the value of that signal
 
     Yields:
-        Iterator[Dict[str, Any]]: _description_
+        Iterator[Dict[str, Any]]: The Location of a signal
+
+    See Also
+    --------
+    :func:`ophyd_async.core.walk_rw_signals`
+    :func:`ophyd_async.core.save_to_yaml`
+
     """
-    values = yield Msg("locate", *signals)
-    values = [value["setpoint"] for value in signals]
+
+    if ignore is None:
+        ignore = [""]
+
+    values = yield Msg("locate", *signals.values())
+    assert values is not None, "No signalRW's found"
+    values = [value["setpoint"] for value in values]
     signal_name_to_val: Dict[str, Any] = {}
     for index, key in enumerate(signals.keys()):
+        if key in ignore:
+            continue
         signal_name_to_val[key] = values[index]
     return signal_name_to_val
 
@@ -34,8 +56,7 @@ def walk_rw_signals(
 ) -> Dict[str, SignalRW]:
     """
     Get all the SignalRWs from a device and store them with their dotted attribute
-    paths. Used by the save and load methods.
-
+    paths in a dictionary. Used as part of saving and loading a device
     Parameters
     ----------
     device : Device
@@ -49,6 +70,12 @@ def walk_rw_signals(
     SignalRWs : dict
         A dictionary matching the string attribute path of a SignalRW with the
         signal itself.
+
+        See Also
+    --------
+    :func:`ophyd_async.core.get_signal_values`
+    :func:`ophyd_async.core.save_to_yaml`
+
     """
 
     if not path_prefix:
@@ -64,80 +91,42 @@ def walk_rw_signals(
     return signals
 
 
-def save_device(device: Device, savename: str, ignore: Optional[List[str]] = None):
-    """
-    Plan to save the setup of a device by getting a list of its signals and their
-    readback values.
-
-    Store the output to a yaml file ``savename.yaml``
+def save_to_yaml(phases: Union[Dict, List[Dict]], save_path: str):
+    """Serialises and saves a phase or a set of phases of a device's SignalRW's to a
+    yaml file.
 
     Parameters
     ----------
-    device : Device
+    phases : dict or list of dicts
+        The values to save. Each item in the list is a seperate phase used when loading
+        a device. In general this variable be the return value of `get_signal_values`.
 
-    savename : str
-        Name of the YAML file.
-
-    ignore : list of str
-        List of attribute path strings to not include in the save file.
-
-    Yields
-    ------
-    msg : Msg
-        ``locate``, ``*signals``
+    save_path : str
 
     See Also
     --------
-    :func:`ophyd_async.core.load_device_plan`
-    :func:`ophyd_async.core.load_device`
-    :func:`sort_signal_by_phase`
+    :func:`ophyd_async.core.walk_rw_signals`
+    :func:`ophyd_async.core.get_signal_values`
     """
 
-    if not ignore:
-        ignore = []
-
-    signalRWs: Dict[str, SignalRW] = walk_rw_signals(device, "")
-
-    # Get list of signalRWs ordered by phase
-    phase_dicts: List[Dict[str, SignalRW]] = []
-    if len(signalRWs):
-        if hasattr(device, "sort_signal_by_phase"):
-            phase_dicts = device.sort_signal_by_phase(device, signalRWs)
-        else:
-            phase_dicts.append(signalRWs)
-
-        # Locate all signals in parallel
-        signals_to_locate: List[SignalRW] = []
-        for phase in phase_dicts:
-            signals_to_locate.extend(phase.values())
-        signal_values = yield Msg("locate", *signals_to_locate)
-        signal_values = [value["setpoint"] for value in signal_values]
-
+    if isinstance(phases, dict):
+        phases = [phases]
+    phase_outputs = []
+    for phase in phases:
         # The table PVs are dictionaries of np arrays. Need to convert these to
         # lists for easy saving
-        for index, value in enumerate(signal_values):
+        for key, value in phase.items():
             if isinstance(value, dict):
                 for inner_key, inner_value in value.items():
                     if isinstance(inner_value, ndarray):
                         value[inner_key] = inner_value.tolist()
-            # Convert enums to their values
-            elif isinstance(signal_values[index], Enum):
-                assert isinstance(value.value, str)
-                signal_values[index] = value.value
+            # Convert enums to their value
+            elif isinstance(value, Enum):
+                assert isinstance(
+                    value.value, str
+                ), "Enum value did not evaluate to string"
+                phase[key] = value.value
+        phase_outputs.append(phase)
 
-        # For each phase, save a dictionary containing the phases'
-        # dotted signalRW paths and their values
-        phase_outputs: List[Dict[str, Any]] = []
-        signal_value_index = 0
-        for phase in phase_dicts:
-            signal_name_values: Dict[str, Any] = {}
-            for signal_name in phase.keys():
-                if signal_name not in ignore:
-                    signal_name_values[signal_name] = signal_values[signal_value_index]
-                signal_value_index += 1
-
-            phase_outputs.append(signal_name_values)
-
-        filename = f"{savename}.yaml"
-        with open(filename, "w") as file:
-            yaml.dump(phase_outputs, file)
+    with open(save_path, "w") as file:
+        yaml.dump(phase_outputs, file)
