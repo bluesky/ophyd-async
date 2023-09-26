@@ -14,7 +14,8 @@ def ndarray_representer(dumper: yaml.Dumper, array: np.ndarray) -> yaml.Node:
 
 
 def ndarray_constructor(loader: Loader, node: yaml.ScalarNode) -> np.ndarray:
-    value: str = loader.construct_scalar(node)
+    value = loader.construct_scalar(node)
+    assert isinstance(value, str)
     return np.array(eval(value))
 
 
