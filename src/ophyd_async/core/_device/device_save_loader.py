@@ -13,19 +13,19 @@ def get_signal_values(
 ) -> Union[Generator[Dict[str, Any], None, None], Dict[str, Any]]:
     """
     Read the values of SignalRW's, to be used alongside `walk_rw_signals`. Used as part
-    of saving a device
+    of saving a device.
     Parameters
     ----------
         signals : Dict[str, SignalRW]: A dictionary matching the string attribute path
         of a SignalRW to the signal itself
 
         ignore : List of strings: . A list of string attribute paths to the SignalRW's
-        to be ignored. Defaults to None.
+        to be ignored.
 
     Returns
     ----------
         Dict[str, Any]: A dictionary matching the string attribute path of a SignalRW
-        to the value of that signal
+        to the value of that signal. Ignored attributes are set to None.
 
     Yields:
         Iterator[Dict[str, Any]]: The Location of a signal
@@ -37,22 +37,21 @@ def get_signal_values(
 
     """
 
-    if ignore is None:
-        ignore = [""]
-
-    values = yield Msg("locate", *signals.values())
-    assert values is not None, "No signalRW's found"
-    values = [value["setpoint"] for value in values]
-    signal_name_to_val: Dict[str, Any] = {}
-    for index, key in enumerate(signals.keys()):
-        if key in ignore:
-            continue
-        signal_name_to_val[key] = values[index]
-    return signal_name_to_val
+    ignore = ignore or []
+    selected_signals = {
+        key: signal for key, signal in signals.items() if key not in ignore
+    }
+    selected_values = yield Msg("locate", *selected_signals.values())
+    named_values = {
+        key: value["setpoint"] for key, value in zip(selected_signals, selected_values)
+    }
+    # Ignored values place in with value None so we know which ones were ignored
+    named_values.update({key: None for key in ignore})
+    return named_values
 
 
 def walk_rw_signals(
-    device: Device, path_prefix: Optional[str] = None
+    device: Device, path_prefix: Optional[str] = ""
 ) -> Dict[str, SignalRW]:
     """
     Get all the SignalRWs from a device and store them with their dotted attribute

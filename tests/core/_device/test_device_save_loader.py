@@ -92,6 +92,7 @@ async def test_save_device_no_phase(device, tmp_path):
             "child1.sig1": "string",
             "child2.sig1": table_pv,
             "parent_sig3": EnumTest.VAL1,
+            "parent_sig1": None,
         }
 
         save_to_yaml(values, path.join(tmp_path, "test_file.yaml"))
@@ -107,6 +108,7 @@ async def test_save_device_no_phase(device, tmp_path):
                 "VAL2": [1, 1, 1, 1, 1],
             },
             "parent_sig3": "val1",
+            "parent_sig1": None,
         }
 
 
