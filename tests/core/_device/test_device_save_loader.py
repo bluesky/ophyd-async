@@ -11,6 +11,7 @@ from bluesky import RunEngine
 from ophyd_async.core import Device, SignalR, SignalRW
 from ophyd_async.core._device.device_save_loader import (
     get_signal_values,
+    ndarray_constructor,
     save_to_yaml,
     walk_rw_signals,
 )
@@ -99,17 +100,20 @@ async def test_save_device_no_phase(device, tmp_path):
 
     RE(save_my_device())
 
+    yaml.add_constructor("tag:!numpy.ndarray", ndarray_constructor)
+
     with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
-        yaml_content = yaml.safe_load(file)
-        assert yaml_content[0] == {
-            "child1.sig1": "string",
-            "child2.sig1": {
-                "VAL1": [1, 1, 1, 1, 1],
-                "VAL2": [1, 1, 1, 1, 1],
-            },
-            "parent_sig3": "val1",
-            "parent_sig1": None,
-        }
+        yaml_content = yaml.load(file, yaml.Loader)[0]
+        assert len(yaml_content) == 4
+        assert yaml_content["child1.sig1"] == "string"
+        assert np.array_equal(
+            yaml_content["child2.sig1"]["VAL1"], np.array([1, 1, 1, 1, 1])
+        )
+        assert np.array_equal(
+            yaml_content["child2.sig1"]["VAL2"], np.array([1, 1, 1, 1, 1])
+        )
+        assert yaml_content["parent_sig3"] == "val1"
+        assert yaml_content["parent_sig1"] is None
 
 
 async def test_save_device_with_phase(device_with_phases, tmp_path):
@@ -127,7 +131,14 @@ async def test_save_device_with_phase(device_with_phases, tmp_path):
 
     RE(save_my_device())
 
+    yaml.add_constructor("tag:!numpy.ndarray", ndarray_constructor)
+
     with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
-        yaml_content = yaml.safe_load(file)
+        yaml_content = yaml.load(file, yaml.Loader)
         assert yaml_content[0] == {"child1.sig1": "string"}
-        assert yaml_content[1] == {"child2.sig1": table_pv}
+        assert np.array_equal(
+            yaml_content[1]["child2.sig1"]["VAL1"], np.array([1, 1, 1, 1, 1])
+        )
+        assert np.array_equal(
+            yaml_content[1]["child2.sig1"]["VAL2"], np.array([1, 1, 1, 1, 1])
+        )

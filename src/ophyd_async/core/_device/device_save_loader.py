@@ -1,11 +1,21 @@
 from enum import Enum
 from typing import Any, Dict, Generator, List, Optional, Union
 
+import numpy as np
 import yaml
 from bluesky import Msg
-from numpy import ndarray
+from yaml.loader import Loader
 
 from ophyd_async.core import Device, SignalRW
+
+
+def ndarray_representer(dumper: yaml.Dumper, array: np.ndarray) -> yaml.Node:
+    return dumper.represent_scalar("tag:!numpy.ndarray", str(array.tolist()))
+
+
+def ndarray_constructor(loader: Loader, node: yaml.ScalarNode) -> np.ndarray:
+    value: str = loader.construct_scalar(node)
+    return np.array(eval(value))
 
 
 def get_signal_values(
@@ -42,6 +52,7 @@ def get_signal_values(
         key: signal for key, signal in signals.items() if key not in ignore
     }
     selected_values = yield Msg("locate", *selected_signals.values())
+    assert selected_values is not None, "No signalRW's were able to be located"
     named_values = {
         key: value["setpoint"] for key, value in zip(selected_signals, selected_values)
     }
@@ -107,6 +118,7 @@ def save_to_yaml(phases: Union[Dict, List[Dict]], save_path: str):
     :func:`ophyd_async.core.walk_rw_signals`
     :func:`ophyd_async.core.get_signal_values`
     """
+    yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
 
     if isinstance(phases, dict):
         phases = [phases]
@@ -114,18 +126,16 @@ def save_to_yaml(phases: Union[Dict, List[Dict]], save_path: str):
     for phase in phases:
         # The table PVs are dictionaries of np arrays. Need to convert these to
         # lists for easy saving
+
         for key, value in phase.items():
-            if isinstance(value, dict):
-                for inner_key, inner_value in value.items():
-                    if isinstance(inner_value, ndarray):
-                        value[inner_key] = inner_value.tolist()
             # Convert enums to their value
-            elif isinstance(value, Enum):
+            if isinstance(value, Enum):
                 assert isinstance(
                     value.value, str
                 ), "Enum value did not evaluate to string"
                 phase[key] = value.value
+
         phase_outputs.append(phase)
 
     with open(save_path, "w") as file:
-        yaml.dump(phase_outputs, file)
+        yaml.dump(phase_outputs, file, Dumper=yaml.Dumper)
