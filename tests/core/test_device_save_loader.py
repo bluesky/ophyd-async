@@ -92,7 +92,7 @@ async def test_save_device_no_phase(device, tmp_path):
         assert values == {
             "child1.sig1": "string",
             "child2.sig1": table_pv,
-            "parent_sig3": EnumTest.VAL1,
+            "parent_sig3": "val1",
             "parent_sig1": None,
         }
 
