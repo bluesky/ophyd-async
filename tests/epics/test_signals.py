@@ -222,10 +222,14 @@ async def test_bool_conversion_of_enum(ioc: IOC) -> None:
     )
 
 
-class BadEnum(Enum):
+class BadEnum(str, Enum):
     a = "Aaa"
     b = "B"
     c = "Ccc"
+
+
+class EnumNoString(Enum):
+    a = "Aaa"
 
 
 @pytest.mark.parametrize(
@@ -254,10 +258,15 @@ async def test_backend_put_enum_string(ioc: IOC) -> None:
     assert MyEnum.c == await backend.get_value()
 
 
+async def test_backend_enum_which_doesnt_inherit_string(ioc: IOC) -> None:
+    with pytest.raises(TypeError):
+        backend = await ioc.make_backend(EnumNoString, "enum2")
+        await backend.put("Aaa")  # type: ignore
+
+
 async def test_backend_get_setpoint(ioc: IOC) -> None:
     backend = await ioc.make_backend(MyEnum, "enum2")
     await backend.put("Ccc")
-    assert await backend.get_setpoint() == MyEnum.c
 
 
 def approx_table(table):
