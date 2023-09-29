@@ -21,7 +21,7 @@ class FileWriteMode(str, Enum):
     stream = "Stream"
 
 
-class ImageMode(Enum):
+class ImageMode(str, Enum):
     single = "Single"
     multiple = "Multiple"
     continuous = "Continuous"

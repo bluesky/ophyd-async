@@ -46,7 +46,7 @@ class PulseBlock(Device):
     width: SignalRW[float]
 
 
-class SeqTrigger(Enum):
+class SeqTrigger(str, Enum):
     IMMEDIATE = "Immediate"
     BITA_0 = "BITA=0"
     BITA_1 = "BITA=1"

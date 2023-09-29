@@ -24,7 +24,7 @@ class DummyChildDevice(Device):
         self.sig2: SignalR = epics_signal_r(str, "Value2")
 
 
-class EnumTest(Enum):
+class EnumTest(str, Enum):
     VAL1 = "val1"
     VAL2 = "val2"
 
