@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, Generator, List, Optional, Union
 
 import numpy as np
@@ -122,7 +123,17 @@ def save_to_yaml(phases: Union[Dict, List[Dict]], save_path: str):
 
     if isinstance(phases, dict):
         phases = [phases]
-    phase_outputs = [phase for phase in phases]
+    phase_outputs = []
+    for phase in phases:
+        for key, value in phase.items():
+            # Convert enums to their value
+            if isinstance(value, Enum):
+                assert isinstance(
+                    value.value, str
+                ), "Enum value did not evaluate to string"
+                phase[key] = value.value
+
+        phase_outputs.append(phase)
 
     with open(save_path, "w") as file:
         yaml.dump(phase_outputs, file, Dumper=yaml.Dumper)
