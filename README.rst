@@ -4,17 +4,18 @@ Ophyd Async
 
 |build_status| |coverage| |pypi_version| |license|
 
-Ophyd is a Python library for interfacing with hardware. It provides an
+ophyd-async is a Python library for asynchronously interfacing with hardware,
+building upon the logic of `Ophyd`_. It is intended to be used as an
 abstraction layer that enables experiment orchestration and data acquisition
 code to operate above the specifics of particular devices and control systems.
 
-Ophyd is typically used with the `Bluesky Run Engine`_ for experiment
-orchestration and data acquisition. It is also sometimes used in a stand-alone
-fashion.
+Both ophyd and ophyd-async are typically used with the `Bluesky Run Engine`_ for 
+experiment orchestration and data acquisition. However, these libraries are
+able to be used in a stand-alone fashion.
 
-Many facilities use ophyd to integrate with control systems that use `EPICS`_ ,
-but ophyd's design and some of its objects are also used to integrate with
-other control systems.
+Many facilities use ophyd-async to integrate with control systems that use 
+`EPICS`_, but ophyd's design and some of its objects are also used to integrate
+with other control systems.
 
 * Put the details specific to a device or control system behind a **high-level
   interface** with methods like ``trigger()``, ``read()``, and ``set(...)``.
@@ -26,9 +27,8 @@ other control systems.
   engineering/debugging) which can be read selectively.
 
 ============== ==============================================================
-PyPI           ``pip install ophyd``
-Conda          ``conda install -c conda-forge ophyd``
-Source code    https://github.com/bluesky/ophyd
+PyPI           ``pip install ophyd-async``
+Source code    https://github.com/bluesky/ophyd-async
 Documentation  https://blueskyproject.io/ophyd
 ============== ==============================================================
 
@@ -51,6 +51,8 @@ See the tutorials for usage examples.
     :alt: BSD 3-Clause License
 
 .. _Bluesky Run Engine: http://blueskyproject.io/bluesky
+
+.. _Ophyd: http://blueskyproject.io/ophyd
 
 .. _EPICS: http://www.aps.anl.gov/epics/
 
