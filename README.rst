@@ -24,6 +24,7 @@ also. In addition to the abstractions provided by ophyd, ophyd-async allows:
 * Simpler instantiation of devices (groupings of signals) with less reliance
   upon complex class hierarchies
 
+NOTE: ophyd-async is included on a provisional basis until the v1.0 release.
 ============== ==============================================================
 PyPI           ``pip install ophyd-async``
 Source code    https://github.com/bluesky/ophyd-async
