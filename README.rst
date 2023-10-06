@@ -11,20 +11,18 @@ code to operate above the specifics of particular devices and control systems.
 
 Both ophyd and ophyd-async are typically used with the `Bluesky Run Engine`_ for 
 experiment orchestration and data acquisition. However, these libraries are
-able to be used in a stand-alone fashion.
+able to be used in a stand-alone fashion. For an example of how a facility defines
+and uses ophyd-async devices, see `dls-dodal`_, which is currently using a
+mixture of ophyd and ophyd-async devices.
 
-Many facilities use ophyd-async to integrate with control systems that use 
-`EPICS`_, but ophyd's design and some of its objects are also used to integrate
-with other control systems.
+While `EPICS`_ is the most common control system layer that ophyd-async can
+interface with, other control systems like `Tango`_ are used by some facilities
+also. In addition to the abstractions provided by ophyd, ophyd-async allows:
 
-* Put the details specific to a device or control system behind a **high-level
-  interface** with methods like ``trigger()``, ``read()``, and ``set(...)``.
-* **Group** individual control channels (such as EPICS V3 PVs) into logical
-  "Devices" to be configured and used as units with internal coordination.
-* Assign readings with **names meaningful for data analysis** that will
-  propagate into metadata.
-* **Categorize** readings by "kind" (primary reading, configuration,
-  engineering/debugging) which can be read selectively.
+* Asynchronous signal access, opening the possibility for hardware-triggered
+  scanning (also known as fly-scanning)
+* Simpler instantiation of devices (groupings of signals) with less reliance
+  upon complex class hierarchies
 
 ============== ==============================================================
 PyPI           ``pip install ophyd-async``
@@ -54,7 +52,11 @@ See the tutorials for usage examples.
 
 .. _Ophyd: http://blueskyproject.io/ophyd
 
+.. _dls-dodal: https://github.com/DiamondLightSource/dodal
+
 .. _EPICS: http://www.aps.anl.gov/epics/
+
+.. _Tango: https://www.tango-controls.org/
 
 ..
     Anything below this line is used when viewing README.rst and will be replaced
