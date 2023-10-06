@@ -1,4 +1,4 @@
-"""Equivalent of bluesky.protols.Status for asynchronous tasks."""
+"""Equivalent of bluesky.protocols.Status for asynchronous tasks."""
 
 import asyncio
 import functools

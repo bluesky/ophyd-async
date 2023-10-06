@@ -1,6 +1,6 @@
 from ophyd_async.core import Device
 
-from .utils import ad_r
+from ..utils import ad_r
 
 
 class NDPlugin(Device):

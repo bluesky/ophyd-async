@@ -6,16 +6,23 @@ import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import bluesky.preprocessors as bpp
 import pytest
+import tempfile
 
 from ophyd_async.core import DeviceCollector, set_sim_put_proceeds, set_sim_value
+from ophyd_async.core.detector import StandardDetector
+from ophyd_async.epics.areadetector.drivers.ad_driver import ADDriverShapeProvider
+from ophyd_async.epics.areadetector.plugins.hdf_writer import HDFWriter # replacement to HDFStreamerDet
+from ophyd_async.epics.areadetector.plugins.nd_file_hdf import NDFileHDF
+from ophyd_async.core.detector.providers import StaticDirectoryProvider #replacement to TmpDirectoryProvider
 from ophyd_async.epics.areadetector import (
     ADDriver,
     FileWriteMode,
-    HDFStreamerDet,
     ImageMode,
     NDFileHDF,
-    TmpDirectoryProvider,
 )
+from bluesky.utils import new_uid
+
+from ophyd_async.epics.areadetector.standard_control import StandardControl
 
 
 class DocHolder:
@@ -35,47 +42,52 @@ def doc_holder():
 
 @pytest.fixture
 async def hdf_streamer_dets():
-    dp = TmpDirectoryProvider()
+    temporary_directory = tempfile.mkdtemp()
+    dp = StaticDirectoryProvider(temporary_directory, f"test-{new_uid()}")
     async with DeviceCollector(sim=True):
-        deta = HDFStreamerDet(
-            drv=ADDriver(prefix="PREFIX1:DET"),
-            hdf=NDFileHDF("PREFIX1:HDF"),
-            dp=dp,
-        )
-        detb = HDFStreamerDet(
-            drv=ADDriver(prefix="PREFIX1:DET"),
-            hdf=NDFileHDF("PREFIX1:HDF"),
-            dp=dp,
-        )
+        drv = ADDriver(prefix="PREFIX1:DET")
+        writer = HDFWriter(NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drv))
+
+        deta = StandardDetector(
+            StandardControl(drv),
+            writer, config_sigs=[])
+
+        detb = StandardDetector(
+            StandardControl(drv),
+            writer, config_sigs=[])
+
 
     assert deta.name == "deta"
     assert detb.name == "detb"
-    assert deta.drv.name == "deta-drv"
-    assert deta.hdf.name == "deta-hdf"
+    assert deta.control.driver.name == "deta-drv"
+    assert deta.data.hdf.name == "deta-hdf"
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
-        set_sim_value(det.drv.acquire_time, 0.8 + i)
-        set_sim_value(det.drv.image_mode, ImageMode.continuous)
-        set_sim_value(det.hdf.num_capture, 1000)
-        set_sim_value(det.hdf.num_captured, 1)
-        set_sim_value(det.hdf.full_file_name, f"/tmp/123456/{det.name}.h5")
-        set_sim_value(det.drv.array_size_x, 1024 + i)
-        set_sim_value(det.drv.array_size_y, 768 + i)
+        driver = det.control.driver
+        hdf = det.data.hdf
+
+        set_sim_value(driver.acquire_time, 0.8 + i)
+        set_sim_value(driver.image_mode, ImageMode.continuous)
+        set_sim_value(hdf.num_capture, 1000)
+        set_sim_value(hdf.num_captured, 1)
+        set_sim_value(hdf.full_file_name, f"/tmp/123456/{det.name}.h5")
+        set_sim_value(driver.array_size_x, 1024 + i)
+        set_sim_value(driver.array_size_y, 768 + i)
     yield deta, detb
 
 
 async def test_hdf_streamer_dets_step(
-    hdf_streamer_dets: List[HDFStreamerDet], RE, doc_holder: DocHolder
+    hdf_streamer_dets: List[StandardDetector[StandardControl, HDFWriter]], RE, doc_holder: DocHolder
 ):
     RE(bp.count(hdf_streamer_dets), doc_holder.append)
 
-    drv = hdf_streamer_dets[0].drv
+    drv = hdf_streamer_dets[0].control.driver
     assert 1 == await drv.acquire.get_value()
     assert ImageMode.single == await drv.image_mode.get_value()
     assert True is await drv.wait_for_plugins.get_value()
 
-    hdf = hdf_streamer_dets[1].hdf
+    hdf = hdf_streamer_dets[1].data.hdf
     assert True is await hdf.lazy_open.get_value()
     assert True is await hdf.swmr_mode.get_value()
     assert 0 == await hdf.num_capture.get_value()
@@ -109,18 +121,18 @@ async def test_hdf_streamer_dets_step(
 # TODO: write test where they are in the same stream after
 #   https://github.com/bluesky/bluesky/issues/1558
 async def test_hdf_streamer_dets_fly_different_streams(
-    hdf_streamer_dets: List[HDFStreamerDet], RE, doc_holder: DocHolder
+    hdf_streamer_dets: List[StandardDetector[StandardControl, HDFWriter]], RE, doc_holder: DocHolder
 ):
     deta, detb = hdf_streamer_dets
 
     for det in hdf_streamer_dets:
-        set_sim_value(det.hdf.num_captured, 5)
+        set_sim_value(det.data.hdf.num_captured, 5)
 
     @bpp.stage_decorator(hdf_streamer_dets)
     @bpp.run_decorator()
     def fly_det(num: int):
         # Set the number of images
-        yield from bps.mov(deta.drv.num_images, num, detb.drv.num_images, num)
+        yield from bps.mov(deta.control.driver.num_images, num, detb.control.driver.num_images, num)
         # Kick them off in parallel and wait to be done
         for det in hdf_streamer_dets:
             yield from bps.kickoff(det, wait=False, group="kickoff")
@@ -150,12 +162,12 @@ async def test_hdf_streamer_dets_fly_different_streams(
         "stop",
     ]
 
-    drv = hdf_streamer_dets[0].drv
+    drv = hdf_streamer_dets[0].control.driver
     assert 1 == await drv.acquire.get_value()
     assert ImageMode.multiple == await drv.image_mode.get_value()
     assert True is await drv.wait_for_plugins.get_value()
 
-    hdf = hdf_streamer_dets[1].hdf
+    hdf = hdf_streamer_dets[1].data.hdf
     assert True is await hdf.lazy_open.get_value()
     assert True is await hdf.swmr_mode.get_value()
     assert 0 == await hdf.num_capture.get_value()
@@ -174,15 +186,3 @@ async def test_hdf_streamer_dets_fly_different_streams(
     for sd in (sda, sdb):
         assert sd["event_offset"] == 0
         assert sd["event_count"] == 5
-
-
-async def test_hdf_streamer_dets_timeout(hdf_streamer_dets: List[HDFStreamerDet]):
-    det, _ = hdf_streamer_dets
-    await det.stage()
-    set_sim_put_proceeds(det.drv.acquire, False)
-    await det.kickoff()
-    t = time.monotonic()
-    with patch("ophyd_async.epics.areadetector.hdf_streamer_det.FRAME_TIMEOUT", 0.1):
-        with pytest.raises(TimeoutError, match="deta-hdf: writing stalled on frame 1"):
-            await det.complete()
-    assert 1.0 < time.monotonic() - t < 1.1

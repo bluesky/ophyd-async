@@ -1,6 +1,12 @@
-from ._device._backend.signal_backend import SignalBackend
-from ._device._backend.sim_signal_backend import SimSignalBackend
-from ._device._signal.signal import (
+from ._backend.signal_backend import SignalBackend
+from ._backend.sim_signal_backend import SimSignalBackend
+from ._detector.detector_control import C, DetectorControl, DetectorTrigger
+from ._detector.detector_writer import D, DetectorWriter
+from ._detector.standard_detector import StandardDetector
+from ._device.device import Device
+from ._device.device_collector import DeviceCollector
+from ._device.device_vector import DeviceVector
+from ._signal.signal import (
     Signal,
     SignalR,
     SignalRW,
@@ -13,19 +19,20 @@ from ._device._signal.signal import (
     set_sim_value,
     wait_for_value,
 )
-from ._device.device import Device
-from ._device.device_collector import DeviceCollector
-from ._device.device_vector import DeviceVector
-from ._device.standard_readable import StandardReadable
 from .async_status import AsyncStatus
+from .providers import (
+    DirectoryInfo,
+    DirectoryProvider,
+    NameProvider,
+    ShapeProvider,
+    StaticDirectoryProvider,
+)
+from .standard_readable import StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
     Callback,
-    DirectoryInfo,
-    DirectoryProvider,
     NotConnected,
     ReadingValueCallback,
-    StaticDirectoryProvider,
     T,
     get_dtype,
     get_unique,
@@ -36,6 +43,15 @@ from .utils import (
 __all__ = [
     "SignalBackend",
     "SimSignalBackend",
+    "C",
+    "DetectorControl",
+    "DetectorTrigger",
+    "D",
+    "DetectorWriter",
+    "StandardDetector",
+    "Device",
+    "DeviceCollector",
+    "DeviceVector",
     "Signal",
     "SignalR",
     "SignalW",
@@ -47,18 +63,17 @@ __all__ = [
     "set_sim_put_proceeds",
     "set_sim_value",
     "wait_for_value",
-    "Device",
-    "DeviceCollector",
-    "DeviceVector",
-    "StandardReadable",
     "AsyncStatus",
-    "DEFAULT_TIMEOUT",
-    "Callback",
     "DirectoryInfo",
     "DirectoryProvider",
+    "NameProvider",
+    "ShapeProvider",
+    "StaticDirectoryProvider",
+    "StandardReadable",
+    "DEFAULT_TIMEOUT",
+    "Callback",
     "NotConnected",
     "ReadingValueCallback",
-    "StaticDirectoryProvider",
     "T",
     "get_dtype",
     "get_unique",
