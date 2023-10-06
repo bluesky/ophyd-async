@@ -6,8 +6,8 @@ from bluesky.protocols import Triggerable
 from ophyd_async.core import AsyncStatus, SignalR, StandardReadable
 
 from .drivers.ad_driver import ADDriver
-from .writers.nd_plugin import NDPlugin
 from .utils import ImageMode
+from .writers.nd_plugin import NDPlugin
 
 
 class SingleTriggerDet(StandardReadable, Triggerable):
