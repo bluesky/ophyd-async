@@ -27,7 +27,7 @@ also. In addition to the abstractions provided by ophyd, ophyd-async allows:
 ============== ==============================================================
 PyPI           ``pip install ophyd-async``
 Source code    https://github.com/bluesky/ophyd-async
-Documentation  https://blueskyproject.io/ophyd
+Documentation  https://blueskyproject.io/ophyd-async
 ============== ==============================================================
 
 See the tutorials for usage examples.
