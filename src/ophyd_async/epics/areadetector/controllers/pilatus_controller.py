@@ -1,11 +1,15 @@
 import asyncio
 
-from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
-from ophyd_async.core._detector import DetectorControl, DetectorTrigger
-from ophyd_async.core._signal.signal import set_and_wait_for_value, wait_for_value
-from ophyd_async.epics.areadetector.utils import ImageMode
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+    set_and_wait_for_value,
+    wait_for_value,
+)
 
 from ..drivers.pilatus_driver import PilatusDriver, TriggerMode
+from ..utils import ImageMode
 
 TRIGGER_MODE = {
     DetectorTrigger.internal: TriggerMode.internal,

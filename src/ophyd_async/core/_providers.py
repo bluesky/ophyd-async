@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, Sequence
 
 
 @dataclass
@@ -26,4 +26,10 @@ class StaticDirectoryProvider(DirectoryProvider):
 class NameProvider(Protocol):
     @abstractmethod
     def __call__(self) -> str:
+        ...
+
+
+class ShapeProvider(Protocol):
+    @abstractmethod
+    async def __call__(self) -> Sequence[int]:
         ...

@@ -2,7 +2,6 @@ from ._backend.signal_backend import SignalBackend
 from ._backend.sim_signal_backend import SimSignalBackend
 from ._detector.detector_control import C, DetectorControl, DetectorTrigger
 from ._detector.detector_writer import D, DetectorWriter
-from ._detector.driver import Driver
 from ._detector.standard_detector import StandardDetector
 from ._device.device import Device
 from ._device.device_collector import DeviceCollector
@@ -11,6 +10,7 @@ from ._providers import (
     DirectoryInfo,
     DirectoryProvider,
     NameProvider,
+    ShapeProvider,
     StaticDirectoryProvider,
 )
 from ._signal.signal import (
@@ -48,7 +48,6 @@ __all__ = [
     "DetectorTrigger",
     "D",
     "DetectorWriter",
-    "Driver",
     "StandardDetector",
     "Device",
     "DeviceCollector",
@@ -68,6 +67,7 @@ __all__ = [
     "DirectoryInfo",
     "DirectoryProvider",
     "NameProvider",
+    "ShapeProvider",
     "StaticDirectoryProvider",
     "StandardReadable",
     "DEFAULT_TIMEOUT",

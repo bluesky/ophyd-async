@@ -2,12 +2,9 @@ import bluesky.plans as bp
 import pytest
 
 from ophyd_async.core import DeviceCollector, set_sim_value
-from ophyd_async.epics.areadetector import (
-    ADDriver,
-    ImageMode,
-    NDPluginStats,
-    SingleTriggerDet,
-)
+from ophyd_async.epics.areadetector import ImageMode, SingleTriggerDet
+from ophyd_async.epics.areadetector.drivers import ADDriver
+from ophyd_async.epics.areadetector.writers import NDPluginStats
 
 
 class DocHolder:

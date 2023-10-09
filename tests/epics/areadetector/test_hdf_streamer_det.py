@@ -13,16 +13,10 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_sim_value,
 )
-from ophyd_async.epics.areadetector import (
-    ADDriver,
-    FileWriteMode,
-    ImageMode,
-    NDFileHDF,
-    StandardController,
-)
-from ophyd_async.epics.areadetector.drivers.ad_driver import ADDriverShapeProvider
-from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
+from ophyd_async.epics.areadetector import FileWriteMode, ImageMode
+from ophyd_async.epics.areadetector.controllers import StandardController
+from ophyd_async.epics.areadetector.drivers import ADDriver, ADDriverShapeProvider
+from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 
 
 class DocHolder:
@@ -45,14 +39,19 @@ async def hdf_streamer_dets():
     temporary_directory = tempfile.mkdtemp()
     dp = StaticDirectoryProvider(temporary_directory, f"test-{new_uid()}")
     async with DeviceCollector(sim=True):
-        drv = ADDriver(prefix="PREFIX1:DET")
-        writer = HDFWriter(
-            NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drv)
+        drva = ADDriver(prefix="PREFIX1:DET")
+        drvb = ADDriver(prefix="PREFIX2:DET")
+
+        writera = HDFWriter(
+            NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drva)
+        )
+        writerb = HDFWriter(
+            NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drvb)
         )
 
-        deta = StandardDetector(StandardController(drv), writer, config_sigs=[])
+        deta = StandardDetector(StandardController(drva), writera, config_sigs=[])
 
-        detb = StandardDetector(StandardController(drv), writer, config_sigs=[])
+        detb = StandardDetector(StandardController(drvb), writerb, config_sigs=[])
 
     assert deta.name == "deta"
     assert detb.name == "detb"

@@ -4,7 +4,6 @@ from enum import Enum
 from typing import Optional, TypeVar
 
 from ..async_status import AsyncStatus
-from .driver import Driver
 
 
 class DetectorTrigger(Enum):
@@ -19,12 +18,6 @@ class DetectorTrigger(Enum):
 
 
 class DetectorControl(ABC):
-    @property
-    @abstractmethod
-    def driver(self) -> Driver:
-        """The driver that actually does the data collection."""
-        ...
-
     @abstractmethod
     def get_deadtime(self, exposure: float) -> float:
         """For a given exposure, how long should the time between exposures be"""
