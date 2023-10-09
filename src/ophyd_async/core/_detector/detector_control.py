@@ -1,7 +1,7 @@
 """Module which defines abstract classes to work with detectors"""
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, TypeVar
+from typing import Optional
 
 from ..async_status import AsyncStatus
 
@@ -37,6 +37,3 @@ class DetectorControl(ABC):
     @abstractmethod
     async def disarm(self):
         """Disarm the detector"""
-
-
-C = TypeVar("C", bound=DetectorControl)

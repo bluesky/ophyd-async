@@ -14,6 +14,7 @@ from bluesky.protocols import Descriptor
 from event_model import StreamDatum, StreamResource
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     AsyncStatus,
     DetectorWriter,
     DirectoryProvider,
@@ -116,7 +117,9 @@ class HDFWriter(DetectorWriter):
             yield doc
 
     async def close(self):
-        assert self._capture_status, "Open not run"
         # Already done a caput callback in _capture_status, so can't do one here
         await self.hdf.capture.set(0, wait=False)
-        await self._capture_status
+        await wait_for_value(self.hdf.capture, 0, DEFAULT_TIMEOUT)
+        if self._capture_status:
+            # We kicked off an open, so wait for it to return
+            await self._capture_status

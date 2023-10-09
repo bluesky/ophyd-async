@@ -1,7 +1,7 @@
 from ._backend.signal_backend import SignalBackend
 from ._backend.sim_signal_backend import SimSignalBackend
-from ._detector.detector_control import C, DetectorControl, DetectorTrigger
-from ._detector.detector_writer import D, DetectorWriter
+from ._detector.detector_control import DetectorControl, DetectorTrigger
+from ._detector.detector_writer import DetectorWriter
 from ._detector.standard_detector import StandardDetector
 from ._device.device import Device
 from ._device.device_collector import DeviceCollector
@@ -43,10 +43,8 @@ from .utils import (
 __all__ = [
     "SignalBackend",
     "SimSignalBackend",
-    "C",
     "DetectorControl",
     "DetectorTrigger",
-    "D",
     "DetectorWriter",
     "StandardDetector",
     "Device",

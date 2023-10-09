@@ -1,6 +1,12 @@
 import asyncio
+from typing import Optional
 
-from ophyd_async.core import AsyncStatus, set_and_wait_for_value, wait_for_value
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorTrigger,
+    set_and_wait_for_value,
+    wait_for_value,
+)
 from ophyd_async.core._detector.detector_control import DetectorControl
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.areadetector.drivers.ad_driver import ADDriver, ImageMode
@@ -13,7 +19,12 @@ class StandardController(DetectorControl):
     async def get_deadtime(self, exposure: float) -> float:
         return 0.002
 
-    async def arm(self, num: int = 0) -> AsyncStatus:
+    async def arm(
+        self,
+        trigger: DetectorTrigger = DetectorTrigger.internal,
+        num: int = 0,
+        exposure: Optional[float] = None,
+    ) -> AsyncStatus:
         frame_timeout = DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         await asyncio.gather(
             self.driver.num_images.set(num),

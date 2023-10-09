@@ -42,12 +42,11 @@ async def hdf_streamer_dets():
         drva = ADDriver(prefix="PREFIX1:DET")
         drvb = ADDriver(prefix="PREFIX2:DET")
 
-        writera = HDFWriter(
-            NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drva)
-        )
-        writerb = HDFWriter(
-            NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drvb)
-        )
+        hdfa = NDFileHDF("PREFIX1:HDF")
+        hdfb = NDFileHDF("PREFIX2:HDF")
+
+        writera = HDFWriter(hdfa, dp, lambda: "test", ADDriverShapeProvider(drva))
+        writerb = HDFWriter(hdfb, dp, lambda: "test", ADDriverShapeProvider(drvb))
 
         deta = StandardDetector(StandardController(drva), writera, config_sigs=[])
 
@@ -55,8 +54,6 @@ async def hdf_streamer_dets():
 
     assert deta.name == "deta"
     assert detb.name == "detb"
-    assert deta.control.driver.name == "deta-drv"
-    assert deta.data.hdf.name == "deta-hdf"
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
@@ -74,7 +71,7 @@ async def hdf_streamer_dets():
 
 
 async def test_hdf_streamer_dets_step(
-    hdf_streamer_dets: List[StandardDetector[StandardController, HDFWriter]],
+    hdf_streamer_dets: List[StandardDetector],
     RE,
     doc_holder: DocHolder,
 ):
@@ -119,7 +116,7 @@ async def test_hdf_streamer_dets_step(
 # TODO: write test where they are in the same stream after
 #   https://github.com/bluesky/bluesky/issues/1558
 async def test_hdf_streamer_dets_fly_different_streams(
-    hdf_streamer_dets: List[StandardDetector[StandardController, HDFWriter]],
+    hdf_streamer_dets: List[StandardDetector],
     RE,
     doc_holder: DocHolder,
 ):

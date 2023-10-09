@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Generic, Iterator, Sequence
+from typing import Dict, Iterator, Sequence
 
 from bluesky.protocols import (
     Asset,
@@ -16,8 +16,8 @@ from .._device.device import Device
 from .._signal.signal import SignalR
 from ..async_status import AsyncStatus
 from ..utils import merge_gathered_dicts
-from .detector_control import C, DetectorTrigger
-from .detector_writer import D
+from .detector_control import DetectorControl, DetectorTrigger
+from .detector_writer import DetectorWriter
 
 
 class StandardDetector(
@@ -27,7 +27,6 @@ class StandardDetector(
     Readable,
     Triggerable,
     WritesExternalAssets,
-    Generic[C, D],
 ):
     """Detector with useful default behaviour.
 
@@ -45,8 +44,8 @@ class StandardDetector(
 
     def __init__(
         self,
-        control: C,
-        data: D,
+        control: DetectorControl,
+        data: DetectorWriter,
         config_sigs: Sequence[SignalR],
         name: str = "",
         **plugins: Device,

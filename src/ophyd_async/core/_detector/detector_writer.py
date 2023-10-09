@@ -1,6 +1,6 @@
 """Module which defines abstract classes to work with writers"""
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, Dict, TypeVar, Union
+from typing import AsyncIterator, Dict, Union
 
 from bluesky.protocols import Descriptor
 from event_model import StreamDatum, StreamResource
@@ -36,6 +36,3 @@ class DetectorWriter(ABC):
     @abstractmethod
     async def close(self) -> None:
         """Close writer and wait for it to be finished"""
-
-
-D = TypeVar("D", bound=DetectorWriter)
