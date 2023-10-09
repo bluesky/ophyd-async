@@ -1,5 +1,8 @@
+"""Module which defines abstract classes to work with detectors"""
 import asyncio
-from typing import Dict, Iterator, Sequence
+from abc import ABC, abstractmethod
+from enum import Enum
+from typing import AsyncIterator, Dict, Iterator, Optional, Sequence, Union
 
 from bluesky.protocols import (
     Asset,
@@ -11,13 +14,77 @@ from bluesky.protocols import (
     Triggerable,
     WritesExternalAssets,
 )
+from event_model import StreamDatum, StreamResource
 
-from .._device.device import Device
-from .._signal.signal import SignalR
-from ..async_status import AsyncStatus
-from ..utils import merge_gathered_dicts
-from .detector_control import DetectorControl, DetectorTrigger
-from .detector_writer import DetectorWriter
+from .async_status import AsyncStatus
+from .device import Device
+from .signal import SignalR
+from .utils import merge_gathered_dicts
+
+
+class DetectorTrigger(Enum):
+    #: Detector generates internal trigger for given rate
+    internal = ()
+    #: Expect a series of arbitrary length trigger signals
+    edge_trigger = ()
+    #: Expect a series of constant width external gate signals
+    constant_gate = ()
+    #: Expect a series of variable width external gate signals
+    variable_gate = ()
+
+
+class DetectorControl(ABC):
+    @abstractmethod
+    def get_deadtime(self, exposure: float) -> float:
+        """For a given exposure, how long should the time between exposures be"""
+
+    @abstractmethod
+    async def arm(
+        self,
+        trigger: DetectorTrigger = DetectorTrigger.internal,
+        num: int = 0,
+        exposure: Optional[float] = None,
+    ) -> AsyncStatus:
+        """Arm the detector and return AsyncStatus.
+
+        Awaiting the return value will wait for num frames to be written.
+        """
+
+    @abstractmethod
+    async def disarm(self):
+        """Disarm the detector"""
+
+
+class DetectorWriter(ABC):
+    @abstractmethod
+    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+        """Open writer and wait for it to be ready for data.
+
+        Args:
+            multiplier: Each StreamDatum index corresponds to this many
+                written exposures
+
+        Returns:
+            Output for ``describe()``
+        """
+
+    @abstractmethod
+    async def wait_for_index(self, index: int) -> None:
+        """Wait until a specific index is ready to be collected"""
+
+    @abstractmethod
+    async def get_indices_written(self) -> int:
+        """Get the number of indices written"""
+
+    @abstractmethod
+    async def collect_stream_docs(
+        self, indices_written: int
+    ) -> AsyncIterator[Union[StreamResource, StreamDatum]]:
+        """Create Stream docs up to given number written"""
+
+    @abstractmethod
+    async def close(self) -> None:
+        """Close writer and wait for it to be finished"""
 
 
 class StandardDetector(

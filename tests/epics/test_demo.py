@@ -135,7 +135,7 @@ async def test_mover_disconncted():
 
 
 async def test_sensor_disconnected():
-    with patch("ophyd_async.core._device.device_collector.logging") as mock_logging:
+    with patch("ophyd_async.core.device.logging") as mock_logging:
         with pytest.raises(NotConnected, match="Not all Devices connected"):
             async with DeviceCollector(timeout=0.1):
                 s = demo.Sensor("ca://PRE:", name="sensor")
