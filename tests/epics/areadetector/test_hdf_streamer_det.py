@@ -1,29 +1,28 @@
-import time
+import tempfile
 from typing import List
-from unittest.mock import patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import bluesky.preprocessors as bpp
 import pytest
-import tempfile
+from bluesky.utils import new_uid
 
-
-from ophyd_async.core import DeviceCollector, set_sim_value, StandardDetector, StaticDirectoryProvider
-
-from ophyd_async.epics.areadetector.drivers.ad_driver import ADDriverShapeProvider
-from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
-
+from ophyd_async.core import (
+    DeviceCollector,
+    StandardDetector,
+    StaticDirectoryProvider,
+    set_sim_value,
+)
 from ophyd_async.epics.areadetector import (
     ADDriver,
     FileWriteMode,
     ImageMode,
     NDFileHDF,
+    StandardController,
 )
-from bluesky.utils import new_uid
-
-from ophyd_async.epics.areadetector import StandardController
+from ophyd_async.epics.areadetector.drivers.ad_driver import ADDriverShapeProvider
+from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter
+from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
 
 
 class DocHolder:
@@ -47,16 +46,13 @@ async def hdf_streamer_dets():
     dp = StaticDirectoryProvider(temporary_directory, f"test-{new_uid()}")
     async with DeviceCollector(sim=True):
         drv = ADDriver(prefix="PREFIX1:DET")
-        writer = HDFWriter(NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drv))
+        writer = HDFWriter(
+            NDFileHDF("PREFIX1:HDF"), dp, lambda: "test", ADDriverShapeProvider(drv)
+        )
 
-        deta = StandardDetector(
-            StandardController(drv),
-            writer, config_sigs=[])
+        deta = StandardDetector(StandardController(drv), writer, config_sigs=[])
 
-        detb = StandardDetector(
-            StandardController(drv),
-            writer, config_sigs=[])
-
+        detb = StandardDetector(StandardController(drv), writer, config_sigs=[])
 
     assert deta.name == "deta"
     assert detb.name == "detb"
@@ -79,7 +75,9 @@ async def hdf_streamer_dets():
 
 
 async def test_hdf_streamer_dets_step(
-    hdf_streamer_dets: List[StandardDetector[StandardController, HDFWriter]], RE, doc_holder: DocHolder
+    hdf_streamer_dets: List[StandardDetector[StandardController, HDFWriter]],
+    RE,
+    doc_holder: DocHolder,
 ):
     RE(bp.count(hdf_streamer_dets), doc_holder.append)
 
@@ -122,7 +120,9 @@ async def test_hdf_streamer_dets_step(
 # TODO: write test where they are in the same stream after
 #   https://github.com/bluesky/bluesky/issues/1558
 async def test_hdf_streamer_dets_fly_different_streams(
-    hdf_streamer_dets: List[StandardDetector[StandardController, HDFWriter]], RE, doc_holder: DocHolder
+    hdf_streamer_dets: List[StandardDetector[StandardController, HDFWriter]],
+    RE,
+    doc_holder: DocHolder,
 ):
     deta, detb = hdf_streamer_dets
 
@@ -133,7 +133,9 @@ async def test_hdf_streamer_dets_fly_different_streams(
     @bpp.run_decorator()
     def fly_det(num: int):
         # Set the number of images
-        yield from bps.mov(deta.control.driver.num_images, num, detb.control.driver.num_images, num)
+        yield from bps.mov(
+            deta.control.driver.num_images, num, detb.control.driver.num_images, num
+        )
         # Kick them off in parallel and wait to be done
         for det in hdf_streamer_dets:
             yield from bps.kickoff(det, wait=False, group="kickoff")

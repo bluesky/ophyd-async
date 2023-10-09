@@ -7,6 +7,12 @@ from ._detector.standard_detector import StandardDetector
 from ._device.device import Device
 from ._device.device_collector import DeviceCollector
 from ._device.device_vector import DeviceVector
+from ._providers import (
+    DirectoryInfo,
+    DirectoryProvider,
+    NameProvider,
+    StaticDirectoryProvider,
+)
 from ._signal.signal import (
     Signal,
     SignalR,
@@ -21,12 +27,6 @@ from ._signal.signal import (
     wait_for_value,
 )
 from .async_status import AsyncStatus
-from ._providers import (
-    DirectoryInfo,
-    DirectoryProvider,
-    NameProvider,
-    StaticDirectoryProvider,
-)
 from .standard_readable import StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,

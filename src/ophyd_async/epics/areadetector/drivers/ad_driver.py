@@ -26,4 +26,3 @@ class ADDriver(Driver):
             self.array_size_x.get_value(),
         )
         return shape
-

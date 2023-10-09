@@ -1,5 +1,14 @@
 import asyncio
-from typing import AsyncIterator, Callable, Dict, List, Optional, Sequence, Union, Awaitable
+from typing import (
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from bluesky.protocols import Descriptor
 from event_model import StreamDatum, StreamResource
@@ -12,6 +21,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
     wait_for_value,
 )
+
 from ._hdfdataset import _HDFDataset
 from ._hdffile import _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF

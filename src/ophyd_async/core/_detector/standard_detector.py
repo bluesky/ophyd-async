@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Generic, Iterator, Sequence, TypeVar
+from typing import Dict, Generic, Iterator, Sequence
 
 from bluesky.protocols import (
     Asset,
