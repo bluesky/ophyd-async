@@ -21,13 +21,13 @@ from .detector_writer import D
 
 
 class StandardDetector(
-    Generic[C, D],
     Device,
     Stageable,
     Configurable,
     Readable,
     Triggerable,
     WritesExternalAssets,
+    Generic[C, D],
 ):
     """Detector with useful default behaviour.
 
@@ -106,11 +106,3 @@ class StandardDetector(
     async def unstage(self) -> None:
         """Stop data writing."""
         await self.data.close()
-
-    async def pause(self) -> None:
-        """Pause the detector."""
-        await self.control.disarm()
-
-    async def resume(self) -> None:
-        """Resume the detector."""
-        await self.data.reset_index()

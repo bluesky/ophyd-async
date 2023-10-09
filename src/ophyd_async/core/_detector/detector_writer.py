@@ -28,10 +28,6 @@ class DetectorWriter(ABC):
         """Get the number of indices written"""
 
     @abstractmethod
-    async def reset_index(self) -> None:
-        """Reset the index count."""
-
-    @abstractmethod
     async def collect_stream_docs(
         self, indices_written: int
     ) -> AsyncIterator[Union[StreamResource, StreamDatum]]:

@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncIterator, Dict, List, Optional, Union
+from typing import AsyncIterator, Callable, Dict, List, Optional, Sequence, Union, Awaitable
 
 from bluesky.protocols import Descriptor
 from event_model import StreamDatum, StreamResource
@@ -9,18 +9,9 @@ from ophyd_async.core import (
     DetectorWriter,
     DirectoryProvider,
     NameProvider,
-    ShapeProvider,
     set_and_wait_for_value,
     wait_for_value,
 )
-from ophyd_async.core._detector import (
-    DetectorWriter,
-    DirectoryProvider,
-    NameProvider,
-    ShapeProvider,
-)
-from ophyd_async.core._signal.signal import set_and_wait_for_value, wait_for_value
-
 from ._hdfdataset import _HDFDataset
 from ._hdffile import _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF
@@ -32,7 +23,7 @@ class HDFWriter(DetectorWriter):
         hdf: NDFileHDF,
         directory_provider: DirectoryProvider,
         name_provider: NameProvider,
-        shape_provider: ShapeProvider,
+        shape_provider: Callable[[None], Awaitable[Sequence[int]]],
         **scalar_datasets_paths: str,
     ) -> None:
         self.hdf = hdf

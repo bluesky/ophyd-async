@@ -1,14 +1,13 @@
 import asyncio
 from typing import Sequence
 
-from ophyd_async.core import Device
-from ophyd_async.core.providers import ShapeProvider
+from ophyd_async.core import Driver
 
 from ...signal.signal import epics_signal_rw
 from ..utils import ImageMode, ad_r, ad_rw
 
 
-class ADDriver(Device):
+class ADDriver(Driver):
     def __init__(self, prefix: str) -> None:
         # Define some signals
         self.acquire = ad_rw(bool, prefix + "Acquire")
@@ -21,14 +20,10 @@ class ADDriver(Device):
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
 
-
-class ADDriverShapeProvider(ShapeProvider):
-    def __init__(self, driver: ADDriver) -> None:
-        self._driver = driver
-
-    async def __call__(self) -> Sequence[int]:
+    async def shape(self) -> Sequence[int]:
         shape = await asyncio.gather(
-            self._driver.array_size_y.get_value(),
-            self._driver.array_size_x.get_value(),
+            self.array_size_y.get_value(),
+            self.array_size_x.get_value(),
         )
         return shape
+

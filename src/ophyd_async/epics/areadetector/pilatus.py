@@ -1,6 +1,5 @@
 from ophyd_async.core import StandardDetector, StaticDirectoryProvider
-from ophyd_async.epics.areadetector.drivers.ad_driver import ADDriverShapeProvider
-from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter as ADHDFWriter
+from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter
 from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
 from ophyd_async.epics.areadetector.writers.nd_plugin import NDPluginStats
 
@@ -12,15 +11,13 @@ dp = StaticDirectoryProvider("/dls/p45/data/cmxxx/i22-yyy", "i22-yyy-")
 
 class Pilatus(StandardDetector):
     def __init__(self, prefix: str):
-        drv = PilatusDriver(prefix)
-        hdf = NDFileHDF(prefix + "HDF:")
+        self.drv = PilatusDriver(prefix)
+        self.hdf = NDFileHDF(prefix + "HDF:")
+        self.stats = NDPluginStats(prefix + "STATS:")
         super().__init__(
-            PilatusController(drv),
-            ADHDFWriter(
-                hdf, dp, lambda: self.name, ADDriverShapeProvider(drv), sum="NDStatsSum"
+            PilatusController(self.drv),
+            HDFWriter(
+                self.hdf, dp, lambda: self.name, self.drv.shape, sum="NDStatsSum"
             ),
-            config_sigs=[drv.acquire_time, drv.acquire],
-            drv=drv,
-            stats=NDPluginStats(prefix + "STATS:"),
-            hdf=hdf,
+            config_sigs=[self.drv.acquire_time, self.drv.acquire],
         )

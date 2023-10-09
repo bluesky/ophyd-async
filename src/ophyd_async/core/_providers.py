@@ -27,9 +27,3 @@ class NameProvider(Protocol):
     @abstractmethod
     def __call__(self) -> str:
         ...
-
-
-class ShapeProvider(Protocol):
-    @abstractmethod
-    async def __call__(self) -> Sequence[int]:
-        ...
