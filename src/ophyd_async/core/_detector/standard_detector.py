@@ -87,8 +87,10 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def trigger(self) -> None:
         """Arm the detector and wait for it to finish."""
+        indices_written = await self.data.get_indices_written()
         written_status = await self.control.arm(DetectorTrigger.internal, num=1)
         await written_status
+        await self.data.wait_for_index(indices_written + 1)
 
     async def read(self) -> Dict[str, Reading]:
         """Unused method: will be deprecated."""

@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 from bluesky import RunEngine
 from bluesky.callbacks.best_effort import BestEffortCallback
 from bluesky.utils import ProgressBarManager, register_transform
-from ophyd.v2.core import DeviceCollector
 
 from ophyd_async.epics import areadetector
-
+from ophyd_async.core import DeviceCollector
 # Create a run engine, with plotting, progressbar and transform
 RE = RunEngine({}, call_returns_result=True)
 bec = BestEffortCallback()
@@ -25,7 +24,7 @@ pv_prefix = "pc0105-AD-SIM-01:"
 
 # Create v2 devices
 with DeviceCollector():
-    det3 = areadetector.HDFStreamerDet(pv_prefix)
+    det3 = areadetector.Pilatus(pv_prefix)
 
 
 # And a plan

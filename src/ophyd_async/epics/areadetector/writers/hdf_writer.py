@@ -10,8 +10,7 @@ from typing import (
     Union,
 )
 
-from bluesky.protocols import Descriptor
-from event_model import StreamDatum, StreamResource
+from bluesky.protocols import Descriptor, Asset
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -56,10 +55,10 @@ class HDFWriter(DetectorWriter):
             self.hdf.file_path.set(info.directory_path),
             self.hdf.file_name.set(f"{info.filename_prefix}{self.hdf.name}"),
             self.hdf.file_template.set("%s/%s.h5"),
-            # Go forever
-            self.hdf.num_capture.set(0),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
+        # Overwrite num_capture to go forever
+        await self.hdf.num_capture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes
         self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
         name = self._name_provider()
@@ -74,13 +73,13 @@ class HDFWriter(DetectorWriter):
         # And all the scalar datasets
         for ds_name, ds_path in self._scalar_datasets_paths.items():
             self._datasets.append(
-                _HDFDataset(f"{name}.{ds_name}", f"/entry/{ds_path}", (), multiplier)
+                _HDFDataset(f"{name}-{ds_name}", f"/entry/{ds_path}", (), multiplier)
             )
         describe = {
             ds.name: Descriptor(
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + ds.shape,
-                dtype="array",
+                dtype="array" if ds.shape else "number",
                 external="STREAM:",
             )
             for ds in self._datasets
@@ -98,23 +97,18 @@ class HDFWriter(DetectorWriter):
         num_captured = await self.hdf.num_captured.get_value()
         return num_captured // self._multiplier
 
-    async def reset_index(self) -> None:
-        """To be implemented."""
-        ...
-
-    async def collect_stream_docs(
-        self, indices_written: int
-    ) -> AsyncIterator[Union[StreamResource, StreamDatum]]:
+    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         # TODO: fail if we get dropped frames
-        await self.hdf.flush_now.execute()
-        if indices_written and not self._file:
-            self._file = _HDFFile(
-                await self.hdf.full_file_name.get_value(), self._datasets
-            )
-            for doc in self._file.stream_resources():
-                yield doc
-        for doc in self._file.stream_data(indices_written):
-            yield doc
+        await self.hdf.flush_now.set(1)
+        if indices_written:
+            if not self._file:
+                self._file = _HDFFile(
+                    await self.hdf.full_file_name.get_value(), self._datasets
+                )
+                for doc in self._file.stream_resources():
+                    yield "stream_resource", doc
+            for doc in self._file.stream_data(indices_written):
+                yield "stream_datum", doc
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
