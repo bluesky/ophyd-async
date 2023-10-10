@@ -1,6 +1,7 @@
 import tempfile
 from typing import List, cast
 
+from bluesky import RunEngine
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import bluesky.preprocessors as bpp
@@ -18,21 +19,6 @@ from ophyd_async.epics.areadetector import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.controllers import StandardController
 from ophyd_async.epics.areadetector.drivers import ADDriver, ADDriverShapeProvider
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
-
-
-class DocHolder:
-    def __init__(self):
-        self.names = []
-        self.docs = []
-
-    def append(self, name, doc):
-        self.names.append(name)
-        self.docs.append(doc)
-
-
-@pytest.fixture
-def doc_holder():
-    return DocHolder()
 
 
 @pytest.fixture
@@ -72,10 +58,14 @@ async def hdf_streamer_dets():
 
 async def test_hdf_streamer_dets_step(
     hdf_streamer_dets: List[StandardDetector],
-    RE,
-    doc_holder: DocHolder,
+    RE: RunEngine,
 ):
-    RE(bp.count(hdf_streamer_dets), doc_holder.append)
+    names = []
+    docs = []
+    RE.subscribe(lambda name, _: names.append(name))
+    RE.subscribe(lambda _, doc: docs.append(doc))
+
+    RE(bp.count(hdf_streamer_dets))
 
     first_controller = cast(StandardController, hdf_streamer_dets[0].control)
     second_writer = cast(HDFWriter, hdf_streamer_dets[1].data)
@@ -91,7 +81,7 @@ async def test_hdf_streamer_dets_step(
     assert 0 == await hdf.num_capture.get_value()
     assert FileWriteMode.stream == await hdf.file_write_mode.get_value()
 
-    assert doc_holder.names == [
+    assert names == [
         "start",
         "descriptor",
         "stream_resource",
@@ -101,7 +91,7 @@ async def test_hdf_streamer_dets_step(
         "event",
         "stop",
     ]
-    _, descriptor, sra, sda, srb, sdb, event, _ = doc_holder.docs
+    _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["deta"]["data"]["deta-drv-acquire_time"] == 0.8
     assert descriptor["configuration"]["detb"]["data"]["detb-drv-acquire_time"] == 1.8
     assert descriptor["data_keys"]["deta"]["shape"] == [768, 1024]
