@@ -1,7 +1,7 @@
 import tempfile
 from typing import List, cast
 
-from bluesky import RunEngine
+from bluesky import RunEngine, Msg
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import bluesky.preprocessors as bpp
@@ -19,7 +19,7 @@ from ophyd_async.epics.areadetector import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.controllers import StandardController
 from ophyd_async.epics.areadetector.drivers import ADDriver, ADDriverShapeProvider
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
-
+from ophyd_async.epics.motion.motor import Motor
 
 @pytest.fixture
 async def hdf_streamer_dets():
@@ -32,8 +32,8 @@ async def hdf_streamer_dets():
         hdfa = NDFileHDF("PREFIX1:HDF")
         hdfb = NDFileHDF("PREFIX2:HDF")
 
-        writera = HDFWriter(hdfa, dp, lambda: "test", ADDriverShapeProvider(drva))
-        writerb = HDFWriter(hdfb, dp, lambda: "test", ADDriverShapeProvider(drvb))
+        writera = HDFWriter(hdfa, dp, lambda: "testa", ADDriverShapeProvider(drva))
+        writerb = HDFWriter(hdfb, dp, lambda: "testb", ADDriverShapeProvider(drvb))
 
         deta = StandardDetector(StandardController(drva), writera, config_sigs=[])
         detb = StandardDetector(StandardController(drvb), writerb, config_sigs=[])
@@ -56,8 +56,21 @@ async def hdf_streamer_dets():
     yield deta, detb
 
 
+@pytest.fixture
+async def sim_motor():
+    async with DeviceCollector(sim=True):
+        sim_motor = Motor("BLxxI-MO-TABLE-01:X")
+        # Signals connected here
+
+    assert sim_motor.name == "sim_motor"
+    set_sim_value(sim_motor.units, "mm")
+    set_sim_value(sim_motor.precision, 3)
+    set_sim_value(sim_motor.velocity, 1)
+    yield sim_motor
+
 async def test_hdf_streamer_dets_step(
     hdf_streamer_dets: List[StandardDetector],
+    sim_motor: Motor,
     RE: RunEngine,
 ):
     names = []
@@ -65,7 +78,24 @@ async def test_hdf_streamer_dets_step(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
 
-    RE(bp.count(hdf_streamer_dets))
+    def inner_plan(dets: List[StandardDetector]):
+        yield Msg("stage", obj=dets[0])
+        yield Msg("stage", obj=dets[1])
+        yield Msg("open_run")
+        yield Msg("declare_stream", name="primary", collect=False)
+        yield Msg("trigger", dets[0], group="wait_for_trigger")
+        set_sim_value(cast(HDFWriter, dets[0].data).hdf.num_captured, 1)
+        yield Msg("trigger", dets[1], group="wait_for_trigger")
+        set_sim_value(cast(HDFWriter, dets[1].data).hdf.num_captured, 1)
+        yield Msg("wait", group="wait_for_trigger")
+        yield Msg("create", name="primary")
+        yield Msg("read", obj=dets[0])
+        yield Msg("read", obj=dets[1])
+        yield Msg("save")
+        yield Msg("unstage", obj=dets[0])
+        yield Msg("unstage", obj=dets[1])
+
+    RE(inner_plan(hdf_streamer_dets))
 
     first_controller = cast(StandardController, hdf_streamer_dets[0].control)
     second_writer = cast(HDFWriter, hdf_streamer_dets[1].data)
