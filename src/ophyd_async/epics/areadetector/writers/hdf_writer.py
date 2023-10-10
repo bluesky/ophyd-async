@@ -89,21 +89,18 @@ class HDFWriter(DetectorWriter):
         num_captured = await self.hdf.num_captured.get_value()
         return num_captured // self._multiplier
 
-    async def reset_index(self) -> None:
-        """To be implemented."""
-        ...
-
     async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         # TODO: fail if we get dropped frames
         await self.hdf.flush_now.set(True)
-        if indices_written and not self._file:
-            self._file = _HDFFile(
-                await self.hdf.full_file_name.get_value(), self._datasets
-            )
-            for doc in self._file.stream_resources():
-                yield "stream_resource", doc
-        for doc in self._file.stream_data(indices_written):
-            yield "stream_datum", doc
+        if indices_written:
+            if not self._file:
+                self._file = _HDFFile(
+                    await self.hdf.full_file_name.get_value(), self._datasets
+                )
+                for doc in self._file.stream_resources():
+                    yield "stream_resource", doc
+            for doc in self._file.stream_data(indices_written):
+                yield "stream_datum", doc
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here

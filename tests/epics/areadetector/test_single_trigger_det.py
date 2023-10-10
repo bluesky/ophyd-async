@@ -1,3 +1,4 @@
+from typing import Dict, List
 import bluesky.plans as bp
 import pytest
 
@@ -5,21 +6,7 @@ from ophyd_async.core import DeviceCollector, set_sim_value
 from ophyd_async.epics.areadetector import ImageMode, SingleTriggerDet
 from ophyd_async.epics.areadetector.drivers import ADDriver
 from ophyd_async.epics.areadetector.writers import NDPluginStats
-
-
-class DocHolder:
-    def __init__(self):
-        self.names = []
-        self.docs = []
-
-    def append(self, name, doc):
-        self.names.append(name)
-        self.docs.append(doc)
-
-
-@pytest.fixture
-def doc_holder():
-    return DocHolder()
+from bluesky import RunEngine
 
 
 @pytest.fixture
@@ -43,17 +30,22 @@ async def single_trigger_det():
 
 
 async def test_single_trigger_det(
-    single_trigger_det: SingleTriggerDet, RE, doc_holder: DocHolder
+    single_trigger_det: SingleTriggerDet, RE: RunEngine
 ):
-    RE(bp.count([single_trigger_det]), doc_holder.append)
+    names = []
+    docs = []
+    RE.subscribe(lambda name, _: names.append(name))
+    RE.subscribe(lambda _, doc: docs.append(doc))
+
+    RE(bp.count([single_trigger_det]))
 
     drv = single_trigger_det.drv
     assert 1 == await drv.acquire.get_value()
     assert ImageMode.single == await drv.image_mode.get_value()
     assert True is await drv.wait_for_plugins.get_value()
 
-    assert doc_holder.names == ["start", "descriptor", "event", "stop"]
-    _, descriptor, event, _ = doc_holder.docs
+    assert names == ["start", "descriptor", "event", "stop"]
+    _, descriptor, event, _ = docs
     assert descriptor["configuration"]["det"]["data"]["det-drv-acquire_time"] == 0.5
     assert (
         descriptor["data_keys"]["det-stats-unique_id"]["source"]
