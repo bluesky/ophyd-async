@@ -21,6 +21,7 @@ dependencies = [
     "bluesky",
     "event-model",
     "p4p",
+    "scanspec",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 
 dynamic = ["version"]

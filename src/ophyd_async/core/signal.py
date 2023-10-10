@@ -13,11 +13,11 @@ from bluesky.protocols import (
     Subscribable,
 )
 
-from .._backend.signal_backend import SignalBackend
-from .._backend.sim_signal_backend import SimSignalBackend
-from .._device.device import Device
-from ..async_status import AsyncStatus
-from ..utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
+from .async_status import AsyncStatus
+from .device import Device
+from .signal_backend import SignalBackend
+from .sim_signal_backend import SimSignalBackend
+from .utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
 
 _sim_backends: Dict[Signal, SimSignalBackend] = {}
 

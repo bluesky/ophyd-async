@@ -2,14 +2,15 @@ import asyncio
 from typing import Optional
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     AsyncStatus,
+    DetectorControl,
     DetectorTrigger,
     set_and_wait_for_value,
     wait_for_value,
 )
-from ophyd_async.core._detector.detector_control import DetectorControl
-from ophyd_async.core.utils import DEFAULT_TIMEOUT
-from ophyd_async.epics.areadetector.drivers.ad_driver import ADDriver, ImageMode
+
+from ..drivers.ad_driver import ADDriver, ImageMode
 
 
 class StandardController(DetectorControl):

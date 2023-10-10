@@ -1,11 +1,3 @@
-from ._backend.signal_backend import SignalBackend
-from ._backend.sim_signal_backend import SimSignalBackend
-from ._detector.detector_control import DetectorControl, DetectorTrigger
-from ._detector.detector_writer import DetectorWriter
-from ._detector.standard_detector import StandardDetector
-from ._device.device import Device
-from ._device.device_collector import DeviceCollector
-from ._device.device_vector import DeviceVector
 from ._providers import (
     DirectoryInfo,
     DirectoryProvider,
@@ -13,7 +5,10 @@ from ._providers import (
     ShapeProvider,
     StaticDirectoryProvider,
 )
-from ._signal.signal import (
+from .async_status import AsyncStatus
+from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
+from .device import Device, DeviceCollector, DeviceVector
+from .signal import (
     Signal,
     SignalR,
     SignalRW,
@@ -26,7 +21,8 @@ from ._signal.signal import (
     set_sim_value,
     wait_for_value,
 )
-from .async_status import AsyncStatus
+from .signal_backend import SignalBackend
+from .sim_signal_backend import SimSignalBackend
 from .standard_readable import StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,

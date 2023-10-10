@@ -1,16 +1,7 @@
 import asyncio
-from typing import (
-    AsyncIterator,
-    Awaitable,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Union,
-)
+from typing import AsyncIterator, Awaitable, Callable, Dict, List, Optional, Sequence
 
-from bluesky.protocols import Descriptor, Asset
+from bluesky.protocols import Asset, Descriptor
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -18,6 +9,7 @@ from ophyd_async.core import (
     DetectorWriter,
     DirectoryProvider,
     NameProvider,
+    ShapeProvider,
     set_and_wait_for_value,
     wait_for_value,
 )
@@ -33,7 +25,7 @@ class HDFWriter(DetectorWriter):
         hdf: NDFileHDF,
         directory_provider: DirectoryProvider,
         name_provider: NameProvider,
-        shape_provider: Callable[[None], Awaitable[Sequence[int]]],
+        shape_provider: ShapeProvider,
         **scalar_datasets_paths: str,
     ) -> None:
         self.hdf = hdf
@@ -99,7 +91,7 @@ class HDFWriter(DetectorWriter):
 
     async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         # TODO: fail if we get dropped frames
-        await self.hdf.flush_now.set(1)
+        await self.hdf.flush_now.set(True)
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
