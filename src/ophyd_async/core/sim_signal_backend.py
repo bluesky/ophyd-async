@@ -152,6 +152,10 @@ class SimSignalBackend(SignalBackend[T]):
         if self.callback:
             self.callback(reading, self._value)
 
+    def _get_value(self):
+        """Method to bypass asynchronous logic, designed to only be used in tests."""
+        return self.converter.value(self._value)
+
     async def get_descriptor(self) -> Descriptor:
         return self.converter.descriptor(self.source, self._value)
 
@@ -159,7 +163,7 @@ class SimSignalBackend(SignalBackend[T]):
         return self.converter.reading(self._value, self._timestamp, self._severity)
 
     async def get_value(self) -> T:
-        return self.converter.value(self._value)
+        return self._get_value()
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
         if callback:
