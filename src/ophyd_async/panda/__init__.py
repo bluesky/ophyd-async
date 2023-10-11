@@ -9,7 +9,11 @@ from .panda import (
     pvi,
 )
 
+from .flyingpanda import FlyingPanda
+
+
 __all__ = [
+    "FlyingPanda",
     "PandA",
     "PcapBlock",
     "PulseBlock",
