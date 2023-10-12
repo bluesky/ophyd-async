@@ -2,7 +2,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import AsyncIterator, Dict, Iterator, Optional, Sequence, Union
+from typing import AsyncIterator, Dict, Optional, Sequence
 
 from bluesky.protocols import (
     Asset,
@@ -14,7 +14,6 @@ from bluesky.protocols import (
     Triggerable,
     WritesExternalAssets,
 )
-from event_model import StreamDatum, StreamResource
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -77,9 +76,7 @@ class DetectorWriter(ABC):
         """Get the number of indices written"""
 
     @abstractmethod
-    async def collect_stream_docs(
-        self, indices_written: int
-    ) -> AsyncIterator[Union[StreamResource, StreamDatum]]:
+    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         """Create Stream docs up to given number written"""
 
     @abstractmethod
@@ -129,12 +126,20 @@ class StandardDetector(
         name:
             detector name
         """
-        self.control = control
-        self.data = data
+        self._control = control
+        self._data = data
         self._config_sigs = config_sigs
         self._describe: Dict[str, Descriptor] = {}
         self.__dict__.update(plugins)
         super().__init__(name)
+
+    @property
+    def control(self) -> DetectorControl:
+        return self._control
+
+    @property
+    def data(self) -> DetectorWriter:
+        return self._data
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -164,7 +169,7 @@ class StandardDetector(
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    async def collect_asset_docs(self) -> Iterator[Asset]:
+    async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         """Collect stream datum documents for all indices written."""
         indices_written = await self.data.get_indices_written()
         async for doc in self.data.collect_stream_docs(indices_written):

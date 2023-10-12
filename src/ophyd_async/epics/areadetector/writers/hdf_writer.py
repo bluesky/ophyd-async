@@ -56,10 +56,7 @@ class HDFWriter(DetectorWriter):
         name = self._name_provider()
         detector_shape = tuple(await self._shape_provider())
         self._multiplier = multiplier
-        if multiplier > 1:
-            outer_shape = (multiplier,)
-        else:
-            outer_shape = ()
+        outer_shape = (multiplier,) if multiplier > 1 else ()
         # Add the main data
         self._datasets = [_HDFDataset(name, "/entry/data", detector_shape, multiplier)]
         # And all the scalar datasets
@@ -70,7 +67,7 @@ class HDFWriter(DetectorWriter):
         describe = {
             ds.name: Descriptor(
                 source=self.hdf.full_file_name.source,
-                shape=outer_shape + ds.shape,
+                shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
                 external="STREAM:",
             )

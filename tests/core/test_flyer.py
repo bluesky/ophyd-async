@@ -1,14 +1,14 @@
 import time
 from enum import Enum
-from typing import AsyncIterator, Dict, Tuple, Union
+from typing import AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import AsyncMock
 
 import bluesky.plan_stubs as bps
 import pytest
 from bluesky import RunEngine
-from bluesky.protocols import Descriptor
-from event_model import StreamDatum, StreamResource, compose_stream_resource
-from scanspec.core import Frames, Path
+from bluesky.protocols import Asset, Descriptor
+from event_model import ComposeStreamResourceBundle, compose_stream_resource
+from scanspec.core import Path
 
 from ophyd_async.core import (
     DetectorControl,
@@ -70,14 +70,13 @@ class DummyPathTriggerLogic(TriggerLogic[Path]):
 
 
 class DummyWriter(DetectorWriter):
-    def __init__(self, name: str, shape: Tuple[int]):
+    def __init__(self, name: str, shape: Sequence[int]):
         self._shape = shape
         self._name = name
-        self._file: bool = False
+        self._file: Optional[ComposeStreamResourceBundle] = None
         self._last_emitted = 0
 
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
-        detector_shape = (10, 20)
         return {
             self._name: Descriptor(
                 source="sim://some-source",
@@ -93,9 +92,7 @@ class DummyWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return 1
 
-    async def collect_stream_docs(
-        self, indices_written: int
-    ) -> AsyncIterator[Union[StreamResource, StreamDatum]]:
+    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         if indices_written:
             if not self._file:
                 self._file = compose_stream_resource(
@@ -121,7 +118,7 @@ class DummyWriter(DetectorWriter):
                 yield "stream_datum", self._file.compose_stream_datum(indices)
 
     async def close(self) -> None:
-        self._file = False
+        self._file = None
 
 
 @pytest.fixture
@@ -204,7 +201,7 @@ async def test_hardware_triggered_flyable(
 async def test_scan_spec_flyable_wont_pause_if_not_flying(
     RE: RunEngine, detector_group: SameTriggerDetectorGroupLogic
 ):
-    trigger_logic = DummyTriggerLogic()
+    trigger_logic = DummyPathTriggerLogic()
     flyer = ScanSpecFlyable(detector_group, trigger_logic, [], name="flyer")
 
     with pytest.raises(AssertionError):
@@ -213,8 +210,6 @@ async def test_scan_spec_flyable_wont_pause_if_not_flying(
     with pytest.raises(AssertionError):
         await flyer.resume()
 
-    # now check that you can do the first half of a plan, pause it, and it unstages and prepares again.
-
 
 """ For the moment, this test doesnt work.
 
@@ -222,13 +217,15 @@ This is because you can't add a scanspec Path and an int.
 Flyers set a _current_frame to 0 by default, but then expect to be able to add
 any generic T value to it from _prepare...
 """
-"""   
-async def test_scan_spec_flyable_pauses(RE: RunEngine, detector_group: SameTriggerDetectorGroupLogic):
+"""
+async def test_scan_spec_flyable_pauses(
+    RE: RunEngine, detector_group: SameTriggerDetectorGroupLogic
+):
     trigger_logic = DummyPathTriggerLogic()
-    
+
     flyer = ScanSpecFlyable(detector_group, trigger_logic, [], name="flyer")
-    
-    def kickoff_plan():  
+
+    def kickoff_plan():
         yield from bps.stage_all(flyer)
         assert trigger_logic.state == TriggerState.stopping
 
@@ -242,11 +239,11 @@ async def test_scan_spec_flyable_pauses(RE: RunEngine, detector_group: SameTrigg
     # pausing should have unstaged
     for controller in detector_group.controllers:
         assert controller.disarm.called  # type: ignore
-        assert controller.disarm.call_count ==1 # type: ignore
+        assert controller.disarm.call_count == 1  # type: ignore
 
     await flyer.resume()
 
-    def complete_fly():  
+    def complete_fly():
         yield from bps.complete(flyer, wait=False, group="complete")
         assert trigger_logic.state == TriggerState.starting
 

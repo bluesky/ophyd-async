@@ -11,7 +11,7 @@ from ophyd_async.epics.areadetector.controllers import PilatusController
 from ophyd_async.epics.areadetector.pilatus import HDFStatsPilatus
 from ophyd_async.epics.areadetector.writers import HDFWriter
 
-CURRENT_DIRECTORY = Path(__file__).parent
+CURRENT_DIRECTORY = str(Path(__file__).parent)
 
 
 async def make_detector(prefix: str = "") -> HDFStatsPilatus:

@@ -273,7 +273,7 @@ class _ValueChecker(Generic[T]):
             if self._matcher(value):
                 return
 
-    async def wait_for_value(self, signal: SignalR[T], timeout: float):
+    async def wait_for_value(self, signal: SignalR[T], timeout: Optional[float]):
         try:
             await asyncio.wait_for(self._wait_for_value(signal), timeout)
         except asyncio.TimeoutError as e:
@@ -284,7 +284,7 @@ class _ValueChecker(Generic[T]):
 
 
 async def wait_for_value(
-    signal: SignalR[T], match: Union[T, Callable[[T], bool]], timeout: float
+    signal: SignalR[T], match: Union[T, Callable[[T], bool]], timeout: Optional[float]
 ):
     """Wait for a signal to have a matching value.
 

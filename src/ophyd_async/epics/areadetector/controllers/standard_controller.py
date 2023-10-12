@@ -17,7 +17,7 @@ class StandardController(DetectorControl):
     def __init__(self, drv: ADDriver) -> None:
         self.driver = drv
 
-    async def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float) -> float:
         return 0.002
 
     async def arm(
@@ -38,5 +38,5 @@ class StandardController(DetectorControl):
     async def disarm(self):
         # wait=False means don't caput callback. We can't use caput callback as we
         # already used it in arm() and we can't have 2 or they will deadlock
-        await self.driver.acquire.set(0, wait=False)
+        await self.driver.acquire.set(False, wait=False)
         await wait_for_value(self.driver.acquire, False, timeout=1)

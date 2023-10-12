@@ -2,7 +2,6 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
 from typing import (
     AsyncIterator,
     Callable,
@@ -118,8 +117,14 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         return self._arm_status
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
+        # the below is confusing: gather_list does return an awaitable, but it itself
+        # is a coroutine so we must call await twice...
         indices_written = min(
-            await gather_list(writer.get_indices_written() for writer in self.writers)
+            await (
+                await gather_list(
+                    writer.get_indices_written() for writer in self.writers
+                )
+            )
         )
         for writer in self.writers:
             async for doc in writer.collect_stream_docs(indices_written):
@@ -262,7 +267,7 @@ class HardwareTriggeredFlyable(
 ScanAxis = Union[Device, Literal["DURATION"]]
 
 
-class ScanSpecFlyable(HardwareTriggeredFlyable[Path[ScanAxis]], Pausable):
+class ScanSpecFlyable(HardwareTriggeredFlyable[Path], Pausable):
     _spec: Optional[Spec] = None
     _frames: Sequence[Frames] = ()
 
