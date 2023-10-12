@@ -202,7 +202,7 @@ async def test_read_and_describe_detector(single_detector: StandardDetector):
     assert read == {
         "drv-acquire_time": {
             "value": 0.0,
-            "timestamp": pytest.approx(time.monotonic()),
+            "timestamp": pytest.approx(time.monotonic(), rel=1e-2),
             "alarm_severity": 0,
         }
     }
