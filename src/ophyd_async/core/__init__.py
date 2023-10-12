@@ -8,6 +8,15 @@ from ._providers import (
 from .async_status import AsyncStatus
 from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
 from .device import Device, DeviceCollector, DeviceVector
+from .flyer import (
+    DetectorGroupLogic,
+    HardwareTriggeredFlyable,
+    SameTriggerDetectorGroupLogic,
+    ScanAxis,
+    ScanSpecFlyable,
+    TriggerInfo,
+    TriggerLogic,
+)
 from .signal import (
     Signal,
     SignalR,
@@ -64,6 +73,13 @@ __all__ = [
     "ShapeProvider",
     "StaticDirectoryProvider",
     "StandardReadable",
+    "TriggerInfo",
+    "DetectorGroupLogic",
+    "SameTriggerDetectorGroupLogic",
+    "TriggerLogic",
+    "ScanSpecFlyable",
+    "ScanAxis",
+    "HardwareTriggeredFlyable",
     "DEFAULT_TIMEOUT",
     "Callback",
     "NotConnected",

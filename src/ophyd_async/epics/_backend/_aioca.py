@@ -65,10 +65,10 @@ class CaLongStrConverter(CaConverter):
 
     def write_value(self, value: str):
         # Add a null in here as this is what the commandline caput does
-        # TODO: this should probably be in the server so check if it can be pushed to asyn
+        # TODO: this should be in the server so check if it can be pushed to asyn
         return value + "\0"
-    
-    
+
+
 class CaArrayConverter(CaConverter):
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
         return dict(source=source, dtype="array", shape=[len(value)])

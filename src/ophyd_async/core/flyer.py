@@ -82,16 +82,16 @@ class DetectorGroupLogic(ABC):
 class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
     def __init__(
         self,
-        detector_logics: Sequence[DetectorControl],
-        writer_logics: Sequence[DetectorWriter],
+        controllers: Sequence[DetectorControl],
+        writers: Sequence[DetectorWriter],
     ) -> None:
-        self.detector_logics = detector_logics
-        self.writer_logics = writer_logics
+        self.controllers = controllers
+        self.writers = writers
         self._arm_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
 
     async def open(self) -> Dict[str, Descriptor]:
-        return merge_gathered_dicts(wl.open() for wl in self.writer_logics)
+        return await merge_gathered_dicts(writer.open() for writer in self.writers)
 
     async def ensure_armed(self, trigger_info: TriggerInfo) -> AsyncStatus:
         if (
@@ -100,16 +100,18 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             or trigger_info != self._trigger_info
         ):
             # We need to re-arm
-            await gather_list(dl.disarm() for dl in self.detector_logics)
-            for dl in self.detector_logics:
-                required = dl.get_deadtime(trigger_info.livetime)
+            await gather_list(controller.disarm() for controller in self.controllers)
+            for controller in self.controllers:
+                required = controller.get_deadtime(trigger_info.livetime)
                 assert required > trigger_info.deadtime, (
-                    f"Detector {dl} needs at least {required}s deadtime, "
-                    "but trigger logic provides only {trigger_info.deadtime}s"
+                    f"Detector {controller} needs at least {required}s deadtime, "
+                    f"but trigger logic provides only {trigger_info.deadtime}s"
                 )
             statuses = await gather_list(
-                dl.arm(trigger=trigger_info.trigger, exposure=trigger_info.livetime)
-                for dl in self.detector_logics
+                controller.arm(
+                    trigger=trigger_info.trigger, exposure=trigger_info.livetime
+                )
+                for controller in self.controllers
             )
             self._arm_status = AsyncStatus(gather_list(statuses))
             self._trigger_info = trigger_info
@@ -117,23 +119,20 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         indices_written = min(
-            gather_list(wl.get_indices_written() for wl in self.writer_logics)
+            await gather_list(writer.get_indices_written() for writer in self.writers)
         )
-        for wl in self.writer_logics:
-            async for doc in wl.collect_stream_docs(indices_written):
+        for writer in self.writers:
+            async for doc in writer.collect_stream_docs(indices_written):
                 yield doc
 
-    @abstractmethod
     async def wait_for_index(self, index: int):
-        await gather_list(wl.wait_for_index(index) for wl in self.writer_logics)
+        await gather_list(writer.wait_for_index(index) for writer in self.writers)
 
-    @abstractmethod
     async def disarm(self):
-        await gather_list(dl.disarm() for dl in self.detector_logics)
+        await gather_list(controller.disarm() for controller in self.controllers)
 
-    @abstractmethod
     async def close(self):
-        await gather_list(wl.close() for wl in self.writer_logics)
+        await gather_list(writer.close() for writer in self.writers)
 
 
 class TriggerLogic(ABC, Generic[T]):
@@ -180,15 +179,17 @@ class HardwareTriggeredFlyable(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         await self.unstage()
-        await self._detector_group_logic.open()
+        self._describe = await self._detector_group_logic.open()
         self._offset = 0
         self._current_frame = 0
 
-    @AsyncStatus.wrap
-    async def set(self, value: T):
+    def set(self, value: T) -> AsyncStatus:
         """Arm detectors and setup trajectories"""
         # index + offset = current_frame, but starting a new scan so want it to be 0
         # so subtract current_frame from both sides
+        return AsyncStatus(self._set(value))
+
+    async def _set(self, value: T) -> None:
         self._offset -= self._current_frame
         self._current_frame = 0
         await self._prepare(value)
@@ -265,13 +266,12 @@ class ScanSpecFlyable(HardwareTriggeredFlyable[Path[ScanAxis]], Pausable):
     _spec: Optional[Spec] = None
     _frames: Sequence[Frames] = ()
 
-    @AsyncStatus.wrap
-    async def set(self, value: Spec[ScanAxis]):
+    async def _set(self, value: Spec[ScanAxis]):
         """Arm detectors and setup trajectories"""
         if value != self._spec:
             self._spec = value
             self._frames = value.calculate()
-        super().set(Path(self._frames))
+        await super()._set(Path(self._frames))
 
     async def pause(self):
         assert self._fly_status, "Kickoff not run"

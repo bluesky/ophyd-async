@@ -1,12 +1,11 @@
-from typing import Dict, List
 import bluesky.plans as bp
 import pytest
+from bluesky import RunEngine
 
 from ophyd_async.core import DeviceCollector, set_sim_value
 from ophyd_async.epics.areadetector import ImageMode, SingleTriggerDet
 from ophyd_async.epics.areadetector.drivers import ADDriver
 from ophyd_async.epics.areadetector.writers import NDPluginStats
-from bluesky import RunEngine
 
 
 @pytest.fixture
@@ -29,9 +28,7 @@ async def single_trigger_det():
     yield det
 
 
-async def test_single_trigger_det(
-    single_trigger_det: SingleTriggerDet, RE: RunEngine
-):
+async def test_single_trigger_det(single_trigger_det: SingleTriggerDet, RE: RunEngine):
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))

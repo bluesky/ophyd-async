@@ -8,8 +8,9 @@ from bluesky import RunEngine
 from bluesky.callbacks.best_effort import BestEffortCallback
 from bluesky.utils import ProgressBarManager, register_transform
 
-from ophyd_async.epics import areadetector
 from ophyd_async.core import DeviceCollector
+from ophyd_async.epics import areadetector
+
 # Create a run engine, with plotting, progressbar and transform
 RE = RunEngine({}, call_returns_result=True)
 bec = BestEffortCallback()

@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncIterator, Awaitable, Callable, Dict, List, Optional, Sequence
+from typing import AsyncIterator, Dict, List, Optional
 
 from bluesky.protocols import Asset, Descriptor
 

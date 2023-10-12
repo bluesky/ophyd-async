@@ -5,41 +5,41 @@ Once those have been implemented can move this into core tests.
 """
 
 
+import time
+from pathlib import Path
 from typing import List, cast
 
+import bluesky.plan_stubs as bps
 import pytest
+from bluesky import RunEngine
+from bluesky.utils import new_uid
 
-from ophyd_async.core import StandardDetector, DeviceCollector, StaticDirectoryProvider
-
+from ophyd_async.core import DeviceCollector, StandardDetector, StaticDirectoryProvider
 from ophyd_async.core.signal import set_sim_value
-
 from ophyd_async.epics.areadetector.controllers import StandardController
 from ophyd_async.epics.areadetector.drivers import ADDriver, ADDriverShapeProvider
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
-from pathlib import Path
-
-import bluesky.plan_stubs as bps
-from bluesky import RunEngine
-import time
-from bluesky.utils import new_uid
-
 
 CURRENT_DIRECTORY = Path(__file__).parent
 
+
 async def make_detector(prefix="", name="test"):
     dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
-    
+
     async with DeviceCollector(sim=True):
         drv = ADDriver(prefix=f"{prefix}:DET:")
         hdf = NDFileHDF(f"{prefix}:HDF:")
         writer = HDFWriter(hdf, dp, lambda: name, ADDriverShapeProvider(drv))
-        det = StandardDetector(StandardController(drv), writer, config_sigs=[drv.acquire_time])
-        
+        det = StandardDetector(
+            StandardController(drv), writer, config_sigs=[drv.acquire_time]
+        )
+
     det.set_name(name)
     return det
 
-def count_sim(dets: List[StandardDetector], times: int =1):
+
+def count_sim(dets: List[StandardDetector], times: int = 1):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 
     yield from bps.stage_all(*dets)
@@ -48,13 +48,20 @@ def count_sim(dets: List[StandardDetector], times: int =1):
     for _ in range(times):
         read_values = {}
         for det in dets:
-            read_values[det] = yield from bps.rd(cast(HDFWriter, det.data).hdf.num_captured)
+            read_values[det] = yield from bps.rd(
+                cast(HDFWriter, det.data).hdf.num_captured
+            )
 
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
-        
+
         yield from bps.sleep(0.001)
-        [set_sim_value(cast(HDFWriter, det.data).hdf.num_captured, read_values[det] + 1) for det in dets]
+        [
+            set_sim_value(
+                cast(HDFWriter, det.data).hdf.num_captured, read_values[det] + 1
+            )
+            for det in dets
+        ]
 
         yield from bps.wait(group="wait_for_trigger")
         yield from bps.create()
@@ -70,8 +77,8 @@ def count_sim(dets: List[StandardDetector], times: int =1):
 
 @pytest.fixture
 async def single_detector(RE: RunEngine) -> StandardDetector:
-    detector = await make_detector(prefix = "TEST")
-    
+    detector = await make_detector(prefix="TEST")
+
     set_sim_value(cast(StandardController, detector.control).driver.array_size_x, 10)
     set_sim_value(cast(StandardController, detector.control).driver.array_size_y, 20)
     return detector
@@ -79,8 +86,8 @@ async def single_detector(RE: RunEngine) -> StandardDetector:
 
 @pytest.fixture
 async def two_detectors():
-    deta = await make_detector(prefix = "PREFIX1", name="testa")
-    detb = await make_detector(prefix = "PREFIX2", name="testb")
+    deta = await make_detector(prefix="PREFIX1", name="testa")
+    detb = await make_detector(prefix="PREFIX2", name="testb")
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
@@ -150,42 +157,69 @@ async def test_two_detectors_step(
     assert event["data"] == {}
 
 
-async def test_detector_writes_to_file(RE: RunEngine, single_detector: StandardDetector):
+async def test_detector_writes_to_file(
+    RE: RunEngine, single_detector: StandardDetector
+):
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     RE(count_sim([single_detector], times=3))
-    
 
-    assert await cast(HDFWriter, single_detector.data).hdf.file_path.get_value() == CURRENT_DIRECTORY
-    
+    assert (
+        await cast(HDFWriter, single_detector.data).hdf.file_path.get_value()
+        == CURRENT_DIRECTORY
+    )
+
     descriptor_index = names.index("descriptor")
 
     assert docs[descriptor_index].get("data_keys").get("test").get("shape") == (20, 10)
-    assert names == ['start', 'descriptor', 'stream_resource', 'stream_datum', 'event', 'stream_datum', 'event', 'stream_datum', 'event', 'stop']
+    assert names == [
+        "start",
+        "descriptor",
+        "stream_resource",
+        "stream_datum",
+        "event",
+        "stream_datum",
+        "event",
+        "stream_datum",
+        "event",
+        "stop",
+    ]
+
 
 async def test_read_and_describe_detector(single_detector: StandardDetector):
     describe = await single_detector.describe_configuration()
     read = await single_detector.read_configuration()
 
     assert describe == {
-        "drv-acquire_time": {"source": "sim://TEST:DET:AcquireTime_RBV", "dtype": "number", "shape": []}
+        "drv-acquire_time": {
+            "source": "sim://TEST:DET:AcquireTime_RBV",
+            "dtype": "number",
+            "shape": [],
+        }
     }
-    assert read == {'drv-acquire_time': {'value': 0.0, 'timestamp': pytest.approx(time.monotonic()), 'alarm_severity': 0}}
+    assert read == {
+        "drv-acquire_time": {
+            "value": 0.0,
+            "timestamp": pytest.approx(time.monotonic()),
+            "alarm_severity": 0,
+        }
+    }
+
 
 async def test_read_returns_nothing(single_detector: StandardDetector):
     assert await single_detector.read() == {}
 
 
 async def test_trigger_logic():
-    """ I want this test to check that when StandardDetector.trigger is called:
-    
+    """I want this test to check that when StandardDetector.trigger is called:
+
     1. the detector.control is armed, and that starts the acquisition so that,
     2. The detector.data.hdf.num_captured is 1
 
     Probably the best thing to do here is mock the detector.control.driver and
-    detector.data.hdf. Then, mock out set_and_wait_for_value in 
+    detector.data.hdf. Then, mock out set_and_wait_for_value in
     ophyd_async.epics.areadetector.controllers.standard_controller.StandardController
     so that, as well as setting detector.control.driver.acquire to True, it sets
     detector.data.hdf.num_captured to 1, using set_sim_value
