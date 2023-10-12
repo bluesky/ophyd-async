@@ -13,7 +13,7 @@ from ophyd_async.core import (
 from ..drivers.ad_driver import ADDriver, ImageMode
 
 
-class StandardController(DetectorControl):
+class ADController(DetectorControl):
     def __init__(self, drv: ADDriver) -> None:
         self.driver = drv
 

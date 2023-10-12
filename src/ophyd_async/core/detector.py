@@ -94,10 +94,6 @@ class StandardDetector(
 ):
     """Detector with useful default behaviour.
 
-    Can be supplied extra devices such that they can also be accessed on the detector.
-    This allows for similar on-the-fly device generation as what is currently done for
-    the ophyd_async.panda.PandA object.
-
     Must be supplied instances of classes that inherit from DetectorControl and
     DetectorData, to dictate how the detector will be controlled (i.e. arming and
     disarming) as well as how the detector data will be written (i.e. opening and
@@ -112,7 +108,6 @@ class StandardDetector(
         data: DetectorWriter,
         config_sigs: Sequence[SignalR],
         name: str = "",
-        **plugins: Device,
     ) -> None:
         """
         Parameters
@@ -130,7 +125,6 @@ class StandardDetector(
         self._data = data
         self._config_sigs = config_sigs
         self._describe: Dict[str, Descriptor] = {}
-        self.__dict__.update(plugins)
         super().__init__(name)
 
     @property

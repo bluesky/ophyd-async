@@ -16,7 +16,6 @@ from ophyd_async.core import (
     DetectorWriter,
     HardwareTriggeredFlyable,
     SameTriggerDetectorGroupLogic,
-    ScanSpecFlyable,
     TriggerInfo,
     TriggerLogic,
 )
@@ -196,74 +195,3 @@ async def test_hardware_triggered_flyable(
         "stream_datum",
         "stop",
     ]
-
-
-async def test_scan_spec_flyable_wont_pause_if_not_flying(
-    RE: RunEngine, detector_group: SameTriggerDetectorGroupLogic
-):
-    trigger_logic = DummyPathTriggerLogic()
-    flyer = ScanSpecFlyable(detector_group, trigger_logic, [], name="flyer")
-
-    with pytest.raises(AssertionError):
-        await flyer.pause()
-
-    with pytest.raises(AssertionError):
-        await flyer.resume()
-
-
-""" For the moment, this test doesnt work.
-
-This is because you can't add a scanspec Path and an int.
-Flyers set a _current_frame to 0 by default, but then expect to be able to add
-any generic T value to it from _prepare...
-"""
-"""
-async def test_scan_spec_flyable_pauses(
-    RE: RunEngine, detector_group: SameTriggerDetectorGroupLogic
-):
-    trigger_logic = DummyPathTriggerLogic()
-
-    flyer = ScanSpecFlyable(detector_group, trigger_logic, [], name="flyer")
-
-    def kickoff_plan():
-        yield from bps.stage_all(flyer)
-        assert trigger_logic.state == TriggerState.stopping
-
-        yield from bps.open_run()
-        yield from bps.kickoff(flyer)
-
-    RE(kickoff_plan())
-    assert flyer._fly_status, "Kickoff not run"
-    await flyer.pause()
-
-    # pausing should have unstaged
-    for controller in detector_group.controllers:
-        assert controller.disarm.called  # type: ignore
-        assert controller.disarm.call_count == 1  # type: ignore
-
-    await flyer.resume()
-
-    def complete_fly():
-        yield from bps.complete(flyer, wait=False, group="complete")
-        assert trigger_logic.state == TriggerState.starting
-
-        done = False
-        while not done:
-            try:
-                yield from bps.wait(group="complete", timeout=0.5)
-            except TimeoutError:
-                pass
-            else:
-                done = True
-
-            yield from bps.collect(
-                flyer, stream=True, return_payload=False, name="primary"
-            )
-            yield from bps.sleep(0.001)
-        yield from bps.wait(group="complete")
-        yield from bps.close_run()
-
-        yield from bps.unstage_all(flyer)
-
-    RE(complete_fly())
-"""

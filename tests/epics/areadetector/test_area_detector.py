@@ -1,4 +1,4 @@
-"""Integration tests for a StandardDetector using a HDFWriter and StandardController.
+"""Integration tests for a StandardDetector using a HDFWriter and ADController.
 
 Until we have SimController and SimWriter, this should belond in areadetector tests.
 Once those have been implemented can move this into core tests.
@@ -16,7 +16,7 @@ from bluesky.utils import new_uid
 
 from ophyd_async.core import DeviceCollector, StandardDetector, StaticDirectoryProvider
 from ophyd_async.core.signal import set_sim_value
-from ophyd_async.epics.areadetector.controllers import StandardController
+from ophyd_async.epics.areadetector.controllers import ADController
 from ophyd_async.epics.areadetector.drivers import ADDriver, ADDriverShapeProvider
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
@@ -32,7 +32,7 @@ async def make_detector(prefix="", name="test"):
         hdf = NDFileHDF(f"{prefix}:HDF:")
         writer = HDFWriter(hdf, dp, lambda: name, ADDriverShapeProvider(drv))
         det = StandardDetector(
-            StandardController(drv), writer, config_sigs=[drv.acquire_time]
+            ADController(drv), writer, config_sigs=[drv.acquire_time]
         )
 
     det.set_name(name)
@@ -79,8 +79,8 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 async def single_detector(RE: RunEngine) -> StandardDetector:
     detector = await make_detector(prefix="TEST")
 
-    set_sim_value(cast(StandardController, detector.control).driver.array_size_x, 10)
-    set_sim_value(cast(StandardController, detector.control).driver.array_size_y, 20)
+    set_sim_value(cast(ADController, detector.control).driver.array_size_x, 10)
+    set_sim_value(cast(ADController, detector.control).driver.array_size_y, 20)
     return detector
 
 
@@ -91,7 +91,7 @@ async def two_detectors():
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
-        controller = cast(StandardController, det.control)
+        controller = cast(ADController, det.control)
         writer = cast(HDFWriter, det.data)
 
         set_sim_value(controller.driver.acquire_time, 0.8 + i)
@@ -114,7 +114,7 @@ async def test_two_detectors_step(
 
     RE(count_sim(two_detectors, times=1))
 
-    controller_a = cast(StandardController, two_detectors[0].control)
+    controller_a = cast(ADController, two_detectors[0].control)
     writer_a = cast(HDFWriter, two_detectors[0].data)
     writer_b = cast(HDFWriter, two_detectors[1].data)
 
@@ -220,7 +220,7 @@ async def test_trigger_logic():
 
     Probably the best thing to do here is mock the detector.control.driver and
     detector.data.hdf. Then, mock out set_and_wait_for_value in
-    ophyd_async.epics.areadetector.controllers.standard_controller.StandardController
+    ophyd_async.epics.areadetector.controllers.standard_controller.ADController
     so that, as well as setting detector.control.driver.acquire to True, it sets
     detector.data.hdf.num_captured to 1, using set_sim_value
     """

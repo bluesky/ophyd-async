@@ -8,27 +8,21 @@ from typing import (
     Dict,
     Generic,
     List,
-    Literal,
     Optional,
     Sequence,
     TypeVar,
-    Union,
 )
 
-import numpy as np
 from bluesky.protocols import (
     Asset,
     Collectable,
     Descriptor,
     Flyable,
     Movable,
-    Pausable,
     Reading,
     Stageable,
     WritesExternalAssets,
 )
-from scanspec.core import Frames, Path
-from scanspec.specs import DURATION, Spec
 
 from .async_status import AsyncStatus
 from .detector import DetectorControl, DetectorTrigger, DetectorWriter
@@ -262,45 +256,3 @@ class HardwareTriggeredFlyable(
             self._detector_group_logic.close(),
             self._detector_group_logic.disarm(),
         )
-
-
-ScanAxis = Union[Device, Literal["DURATION"]]
-
-
-class ScanSpecFlyable(HardwareTriggeredFlyable[Path], Pausable):
-    _spec: Optional[Spec] = None
-    _frames: Sequence[Frames] = ()
-
-    async def _set(self, value: Spec[ScanAxis]):
-        """Arm detectors and setup trajectories"""
-        if value != self._spec:
-            self._spec = value
-            self._frames = value.calculate()
-        await super()._set(Path(self._frames))
-
-    async def pause(self):
-        assert self._fly_status, "Kickoff not run"
-        self._fly_status.task.cancel()
-        await self.unstage()
-        await self._detector_group_logic.open()
-        # Next frame will have index 0, but will be self._current_frame
-        self._offset = self._current_frame
-        await self._prepare(Path(self._frames, start=self._current_frame))
-
-    async def resume(self):
-        assert self._fly_status, "Kickoff not run"
-        assert self._fly_status.task.cancelled(), "You didn't call pause"
-        self._fly_status.task = asyncio.create_task(self._fly())
-
-
-def get_duration(frames: List[Frames]) -> Optional[float]:
-    for fs in frames:
-        if DURATION in fs.axes():
-            durations = fs.midpoints[DURATION]
-            first_duration = durations[0]
-            if np.all(durations == first_duration):
-                # Constant duration, return it
-                return first_duration
-            else:
-                return None
-    raise ValueError("Duration not specified in Spec")

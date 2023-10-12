@@ -24,7 +24,7 @@ class PilatusController(DetectorControl):
         self.driver = drv
 
     def get_deadtime(self, exposure: float) -> float:
-        return 0.002
+        return 0.001
 
     async def arm(
         self,

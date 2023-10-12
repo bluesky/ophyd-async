@@ -12,8 +12,6 @@ from .flyer import (
     DetectorGroupLogic,
     HardwareTriggeredFlyable,
     SameTriggerDetectorGroupLogic,
-    ScanAxis,
-    ScanSpecFlyable,
     TriggerInfo,
     TriggerLogic,
 )
@@ -77,8 +75,6 @@ __all__ = [
     "DetectorGroupLogic",
     "SameTriggerDetectorGroupLogic",
     "TriggerLogic",
-    "ScanSpecFlyable",
-    "ScanAxis",
     "HardwareTriggeredFlyable",
     "DEFAULT_TIMEOUT",
     "Callback",
