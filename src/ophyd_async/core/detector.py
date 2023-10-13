@@ -76,7 +76,7 @@ class DetectorWriter(ABC):
         """Get the number of indices written"""
 
     @abstractmethod
-    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         """Create Stream docs up to given number written"""
 
     @abstractmethod
@@ -166,8 +166,11 @@ class StandardDetector(
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         """Collect stream datum documents for all indices written."""
         indices_written = await self.data.get_indices_written()
+
         async for doc in self.data.collect_stream_docs(indices_written):
             yield doc
+        # async for doc in self.data.collect_stream_docs(indices_written):
+        #     yield doc
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:

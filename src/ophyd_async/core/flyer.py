@@ -56,7 +56,7 @@ class DetectorGroupLogic(ABC):
         """Ensure the detectors are armed, return AsyncStatus that waits for disarm."""
 
     @abstractmethod
-    async def collect_asset_docs(self) -> AsyncIterator[Asset]:
+    def collect_asset_docs(self) -> AsyncIterator[Asset]:
         """Collect asset docs from all writers"""
 
     @abstractmethod
@@ -100,13 +100,13 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
                     f"Detector {controller} needs at least {required}s deadtime, "
                     f"but trigger logic provides only {trigger_info.deadtime}s"
                 )
-            statuses = await gather_list(
+            statuses = gather_list(
                 controller.arm(
                     trigger=trigger_info.trigger, exposure=trigger_info.livetime
                 )
                 for controller in self.controllers
             )
-            self._arm_status = AsyncStatus(gather_list(statuses))
+            self._arm_status = AsyncStatus(statuses)
             self._trigger_info = trigger_info
         return self._arm_status
 
@@ -114,11 +114,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         # the below is confusing: gather_list does return an awaitable, but it itself
         # is a coroutine so we must call await twice...
         indices_written = min(
-            await (
-                await gather_list(
-                    writer.get_indices_written() for writer in self.writers
-                )
-            )
+            await gather_list(writer.get_indices_written() for writer in self.writers)
         )
         for writer in self.writers:
             async for doc in writer.collect_stream_docs(indices_written):
