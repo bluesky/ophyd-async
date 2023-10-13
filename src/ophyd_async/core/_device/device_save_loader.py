@@ -10,13 +10,14 @@ from ophyd_async.core import Device, SignalRW
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: np.ndarray) -> yaml.Node:
-    return dumper.represent_scalar("tag:!numpy.ndarray", str(array.tolist()))
+    return dumper.represent_sequence("tag:yaml.org,2002:seq", array.tolist())
 
 
-def ndarray_constructor(loader: Loader, node: yaml.ScalarNode) -> np.ndarray:
-    value = loader.construct_scalar(node)
-    assert isinstance(value, str)
-    return np.array(eval(value))
+class OphydDumper(yaml.Dumper):
+    def represent_data(self, data):
+        if isinstance(data, Enum):
+            return self.represent_data(data.value)
+        return super(OphydDumper, self).represent_data(data)
 
 
 def get_signal_values(
@@ -123,17 +124,6 @@ def save_to_yaml(phases: Union[Dict, List[Dict]], save_path: str):
 
     if isinstance(phases, dict):
         phases = [phases]
-    phase_outputs = []
-    for phase in phases:
-        for key, value in phase.items():
-            # Convert enums to their value
-            if isinstance(value, Enum):
-                assert isinstance(
-                    value.value, str
-                ), "Enum value did not evaluate to string"
-                phase[key] = value.value
-
-        phase_outputs.append(phase)
 
     with open(save_path, "w") as file:
-        yaml.dump(phase_outputs, file, Dumper=yaml.Dumper)
+        yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=None)

@@ -11,7 +11,6 @@ from bluesky import RunEngine
 from ophyd_async.core import Device, SignalR, SignalRW
 from ophyd_async.core._device.device_save_loader import (
     get_signal_values,
-    ndarray_constructor,
     save_to_yaml,
     walk_rw_signals,
 )
@@ -100,8 +99,6 @@ async def test_save_device_no_phase(device, tmp_path):
 
     RE(save_my_device())
 
-    yaml.add_constructor("tag:!numpy.ndarray", ndarray_constructor)
-
     with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
         yaml_content = yaml.load(file, yaml.Loader)[0]
         assert len(yaml_content) == 4
@@ -130,8 +127,6 @@ async def test_save_device_with_phase(device_with_phases, tmp_path):
         save_to_yaml(phases, path.join(tmp_path, "test_file.yaml"))
 
     RE(save_my_device())
-
-    yaml.add_constructor("tag:!numpy.ndarray", ndarray_constructor)
 
     with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
         yaml_content = yaml.load(file, yaml.Loader)
