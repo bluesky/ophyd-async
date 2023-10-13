@@ -62,6 +62,17 @@ async def device_with_phases() -> DummyDeviceGroup:
     return device
 
 
+async def test_enum_yaml_formatting(tmp_path):
+    enums = [EnumTest(EnumTest.VAL1), EnumTest(EnumTest.VAL2)]
+    assert isinstance(enums[0], EnumTest)
+    save_to_yaml(enums, path.join(tmp_path, "test_file.yaml"))
+    with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
+        yaml_content = yaml.load(file, yaml.Loader)
+        assert isinstance(yaml_content, list)
+        assert yaml_content[0] == EnumTest.VAL1
+        assert yaml_content[1] == EnumTest.VAL2
+
+
 async def test_save_device_no_phase(device, tmp_path):
     RE = RunEngine()
 
@@ -137,3 +148,48 @@ async def test_save_device_with_phase(device_with_phases, tmp_path):
         assert np.array_equal(
             yaml_content[1]["child2.sig1"]["VAL2"], np.array([1, 1, 1, 1, 1])
         )
+
+
+async def test_yaml_formatting_no_phase(device_with_phases, tmp_path):
+    RE = RunEngine()
+    await device_with_phases.child1.sig1.set("test_string")
+    table_pv = {"VAL1": np.array([1, 2, 3, 4, 5]), "VAL2": np.array([6, 7, 8, 9, 10])}
+    await device_with_phases.child2.sig1.set(table_pv)
+
+    # Create save plan from utility functions
+    def save_my_device():
+        signalRWs = walk_rw_signals(device_with_phases)
+        values = yield from get_signal_values(signalRWs)
+        phases = device_with_phases.sort_signal_by_phase(device_with_phases, values)
+        save_to_yaml(phases, path.join(tmp_path, "test_file.yaml"))
+
+    RE(save_my_device())
+
+    with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
+        assert file.read() == """\
+- {child1.sig1: test_string}
+- child2.sig1:
+    VAL1: [1, 2, 3, 4, 5]
+    VAL2: [6, 7, 8, 9, 10]
+"""
+
+async def test_saved_types_with_phase(device_with_phases, tmp_path):
+    RE = RunEngine()
+    await device_with_phases.child1.sig1.set("string")
+    table_pv = {"VAL1": np.array([1, 1, 1, 1, 1]), "VAL2": np.array([1, 1, 1, 1, 1])}
+    await device_with_phases.child2.sig1.set(table_pv)
+
+    # Create save plan from utility functions
+    def save_my_device():
+        signalRWs = walk_rw_signals(device_with_phases)
+        values = yield from get_signal_values(signalRWs)
+        phases = device_with_phases.sort_signal_by_phase(device_with_phases, values)
+        save_to_yaml(phases, path.join(tmp_path, "test_file.yaml"))
+
+    RE(save_my_device())
+
+    with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
+        yaml_content = yaml.load(file, yaml.Loader)
+        assert type(yaml_content[0]["child1.sig1"]) is str
+        assert type(yaml_content[1]["child2.sig1"]["VAL1"]) is list
+        assert type(yaml_content[1]["child2.sig1"]["VAL2"]) is list

@@ -2,14 +2,14 @@ from enum import Enum
 from typing import Any, Dict, Generator, List, Optional, Union
 
 import numpy as np
+from numpy.typing import NDArray
 import yaml
 from bluesky import Msg
-from yaml.loader import Loader
 
 from ophyd_async.core import Device, SignalRW
 
 
-def ndarray_representer(dumper: yaml.Dumper, array: np.ndarray) -> yaml.Node:
+def ndarray_representer(dumper: yaml.Dumper, array: NDArray[Any]) -> yaml.Node:
     return dumper.represent_sequence("tag:yaml.org,2002:seq", array.tolist())
 
 
