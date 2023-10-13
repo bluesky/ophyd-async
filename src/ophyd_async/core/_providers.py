@@ -26,10 +26,10 @@ class StaticDirectoryProvider(DirectoryProvider):
 class NameProvider(Protocol):
     @abstractmethod
     def __call__(self) -> str:
-        ...
+        """Get the name to be used as a data_key in the descriptor document"""
 
 
 class ShapeProvider(Protocol):
     @abstractmethod
     async def __call__(self) -> Sequence[int]:
-        ...
+        """Get the shape of the data collection"""
