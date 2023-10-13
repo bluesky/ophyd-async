@@ -20,8 +20,8 @@ TRIGGER_MODE = {
 
 
 class PilatusController(DetectorControl):
-    def __init__(self, drv: PilatusDriver) -> None:
-        self.driver = drv
+    def __init__(self, driver: PilatusDriver) -> None:
+        self.driver = driver
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.001

@@ -14,8 +14,8 @@ from ..drivers.ad_driver import ADDriver, ImageMode
 
 
 class ADController(DetectorControl):
-    def __init__(self, drv: ADDriver) -> None:
-        self.driver = drv
+    def __init__(self, driver: ADDriver) -> None:
+        self.driver = driver
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.002

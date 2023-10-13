@@ -1,4 +1,5 @@
 from typing import Sequence
+from unittest.mock import patch
 
 import pytest
 
@@ -27,17 +28,24 @@ async def hdf_writer(RE) -> HDFWriter:
     )
 
 
-# for some reason these tests cause tear down errors...
+async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
+    with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
+        descriptor = await hdf_writer.open()
 
-# async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
-#     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-#         descriptor = await hdf_writer.open()
+    assert descriptor == {
+        "test": {
+            "source": "sim://HDF:FullFileName_RBV",
+            "shape": (10, 10),
+            "dtype": "array",
+            "external": "STREAM:",
+        }
+    }
 
-#     assert descriptor == {"test": {'source': 'sim://HDF:FullFileName_RBV',
-# 'shape': (10, 10), 'dtype': 'array', 'external': 'STREAM:'}}
+    await hdf_writer.close()
 
-# async def test_collect_stream_docs(hdf_writer: HDFWriter):
-#     assert hdf_writer._file is None
 
-#     [item async for item in hdf_writer.collect_stream_docs(1)]
-#     assert hdf_writer._file
+async def test_collect_stream_docs(hdf_writer: HDFWriter):
+    assert hdf_writer._file is None
+
+    [item async for item in hdf_writer.collect_stream_docs(1)]
+    assert hdf_writer._file

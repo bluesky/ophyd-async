@@ -16,10 +16,10 @@ from bluesky.utils import new_uid
 
 from ophyd_async.core import DeviceCollector, StandardDetector, StaticDirectoryProvider
 from ophyd_async.core.signal import set_sim_value
+from ophyd_async.epics.areadetector import AreaDetector
 from ophyd_async.epics.areadetector.controllers import ADController
-from ophyd_async.epics.areadetector.drivers import ADDriver, ADDriverShapeProvider
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+from ophyd_async.epics.areadetector.writers import HDFWriter
 
 CURRENT_DIRECTORY = Path(__file__).parent
 
@@ -28,14 +28,8 @@ async def make_detector(prefix="", name="test"):
     dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
 
     async with DeviceCollector(sim=True):
-        drv = ADDriver(prefix=f"{prefix}:DET:")
-        hdf = NDFileHDF(f"{prefix}:HDF:")
-        writer = HDFWriter(hdf, dp, lambda: name, ADDriverShapeProvider(drv))
-        det = StandardDetector(
-            ADController(drv), writer, config_sigs=[drv.acquire_time]
-        )
+        det = AreaDetector(prefix, dp, name=name)
 
-    det.set_name(name)
     return det
 
 
@@ -49,7 +43,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         read_values = {}
         for det in dets:
             read_values[det] = yield from bps.rd(
-                cast(HDFWriter, det.data).hdf.num_captured
+                cast(HDFWriter, det.writer).hdf.num_captured
             )
 
         for det in dets:
@@ -58,7 +52,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         yield from bps.sleep(0.001)
         [
             set_sim_value(
-                cast(HDFWriter, det.data).hdf.num_captured, read_values[det] + 1
+                cast(HDFWriter, det.writer).hdf.num_captured, read_values[det] + 1
             )
             for det in dets
         ]
@@ -79,8 +73,8 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 async def single_detector(RE: RunEngine) -> StandardDetector:
     detector = await make_detector(prefix="TEST")
 
-    set_sim_value(cast(ADController, detector.control).driver.array_size_x, 10)
-    set_sim_value(cast(ADController, detector.control).driver.array_size_y, 20)
+    set_sim_value(detector._controller.driver.array_size_x, 10)
+    set_sim_value(detector._controller.driver.array_size_y, 20)
     return detector
 
 
@@ -91,8 +85,9 @@ async def two_detectors():
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
-        controller = cast(ADController, det.control)
-        writer = cast(HDFWriter, det.data)
+        # accessing the hidden objects just for neat typing
+        controller = det._controller
+        writer = det._writer
 
         set_sim_value(controller.driver.acquire_time, 0.8 + i)
         set_sim_value(controller.driver.image_mode, ImageMode.continuous)
@@ -114,9 +109,9 @@ async def test_two_detectors_step(
 
     RE(count_sim(two_detectors, times=1))
 
-    controller_a = cast(ADController, two_detectors[0].control)
-    writer_a = cast(HDFWriter, two_detectors[0].data)
-    writer_b = cast(HDFWriter, two_detectors[1].data)
+    controller_a = cast(ADController, two_detectors[0].controller)
+    writer_a = cast(HDFWriter, two_detectors[0].writer)
+    writer_b = cast(HDFWriter, two_detectors[1].writer)
 
     drv = controller_a.driver
     assert 1 == await drv.acquire.get_value()
@@ -148,8 +143,8 @@ async def test_two_detectors_step(
     assert (await writer_b.hdf.file_name.get_value()).startswith(info_b.filename_prefix)
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
-    assert descriptor["configuration"]["testa"]["data"]["drv-acquire_time"] == 0.8
-    assert descriptor["configuration"]["testb"]["data"]["drv-acquire_time"] == 1.8
+    assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8
+    assert descriptor["configuration"]["testb"]["data"]["testb-drv-acquire_time"] == 1.8
     assert descriptor["data_keys"]["testa"]["shape"] == (768, 1024)
     assert descriptor["data_keys"]["testb"]["shape"] == (769, 1025)
     assert sda["stream_resource"] == sra["uid"]
@@ -167,7 +162,7 @@ async def test_detector_writes_to_file(
     RE(count_sim([single_detector], times=3))
 
     assert (
-        await cast(HDFWriter, single_detector.data).hdf.file_path.get_value()
+        await cast(HDFWriter, single_detector.writer).hdf.file_path.get_value()
         == CURRENT_DIRECTORY
     )
 
@@ -193,18 +188,28 @@ async def test_read_and_describe_detector(single_detector: StandardDetector):
     read = await single_detector.read_configuration()
 
     assert describe == {
-        "drv-acquire_time": {
-            "source": "sim://TEST:DET:AcquireTime_RBV",
+        "test-drv-acquire_time": {
+            "source": "sim://TESTDRV:AcquireTime_RBV",
             "dtype": "number",
             "shape": [],
-        }
+        },
+        "test-drv-acquire": {
+            "source": "sim://TESTDRV:Acquire_RBV",
+            "dtype": "boolean",
+            "shape": [],
+        },
     }
     assert read == {
-        "drv-acquire_time": {
+        "test-drv-acquire_time": {
             "value": 0.0,
             "timestamp": pytest.approx(time.monotonic(), rel=1e-2),
             "alarm_severity": 0,
-        }
+        },
+        "test-drv-acquire": {
+            "value": False,
+            "timestamp": pytest.approx(time.monotonic(), rel=1e-2),
+            "alarm_severity": 0,
+        },
     }
 
 
@@ -215,13 +220,13 @@ async def test_read_returns_nothing(single_detector: StandardDetector):
 async def test_trigger_logic():
     """I want this test to check that when StandardDetector.trigger is called:
 
-    1. the detector.control is armed, and that starts the acquisition so that,
-    2. The detector.data.hdf.num_captured is 1
+    1. the detector.controller is armed, and that starts the acquisition so that,
+    2. The detector.writer.hdf.num_captured is 1
 
-    Probably the best thing to do here is mock the detector.control.driver and
-    detector.data.hdf. Then, mock out set_and_wait_for_value in
+    Probably the best thing to do here is mock the detector.controller.driver and
+    detector.writer.hdf. Then, mock out set_and_wait_for_value in
     ophyd_async.epics.areadetector.controllers.standard_controller.ADController
-    so that, as well as setting detector.control.driver.acquire to True, it sets
-    detector.data.hdf.num_captured to 1, using set_sim_value
+    so that, as well as setting detector.controller.driver.acquire to True, it sets
+    detector.writer.hdf.num_captured to 1, using set_sim_value
     """
     ...

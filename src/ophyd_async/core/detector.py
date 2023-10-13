@@ -2,7 +2,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import AsyncIterator, Dict, Optional, Sequence
+from typing import AsyncIterator, Dict, Optional, Sequence, Tuple
 
 from bluesky.protocols import (
     Asset,
@@ -102,11 +102,13 @@ class StandardDetector(
     NOTE: only for step-scans.
     """
 
+    _config_sigs: Sequence[Tuple[str, SignalR]] = ()
+
     def __init__(
         self,
-        control: DetectorControl,
-        data: DetectorWriter,
-        config_sigs: Sequence[SignalR],
+        controller: DetectorControl,
+        writer: DetectorWriter,
+        config_sigs: Sequence[Tuple[str, SignalR]] = (),
         name: str = "",
     ) -> None:
         """
@@ -116,36 +118,48 @@ class StandardDetector(
             instance of class which inherits from :class:`DetectorControl`
         data:
             instance of class which inherits from :class:`DetectorData`
-        config_sigs:
-            configuration signals to be used for describing/reading the detector.
         name:
             detector name
         """
-        self._control = control
-        self._data = data
-        self._config_sigs = config_sigs
+        self._controller = controller
+        self._writer = writer
         self._describe: Dict[str, Descriptor] = {}
+        self._config_sigs = list(config_sigs)
         super().__init__(name)
 
     @property
-    def control(self) -> DetectorControl:
-        return self._control
+    def controller(self) -> DetectorControl:
+        return self._controller
 
     @property
-    def data(self) -> DetectorWriter:
-        return self._data
+    def writer(self) -> DetectorWriter:
+        return self._writer
+
+    async def connect(self, sim: bool = False):
+        await super().connect(sim=sim)
+
+        for _, signal in self._config_sigs:
+            await signal.connect(sim=sim)
+
+    def set_name(self, name: str):
+        super().set_name(name)
+
+        for signal_name, signal in self._config_sigs:
+            signal.set_name(signal_name)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Disarm the detector, stop filewriting, and open file for writing."""
-        await asyncio.gather(self.data.close(), self.control.disarm())
-        self._describe = await self.data.open()
+        await asyncio.gather(self.writer.close(), self.controller.disarm())
+        self._describe = await self.writer.open()
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:
-        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
+        return await merge_gathered_dicts(
+            sig[1].describe() for sig in self._config_sigs
+        )
 
     async def read_configuration(self) -> Dict[str, Reading]:
-        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
+        return await merge_gathered_dicts(sig[1].read() for sig in self._config_sigs)
 
     def describe(self) -> Dict[str, Descriptor]:
         return self._describe
@@ -153,10 +167,10 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def trigger(self) -> None:
         """Arm the detector and wait for it to finish."""
-        indices_written = await self.data.get_indices_written()
-        written_status = await self.control.arm(DetectorTrigger.internal, num=1)
+        indices_written = await self.writer.get_indices_written()
+        written_status = await self.controller.arm(DetectorTrigger.internal, num=1)
         await written_status
-        await self.data.wait_for_index(indices_written + 1)
+        await self.writer.wait_for_index(indices_written + 1)
 
     async def read(self) -> Dict[str, Reading]:
         """Unused method: will be deprecated."""
@@ -165,14 +179,14 @@ class StandardDetector(
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         """Collect stream datum documents for all indices written."""
-        indices_written = await self.data.get_indices_written()
+        indices_written = await self.writer.get_indices_written()
 
-        async for doc in self.data.collect_stream_docs(indices_written):
+        async for doc in self.writer.collect_stream_docs(indices_written):
             yield doc
-        # async for doc in self.data.collect_stream_docs(indices_written):
+        # async for doc in self.writer.collect_stream_docs(indices_written):
         #     yield doc
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Stop data writing."""
-        await self.data.close()
+        await self.writer.close()

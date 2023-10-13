@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import cast
 
 import bluesky.plan_stubs as bps
 import pytest
@@ -7,9 +6,7 @@ from bluesky import RunEngine
 from bluesky.utils import new_uid
 
 from ophyd_async.core import DeviceCollector, StaticDirectoryProvider, set_sim_value
-from ophyd_async.epics.areadetector.controllers import PilatusController
 from ophyd_async.epics.areadetector.pilatus import HDFStatsPilatus
-from ophyd_async.epics.areadetector.writers import HDFWriter
 
 CURRENT_DIRECTORY = str(Path(__file__).parent)
 
@@ -29,11 +26,11 @@ def count_sim(det: HDFStatsPilatus, times: int = 1):
     yield from bps.open_run()
     yield from bps.declare_stream(det, name="primary", collect=False)
     for _ in range(times):
-        read_value = yield from bps.rd(cast(HDFStatsPilatus, det.data).hdf.num_captured)
+        read_value = yield from bps.rd(det._writer.hdf.num_captured)
         yield from bps.trigger(det, wait=False, group="wait_for_trigger")
 
         yield from bps.sleep(0.001)
-        set_sim_value(cast(HDFStatsPilatus, det.data).hdf.num_captured, read_value + 1)
+        set_sim_value(det._writer.hdf.num_captured, read_value + 1)
 
         yield from bps.wait(group="wait_for_trigger")
         yield from bps.create()
@@ -48,8 +45,8 @@ def count_sim(det: HDFStatsPilatus, times: int = 1):
 async def single_detector(RE: RunEngine) -> HDFStatsPilatus:
     detector = await make_detector(prefix="TEST")
 
-    set_sim_value(cast(PilatusController, detector.control).driver.array_size_x, 10)
-    set_sim_value(cast(PilatusController, detector.control).driver.array_size_y, 20)
+    set_sim_value(detector._controller.driver.array_size_x, 10)
+    set_sim_value(detector._controller.driver.array_size_y, 20)
     return detector
 
 
@@ -60,7 +57,7 @@ async def test_pilatus(RE: RunEngine, single_detector: HDFStatsPilatus):
     RE.subscribe(lambda _, doc: docs.append(doc))
 
     RE(count_sim(single_detector))
-    writer = cast(HDFWriter, single_detector.data)
+    writer = single_detector._writer
 
     assert (
         await writer.hdf.file_path.get_value()
