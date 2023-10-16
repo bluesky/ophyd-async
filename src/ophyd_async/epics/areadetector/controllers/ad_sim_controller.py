@@ -10,6 +10,7 @@ from ophyd_async.core import (
 )
 
 from ..drivers.ad_driver import ADDriver, ImageMode
+from ..utils import stop_busy_record
 
 
 class ADSimController(DetectorControl):
@@ -40,6 +41,4 @@ class ADSimController(DetectorControl):
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have
         # 2 or they will deadlock
-        await set_and_wait_for_value(
-            self.driver.acquire, False, with_callback=False, timeout=1
-        )
+        await stop_busy_record(self.driver.acquire, False, timeout=1)

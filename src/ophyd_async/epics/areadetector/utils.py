@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional, Type
 from xml.etree import cElementTree as ET
 
-from ophyd_async.core import SignalR, SignalRW, T
+from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, T, wait_for_value
 
 from ..signal.signal import epics_signal_r, epics_signal_rw
 
@@ -102,3 +102,13 @@ class NDAttributesXML:
         """Output the XML pretty printed"""
         ET.indent(self._root, space="    ", level=0)
         return ET.tostring(self._root, xml_declaration=True, encoding="utf-8").decode()
+
+
+async def stop_busy_record(
+    signal: SignalRW[T],
+    value: T,
+    timeout: float = DEFAULT_TIMEOUT,
+    status_timeout: Optional[float] = None,
+) -> None:
+    await signal.set(value, wait=False, timeout=status_timeout)
+    await wait_for_value(signal, value, timeout=timeout)
