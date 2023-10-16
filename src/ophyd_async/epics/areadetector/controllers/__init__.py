@@ -1,4 +1,4 @@
-from .ad_controller import ADController
+from .ad_sim_controller import ADSimController
 from .pilatus_controller import PilatusController
 
-__all__ = ["PilatusController", "ADController"]
+__all__ = ["PilatusController", "ADSimController"]

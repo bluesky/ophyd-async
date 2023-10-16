@@ -1,4 +1,3 @@
-from .areadetector import AreaDetector
 from .single_trigger_det import SingleTriggerDet
 from .utils import (
     FileWriteMode,
@@ -15,7 +14,6 @@ __all__ = [
     "ImageMode",
     "ad_r",
     "ad_rw",
-    "AreaDetector",
     "NDAttributeDataType",
     "NDAttributesXML",
 ]

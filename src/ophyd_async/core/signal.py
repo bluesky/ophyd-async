@@ -319,6 +319,7 @@ async def wait_for_value(
 async def set_and_wait_for_value(
     signal: SignalRW[T],
     value: T,
+    with_callback: bool = True,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: Optional[float] = None,
 ) -> AsyncStatus:
@@ -326,9 +327,13 @@ async def set_and_wait_for_value(
 
     Useful for busy record, or other Signals with pattern:
 
-    - Set Signal with wait=True and stash the Status
+    - Set Signal with wait=with_callback and stash the Status
     - Read the same Signal to check the operation has started
     - Return the Status so calling code can wait for operation to complete
+
+    This function sets a signal to a specified value, optionally with or without a
+    ca/pv put callback, and waits for the readback value of the signal to match the
+    value it was set to.
 
     Parameters
     ----------
@@ -336,6 +341,8 @@ async def set_and_wait_for_value(
         The signal to set and monitor
     value:
         The value to set it to
+    with_callback:
+        If we want to wait for a caput/pvput callback
     timeout:
         How long to wait for the signal to have the value
     status_timeout:
@@ -347,6 +354,6 @@ async def set_and_wait_for_value(
 
         set_and_wait_for_value(device.acquire, 1)
     """
-    status = signal.set(value, timeout=status_timeout)
+    status = signal.set(value, wait=with_callback, timeout=status_timeout)
     await wait_for_value(signal, value, timeout=timeout)
     return status

@@ -7,13 +7,12 @@ from ophyd_async.core import (
     DetectorControl,
     DetectorTrigger,
     set_and_wait_for_value,
-    wait_for_value,
 )
 
 from ..drivers.ad_driver import ADDriver, ImageMode
 
 
-class ADController(DetectorControl):
+class ADSimController(DetectorControl):
     def __init__(self, driver: ADDriver) -> None:
         self.driver = driver
 
@@ -26,6 +25,9 @@ class ADController(DetectorControl):
         num: int = 0,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
+        assert (
+            trigger == DetectorTrigger.internal
+        ), "fly scanning (i.e. external triggering) is not supported for this device"
         frame_timeout = DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         await asyncio.gather(
             self.driver.num_images.set(num),
@@ -36,7 +38,8 @@ class ADController(DetectorControl):
         )
 
     async def disarm(self):
-        # wait=False means don't caput callback. We can't use caput callback as we
-        # already used it in arm() and we can't have 2 or they will deadlock
-        await self.driver.acquire.set(False, wait=False)
-        await wait_for_value(self.driver.acquire, False, timeout=1)
+        # We can't use caput callback as we already used it in arm() and we can't have
+        # 2 or they will deadlock
+        await set_and_wait_for_value(
+            self.driver.acquire, False, with_callback=False, timeout=1
+        )

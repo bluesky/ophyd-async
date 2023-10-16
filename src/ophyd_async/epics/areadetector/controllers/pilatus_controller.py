@@ -6,7 +6,6 @@ from ophyd_async.core import (
     DetectorControl,
     DetectorTrigger,
     set_and_wait_for_value,
-    wait_for_value,
 )
 
 from ..drivers.pilatus_driver import PilatusDriver, TriggerMode
@@ -40,7 +39,6 @@ class PilatusController(DetectorControl):
         return await set_and_wait_for_value(self.driver.acquire, True)
 
     async def disarm(self):
-        # wait=False means don't caput callback. We can't use caput callback as we
-        # already used it in arm() and we can't have 2 or they will deadlock
-        await self.driver.acquire.set(False, wait=False)
-        await wait_for_value(self.driver.acquire, False, timeout=1)
+        await set_and_wait_for_value(
+            self.driver.acquire, False, with_callback=False, timeout=1
+        )

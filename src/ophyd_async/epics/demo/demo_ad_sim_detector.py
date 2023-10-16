@@ -2,13 +2,13 @@ from typing import Sequence, Tuple, cast
 
 from ophyd_async.core import DirectoryProvider, SignalR, StandardDetector
 
-from .controllers import ADController
-from .drivers import ADDriver, ADDriverShapeProvider
-from .writers import HDFWriter, NDFileHDF
+from ..areadetector.controllers import ADSimController
+from ..areadetector.drivers import ADDriver, ADDriverShapeProvider
+from ..areadetector.writers import HDFWriter, NDFileHDF
 
 
-class AreaDetector(StandardDetector):
-    _controller: ADController
+class DemoADSimDetector(StandardDetector):
+    _controller: ADSimController
     _writer: HDFWriter
 
     def __init__(
@@ -22,7 +22,7 @@ class AreaDetector(StandardDetector):
         self.hdf = NDFileHDF(prefix + "HDF:")
 
         super().__init__(
-            ADController(self.drv),
+            ADSimController(self.drv),
             HDFWriter(
                 self.hdf,
                 directory_provider,

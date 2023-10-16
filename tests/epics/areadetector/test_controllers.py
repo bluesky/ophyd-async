@@ -4,7 +4,10 @@ import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector
 from ophyd_async.core.flyer import SameTriggerDetectorGroupLogic, TriggerInfo
-from ophyd_async.epics.areadetector.controllers import ADController, PilatusController
+from ophyd_async.epics.areadetector.controllers import (
+    ADSimController,
+    PilatusController,
+)
 from ophyd_async.epics.areadetector.drivers import ADDriver, PilatusDriver, TriggerMode
 from ophyd_async.epics.areadetector.utils import ImageMode
 
@@ -19,15 +22,15 @@ async def pilatus(RE) -> PilatusController:
 
 
 @pytest.fixture
-async def ad(RE) -> ADController:
+async def ad(RE) -> ADSimController:
     async with DeviceCollector(sim=True):
         drv = ADDriver("DRIVER:")
-        controller = ADController(drv)
+        controller = ADSimController(drv)
 
     return controller
 
 
-async def test_ad_controller(RE, ad: ADController):
+async def test_ad_controller(RE, ad: ADSimController):
     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
         await ad.arm()
 
@@ -37,7 +40,7 @@ async def test_ad_controller(RE, ad: ADController):
     assert await driver.acquire.get_value() is True
 
     with patch(
-        "ophyd_async.epics.areadetector.controllers.ad_controller.wait_for_value",
+        "ophyd_async.epics.areadetector.controllers.ad_sim_controller.wait_for_value",
         return_value=None,
     ):
         await ad.disarm()
@@ -56,7 +59,7 @@ async def test_pilatus_controller(RE, pilatus: PilatusController):
     assert await driver.acquire.get_value() is True
 
     with patch(
-        "ophyd_async.epics.areadetector.controllers.ad_controller.wait_for_value",
+        "ophyd_async.epics.areadetector.controllers.ad_sim_controller.wait_for_value",
         return_value=None,
     ):
         await pilatus.disarm()
@@ -65,7 +68,7 @@ async def test_pilatus_controller(RE, pilatus: PilatusController):
 
 
 async def test_arming_pilatus_for_detector_group(
-    RE, pilatus: PilatusController, ad: ADController
+    RE, pilatus: PilatusController, ad: ADSimController
 ):
     detector_group = SameTriggerDetectorGroupLogic(
         controllers=[ad, pilatus], writers=[]

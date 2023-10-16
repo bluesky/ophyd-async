@@ -1,8 +1,4 @@
-"""Integration tests for a StandardDetector using a HDFWriter and ADController.
-
-Until we have SimController and SimWriter, this should belond in areadetector tests.
-Once those have been implemented can move this into core tests.
-"""
+"""Integration tests for a StandardDetector using a HDFWriter and ADSimController."""
 
 
 import time
@@ -16,10 +12,10 @@ from bluesky.utils import new_uid
 
 from ophyd_async.core import DeviceCollector, StandardDetector, StaticDirectoryProvider
 from ophyd_async.core.signal import set_sim_value
-from ophyd_async.epics.areadetector import AreaDetector
-from ophyd_async.epics.areadetector.controllers import ADController
+from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.writers import HDFWriter
+from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
 
 CURRENT_DIRECTORY = Path(__file__).parent
 
@@ -28,7 +24,7 @@ async def make_detector(prefix="", name="test"):
     dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
 
     async with DeviceCollector(sim=True):
-        det = AreaDetector(prefix, dp, name=name)
+        det = DemoADSimDetector(prefix, dp, name=name)
 
     return det
 
@@ -109,7 +105,7 @@ async def test_two_detectors_step(
 
     RE(count_sim(two_detectors, times=1))
 
-    controller_a = cast(ADController, two_detectors[0].controller)
+    controller_a = cast(ADSimController, two_detectors[0].controller)
     writer_a = cast(HDFWriter, two_detectors[0].writer)
     writer_b = cast(HDFWriter, two_detectors[1].writer)
 
@@ -225,7 +221,7 @@ async def test_trigger_logic():
 
     Probably the best thing to do here is mock the detector.controller.driver and
     detector.writer.hdf. Then, mock out set_and_wait_for_value in
-    ophyd_async.epics.areadetector.controllers.standard_controller.ADController
+    ophyd_async.epics.DemoADSimDetector.controllers.standard_controller.ADSimController
     so that, as well as setting detector.controller.driver.acquire to True, it sets
     detector.writer.hdf.num_captured to 1, using set_sim_value
     """
