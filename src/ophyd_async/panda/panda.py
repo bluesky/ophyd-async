@@ -161,23 +161,23 @@ def seq_table_from_rows(*rows: SeqTableRow):
 
 
 def seq_table_from_arrays(
-        repeats: Optional[npt.NDArray[np.uint16]] = None,
-        trigger: Optional[Sequence[SeqTrigger]] = None,
-        position: Optional[npt.NDArray[np.int32]] = None,
-        time1: Optional[npt.NDArray[np.uint32]] = None,
-        outa1: Optional[npt.NDArray[np.bool_]] = None,
-        outb1: Optional[npt.NDArray[np.bool_]] = None,
-        outc1: Optional[npt.NDArray[np.bool_]] = None,
-        outd1: Optional[npt.NDArray[np.bool_]] = None,
-        oute1: Optional[npt.NDArray[np.bool_]] = None,
-        outf1: Optional[npt.NDArray[np.bool_]] = None,
-        time2: Optional[npt.NDArray[np.uint32]] = None,
-        outa2: Optional[npt.NDArray[np.bool_]] = None,
-        outb2: Optional[npt.NDArray[np.bool_]] = None,
-        outc2: Optional[npt.NDArray[np.bool_]] = None,
-        outd2: Optional[npt.NDArray[np.bool_]] = None,
-        oute2: Optional[npt.NDArray[np.bool_]] = None,
-        outf2: Optional[npt.NDArray[np.bool_]] = None,
+    repeats: Optional[npt.NDArray[np.uint16]] = None,
+    trigger: Optional[Sequence[SeqTrigger]] = None,
+    position: Optional[npt.NDArray[np.int32]] = None,
+    time1: Optional[npt.NDArray[np.uint32]] = None,
+    outa1: Optional[npt.NDArray[np.bool_]] = None,
+    outb1: Optional[npt.NDArray[np.bool_]] = None,
+    outc1: Optional[npt.NDArray[np.bool_]] = None,
+    outd1: Optional[npt.NDArray[np.bool_]] = None,
+    oute1: Optional[npt.NDArray[np.bool_]] = None,
+    outf1: Optional[npt.NDArray[np.bool_]] = None,
+    time2: Optional[npt.NDArray[np.uint32]] = None,
+    outa2: Optional[npt.NDArray[np.bool_]] = None,
+    outb2: Optional[npt.NDArray[np.bool_]] = None,
+    outc2: Optional[npt.NDArray[np.bool_]] = None,
+    outd2: Optional[npt.NDArray[np.bool_]] = None,
+    oute2: Optional[npt.NDArray[np.bool_]] = None,
+    outf2: Optional[npt.NDArray[np.bool_]] = None,
 ) -> SeqTable:
     assert time2 is not None, "time2 must be provided"
     length = len(time2)
@@ -277,7 +277,7 @@ class PandA(Device):
         return block
 
     async def _make_block(
-            self, name: str, num: Optional[int], block_pv: str, sim: bool = False
+        self, name: str, num: Optional[int], block_pv: str, sim: bool = False
     ):
         """Makes a block given a block name containing relevant signals.
 

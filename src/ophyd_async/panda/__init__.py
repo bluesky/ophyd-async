@@ -3,8 +3,10 @@ from .panda import (
     PcapBlock,
     PulseBlock,
     PVIEntry,
+    seq_table_from_rows,
     SeqBlock,
     SeqTable,
+    SeqTableRow,
     SeqTrigger,
     pvi,
 )
@@ -14,8 +16,10 @@ __all__ = [
     "PcapBlock",
     "PulseBlock",
     "PVIEntry",
+    "seq_table_from_rows",
     "SeqBlock",
     "SeqTable",
+    "SeqTableRow",
     "SeqTrigger",
     "pvi",
 ]
