@@ -15,7 +15,7 @@ from ophyd_async.epics import demo
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
-A_WHILE = 0.01
+A_WHILE = 0.001
 
 
 @pytest.fixture
