@@ -8,7 +8,12 @@ from ._providers import (
 from .async_status import AsyncStatus
 from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
 from .device import Device, DeviceCollector, DeviceVector
-from .device_save_loader import get_signal_values, save_to_yaml, walk_rw_signals
+from .device_save_loader import (
+    get_signal_values,
+    load_from_yaml,
+    save_to_yaml,
+    walk_rw_signals,
+)
 from .flyer import (
     DetectorGroupLogic,
     HardwareTriggeredFlyable,
@@ -86,6 +91,7 @@ __all__ = [
     "get_unique",
     "merge_gathered_dicts",
     "wait_for_connection",
+    "load_from_yaml"
     "save_to_yaml",
     "get_signal_values",
     "walk_rw_signals",

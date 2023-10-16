@@ -1,9 +1,10 @@
 from enum import Enum
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Sequence, Union
 
 import numpy as np
-import numpy.typing
+import numpy.typing as npt
 import yaml
+from bluesky.plan_stubs import abs_set, wait
 from bluesky.utils import Msg
 
 from .device import Device
@@ -11,7 +12,7 @@ from .signal import SignalRW
 
 
 def ndarray_representer(
-    dumper: yaml.Dumper, array: numpy.typing.NDArray[Any]
+    dumper: yaml.Dumper, array: npt.NDArray[Any]
 ) -> yaml.Node:
     return dumper.represent_sequence("tag:yaml.org,2002:seq", array.tolist())
 
@@ -107,7 +108,8 @@ def walk_rw_signals(
 
 
 def save_to_yaml(phases: Union[Dict[str, Any], List[Dict[str, Any]]], save_path: str):
-    """Serialises and saves a phase or a set of phases of a device's SignalRW's to a
+    """
+    Serialises and saves a phase or a set of phases of a device's SignalRW's to a
     yaml file.
 
     Parameters
@@ -117,11 +119,13 @@ def save_to_yaml(phases: Union[Dict[str, Any], List[Dict[str, Any]]], save_path:
         a device. In general this variable be the return value of `get_signal_values`.
 
     save_path : str
+        Path of the yaml file to write to
 
     See Also
     --------
     :func:`ophyd_async.core.walk_rw_signals`
     :func:`ophyd_async.core.get_signal_values`
+    :func:`ophyd_async.core.load_from_yaml`
     """
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
     with open(save_path, "w") as file:
@@ -129,3 +133,48 @@ def save_to_yaml(phases: Union[Dict[str, Any], List[Dict[str, Any]]], save_path:
             yaml.dump([phases], file, Dumper=OphydDumper, default_flow_style=None)
         else:
             yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=None)
+
+
+def load_from_yaml(device: Device, save_path: str):
+    """
+    Loads a phase or a set of phases from a yaml file and puts value to an Ophyd device
+
+    Parameters
+    ----------
+    device : Device
+        Ophyd device with read-write Signals to write values to from yaml file.
+
+    save_path : str
+        Path of the yaml file to load from
+
+    See Also
+    --------
+    :func:`ophyd_async.core.save_to_yaml`
+    """
+    with open(save_path, "r") as file:
+        data_by_phase: Sequence[Dict[str, Any]] = yaml.full_load(file)
+
+    # For each phase, find the location of the SignalRWs in that phase,
+    # load them to the correct value and wait for the load to complete
+    for phase_number, phase in enumerate(data_by_phase):
+        for key, value in phase.items():
+
+            # Key is subdevices_x.subdevices_x+1.etc.signalname.
+            # First get the attribute hierarchy
+            components = key.split(".")
+            lowest_device = device
+
+            # If there are subdevices
+            if len(components) > 1:
+                signal_name: str = components[-1]  # Last string is the signal name
+                for attribute in components[:-1]:
+                    lowest_device = getattr(lowest_device, attribute)
+            else:
+                signal_name: str = components[0]
+            signal: SignalRW = getattr(lowest_device, signal_name)
+
+            yield from abs_set(signal, value, group=f"load-phase{phase_number}")
+
+        yield from wait(f"load-phase{phase_number}")
+
+    return (data_by_phase)

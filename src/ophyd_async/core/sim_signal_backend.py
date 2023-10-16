@@ -162,7 +162,8 @@ class SimSignalBackend(SignalBackend[T]):
         return self.converter.value(self._value)
 
     async def get_setpoint(self) -> T:
-        return self.converter.value(self._value)
+        """For a simulated backend, the setpoint and readback values are the same."""
+        return await self.get_value()
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
         if callback:

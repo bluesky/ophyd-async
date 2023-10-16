@@ -37,7 +37,7 @@ class SignalBackend(Generic[T]):
 
     @abstractmethod
     async def get_setpoint(self) -> T:
-        """The current setpoint"""
+        """The point that a signal was requested to move to."""
 
     @abstractmethod
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
