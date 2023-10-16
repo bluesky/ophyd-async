@@ -6,7 +6,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 import yaml
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import Device, SignalR, SignalRW
 from ophyd_async.core.device_save_loader import (
@@ -18,7 +18,7 @@ from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
 class DummyChildDevice(Device):
-    def __init__(self):
+    def __init__(self) -> None:
         self.sig1: SignalRW = epics_signal_rw(str, "Value1")
         self.sig2: SignalR = epics_signal_r(str, "Value2")
 

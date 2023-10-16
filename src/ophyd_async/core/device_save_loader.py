@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, Generator, List, Optional, Union
 
 import numpy as np
-from numpy.typing import NDArray
+import numpy.typing
 import yaml
 from bluesky.utils import Msg
 
@@ -10,19 +10,21 @@ from .device import Device
 from .signal import SignalRW
 
 
-def ndarray_representer(dumper: yaml.Dumper, array: NDArray[Any]) -> yaml.Node:
+def ndarray_representer(
+    dumper: yaml.Dumper, array: numpy.typing.NDArray[Any]
+) -> yaml.Node:
     return dumper.represent_sequence("tag:yaml.org,2002:seq", array.tolist())
 
 
 class OphydDumper(yaml.Dumper):
-    def represent_data(self, data):
+    def represent_data(self, data: Any) -> Any:
         if isinstance(data, Enum):
             return self.represent_data(data.value)
         return super(OphydDumper, self).represent_data(data)
 
 
 def get_signal_values(
-    signals: Dict[str, SignalRW], ignore: Optional[List[str]] = None
+    signals: Dict[str, SignalRW[Any]], ignore: Optional[List[str]] = None
 ) -> Union[Generator[Dict[str, Any], None, None], Dict[str, Any]]:
     """
     Read the values of SignalRW's, to be used alongside `walk_rw_signals`. Used as part
@@ -66,7 +68,7 @@ def get_signal_values(
 
 def walk_rw_signals(
     device: Device, path_prefix: Optional[str] = ""
-) -> Dict[str, SignalRW]:
+) -> Dict[str, SignalRW[Any]]:
     """
     Get all the SignalRWs from a device and store them with their dotted attribute
     paths in a dictionary. Used as part of saving and loading a device
@@ -94,7 +96,7 @@ def walk_rw_signals(
     if not path_prefix:
         path_prefix = ""
 
-    signals: Dict[str, SignalRW] = {}
+    signals: Dict[str, SignalRW[Any]] = {}
     for attr_name, attr in device.children():
         dot_path = f"{path_prefix}{attr_name}"
         if type(attr) is SignalRW:
@@ -104,7 +106,7 @@ def walk_rw_signals(
     return signals
 
 
-def save_to_yaml(phases: Union[Dict, List[Dict]], save_path: str):
+def save_to_yaml(phases: Union[Dict[str, Any], List[Dict[str, Any]]], save_path: str):
     """Serialises and saves a phase or a set of phases of a device's SignalRW's to a
     yaml file.
 
@@ -122,9 +124,8 @@ def save_to_yaml(phases: Union[Dict, List[Dict]], save_path: str):
     :func:`ophyd_async.core.get_signal_values`
     """
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
-
-    if isinstance(phases, dict):
-        phases = [phases]
-
     with open(save_path, "w") as file:
-        yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=None)
+        if isinstance(phases, dict):
+            yaml.dump([phases], file, Dumper=OphydDumper, default_flow_style=None)
+        else:
+            yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=None)
