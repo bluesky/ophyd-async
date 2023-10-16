@@ -29,7 +29,7 @@ class ADController(DetectorControl):
         frame_timeout = DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         await asyncio.gather(
             self.driver.num_images.set(num),
-            self.driver.image_mode.set(ImageMode.single),
+            self.driver.image_mode.set(ImageMode.multiple),
         )
         return await set_and_wait_for_value(
             self.driver.acquire, True, timeout=frame_timeout
