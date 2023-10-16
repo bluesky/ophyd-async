@@ -14,6 +14,7 @@ from typing import (
     Union,
 )
 
+from tango import EventData
 import numpy as np
 from bluesky.protocols import Reading
 
