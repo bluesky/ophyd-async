@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import atexit
 import re
+from dataclasses import dataclass
 from enum import Enum
 from typing import (
     Callable,
@@ -86,6 +87,27 @@ class SeqBlock(Device):
     table: SignalRW[SeqTable]
 
 
+@dataclass
+class SeqTableRow:
+    repeats: int = 1
+    trigger: SeqTrigger = SeqTrigger.IMMEDIATE
+    position: int = 0
+    time1: int = 0
+    outa1: bool = False
+    outb1: bool = False
+    outc1: bool = False
+    outd1: bool = False
+    oute1: bool = False
+    outf1: bool = False
+    time2: int = 0
+    outa2: bool = False
+    outb2: bool = False
+    outc2: bool = False
+    outd2: bool = False
+    oute2: bool = False
+    outf2: bool = False
+
+
 class PcapBlock(Device):
     active: SignalR[bool]
 
@@ -114,6 +136,75 @@ def _block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
         return name, int(num or 1)  # just to pass type checks.
 
     return block_name, None
+
+
+def seq_table_from_rows(*rows: SeqTableRow):
+    return seq_table_from_arrays(
+        repeats=np.ndarray([row.repeats for row in rows], dtype=np.uint16),
+        trigger=[row.trigger for row in rows],
+        position=np.ndarray([row.position for row in rows], dtype=np.int32),
+        time1=np.ndarray([row.time1 for row in rows], dtype=np.uint32),
+        outa1=np.ndarray([row.outa1 for row in rows], dtype=np.bool_),
+        outb1=np.ndarray([row.outb1 for row in rows], dtype=np.bool_),
+        outc1=np.ndarray([row.outc1 for row in rows], dtype=np.bool_),
+        outd1=np.ndarray([row.outd1 for row in rows], dtype=np.bool_),
+        oute1=np.ndarray([row.oute1 for row in rows], dtype=np.bool_),
+        outf1=np.ndarray([row.outf1 for row in rows], dtype=np.bool_),
+        time2=np.ndarray([row.time2 for row in rows], dtype=np.uint32),
+        outa2=np.ndarray([row.outa2 for row in rows], dtype=np.bool_),
+        outb2=np.ndarray([row.outb2 for row in rows], dtype=np.bool_),
+        outc2=np.ndarray([row.outc2 for row in rows], dtype=np.bool_),
+        outd2=np.ndarray([row.outd2 for row in rows], dtype=np.bool_),
+        oute2=np.ndarray([row.oute2 for row in rows], dtype=np.bool_),
+        outf2=np.ndarray([row.outf2 for row in rows], dtype=np.bool_),
+    )
+
+
+def seq_table_from_arrays(
+        repeats: Optional[npt.NDArray[np.uint16]] = None,
+        trigger: Optional[Sequence[SeqTrigger]] = None,
+        position: Optional[npt.NDArray[np.int32]] = None,
+        time1: Optional[npt.NDArray[np.uint32]] = None,
+        outa1: Optional[npt.NDArray[np.bool_]] = None,
+        outb1: Optional[npt.NDArray[np.bool_]] = None,
+        outc1: Optional[npt.NDArray[np.bool_]] = None,
+        outd1: Optional[npt.NDArray[np.bool_]] = None,
+        oute1: Optional[npt.NDArray[np.bool_]] = None,
+        outf1: Optional[npt.NDArray[np.bool_]] = None,
+        time2: Optional[npt.NDArray[np.uint32]] = None,
+        outa2: Optional[npt.NDArray[np.bool_]] = None,
+        outb2: Optional[npt.NDArray[np.bool_]] = None,
+        outc2: Optional[npt.NDArray[np.bool_]] = None,
+        outd2: Optional[npt.NDArray[np.bool_]] = None,
+        oute2: Optional[npt.NDArray[np.bool_]] = None,
+        outf2: Optional[npt.NDArray[np.bool_]] = None,
+) -> SeqTable:
+    assert time2 is not None, "time2 must be provided"
+    length = len(time2)
+    assert 0 < length < 4096, f"Length {length} not in range"
+    table = SeqTable(
+        repeats=repeats or np.ones(length),
+        trigger=trigger or [SeqTrigger.IMMEDIATE] * length,
+        position=position or np.zeros(length),
+        time1=time1 or np.zeros(length),
+        outa1=outa1 or np.zeros(length),
+        outb1=outb1 or np.zeros(length),
+        outc1=outc1 or np.zeros(length),
+        outd1=outd1 or np.zeros(length),
+        oute1=oute1 or np.zeros(length),
+        outf1=outf1 or np.zeros(length),
+        time2=time2,
+        outa2=outa2 or np.zeros(length),
+        outb2=outb2 or np.zeros(length),
+        outc2=outc2 or np.zeros(length),
+        outd2=outd2 or np.zeros(length),
+        oute2=oute2 or np.zeros(length),
+        outf2=outf2 or np.zeros(length),
+    )
+    for k, v in table.items():
+        if len(v) != length:
+            raise ValueError(f"{k}: has length {len(v)} not {length}")
+    return table
 
 
 def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
@@ -186,7 +277,7 @@ class PandA(Device):
         return block
 
     async def _make_block(
-        self, name: str, num: Optional[int], block_pv: str, sim: bool = False
+            self, name: str, num: Optional[int], block_pv: str, sim: bool = False
     ):
         """Makes a block given a block name containing relevant signals.
 
