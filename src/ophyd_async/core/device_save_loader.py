@@ -6,7 +6,8 @@ from numpy.typing import NDArray
 import yaml
 from bluesky.utils import Msg
 
-from ophyd_async.core import Device, SignalRW
+from .device import Device
+from .signal import SignalRW
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: NDArray[Any]) -> yaml.Node:

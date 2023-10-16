@@ -9,7 +9,7 @@ import yaml
 from bluesky import RunEngine
 
 from ophyd_async.core import Device, SignalR, SignalRW
-from ophyd_async.core._device.device_save_loader import (
+from ophyd_async.core.device_save_loader import (
     get_signal_values,
     save_to_yaml,
     walk_rw_signals,
