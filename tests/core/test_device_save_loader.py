@@ -166,12 +166,14 @@ async def test_yaml_formatting_no_phase(device_with_phases, tmp_path):
     RE(save_my_device())
 
     with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
-        assert file.read() == """\
+        expected = """\
 - {child1.sig1: test_string}
 - child2.sig1:
     VAL1: [1, 2, 3, 4, 5]
     VAL2: [6, 7, 8, 9, 10]
 """
+        assert file.read() == expected
+
 
 async def test_saved_types_with_phase(device_with_phases, tmp_path):
     RE = RunEngine()

@@ -4,7 +4,7 @@ from typing import Any, Dict, Generator, List, Optional, Union
 import numpy as np
 from numpy.typing import NDArray
 import yaml
-from bluesky import Msg
+from bluesky.utils import Msg
 
 from ophyd_async.core import Device, SignalRW
 
