@@ -111,7 +111,7 @@ async def test_two_detectors_step(
 
     drv = controller_a.driver
     assert 1 == await drv.acquire.get_value()
-    assert ImageMode.single == await drv.image_mode.get_value()
+    assert ImageMode.multiple == await drv.image_mode.get_value()
 
     hdfb = writer_b.hdf
     assert True is await hdfb.lazy_open.get_value()

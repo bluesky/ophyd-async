@@ -30,27 +30,23 @@ async def ad(RE) -> ADSimController:
     return controller
 
 
+@patch("ophyd_async.core.signal.wait_for_value", return_value=None)
 async def test_ad_controller(RE, ad: ADSimController):
-    with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-        await ad.arm()
+    await ad.arm()
 
     driver = ad.driver
     assert await driver.num_images.get_value() == 0
-    assert await driver.image_mode.get_value() == ImageMode.single
+    assert await driver.image_mode.get_value() == ImageMode.multiple
     assert await driver.acquire.get_value() is True
 
-    with patch(
-        "ophyd_async.epics.areadetector.controllers.ad_sim_controller.wait_for_value",
-        return_value=None,
-    ):
-        await ad.disarm()
+    await ad.disarm()
 
     assert await driver.acquire.get_value() is False
 
 
+@patch("ophyd_async.core.signal.wait_for_value", return_value=None)
 async def test_pilatus_controller(RE, pilatus: PilatusController):
-    with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-        await pilatus.arm(mode=DetectorTrigger.constant_gate)
+    await pilatus.arm(mode=DetectorTrigger.constant_gate)
 
     driver = pilatus.driver
     assert await driver.num_images.get_value() == 0
@@ -58,11 +54,7 @@ async def test_pilatus_controller(RE, pilatus: PilatusController):
     assert await driver.trigger_mode.get_value() == TriggerMode.ext_enable
     assert await driver.acquire.get_value() is True
 
-    with patch(
-        "ophyd_async.epics.areadetector.controllers.ad_sim_controller.wait_for_value",
-        return_value=None,
-    ):
-        await pilatus.disarm()
+    await pilatus.disarm()
 
     assert await driver.acquire.get_value() is False
 
