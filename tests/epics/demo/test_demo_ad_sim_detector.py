@@ -10,11 +10,17 @@ import pytest
 from bluesky import RunEngine
 from bluesky.utils import new_uid
 
-from ophyd_async.core import DeviceCollector, StandardDetector, StaticDirectoryProvider
-from ophyd_async.core.signal import set_sim_value
+from ophyd_async.core import (
+    AsyncStatus,
+    DeviceCollector,
+    StandardDetector,
+    StaticDirectoryProvider,
+    set_sim_value,
+)
 from ophyd_async.epics.areadetector.controllers import ADSimController
+from ophyd_async.epics.areadetector.drivers import ADDriver
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
-from ophyd_async.epics.areadetector.writers import HDFWriter
+from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
 
 CURRENT_DIRECTORY = Path(__file__).parent
@@ -24,7 +30,11 @@ async def make_detector(prefix="", name="test"):
     dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
 
     async with DeviceCollector(sim=True):
-        det = DemoADSimDetector(prefix, dp, name=name)
+        drv = ADDriver(f"{prefix}DRV:")
+        hdf = NDFileHDF(f"{prefix}HDF:")
+        det = DemoADSimDetector(
+            drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
+        )
 
     return det
 
@@ -67,7 +77,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 
 @pytest.fixture
 async def single_detector(RE: RunEngine) -> StandardDetector:
-    detector = await make_detector(prefix="TEST")
+    detector = await make_detector(prefix="TEST:")
 
     set_sim_value(detector._controller.driver.array_size_x, 10)
     set_sim_value(detector._controller.driver.array_size_y, 20)
@@ -76,8 +86,8 @@ async def single_detector(RE: RunEngine) -> StandardDetector:
 
 @pytest.fixture
 async def two_detectors():
-    deta = await make_detector(prefix="PREFIX1", name="testa")
-    detb = await make_detector(prefix="PREFIX2", name="testb")
+    deta = await make_detector(prefix="PREFIX1:", name="testa")
+    detb = await make_detector(prefix="PREFIX2:", name="testb")
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
@@ -185,12 +195,12 @@ async def test_read_and_describe_detector(single_detector: StandardDetector):
 
     assert describe == {
         "test-drv-acquire_time": {
-            "source": "sim://TESTDRV:AcquireTime_RBV",
+            "source": "sim://TEST:DRV:AcquireTime_RBV",
             "dtype": "number",
             "shape": [],
         },
         "test-drv-acquire": {
-            "source": "sim://TESTDRV:Acquire_RBV",
+            "source": "sim://TEST:DRV:Acquire_RBV",
             "dtype": "boolean",
             "shape": [],
         },
@@ -226,3 +236,43 @@ async def test_trigger_logic():
     detector.writer.hdf.num_captured to 1, using set_sim_value
     """
     ...
+
+
+async def test_detector_with_unnamed_or_disconnected_config_sigs(
+    RE, prefix="", name="test"
+):
+    dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
+    drv = ADDriver(f"{prefix}DRV:")
+
+    some_other_driver = ADDriver("TEST")
+
+    async with DeviceCollector(sim=True):
+        hdf = NDFileHDF(f"{prefix}HDF:")
+        det = DemoADSimDetector(
+            drv,
+            hdf,
+            dp,
+            config_sigs=[some_other_driver.acquire_time, drv.acquire],
+            name=name,
+        )
+
+    with pytest.raises(Exception) as exc:
+        RE(count_sim([det], times=1))
+
+    assert isinstance(exc.value.args[0], AsyncStatus)
+    assert (
+        str(exc.value.args[0].exception())
+        == "config signal must be named before it is passed to the detector"
+    )
+
+    some_other_driver.set_name("some-name")
+
+    with pytest.raises(Exception) as exc:
+        RE(count_sim([det], times=1))
+
+    assert isinstance(exc.value.args[0], AsyncStatus)
+    assert (
+        str(exc.value.args[0].exception())
+        == "config signal some-name-acquire_time must be connected before it is "
+        + "passed to the detector"
+    )

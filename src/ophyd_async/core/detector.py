@@ -2,7 +2,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import AsyncIterator, Dict, Optional, Sequence, Tuple
+from typing import AsyncIterator, Dict, Optional, Sequence
 
 from bluesky.protocols import (
     Asset,
@@ -102,13 +102,11 @@ class StandardDetector(
     NOTE: only for step-scans.
     """
 
-    _config_sigs: Sequence[Tuple[str, SignalR]] = ()
-
     def __init__(
         self,
         controller: DetectorControl,
         writer: DetectorWriter,
-        config_sigs: Sequence[Tuple[str, SignalR]] = (),
+        config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         """
@@ -135,31 +133,34 @@ class StandardDetector(
     def writer(self) -> DetectorWriter:
         return self._writer
 
-    async def connect(self, sim: bool = False):
-        await super().connect(sim=sim)
+    async def check_config_sigs(self):
+        """Checks configuration signals are named and connected."""
+        for signal in self._config_sigs:
+            if signal._name == "":
+                raise Exception(
+                    "config signal must be named before it is passed to the detector"
+                )
 
-        for _, signal in self._config_sigs:
-            await signal.connect(sim=sim)
-
-    def set_name(self, name: str):
-        super().set_name(name)
-
-        for signal_name, signal in self._config_sigs:
-            signal.set_name(signal_name)
+            try:
+                await signal.get_value()
+            except NotImplementedError:
+                raise Exception(
+                    f"config signal {signal._name} must be connected before it is "
+                    + "passed to the detector"
+                )
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Disarm the detector, stop filewriting, and open file for writing."""
+        await self.check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._describe = await self.writer.open()
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:
-        return await merge_gathered_dicts(
-            sig[1].describe() for sig in self._config_sigs
-        )
+        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
     async def read_configuration(self) -> Dict[str, Reading]:
-        return await merge_gathered_dicts(sig[1].read() for sig in self._config_sigs)
+        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
 
     def describe(self) -> Dict[str, Descriptor]:
         return self._describe

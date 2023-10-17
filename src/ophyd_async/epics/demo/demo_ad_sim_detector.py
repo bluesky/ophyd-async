@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple, cast
+from typing import Sequence
 
 from ophyd_async.core import DirectoryProvider, SignalR, StandardDetector
 
@@ -13,13 +13,14 @@ class DemoADSimDetector(StandardDetector):
 
     def __init__(
         self,
-        prefix: str,
+        drv: ADDriver,
+        hdf: NDFileHDF,
         directory_provider: DirectoryProvider,
         name: str = "",
-        config_sigs: Sequence[Tuple[str, SignalR]] = (),
+        config_sigs: Sequence[SignalR] = (),
     ):
-        self.drv = ADDriver(prefix + "DRV:")
-        self.hdf = NDFileHDF(prefix + "HDF:")
+        self.drv = drv
+        self.hdf = hdf
 
         super().__init__(
             ADSimController(self.drv),
@@ -32,14 +33,3 @@ class DemoADSimDetector(StandardDetector):
             config_sigs=config_sigs,
             name=name,
         )
-
-    async def connect(self, sim: bool = False):
-        await super().connect(sim=sim)
-        driver = self._controller.driver
-        self._config_sigs = [
-            *self._config_sigs,
-            *[
-                (getattr(signal, "name"), cast(SignalR, signal))
-                for signal in [driver.acquire_time, driver.acquire]
-            ],
-        ]
