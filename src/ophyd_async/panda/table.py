@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Sequence, TypedDict
+from typing import Optional, Sequence, Type, TypedDict, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -88,6 +88,9 @@ def seq_table_from_rows(*rows: SeqTableRow):
     )
 
 
+T = TypeVar("T", bound=np.generic)
+
+
 def seq_table_from_arrays(
     *,
     repeats: Optional[npt.NDArray[np.uint16]] = None,
@@ -122,31 +125,34 @@ def seq_table_from_arrays(
     length = len(time2)
     assert 0 < length < 4096, f"Length {length} not in range"
 
-    def is_invalid(value: Optional[npt.NDArray]):
+    def or_default(
+        value: Optional[npt.NDArray[T]], dtype: Type[T], default_value: int = 0
+    ) -> npt.NDArray[T]:
         if value is None or len(value) == 0:
-            return True
-        return False
+            return np.full(length, default_value, dtype=dtype)
+        return value
 
     table = SeqTable(
-        repeats=np.ones(length) if is_invalid(repeats) else repeats,
+        repeats=or_default(repeats, np.uint16, 1),
         trigger=trigger or [SeqTrigger.IMMEDIATE] * length,
-        position=np.zeros(length) if is_invalid(position) else position,
-        time1=np.zeros(length) if is_invalid(time1) else time1,
-        outa1=np.zeros(length) if is_invalid(outa1) else outa1,
-        outb1=np.zeros(length) if is_invalid(outb1) else outb1,
-        outc1=np.zeros(length) if is_invalid(outc1) else outc1,
-        outd1=np.zeros(length) if is_invalid(outd1) else outd1,
-        oute1=np.zeros(length) if is_invalid(oute1) else oute1,
-        outf1=np.zeros(length) if is_invalid(outf1) else outf1,
+        position=or_default(position, np.int32),
+        time1=or_default(time1, np.uint32),
+        outa1=or_default(outa1, np.bool_),
+        outb1=or_default(outb1, np.bool_),
+        outc1=or_default(outc1, np.bool_),
+        outd1=or_default(outd1, np.bool_),
+        oute1=or_default(oute1, np.bool_),
+        outf1=or_default(outf1, np.bool_),
         time2=time2,
-        outa2=np.zeros(length) if is_invalid(outa2) else outa2,
-        outb2=np.zeros(length) if is_invalid(outb2) else outb2,
-        outc2=np.zeros(length) if is_invalid(outc2) else outc2,
-        outd2=np.zeros(length) if is_invalid(outd2) else outd2,
-        oute2=np.zeros(length) if is_invalid(oute2) else oute2,
-        outf2=np.zeros(length) if is_invalid(outf2) else outf2,
+        outa2=or_default(outa2, np.bool_),
+        outb2=or_default(outb2, np.bool_),
+        outc2=or_default(outc2, np.bool_),
+        outd2=or_default(outd2, np.bool_),
+        oute2=or_default(oute2, np.bool_),
+        outf2=or_default(outf2, np.bool_),
     )
     for k, v in table.items():
-        if len(v) != length:
-            raise ValueError(f"{k}: has length {len(v)} not {length}")
+        size = len(v)  # type: ignore
+        if size != length:
+            raise ValueError(f"{k}: has length {size} not {length}")
     return table
