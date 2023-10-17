@@ -49,6 +49,7 @@ def save_device(device, file_path):
     phases = sort_signal_by_phase(values)
     save_to_yaml(phases, file_path)
 
+
 @pytest.fixture
 async def device() -> DummyDeviceGroup:
     device = DummyDeviceGroup("parent")

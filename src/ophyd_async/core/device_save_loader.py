@@ -11,9 +11,7 @@ from .device import Device
 from .signal import SignalRW
 
 
-def ndarray_representer(
-    dumper: yaml.Dumper, array: npt.NDArray[Any]
-) -> yaml.Node:
+def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.Node:
     return dumper.represent_sequence("tag:yaml.org,2002:seq", array.tolist())
 
 
@@ -158,23 +156,20 @@ def load_from_yaml(device: Device, save_path: str):
     # load them to the correct value and wait for the load to complete
     for phase_number, phase in enumerate(data_by_phase):
         for key, value in phase.items():
-
             # Key is subdevices_x.subdevices_x+1.etc.signalname.
             # First get the attribute hierarchy
             components = key.split(".")
             lowest_device = device
-
+            signal_name: str = components[0]
             # If there are subdevices
             if len(components) > 1:
-                signal_name: str = components[-1]  # Last string is the signal name
+                signal_name = components[-1]  # Last string is the signal name
                 for attribute in components[:-1]:
                     lowest_device = getattr(lowest_device, attribute)
-            else:
-                signal_name: str = components[0]
             signal: SignalRW = getattr(lowest_device, signal_name)
 
             yield from abs_set(signal, value, group=f"load-phase{phase_number}")
 
         yield from wait(f"load-phase{phase_number}")
 
-    return (data_by_phase)
+    return data_by_phase

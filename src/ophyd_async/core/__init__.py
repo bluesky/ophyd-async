@@ -91,7 +91,7 @@ __all__ = [
     "get_unique",
     "merge_gathered_dicts",
     "wait_for_connection",
-    "load_from_yaml"
+    "load_from_yaml",
     "save_to_yaml",
     "get_signal_values",
     "walk_rw_signals",
