@@ -1,13 +1,8 @@
-from .panda import (
-    PandA,
-    PcapBlock,
-    PulseBlock,
-    PVIEntry,
-    SeqBlock,
+from .panda import PandA, PcapBlock, PulseBlock, PVIEntry, SeqBlock, SeqTable, pvi
+from .table import (
     SeqTable,
     SeqTableRow,
     SeqTrigger,
-    pvi,
     seq_table_from_arrays,
     seq_table_from_rows,
 )
