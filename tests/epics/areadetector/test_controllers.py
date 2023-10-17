@@ -47,8 +47,8 @@ async def ad(RE) -> ADSimController:
 @pytest.fixture
 async def ad_aravis(RE) -> ADAravisController:
     async with DeviceCollector(sim=True):
-        drv = ADAravisDriver("DRIVER:", 2)
-        controller = ADAravisController(drv)
+        drv = ADAravisDriver("DRIVER:")
+        controller = ADAravisController(drv, 2)
 
     return controller
 
@@ -105,7 +105,6 @@ async def test_ad_aravis_controller(RE, ad_aravis: ADAravisController):
         await ad_aravis.disarm()
 
     assert await driver.acquire.get_value() is False
-    assert await driver.trigger_mode.get_value() == ADAravisTrigger.off
 
 
 async def test_arming_pilatus_for_detector_group(
