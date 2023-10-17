@@ -139,6 +139,9 @@ def _block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
 
 
 def seq_table_from_rows(*rows: SeqTableRow):
+    """
+    Constructs a sequence table from a series of rows.
+    """
     return seq_table_from_arrays(
         repeats=np.ndarray([row.repeats for row in rows], dtype=np.uint16),
         trigger=[row.trigger for row in rows],
@@ -161,6 +164,7 @@ def seq_table_from_rows(*rows: SeqTableRow):
 
 
 def seq_table_from_arrays(
+    *,
     repeats: Optional[npt.NDArray[np.uint16]] = None,
     trigger: Optional[Sequence[SeqTrigger]] = None,
     position: Optional[npt.NDArray[np.int32]] = None,
@@ -171,7 +175,7 @@ def seq_table_from_arrays(
     outd1: Optional[npt.NDArray[np.bool_]] = None,
     oute1: Optional[npt.NDArray[np.bool_]] = None,
     outf1: Optional[npt.NDArray[np.bool_]] = None,
-    time2: Optional[npt.NDArray[np.uint32]] = None,
+    time2: npt.NDArray[np.uint32],
     outa2: Optional[npt.NDArray[np.bool_]] = None,
     outb2: Optional[npt.NDArray[np.bool_]] = None,
     outc2: Optional[npt.NDArray[np.bool_]] = None,
@@ -179,6 +183,16 @@ def seq_table_from_arrays(
     oute2: Optional[npt.NDArray[np.bool_]] = None,
     outf2: Optional[npt.NDArray[np.bool_]] = None,
 ) -> SeqTable:
+    """
+    Constructs a sequence table from a series of columns as arrays.
+    time2 is the only required argument and must not be None.
+    All other provided arguments must be of equal length to time2.
+    If any other argument is not given, or else given as None or empty,
+    an array of length len(time2) filled with the following is defaulted:
+    repeats: 1
+    trigger: SeqTrigger.IMMEDIATE
+    all others: 0/False as appropriate
+    """
     assert time2 is not None, "time2 must be provided"
     length = len(time2)
     assert 0 < length < 4096, f"Length {length} not in range"
