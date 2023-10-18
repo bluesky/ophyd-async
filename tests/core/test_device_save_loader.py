@@ -15,6 +15,7 @@ from ophyd_async.core import (
     get_signal_values,
     load_from_yaml,
     save_to_yaml,
+    set_signal_values,
     walk_rw_signals,
 )
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
@@ -108,7 +109,7 @@ async def test_save_device(device, tmp_path):
             "parent_sig1": None,
         }
 
-        save_to_yaml(values, path.join(tmp_path, "test_file.yaml"))
+        save_to_yaml([values], path.join(tmp_path, "test_file.yaml"))
 
     RE(save_my_device())
 
@@ -144,7 +145,20 @@ async def test_yaml_formatting(device, tmp_path):
         assert file.read() == expected
 
 
-async def test_load_from_yaml_restores_value(device, tmp_path):
+async def test_load_from_yaml(device, tmp_path):
+    file_path = path.join(tmp_path, "test_file.yaml")
+    RE = RunEngine()
+    array = np.array([1, 1, 1, 1, 1])
+    await device.child1.sig1.set("initial_string")
+    await device.child2.sig1.set(array)
+    RE(save_device(device, file_path))
+
+    values = load_from_yaml(file_path)
+    assert values[0]["child1.sig1"] == "initial_string"
+    assert np.array_equal(values[1]["child2.sig1"], array)
+
+
+async def test_set_signal_values_restores_value(device, tmp_path):
     file_path = path.join(tmp_path, "test_file.yaml")
     RE = RunEngine()
 
@@ -159,7 +173,10 @@ async def test_load_from_yaml_restores_value(device, tmp_path):
     assert string_value == "changed_string"
     assert np.array_equal(array_value, np.array([2, 2, 2, 2, 2]))
 
-    RE(load_from_yaml(device, file_path))
+    values = load_from_yaml(file_path)
+    signals_to_set = walk_rw_signals(device)
+
+    RE(set_signal_values(signals_to_set, values))
 
     string_value = await device.child1.sig1.get_value()
     array_value = await device.child2.sig1.get_value()

@@ -12,6 +12,7 @@ from .device_save_loader import (
     get_signal_values,
     load_from_yaml,
     save_to_yaml,
+    set_signal_values,
     walk_rw_signals,
 )
 from .flyer import (
@@ -94,5 +95,6 @@ __all__ = [
     "load_from_yaml",
     "save_to_yaml",
     "get_signal_values",
+    "set_signal_values",
     "walk_rw_signals",
 ]

@@ -1,10 +1,11 @@
 from enum import Enum
-from typing import Any, Dict, Generator, List, Optional, Sequence, Union
+from typing import Any, Dict, Generator, List, Optional, Sequence
 
 import numpy as np
 import numpy.typing as npt
 import yaml
 from bluesky.plan_stubs import abs_set, wait
+from bluesky.protocols import Location
 from bluesky.utils import Msg
 
 from .device import Device
@@ -24,7 +25,7 @@ class OphydDumper(yaml.Dumper):
 
 def get_signal_values(
     signals: Dict[str, SignalRW[Any]], ignore: Optional[List[str]] = None
-) -> Union[Generator[Dict[str, Any], None, None], Dict[str, Any]]:
+) -> Generator[Msg, Sequence[Location[Any]], Dict[str, Any]]:
     """
     Read the values of SignalRW's, to be used alongside `walk_rw_signals`. Used as part
     of saving a device.
@@ -105,7 +106,7 @@ def walk_rw_signals(
     return signals
 
 
-def save_to_yaml(phases: Union[Dict[str, Any], List[Dict[str, Any]]], save_path: str):
+def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
     """
     Serialises and saves a phase or a set of phases of a device's SignalRW's to a
     yaml file.
@@ -127,49 +128,55 @@ def save_to_yaml(phases: Union[Dict[str, Any], List[Dict[str, Any]]], save_path:
     """
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
     with open(save_path, "w") as file:
-        if isinstance(phases, dict):
-            yaml.dump([phases], file, Dumper=OphydDumper, default_flow_style=None)
-        else:
-            yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=None)
+        yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=None)
 
 
-def load_from_yaml(device: Device, save_path: str):
+def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
     """
-    Loads a phase or a set of phases from a yaml file and puts value to an Ophyd device
+    Returns a list of dicts with saved signal values from a yaml file
 
     Parameters
     ----------
-    device : Device
-        Ophyd device with read-write Signals to write values to from yaml file.
-
     save_path : str
         Path of the yaml file to load from
 
     See Also
     --------
     :func:`ophyd_async.core.save_to_yaml`
+    :func:`ophyd_async.core.set_signal_values`
     """
     with open(save_path, "r") as file:
-        data_by_phase: Sequence[Dict[str, Any]] = yaml.full_load(file)
+        return yaml.full_load(file)
 
-    # For each phase, find the location of the SignalRWs in that phase,
+
+def set_signal_values(
+    signals: Dict[str, SignalRW[Any]], values: Sequence[Dict[str, Any]]
+) -> Generator[Msg, None, None]:
+    """
+    Loads a phase or a set of phases from a yaml file and puts value to an Ophyd device
+
+    Parameters
+    ----------
+    signals : Dict[str, SignalRW[Any]]
+        Dictionary of named signals to be updated if value found in values argument.
+
+    values : Sequence[Dict[str, Any]]
+        List of dictionaries of signal name and value pairs, if a signal matches
+        the name of one in the signals argument, sets the signal to that value.
+        The groups of signals are loaded in their list order.
+
+    See Also
+    --------
+    :func:`ophyd_async.core.load_from_yaml`
+    :func:`ophyd_async.core.walk_rw_signals`
+    """
+    # For each phase, set all the signals,
     # load them to the correct value and wait for the load to complete
-    for phase_number, phase in enumerate(data_by_phase):
+    for phase_number, phase in enumerate(values):
+        # Key is signal name
         for key, value in phase.items():
-            # Key is subdevices_x.subdevices_x+1.etc.signalname.
-            # First get the attribute hierarchy
-            components = key.split(".")
-            lowest_device = device
-            signal_name: str = components[0]
-            # If there are subdevices
-            if len(components) > 1:
-                signal_name = components[-1]  # Last string is the signal name
-                for attribute in components[:-1]:
-                    lowest_device = getattr(lowest_device, attribute)
-            signal: SignalRW = getattr(lowest_device, signal_name)
-
-            yield from abs_set(signal, value, group=f"load-phase{phase_number}")
-
+            if key in signals:
+                yield from abs_set(
+                    signals[key], value, group=f"load-phase{phase_number}"
+                )
         yield from wait(f"load-phase{phase_number}")
-
-    return data_by_phase
