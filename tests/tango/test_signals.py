@@ -59,21 +59,24 @@ for type_name, tango_type_name, py_type, values in BASE_TYPES_SET:
     ATTRIBUTES_SET.extend([
         (f"{type_name}_scalar_attr", tango_type_name, AttrDataFormat.SCALAR, py_type, choice(values), choice(values)),
         (f"{type_name}_spectrum_attr", tango_type_name, AttrDataFormat.SPECTRUM, npt.NDArray[py_type],
-         [choice(values), choice(values)], [choice(values), choice(values)]),
+         [choice(values), choice(values), choice(values)], [choice(values), choice(values), choice(values)]),
         (f"{type_name}_image_attr", tango_type_name, AttrDataFormat.IMAGE, npt.NDArray[py_type],
-         [[choice(values), choice(values)], [choice(values), choice(values)]],
-         [[choice(values), choice(values)], [choice(values), choice(values)]])
+         [[choice(values), choice(values), choice(values)], [choice(values), choice(values), choice(values)]],
+         [[choice(values), choice(values), choice(values)], [choice(values), choice(values), choice(values)]])
         ])
 
     if tango_type_name == 'DevUChar':
         continue
     else:
-        COMMANDS_SET.append((f"{type_name}_scalar_cmd", tango_type_name, AttrDataFormat.SCALAR, py_type, choice(values), choice(values)))
+        COMMANDS_SET.append((f"{type_name}_scalar_cmd", tango_type_name, AttrDataFormat.SCALAR,
+                             py_type, choice(values), choice(values)))
         if tango_type_name in ['DevState', 'DevEnum']:
             continue
         else:
             COMMANDS_SET.append((f"{type_name}_spectrum_cmd", tango_type_name, AttrDataFormat.SPECTRUM,
-                                 npt.NDArray[py_type], [choice(values), choice(values)], [choice(values), choice(values)]))
+                                 npt.NDArray[py_type],
+                                 [choice(values), choice(values), choice(values)],
+                                 [choice(values), choice(values), choice(values)]))
 
 
 # --------------------------------------------------------------------
@@ -91,7 +94,7 @@ class EchoDevice(Device):
                 access=AttrWriteType.READ_WRITE,
                 fget=self.read,
                 fset=self.write,
-                max_dim_x=2,
+                max_dim_x=3,
                 max_dim_y=2,
                 enum_labels=[member.name for member in TestEnum]
             )
@@ -126,6 +129,7 @@ class EchoDevice(Device):
     for name, _, _, _, _, _ in COMMANDS_SET:
         exec(echo_command_code.replace("echo_command", name))
 
+
 # --------------------------------------------------------------------
 def assert_enum(initial_value, readout_value):
     if type(readout_value) in [list, tuple]:
@@ -134,12 +138,13 @@ def assert_enum(initial_value, readout_value):
     else:
         assert initial_value == readout_value
 
+
 # --------------------------------------------------------------------
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def echo_device():
-    with MultiDeviceTestContext([{"class": EchoDevice, "devices": [{"name": "test/device/1"}]}], process=True) as context:
+    with MultiDeviceTestContext([{"class": EchoDevice, "devices": [{"name": "test/device/1"}]}]) as context:
         yield context.get_device_access("test/device/1")
 
 

@@ -6,9 +6,13 @@ from asyncio import CancelledError
 
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Dict, Optional, Type, Union
 
-from tango import AttributeInfoEx, AttrDataFormat, CmdArgType, EventType, GreenMode, DevState, CommandInfo
+from tango import (AttributeInfoEx, AttrDataFormat,
+                   CmdArgType, EventType,
+                   GreenMode, DevState,
+                   CommandInfo, AttrWriteType)
+
 from tango.asyncio import DeviceProxy
 from tango.utils import is_int, is_float, is_bool, is_str, is_binary, is_array
 
@@ -23,6 +27,8 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
+
+__all__ = ("TangoTransport",)
 
 
 # --------------------------------------------------------------------
@@ -61,26 +67,26 @@ class TangoProxy:
     # --------------------------------------------------------------------
     @abstractmethod
     async def get(self) -> T:
-        """Get value from PV"""
+        """Get value from TRL"""
 
     # --------------------------------------------------------------------
     @abstractmethod
     async def put(self, value: Optional[T], wait: bool=True, timeout: Optional[float]=None) -> None:
-        """Get value from PV"""
+        """Put value to TRL"""
 
     # --------------------------------------------------------------------
     @abstractmethod
     async def get_config(self) -> Union[AttributeInfoEx, CommandInfo]:
-        """Get value from PV"""
+        """Get TRL config async"""
 
     # --------------------------------------------------------------------
     @abstractmethod
     async def get_reading(self) -> Reading:
-        """Get value from PV"""
+        """Get reading from TRL"""
 
     # --------------------------------------------------------------------
     def has_subscription(self) -> bool:
-        """indicates, that this pv already subscribed"""
+        """indicates, that this trl already subscribed"""
 
     # --------------------------------------------------------------------
     @abstractmethod
@@ -136,7 +142,7 @@ class AttributeProxy(TangoProxy):
 
     # --------------------------------------------------------------------
     def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
-        """add user callack to delete CHANGE event subscription"""
+        """add user callback to CHANGE event subscription"""
         self._event_callback = callback
         self._eid = self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor)
 
@@ -191,7 +197,7 @@ class CommandProxy(TangoProxy):
 
 
 # --------------------------------------------------------------------
-def get_dtype_extendet(datatype):
+def get_dtype_extended(datatype):
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
@@ -202,77 +208,76 @@ def get_dtype_extendet(datatype):
 
 
 # --------------------------------------------------------------------
-def get_pv_descriptor(datatype: Optional[Type], pv: str, pvs_config: Dict[str, Union[AttributeInfoEx, CommandInfo]]) -> dict:
-    pvs_dtype = {}
-    for pv_name, config in pvs_config.items():
+def get_trl_descriptor(datatype: Optional[Type], trl: str, trls_config: Dict[str, Union[AttributeInfoEx, CommandInfo]]) -> dict:
+    trls_dtype = {}
+    for trl_name, config in trls_config.items():
         if isinstance(config, AttributeInfoEx):
             _, dtype, descr = get_pyton_type(config.data_type)
-            pvs_dtype[pv_name] = config.data_format, dtype, descr
+            trls_dtype[trl_name] = config.data_format, dtype, descr
         elif isinstance(config, CommandInfo):
             if config.in_type != CmdArgType.DevVoid and \
                     config.out_type != CmdArgType.DevVoid and \
                     config.in_type != config.out_type:
                 raise RuntimeError("Commands with different in and out dtypes are not supported")
             array, dtype, descr = get_pyton_type(config.in_type if config.in_type != CmdArgType.DevVoid else config.out_type)
-            pvs_dtype[pv_name] = AttrDataFormat.SPECTRUM if array else AttrDataFormat.SCALAR, dtype, descr
+            trls_dtype[trl_name] = AttrDataFormat.SPECTRUM if array else AttrDataFormat.SCALAR, dtype, descr
         else:
             raise RuntimeError(f"Unknown config type: {type(config)}")
-    pv_format, pv_dtype, pv_dtype_desc = get_unique(pvs_dtype, "typeids")
+    trl_format, trl_dtype, trl_dtype_desc = get_unique(trls_dtype, "typeids")
 
     # tango commands are limited in functionality: they do not have info about shape and Enum labels
-    pv_config = list(pvs_config.values())[0]
-    max_x = pv_config.max_dim_x if hasattr(pv_config, "max_dim_x") else np.Inf
-    max_y = pv_config.max_dim_x if hasattr(pv_config, "max_dim_y") else np.Inf
-    is_attr = hasattr(pv_config, "enum_labels")
-    pv_choices = list(pv_config.enum_labels) if is_attr else []
+    trl_config = list(trls_config.values())[0]
+    max_x = trl_config.max_dim_x if hasattr(trl_config, "max_dim_x") else np.Inf
+    max_y = trl_config.max_dim_y if hasattr(trl_config, "max_dim_y") else np.Inf
+    is_attr = hasattr(trl_config, "enum_labels")
+    trl_choices = list(trl_config.enum_labels) if is_attr else []
 
-    if pv_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
+    if trl_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
         # This is an array
         if datatype:
-            print(f"{datatype=}")
             # Check we wanted an array of this type
-            dtype = get_dtype_extendet(datatype)
+            dtype = get_dtype_extended(datatype)
             if not dtype:
-                raise TypeError(f"{pv} has type [{pv_dtype}] not {datatype.__name__}")
-            if dtype != pv_dtype:
-                raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
+                raise TypeError(f"{trl} has type [{trl_dtype}] not {datatype.__name__}")
+            if dtype != trl_dtype:
+                raise TypeError(f"{trl} has type [{trl_dtype}] not [{dtype}]")
 
-        if pv_format == AttrDataFormat.SPECTRUM:
-            return dict(source=pv, dtype="array", shape=[max_x])
-        elif pv_format == AttrDataFormat.IMAGE:
-            return dict(source=pv, dtype="array", shape=[max_x, max_y])
+        if trl_format == AttrDataFormat.SPECTRUM:
+            return dict(source=trl, dtype="array", shape=[max_x])
+        elif trl_format == AttrDataFormat.IMAGE:
+            return dict(source=trl, dtype="array", shape=[max_y, max_x])
 
     else:
-        if pv_dtype in (Enum, CmdArgType.DevState):
-            if pv_dtype == CmdArgType.DevState:
-                pv_choices = list(DevState.names.keys())
+        if trl_dtype in (Enum, CmdArgType.DevState):
+            if trl_dtype == CmdArgType.DevState:
+                trl_choices = list(DevState.names.keys())
 
             if datatype:
                 if not issubclass(datatype, (Enum, DevState)):
-                    raise TypeError(f"{pv} has type Enum not {datatype.__name__}")
-                if pv_dtype == Enum and is_attr:
+                    raise TypeError(f"{trl} has type Enum not {datatype.__name__}")
+                if trl_dtype == Enum and is_attr:
                     choices = tuple(v.name for v in datatype)
-                    if set(choices) != set(pv_choices):
-                        raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
-            return dict(source=pv, dtype="string", shape=[], choices=pv_choices)
+                    if set(choices) != set(trl_choices):
+                        raise TypeError(f"{trl} has choices {trl_choices} not {choices}")
+            return dict(source=trl, dtype="string", shape=[], choices=trl_choices)
         else:
-            if datatype and not issubclass(pv_dtype, datatype):
-                raise TypeError(f"{pv} has type {pv_dtype.__name__} not {datatype.__name__}")
-            return dict(source=pv, dtype=pv_dtype_desc, shape=[])
+            if datatype and not issubclass(trl_dtype, datatype):
+                raise TypeError(f"{trl} has type {trl_dtype.__name__} not {datatype.__name__}")
+            return dict(source=trl, dtype=trl_dtype_desc, shape=[])
 
 
 # --------------------------------------------------------------------
-async def get_tango_pv(full_trl: str, device_proxy: Optional[DeviceProxy]) -> TangoProxy:
-    device_trl, pv_name = full_trl.rsplit('/', 1)
+async def get_tango_trl(full_trl: str, device_proxy: Optional[DeviceProxy]) -> TangoProxy:
+    device_trl, trl_name = full_trl.rsplit('/', 1)
     device_proxy = device_proxy or await DeviceProxy(device_trl)
-    if pv_name in device_proxy.get_attribute_list():
-        return AttributeProxy(device_proxy, pv_name)
-    if pv_name in device_proxy.get_command_list():
-        return CommandProxy(device_proxy, pv_name)
-    if pv_name in device_proxy.get_pipe_list():
+    if trl_name in device_proxy.get_attribute_list():
+        return AttributeProxy(device_proxy, trl_name)
+    if trl_name in device_proxy.get_command_list():
+        return CommandProxy(device_proxy, trl_name)
+    if trl_name in device_proxy.get_pipe_list():
         raise NotImplemented("Pipes are not supported")
 
-    raise RuntimeError(f"{pv_name} cannot be found in {device_proxy.name()}")
+    raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
 
 # --------------------------------------------------------------------
@@ -280,42 +285,42 @@ class TangoTransport(SignalBackend[T]):
 
     def __init__(self,
                  datatype: Optional[Type[T]],
-                 read_pv: str,
-                 write_pv: str,
+                 read_trl: str,
+                 write_trl: str,
                  device_proxy: Optional[DeviceProxy] = None):
         self.datatype = datatype
-        self.read_pv = read_pv
-        self.write_pv = write_pv
-        self.proxies: Dict[str, TangoProxy] = {read_pv: device_proxy, write_pv: device_proxy}
-        self.pv_configs: Dict[str, AttributeConfig] = {}
-        self.source = f"{self.read_pv}"
+        self.read_trl = read_trl
+        self.write_trl = write_trl
+        self.proxies: Dict[str, TangoProxy] = {read_trl: device_proxy, write_trl: device_proxy}
+        self.trl_configs: Dict[str, AttributeInfoEx] = {}
+        self.source = f"{self.read_trl}"
         self.descriptor: Descriptor = {}  # type: ignore
         self.eid: Optional[int] = None
 
     # --------------------------------------------------------------------
-    async def _connect_and_store_config(self, pv):
+    async def _connect_and_store_config(self, trl):
         try:
-            self.proxies[pv] = await get_tango_pv(pv, self.proxies[pv])
-            self.pv_configs[pv] = await self.proxies[pv].get_config()
+            self.proxies[trl] = await get_tango_trl(trl, self.proxies[trl])
+            self.trl_configs[trl] = await self.proxies[trl].get_config()
         except CancelledError:
             raise NotConnected(self.source)
 
     # --------------------------------------------------------------------
     async def connect(self):
-        if self.read_pv != self.write_pv:
+        if self.read_trl != self.write_trl:
             # Different, need to connect both
             await wait_for_connection(
-                read_pv=self._connect_and_store_config(self.read_pv),
-                write_pv=self._connect_and_store_config(self.write_pv),
+                read_trl=self._connect_and_store_config(self.read_trl),
+                write_trl=self._connect_and_store_config(self.write_trl),
             )
         else:
             # The same, so only need to connect one
-            await self._connect_and_store_config(self.read_pv)
-        self.descriptor = get_pv_descriptor(self.datatype, self.read_pv, self.pv_configs)
+            await self._connect_and_store_config(self.read_trl)
+        self.descriptor = get_trl_descriptor(self.datatype, self.read_trl, self.trl_configs)
 
     # --------------------------------------------------------------------
     async def put(self, write_value: Optional[T], wait=True, timeout=None):
-        await self.proxies[self.write_pv].put(write_value, wait, timeout)
+        await self.proxies[self.write_trl].put(write_value, wait, timeout)
 
     # --------------------------------------------------------------------
     async def get_descriptor(self) -> Descriptor:
@@ -323,21 +328,21 @@ class TangoTransport(SignalBackend[T]):
 
     # --------------------------------------------------------------------
     async def get_reading(self) -> Reading:
-        return await self.proxies[self.read_pv].get_reading()
+        return await self.proxies[self.read_trl].get_reading()
 
     # --------------------------------------------------------------------
     async def get_value(self) -> T:
-        return await self.proxies[self.write_pv].get()
+        return await self.proxies[self.write_trl].get()
 
     # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
-        assert self.proxies[self.read_pv].support_events, f"{self.source} does not support events"
+        assert self.proxies[self.read_trl].support_events, f"{self.source} does not support events"
 
         if callback:
-            assert (not self.proxies[self.read_pv].has_subscription()), "Cannot set a callback when one is already set"
-            self.eid = self.proxies[self.read_pv].subscribe_callback(callback)
+            assert (not self.proxies[self.read_trl].has_subscription()), "Cannot set a callback when one is already set"
+            self.eid = self.proxies[self.read_trl].subscribe_callback(callback)
 
         else:
             if self.eid:
-                self.proxies[self.read_pv].unsubscribe_callback(self.eid)
+                self.proxies[self.read_trl].unsubscribe_callback(self.eid)
             self.eid = None
