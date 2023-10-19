@@ -263,7 +263,7 @@ async def observe_value(signal: SignalR[T]) -> AsyncGenerator[T, None]:
 
 class _ValueChecker(Generic[T]):
     def __init__(self, matcher: Callable[[T], bool], matcher_name: str):
-        self._last_value: Optional[T]
+        self._last_value: Optional[T] = None
         self._matcher = matcher
         self._matcher_name = matcher_name
 

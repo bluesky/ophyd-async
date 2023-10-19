@@ -45,6 +45,7 @@ class PulseBlock(Device):
 
 class SeqBlock(Device):
     table: SignalRW[SeqTable]
+    active: SignalRW[bool]
 
 
 class PcapBlock(Device):

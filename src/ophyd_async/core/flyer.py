@@ -96,7 +96,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             await gather_list(controller.disarm() for controller in self.controllers)
             for controller in self.controllers:
                 required = controller.get_deadtime(trigger_info.livetime)
-                assert required > trigger_info.deadtime, (
+                assert required >= trigger_info.deadtime, (
                     f"Detector {controller} needs at least {required}s deadtime, "
                     f"but trigger logic provides only {trigger_info.deadtime}s"
                 )
@@ -192,11 +192,12 @@ class HardwareTriggeredFlyable(
     async def _prepare(self, value: T):
         trigger_info = self._trigger_logic.trigger_info(value)
         # Move to start and setup the flyscan, and arm dets in parallel
-        self._det_status, num_frames = await asyncio.gather(
+        self._det_status, _ = await asyncio.gather(
             self._detector_group_logic.ensure_armed(trigger_info),
             self._trigger_logic.prepare(value),
         )
-        self._last_frame = self._current_frame + num_frames
+
+        self._last_frame = self._current_frame + trigger_info.num
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:
         return await merge_gathered_dicts(

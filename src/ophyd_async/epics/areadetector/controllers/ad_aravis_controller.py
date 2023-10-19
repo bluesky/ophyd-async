@@ -19,7 +19,7 @@ class ADAravisController(DetectorControl):
         self.gpio_number = gpio_number
         assert gpio_number in {1, 2}, "invalid gpio number"
         self.TRIGGER_SOURCE = {
-            DetectorTrigger.internal: TriggerSource.freerun,
+            DetectorTrigger.internal: TriggerSource.fixed_rate,
             DetectorTrigger.constant_gate: TriggerSource[f"line_{self.gpio_number}"],
             DetectorTrigger.edge_trigger: TriggerSource[f"line_{self.gpio_number}"],
         }
@@ -33,14 +33,15 @@ class ADAravisController(DetectorControl):
         num: int = 0,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
-        if exposure:
-            await self.driver.acquire_time.set(exposure)
+        # trigger mode must be set first and on it's own!
+        await self.driver.trigger_mode.set(TriggerMode.on)
+
         await asyncio.gather(
             self.driver.trigger_source.set(self.TRIGGER_SOURCE[mode]),
-            self.driver.trigger_mode.set(TriggerMode.on),
             self.driver.num_images.set(num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
+
         return await set_and_wait_for_value(self.driver.acquire, True)
 
     async def disarm(self):
