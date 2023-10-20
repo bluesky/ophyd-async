@@ -5,18 +5,18 @@ from bluesky.protocols import Triggerable
 
 from ophyd_async.core import AsyncStatus, SignalR, StandardReadable
 
-from .drivers.ad_driver import ADDriver
+from .drivers.ad_base import ADBase
 from .utils import ImageMode
-from .writers.nd_plugin import NDPlugin
+from .writers.nd_plugin import NDPluginBase
 
 
 class SingleTriggerDet(StandardReadable, Triggerable):
     def __init__(
         self,
-        drv: ADDriver,
+        drv: ADBase,
         read_uncached: Sequence[SignalR] = (),
         name="",
-        **plugins: NDPlugin,
+        **plugins: NDPluginBase,
     ) -> None:
         self.drv = drv
         self.__dict__.update(plugins)

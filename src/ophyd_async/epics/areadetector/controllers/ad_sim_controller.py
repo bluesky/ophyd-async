@@ -9,12 +9,12 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 
-from ..drivers.ad_driver import ADDriver, ImageMode
+from ..drivers.ad_base import ADBase, ImageMode
 from ..utils import stop_busy_record
 
 
 class ADSimController(DetectorControl):
-    def __init__(self, driver: ADDriver) -> None:
+    def __init__(self, driver: ADBase) -> None:
         self.driver = driver
 
     def get_deadtime(self, exposure: float) -> float:
