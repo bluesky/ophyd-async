@@ -49,15 +49,6 @@ class TriggerInfo:
 
 class DetectorGroupLogic(ABC):
     # Read multipliers here, exposure is set in the plan
-    @property
-    @abstractmethod
-    def writers(self) -> Sequence[DetectorWriter]:
-        """Writers"""
-
-    @property
-    @abstractmethod
-    def controllers(self) -> Sequence[DetectorControl]:
-        """Controllers"""
 
     @abstractmethod
     async def open(self) -> Dict[str, Descriptor]:
@@ -83,6 +74,10 @@ class DetectorGroupLogic(ABC):
     async def close(self):
         """Close all writers and wait for them to be closed"""
 
+    @abstractmethod
+    def hints(self) -> Hints:
+        """Produce hints specifying which dataset(s) are most important"""
+
 
 class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
     def __init__(
@@ -95,24 +90,8 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         self._arm_statuses: Sequence[AsyncStatus] = ()
         self._trigger_info: Optional[TriggerInfo] = None
 
-    @property
-    def writers(self) -> Sequence[DetectorWriter]:
-        return self._writers
-
-    @writers.setter
-    def writers(self, writers: Sequence[DetectorWriter]):
-        self._writers = writers
-
-    @property
-    def controllers(self) -> Sequence[DetectorControl]:
-        return self._controllers
-    
-    @controllers.setter
-    def controllers(self, controllers: Sequence[DetectorControl]):
-        self._controllers = controllers
-
     async def open(self) -> Dict[str, Descriptor]:
-        return await merge_gathered_dicts(writer.open() for writer in self.writers)
+        return await merge_gathered_dicts(writer.open() for writer in self._writers)
 
     async def ensure_armed(self, trigger_info: TriggerInfo):
         if (
@@ -121,9 +100,9 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             or trigger_info != self._trigger_info
         ):
             # We need to re-arm
-            await gather_list(controller.disarm() for controller in self.controllers)
+            await gather_list(controller.disarm() for controller in self._controllers)
             await gather_list(self._arm_statuses)
-            for controller in self.controllers:
+            for controller in self._controllers:
                 required = controller.get_deadtime(trigger_info.livetime)
                 assert required >= trigger_info.deadtime, (
                     f"Detector {controller} needs at least {required}s deadtime, "
@@ -133,7 +112,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
                 controller.arm(
                     trigger=trigger_info.trigger, exposure=trigger_info.livetime
                 )
-                for controller in self.controllers
+                for controller in self._controllers
             )
             self._trigger_info = trigger_info
 
@@ -141,20 +120,24 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         # the below is confusing: gather_list does return an awaitable, but it itself
         # is a coroutine so we must call await twice...
         indices_written = min(
-            await gather_list(writer.get_indices_written() for writer in self.writers)
+            await gather_list(writer.get_indices_written() for writer in self._writers)
         )
-        for writer in self.writers:
+        for writer in self._writers:
             async for doc in writer.collect_stream_docs(indices_written):
                 yield doc
 
     async def wait_for_index(self, index: int):
-        await gather_list(writer.wait_for_index(index) for writer in self.writers)
+        await gather_list(writer.wait_for_index(index) for writer in self._writers)
 
     async def disarm(self):
-        await gather_list(controller.disarm() for controller in self.controllers)
+        await gather_list(controller.disarm() for controller in self._controllers)
 
     async def close(self):
-        await gather_list(writer.close() for writer in self.writers)
+        await gather_list(writer.close() for writer in self._writers)
+
+    def hints(self) -> Hints:
+        return {"fields": [field for writer in self._writers if hasattr(writer, "hints") for field in writer.hints.get("fields")]}
+
 
 
 class TriggerLogic(ABC, Generic[T]):
@@ -282,4 +265,4 @@ class HardwareTriggeredFlyable(
 
     @property
     def hints(self) -> Hints:
-        return {"fields": [field for writer in self._detector_group_logic.writers if hasattr(writer, "hints") for field in writer.hints.get("fields")]}
+        return self._detector_group_logic.hints()
