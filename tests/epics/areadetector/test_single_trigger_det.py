@@ -4,7 +4,7 @@ from bluesky import RunEngine
 
 from ophyd_async.core import DeviceCollector, set_sim_value
 from ophyd_async.epics.areadetector import ImageMode, SingleTriggerDet
-from ophyd_async.epics.areadetector.drivers import ADDriver
+from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.writers import NDPluginStats
 
 
@@ -13,7 +13,7 @@ async def single_trigger_det():
     async with DeviceCollector(sim=True):
         stats = NDPluginStats("PREFIX:STATS")
         det = SingleTriggerDet(
-            drv=ADDriver("PREFIX:DRV"), stats=stats, read_uncached=[stats.unique_id]
+            drv=ADBase("PREFIX:DRV"), stats=stats, read_uncached=[stats.unique_id]
         )
 
     assert det.name == "det"

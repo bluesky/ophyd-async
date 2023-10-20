@@ -18,7 +18,7 @@ from ophyd_async.core import (
     set_sim_value,
 )
 from ophyd_async.epics.areadetector.controllers import ADSimController
-from ophyd_async.epics.areadetector.drivers import ADDriver
+from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
@@ -30,7 +30,7 @@ async def make_detector(prefix="", name="test"):
     dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
 
     async with DeviceCollector(sim=True):
-        drv = ADDriver(f"{prefix}DRV:")
+        drv = ADBase(f"{prefix}DRV:")
         hdf = NDFileHDF(f"{prefix}HDF:")
         det = DemoADSimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
@@ -242,9 +242,9 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(
     RE, prefix="", name="test"
 ):
     dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
-    drv = ADDriver(f"{prefix}DRV:")
+    drv = ADBase(f"{prefix}DRV:")
 
-    some_other_driver = ADDriver("TEST")
+    some_other_driver = ADBase("TEST")
 
     async with DeviceCollector(sim=True):
         hdf = NDFileHDF(f"{prefix}HDF:")

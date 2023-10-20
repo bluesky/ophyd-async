@@ -8,7 +8,6 @@ import pytest
 from bluesky import RunEngine
 from bluesky.protocols import Asset, Descriptor
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
-from scanspec.core import Path
 
 from ophyd_async.core import (
     DetectorControl,
@@ -48,16 +47,16 @@ class DummyTriggerLogic(TriggerLogic[int]):
         self.state = TriggerState.stopping
 
 
-class DummyPathTriggerLogic(TriggerLogic[Path]):
+class DummyPathTriggerLogic(TriggerLogic[int]):
     def __init__(self):
         self.state = TriggerState.null
 
-    def trigger_info(self, value: Path) -> TriggerInfo:
+    def trigger_info(self, value: int) -> TriggerInfo:
         return TriggerInfo(
             num=value, trigger=DetectorTrigger.constant_gate, deadtime=0, livetime=10
         )
 
-    async def prepare(self, value: Path):
+    async def prepare(self, value: int):
         self.state = TriggerState.preparing
         return value
 
