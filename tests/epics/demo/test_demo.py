@@ -41,15 +41,30 @@ async def sim_sensor():
     yield sim_sensor
 
 
+class Watcher:
+    def __init__(self) -> None:
+        self._event = asyncio.Event()
+        self._mock = Mock()
+
+    def __call__(self, *args, **kwargs):
+        self._mock(*args, **kwargs)
+        self._event.set()
+
+    async def wait_for_call(self, *args, **kwargs):
+        await asyncio.wait_for(self._event.wait(), timeout=1)
+        assert self._mock.call_count == 1
+        assert self._mock.call_args == call(*args, **kwargs)
+        self._mock.reset_mock()
+        self._event.clear()
+
+
 async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
     s = sim_mover.set(0.55)
-    watcher = Mock()
+    watcher = Watcher()
     s.watch(watcher)
     done = Mock()
     s.add_callback(done)
-    await asyncio.sleep(A_WHILE)
-    assert watcher.call_count == 1
-    assert watcher.call_args == call(
+    await watcher.wait_for_call(
         name="sim_mover",
         current=0.0,
         initial=0.0,
@@ -58,15 +73,12 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
-    watcher.reset_mock()
     assert 0.55 == await sim_mover.setpoint.get_value()
     assert not s.done
     done.assert_not_called()
     await asyncio.sleep(0.1)
     set_sim_value(sim_mover.readback, 0.1)
-    await asyncio.sleep(A_WHILE)
-    assert watcher.call_count == 1
-    assert watcher.call_args == call(
+    await watcher.wait_for_call(
         name="sim_mover",
         current=0.1,
         initial=0.0,
@@ -135,7 +147,7 @@ async def test_mover_disconncted():
 
 
 async def test_sensor_disconnected():
-    with patch("ophyd_async.core._device.device_collector.logging") as mock_logging:
+    with patch("ophyd_async.core.device.logging") as mock_logging:
         with pytest.raises(NotConnected, match="Not all Devices connected"):
             async with DeviceCollector(timeout=0.1):
                 s = demo.Sensor("ca://PRE:", name="sensor")

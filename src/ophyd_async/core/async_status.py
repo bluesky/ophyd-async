@@ -1,4 +1,4 @@
-"""Equivalent of bluesky.protols.Status for asynchronous tasks."""
+"""Equivalent of bluesky.protocols.Status for asynchronous tasks."""
 
 import asyncio
 import functools
@@ -62,7 +62,9 @@ class AsyncStatus(Status):
     @property
     def success(self) -> bool:
         return (
-            self.task.done() and not self.task.cancelled() and not self.task.exception()
+            self.task.done()
+            and not self.task.cancelled()
+            and self.task.exception() is None
         )
 
     def watch(self, watcher: Callable):

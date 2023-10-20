@@ -1,17 +1,5 @@
 import asyncio
-from abc import abstractmethod
-from dataclasses import dataclass
-from typing import (
-    Awaitable,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Protocol,
-    Type,
-    TypeVar,
-)
+from typing import Awaitable, Callable, Dict, Iterable, List, Optional, Type, TypeVar
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -112,21 +100,5 @@ async def merge_gathered_dicts(
     return ret
 
 
-@dataclass
-class DirectoryInfo:
-    directory_path: str
-    filename_prefix: str
-
-
-class DirectoryProvider(Protocol):
-    @abstractmethod
-    def __call__(self) -> DirectoryInfo:
-        """Get the current directory to write files into"""
-
-
-class StaticDirectoryProvider(DirectoryProvider):
-    def __init__(self, directory_path: str, filename_prefix: str) -> None:
-        self._directory_info = DirectoryInfo(directory_path, filename_prefix)
-
-    def __call__(self) -> DirectoryInfo:
-        return self._directory_info
+async def gather_list(coros: Iterable[Awaitable[T]]) -> List[T]:
+    return await asyncio.gather(*coros)

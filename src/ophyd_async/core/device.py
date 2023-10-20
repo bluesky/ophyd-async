@@ -1,14 +1,78 @@
-"""Interface for connecting and naming multiple devices"""
+"""Base device"""
+from __future__ import annotations
+
 import asyncio
 import logging
 import sys
 from contextlib import suppress
-from typing import Any, Dict, Set
+from typing import Any, Dict, Generator, Iterator, Optional, Set, Tuple, TypeVar
 
+from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
 
-from ..utils import NotConnected
-from .device import Device
+from .utils import NotConnected, wait_for_connection
+
+
+class Device(HasName):
+    """Common base class for all Ophyd Async Devices.
+
+    By default, names and connects all Device children.
+    """
+
+    _name: str = ""
+    #: The parent Device if it exists
+    parent: Optional[Device] = None
+
+    def __init__(self, name: str = "") -> None:
+        self.set_name(name)
+
+    @property
+    def name(self) -> str:
+        """Return the name of the Device"""
+        return self._name
+
+    def children(self) -> Iterator[Tuple[str, Device]]:
+        for attr_name, attr in self.__dict__.items():
+            if attr_name != "parent" and isinstance(attr, Device):
+                yield attr_name, attr
+
+    def set_name(self, name: str):
+        """Set ``self.name=name`` and each ``self.child.name=name+"-child"``.
+
+        Parameters
+        ----------
+        name:
+            New name to set
+        """
+        self._name = name
+        for attr_name, child in self.children():
+            child_name = f"{name}-{attr_name.rstrip('_')}" if name else ""
+            child.set_name(child_name)
+            child.parent = self
+
+    async def connect(self, sim: bool = False):
+        """Connect self and all child Devices.
+
+        Parameters
+        ----------
+        sim:
+            If True then connect in simulation mode.
+        """
+        coros = {
+            name: child_device.connect(sim) for name, child_device in self.children()
+        }
+        if coros:
+            await wait_for_connection(**coros)
+
+
+VT = TypeVar("VT", bound=Device)
+
+
+class DeviceVector(Dict[int, VT], Device):
+    def children(self) -> Generator[Tuple[str, Device], None, None]:
+        for attr_name, attr in self.items():
+            if isinstance(attr, Device):
+                yield str(attr_name), attr
 
 
 class DeviceCollector:

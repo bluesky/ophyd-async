@@ -11,8 +11,8 @@ from typing import Any, Dict, Generic, Optional, Type, Union, cast, get_origin
 
 from bluesky.protocols import Descriptor, Dtype, Reading
 
-from ...utils import ReadingValueCallback, T, get_dtype
 from .signal_backend import SignalBackend
+from .utils import ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
     str: "string",
