@@ -23,13 +23,13 @@ from .utils import merge_gathered_dicts
 
 class DetectorTrigger(Enum):
     #: Detector generates internal trigger for given rate
-    internal = "internal"
+    internal = ()
     #: Expect a series of arbitrary length trigger signals
-    edge_trigger = "edge_trigger"
+    edge_trigger = ()
     #: Expect a series of constant width external gate signals
-    constant_gate = "constant_gate"
+    constant_gate = ()
     #: Expect a series of variable width external gate signals
-    variable_gate = "variable_gate"
+    variable_gate = ()
 
 
 class DetectorControl(ABC):

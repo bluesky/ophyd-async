@@ -20,7 +20,8 @@ dependencies = [
     "pint",
     "bluesky @ git+https://github.com/coretl/bluesky.git@async-stage",
     "event-model",
-    "p4p==4.1.11a2",
+    "p4p",
+    "scanspec",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 
 dynamic = ["version"]
@@ -30,7 +31,7 @@ requires-python = ">=3.9"
 
 [project.optional-dependencies]
 ca = ["aioca>=1.6"]
-pva = ["p4p==4.1.11a2"]
+pva = ["p4p"]
 dev = [
     "ophyd_async[pva]",
     "ophyd_async[ca]",

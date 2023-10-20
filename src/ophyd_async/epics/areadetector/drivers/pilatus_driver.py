@@ -1,7 +1,7 @@
 from enum import Enum
 
 from ..utils import ad_rw
-from .ad_base import ADBase
+from .ad_driver import ADDriver
 
 
 class TriggerMode(Enum):
@@ -12,7 +12,7 @@ class TriggerMode(Enum):
     alignment = "Alignment"
 
 
-class PilatusDriver(ADBase):
+class PilatusDriver(ADDriver):
     def __init__(self, prefix: str) -> None:
         self.trigger_mode = ad_rw(TriggerMode, prefix + "TriggerMode")
         super().__init__(prefix)

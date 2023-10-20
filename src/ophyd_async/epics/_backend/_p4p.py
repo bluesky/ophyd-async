@@ -194,7 +194,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
             enum_class = datatype
         else:
             enum_class = Enum(  # type: ignore
-                "GeneratedChoices", {x or "_": x for x in pv_choices}, type=str
+                "GeneratedChoices", {x: x for x in pv_choices}, type=str
             )
         return PvaEnumConverter(enum_class)
     elif "NTScalar" in typeid:

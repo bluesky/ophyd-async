@@ -1,5 +1,5 @@
 from .ad_aravis_driver import ADAravisDriver
-from .ad_base import ADBase, ADBaseShapeProvider
+from .ad_driver import ADDriver, ADDriverShapeProvider
 from .pilatus_driver import PilatusDriver
 
-__all__ = ["ADBase", "ADBaseShapeProvider", "PilatusDriver", "ADAravisDriver"]
+__all__ = ["ADDriver", "ADDriverShapeProvider", "PilatusDriver", "ADAravisDriver"]

@@ -3,7 +3,7 @@ from typing import Sequence
 from ophyd_async.core import DirectoryProvider, SignalR, StandardDetector
 
 from ..areadetector.controllers import ADSimController
-from ..areadetector.drivers import ADBase, ADBaseShapeProvider
+from ..areadetector.drivers import ADDriver, ADDriverShapeProvider
 from ..areadetector.writers import HDFWriter, NDFileHDF
 
 
@@ -13,7 +13,7 @@ class DemoADSimDetector(StandardDetector):
 
     def __init__(
         self,
-        drv: ADBase,
+        drv: ADDriver,
         hdf: NDFileHDF,
         directory_provider: DirectoryProvider,
         name: str = "",
@@ -28,7 +28,7 @@ class DemoADSimDetector(StandardDetector):
                 self.hdf,
                 directory_provider,
                 lambda: self.name,
-                ADBaseShapeProvider(self.drv),
+                ADDriverShapeProvider(self.drv),
             ),
             config_sigs=config_sigs,
             name=name,

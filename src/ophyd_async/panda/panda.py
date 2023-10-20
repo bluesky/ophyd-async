@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import atexit
 import re
+from enum import Enum
 from typing import (
     Callable,
     Dict,
     FrozenSet,
     Optional,
+    Sequence,
     Tuple,
     Type,
     TypedDict,
@@ -16,6 +18,8 @@ from typing import (
     get_type_hints,
 )
 
+import numpy as np
+import numpy.typing as npt
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -35,7 +39,6 @@ from ophyd_async.epics.signal import (
     epics_signal_x,
     pvi_get,
 )
-from ophyd_async.panda.table import SeqTable
 
 
 class PulseBlock(Device):
@@ -43,9 +46,44 @@ class PulseBlock(Device):
     width: SignalRW[float]
 
 
+class SeqTrigger(Enum):
+    IMMEDIATE = "Immediate"
+    BITA_0 = "BITA=0"
+    BITA_1 = "BITA=1"
+    BITB_0 = "BITB=0"
+    BITB_1 = "BITB=1"
+    BITC_0 = "BITC=0"
+    BITC_1 = "BITC=1"
+    POSA_GT = "POSA>=POSITION"
+    POSA_LT = "POSA<=POSITION"
+    POSB_GT = "POSB>=POSITION"
+    POSB_LT = "POSB<=POSITION"
+    POSC_GT = "POSC>=POSITION"
+    POSC_LT = "POSC<=POSITION"
+
+
+class SeqTable(TypedDict):
+    repeats: npt.NDArray[np.uint16]
+    trigger: Sequence[SeqTrigger]
+    position: npt.NDArray[np.int32]
+    time1: npt.NDArray[np.uint32]
+    outa1: npt.NDArray[np.bool_]
+    outb1: npt.NDArray[np.bool_]
+    outc1: npt.NDArray[np.bool_]
+    outd1: npt.NDArray[np.bool_]
+    oute1: npt.NDArray[np.bool_]
+    outf1: npt.NDArray[np.bool_]
+    time2: npt.NDArray[np.uint32]
+    outa2: npt.NDArray[np.bool_]
+    outb2: npt.NDArray[np.bool_]
+    outc2: npt.NDArray[np.bool_]
+    outd2: npt.NDArray[np.bool_]
+    oute2: npt.NDArray[np.bool_]
+    outf2: npt.NDArray[np.bool_]
+
+
 class SeqBlock(Device):
     table: SignalRW[SeqTable]
-    active: SignalRW[bool]
 
 
 class PcapBlock(Device):

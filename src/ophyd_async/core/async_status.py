@@ -62,7 +62,7 @@ class AsyncStatus(Status):
     @property
     def success(self) -> bool:
         return (
-            self.task.done() and not self.task.cancelled() and self.task.exception() is None
+            self.task.done() and not self.task.cancelled() and not self.task.exception()
         )
 
     def watch(self, watcher: Callable):
