@@ -1,7 +1,7 @@
 import asyncio
 from typing import AsyncIterator, Dict, List, Optional
 
-from bluesky.protocols import Asset, Descriptor
+from bluesky.protocols import Asset, Descriptor, Hints
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -109,3 +109,7 @@ class HDFWriter(DetectorWriter):
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status
+
+    @property
+    def hints(self) -> Hints:
+        return {"fields": [self._name_provider()]}

@@ -22,6 +22,8 @@ from bluesky.protocols import (
     Reading,
     Stageable,
     WritesExternalAssets,
+    HasHints,
+    Hints
 )
 
 from .async_status import AsyncStatus
@@ -47,6 +49,16 @@ class TriggerInfo:
 
 class DetectorGroupLogic(ABC):
     # Read multipliers here, exposure is set in the plan
+    @property
+    @abstractmethod
+    def writers(self) -> Sequence[DetectorWriter]:
+        """Writers"""
+
+    @property
+    @abstractmethod
+    def controllers(self) -> Sequence[DetectorControl]:
+        """Controllers"""
+
     @abstractmethod
     async def open(self) -> Dict[str, Descriptor]:
         """Open all writers, wait for them to be open and return their descriptors"""
@@ -78,10 +90,26 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         controllers: Sequence[DetectorControl],
         writers: Sequence[DetectorWriter],
     ) -> None:
-        self.controllers = controllers
-        self.writers = writers
+        self._controllers = controllers
+        self._writers = writers
         self._arm_statuses: Sequence[AsyncStatus] = ()
         self._trigger_info: Optional[TriggerInfo] = None
+
+    @property
+    def writers(self) -> Sequence[DetectorWriter]:
+        return self._writers
+
+    @writers.setter
+    def writers(self, writers: Sequence[DetectorWriter]):
+        self._writers = writers
+
+    @property
+    def controllers(self) -> Sequence[DetectorControl]:
+        return self._controllers
+    
+    @controllers.setter
+    def controllers(self, controllers: Sequence[DetectorControl]):
+        self._controllers = controllers
 
     async def open(self) -> Dict[str, Descriptor]:
         return await merge_gathered_dicts(writer.open() for writer in self.writers)
@@ -148,7 +176,7 @@ class TriggerLogic(ABC, Generic[T]):
 
 
 class HardwareTriggeredFlyable(
-    Device, Movable, Stageable, Flyable, Collectable, WritesExternalAssets, Generic[T]
+    Device, Movable, Stageable, Flyable, Collectable, WritesExternalAssets, HasHints, Generic[T],
 ):
     def __init__(
         self,
@@ -251,3 +279,7 @@ class HardwareTriggeredFlyable(
             self._detector_group_logic.close(),
             self._detector_group_logic.disarm(),
         )
+
+    @property
+    def hints(self) -> Hints:
+        return {"fields": [field for writer in self._detector_group_logic.writers if hasattr(writer, "hints") for field in writer.hints.get("fields")]}
