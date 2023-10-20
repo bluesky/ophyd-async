@@ -1,6 +1,21 @@
-from ._device._backend.signal_backend import SignalBackend
-from ._device._backend.sim_signal_backend import SimSignalBackend
-from ._device._signal.signal import (
+from ._providers import (
+    DirectoryInfo,
+    DirectoryProvider,
+    NameProvider,
+    ShapeProvider,
+    StaticDirectoryProvider,
+)
+from .async_status import AsyncStatus
+from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
+from .device import Device, DeviceCollector, DeviceVector
+from .flyer import (
+    DetectorGroupLogic,
+    HardwareTriggeredFlyable,
+    SameTriggerDetectorGroupLogic,
+    TriggerInfo,
+    TriggerLogic,
+)
+from .signal import (
     Signal,
     SignalR,
     SignalRW,
@@ -13,19 +28,14 @@ from ._device._signal.signal import (
     set_sim_value,
     wait_for_value,
 )
-from ._device.device import Device
-from ._device.device_collector import DeviceCollector
-from ._device.device_vector import DeviceVector
-from ._device.standard_readable import StandardReadable
-from .async_status import AsyncStatus
+from .signal_backend import SignalBackend
+from .sim_signal_backend import SimSignalBackend
+from .standard_readable import StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
     Callback,
-    DirectoryInfo,
-    DirectoryProvider,
     NotConnected,
     ReadingValueCallback,
-    StaticDirectoryProvider,
     T,
     get_dtype,
     get_unique,
@@ -36,6 +46,13 @@ from .utils import (
 __all__ = [
     "SignalBackend",
     "SimSignalBackend",
+    "DetectorControl",
+    "DetectorTrigger",
+    "DetectorWriter",
+    "StandardDetector",
+    "Device",
+    "DeviceCollector",
+    "DeviceVector",
     "Signal",
     "SignalR",
     "SignalW",
@@ -47,18 +64,22 @@ __all__ = [
     "set_sim_put_proceeds",
     "set_sim_value",
     "wait_for_value",
-    "Device",
-    "DeviceCollector",
-    "DeviceVector",
-    "StandardReadable",
     "AsyncStatus",
-    "DEFAULT_TIMEOUT",
-    "Callback",
     "DirectoryInfo",
     "DirectoryProvider",
+    "NameProvider",
+    "ShapeProvider",
+    "StaticDirectoryProvider",
+    "StandardReadable",
+    "TriggerInfo",
+    "DetectorGroupLogic",
+    "SameTriggerDetectorGroupLogic",
+    "TriggerLogic",
+    "HardwareTriggeredFlyable",
+    "DEFAULT_TIMEOUT",
+    "Callback",
     "NotConnected",
     "ReadingValueCallback",
-    "StaticDirectoryProvider",
     "T",
     "get_dtype",
     "get_unique",

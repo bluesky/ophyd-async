@@ -1,7 +1,7 @@
 from ophyd_async.core import Device
 
-from ..signal.signal import epics_signal_rw
-from .utils import FileWriteMode, ad_r, ad_rw
+from ...signal.signal import epics_signal_rw
+from ..utils import FileWriteMode, ad_r, ad_rw
 
 
 class NDFileHDF(Device):
@@ -9,6 +9,7 @@ class NDFileHDF(Device):
         # Define some signals
         self.file_path = ad_rw(str, prefix + "FilePath")
         self.file_name = ad_rw(str, prefix + "FileName")
+        self.file_path_exists = ad_r(bool, prefix + "FilePathExists")
         self.file_template = ad_rw(str, prefix + "FileTemplate")
         self.full_file_name = ad_r(str, prefix + "FullFileName")
         self.file_write_mode = ad_rw(FileWriteMode, prefix + "FileWriteMode")

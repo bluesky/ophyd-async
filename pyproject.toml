@@ -18,9 +18,9 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky",
+    "bluesky @ git+https://github.com/coretl/bluesky.git@async-stage",
     "event-model",
-    "p4p",
+    "p4p==4.1.11a2",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 
 dynamic = ["version"]
@@ -30,13 +30,13 @@ requires-python = ">=3.9"
 
 [project.optional-dependencies]
 ca = ["aioca>=1.6"]
-pva = ["p4p"]
+pva = ["p4p==4.1.11a2"]
 dev = [
     "ophyd_async[pva]",
     "ophyd_async[ca]",
     "attrs>=19.3.0",
     "black",
-    "bluesky>=1.11.0",
+    "bluesky @ git+https://github.com/coretl/bluesky.git@async-stage",
     "caproto[standard] >=0.4.2rc1",
     "pytest-codecov",
     "databroker>=1.0.0b1",

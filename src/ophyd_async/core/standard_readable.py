@@ -2,10 +2,10 @@ from typing import Dict, Sequence, Tuple
 
 from bluesky.protocols import Configurable, Descriptor, Readable, Reading, Stageable
 
-from ..async_status import AsyncStatus
-from ..utils import merge_gathered_dicts
-from ._signal.signal import SignalR
+from .async_status import AsyncStatus
 from .device import Device
+from .signal import SignalR
+from .utils import merge_gathered_dicts
 
 
 class StandardReadable(Device, Readable, Configurable, Stageable):

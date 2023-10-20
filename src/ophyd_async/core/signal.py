@@ -13,11 +13,11 @@ from bluesky.protocols import (
     Subscribable,
 )
 
-from ...async_status import AsyncStatus
-from ...utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
-from .._backend.signal_backend import SignalBackend
-from .._backend.sim_signal_backend import SimSignalBackend
-from ..device import Device
+from .async_status import AsyncStatus
+from .device import Device
+from .signal_backend import SignalBackend
+from .sim_signal_backend import SimSignalBackend
+from .utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
 
 _sim_backends: Dict[Signal, SimSignalBackend] = {}
 
@@ -196,12 +196,17 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
         self._del_cache(self._get_cache().set_staged(False))
 
 
+USE_DEFAULT_TIMEOUT = "USE_DEFAULT_TIMEOUT"
+
+
 class SignalW(Signal[T], Movable):
     """Signal that can be set"""
 
-    def set(self, value: T, wait=True, timeout=None) -> AsyncStatus:
+    def set(self, value: T, wait=True, timeout=USE_DEFAULT_TIMEOUT) -> AsyncStatus:
         """Set the value and return a status saying when it's done"""
-        coro = self._backend.put(value, wait=wait, timeout=timeout or self._timeout)
+        if timeout is USE_DEFAULT_TIMEOUT:
+            timeout = self._timeout
+        coro = self._backend.put(value, wait=wait, timeout=timeout)
         return AsyncStatus(coro)
 
 
@@ -263,7 +268,7 @@ async def observe_value(signal: SignalR[T]) -> AsyncGenerator[T, None]:
 
 class _ValueChecker(Generic[T]):
     def __init__(self, matcher: Callable[[T], bool], matcher_name: str):
-        self._last_value: Optional[T]
+        self._last_value: Optional[T] = None
         self._matcher = matcher
         self._matcher_name = matcher_name
 
@@ -273,7 +278,7 @@ class _ValueChecker(Generic[T]):
             if self._matcher(value):
                 return
 
-    async def wait_for_value(self, signal: SignalR[T], timeout: float):
+    async def wait_for_value(self, signal: SignalR[T], timeout: Optional[float]):
         try:
             await asyncio.wait_for(self._wait_for_value(signal), timeout)
         except asyncio.TimeoutError as e:
@@ -284,7 +289,7 @@ class _ValueChecker(Generic[T]):
 
 
 async def wait_for_value(
-    signal: SignalR[T], match: Union[T, Callable[[T], bool]], timeout: float
+    signal: SignalR[T], match: Union[T, Callable[[T], bool]], timeout: Optional[float]
 ):
     """Wait for a signal to have a matching value.
 
@@ -326,9 +331,13 @@ async def set_and_wait_for_value(
 
     Useful for busy record, or other Signals with pattern:
 
-    - Set Signal with wait=True and stash the Status
+    - Set Signal with wait=with_callback and stash the Status
     - Read the same Signal to check the operation has started
     - Return the Status so calling code can wait for operation to complete
+
+    This function sets a signal to a specified value, optionally with or without a
+    ca/pv put callback, and waits for the readback value of the signal to match the
+    value it was set to.
 
     Parameters
     ----------
@@ -336,6 +345,8 @@ async def set_and_wait_for_value(
         The signal to set and monitor
     value:
         The value to set it to
+    with_callback:
+        If we want to wait for a caput/pvput callback
     timeout:
         How long to wait for the signal to have the value
     status_timeout:
