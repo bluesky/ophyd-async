@@ -9,7 +9,7 @@ from ..writers.nd_plugin import NDArrayBase
 
 
 class ADBase(NDArrayBase):
-    def __init__(self, prefix: str, name: str="") -> None:
+    def __init__(self, prefix: str, name: str = "") -> None:
         # Define some signals
         self.acquire = ad_rw(bool, prefix + "Acquire")
         self.acquire_time = ad_rw(float, prefix + "AcquireTime")

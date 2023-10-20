@@ -3,7 +3,12 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import DeviceCollector, ShapeProvider, StaticDirectoryProvider
+from ophyd_async.core import (
+    DeviceCollector,
+    ShapeProvider,
+    StaticDirectoryProvider,
+    set_sim_value,
+)
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 
 
@@ -29,6 +34,7 @@ async def hdf_writer(RE) -> HDFWriter:
 
 
 async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
+    set_sim_value(hdf_writer.hdf.file_path_exists, True)
     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
         descriptor = await hdf_writer.open()
 

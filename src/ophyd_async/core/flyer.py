@@ -18,12 +18,12 @@ from bluesky.protocols import (
     Collectable,
     Descriptor,
     Flyable,
+    HasHints,
+    Hints,
     Movable,
     Reading,
     Stageable,
     WritesExternalAssets,
-    HasHints,
-    Hints
 )
 
 from .async_status import AsyncStatus
@@ -136,8 +136,14 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         await gather_list(writer.close() for writer in self._writers)
 
     def hints(self) -> Hints:
-        return {"fields": [field for writer in self._writers if hasattr(writer, "hints") for field in writer.hints.get("fields")]}
-
+        return {
+            "fields": [
+                field
+                for writer in self._writers
+                if hasattr(writer, "hints")
+                for field in writer.hints.get("fields")
+            ]
+        }
 
 
 class TriggerLogic(ABC, Generic[T]):
@@ -159,7 +165,14 @@ class TriggerLogic(ABC, Generic[T]):
 
 
 class HardwareTriggeredFlyable(
-    Device, Movable, Stageable, Flyable, Collectable, WritesExternalAssets, HasHints, Generic[T],
+    Device,
+    Movable,
+    Stageable,
+    Flyable,
+    Collectable,
+    WritesExternalAssets,
+    HasHints,
+    Generic[T],
 ):
     def __init__(
         self,

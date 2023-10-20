@@ -28,6 +28,21 @@ $(EXCLUDE_WIDTH=)        }
 $(EXCLUDE_WIDTH=)    })
 $(EXCLUDE_WIDTH=)}
 
+record(bi, "$(IOC_NAME=PANDAQSRV):SEQ1:ACTIVE")
+{
+    field(ZNAM,  "0")
+    field(ONAM,  "1")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
+            "pvi.active.r": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
 record(bi, "$(IOC_NAME=PANDAQSRV):PCAP:ACTIVE")
 {
     field(ZNAM,  "0")

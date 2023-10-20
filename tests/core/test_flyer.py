@@ -168,7 +168,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer)
-        for controller in detector_group.controllers:
+        for controller in detector_group._controllers:
             assert controller.disarm.called  # type: ignore
             assert controller.disarm.call_count == 3  # type: ignore
         assert trigger_logic.state == TriggerState.stopping
@@ -176,7 +176,7 @@ async def test_hardware_triggered_flyable(
     # move the flyer to the correct place, before fly scanning.
     RE(bps.mv(flyer, 1))
     assert trigger_logic.state == TriggerState.preparing
-    for controller in detector_group.controllers:
+    for controller in detector_group._controllers:
         assert controller.disarm.called  # type: ignore
         assert controller.disarm.call_count == 1  # type: ignore
         assert controller.arm.called  # type: ignore

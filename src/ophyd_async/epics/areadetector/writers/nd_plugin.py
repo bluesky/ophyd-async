@@ -1,7 +1,7 @@
 from ophyd_async.core import Device
+from ophyd_async.epics.signal import epics_signal_rw
 
 from ..utils import ad_r
-from ophyd_async.epics.signal import epics_signal_rw
 
 
 class NDArrayBase(Device):

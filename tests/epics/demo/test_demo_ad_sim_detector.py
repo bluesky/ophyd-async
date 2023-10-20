@@ -112,6 +112,10 @@ async def test_two_detectors_step(
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
+    [
+        set_sim_value(cast(HDFWriter, det._writer).hdf.file_path_exists, True)
+        for det in two_detectors
+    ]
 
     RE(count_sim(two_detectors, times=1))
 
@@ -165,6 +169,8 @@ async def test_detector_writes_to_file(
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
+    set_sim_value(cast(HDFWriter, single_detector._writer).hdf.file_path_exists, True)
+
     RE(count_sim([single_detector], times=3))
 
     assert (

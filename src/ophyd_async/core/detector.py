@@ -13,8 +13,6 @@ from bluesky.protocols import (
     Stageable,
     Triggerable,
     WritesExternalAssets,
-    Hints,
-    HasHints
 )
 
 from .async_status import AsyncStatus

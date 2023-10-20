@@ -50,7 +50,9 @@ class HDFWriter(DetectorWriter):
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
 
-        assert await self.hdf.file_path_exists.get_value(), f"File path {info.directory_path} for hdf plugin does not exist"
+        assert (
+            await self.hdf.file_path_exists.get_value()
+        ), f"File path {info.directory_path} for hdf plugin does not exist"
 
         # Overwrite num_capture to go forever
         await self.hdf.num_capture.set(0)
@@ -65,7 +67,12 @@ class HDFWriter(DetectorWriter):
         # And all the scalar datasets
         for ds_name, ds_path in self._scalar_datasets_paths.items():
             self._datasets.append(
-                _HDFDataset(f"{name}-{ds_name}", f"/entry/instrument/NDAttributes/{ds_path}", (), multiplier)
+                _HDFDataset(
+                    f"{name}-{ds_name}",
+                    f"/entry/instrument/NDAttributes/{ds_path}",
+                    (),
+                    multiplier,
+                )
             )
         describe = {
             ds.name: Descriptor(

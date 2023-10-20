@@ -8,10 +8,7 @@ from ophyd_async.epics.areadetector.controllers import (
     ADSimController,
     PilatusController,
 )
-from ophyd_async.epics.areadetector.drivers import (
-    ADBase,
-    PilatusDriver,
-)
+from ophyd_async.epics.areadetector.drivers import ADBase, PilatusDriver
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import (
     TriggerMode as PilatusTrigger,
 )
@@ -34,6 +31,7 @@ async def ad(RE) -> ADSimController:
         controller = ADSimController(drv)
 
     return controller
+
 
 async def test_ad_controller(RE, ad: ADSimController):
     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
