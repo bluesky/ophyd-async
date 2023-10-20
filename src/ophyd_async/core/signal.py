@@ -195,14 +195,19 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
         """Stop caching this signal"""
         self._del_cache(self._get_cache().set_staged(False))
 
+USE_DEFAULT_TIMEOUT = "USE_DEFAULT_TIMEOUT"
 
 class SignalW(Signal[T], Movable):
     """Signal that can be set"""
 
-    def set(self, value: T, wait=True, timeout=None) -> AsyncStatus:
+    def set(self, value: T, wait=True, timeout=USE_DEFAULT_TIMEOUT) -> AsyncStatus:
         """Set the value and return a status saying when it's done"""
-        coro = self._backend.put(value, wait=wait, timeout=timeout or self._timeout)
+        if timeout is USE_DEFAULT_TIMEOUT:
+            timeout = self._timeout
+        coro = self._backend.put(value, wait=wait, timeout=timeout)
         return AsyncStatus(coro)
+
+
 
 
 class SignalRW(SignalR[T], SignalW[T]):

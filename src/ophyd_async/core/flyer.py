@@ -52,7 +52,7 @@ class DetectorGroupLogic(ABC):
         """Open all writers, wait for them to be open and return their descriptors"""
 
     @abstractmethod
-    async def ensure_armed(self, trigger_info: TriggerInfo) -> AsyncStatus:
+    async def ensure_armed(self, trigger_info: TriggerInfo):
         """Ensure the detectors are armed, return AsyncStatus that waits for disarm."""
 
     @abstractmethod
@@ -80,35 +80,34 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
     ) -> None:
         self.controllers = controllers
         self.writers = writers
-        self._arm_status: Optional[AsyncStatus] = None
+        self._arm_statuses: Sequence[AsyncStatus] = ()
         self._trigger_info: Optional[TriggerInfo] = None
 
     async def open(self) -> Dict[str, Descriptor]:
         return await merge_gathered_dicts(writer.open() for writer in self.writers)
 
-    async def ensure_armed(self, trigger_info: TriggerInfo) -> AsyncStatus:
+    async def ensure_armed(self, trigger_info: TriggerInfo):
         if (
-            not self._arm_status
-            or self._arm_status.done
+            not self._arm_statuses
+            or any(status.done for status in self._arm_statuses)
             or trigger_info != self._trigger_info
         ):
             # We need to re-arm
             await gather_list(controller.disarm() for controller in self.controllers)
+            await gather_list(self._arm_statuses)
             for controller in self.controllers:
                 required = controller.get_deadtime(trigger_info.livetime)
                 assert required >= trigger_info.deadtime, (
                     f"Detector {controller} needs at least {required}s deadtime, "
                     f"but trigger logic provides only {trigger_info.deadtime}s"
                 )
-            statuses = gather_list(
+            self._arm_statuses = await gather_list(
                 controller.arm(
                     trigger=trigger_info.trigger, exposure=trigger_info.livetime
                 )
                 for controller in self.controllers
             )
-            self._arm_status = AsyncStatus(statuses)
             self._trigger_info = trigger_info
-        return self._arm_status
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         # the below is confusing: gather_list does return an awaitable, but it itself
@@ -162,7 +161,6 @@ class HardwareTriggeredFlyable(
         self._trigger_logic = trigger_logic
         self._configuration_signals = tuple(configuration_signals)
         self._describe: Dict[str, Descriptor] = {}
-        self._det_status: Optional[AsyncStatus] = None
         self._watchers: List[Callable] = []
         self._fly_status: Optional[AsyncStatus] = None
         self._fly_start = 0.0
@@ -192,11 +190,10 @@ class HardwareTriggeredFlyable(
     async def _prepare(self, value: T):
         trigger_info = self._trigger_logic.trigger_info(value)
         # Move to start and setup the flyscan, and arm dets in parallel
-        self._det_status, _ = await asyncio.gather(
+        await asyncio.gather(
             self._detector_group_logic.ensure_armed(trigger_info),
             self._trigger_logic.prepare(value),
         )
-
         self._last_frame = self._current_frame + trigger_info.num
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:
@@ -221,7 +218,7 @@ class HardwareTriggeredFlyable(
     async def _fly(self) -> None:
         await self._trigger_logic.start()
         # Wait for all detectors to have written up to a particular frame
-        await self._detector_group_logic.wait_for_index(self._last_frame + self._offset)
+        await self._detector_group_logic.wait_for_index(self._last_frame - self._offset)
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         current_frame = self._current_frame
@@ -229,7 +226,6 @@ class HardwareTriggeredFlyable(
             name, doc = asset
             if name == "stream_datum":
                 current_frame = doc["indices"]["stop"] + self._offset
-
             yield asset
         if current_frame != self._current_frame:
             self._current_frame = current_frame

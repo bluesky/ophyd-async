@@ -33,7 +33,7 @@ class _HDFFile:
 
     def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
         # Indices are relative to resource
-        if indices_written >= self._last_emitted:
+        if indices_written > self._last_emitted:
             indices = dict(
                 start=self._last_emitted,
                 stop=indices_written,
