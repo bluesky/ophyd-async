@@ -20,7 +20,7 @@ from tango.asyncio_executor import set_global_executor
 from bluesky.protocols import Reading
 
 from ophyd_async.core import SignalBackend, T
-from ophyd_async.tango._backend import TangoTransport
+from ophyd_async.tango._backend import TangoTransport, TangoSignalBackend
 
 
 # --------------------------------------------------------------------
@@ -175,7 +175,7 @@ def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
 
 
 # --------------------------------------------------------------------
-async def make_backend(typ: Optional[Type], pv: str, connect=True) -> SignalBackend:
+async def make_backend(typ: Optional[Type], pv: str, connect=True) -> TangoSignalBackend:
     backend = TangoTransport(typ, pv, pv)
     if connect:
         await asyncio.wait_for(backend.connect(), 10)
@@ -241,6 +241,7 @@ async def assert_monitor_then_put(
         await q.assert_updates(initial_value)
         # Put to new value and check that
         await backend.put(put_value)
+        assert_close(put_value, await backend.get_w_value())
         await q.assert_updates(put_value)
     finally:
         q.close()

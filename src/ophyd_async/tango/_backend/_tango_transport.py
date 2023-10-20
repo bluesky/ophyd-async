@@ -16,19 +16,49 @@ from tango import (AttributeInfoEx, AttrDataFormat,
 from tango.asyncio import DeviceProxy
 from tango.utils import is_int, is_float, is_bool, is_str, is_binary, is_array
 
-from bluesky.protocols import Descriptor, Dtype, Reading
+from bluesky.protocols import Descriptor, Reading
 
 from ophyd_async.core import (
     NotConnected,
     ReadingValueCallback,
     SignalBackend,
+    SignalRW,
+    SignalW,
     T,
     get_dtype,
     get_unique,
     wait_for_connection,
 )
 
-__all__ = ("TangoTransport",)
+from ophyd_async.core._device._signal.signal import _add_timeout
+
+__all__ = ("TangoTransport", "TangoSignalRW", "TangoSignalW", "TangoSignalBackend")
+
+
+# --------------------------------------------------------------------
+# from tango attributes one can get setvalue, so we extend SignalRW and SignalW to add it
+class SignalWithSetpoit:
+    @_add_timeout
+    async def get_setpoint(self, cached: Optional[bool] = None) -> T:
+        """The last written value to TRL"""
+        return await self._backend_or_cache(cached).get_w_value()
+
+
+# --------------------------------------------------------------------
+class TangoSignalW(SignalW[T], SignalWithSetpoit):
+    ...
+
+
+# --------------------------------------------------------------------
+class TangoSignalRW(SignalRW[T], SignalWithSetpoit):
+    ...
+
+
+# --------------------------------------------------------------------
+class TangoSignalBackend(SignalBackend[T]):
+    @abstractmethod
+    async def get_w_value(self) -> T:
+        """The last written value"""
 
 
 # --------------------------------------------------------------------
@@ -71,6 +101,11 @@ class TangoProxy:
 
     # --------------------------------------------------------------------
     @abstractmethod
+    async def get_w_value(self) -> T:
+        """Get last written value from TRL"""
+
+    # --------------------------------------------------------------------
+    @abstractmethod
     async def put(self, value: Optional[T], wait: bool=True, timeout: Optional[float]=None) -> None:
         """Put value to TRL"""
 
@@ -110,6 +145,11 @@ class AttributeProxy(TangoProxy):
     async def get(self) -> T:
         attr = await self._proxy.read_attribute(self._name)
         return attr.value
+
+    # --------------------------------------------------------------------
+    async def get_w_value(self) -> T:
+        attr = await self._proxy.read_attribute(self._name)
+        return attr.w_value
 
     # --------------------------------------------------------------------
     async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
@@ -281,7 +321,7 @@ async def get_tango_trl(full_trl: str, device_proxy: Optional[DeviceProxy]) -> T
 
 
 # --------------------------------------------------------------------
-class TangoTransport(SignalBackend[T]):
+class TangoTransport(TangoSignalBackend[T]):
 
     def __init__(self,
                  datatype: Optional[Type[T]],
@@ -333,6 +373,10 @@ class TangoTransport(SignalBackend[T]):
     # --------------------------------------------------------------------
     async def get_value(self) -> T:
         return await self.proxies[self.write_trl].get()
+
+    # --------------------------------------------------------------------
+    async def get_w_value(self) -> T:
+        return await self.proxies[self.write_trl].get_w_value()
 
     # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:

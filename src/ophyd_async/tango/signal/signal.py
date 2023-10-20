@@ -5,14 +5,9 @@ from __future__ import annotations
 from typing import Optional, Type
 from tango import DeviceProxy
 
-from ophyd_async.core import (
-    SignalBackend,
-    SignalR,
-    SignalRW,
-    SignalW,
-    SignalX,
-    T,
-)
+from ophyd_async.core import SignalR, SignalX, T
+
+from ophyd_async.tango._backend import TangoTransport, TangoSignalRW, TangoSignalW, TangoSignalBackend
 
 __all__ = ("tango_signal_rw",
            "tango_signal_r",
@@ -20,15 +15,12 @@ __all__ = ("tango_signal_rw",
            "tango_signal_x")
 
 
-from ophyd_async.tango._backend import TangoTransport
-
-
 # --------------------------------------------------------------------
 def tango_signal_rw(datatype: Type[T],
                     read_trl: str,
                     write_trl: Optional[str] = None,
                     device_proxy: Optional[DeviceProxy] = None
-                    ) -> SignalRW[T]:
+                    ) -> TangoSignalRW[T]:
     """Create a `SignalRW` backed by 1 or 2 Tango Attribute/Command
 
     Parameters
@@ -43,7 +35,7 @@ def tango_signal_rw(datatype: Type[T],
         If given, this DeviceProxy will be used
     """
     backend = TangoTransport(datatype, read_trl, write_trl or read_trl, device_proxy)
-    return SignalRW(backend)
+    return TangoSignalRW(backend)
 
 
 # --------------------------------------------------------------------
@@ -70,7 +62,7 @@ def tango_signal_r(datatype: Type[T],
 def tango_signal_w(datatype: Type[T],
                    write_trl: str,
                    device_proxy: Optional[DeviceProxy] = None
-                   ) -> SignalW[T]:
+                   ) -> TangoSignalW[T]:
     """Create a `SignalW` backed by 1 Tango Attribute/Command
 
     Parameters
@@ -83,7 +75,7 @@ def tango_signal_w(datatype: Type[T],
         If given, this DeviceProxy will be used
     """
     backend = TangoTransport(datatype, write_trl, write_trl, device_proxy)
-    return SignalW(backend)
+    return TangoSignalW(backend)
 
 
 # --------------------------------------------------------------------
@@ -99,5 +91,5 @@ def tango_signal_x(write_trl: str,
     device_proxy:
         If given, this DeviceProxy will be used
     """
-    backend: SignalBackend = TangoTransport(None, write_trl, write_trl, device_proxy)
+    backend: TangoSignalBackend = TangoTransport(None, write_trl, write_trl, device_proxy)
     return SignalX(backend)
