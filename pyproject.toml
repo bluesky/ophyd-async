@@ -18,7 +18,7 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky @ git+https://github.com/coretl/bluesky.git@async-stage",
+    "bluesky @ git+https://github.com/bluesky/bluesky.git",
     "event-model",
     "p4p==4.1.11a2",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
@@ -36,7 +36,6 @@ dev = [
     "ophyd_async[ca]",
     "attrs>=19.3.0",
     "black",
-    "bluesky @ git+https://github.com/coretl/bluesky.git@async-stage",
     "caproto[standard] >=0.4.2rc1",
     "pytest-codecov",
     "databroker>=1.0.0b1",
