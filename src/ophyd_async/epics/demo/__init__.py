@@ -19,7 +19,7 @@ from ophyd_async.core import AsyncStatus, Device, StandardReadable, observe_valu
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
 
-class EnergyMode(Enum):
+class EnergyMode(str, Enum):
     """Energy mode for `Sensor`"""
 
     #: Low energy mode
