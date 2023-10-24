@@ -140,6 +140,8 @@ def make_converter(
         if datatype:
             if not issubclass(datatype, Enum):
                 raise TypeError(f"{pv} has type Enum not {datatype.__name__}")
+            if not issubclass(datatype, str):
+                raise TypeError(f"{pv} has type Enum but doesn't inherit from String")
             choices = tuple(v.value for v in datatype)
             if set(choices) != set(pv_choices):
                 raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
@@ -232,6 +234,15 @@ class CaSignalBackend(SignalBackend[T]):
 
     async def get_value(self) -> T:
         value = await self._caget(FORMAT_RAW)
+        return self.converter.value(value)
+
+    async def get_setpoint(self) -> T:
+        value = await caget(
+            self.write_pv,
+            datatype=self.converter.read_dbr,
+            format=FORMAT_RAW,
+            timeout=None,
+        )
         return self.converter.value(value)
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:

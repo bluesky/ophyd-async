@@ -6,6 +6,8 @@ from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
 
 from bluesky.protocols import (
     Descriptor,
+    Locatable,
+    Location,
     Movable,
     Readable,
     Reading,
@@ -210,8 +212,15 @@ class SignalW(Signal[T], Movable):
         return AsyncStatus(coro)
 
 
-class SignalRW(SignalR[T], SignalW[T]):
+class SignalRW(SignalR[T], SignalW[T], Locatable):
     """Signal that can be both read and set"""
+
+    async def locate(self) -> Location:
+        location: Location = {
+            "setpoint": await self._backend.get_setpoint(),
+            "readback": await self.get_value(),
+        }
+        return location
 
 
 class SignalX(Signal):

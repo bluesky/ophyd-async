@@ -21,6 +21,7 @@ dependencies = [
     "bluesky @ git+https://github.com/bluesky/bluesky.git",
     "event-model",
     "p4p==4.1.11a2",
+    "pyyaml"
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 
 dynamic = ["version"]
@@ -69,6 +70,7 @@ dev = [
     "sphinx-design",
     "tox-direct",
     "types-mock",
+    "types-pyyaml",
 ]
 
 [project.scripts]
