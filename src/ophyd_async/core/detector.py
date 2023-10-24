@@ -21,7 +21,7 @@ from .signal import SignalR
 from .utils import merge_gathered_dicts
 
 
-class DetectorTrigger(Enum):
+class DetectorTrigger(str, Enum):
     #: Detector generates internal trigger for given rate
     internal = "internal"
     #: Expect a series of arbitrary length trigger signals

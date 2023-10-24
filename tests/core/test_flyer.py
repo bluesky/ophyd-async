@@ -20,7 +20,7 @@ from ophyd_async.core import (
 )
 
 
-class TriggerState(Enum):
+class TriggerState(str, Enum):
     null = "null"
     preparing = "preparing"
     starting = "starting"

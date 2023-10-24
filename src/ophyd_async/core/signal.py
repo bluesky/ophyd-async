@@ -6,9 +6,9 @@ from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
 
 from bluesky.protocols import (
     Descriptor,
-    Movable,
     Locatable,
     Location,
+    Movable,
     Readable,
     Reading,
     Stageable,
