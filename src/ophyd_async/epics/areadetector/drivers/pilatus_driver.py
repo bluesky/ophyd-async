@@ -4,7 +4,7 @@ from ..utils import ad_rw
 from .ad_base import ADBase
 
 
-class TriggerMode(Enum):
+class TriggerMode(str, Enum):
     internal = "Internal"
     ext_enable = "Ext. Enable"
     ext_trigger = "Ext. Trigger"
