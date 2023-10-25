@@ -20,7 +20,7 @@ dependencies = [
     "pint",
     "bluesky @ git+https://github.com/bluesky/bluesky.git",
     "event-model",
-    "p4p==4.1.11a2",
+    "p4p==4.1.11",
     "pyyaml"
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 
@@ -31,7 +31,7 @@ requires-python = ">=3.9"
 
 [project.optional-dependencies]
 ca = ["aioca>=1.6"]
-pva = ["p4p==4.1.11a2"]
+pva = ["p4p==4.1.11"]
 dev = [
     "ophyd_async[pva]",
     "ophyd_async[ca]",
