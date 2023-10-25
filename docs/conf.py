@@ -187,7 +187,7 @@ html_theme_options = dict(
             url="https://blueskyproject.io",
         )
     ],
-    navigation_with_keys=True
+    navigation_with_keys=True,
 )
 
 
