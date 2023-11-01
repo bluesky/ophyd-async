@@ -33,7 +33,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
     def trigger_info(self, value: int) -> TriggerInfo:
         return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=0, livetime=10
+            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
         )
 
     async def prepare(self, value: int):
@@ -53,7 +53,7 @@ class DummyPathTriggerLogic(TriggerLogic[int]):
 
     def trigger_info(self, value: int) -> TriggerInfo:
         return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=0, livetime=10
+            num=value, trigger=DetectorTrigger.constant_gate, deadtime=0, livetime=2
         )
 
     async def prepare(self, value: int):
@@ -125,7 +125,7 @@ def detector_group() -> SameTriggerDetectorGroupLogic:
         AsyncMock(spec=DetectorControl, get_deadtime=lambda num: num),
         AsyncMock(spec=DetectorControl, get_deadtime=lambda num: num),
     ]
-    writers = [DummyWriter("testa", (10, 10)), DummyWriter("testb", (10, 10))]
+    writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
     return SameTriggerDetectorGroupLogic(controllers, writers)
 
 
