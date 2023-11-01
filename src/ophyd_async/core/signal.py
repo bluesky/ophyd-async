@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
+from contextlib import contextmanager
 from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
 
 from bluesky.protocols import (
@@ -245,9 +246,15 @@ def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
         event.clear()
 
 
-def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
-    """Monitor the value of a signal that is in sim mode"""
-    return _sim_backends[signal].set_callback(callback)
+@contextmanager
+def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]):
+    """A context where the specified callback is monitoring the value of the
+    specified signal."""
+    _sim_backends[signal].set_callback(callback)
+    try:
+        yield
+    finally:
+        _sim_backends[signal].callback = None
 
 
 async def observe_value(signal: SignalR[T]) -> AsyncGenerator[T, None]:
