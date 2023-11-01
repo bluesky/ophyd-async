@@ -104,7 +104,6 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             await gather_list(self._arm_statuses)
             for controller in self._controllers:
                 required = controller.get_deadtime(trigger_info.livetime)
-                print("REQUIRED, TRIGGER_INFO_DEADTIME: ", required, trigger_info.deadtime)
                 assert required <= trigger_info.deadtime, (
                     f"Detector {controller} needs at least {required}s deadtime, "
                     f"but trigger logic provides only {trigger_info.deadtime}s"
