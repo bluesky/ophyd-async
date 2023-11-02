@@ -55,7 +55,7 @@ async def test_pilatus_controller(RE, pilatus: PilatusController):
         await pilatus.arm(trigger=DetectorTrigger.constant_gate)
 
     driver = pilatus.driver
-    assert await driver.num_images.get_value() == 0
+    assert await driver.num_images.get_value() == 2**31 - 1
     assert await driver.image_mode.get_value() == ImageMode.multiple
     assert await driver.trigger_mode.get_value() == PilatusTrigger.ext_enable
     assert await driver.acquire.get_value() is True

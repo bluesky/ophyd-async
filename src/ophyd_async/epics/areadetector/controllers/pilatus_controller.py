@@ -33,7 +33,7 @@ class PilatusController(DetectorControl):
     ) -> AsyncStatus:
         await asyncio.gather(
             self.driver.trigger_mode.set(TRIGGER_MODE[trigger]),
-            self.driver.num_images.set(num),
+            self.driver.num_images.set(2**31 - 1 if num == 0 else num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
         return await set_and_wait_for_value(self.driver.acquire, True)
