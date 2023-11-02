@@ -8,17 +8,16 @@ from bluesky import RunEngine
 
 from ophyd_async.core import (
     AsyncStatus,
+    DetectorControl,
     DetectorTrigger,
     DeviceCollector,
     DirectoryInfo,
+    HardwareTriggeredFlyable,
+    SameTriggerDetectorGroupLogic,
     StandardDetector,
     TriggerInfo,
     TriggerLogic,
     set_sim_value,
-)
-from ophyd_async.core.flyer import (
-    HardwareTriggeredFlyable,
-    SameTriggerDetectorGroupLogic,
 )
 from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
@@ -44,8 +43,27 @@ class DummyTriggerLogic(TriggerLogic[int]):
         ...
 
 
+class DummyController(DetectorControl):
+    def __init__(self) -> None:
+        ...
+
+    async def arm(
+        self,
+        trigger: DetectorTrigger = DetectorTrigger.internal,
+        num: int = 0,
+        exposure: float | None = None,
+    ) -> AsyncStatus:
+        return AsyncStatus(asyncio.sleep(0.1))
+
+    async def disarm(self):
+        ...
+
+    def get_deadtime(self, exposure: float) -> float:
+        return 0.002
+
+
 @pytest.fixture
-def controller() -> ADSimController:
+def controller(RE) -> ADSimController:
     with DeviceCollector(sim=True):
         drv = ADBase("DRV")
 
@@ -53,7 +71,7 @@ def controller() -> ADSimController:
 
 
 @pytest.fixture
-def writer() -> HDFWriter:
+def writer(RE) -> HDFWriter:
     with DeviceCollector(sim=True):
         hdf = NDFileHDF("HDF")
 
@@ -65,9 +83,13 @@ def writer() -> HDFWriter:
     )
 
 
+@patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
 @patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
-    RE: RunEngine, writer: HDFWriter, controller: ADSimController
+    patched_wait_for_value,
+    RE: RunEngine,
+    writer: HDFWriter,
+    controller: ADSimController,
 ):
     set_sim_value(writer.hdf.file_path_exists, True)
     detector = StandardDetector(controller, writer, name="detector")
@@ -78,17 +100,12 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, TimeoutError)
 
 
-
-
+@patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
 async def test_hdf_writer_fails_on_timeout_with_flyscan(
-    RE: RunEngine, writer: HDFWriter, controller: ADSimController
+    patched_wait_for_value, RE: RunEngine, writer: HDFWriter
 ):
+    controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
-    controller.arm = AsyncMock(return_value=AsyncStatus(asyncio.sleep(0.01)))  # type: ignore
-    names = []
-    docs = []
-    RE.subscribe(lambda name, _: names.append(name))
-    RE.subscribe(lambda _, doc: docs.append(doc))
 
     trigger_logic = DummyTriggerLogic()
     detector_group = SameTriggerDetectorGroupLogic([controller], [writer])
@@ -100,24 +117,8 @@ async def test_hdf_writer_fails_on_timeout_with_flyscan(
         yield from bps.stage_all(flyer)
         yield from bps.open_run()
         yield from bps.kickoff(flyer)
-        yield from bps.complete(flyer, wait=False, group="complete")
-
-        done = False
-        while not done:
-            try:
-                yield from bps.wait(group="complete", timeout=0.5)
-            except TimeoutError:
-                pass
-            else:
-                done = True
-
-            yield from bps.collect(
-                flyer, stream=True, return_payload=False, name="primary"
-            )
-            yield from bps.sleep(0.001)
-        yield from bps.wait(group="complete")
+        yield from bps.complete(flyer, wait=True)
         yield from bps.close_run()
-
         yield from bps.unstage_all(flyer)
 
     RE(bps.mv(flyer, 1))
