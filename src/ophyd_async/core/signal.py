@@ -226,9 +226,12 @@ class SignalRW(SignalR[T], SignalW[T], Locatable):
 class SignalX(Signal):
     """Signal that puts the default value"""
 
-    async def execute(self, wait=True, timeout=None):
-        """Execute the action and return a status saying when it's done"""
-        await self._backend.put(None, wait=wait, timeout=timeout or self._timeout)
+    def trigger(self, wait=True, timeout=USE_DEFAULT_TIMEOUT) -> AsyncStatus:
+        """Trigger the action and return a status saying when it's done"""
+        if timeout is USE_DEFAULT_TIMEOUT:
+            timeout = self._timeout
+        coro = self._backend.put(None, wait=wait, timeout=timeout)
+        return AsyncStatus(coro)
 
 
 def set_sim_value(signal: Signal[T], value: T):
