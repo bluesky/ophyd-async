@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 from unittest.mock import AsyncMock, Mock, patch
 
 import bluesky.plan_stubs as bps
@@ -51,7 +52,7 @@ class DummyController(DetectorControl):
         self,
         trigger: DetectorTrigger = DetectorTrigger.internal,
         num: int = 0,
-        exposure: float | None = None,
+        exposure: Optional[float] = None,
     ) -> AsyncStatus:
         return AsyncStatus(asyncio.sleep(0.1))
 
