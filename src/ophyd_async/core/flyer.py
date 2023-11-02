@@ -63,7 +63,7 @@ class DetectorGroupLogic(ABC):
         """Collect asset docs from all writers"""
 
     @abstractmethod
-    async def wait_for_index(self, index: int):
+    async def wait_for_index(self, index: int, timeout: Optional[float] = None):
         """Wait until a specific index is ready to be collected"""
 
     @abstractmethod
@@ -126,8 +126,10 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             async for doc in writer.collect_stream_docs(indices_written):
                 yield doc
 
-    async def wait_for_index(self, index: int):
-        await gather_list(writer.wait_for_index(index) for writer in self._writers)
+    async def wait_for_index(self, index: int, timeout: Optional[float] = None):
+        await gather_list(
+            writer.wait_for_index(index, timeout=timeout) for writer in self._writers
+        )
 
     async def disarm(self):
         await gather_list(controller.disarm() for controller in self._controllers)
@@ -179,6 +181,7 @@ class HardwareTriggeredFlyable(
         detector_group_logic: DetectorGroupLogic,
         trigger_logic: TriggerLogic[T],
         configuration_signals: Sequence[SignalR],
+        timeout: Optional[float] = None,
         name: str = "",
     ):
         self._detector_group_logic = detector_group_logic
@@ -191,6 +194,7 @@ class HardwareTriggeredFlyable(
         self._offset = 0  # Add this to index to get frame number
         self._current_frame = 0  # The current frame we are on
         self._last_frame = 0  # The last frame that will be emitted
+        self._timeout = timeout
         super().__init__(name=name)
 
     @AsyncStatus.wrap
@@ -242,7 +246,9 @@ class HardwareTriggeredFlyable(
     async def _fly(self) -> None:
         await self._trigger_logic.start()
         # Wait for all detectors to have written up to a particular frame
-        await self._detector_group_logic.wait_for_index(self._last_frame - self._offset)
+        await self._detector_group_logic.wait_for_index(
+            self._last_frame - self._offset, timeout=self._timeout
+        )
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         current_frame = self._current_frame

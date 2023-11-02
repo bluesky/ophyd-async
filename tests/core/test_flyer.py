@@ -47,26 +47,6 @@ class DummyTriggerLogic(TriggerLogic[int]):
         self.state = TriggerState.stopping
 
 
-class DummyPathTriggerLogic(TriggerLogic[int]):
-    def __init__(self):
-        self.state = TriggerState.null
-
-    def trigger_info(self, value: int) -> TriggerInfo:
-        return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=0, livetime=2
-        )
-
-    async def prepare(self, value: int):
-        self.state = TriggerState.preparing
-        return value
-
-    async def start(self):
-        self.state = TriggerState.starting
-
-    async def stop(self):
-        self.state = TriggerState.stopping
-
-
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
         self._shape = shape
@@ -84,7 +64,7 @@ class DummyWriter(DetectorWriter):
             )
         }
 
-    async def wait_for_index(self, index: int) -> None:
+    async def wait_for_index(self, index: int, timeout: Optional[float] = None) -> None:
         ...
 
     async def get_indices_written(self) -> int:
