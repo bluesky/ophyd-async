@@ -27,12 +27,12 @@ class PilatusController(DetectorControl):
 
     async def arm(
         self,
-        mode: DetectorTrigger = DetectorTrigger.internal,
+        trigger: DetectorTrigger = DetectorTrigger.internal,
         num: int = 0,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         await asyncio.gather(
-            self.driver.trigger_mode.set(TRIGGER_MODE[mode]),
+            self.driver.trigger_mode.set(TRIGGER_MODE[trigger]),
             self.driver.num_images.set(num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
