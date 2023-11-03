@@ -63,7 +63,7 @@ class DetectorGroupLogic(ABC):
         """Collect asset docs from all writers"""
 
     @abstractmethod
-    async def wait_for_index(self, index: int, timeout: Optional[float] = None):
+    async def wait_for_index(self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT):
         """Wait until a specific index is ready to be collected"""
 
     @abstractmethod
