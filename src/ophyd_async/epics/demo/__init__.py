@@ -112,7 +112,8 @@ class Mover(StandardReadable, Movable, Stoppable):
 
     async def stop(self, success=True):
         self._set_success = success
-        await self.stop_.execute()
+        status = self.stop_.trigger()
+        await status
 
 
 class SampleStage(Device):

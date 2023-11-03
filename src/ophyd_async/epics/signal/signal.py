@@ -92,7 +92,7 @@ def epics_signal_x(write_pv: str) -> SignalX:
     Parameters
     ----------
     write_pv:
-        The PV to write its initial value to on execute
+        The PV to write its initial value to on trigger
     """
     backend: SignalBackend = _make_backend(None, write_pv, write_pv)
     return SignalX(backend)
