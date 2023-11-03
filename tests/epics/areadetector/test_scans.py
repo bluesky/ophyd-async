@@ -115,12 +115,17 @@ async def test_hdf_writer_fails_on_timeout_with_flyscan(
     )
 
     def flying_plan():
+        """NOTE: the following is a workaround to ensure tests always pass.
+        See https://github.com/bluesky/bluesky/issues/1630 for more details.
+        """
         yield from bps.stage_all(flyer)
-        yield from bps.open_run()
-        yield from bps.kickoff(flyer)
-        yield from bps.complete(flyer, wait=True)
-        yield from bps.close_run()
-        yield from bps.unstage_all(flyer)
+        try:
+            yield from bps.open_run()
+            yield from bps.kickoff(flyer)
+            yield from bps.complete(flyer, wait=True)
+            yield from bps.close_run()
+        finally:
+            yield from bps.unstage_all(flyer)
 
     RE(bps.mv(flyer, 1))
     with pytest.raises(Exception) as exc:

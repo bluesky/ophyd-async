@@ -85,7 +85,9 @@ class HDFWriter(DetectorWriter):
         }
         return describe
 
-    async def wait_for_index(self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT):
+    async def wait_for_index(
+        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
+    ):
         def matcher(value: int) -> bool:
             return value // self._multiplier >= index
 

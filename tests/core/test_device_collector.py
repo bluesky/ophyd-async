@@ -1,7 +1,6 @@
-from ophyd_async.core import NotConnected
 import pytest
 
-from ophyd_async.core import Device, DeviceCollector
+from ophyd_async.core import Device, DeviceCollector, NotConnected
 
 
 class Dummy(Device):

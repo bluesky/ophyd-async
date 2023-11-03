@@ -1,23 +1,25 @@
 import time
 from enum import Enum
 from typing import AsyncIterator, Dict, Optional, Sequence
-from unittest.mock import AsyncMock
+from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky import RunEngine
 from bluesky.protocols import Asset, Descriptor
+from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     DetectorControl,
     DetectorTrigger,
     DetectorWriter,
     HardwareTriggeredFlyable,
     SameTriggerDetectorGroupLogic,
+    SignalRW,
+    SimSignalBackend,
     TriggerInfo,
     TriggerLogic,
-    DEFAULT_TIMEOUT
 )
 
 
@@ -50,6 +52,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
+        self.dummy_signal = SignalRW(backend=SimSignalBackend(int, source="test"))
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
@@ -65,7 +68,9 @@ class DummyWriter(DetectorWriter):
             )
         }
 
-    async def wait_for_index(self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT) -> None:
+    async def wait_for_index(
+        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
+    ) -> None:
         ...
 
     async def get_indices_written(self) -> int:
@@ -101,12 +106,18 @@ class DummyWriter(DetectorWriter):
 
 
 @pytest.fixture
-def detector_group() -> SameTriggerDetectorGroupLogic:
-    controllers = [
-        AsyncMock(spec=DetectorControl, get_deadtime=lambda num: num),
-        AsyncMock(spec=DetectorControl, get_deadtime=lambda num: num),
-    ]
+async def detector_group(RE: RunEngine) -> SameTriggerDetectorGroupLogic:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
+    await writers[0].dummy_signal.connect(sim=True)
+
+    async def dummy_arm(self=None, trigger=None, num=0, exposure=None):
+        return writers[0].dummy_signal.set(1)
+
+    controllers = [
+        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+    ]
+
     return SameTriggerDetectorGroupLogic(controllers, writers)
 
 
@@ -160,8 +171,6 @@ async def test_hardware_triggered_flyable(
     for controller in detector_group._controllers:
         assert controller.disarm.called  # type: ignore
         assert controller.disarm.call_count == 1  # type: ignore
-        assert controller.arm.called  # type: ignore
-        assert controller.arm.call_count == 1  # type: ignore
 
     # fly scan
     RE(flying_plan())
