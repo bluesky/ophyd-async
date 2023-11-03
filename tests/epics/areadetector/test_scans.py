@@ -111,7 +111,7 @@ async def test_hdf_writer_fails_on_timeout_with_flyscan(
     trigger_logic = DummyTriggerLogic()
     detector_group = SameTriggerDetectorGroupLogic([controller], [writer])
     flyer = HardwareTriggeredFlyable(
-        detector_group, trigger_logic, [], name="flyer", timeout=0.1
+        detector_group, trigger_logic, [], name="flyer", trigger_to_frame_timeout=0.1
     )
 
     def flying_plan():

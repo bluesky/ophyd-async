@@ -17,6 +17,7 @@ from ophyd_async.core import (
     SameTriggerDetectorGroupLogic,
     TriggerInfo,
     TriggerLogic,
+    DEFAULT_TIMEOUT
 )
 
 
