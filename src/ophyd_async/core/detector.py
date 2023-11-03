@@ -68,7 +68,7 @@ class DetectorWriter(ABC):
         """
 
     @abstractmethod
-    async def wait_for_index(self, index: int, timeout: Optional[float] = None) -> None:
+    async def wait_for_index(self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT) -> None:
         """Wait until a specific index is ready to be collected"""
 
     @abstractmethod
