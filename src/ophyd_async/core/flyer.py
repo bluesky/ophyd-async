@@ -30,7 +30,7 @@ from .async_status import AsyncStatus
 from .detector import DetectorControl, DetectorTrigger, DetectorWriter
 from .device import Device
 from .signal import SignalR
-from .utils import gather_list, merge_gathered_dicts
+from .utils import gather_list, merge_gathered_dicts, DEFAULT_TIMEOUT
 
 T = TypeVar("T")
 
@@ -181,7 +181,7 @@ class HardwareTriggeredFlyable(
         detector_group_logic: DetectorGroupLogic,
         trigger_logic: TriggerLogic[T],
         configuration_signals: Sequence[SignalR],
-        timeout: Optional[float] = None,
+        trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
         name: str = "",
     ):
         self._detector_group_logic = detector_group_logic
@@ -194,7 +194,7 @@ class HardwareTriggeredFlyable(
         self._offset = 0  # Add this to index to get frame number
         self._current_frame = 0  # The current frame we are on
         self._last_frame = 0  # The last frame that will be emitted
-        self._timeout = timeout
+        self._trigger_to_frame_timeout = trigger_to_frame_timeout
         super().__init__(name=name)
 
     @AsyncStatus.wrap
@@ -247,7 +247,7 @@ class HardwareTriggeredFlyable(
         await self._trigger_logic.start()
         # Wait for all detectors to have written up to a particular frame
         await self._detector_group_logic.wait_for_index(
-            self._last_frame - self._offset, timeout=DEFAULT_TIMEOUT
+            self._last_frame - self._offset, timeout=self._trigger_to_frame_timeout
         )
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
