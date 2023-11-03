@@ -126,7 +126,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             async for doc in writer.collect_stream_docs(indices_written):
                 yield doc
 
-    async def wait_for_index(self, index: int, timeout: Optional[float] = None):
+    async def wait_for_index(self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT):
         await gather_list(
             writer.wait_for_index(index, timeout=timeout) for writer in self._writers
         )
