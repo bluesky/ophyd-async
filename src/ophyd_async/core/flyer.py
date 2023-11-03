@@ -247,7 +247,7 @@ class HardwareTriggeredFlyable(
         await self._trigger_logic.start()
         # Wait for all detectors to have written up to a particular frame
         await self._detector_group_logic.wait_for_index(
-            self._last_frame - self._offset, timeout=self._timeout
+            self._last_frame - self._offset, timeout=DEFAULT_TIMEOUT
         )
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
