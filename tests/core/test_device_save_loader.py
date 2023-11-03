@@ -137,7 +137,7 @@ async def test_yaml_formatting(device, tmp_path):
 
     with open(file_path, "r") as file:
         expected = """\
-- {child1.sig1: test_string}
+- child1.sig1: test_string
 - child2.sig1:
     VAL1: [1, 2, 3, 4, 5]
     VAL2: [6, 7, 8, 9, 10]
