@@ -81,4 +81,5 @@ class Motor(StandardReadable, Movable, Stoppable):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        await self.stop_.execute(wait=False)
+        status = self.stop_.trigger(wait=False)
+        await status
