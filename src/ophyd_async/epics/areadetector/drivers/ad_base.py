@@ -77,7 +77,7 @@ async def start_acquiring_driver_and_ensure_status(
     status = await set_and_wait_for_value(driver.acquire, True, timeout=timeout)
 
     async def completion_task() -> None:
-        """NOTE: possible race condition here between the callback from 
+        """NOTE: possible race condition here between the callback from
         set_and_wait_for_value and the detector state updating."""
         await status
         state = await driver.detector_state.get_value()
