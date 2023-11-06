@@ -1,11 +1,9 @@
 import asyncio
 from typing import Optional
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    set_and_wait_for_value,
+from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
+from ophyd_async.epics.areadetector.drivers.ad_base import (
+    start_acquiring_driver_and_ensure_status,
 )
 
 from ..drivers.pilatus_driver import PilatusDriver, TriggerMode
@@ -36,7 +34,7 @@ class PilatusController(DetectorControl):
             self.driver.num_images.set(2**31 - 1 if num == 0 else num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
-        return await set_and_wait_for_value(self.driver.acquire, True)
+        return await start_acquiring_driver_and_ensure_status(self.driver)
 
     async def disarm(self):
         await stop_busy_record(self.driver.acquire, False, timeout=1)
