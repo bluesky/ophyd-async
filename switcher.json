@@ -12,16 +12,16 @@
     "url": "https://bluesky.github.io/ophyd-async/add_save_load/"
   },
   {
+    "version": "better-detector-timeout-handling",
+    "url": "https://bluesky.github.io/ophyd-async/better-detector-timeout-handling/"
+  },
+  {
     "version": "dependabot_github_actions_actions_checkout-4",
     "url": "https://bluesky.github.io/ophyd-async/dependabot_github_actions_actions_checkout-4/"
   },
   {
     "version": "dependabot_github_actions_softprops_action-gh-release-0.1.15",
     "url": "https://bluesky.github.io/ophyd-async/dependabot_github_actions_softprops_action-gh-release-0.1.15/"
-  },
-  {
-    "version": "fix-docs",
-    "url": "https://bluesky.github.io/ophyd-async/fix-docs/"
   },
   {
     "version": "flyingpanda",
