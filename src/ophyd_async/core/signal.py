@@ -208,7 +208,8 @@ class SignalW(Signal[T], Movable):
         """Set the value and return a status saying when it's done"""
         if timeout is USE_DEFAULT_TIMEOUT:
             timeout = self._timeout
-        return AsyncStatus(self._backend.put(value, wait=wait, timeout=timeout))
+        coro = self._backend.put(value, wait=wait, timeout=timeout)
+        return AsyncStatus(coro)
 
 
 class SignalRW(SignalR[T], SignalW[T], Locatable):

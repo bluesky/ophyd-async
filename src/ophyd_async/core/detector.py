@@ -110,6 +110,7 @@ class StandardDetector(
         writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
+        writer_timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
         """
         Parameters
@@ -125,6 +126,7 @@ class StandardDetector(
         self._writer = writer
         self._describe: Dict[str, Descriptor] = {}
         self._config_sigs = list(config_sigs)
+        self._writer_timeout = writer_timeout
         super().__init__(name)
 
     @property
@@ -173,10 +175,12 @@ class StandardDetector(
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(DetectorTrigger.internal, num=1)
         await written_status
-        await self.writer.wait_for_index(indices_written + 1, timeout=DEFAULT_TIMEOUT)
+        await self.writer.wait_for_index(
+            indices_written + 1, timeout=self._writer_timeout
+        )
 
     async def read(self) -> Dict[str, Reading]:
-        """Unused method: will be deprecated."""
+        """Read the detector"""
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
