@@ -126,7 +126,7 @@ class StandardDetector(
         self._writer = writer
         self._describe: Dict[str, Descriptor] = {}
         self._config_sigs = list(config_sigs)
-        self._writer_timeout = writer_timeout
+        self._frame_writing_timeout = writer_timeout
         super().__init__(name)
 
     @property
@@ -176,7 +176,7 @@ class StandardDetector(
         written_status = await self.controller.arm(DetectorTrigger.internal, num=1)
         await written_status
         await self.writer.wait_for_index(
-            indices_written + 1, timeout=self._writer_timeout
+            indices_written + 1, timeout=self._frame_writing_timeout
         )
 
     async def read(self) -> Dict[str, Reading]:

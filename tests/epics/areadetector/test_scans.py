@@ -93,7 +93,9 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     controller: ADSimController,
 ):
     set_sim_value(writer.hdf.file_path_exists, True)
-    detector = StandardDetector(controller, writer, name="detector")
+    detector = StandardDetector(
+        controller, writer, name="detector", writer_timeout=0.01
+    )
 
     with pytest.raises(Exception) as exc:
         RE(bp.count([detector]))
@@ -111,7 +113,7 @@ async def test_hdf_writer_fails_on_timeout_with_flyscan(
     trigger_logic = DummyTriggerLogic()
     detector_group = SameTriggerDetectorGroupLogic([controller], [writer])
     flyer = HardwareTriggeredFlyable(
-        detector_group, trigger_logic, [], name="flyer", trigger_to_frame_timeout=0.1
+        detector_group, trigger_logic, [], name="flyer", trigger_to_frame_timeout=0.01
     )
 
     def flying_plan():
