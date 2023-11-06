@@ -13,7 +13,9 @@ from .signal import SignalRW
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.Node:
-    return dumper.represent_sequence("tag:yaml.org,2002:seq", array.tolist())
+    return dumper.represent_sequence(
+        "tag:yaml.org,2002:seq", array.tolist(), flow_style=True
+    )
 
 
 class OphydDumper(yaml.Dumper):
@@ -128,7 +130,7 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
     """
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
     with open(save_path, "w") as file:
-        yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=None)
+        yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)
 
 
 def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
