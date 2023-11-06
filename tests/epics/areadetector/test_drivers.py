@@ -1,9 +1,3 @@
-# want to make a driver and test the following:
-"""
-1. If detector state is immediately in error, that this raises.
-2. If after some time, the detector state is in error, this raises.
-3. If no error happens but driver.acquire isn't being set in the timeout
-"""
 import asyncio
 
 import pytest
