@@ -1,6 +1,6 @@
 import asyncio
 from enum import Enum
-from typing import Sequence, Set
+from typing import FrozenSet, Sequence, Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -28,7 +28,7 @@ class DetectorState(str, Enum):
     Aborted = "Aborted"
 
 
-DEFAULT_GOOD_STATES: Set[DetectorState] = set([DetectorState.Idle])
+DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset([DetectorState.Idle])
 
 
 class ADBase(NDArrayBase):
@@ -49,7 +49,7 @@ class ADBase(NDArrayBase):
 
 async def start_acquiring_driver_and_ensure_status(
     driver: ADBase,
-    good_states: Set[DetectorState] = DEFAULT_GOOD_STATES,
+    good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES),
     timeout: float = DEFAULT_TIMEOUT,
 ) -> AsyncStatus:
     """Start aquiring driver, raising ValueError if the detector is in a bad state.
@@ -76,7 +76,7 @@ async def start_acquiring_driver_and_ensure_status(
 
     status = await set_and_wait_for_value(driver.acquire, True, timeout=timeout)
 
-    async def completion_task() -> None:
+    async def complete_acquisition() -> None:
         """NOTE: possible race condition here between the callback from
         set_and_wait_for_value and the detector state updating."""
         await status
@@ -86,7 +86,7 @@ async def start_acquiring_driver_and_ensure_status(
                 f"Final detector state {state} not in valid end states: {good_states}"
             )
 
-    return AsyncStatus(completion_task())
+    return AsyncStatus(complete_acquisition())
 
 
 class ADBaseShapeProvider(ShapeProvider):
