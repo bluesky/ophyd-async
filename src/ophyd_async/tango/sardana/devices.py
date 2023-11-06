@@ -31,7 +31,7 @@ class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
         self.acceleration = tango_signal_rw(float, self.trl + '/Acceleration', device_proxy=self.proxy)
         self.deceleration = tango_signal_rw(float, self.trl + '/Deceleration', device_proxy=self.proxy)
 
-        self.set_readable_signals(read=[self.position],
+        self.set_readable_signals(read_uncached=[self.position],
                                   config=[self.baserate,
                                           self.velocity,
                                           self.acceleration,
@@ -61,7 +61,6 @@ class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
             await self.position.set(new_position)
             await asyncio.sleep(0.1)
             while await self._state.get_value() == DevState.MOVING:
-                print("Waiting for motor")
                 await asyncio.sleep(0.1)
         finally:
             self.position.clear_sub(update_watchers)

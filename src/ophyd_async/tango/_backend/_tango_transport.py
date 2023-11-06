@@ -1,7 +1,6 @@
 import asyncio
 import time
 import functools
-import logging
 
 import numpy as np
 from asyncio import CancelledError
@@ -33,6 +32,9 @@ from ophyd_async.core import (
 
 __all__ = ("TangoTransport", "TangoSignalBackend")
 
+
+# time constant to wait for timeout
+A_BIT = 1e-5
 
 # --------------------------------------------------------------------
 
@@ -129,7 +131,7 @@ class TangoProxy:
 
     # --------------------------------------------------------------------
     @abstractmethod
-    def unsubscribe_callback(self, callback: Optional[ReadingValueCallback]):
+    def unsubscribe_callback(self):
         """delete CHANGE event subscription"""
 
 
@@ -156,14 +158,18 @@ class AttributeProxy(TangoProxy):
     @ensure_proper_executor
     async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
         if wait:
-            if timeout:
-                rid = self._proxy.write_attribute_asynch(self._name, value, green_mode=GreenMode.Synchronous)
-                await asyncio.sleep(timeout)
-                self._proxy.write_attribute_reply(rid, green_mode=GreenMode.Synchronous)
-            else:
-                self._proxy.write_attribute(self._name, value, green_mode=GreenMode.Synchronous)
-        else:
             await self._proxy.write_attribute(self._name, value)
+        else:
+            rid = await self._proxy.write_attribute_asynch(self._name, value)
+            if timeout:
+                finished = False
+                while not finished:
+                    try:
+                        val = await dev.write_attribute_reply(rid)
+                        finished = True
+                    except:
+                        await asyncio.sleep(A_BIT)
+
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
@@ -188,13 +194,15 @@ class AttributeProxy(TangoProxy):
     def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
         """add user callback to CHANGE event subscription"""
         self._event_callback = callback
-        self._eid = self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor,
-                                                green_mode=False)
+        if not self._eid:
+            self._eid = self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor,
+                                                    green_mode=False)
 
     # --------------------------------------------------------------------
-    def unsubscribe_callback(self, eid: int):
-        self._proxy.unsubscribe_event(self._eid, green_mode=False)
-        self._eid = None
+    def unsubscribe_callback(self):
+        if self._eid:
+            self._proxy.unsubscribe_event(self._eid, green_mode=False)
+            self._eid = None
         self._event_callback = None
 
     # --------------------------------------------------------------------
@@ -222,14 +230,18 @@ class CommandProxy(TangoProxy):
     # @ensure_proper_executor
     async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
         if wait:
-            if timeout:
-                rid = self._proxy.command_inout_asynch(self._name, value, green_mode=GreenMode.Synchronous)
-                await asyncio.sleep(timeout)
-                val = self._proxy.command_inout_reply(rid, green_mode=GreenMode.Synchronous)
-            else:
-                val = self._proxy.command_inout(self._name, value, green_mode=GreenMode.Synchronous)
-        else:
             val = await self._proxy.command_inout(self._name, value)
+        else:
+            val = None
+            rid = await self._proxy.command_inout_asynch(self._name, value)
+            if timeout:
+                finished = False
+                while not finished:
+                    try:
+                        val = await dev.command_inout_reply(rid)
+                        finished = True
+                    except:
+                        await asyncio.sleep(A_BIT)
 
         self._last_reading = dict(value=val, timestamp=time.time(), alarm_severity=0)
 
@@ -344,7 +356,6 @@ class TangoTransport(TangoSignalBackend[T]):
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
         self.source = f"{self.read_trl}"
         self.descriptor: Descriptor = {}  # type: ignore
-        self.eid: Optional[int] = None
 
     # --------------------------------------------------------------------
     async def _connect_and_store_config(self, trl):
@@ -393,9 +404,11 @@ class TangoTransport(TangoSignalBackend[T]):
 
         if callback:
             assert (not self.proxies[self.read_trl].has_subscription()), "Cannot set a callback when one is already set"
-            self.eid = self.proxies[self.read_trl].subscribe_callback(callback)
+            try:
+                self.proxies[self.read_trl].subscribe_callback(callback)
+            except Exception as err:
+                raise RuntimeError(f"Cannot set event for {self.read_trl}. "
+                                   f"This signal should be used only as non-cached!")
 
         else:
-            if self.eid:
-                self.proxies[self.read_trl].unsubscribe_callback(self.eid)
-            self.eid = None
+            self.proxies[self.read_trl].unsubscribe_callback()

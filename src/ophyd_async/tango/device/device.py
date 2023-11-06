@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Union, Tuple, Sequence
 
 from tango.asyncio import DeviceProxy
 
@@ -42,5 +41,5 @@ class TangoReadableDevice(StandardReadable):
     @abstractmethod
     def register_signals(self):
         """
-        This method can be used to manually register signals
+        This method should be used to register signals
         """
