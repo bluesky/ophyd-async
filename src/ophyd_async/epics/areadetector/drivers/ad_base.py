@@ -15,6 +15,11 @@ from ..writers.nd_plugin import NDArrayBase
 
 
 class DetectorState(str, Enum):
+    """
+    Default set of states of an AreaDetector driver.
+    See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore
+    """
+
     Idle = "Idle"
     Acquire = "Acquire"
     Readout = "Readout"
@@ -28,6 +33,8 @@ class DetectorState(str, Enum):
     Aborted = "Aborted"
 
 
+#: Default set of states that we should consider "good" i.e. the acquisition
+#  is complete and went well
 DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset([DetectorState.Idle])
 
 
@@ -52,7 +59,8 @@ async def start_acquiring_driver_and_ensure_status(
     good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES),
     timeout: float = DEFAULT_TIMEOUT,
 ) -> AsyncStatus:
-    """Start aquiring driver, raising ValueError if the detector is in a bad state.
+    """
+    Start acquiring driver, raising ValueError if the detector is in a bad state.
 
     This sets driver.acquire to True, and waits for it to be True up to a timeout.
     Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES, and otherwise
@@ -61,7 +69,7 @@ async def start_acquiring_driver_and_ensure_status(
     Parameters
     ----------
     driver:
-        The driver to start aquiring. Must subclass ADBase.
+        The driver to start acquiring. Must subclass ADBase.
     good_states:
         set of states defined in DetectorState enum which are considered good states.
     timeout:
