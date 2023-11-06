@@ -40,7 +40,7 @@ def get_signal_values(
         to be ignored.
 
     Returns
-    ----------
+    -------
         Dict[str, Any]: A dictionary matching the string attribute path of a SignalRW
         to the value of that signal. Ignored attributes are set to None.
 
