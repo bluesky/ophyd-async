@@ -6,10 +6,13 @@ from ophyd_async.core import (
     AsyncStatus,
     DetectorControl,
     DetectorTrigger,
-    set_and_wait_for_value,
 )
 
-from ..drivers.ad_base import ADBase, ImageMode
+from ..drivers.ad_base import (
+    ADBase,
+    ImageMode,
+    start_acquiring_driver_and_ensure_status,
+)
 from ..utils import stop_busy_record
 
 
@@ -34,8 +37,8 @@ class ADSimController(DetectorControl):
             self.driver.num_images.set(num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
-        return await set_and_wait_for_value(
-            self.driver.acquire, True, timeout=frame_timeout
+        return await start_acquiring_driver_and_ensure_status(
+            self.driver, timeout=frame_timeout
         )
 
     async def disarm(self):
