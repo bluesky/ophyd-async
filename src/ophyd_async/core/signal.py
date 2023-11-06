@@ -343,7 +343,7 @@ async def set_and_wait_for_value(
 
     Useful for busy record, or other Signals with pattern:
 
-    - Set Signal with wait=with_callback and stash the Status
+    - Set Signal with wait=True and stash the Status
     - Read the same Signal to check the operation has started
     - Return the Status so calling code can wait for operation to complete
 
@@ -357,8 +357,6 @@ async def set_and_wait_for_value(
         The signal to set and monitor
     value:
         The value to set it to
-    with_callback:
-        If we want to wait for a caput/pvput callback
     timeout:
         How long to wait for the signal to have the value
     status_timeout:

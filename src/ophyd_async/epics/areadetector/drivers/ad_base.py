@@ -2,8 +2,12 @@ import asyncio
 from enum import Enum
 from typing import Sequence, Set
 
-from ophyd_async.core import AsyncStatus, ShapeProvider
-from ophyd_async.core.signal import set_and_wait_for_value
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    ShapeProvider,
+    set_and_wait_for_value,
+)
 
 from ...signal.signal import epics_signal_rw
 from ..utils import ImageMode, ad_r, ad_rw
@@ -43,11 +47,34 @@ class ADBase(NDArrayBase):
         super().__init__(prefix, name=name)
 
 
-async def arm_and_trigger_detector_and_check_status_pv(
+async def start_acquiring_driver_and_ensure_status(
     driver: ADBase,
     good_states: Set[DetectorState] = DEFAULT_GOOD_STATES,
+    timeout: float = DEFAULT_TIMEOUT,
 ) -> AsyncStatus:
-    status = await set_and_wait_for_value(driver.acquire, True)
+    """Start aquiring driver, raising ValueError if the detector is in a bad state.
+
+    This sets driver.acquire to True, and waits for it to be True up to a timeout.
+    Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES, and otherwise
+    raises a ValueError.
+
+    Parameters
+    ----------
+    driver:
+        The driver to start aquiring. Must subclass ADBase.
+    good_states:
+        set of states defined in DetectorState enum which are considered good states.
+    timeout:
+        How long to wait for driver.acquire to readback True (i.e. acquiring).
+
+    Returns
+    -------
+    AsyncStatus:
+        An AsyncStatus that can be awaited to set driver.acquire to True and perform
+        subsequent raising (if applicable) due to detector state.
+    """
+
+    status = await set_and_wait_for_value(driver.acquire, True, timeout=timeout)
 
     async def completion_task() -> None:
         await status

@@ -3,7 +3,7 @@ from typing import Optional
 
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
-    arm_and_trigger_detector_and_check_status_pv,
+    start_acquiring_driver_and_ensure_status,
 )
 
 from ..drivers.pilatus_driver import PilatusDriver, TriggerMode
@@ -34,7 +34,7 @@ class PilatusController(DetectorControl):
             self.driver.num_images.set(2**31 - 1 if num == 0 else num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
-        return await arm_and_trigger_detector_and_check_status_pv(self.driver)
+        return await start_acquiring_driver_and_ensure_status(self.driver)
 
     async def disarm(self):
         await stop_busy_record(self.driver.acquire, False, timeout=1)
