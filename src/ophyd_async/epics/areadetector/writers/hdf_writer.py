@@ -85,12 +85,14 @@ class HDFWriter(DetectorWriter):
         }
         return describe
 
-    async def wait_for_index(self, index: int):
+    async def wait_for_index(
+        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
+    ):
         def matcher(value: int) -> bool:
             return value // self._multiplier >= index
 
         matcher.__name__ = f"index_at_least_{index}"
-        await wait_for_value(self.hdf.num_captured, matcher, timeout=None)
+        await wait_for_value(self.hdf.num_captured, matcher, timeout=timeout)
 
     async def get_indices_written(self) -> int:
         num_captured = await self.hdf.num_captured.get_value()

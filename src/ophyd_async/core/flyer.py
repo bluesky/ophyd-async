@@ -30,7 +30,7 @@ from .async_status import AsyncStatus
 from .detector import DetectorControl, DetectorTrigger, DetectorWriter
 from .device import Device
 from .signal import SignalR
-from .utils import gather_list, merge_gathered_dicts
+from .utils import DEFAULT_TIMEOUT, gather_list, merge_gathered_dicts
 
 T = TypeVar("T")
 
@@ -63,7 +63,9 @@ class DetectorGroupLogic(ABC):
         """Collect asset docs from all writers"""
 
     @abstractmethod
-    async def wait_for_index(self, index: int):
+    async def wait_for_index(
+        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
+    ):
         """Wait until a specific index is ready to be collected"""
 
     @abstractmethod
@@ -100,8 +102,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             or trigger_info != self._trigger_info
         ):
             # We need to re-arm
-            await gather_list(controller.disarm() for controller in self._controllers)
-            await gather_list(self._arm_statuses)
+            await self.disarm()
             for controller in self._controllers:
                 required = controller.get_deadtime(trigger_info.livetime)
                 assert required <= trigger_info.deadtime, (
@@ -126,11 +127,16 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             async for doc in writer.collect_stream_docs(indices_written):
                 yield doc
 
-    async def wait_for_index(self, index: int):
-        await gather_list(writer.wait_for_index(index) for writer in self._writers)
+    async def wait_for_index(
+        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
+    ):
+        await gather_list(
+            writer.wait_for_index(index, timeout=timeout) for writer in self._writers
+        )
 
     async def disarm(self):
         await gather_list(controller.disarm() for controller in self._controllers)
+        await gather_list(self._arm_statuses)
 
     async def close(self):
         await gather_list(writer.close() for writer in self._writers)
@@ -179,6 +185,7 @@ class HardwareTriggeredFlyable(
         detector_group_logic: DetectorGroupLogic,
         trigger_logic: TriggerLogic[T],
         configuration_signals: Sequence[SignalR],
+        trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
         name: str = "",
     ):
         self._detector_group_logic = detector_group_logic
@@ -191,6 +198,7 @@ class HardwareTriggeredFlyable(
         self._offset = 0  # Add this to index to get frame number
         self._current_frame = 0  # The current frame we are on
         self._last_frame = 0  # The last frame that will be emitted
+        self._trigger_to_frame_timeout = trigger_to_frame_timeout
         super().__init__(name=name)
 
     @AsyncStatus.wrap
@@ -242,7 +250,9 @@ class HardwareTriggeredFlyable(
     async def _fly(self) -> None:
         await self._trigger_logic.start()
         # Wait for all detectors to have written up to a particular frame
-        await self._detector_group_logic.wait_for_index(self._last_frame - self._offset)
+        await self._detector_group_logic.wait_for_index(
+            self._last_frame - self._offset, timeout=self._trigger_to_frame_timeout
+        )
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         current_frame = self._current_frame
