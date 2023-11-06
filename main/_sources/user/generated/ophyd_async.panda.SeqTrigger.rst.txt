@@ -16,59 +16,6 @@ ophyd\_async.panda.SeqTrigger
 
    
    
-   .. rubric:: Methods
-
-   .. autosummary::
-      :nosignatures:
-   
-      ~SeqTrigger.capitalize
-      ~SeqTrigger.casefold
-      ~SeqTrigger.center
-      ~SeqTrigger.count
-      ~SeqTrigger.encode
-      ~SeqTrigger.endswith
-      ~SeqTrigger.expandtabs
-      ~SeqTrigger.find
-      ~SeqTrigger.format
-      ~SeqTrigger.format_map
-      ~SeqTrigger.index
-      ~SeqTrigger.isalnum
-      ~SeqTrigger.isalpha
-      ~SeqTrigger.isascii
-      ~SeqTrigger.isdecimal
-      ~SeqTrigger.isdigit
-      ~SeqTrigger.isidentifier
-      ~SeqTrigger.islower
-      ~SeqTrigger.isnumeric
-      ~SeqTrigger.isprintable
-      ~SeqTrigger.isspace
-      ~SeqTrigger.istitle
-      ~SeqTrigger.isupper
-      ~SeqTrigger.join
-      ~SeqTrigger.ljust
-      ~SeqTrigger.lower
-      ~SeqTrigger.lstrip
-      ~SeqTrigger.maketrans
-      ~SeqTrigger.partition
-      ~SeqTrigger.removeprefix
-      ~SeqTrigger.removesuffix
-      ~SeqTrigger.replace
-      ~SeqTrigger.rfind
-      ~SeqTrigger.rindex
-      ~SeqTrigger.rjust
-      ~SeqTrigger.rpartition
-      ~SeqTrigger.rsplit
-      ~SeqTrigger.rstrip
-      ~SeqTrigger.split
-      ~SeqTrigger.splitlines
-      ~SeqTrigger.startswith
-      ~SeqTrigger.strip
-      ~SeqTrigger.swapcase
-      ~SeqTrigger.title
-      ~SeqTrigger.translate
-      ~SeqTrigger.upper
-      ~SeqTrigger.zfill
-   
    
 
    

@@ -23,8 +23,8 @@ ophyd\_async.core.SignalX
    
       ~SignalX.children
       ~SignalX.connect
-      ~SignalX.execute
       ~SignalX.set_name
+      ~SignalX.trigger
    
    
 

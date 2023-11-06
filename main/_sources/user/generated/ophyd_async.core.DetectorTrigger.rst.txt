@@ -16,59 +16,6 @@ ophyd\_async.core.DetectorTrigger
 
    
    
-   .. rubric:: Methods
-
-   .. autosummary::
-      :nosignatures:
-   
-      ~DetectorTrigger.capitalize
-      ~DetectorTrigger.casefold
-      ~DetectorTrigger.center
-      ~DetectorTrigger.count
-      ~DetectorTrigger.encode
-      ~DetectorTrigger.endswith
-      ~DetectorTrigger.expandtabs
-      ~DetectorTrigger.find
-      ~DetectorTrigger.format
-      ~DetectorTrigger.format_map
-      ~DetectorTrigger.index
-      ~DetectorTrigger.isalnum
-      ~DetectorTrigger.isalpha
-      ~DetectorTrigger.isascii
-      ~DetectorTrigger.isdecimal
-      ~DetectorTrigger.isdigit
-      ~DetectorTrigger.isidentifier
-      ~DetectorTrigger.islower
-      ~DetectorTrigger.isnumeric
-      ~DetectorTrigger.isprintable
-      ~DetectorTrigger.isspace
-      ~DetectorTrigger.istitle
-      ~DetectorTrigger.isupper
-      ~DetectorTrigger.join
-      ~DetectorTrigger.ljust
-      ~DetectorTrigger.lower
-      ~DetectorTrigger.lstrip
-      ~DetectorTrigger.maketrans
-      ~DetectorTrigger.partition
-      ~DetectorTrigger.removeprefix
-      ~DetectorTrigger.removesuffix
-      ~DetectorTrigger.replace
-      ~DetectorTrigger.rfind
-      ~DetectorTrigger.rindex
-      ~DetectorTrigger.rjust
-      ~DetectorTrigger.rpartition
-      ~DetectorTrigger.rsplit
-      ~DetectorTrigger.rstrip
-      ~DetectorTrigger.split
-      ~DetectorTrigger.splitlines
-      ~DetectorTrigger.startswith
-      ~DetectorTrigger.strip
-      ~DetectorTrigger.swapcase
-      ~DetectorTrigger.title
-      ~DetectorTrigger.translate
-      ~DetectorTrigger.upper
-      ~DetectorTrigger.zfill
-   
    
 
    
