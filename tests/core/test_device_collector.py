@@ -1,14 +1,16 @@
 import pytest
 
-from ophyd_async.core import Device, DeviceCollector
+from ophyd_async.core import Device, DeviceCollector, NotConnected
 
 
 class Dummy(Device):
-    def connect(self, sim: bool = False):
+    async def connect(self, sim: bool = False):
         raise AttributeError()
 
 
-def test_device_collector_propagates_error(RE):
-    with pytest.raises(AttributeError):
+def test_device_collector_does_not_propagate_error(RE):
+    with pytest.raises(NotConnected) as exc:
         with DeviceCollector():
             _ = Dummy("somename")
+
+    assert not exc.value.__cause__
