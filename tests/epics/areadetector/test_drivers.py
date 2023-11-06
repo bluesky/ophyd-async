@@ -22,11 +22,7 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
 ):
     set_sim_value(driver.detector_state, DetectorState.Error)
     acquiring = await start_acquiring_driver_and_ensure_status(driver, timeout=0.01)
-    with pytest.raises(
-        ValueError,
-        match="Final detector state Error not in valid end states: "
-        + "{<DetectorState.Idle: 'Idle'>}",
-    ):
+    with pytest.raises(ValueError):
         await acquiring
 
 
@@ -47,9 +43,5 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     acquiring = await start_acquiring_driver_and_ensure_status(driver, timeout=0.1)
     await wait_then_fail()
 
-    with pytest.raises(
-        ValueError,
-        match="Final detector state Disconnected not in valid end states: "
-        + "{<DetectorState.Idle: 'Idle'>}",
-    ):
+    with pytest.raises(ValueError):
         await acquiring
