@@ -1,18 +1,19 @@
 from enum import Enum
 from os import path
 from typing import Any, Dict, List
+from unittest.mock import patch
 
 import numpy as np
 import numpy.typing as npt
 import pytest
 import yaml
 from bluesky.run_engine import RunEngine
-
 from ophyd_async.core import (
     Device,
     SignalR,
     SignalRW,
     get_signal_values,
+    load_device,
     load_from_yaml,
     save_to_yaml,
     set_signal_values,
@@ -178,3 +179,16 @@ async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path)
     array_value = await device.child2.sig1.get_value()
     assert string_value == "initial_string"
     assert np.array_equal(array_value, np.array([1, 1, 1, 1, 1]))
+
+
+@patch("ophyd_async.core.device_save_loader.load_from_yaml")
+@patch("ophyd_async.core.device_save_loader.walk_rw_signals")
+@patch("ophyd_async.core.device_save_loader.set_signal_values")
+async def test_load_device(
+    mock_set_signal_values, mock_walk_rw_signals, mock_load_from_yaml, device
+):
+    RE = RunEngine()
+    RE(load_device(device, "path"))
+    mock_load_from_yaml.assert_called_once()
+    mock_walk_rw_signals.assert_called_once()
+    mock_set_signal_values.assert_called_once()

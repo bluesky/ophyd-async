@@ -1,5 +1,5 @@
 from .panda import PandA, PcapBlock, PulseBlock, PVIEntry, SeqBlock, SeqTable, pvi
-from .panda_utils import load_panda, save_panda
+from .panda_utils import save_panda
 from .table import (
     SeqTable,
     SeqTableRow,
