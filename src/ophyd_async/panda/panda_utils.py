@@ -15,7 +15,7 @@ def _get_panda_phases(panda: PandA, ignore: Optional[List[str]] = None):
 
 def save_panda(panda: PandA, path: str, ignore: Optional[List[str]] = None):
     """
-    Saves all the panda PV's to a yaml file, ignoring any PV's in the `ignore`
+    Saves all the panda PV's to a yaml file, ignoring any PV's in the ignore
     parameter
     """
     phases = yield from _get_panda_phases(panda, ignore=ignore)
