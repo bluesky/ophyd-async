@@ -8,6 +8,7 @@ import numpy.typing as npt
 import pytest
 import yaml
 from bluesky.run_engine import RunEngine
+
 from ophyd_async.core import (
     Device,
     SignalR,
@@ -149,6 +150,7 @@ async def test_load_from_yaml(RE: RunEngine, device, tmp_path):
     array = np.array([1, 1, 1, 1, 1])
     await device.child1.sig1.set("initial_string")
     await device.child2.sig1.set(array)
+    await device.parent_sig1.set(None)
     RE(save_device(device, file_path))
 
     values = load_from_yaml(file_path)

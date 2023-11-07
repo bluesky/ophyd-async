@@ -1,4 +1,3 @@
-from typing import TypeVar
 from unittest.mock import patch
 
 import pytest
@@ -10,8 +9,6 @@ from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.panda import PandA, save_panda
 from ophyd_async.panda.panda_utils import _get_panda_phases
 
-T = TypeVar("T")
-
 
 @pytest.fixture
 async def sim_panda():
@@ -22,7 +19,7 @@ async def sim_panda():
     yield sim_panda
 
 
-async def test_get_panda_phases(sim_panda):
+async def test_get_panda_phases(sim_panda, RE: RunEngine):
     def get_phases(panda):
         phases = yield from _get_panda_phases(panda)
         assert len(phases) == 2
@@ -32,15 +29,15 @@ async def test_get_panda_phases(sim_panda):
             assert not key[-5:] == "units"
         return
 
-    RE = RunEngine()
     set_sim_value(sim_panda.phase_1_signal_units, 1)
     RE(get_phases(sim_panda))
 
 
 @patch("ophyd_async.panda.panda_utils._get_panda_phases")
 @patch("ophyd_async.panda.panda_utils.save_to_yaml")
-async def test_save_panda(mock_save_to_yaml, mock_get_panda_phases, sim_panda):
-    RE = RunEngine()
+async def test_save_panda(
+    mock_save_to_yaml, mock_get_panda_phases, sim_panda, RE: RunEngine
+):
     RE(save_panda(sim_panda, "path"))
     mock_get_panda_phases.assert_called_once()
     mock_save_to_yaml.assert_called_once()
