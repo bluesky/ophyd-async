@@ -177,8 +177,22 @@ def set_signal_values(
     for phase_number, phase in enumerate(values):
         # Key is signal name
         for key, value in phase.items():
+            # Skip ignored values
+            if value is None:
+                continue
+
             if key in signals:
                 yield from abs_set(
                     signals[key], value, group=f"load-phase{phase_number}"
                 )
+
         yield from wait(f"load-phase{phase_number}")
+
+
+def load_device(device: Device, path: str):
+    """
+    Sets all PV's to a device using a previously saved configuration
+    """
+    values = load_from_yaml(path)
+    signals_to_set = walk_rw_signals(device)
+    yield from set_signal_values(signals_to_set, values)
