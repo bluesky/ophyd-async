@@ -42,6 +42,7 @@ class HDFWriter(DetectorWriter):
         self._file = None
         info = self._directory_provider()
         await asyncio.gather(
+            self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
             self.hdf.file_path.set(info.directory_path),
