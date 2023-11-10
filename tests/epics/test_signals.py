@@ -1,4 +1,5 @@
 import asyncio
+import os
 import random
 import re
 import string
@@ -17,12 +18,25 @@ import pytest
 from aioca import purge_channel_caches
 from bluesky.protocols import Reading
 
-from ophyd_async.core import NotConnected, SignalBackend, T, get_dtype
+from ophyd_async.core import (
+    NotConnected,
+    SignalBackend,
+    T,
+    get_dtype,
+    load_from_yaml,
+    save_to_yaml,
+)
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
 from ophyd_async.epics.signal.signal import _make_backend
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+
+
+@pytest.fixture
+def _ensure_removed():
+    yield
+    os.remove("test.yaml")
 
 
 @dataclass
@@ -183,6 +197,7 @@ ca_dtype_mapping = {
     ],
 )
 async def test_backend_get_put_monitor(
+    _ensure_removed: None,
     ioc: IOC,
     datatype: Type[T],
     suffix: str,
@@ -209,6 +224,10 @@ async def test_backend_get_put_monitor(
     await assert_monitor_then_put(
         ioc, suffix, descriptor(put_value), put_value, initial_value, datatype=None
     )
+
+    save_to_yaml([{"test": put_value}], "test.yaml")
+    loaded = load_from_yaml("test.yaml")
+    assert np.all(loaded[0]["test"] == put_value)
 
 
 async def test_bool_conversion_of_enum(ioc: IOC) -> None:

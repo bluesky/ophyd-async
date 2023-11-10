@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Any, Dict, Generator, List, Optional, Sequence
+from functools import partial
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -7,15 +8,31 @@ import yaml
 from bluesky.plan_stubs import abs_set, wait
 from bluesky.protocols import Location
 from bluesky.utils import Msg
+from epicscorelibs.ca.dbr import ca_array, ca_float, ca_int, ca_str
 
 from .device import Device
 from .signal import SignalRW
+
+CaType = Union[ca_float, ca_int, ca_str, ca_array]
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.Node:
     return dumper.represent_sequence(
         "tag:yaml.org,2002:seq", array.tolist(), flow_style=True
     )
+
+
+def ca_dbr_representer(dumper: yaml.Dumper, value: CaType) -> yaml.Node:
+    # if it's an array, just call ndarray_representer...
+    represent_array = partial(ndarray_representer, dumper)
+
+    representers: Dict[CaType, Callable[[CaType], yaml.Node]] = {
+        ca_float: dumper.represent_float,
+        ca_int: dumper.represent_int,
+        ca_str: dumper.represent_str,
+        ca_array: represent_array,
+    }
+    return representers[type(value)](value)
 
 
 class OphydDumper(yaml.Dumper):
@@ -59,6 +76,10 @@ def get_signal_values(
         key: signal for key, signal in signals.items() if key not in ignore
     }
     selected_values = yield Msg("locate", *selected_signals.values())
+
+    if isinstance(selected_values, dict):
+        selected_values = [selected_values]
+
     assert selected_values is not None, "No signalRW's were able to be located"
     named_values = {
         key: value["setpoint"] for key, value in zip(selected_signals, selected_values)
@@ -128,7 +149,14 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
     :func:`ophyd_async.core.get_signal_values`
     :func:`ophyd_async.core.load_from_yaml`
     """
+
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
+
+    yaml.add_representer(ca_float, ca_dbr_representer, Dumper=yaml.Dumper)
+    yaml.add_representer(ca_int, ca_dbr_representer, Dumper=yaml.Dumper)
+    yaml.add_representer(ca_str, ca_dbr_representer, Dumper=yaml.Dumper)
+    yaml.add_representer(ca_array, ca_dbr_representer, Dumper=yaml.Dumper)
+
     with open(save_path, "w") as file:
         yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)
 
