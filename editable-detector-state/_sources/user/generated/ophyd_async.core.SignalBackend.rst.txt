@@ -1,0 +1,43 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.SignalBackend
+===============================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: SignalBackend
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SignalBackend.connect
+      ~SignalBackend.get_descriptor
+      ~SignalBackend.get_reading
+      ~SignalBackend.get_setpoint
+      ~SignalBackend.get_value
+      ~SignalBackend.put
+      ~SignalBackend.set_callback
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SignalBackend.datatype
+      ~SignalBackend.source
+   
+   
