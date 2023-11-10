@@ -35,7 +35,8 @@ class DetectorState(str, Enum):
 
 #: Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
-DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset([DetectorState.Idle])
+DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset([DetectorState.Idle, DetectorState.Aborted])
+
 
 
 class ADBase(NDArrayBase):
