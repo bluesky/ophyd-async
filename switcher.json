@@ -36,6 +36,10 @@
     "url": "https://bluesky.github.io/ophyd-async/get-count-to-work-with-async-aravis-detector/"
   },
   {
+    "version": "pilatus-num-images",
+    "url": "https://bluesky.github.io/ophyd-async/pilatus-num-images/"
+  },
+  {
     "version": "readme-changes",
     "url": "https://bluesky.github.io/ophyd-async/readme-changes/"
   },
