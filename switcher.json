@@ -44,6 +44,10 @@
     "url": "https://bluesky.github.io/ophyd-async/hdf-num-extra-dims/"
   },
   {
+    "version": "ndplugin",
+    "url": "https://bluesky.github.io/ophyd-async/ndplugin/"
+  },
+  {
     "version": "pilatus-num-images",
     "url": "https://bluesky.github.io/ophyd-async/pilatus-num-images/"
   },
