@@ -142,7 +142,7 @@ async def test_yaml_formatting(RE: RunEngine, device, tmp_path):
         assert file.read() == expected
 
 
-async def test_load_from_yaml(RE:RunEngine, device, tmp_path):
+async def test_load_from_yaml(RE: RunEngine, device, tmp_path):
     file_path = path.join(tmp_path, "test_file.yaml")
 
     array = np.array([1, 1, 1, 1, 1])
