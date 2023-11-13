@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 
 from ophyd_async.core import DeviceCollector
-from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi
+from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger
+from ophyd_async.panda.panda import _remove_inconsistent_blocks
 
 
 class DummyDict:
@@ -47,7 +48,7 @@ def test_panda_names_correct(sim_panda: PandA):
     assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
 
 
-async def test_pvi_get_for_inconsistent_blocks():
+async def test_inconsistent_blocks():
     dummy_pvi = {
         "pcap": {},
         "pcap1": {},
@@ -57,9 +58,9 @@ async def test_pvi_get_for_inconsistent_blocks():
         "sfp3_sync_out": {},
     }
 
-    resulting_pvi = await pvi("", MockCtxt(dummy_pvi))
-    assert "sfp3_sync_out1" not in resulting_pvi
-    assert "pcap1" not in resulting_pvi
+    _remove_inconsistent_blocks(dummy_pvi)
+    assert "sfp3_sync_out1" not in dummy_pvi
+    assert "pcap1" not in dummy_pvi
 
 
 async def test_panda_children_connected(sim_panda: PandA):

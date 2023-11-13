@@ -145,11 +145,17 @@ class DisconnectedPvaConverter(PvaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
 
+class PVIConverter(PvaConverter):
+    def value():
+        ...
+
+    def descriptor() -> Descriptor:
+        ...
 
 def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConverter:
     pv = list(values)[0]
     typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
-    typ = get_unique({k: type(v["value"]) for k, v in values.items()}, "value types")
+    typ = get_unique({k: type(v.get("value")) for k, v in values.items()}, "value types")
     if "NTScalarArray" in typeid and typ == list:
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:

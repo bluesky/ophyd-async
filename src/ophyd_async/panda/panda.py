@@ -1,8 +1,9 @@
 from __future__ import annotations
+import asyncio
 
-import atexit
 import re
 from typing import (
+    Any,
     Callable,
     Dict,
     FrozenSet,
@@ -16,8 +17,6 @@ from typing import (
     get_type_hints,
 )
 
-from p4p.client.thread import Context
-
 from ophyd_async.core import (
     Device,
     DeviceVector,
@@ -27,14 +26,16 @@ from ophyd_async.core import (
     SignalRW,
     SignalX,
     SimSignalBackend,
+    DeviceCollector
 )
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.signal import (
     epics_signal_r,
     epics_signal_rw,
     epics_signal_w,
     epics_signal_x,
-    pvi_get,
 )
+from ophyd_async.epics._backend._p4p import PvaSignalBackend
 from ophyd_async.panda.table import SeqTable
 
 
@@ -93,20 +94,15 @@ def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
             del pvi_info[k]
 
 
-async def pvi(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
-    result = await pvi_get(pv, ctxt, timeout=timeout)
-    _remove_inconsistent_blocks(result)
-    return result
-
 
 class PandA(Device):
-    _ctxt: Optional[Context] = None
-
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
 
-    def __init__(self, pv: str) -> None:
+    def __init__(self, pv: str, timeout: float = DEFAULT_TIMEOUT) -> None:
+        self._backend = PvaSignalBackend(None, "", "")
+        self._collector = DeviceCollector(timeout=timeout) # sim will never be True here.
         self._init_prefix = pv
         self.pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
             frozenset({"r", "w"}): lambda dtype, rpv, wpv: epics_signal_rw(
@@ -117,20 +113,6 @@ class PandA(Device):
             frozenset({"w"}): lambda dtype, rpv, wpv: epics_signal_w(dtype, wpv),
             frozenset({"x"}): lambda dtype, rpv, wpv: epics_signal_x(wpv),
         }
-
-    @property
-    def ctxt(self) -> Context:
-        if PandA._ctxt is None:
-            PandA._ctxt = Context("pva", nt=False)
-
-            @atexit.register
-            def _del_ctxt():
-                # If we don't do this we get messages like this on close:
-                #   Error in sys.excepthook:
-                #   Original exception was:
-                PandA._ctxt = None
-
-        return PandA._ctxt
 
     def verify_block(self, name: str, num: Optional[int]):
         """Given a block name and number, return information about a block."""
@@ -158,7 +140,7 @@ class PandA(Device):
         block = self.verify_block(name, num)
 
         field_annos = get_type_hints(block, globalns=globals())
-        block_pvi = await pvi(block_pv, self.ctxt) if not sim else None
+        block_pvi = await self.pvi_get(block_pv) if not sim else None
 
         # finds which fields this class actually has, e.g. delay, width...
         for sig_name, sig_type in field_annos.items():
@@ -203,7 +185,7 @@ class PandA(Device):
         included dynamically anyway.
         """
         block = Device()
-        block_pvi: Dict[str, PVIEntry] = await pvi(block_pv, self.ctxt)
+        block_pvi = await self.pvi_get(block_pv)
 
         for signal_name, signal_pvi in block_pvi.items():
             signal = self._make_signal(signal_pvi)
@@ -241,6 +223,24 @@ class PandA(Device):
         else:
             setattr(self, name, block)
 
+    async def pvi_get(self, pv: str) -> Dict[str, PVIEntry]:
+        """Makes a PvaSignalBackend purely to connect to PVI information.
+        
+        This backend is simply thrown away at the end of this method. This is useful
+        because the backend handles a CancelledError exception that gets thrown on
+        timeout, and therefore can be used for error reporting."""
+        tasks = {asyncio.Task(self._backend._store_initial_value(pv)): pv}
+        await self._collector._wait_for_tasks(tasks)
+        
+        pv_info: Dict[str, Dict[str, str]] = self._backend.initial_values.get(pv).get("pvi").todict()
+
+        result = {}
+
+        for attr_name, attr_info in pv_info.items():
+            result[attr_name] = PVIEntry(**attr_info)  # type: ignore
+
+        return _remove_inconsistent_blocks(result)
+
     async def connect(self, sim=False) -> None:
         """Initialises all blocks and connects them.
 
@@ -250,7 +250,8 @@ class PandA(Device):
         If there's no pvi information, that's because we're in sim mode. In that case,
         makes all required blocks.
         """
-        pvi_info = await pvi(self._init_prefix + ":PVI", self.ctxt) if not sim else None
+        pvi_info = await self.pvi_get(self._init_prefix + ":PVI") if not sim else None
+
         hints = {
             attr_name: attr_type
             for attr_name, attr_type in get_type_hints(self, globalns=globals()).items()
