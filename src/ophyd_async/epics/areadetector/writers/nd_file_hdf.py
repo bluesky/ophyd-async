@@ -1,12 +1,27 @@
+from enum import Enum
+
 from ophyd_async.core import Device
 
 from ...signal.signal import epics_signal_rw
 from ..utils import FileWriteMode, ad_r, ad_rw
 
 
+class Compression(str, Enum):
+    none = "None"
+    nbit = "N-bit"
+    szip = "szip"
+    zlib = "zlib"
+    blosc = "Blosc"
+    bslz4 = "BSLZ4"
+    lz4 = "LZ4"
+    jpeg = "JPEG"
+
+
 class NDFileHDF(Device):
     def __init__(self, prefix: str) -> None:
         # Define some signals
+        self.position_mode = ad_rw(bool, prefix + "PositionMode")
+        self.compression = ad_rw(Compression, prefix + "Compression")
         self.num_extra_dims = ad_rw(int, prefix + "NumExtraDims")
         self.file_path = ad_rw(str, prefix + "FilePath")
         self.file_name = ad_rw(str, prefix + "FileName")
