@@ -44,10 +44,6 @@
     "url": "https://bluesky.github.io/ophyd-async/readme-changes/"
   },
   {
-    "version": "remove-stalled-timeout",
-    "url": "https://bluesky.github.io/ophyd-async/remove-stalled-timeout/"
-  },
-  {
     "version": "revert-33-rename-objects",
     "url": "https://bluesky.github.io/ophyd-async/revert-33-rename-objects/"
   },
