@@ -64,7 +64,9 @@ class HDFWriter(DetectorWriter):
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
         # Add the main data
-        self._datasets = [_HDFDataset(name, "/entry/data", detector_shape, multiplier)]
+        self._datasets = [
+            _HDFDataset(name, "/entry/data/data", detector_shape, multiplier)
+        ]
         # And all the scalar datasets
         for ds_name, ds_path in self._scalar_datasets_paths.items():
             self._datasets.append(
