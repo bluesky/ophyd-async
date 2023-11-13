@@ -7,6 +7,7 @@ from ..utils import FileWriteMode, ad_r, ad_rw
 class NDFileHDF(Device):
     def __init__(self, prefix: str) -> None:
         # Define some signals
+        self.num_extra_dims = ad_rw(int, prefix + "NumExtraDims")
         self.file_path = ad_rw(str, prefix + "FilePath")
         self.file_name = ad_rw(str, prefix + "FileName")
         self.file_path_exists = ad_r(bool, prefix + "FilePathExists")
