@@ -256,10 +256,18 @@ class HardwareTriggeredFlyable(
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         current_frame = self._current_frame
+        stream_datums: List[Asset] = []
         async for asset in self._detector_group_logic.collect_asset_docs():
             name, doc = asset
             if name == "stream_datum":
                 current_frame = doc["indices"]["stop"] + self._offset
+                # Defer stream_datums until all stream_resources have been produced
+                # In a single collect, all the stream_resources are produced first
+                # followed by their stream_datums
+                stream_datums.append(asset)
+            else:
+                yield asset
+        for asset in stream_datums:
             yield asset
         if current_frame != self._current_frame:
             self._current_frame = current_frame
