@@ -179,8 +179,8 @@ async def test_hardware_triggered_flyable(
         "start",
         "descriptor",
         "stream_resource",
-        "stream_datum",
         "stream_resource",
+        "stream_datum",
         "stream_datum",
         "stop",
     ]
