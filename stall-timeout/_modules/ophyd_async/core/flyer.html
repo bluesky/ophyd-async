@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.flyer &#8212; ophyd-async 0.1.1.dev35+g830205fa documentation</title>
+    <title>ophyd_async.core.flyer &#8212; ophyd-async 0.1.1.dev35+gb643d376 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
   <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
-    <script src="../../../_static/documentation_options.js?v=fb63c57f"></script>
+    <script src="../../../_static/documentation_options.js?v=054d5442"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.1.1.dev35+g830205fa documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.1.1.dev35+g830205fa documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.1.1.dev35+gb643d376 documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.1.1.dev35+gb643d376 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -495,8 +495,12 @@ document.write(`
 <div class="viewcode-block" id="DetectorGroupLogic.collect_asset_docs">
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.core.DetectorGroupLogic.html#ophyd_async.core.DetectorGroupLogic.collect_asset_docs">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">collect_asset_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collect asset docs from all writers&quot;&quot;&quot;</span></div>
+    <span class="k">def</span> <span class="nf">collect_asset_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_stream_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collect asset docs from all writers.</span>
+<span class="sd">        </span>
+<span class="sd">        Must be called with a max_stream_time to indicate the maximum time writers</span>
+<span class="sd">        can take to emit their stream data documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DetectorGroupLogic.wait_for_index">
@@ -569,12 +573,12 @@ document.write(`
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">trigger_info</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">collect_asset_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">collect_asset_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_stream_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
         <span class="n">indices_written</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
             <span class="k">await</span> <span class="n">gather_list</span><span class="p">(</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span> <span class="k">for</span> <span class="n">writer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writers</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">writer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writers</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="n">indices_written</span><span class="p">):</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="n">indices_written</span><span class="p">,</span> <span class="n">max_stream_time</span><span class="o">=</span><span class="n">max_stream_time</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="n">doc</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_index</span><span class="p">(</span>
@@ -730,7 +734,8 @@ document.write(`
     <span class="k">async</span> <span class="k">def</span> <span class="nf">collect_asset_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
         <span class="n">current_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_frame</span>
         <span class="n">stream_datums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Asset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detector_group_logic</span><span class="o">.</span><span class="n">collect_asset_docs</span><span class="p">():</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">,</span> <span class="s2">&quot;need to set the flyer first&quot;</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detector_group_logic</span><span class="o">.</span><span class="n">collect_asset_docs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">max_trigger_period</span><span class="p">):</span>
             <span class="n">name</span><span class="p">,</span> <span class="n">doc</span> <span class="o">=</span> <span class="n">asset</span>
             <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;stream_datum&quot;</span><span class="p">:</span>
                 <span class="n">current_frame</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;indices&quot;</span><span class="p">][</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span>

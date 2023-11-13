@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.detector &#8212; ophyd-async 0.1.1.dev35+g830205fa documentation</title>
+    <title>ophyd_async.core.detector &#8212; ophyd-async 0.1.1.dev35+gb643d376 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
   <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
-    <script src="../../../_static/documentation_options.js?v=fb63c57f"></script>
+    <script src="../../../_static/documentation_options.js?v=054d5442"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.1.1.dev35+g830205fa documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.1.1.dev35+g830205fa documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.1.1.dev35+gb643d376 documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.1.1.dev35+gb643d376 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -530,12 +530,13 @@ document.write(`
     <span class="k">def</span> <span class="nf">collect_stream_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_stream_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Asset</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create Stream docs up to given number written and an absolute maximum time.</span>
 <span class="sd">        </span>
-<span class="sd">        If a Stream document is being generated, for which time.monotonic() is beyond </span>
-<span class="sd">        the maximum, should raise a Timeout error as this means in a flyscan triggers </span>
-<span class="sd">        could be being sent faster than they can be written.</span>
-<span class="sd">        </span>
-<span class="sd">        Default value of None indicates no Timeout should be raised, i.e. as for a</span>
-<span class="sd">        step-scan.&quot;&quot;&quot;</span></div>
+<span class="sd">        max_stream_time can be set to indicate the maximum time taken for all stream</span>
+<span class="sd">        data to be produced for the set of indices_written. By default, it is set to</span>
+<span class="sd">        None to indicate there is no time constraint. In the case of fly scanning,</span>
+<span class="sd">        all the stream data must be emitted before the next trigger gets sent so this</span>
+<span class="sd">        must be set to a reasonable value to protect against the flyer sending triggers</span>
+<span class="sd">        faster than they can be processed.        </span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DetectorWriter.close">
