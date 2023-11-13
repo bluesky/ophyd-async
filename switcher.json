@@ -50,5 +50,9 @@
   {
     "version": "seq_tables",
     "url": "https://bluesky.github.io/ophyd-async/seq_tables/"
+  },
+  {
+    "version": "stall-timeout",
+    "url": "https://bluesky.github.io/ophyd-async/stall-timeout/"
   }
 ]
