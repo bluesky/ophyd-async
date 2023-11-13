@@ -76,9 +76,7 @@ async def test_enum_yaml_formatting(tmp_path):
     assert saved_enums == enums
 
 
-async def test_save_device(device, tmp_path):
-    RE = RunEngine()
-
+async def test_save_device(RE: RunEngine, device, tmp_path):
     # Populate fake device with PV's...
     await device.child1.sig1.set("test_string")
     # Test tables PVs
@@ -127,9 +125,8 @@ async def test_save_device(device, tmp_path):
         assert yaml_content["parent_sig1"] is None
 
 
-async def test_yaml_formatting(device, tmp_path):
+async def test_yaml_formatting(RE: RunEngine, device, tmp_path):
     file_path = path.join(tmp_path, "test_file.yaml")
-    RE = RunEngine()
     await device.child1.sig1.set("test_string")
     table_pv = {"VAL1": np.array([1, 2, 3, 4, 5]), "VAL2": np.array([6, 7, 8, 9, 10])}
     await device.child2.sig1.set(table_pv)
@@ -145,9 +142,9 @@ async def test_yaml_formatting(device, tmp_path):
         assert file.read() == expected
 
 
-async def test_load_from_yaml(device, tmp_path):
+async def test_load_from_yaml(RE: RunEngine, device, tmp_path):
     file_path = path.join(tmp_path, "test_file.yaml")
-    RE = RunEngine()
+
     array = np.array([1, 1, 1, 1, 1])
     await device.child1.sig1.set("initial_string")
     await device.child2.sig1.set(array)
@@ -158,9 +155,8 @@ async def test_load_from_yaml(device, tmp_path):
     assert np.array_equal(values[1]["child2.sig1"], array)
 
 
-async def test_set_signal_values_restores_value(device, tmp_path):
+async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path):
     file_path = path.join(tmp_path, "test_file.yaml")
-    RE = RunEngine()
 
     await device.child1.sig1.set("initial_string")
     await device.child2.sig1.set(np.array([1, 1, 1, 1, 1]))
