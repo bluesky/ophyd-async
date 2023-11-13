@@ -36,10 +36,6 @@
     "url": "https://bluesky.github.io/ophyd-async/get-count-to-work-with-async-aravis-detector/"
   },
   {
-    "version": "hdf-num-extra-dims",
-    "url": "https://bluesky.github.io/ophyd-async/hdf-num-extra-dims/"
-  },
-  {
     "version": "pilatus-num-images",
     "url": "https://bluesky.github.io/ophyd-async/pilatus-num-images/"
   },
