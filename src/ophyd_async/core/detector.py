@@ -78,8 +78,16 @@ class DetectorWriter(ABC):
         """Get the number of indices written"""
 
     @abstractmethod
-    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
-        """Create Stream docs up to given number written"""
+    def collect_stream_docs(self, indices_written: int, max_stream_time: Optional[float] = None) -> AsyncIterator[Asset]:
+        """Create Stream docs up to given number written and an absolute maximum time.
+        
+        max_stream_time can be set to indicate the maximum time taken for all stream
+        data to be produced for the set of indices_written. By default, it is set to
+        None to indicate there is no time constraint. In the case of fly scanning,
+        all the stream data must be emitted before the next trigger gets sent so this
+        must be set to a reasonable value to protect against the flyer sending triggers
+        faster than they can be processed.        
+        """
 
     @abstractmethod
     async def close(self) -> None:

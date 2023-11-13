@@ -13,6 +13,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
     wait_for_value,
 )
+import time
 
 from ._hdfdataset import _HDFDataset
 from ._hdffile import _HDFFile
@@ -98,7 +99,7 @@ class HDFWriter(DetectorWriter):
         num_captured = await self.hdf.num_captured.get_value()
         return num_captured // self._multiplier
 
-    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    async def collect_stream_docs(self, indices_written: int, max_stream_time: Optional[float] = None) -> AsyncIterator[Asset]:
         # TODO: fail if we get dropped frames
         await self.hdf.flush_now.set(True)
         if indices_written:
@@ -108,8 +109,15 @@ class HDFWriter(DetectorWriter):
                 )
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc
-            for doc in self._file.stream_data(indices_written):
-                yield "stream_datum", doc
+            if indices_written > self._file._last_emitted:
+                # only produce stream data if we've actually written anything.
+                for doc in self._file.stream_data(indices_written):
+                    yield "stream_datum", doc
+            if max_stream_time and (time.monotonic() - self._file._last_flush > max_stream_time):
+                raise TimeoutError(
+                    f"Writing stalled on frame {indices_written}: "
+                    + f"Producing stream datums took longer than {max_stream_time}s"
+                )
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here

@@ -45,6 +45,8 @@ class TriggerInfo:
     deadtime: float
     #: What is the maximum high time of the triggers
     livetime: float
+    #: TODO: change this description
+    max_trigger_period: float
 
 
 class DetectorGroupLogic(ABC):
@@ -59,8 +61,12 @@ class DetectorGroupLogic(ABC):
         """Ensure the detectors are armed, return AsyncStatus that waits for disarm."""
 
     @abstractmethod
-    def collect_asset_docs(self) -> AsyncIterator[Asset]:
-        """Collect asset docs from all writers"""
+    def collect_asset_docs(self, max_stream_time: float) -> AsyncIterator[Asset]:
+        """Collect asset docs from all writers.
+        
+        Must be called with a max_stream_time to indicate the maximum time writers
+        can take to emit their stream data documents.
+        """
 
     @abstractmethod
     async def wait_for_index(
@@ -117,14 +123,12 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             )
             self._trigger_info = trigger_info
 
-    async def collect_asset_docs(self) -> AsyncIterator[Asset]:
-        # the below is confusing: gather_list does return an awaitable, but it itself
-        # is a coroutine so we must call await twice...
+    async def collect_asset_docs(self, max_stream_time: float) -> AsyncIterator[Asset]:
         indices_written = min(
             await gather_list(writer.get_indices_written() for writer in self._writers)
         )
         for writer in self._writers:
-            async for doc in writer.collect_stream_docs(indices_written):
+            async for doc in writer.collect_stream_docs(indices_written, max_stream_time=max_stream_time):
                 yield doc
 
     async def wait_for_index(
@@ -190,6 +194,7 @@ class HardwareTriggeredFlyable(
     ):
         self._detector_group_logic = detector_group_logic
         self._trigger_logic = trigger_logic
+        self._trigger_info: Optional[TriggerInfo] = None
         self._configuration_signals = tuple(configuration_signals)
         self._describe: Dict[str, Descriptor] = {}
         self._watchers: List[Callable] = []
@@ -221,6 +226,7 @@ class HardwareTriggeredFlyable(
 
     async def _prepare(self, value: T):
         trigger_info = self._trigger_logic.trigger_info(value)
+        self._trigger_info = trigger_info
         # Move to start and setup the flyscan, and arm dets in parallel
         await asyncio.gather(
             self._detector_group_logic.ensure_armed(trigger_info),
@@ -257,7 +263,8 @@ class HardwareTriggeredFlyable(
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
         current_frame = self._current_frame
         stream_datums: List[Asset] = []
-        async for asset in self._detector_group_logic.collect_asset_docs():
+        assert self._trigger_info, "need to set the flyer first"
+        async for asset in self._detector_group_logic.collect_asset_docs(self._trigger_info.max_trigger_period):
             name, doc = asset
             if name == "stream_datum":
                 current_frame = doc["indices"]["stop"] + self._offset

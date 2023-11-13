@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import List, Optional, cast
 from unittest.mock import AsyncMock, Mock, patch
 
 import bluesky.plan_stubs as bps
@@ -31,7 +31,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
     def trigger_info(self, value: int) -> TriggerInfo:
         return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2, max_trigger_period=0
         )
 
     async def prepare(self, value: int):
@@ -134,3 +134,38 @@ async def test_hdf_writer_fails_on_timeout_with_flyscan(
         RE(flying_plan())
 
     assert isinstance(exc.value.__cause__, TimeoutError)
+    
+
+@patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
+async def test_triggers_too_fast_for_writers(patched_wait_for_value, RE: RunEngine, writer: HDFWriter):
+    """Ensure timeout error is raised if flyer sends triggers too fast.
+
+    Tests what happens if the triggers sent from a flyer arrive faster than the
+    writers can emit stream data.
+    """
+    controller = DummyController()
+    set_sim_value(writer.hdf.file_path_exists, True)
+
+    trigger_logic = DummyTriggerLogic()
+    detector_group = SameTriggerDetectorGroupLogic([controller], [writer])
+    flyer = HardwareTriggeredFlyable(
+        detector_group, trigger_logic, [], name="flyer"
+    )
+    
+
+    def fly_sim(flyer: HardwareTriggeredFlyable):
+        yield from bps.stage_all(flyer)
+        try:
+            yield from bps.open_run()
+            yield from bps.kickoff(flyer)
+            yield from bps.complete(flyer, wait=True)
+            yield from bps.collect(flyer)
+            yield from bps.close_run()
+        finally:
+            yield from bps.unstage_all(flyer)
+
+    writer.get_indices_written = AsyncMock(return_value = 1)
+    writer.wait_for_index = AsyncMock(return_value = None)
+    RE(bps.mv(flyer, 1))
+    RE(fly_sim(flyer))
+    print('ah')

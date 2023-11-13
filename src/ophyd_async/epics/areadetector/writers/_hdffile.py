@@ -11,7 +11,7 @@ FRAME_TIMEOUT = 120
 class _HDFFile:
     def __init__(self, full_file_name: str, datasets: List[_HDFDataset]) -> None:
         self._last_emitted = 0
-        self._last_flush = time.monotonic()
+        self._last_flush = 0.0
         self._bundles = [
             compose_stream_resource(
                 spec="AD_HDF5_SWMR_SLICE",
@@ -33,15 +33,11 @@ class _HDFFile:
 
     def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
         # Indices are relative to resource
-        if indices_written > self._last_emitted:
-            indices = dict(
-                start=self._last_emitted,
-                stop=indices_written,
-            )
-            self._last_emitted = indices_written
-            self._last_flush = time.monotonic()
-            for bundle in self._bundles:
-                yield bundle.compose_stream_datum(indices)
-        if time.monotonic() - self._last_flush > FRAME_TIMEOUT:
-            raise TimeoutError(f"Writing stalled on frame {indices_written}")
-        return None
+        indices = dict(
+            start=self._last_emitted,
+            stop=indices_written,
+        )
+        self._last_emitted = indices_written
+        self._last_flush = time.monotonic()
+        for bundle in self._bundles:
+            yield bundle.compose_stream_datum(indices)

@@ -36,7 +36,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
     def trigger_info(self, value: int) -> TriggerInfo:
         return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2, max_trigger_period=2
         )
 
     async def prepare(self, value: int):
@@ -76,7 +76,7 @@ class DummyWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return 1
 
-    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    async def collect_stream_docs(self, indices_written: int, max_stream_time: Optional[float] = None) -> AsyncIterator[Asset]:
         if indices_written:
             if not self._file:
                 self._file = compose_stream_resource(

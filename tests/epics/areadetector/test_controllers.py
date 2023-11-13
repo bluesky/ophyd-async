@@ -75,7 +75,7 @@ async def test_arming_pilatus_for_detector_group(
         controllers=[ad, pilatus], writers=[]
     )
     trigger_info = TriggerInfo(
-        num=3, trigger=DetectorTrigger.constant_gate, deadtime=0.0015, livetime=0
+        num=3, trigger=DetectorTrigger.constant_gate, deadtime=0.0015, livetime=0, max_trigger_period=2
     )
 
     with pytest.raises(AssertionError):
