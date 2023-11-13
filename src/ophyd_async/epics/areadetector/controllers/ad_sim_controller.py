@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import Optional, Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -9,7 +9,9 @@ from ophyd_async.core import (
 )
 
 from ..drivers.ad_base import (
+    DEFAULT_GOOD_STATES,
     ADBase,
+    DetectorState,
     ImageMode,
     start_acquiring_driver_and_ensure_status,
 )
@@ -17,8 +19,11 @@ from ..utils import stop_busy_record
 
 
 class ADSimController(DetectorControl):
-    def __init__(self, driver: ADBase) -> None:
+    def __init__(
+        self, driver: ADBase, good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES)
+    ) -> None:
         self.driver = driver
+        self.good_states = good_states
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.002
@@ -38,7 +43,7 @@ class ADSimController(DetectorControl):
             self.driver.image_mode.set(ImageMode.multiple),
         )
         return await start_acquiring_driver_and_ensure_status(
-            self.driver, timeout=frame_timeout
+            self.driver, good_states=self.good_states, timeout=frame_timeout
         )
 
     async def disarm(self):
