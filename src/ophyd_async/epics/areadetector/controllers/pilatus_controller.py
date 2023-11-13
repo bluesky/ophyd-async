@@ -1,8 +1,10 @@
 import asyncio
-from typing import Optional
+from typing import Optional, Set
 
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
+    DEFAULT_GOOD_STATES,
+    DetectorState,
     start_acquiring_driver_and_ensure_status,
 )
 
@@ -17,8 +19,13 @@ TRIGGER_MODE = {
 
 
 class PilatusController(DetectorControl):
-    def __init__(self, driver: PilatusDriver) -> None:
+    def __init__(
+        self,
+        driver: PilatusDriver,
+        good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES),
+    ) -> None:
         self.driver = driver
+        self.good_states = good_states
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.001
@@ -34,7 +41,9 @@ class PilatusController(DetectorControl):
             self.driver.num_images.set(2**31 - 1 if num == 0 else num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
-        return await start_acquiring_driver_and_ensure_status(self.driver)
+        return await start_acquiring_driver_and_ensure_status(
+            self.driver, good_states=self.good_states
+        )
 
     async def disarm(self):
         await stop_busy_record(self.driver.acquire, False, timeout=1)
