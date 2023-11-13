@@ -1,17 +1,13 @@
-import time
 from typing import Iterator, List
 
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
 from ._hdfdataset import _HDFDataset
 
-FRAME_TIMEOUT = 120
-
 
 class _HDFFile:
     def __init__(self, full_file_name: str, datasets: List[_HDFDataset]) -> None:
         self._last_emitted = 0
-        self._last_flush = time.monotonic()
         self._bundles = [
             compose_stream_resource(
                 spec="AD_HDF5_SWMR_SLICE",
@@ -39,9 +35,6 @@ class _HDFFile:
                 stop=indices_written,
             )
             self._last_emitted = indices_written
-            self._last_flush = time.monotonic()
             for bundle in self._bundles:
                 yield bundle.compose_stream_datum(indices)
-        if time.monotonic() - self._last_flush > FRAME_TIMEOUT:
-            raise TimeoutError(f"Writing stalled on frame {indices_written}")
         return None
