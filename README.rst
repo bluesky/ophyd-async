@@ -35,16 +35,16 @@ NOTE: ophyd-async is included on a provisional basis until the v1.0 release.
 
 See the tutorials for usage examples.
 
-.. |build_status| image:: https://github.com/bluesky/ophyd/workflows/Unit%20Tests/badge.svg?branch=master
-    :target: https://github.com/bluesky/ophyd/actions?query=workflow%3A%22Unit+Tests%22
+.. |build_status| image:: https://github.com/bluesky/ophyd-async/workflows/code.yml/badge.svg
+    :target: https://github.com/bluesky/ophyd-async/actions/workflows/code.yml
     :alt: Build Status
 
-.. |coverage| image:: https://codecov.io/gh/bluesky/ophyd/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/bluesky/ophyd
+.. |coverage| image:: https://codecov.io/gh/bluesky/ophyd-async/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/bluesky/ophyd-async
     :alt: Test Coverage
 
-.. |pypi_version| image:: https://img.shields.io/pypi/v/ophyd.svg
-    :target: https://pypi.org/project/ophyd
+.. |pypi_version| image:: https://img.shields.io/pypi/v/ophyd-async.svg
+    :target: https://pypi.org/project/ophyd-async
     :alt: Latest PyPI version
 
 .. |license| image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
