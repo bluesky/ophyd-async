@@ -4,7 +4,7 @@ from ophyd_async.core import Device
 
 from ...signal.signal import epics_signal_rw
 from ..utils import FileWriteMode, ad_r, ad_rw
-
+from .nd_plugin import NDPluginBase
 
 class Compression(str, Enum):
     none = "None"
@@ -17,8 +17,8 @@ class Compression(str, Enum):
     jpeg = "JPEG"
 
 
-class NDFileHDF(Device):
-    def __init__(self, prefix: str) -> None:
+class NDFileHDF(NDPluginBase):
+    def __init__(self, prefix: str, name="") -> None:
         # Define some signals
         self.position_mode = ad_rw(bool, prefix + "PositionMode")
         self.compression = ad_rw(Compression, prefix + "Compression")
@@ -37,3 +37,4 @@ class NDFileHDF(Device):
         self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
         self.array_size0 = ad_r(int, prefix + "ArraySize0")
         self.array_size1 = ad_r(int, prefix + "ArraySize1")
+        super().__init__(prefix, name)
