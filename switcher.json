@@ -28,6 +28,10 @@
     "url": "https://bluesky.github.io/ophyd-async/dependabot_github_actions_softprops_action-gh-release-0.1.15/"
   },
   {
+    "version": "fix-readme-icons",
+    "url": "https://bluesky.github.io/ophyd-async/fix-readme-icons/"
+  },
+  {
     "version": "flyingpanda",
     "url": "https://bluesky.github.io/ophyd-async/flyingpanda/"
   },
@@ -38,10 +42,6 @@
   {
     "version": "hdf-num-extra-dims",
     "url": "https://bluesky.github.io/ophyd-async/hdf-num-extra-dims/"
-  },
-  {
-    "version": "readme-changes",
-    "url": "https://bluesky.github.io/ophyd-async/readme-changes/"
   },
   {
     "version": "revert-33-rename-objects",
