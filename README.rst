@@ -1,7 +1,7 @@
 Ophyd Async
 ===========
 
-|build_status| |coverage| |pypi_version| |license|
+|code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
 Asynchronous device abstraction framework, building on `Ophyd`_.
 
@@ -35,9 +35,13 @@ NOTE: ophyd-async is included on a provisional basis until the v1.0 release.
 
 See the tutorials for usage examples.
 
-.. |build_status| image:: https://github.com/bluesky/ophyd-async/workflows/code.yml/badge.svg
+.. |code_ci| image:: https://github.com/bluesky/ophyd-async/actions/workflows/code.yml/badge.svg?branch=main
     :target: https://github.com/bluesky/ophyd-async/actions/workflows/code.yml
-    :alt: Build Status
+    :alt: Code CI
+
+.. |docs_ci| image:: https://github.com/bluesky/ophyd-async/actions/workflows/docs.yml/badge.svg?branch=main
+    :target: https://github.com/bluesky/ophyd-async/actions/workflows/docs.yml
+    :alt: Docs CI
 
 .. |coverage| image:: https://codecov.io/gh/bluesky/ophyd-async/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/bluesky/ophyd-async
