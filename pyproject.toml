@@ -18,7 +18,7 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky @ git+https://github.com/bluesky/bluesky.git",
+    "bluesky",
     "event-model",
     "p4p",
     "pyyaml",
