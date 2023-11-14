@@ -22,6 +22,7 @@ class NDPluginBase(NDArrayBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nd_array_port = ad_rw(str, prefix + "NDArrayPort")
         self.enable_callback = ad_rw(Callback, prefix + "EnableCallbacks")
+        self.nd_array_address = ad_rw(int, prefix + "NDArrayAddress")
         super().__init__(prefix, name)
 
 
