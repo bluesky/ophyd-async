@@ -32,6 +32,10 @@
     "url": "https://bluesky.github.io/ophyd-async/dependabot_github_actions_softprops_action-gh-release-0.1.15/"
   },
   {
+    "version": "fix-sr-paths",
+    "url": "https://bluesky.github.io/ophyd-async/fix-sr-paths/"
+  },
+  {
     "version": "flyingpanda",
     "url": "https://bluesky.github.io/ophyd-async/flyingpanda/"
   },
