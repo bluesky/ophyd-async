@@ -1,12 +1,14 @@
-from ophyd_async.epics.signal.signal import epics_signal_rw, epics_signal_r
-from ophyd_async.core.device import Device
 from dataclasses import dataclass
-from event_model import StreamDatum, StreamResource, compose_stream_resource
 from typing import Iterator, List, Sequence
+
+from event_model import StreamDatum, StreamResource, compose_stream_resource
+
+from ophyd_async.core.device import Device
+from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw
 
 
 class PandaHDF(Device):
-    def __init__(self, prefix: str, name="") -> None:
+    def __init__(self, prefix: str, name: str = "") -> None:
         # Define some signals
         self.file_path = epics_signal_rw(str, prefix + ":HDF5:FilePath")
         self.file_name = epics_signal_rw(str, prefix + ":HDF5:FileName")
@@ -40,7 +42,6 @@ class _HDFFile:
                 resource_kwargs={
                     "path": ds.path,
                     "multiplier": ds.multiplier,
-                    # "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
                 },
             )
             for ds in datasets

@@ -1,28 +1,28 @@
-import pytest
 from unittest.mock import patch
-from ophyd_async.panda.writers.panda_hdf import PandaHDF
-from ophyd_async.panda.writers.hdf_writer import PandaHDFWriter
+
+import pytest
+from bluesky.protocols import Descriptor
+
 from ophyd_async.core import (
-    StaticDirectoryProvider,
     DeviceCollector,
+    StaticDirectoryProvider,
     set_and_wait_for_value,
 )
-from ophyd_async.epics.signal.signal import epics_signal_rw, SignalR
-from ophyd_async.core.utils import T
-from bluesky.protocols import Descriptor
+from ophyd_async.epics.signal.signal import SignalR, epics_signal_rw
+from ophyd_async.panda.writers.hdf_writer import PandaHDFWriter
+from ophyd_async.panda.writers.panda_hdf import PandaHDF
 
 
 @pytest.fixture
 async def sim_writer(tmp_path) -> PandaHDFWriter:
     dir_prov = StaticDirectoryProvider(str(tmp_path), "test")
-    name_prov = lambda: "test-panda"
     async with DeviceCollector(sim=True):
         hdf = PandaHDF("TEST-PANDA")
-        await hdf.connect(sim=True)
-        writer = PandaHDFWriter(hdf, dir_prov, name_prov)
+        writer = PandaHDFWriter(hdf, dir_prov, lambda: "test-panda")
     return writer
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 async def test_open_returns_descriptors(sim_writer):
     description = await sim_writer.open()
     assert isinstance(description, dict)
@@ -35,15 +35,9 @@ async def test_open_returns_descriptors(sim_writer):
 
 
 @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-async def test_open_sets_capture(sim_writer):
+async def test_open_close_sets_capture(sim_writer):
     return_val = await sim_writer.open()
     assert isinstance(return_val, dict)
-    capturing = await sim_writer.hdf.capture.get_value()
-    assert capturing is True
-
-
-async def test_close_unsets_capture(sim_writer):
-    await sim_writer.open()
     capturing = await sim_writer.hdf.capture.get_value()
     assert capturing is True
     await sim_writer.close()
@@ -51,6 +45,7 @@ async def test_close_unsets_capture(sim_writer):
     assert capturing is False
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 async def test_open_sets_file_path(sim_writer, tmp_path):
     path = await sim_writer.hdf.file_path.get_value()
     assert path == ""
@@ -61,6 +56,7 @@ async def test_open_sets_file_path(sim_writer, tmp_path):
     assert name == "test.h5"
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 async def test_get_indices_written(sim_writer):
     written = await sim_writer.get_indices_written()
     assert written == 0, f"{written} != 0"
@@ -73,11 +69,12 @@ async def test_get_indices_written(sim_writer):
     assert written == 25, f"{written} != 25"
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 async def test_wait_for_index(sim_writer):
     assert type(sim_writer.hdf.num_written) is SignalR
     # usually num_written is a SignalR so can't be set from ophyd,
     # overload with SignalRW for testing
-    sim_writer.hdf.num_written = epics_signal_rw(int, f"TEST-PANDA:HDF5:NumWritten")
+    sim_writer.hdf.num_written = epics_signal_rw(int, "TEST-PANDA:HDF5:NumWritten")
     await sim_writer.hdf.num_written.connect(sim=True)
     await set_and_wait_for_value(sim_writer.hdf.num_written, 25)
     assert (await sim_writer.hdf.num_written.get_value()) == 25
@@ -86,6 +83,7 @@ async def test_wait_for_index(sim_writer):
         await sim_writer.wait_for_index(27, timeout=1)
 
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 async def test_collect_stream_docs(sim_writer):
     assert sim_writer._file is None
 
