@@ -13,7 +13,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from .panda_hdf import _HDFDataset, _HDFFile, PandaHDF
+from .panda_hdf import PandaHDF, _HDFDataset, _HDFFile
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -32,10 +32,6 @@ class PandaHDFWriter(DetectorWriter):
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
         self._multiplier = 1
-        if self._multiplier > 1:
-            raise ValueError(
-                "All PandA datasets should be scalar, " "multiplier should be 1"
-            )
 
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         self._file = None
@@ -52,7 +48,7 @@ class PandaHDFWriter(DetectorWriter):
         name = self._name_provider()
         if multiplier > 1:
             raise ValueError(
-                "All PandA datasets should be scalar, " "multiplier should be 1"
+                "All PandA datasets should be scalar, multiplier should be 1"
             )
         self._multiplier = multiplier
         self._datasets = []
