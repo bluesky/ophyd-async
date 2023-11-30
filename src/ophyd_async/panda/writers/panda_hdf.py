@@ -1,0 +1,63 @@
+from ophyd_async.epics.signal.signal import epics_signal_rw, epics_signal_r
+from ophyd_async.core.device import Device
+from dataclasses import dataclass
+from event_model import StreamDatum, StreamResource, compose_stream_resource
+from typing import Iterator, List, Sequence
+
+
+class PandaHDF(Device):
+    def __init__(self, prefix: str, name="") -> None:
+        # Define some signals
+        self.file_path = epics_signal_rw(str, prefix + ":HDF5:FilePath")
+        self.file_name = epics_signal_rw(str, prefix + ":HDF5:FileName")
+        self.full_file_name = epics_signal_r(str, prefix + ":HDF5:FullFileName")
+        self.num_capture = epics_signal_rw(int, prefix + ":HDF5:NumCapture")
+        self.num_written = epics_signal_r(int, prefix + ":HDF5:NumWritten_RBV")
+        self.capture = epics_signal_rw(
+            bool, prefix + ":HDF5:Capturing", prefix + ":HDF5:Capture"
+        )
+        self.flush_now = epics_signal_rw(bool, prefix + ":HDF5:FlushNow")
+        super(PandaHDF, self).__init__(name)
+
+
+@dataclass
+class _HDFDataset:
+    name: str
+    path: str
+    shape: Sequence[int]
+    multiplier: int
+
+
+class _HDFFile:
+    def __init__(self, full_file_name: str, datasets: List[_HDFDataset]) -> None:
+        self._last_emitted = 0
+        self._bundles = [
+            compose_stream_resource(
+                spec="AD_HDF5_SWMR_SLICE",
+                root="/",
+                data_key=ds.name,
+                resource_path=full_file_name,
+                resource_kwargs={
+                    "path": ds.path,
+                    "multiplier": ds.multiplier,
+                    # "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                },
+            )
+            for ds in datasets
+        ]
+
+    def stream_resources(self) -> Iterator[StreamResource]:
+        for bundle in self._bundles:
+            yield bundle.stream_resource_doc
+
+    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
+        # Indices are relative to resource
+        if indices_written > self._last_emitted:
+            indices = dict(
+                start=self._last_emitted,
+                stop=indices_written,
+            )
+            self._last_emitted = indices_written
+            for bundle in self._bundles:
+                yield bundle.compose_stream_datum(indices)
+        return None
