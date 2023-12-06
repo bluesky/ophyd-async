@@ -22,12 +22,11 @@ class PandaHDFWriter(DetectorWriter):
         hdf: PandaHDF,
         directory_provider: DirectoryProvider,
         name_provider: NameProvider,
-        **scalar_datasets_paths: str,
     ) -> None:
         self.hdf = hdf
         self._directory_provider = directory_provider
         self._name_provider = name_provider
-        self._scalar_datasets_paths = scalar_datasets_paths
+
         self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
@@ -53,12 +52,13 @@ class PandaHDFWriter(DetectorWriter):
         self._multiplier = multiplier
         self._datasets = []
         # Add all the scalar datasets
-        for ds_name, ds_path in self._scalar_datasets_paths.items():
+        for ds_name, ds_path in self.hdf.scalar_datasets.items():
             self._datasets.append(
                 _HDFDataset(
-                    f"{name}-{ds_name}",
+                    name,
+                    ds_name,
                     ds_path,
-                    (),
+                    [],
                     multiplier,
                 )
             )
@@ -88,13 +88,18 @@ class PandaHDFWriter(DetectorWriter):
 
     async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         # TODO: fail if we get dropped frames
-        await self.hdf.flush_now.set(True)
+        # await self.hdf.flush_now.set(True)
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
                     await self.hdf.full_file_name.get_value(), self._datasets
                 )
-                for doc in self._file.stream_resources():
+            for doc in self._file.stream_resources():
+                ds_name = doc["resource_kwargs"]["name"]
+                if (
+                    ds_name in self.hdf.capture_signals
+                    and await self.hdf.capture_signals[ds_name].get_value()
+                ):
                     yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
                 yield "stream_datum", doc
