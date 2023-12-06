@@ -24,7 +24,7 @@ class PandaHDF(Device):
             setattr(
                 self,
                 "capturing_" + ds_name,
-                epics_signal_r(bool, prefix + ":" + ds_path + ":CAPTURE")
+                epics_signal_r(bool, prefix + ":" + ds_path + ":CAPTURE"),
             )
         super(PandaHDF, self).__init__(name)
 
