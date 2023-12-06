@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterator, List, Sequence
+from typing import Iterator, List, Tuple
 
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
@@ -8,7 +8,7 @@ from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw
 
 
 class PandaHDF(Device):
-    def __init__(self, prefix: str, name: str = "") -> None:
+    def __init__(self, prefix: str, name: str = "", **scalar_datasets: str) -> None:
         # Define some signals
         self.file_path = epics_signal_rw(str, prefix + ":HDF5:FilePath")
         self.file_name = epics_signal_rw(str, prefix + ":HDF5:FileName")
@@ -19,14 +19,26 @@ class PandaHDF(Device):
             bool, prefix + ":HDF5:Capturing", prefix + ":HDF5:Capture"
         )
         self.flush_now = epics_signal_rw(bool, prefix + ":HDF5:FlushNow")
+        self.capture_signals = {
+            ds_name: epics_signal_r(bool, prefix + ":" + ds_path + ":CAPTURE")
+            for ds_name, ds_path in scalar_datasets.items()
+        }
+        self.scalar_datasets = scalar_datasets
         super(PandaHDF, self).__init__(name)
+
+    def children(self) -> Iterator[Tuple[str, Device]]:
+        for child in super(PandaHDF, self).children():
+            yield child
+        for attr_name, attr in self.capture_signals.items():
+            yield attr_name, attr
 
 
 @dataclass
 class _HDFDataset:
+    device_name: str
     name: str
     path: str
-    shape: Sequence[int]
+    shape: List[int]
     multiplier: int
 
 
@@ -37,10 +49,11 @@ class _HDFFile:
             compose_stream_resource(
                 spec="AD_HDF5_SWMR_SLICE",
                 root="/",
-                data_key=ds.name,
+                data_key=f"{ds.device_name}-{ds.name}",
                 resource_path=full_file_name,
                 resource_kwargs={
-                    "path": ds.path,
+                    "name": ds.name,
+                    "path": ds.path + ".Value",
                     "multiplier": ds.multiplier,
                 },
             )
