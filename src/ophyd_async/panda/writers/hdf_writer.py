@@ -88,7 +88,7 @@ class PandaHDFWriter(DetectorWriter):
 
     async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         # TODO: fail if we get dropped frames
-        # await self.hdf.flush_now.set(True)
+        await self.hdf.flush_now.set(True)
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
@@ -96,10 +96,8 @@ class PandaHDFWriter(DetectorWriter):
                 )
             for doc in self._file.stream_resources():
                 ds_name = doc["resource_kwargs"]["name"]
-                if (
-                    ds_name in self.hdf.capture_signals
-                    and await self.hdf.capture_signals[ds_name].get_value()
-                ):
+                capturing = getattr(self.hdf, "capturing_" + ds_name, None)
+                if capturing and await capturing.get_value():
                     yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
                 yield "stream_datum", doc

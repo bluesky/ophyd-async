@@ -19,18 +19,14 @@ class PandaHDF(Device):
             bool, prefix + ":HDF5:Capturing", prefix + ":HDF5:Capture"
         )
         self.flush_now = epics_signal_rw(bool, prefix + ":HDF5:FlushNow")
-        self.capture_signals = {
-            ds_name: epics_signal_r(bool, prefix + ":" + ds_path + ":CAPTURE")
-            for ds_name, ds_path in scalar_datasets.items()
-        }
         self.scalar_datasets = scalar_datasets
+        for ds_name, ds_path in self.scalar_datasets.items():
+            setattr(
+                self,
+                "capturing_" + ds_name,
+                epics_signal_r(bool, prefix + ":" + ds_path + ":CAPTURE")
+            )
         super(PandaHDF, self).__init__(name)
-
-    def children(self) -> Iterator[Tuple[str, Device]]:
-        for child in super(PandaHDF, self).children():
-            yield child
-        for attr_name, attr in self.capture_signals.items():
-            yield attr_name, attr
 
 
 @dataclass
