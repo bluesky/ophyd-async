@@ -9,7 +9,7 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_and_wait_for_value,
 )
-from ophyd_async.epics.signal.signal import SignalR, SignalRW, epics_signal_rw
+from ophyd_async.epics.signal.signal import SignalRW
 from ophyd_async.panda.writers import PandaHDFWriter
 
 
@@ -19,26 +19,28 @@ async def sim_writer(tmp_path) -> PandaHDFWriter:
     async with DeviceCollector(sim=True):
         writer = PandaHDFWriter("TEST-PANDA", dir_prov, lambda: "test-panda")
         writer.hdf5.filepath = SignalRW(
-            SimSignalBackend(str, "TEST-PANDA:HDF5:FilePath")
+            backend=SimSignalBackend(str, source="TEST-PANDA:HDF5:FilePath")
         )
         writer.hdf5.filename = SignalRW(
-            SimSignalBackend(str, "TEST-PANDA:HDF5:FileName")
+            backend=SimSignalBackend(str, source="TEST-PANDA:HDF5:FileName")
         )
         writer.hdf5.fullfilename = SignalRW(
-            SimSignalBackend(str, "TEST-PANDA:HDF5:FullFileName")
+            backend=SimSignalBackend(str, source="TEST-PANDA:HDF5:FullFileName")
         )
         writer.hdf5.numcapture = SignalRW(
-            SimSignalBackend(int, "TEST-PANDA:HDF5:NumCapture")
+            backend=SimSignalBackend(int, source="TEST-PANDA:HDF5:NumCapture")
         )
-        writer.hdf5.capture = SignalRW(SimSignalBackend(int, "TEST-PANDA:HDF5:Capture"))
+        writer.hdf5.capture = SignalRW(
+            backend=SimSignalBackend(bool, source="TEST-PANDA:HDF5:Capture")
+        )
         writer.hdf5.capturing = SignalRW(
-            SimSignalBackend(int, "TEST-PANDA:HDF5:Capturing")
+            backend=SimSignalBackend(bool, source="TEST-PANDA:HDF5:Capturing")
         )
         writer.hdf5.flushnow = SignalRW(
-            SimSignalBackend(int, "TEST-PANDA:HDF5:FlushNow")
+            backend=SimSignalBackend(bool, source="TEST-PANDA:HDF5:FlushNow")
         )
         writer.hdf5.numwritten_rbv = SignalRW(
-            SimSignalBackend(int, "TEST-PANDA:HDF5:NumWritten_RBV")
+            backend=SimSignalBackend(int, source="TEST-PANDA:HDF5:NumWritten_RBV")
         )
         await writer.connect(sim=True)
     return writer
