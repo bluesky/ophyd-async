@@ -1,13 +1,10 @@
 from dataclasses import dataclass
-from typing import Iterator, List, Tuple
+from typing import Iterator, List
 
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
+from ophyd_async.core import SignalR, SignalRW
 from ophyd_async.core.device import Device
-from ophyd_async.core import (
-    SignalR,
-    SignalRW,
-)
 
 
 class DataBlock(Device):

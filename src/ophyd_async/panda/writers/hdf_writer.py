@@ -1,18 +1,18 @@
 import asyncio
-from typing import (
-    AsyncIterator,
-    Dict,
-    List,
-    Optional,
-    FrozenSet,
-    Callable,
-    get_type_hints,
-)
 import atexit
 from enum import Enum
+from typing import (
+    AsyncIterator,
+    Callable,
+    Dict,
+    FrozenSet,
+    List,
+    Optional,
+    Tuple,
+    get_type_hints,
+)
 
 from bluesky.protocols import Asset, Descriptor, Hints
-
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -25,13 +25,12 @@ from ophyd_async.core import (
     Signal,
     wait_for_value,
 )
-
 from ophyd_async.epics.signal import (
-    pvi_get,
     epics_signal_r,
     epics_signal_rw,
     epics_signal_w,
     epics_signal_x,
+    pvi_get,
 )
 
 from .panda_hdf import DataBlock, _HDFDataset, _HDFFile
@@ -76,20 +75,20 @@ class PandaHDFWriter(DetectorWriter):
         pvi_info = await pvi_get(self._prefix + ":PVI", self.ctxt) if not sim else {}
 
         # signals to connect, giving block name, signal name and datatype
-        desired_signals = {}
+        desired_signals: Dict[str, List[Tuple[str, type]]] = {}
         for block_name, block in self._to_capture.items():
             if block_name not in desired_signals:
                 desired_signals[block_name] = []
             for signal_name in block:
                 desired_signals[block_name].append(
-                    [f"{signal_name}_capture", SimpleCapture]
+                    (f"{signal_name}_capture", SimpleCapture)
                 )
         # add signals from DataBlock using type hints
         if "hdf5" not in desired_signals:
             desired_signals["hdf5"] = []
         for signal_name, hint in get_type_hints(self.hdf5).items():
             dtype = hint.__args__[0]
-            desired_signals["hdf5"].append([signal_name, dtype])
+            desired_signals["hdf5"].append((signal_name, dtype))
         # loop over desired signals and set
         for block_name, block_signals in desired_signals.items():
             if block_name not in pvi_info:
@@ -116,7 +115,7 @@ class PandaHDFWriter(DetectorWriter):
                 )
                 setattr(block, signal_name, signal)
         for block_name in desired_signals.keys():
-            block = getattr(self, block_name)
+            block: Device = getattr(self, block_name)
             if block:
                 await block.connect(sim=sim)
 
@@ -160,7 +159,7 @@ class PandaHDFWriter(DetectorWriter):
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.hdf5.capture.set(True)
         self._capture_status = await wait_for_value(
-            self.hdf5.capturing, 1, DEFAULT_TIMEOUT
+            self.hdf5.capturing, True, DEFAULT_TIMEOUT
         )
         name = self._name_provider()
         if multiplier > 1:
@@ -199,7 +198,6 @@ class PandaHDFWriter(DetectorWriter):
         await wait_for_value(self.hdf5.numwritten_rbv, matcher, timeout=timeout)
 
     async def get_indices_written(self) -> int:
-        value = await self.hdf5.numwritten_rbv.get_value()
         num_written = await self.hdf5.numwritten_rbv.get_value()
         return num_written // self._multiplier
 
