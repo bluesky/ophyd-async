@@ -74,6 +74,8 @@ class PandaHDFWriter(DetectorWriter):
 
     async def connect(self, sim=False) -> None:
         pvi_info = await pvi_get(self._prefix + ":PVI", self.ctxt) if not sim else {}
+
+        # signals to connect, giving block name, signal name and datatype
         desired_signals = {}
         for block_name, block in self._to_capture.items():
             if block_name not in desired_signals:
@@ -82,11 +84,13 @@ class PandaHDFWriter(DetectorWriter):
                 desired_signals[block_name].append(
                     [f"{signal_name}_capture", SimpleCapture]
                 )
+        # add signals from DataBlock using type hints
         if "hdf5" not in desired_signals:
             desired_signals["hdf5"] = []
         for signal_name, hint in get_type_hints(self.hdf5).items():
             dtype = hint.__args__[0]
             desired_signals["hdf5"].append([signal_name, dtype])
+        # loop over desired signals and set
         for block_name, block_signals in desired_signals.items():
             if block_name not in pvi_info:
                 continue
@@ -104,13 +108,17 @@ class PandaHDFWriter(DetectorWriter):
                 read_pv = write_pv if len(pvs) == 1 else pvs[1]
                 pv_ctxt = self.ctxt.get(read_pv)
                 if dtype is SimpleCapture:  # capture record
+                    # some :CAPTURE PVs have only 2 values, many have 9
                     if set(pv_ctxt.value.choices) == set(v.value for v in Capture):
                         dtype = Capture
                 signal = self.pvi_mapping[operations](
                     dtype, "pva://" + read_pv, "pva://" + write_pv
                 )
                 setattr(block, signal_name, signal)
-            await block.connect()
+        for block_name in desired_signals.keys():
+            block = getattr(self, block_name)
+            if block:
+                await block.connect(sim=sim)
 
     def __init__(
         self,
@@ -206,11 +214,11 @@ class PandaHDFWriter(DetectorWriter):
             for doc in self._file.stream_resources():
                 ds_name = doc["resource_kwargs"]["name"]
                 ds_block = doc["resource_kwargs"]["block"]
-                block = getattr(self, ds_block)
-                # capturing = getattr(self.hdf5, "capturing_" + ds_name, None)
-                capturing = getattr(block, f"{ds_name}_capture")
-                if capturing and await capturing.get_value() != Capture.No:
-                    yield "stream_resource", doc
+                block = getattr(self, ds_block, None)
+                if block is not None:
+                    capturing = getattr(block, f"{ds_name}_capture")
+                    if capturing and await capturing.get_value() != Capture.No:
+                        yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
                 yield "stream_datum", doc
 
