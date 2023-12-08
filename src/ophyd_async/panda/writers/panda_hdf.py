@@ -4,34 +4,27 @@ from typing import Iterator, List, Tuple
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
 from ophyd_async.core.device import Device
-from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw
+from ophyd_async.core import (
+    SignalR,
+    SignalRW,
+)
 
 
-class PandaHDF(Device):
-    def __init__(self, prefix: str, name: str = "", **scalar_datasets: str) -> None:
-        # Define some signals
-        self.file_path = epics_signal_rw(str, prefix + ":HDF5:FilePath")
-        self.file_name = epics_signal_rw(str, prefix + ":HDF5:FileName")
-        self.full_file_name = epics_signal_r(str, prefix + ":HDF5:FullFileName")
-        self.num_capture = epics_signal_rw(int, prefix + ":HDF5:NumCapture")
-        self.num_written = epics_signal_r(int, prefix + ":HDF5:NumWritten_RBV")
-        self.capture = epics_signal_rw(
-            bool, prefix + ":HDF5:Capturing", prefix + ":HDF5:Capture"
-        )
-        self.flush_now = epics_signal_rw(bool, prefix + ":HDF5:FlushNow")
-        self.scalar_datasets = scalar_datasets
-        for ds_name, ds_path in self.scalar_datasets.items():
-            setattr(
-                self,
-                "capturing_" + ds_name,
-                epics_signal_r(bool, prefix + ":" + ds_path + ":CAPTURE"),
-            )
-        super(PandaHDF, self).__init__(name)
+class DataBlock(Device):
+    filepath: SignalRW[str]
+    filename: SignalRW[str]
+    fullfilename: SignalR[str]
+    numcapture: SignalRW[int]
+    flushnow: SignalRW[bool]
+    capture: SignalRW[bool]
+    capturing: SignalR[bool]
+    numwritten_rbv: SignalR[int]
 
 
 @dataclass
 class _HDFDataset:
     device_name: str
+    block: str
     name: str
     path: str
     shape: List[int]
@@ -49,6 +42,7 @@ class _HDFFile:
                 resource_path=full_file_name,
                 resource_kwargs={
                     "name": ds.name,
+                    "block": ds.block,
                     "path": ds.path + ".Value",
                     "multiplier": ds.multiplier,
                 },
