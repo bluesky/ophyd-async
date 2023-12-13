@@ -12,6 +12,7 @@ from .device_save_loader import (
     get_signal_values,
     load_device,
     load_from_yaml,
+    save_device,
     save_to_yaml,
     set_signal_values,
     walk_rw_signals,
@@ -99,4 +100,5 @@ __all__ = [
     "set_signal_values",
     "walk_rw_signals",
     "load_device",
+    "save_device",
 ]
