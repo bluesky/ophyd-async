@@ -23,7 +23,7 @@ ophyd\_async.panda
       seq_table_from_arrays
       seq_table_from_rows
       pvi
-      save_panda
+      phase_sorter
    
    
 
