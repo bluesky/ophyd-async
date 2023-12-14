@@ -211,10 +211,15 @@ def load_device(device: Device, path: str):
     yield from set_signal_values(signals_to_set, values)
 
 
+def all_at_once(values: Dict[str, Any]) -> Sequence[Dict[str, Any]]:
+    """Sort all the values into a single phase so they are set all at once"""
+    return [values]
+
+
 def save_device(
     device: Device,
     path: str,
-    sorter: Callable[[Dict[str, Any]], Sequence[Dict[str, Any]]] = lambda x: [x],
+    sorter: Callable[[Dict[str, Any]], Sequence[Dict[str, Any]]] = all_at_once,
     ignore: Optional[List[str]] = None,
 ):
     """Plan that saves the state of all PV's on a device using a sorter.
