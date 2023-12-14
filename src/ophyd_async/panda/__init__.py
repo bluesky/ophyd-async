@@ -1,5 +1,4 @@
 from .panda import PandA, PcapBlock, PulseBlock, PVIEntry, SeqBlock, SeqTable, pvi
-from .panda_utils import save_panda
 from .table import (
     SeqTable,
     SeqTableRow,
@@ -7,6 +6,7 @@ from .table import (
     seq_table_from_arrays,
     seq_table_from_rows,
 )
+from .utils import phase_sorter
 
 __all__ = [
     "PandA",
@@ -20,6 +20,5 @@ __all__ = [
     "SeqTableRow",
     "SeqTrigger",
     "pvi",
-    "load_panda",
-    "save_panda",
+    "phase_sorter",
 ]
