@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.signal &#8212; ophyd-async 0.1.1.dev36+g748bf87d documentation</title>
+    <title>ophyd_async.core.signal &#8212; ophyd-async 0.2.1.dev6+g8ca58245 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
   <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
 
-    <script src="../../../_static/documentation_options.js?v=23c6c1f5"></script>
+    <script src="../../../_static/documentation_options.js?v=67a2d2b6"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -125,8 +125,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.1.1.dev36+g748bf87d documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.1.1.dev36+g748bf87d documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev6+g8ca58245 documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev6+g8ca58245 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -833,7 +833,7 @@ document.write(`
 
 <span class="sd">    Useful for busy record, or other Signals with pattern:</span>
 
-<span class="sd">    - Set Signal with wait=with_callback and stash the Status</span>
+<span class="sd">    - Set Signal with wait=True and stash the Status</span>
 <span class="sd">    - Read the same Signal to check the operation has started</span>
 <span class="sd">    - Return the Status so calling code can wait for operation to complete</span>
 
@@ -847,8 +847,6 @@ document.write(`
 <span class="sd">        The signal to set and monitor</span>
 <span class="sd">    value:</span>
 <span class="sd">        The value to set it to</span>
-<span class="sd">    with_callback:</span>
-<span class="sd">        If we want to wait for a caput/pvput callback</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        How long to wait for the signal to have the value</span>
 <span class="sd">    status_timeout:</span>
