@@ -40,8 +40,8 @@ class DetectorControl(ABC):
     @abstractmethod
     async def arm(
         self,
+        num: int,
         trigger: DetectorTrigger = DetectorTrigger.internal,
-        num: int = 0,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         """Arm the detector and return AsyncStatus.
@@ -173,7 +173,10 @@ class StandardDetector(
     async def trigger(self) -> None:
         """Arm the detector and wait for it to finish."""
         indices_written = await self.writer.get_indices_written()
-        written_status = await self.controller.arm(DetectorTrigger.internal, num=1)
+        written_status = await self.controller.arm(
+            num=1,
+            trigger=DetectorTrigger.internal,
+        )
         await written_status
         await self.writer.wait_for_index(
             indices_written + 1, timeout=self._frame_writing_timeout
