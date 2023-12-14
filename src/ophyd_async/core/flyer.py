@@ -111,7 +111,9 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
                 )
             self._arm_statuses = await gather_list(
                 controller.arm(
-                    trigger=trigger_info.trigger, exposure=trigger_info.livetime
+                    num=trigger_info.num,
+                    trigger=trigger_info.trigger,
+                    exposure=trigger_info.livetime,
                 )
                 for controller in self._controllers
             )
