@@ -48,10 +48,6 @@
     "url": "https://bluesky.github.io/ophyd-async/hdf-num-extra-dims/"
   },
   {
-    "version": "panda_save_load_with_sorter",
-    "url": "https://bluesky.github.io/ophyd-async/panda_save_load_with_sorter/"
-  },
-  {
     "version": "remove-explicit-defaults",
     "url": "https://bluesky.github.io/ophyd-async/remove-explicit-defaults/"
   },
