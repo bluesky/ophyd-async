@@ -4,14 +4,6 @@
     "url": "https://bluesky.github.io/ophyd-async/main/"
   },
   {
-    "version": "v0.2.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
-  },
-  {
-    "version": "v0.1.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
-  },
-  {
     "version": "add-position-and-compression-to-hdf",
     "url": "https://bluesky.github.io/ophyd-async/add-position-and-compression-to-hdf/"
   },
@@ -48,10 +40,6 @@
     "url": "https://bluesky.github.io/ophyd-async/hdf-num-extra-dims/"
   },
   {
-    "version": "remove-explicit-defaults",
-    "url": "https://bluesky.github.io/ophyd-async/remove-explicit-defaults/"
-  },
-  {
     "version": "revert-33-rename-objects",
     "url": "https://bluesky.github.io/ophyd-async/revert-33-rename-objects/"
   },
@@ -66,5 +54,13 @@
   {
     "version": "stall-timeout",
     "url": "https://bluesky.github.io/ophyd-async/stall-timeout/"
+  },
+  {
+    "version": "v0.1.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
+  },
+  {
+    "version": "v0.2.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
   }
 ]
