@@ -30,7 +30,7 @@ def get_signal_values(
 ) -> Generator[Msg, Sequence[Location[Any]], Dict[str, Any]]:
     """Get signal values in bulk.
 
-    Used as part of saving PVs of a device to a yaml file.
+    Used as part of saving the signals of a device to a yaml file.
 
     Parameters
     ----------
@@ -46,11 +46,6 @@ def get_signal_values(
     Dict[str, Any]
         A dictionary containing pv names and their associated values. Ignored pvs are
         set to None.
-
-    Yields
-    ------
-    Iterator[Dict[str, Any]]
-        The Location of a signal
 
     See Also
     --------
@@ -115,7 +110,7 @@ def walk_rw_signals(
 
 
 def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
-    """Plan which serialises a phase or set of phases of pvs to a yaml file.
+    """Plan which serialises a phase or set of phases of SignalRWs to a yaml file.
 
     Parameters
     ----------
@@ -157,18 +152,22 @@ def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
 def set_signal_values(
     signals: Dict[str, SignalRW[Any]], values: Sequence[Dict[str, Any]]
 ) -> Generator[Msg, None, None]:
-    """
-    Loads a phase or a set of phases from a yaml file and puts value to an Ophyd device
+    """Maps signals from a yaml file into device signals.
+
+    ``values`` contains signal values in phases, which are loaded in sequentially
+    into the provided signals, to ensure signals are set in the correct order.
 
     Parameters
     ----------
     signals : Dict[str, SignalRW[Any]]
         Dictionary of named signals to be updated if value found in values argument.
+        Can be the output of :func:`walk_rw_signals()` for a device.
 
     values : Sequence[Dict[str, Any]]
         List of dictionaries of signal name and value pairs, if a signal matches
         the name of one in the signals argument, sets the signal to that value.
         The groups of signals are loaded in their list order.
+        Can be the output of :func:`load_from_yaml()` for a yaml file.
 
     See Also
     --------
