@@ -30,8 +30,8 @@ class ADSimController(DetectorControl):
 
     async def arm(
         self,
+        num: int,
         trigger: DetectorTrigger = DetectorTrigger.internal,
-        num: int = 0,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         assert (
