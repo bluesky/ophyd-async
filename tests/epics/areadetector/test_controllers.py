@@ -35,7 +35,7 @@ async def ad(RE) -> ADSimController:
 
 async def test_ad_controller(RE, ad: ADSimController):
     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-        await ad.arm()
+        await ad.arm(num=0)
 
     driver = ad.driver
     assert await driver.num_images.get_value() == 0
@@ -52,7 +52,7 @@ async def test_ad_controller(RE, ad: ADSimController):
 
 async def test_pilatus_controller(RE, pilatus: PilatusController):
     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-        await pilatus.arm(trigger=DetectorTrigger.constant_gate)
+        await pilatus.arm(num=0, trigger=DetectorTrigger.constant_gate)
 
     driver = pilatus.driver
     assert await driver.num_images.get_value() == 999_999
