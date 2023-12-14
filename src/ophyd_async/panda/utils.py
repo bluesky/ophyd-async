@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Sequence
 
 
 def phase_sorter(panda_signal_values: Dict[str, Any]) -> Sequence[Dict[str, Any]]:
