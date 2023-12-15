@@ -48,10 +48,6 @@
     "url": "https://bluesky.github.io/ophyd-async/hdf-num-extra-dims/"
   },
   {
-    "version": "remove-explicit-defaults",
-    "url": "https://bluesky.github.io/ophyd-async/remove-explicit-defaults/"
-  },
-  {
     "version": "revert-33-rename-objects",
     "url": "https://bluesky.github.io/ophyd-async/revert-33-rename-objects/"
   },
