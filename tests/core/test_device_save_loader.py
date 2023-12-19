@@ -1,6 +1,7 @@
 from enum import Enum
 from os import path
 from typing import Any, Dict, List
+from unittest.mock import patch
 
 import numpy as np
 import numpy.typing as npt
@@ -13,11 +14,14 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     get_signal_values,
+    load_device,
     load_from_yaml,
+    save_device,
     save_to_yaml,
     set_signal_values,
     walk_rw_signals,
 )
+from ophyd_async.core.device_save_loader import all_at_once
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
@@ -42,13 +46,6 @@ class DummyDeviceGroup(Device):
         )  # Ensure only RW are found
         self.parent_sig3: SignalRW = epics_signal_rw(str, "ParentValue3")
         self.position: npt.NDArray[np.int32]
-
-
-def save_device(device, file_path):
-    signalRWs = walk_rw_signals(device)
-    values = yield from get_signal_values(signalRWs)
-    phases = sort_signal_by_phase(values)
-    save_to_yaml(phases, file_path)
 
 
 @pytest.fixture
@@ -130,7 +127,7 @@ async def test_yaml_formatting(RE: RunEngine, device, tmp_path):
     await device.child1.sig1.set("test_string")
     table_pv = {"VAL1": np.array([1, 2, 3, 4, 5]), "VAL2": np.array([6, 7, 8, 9, 10])}
     await device.child2.sig1.set(table_pv)
-    RE(save_device(device, file_path))
+    RE(save_device(device, file_path, sorter=sort_signal_by_phase))
 
     with open(file_path, "r") as file:
         expected = """\
@@ -148,7 +145,8 @@ async def test_load_from_yaml(RE: RunEngine, device, tmp_path):
     array = np.array([1, 1, 1, 1, 1])
     await device.child1.sig1.set("initial_string")
     await device.child2.sig1.set(array)
-    RE(save_device(device, file_path))
+    await device.parent_sig1.set(None)
+    RE(save_device(device, file_path, sorter=sort_signal_by_phase))
 
     values = load_from_yaml(file_path)
     assert values[0]["child1.sig1"] == "initial_string"
@@ -160,7 +158,7 @@ async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path)
 
     await device.child1.sig1.set("initial_string")
     await device.child2.sig1.set(np.array([1, 1, 1, 1, 1]))
-    RE(save_device(device, file_path))
+    RE(save_device(device, file_path, sorter=sort_signal_by_phase))
 
     await device.child1.sig1.set("changed_string")
     await device.child2.sig1.set(np.array([2, 2, 2, 2, 2]))
@@ -178,3 +176,37 @@ async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path)
     array_value = await device.child2.sig1.get_value()
     assert string_value == "initial_string"
     assert np.array_equal(array_value, np.array([1, 1, 1, 1, 1]))
+
+
+@patch("ophyd_async.core.device_save_loader.load_from_yaml")
+@patch("ophyd_async.core.device_save_loader.walk_rw_signals")
+@patch("ophyd_async.core.device_save_loader.set_signal_values")
+async def test_load_device(
+    mock_set_signal_values, mock_walk_rw_signals, mock_load_from_yaml, device
+):
+    RE = RunEngine()
+    RE(load_device(device, "path"))
+    mock_load_from_yaml.assert_called_once()
+    mock_walk_rw_signals.assert_called_once()
+    mock_set_signal_values.assert_called_once()
+
+
+async def test_set_signal_values_skips_ignored_values(device):
+    RE = RunEngine()
+    array = np.array([1, 1, 1, 1, 1])
+
+    await device.child1.sig1.set("initial_string")
+    await device.child2.sig1.set(array)
+    await device.parent_sig1.set(None)
+
+    signals_of_device = walk_rw_signals(device)
+    values_to_set = [{"child1.sig1": None, "child2.sig1": np.array([2, 3, 4])}]
+
+    RE(set_signal_values(signals_of_device, values_to_set))
+
+    assert np.all(await device.child2.sig1.get_value() == np.array([2, 3, 4]))
+    assert await device.child1.sig1.get_value() == "initial_string"
+
+
+def test_all_at_once_sorter():
+    assert all_at_once({"child1.sig1": 0}) == [{"child1.sig1": 0}]
