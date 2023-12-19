@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.device_save_loader &#8212; ophyd-async 0.2.1.dev1+gce2db455 documentation</title>
+    <title>ophyd_async.core.device_save_loader &#8212; ophyd-async 0.2.1.dev2+g2ae845ff documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
   <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
 
-    <script src="../../../_static/documentation_options.js?v=c200881a"></script>
+    <script src="../../../_static/documentation_options.js?v=ffa78b49"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -125,8 +125,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev1+gce2db455 documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev1+gce2db455 documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev2+g2ae845ff documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev2+g2ae845ff documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -475,30 +475,29 @@ document.write(`
 <span class="k">def</span> <span class="nf">get_signal_values</span><span class="p">(</span>
     <span class="n">signals</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">ignore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Msg</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Location</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Read the values of SignalRW&#39;s, to be used alongside `walk_rw_signals`. Used as part</span>
-<span class="sd">    of saving a device.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get signal values in bulk.</span>
+
+<span class="sd">    Used as part of saving the signals of a device to a yaml file.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">        signals : Dict[str, SignalRW]: A dictionary matching the string attribute path</span>
-<span class="sd">        of a SignalRW to the signal itself</span>
+<span class="sd">    signals : Dict[str, SignalRW]</span>
+<span class="sd">        Dictionary with pv names and matching SignalRW values. Often the direct result</span>
+<span class="sd">        of :func:`walk_rw_signals`.</span>
 
-<span class="sd">        ignore : List of strings: . A list of string attribute paths to the SignalRW&#39;s</span>
-<span class="sd">        to be ignored.</span>
+<span class="sd">    ignore : Optional[List[str]]</span>
+<span class="sd">        Optional list of PVs that should be ignored.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">        Dict[str, Any]: A dictionary matching the string attribute path of a SignalRW</span>
-<span class="sd">        to the value of that signal. Ignored attributes are set to None.</span>
-
-<span class="sd">    Yields:</span>
-<span class="sd">        Iterator[Dict[str, Any]]: The Location of a signal</span>
+<span class="sd">    Dict[str, Any]</span>
+<span class="sd">        A dictionary containing pv names and their associated values. Ignored pvs are</span>
+<span class="sd">        set to None.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    :func:`ophyd_async.core.walk_rw_signals`</span>
 <span class="sd">    :func:`ophyd_async.core.save_to_yaml`</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ignore</span> <span class="o">=</span> <span class="n">ignore</span> <span class="ow">or</span> <span class="p">[]</span>
@@ -526,9 +525,11 @@ document.write(`
 <span class="k">def</span> <span class="nf">walk_rw_signals</span><span class="p">(</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get all the SignalRWs from a device and store them with their dotted attribute</span>
-<span class="sd">    paths in a dictionary. Used as part of saving and loading a device</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all SignalRWs from a device.</span>
+
+<span class="sd">    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as</span>
+<span class="sd">    part of saving and loading a device.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    device : Device</span>
@@ -567,9 +568,7 @@ document.write(`
 <div class="viewcode-block" id="save_to_yaml">
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.core.save_to_yaml.html#ophyd_async.core.save_to_yaml">[docs]</a>
 <span class="k">def</span> <span class="nf">save_to_yaml</span><span class="p">(</span><span class="n">phases</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Serialises and saves a phase or a set of phases of a device&#39;s SignalRW&#39;s to a</span>
-<span class="sd">    yaml file.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plan which serialises a phase or set of phases of SignalRWs to a yaml file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -602,8 +601,7 @@ document.write(`
 <div class="viewcode-block" id="load_from_yaml">
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.core.load_from_yaml.html#ophyd_async.core.load_from_yaml">[docs]</a>
 <span class="k">def</span> <span class="nf">load_from_yaml</span><span class="p">(</span><span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns a list of dicts with saved signal values from a yaml file</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plan that returns a list of dicts with saved signal values from a yaml file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -625,18 +623,22 @@ document.write(`
 <span class="k">def</span> <span class="nf">set_signal_values</span><span class="p">(</span>
     <span class="n">signals</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Msg</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loads a phase or a set of phases from a yaml file and puts value to an Ophyd device</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Maps signals from a yaml file into device signals.</span>
+
+<span class="sd">    ``values`` contains signal values in phases, which are loaded in sequentially</span>
+<span class="sd">    into the provided signals, to ensure signals are set in the correct order.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    signals : Dict[str, SignalRW[Any]]</span>
 <span class="sd">        Dictionary of named signals to be updated if value found in values argument.</span>
+<span class="sd">        Can be the output of :func:`walk_rw_signals()` for a device.</span>
 
 <span class="sd">    values : Sequence[Dict[str, Any]]</span>
 <span class="sd">        List of dictionaries of signal name and value pairs, if a signal matches</span>
 <span class="sd">        the name of one in the signals argument, sets the signal to that value.</span>
 <span class="sd">        The groups of signals are loaded in their list order.</span>
+<span class="sd">        Can be the output of :func:`load_from_yaml()` for a yaml file.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -648,11 +650,88 @@ document.write(`
     <span class="k">for</span> <span class="n">phase_number</span><span class="p">,</span> <span class="n">phase</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
         <span class="c1"># Key is signal name</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">phase</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Skip ignored values</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
                 <span class="k">yield from</span> <span class="n">abs_set</span><span class="p">(</span>
                     <span class="n">signals</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">value</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;load-phase</span><span class="si">{</span><span class="n">phase_number</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
+
         <span class="k">yield from</span> <span class="n">wait</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;load-phase</span><span class="si">{</span><span class="n">phase_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load_device">
+<a class="viewcode-back" href="../../../user/generated/ophyd_async.core.load_device.html#ophyd_async.core.load_device">[docs]</a>
+<span class="k">def</span> <span class="nf">load_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plan which loads PVs from a yaml file into a device.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device: Device</span>
+<span class="sd">        The device to load PVs into</span>
+<span class="sd">    path: str</span>
+<span class="sd">        Path of the yaml file to load</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :func:`ophyd_async.core.save_device`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">load_from_yaml</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">signals_to_set</span> <span class="o">=</span> <span class="n">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">set_signal_values</span><span class="p">(</span><span class="n">signals_to_set</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">all_at_once</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sort all the values into a single phase so they are set all at once&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">values</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="save_device">
+<a class="viewcode-back" href="../../../user/generated/ophyd_async.core.save_device.html#ophyd_async.core.save_device">[docs]</a>
+<span class="k">def</span> <span class="nf">save_device</span><span class="p">(</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">sorter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">all_at_once</span><span class="p">,</span>
+    <span class="n">ignore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plan that saves the state of all PV&#39;s on a device using a sorter.</span>
+
+<span class="sd">    The default sorter assumes all saved PVs can be loaded at once, and therefore</span>
+<span class="sd">    can be saved at one time, i.e. all PVs will appear on one list in the</span>
+<span class="sd">    resulting yaml file.</span>
+
+<span class="sd">    This can be a problem, because when the yaml is ingested with</span>
+<span class="sd">    :func:`ophyd_async.core.load_device`, it will set all of those PVs at once.</span>
+<span class="sd">    However, some PV&#39;s need to be set before others - this is device specific.</span>
+
+<span class="sd">    Therefore, users should consider the order of device loading and write their</span>
+<span class="sd">    own sorter algorithms accordingly.</span>
+
+<span class="sd">    See :func:`ophyd_async.panda.phase_sorter` for a valid implementation of the</span>
+<span class="sd">    sorter.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : Device</span>
+<span class="sd">        The device whose PVs should be saved.</span>
+
+<span class="sd">    path : str</span>
+<span class="sd">        The path where the resulting yaml should be saved to</span>
+
+<span class="sd">    sorter : Callable[[Dict[str, Any]], Sequence[Dict[str, Any]]]</span>
+
+<span class="sd">    ignore : Optional[List[str]]</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :func:`ophyd_async.core.load_device`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">get_signal_values</span><span class="p">(</span><span class="n">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">ignore</span><span class="o">=</span><span class="n">ignore</span><span class="p">)</span>
+    <span class="n">save_to_yaml</span><span class="p">(</span><span class="n">sorter</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">path</span><span class="p">)</span></div>
 
 </pre></div>
 

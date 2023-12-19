@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.get_signal_values &#8212; ophyd-async 0.2.1.dev1+gce2db455 documentation</title>
+    <title>ophyd_async.core.get_signal_values &#8212; ophyd-async 0.2.1.dev2+g2ae845ff documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
   <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
 
-    <script src="../../_static/documentation_options.js?v=c200881a"></script>
+    <script src="../../_static/documentation_options.js?v=ffa78b49"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -128,8 +128,8 @@
       
     
     
-    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev1+gce2db455 documentation - Home"/>
-    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev1+gce2db455 documentation - Home"/>`);</script>
+    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev2+g2ae845ff documentation - Home"/>
+    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev2+g2ae845ff documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -418,6 +418,8 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_to_yaml.html">ophyd_async.core.save_to_yaml</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_signal_values.html">ophyd_async.core.set_signal_values</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.walk_rw_signals.html">ophyd_async.core.walk_rw_signals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_device.html">ophyd_async.core.load_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_device.html">ophyd_async.core.save_device</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalBackend.html">ophyd_async.core.SignalBackend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SimSignalBackend.html">ophyd_async.core.SimSignalBackend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorControl.html">ophyd_async.core.DetectorControl</a></li>
@@ -485,6 +487,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.seq_table_from_arrays.html">ophyd_async.panda.seq_table_from_arrays</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.seq_table_from_rows.html">ophyd_async.panda.seq_table_from_rows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.pvi.html">ophyd_async.panda.pvi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.phase_sorter.html">ophyd_async.panda.phase_sorter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PandA.html">ophyd_async.panda.PandA</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PcapBlock.html">ophyd_async.panda.PcapBlock</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PulseBlock.html">ophyd_async.panda.PulseBlock</a></li>
@@ -568,25 +571,22 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.get_signal_values">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_signal_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.SignalRW.html#ophyd_async.core.SignalRW" title="ophyd_async.core.signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.12)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://blueskyproject.io/bluesky/generated/bluesky.utils.Msg.html#bluesky.utils.Msg" title="(in bluesky v1.12.0.post1+g9b0d7295)"><span class="pre">Msg</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Location" title="(in bluesky v1.12.0.post1+g9b0d7295)"><span class="pre">Location</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/device_save_loader.html#get_signal_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_signal_values" title="Link to this definition">#</a></dt>
-<dd><p>Read the values of SignalRW’s, to be used alongside <a class="reference internal" href="ophyd_async.core.walk_rw_signals.html#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref any py py-func docutils literal notranslate"><span class="pre">walk_rw_signals</span></code></a>. Used as part
-of saving a device.
-:param signals:
-:type signals: Dict[str, SignalRW]: A dictionary matching the string attribute path
-:param of a SignalRW to the signal itself:
-:param ignore:
-:type ignore: List of strings: . A list of string attribute paths to the SignalRW’s
-:param to be ignored.:</p>
+<dd><p>Get signal values in bulk.</p>
+<p>Used as part of saving the signals of a device to a yaml file.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>Dict[str, Any]</strong> (<em>A dictionary matching the string attribute path of a SignalRW</em>)</p></li>
-<li><p><em>to the value of that signal. Ignored attributes are set to None.</em></p></li>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signals</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference internal" href="ophyd_async.core.SignalRW.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><em>SignalRW</em></a><em>]</em>) – Dictionary with pv names and matching SignalRW values. Often the direct result
+of <a class="reference internal" href="ophyd_async.core.walk_rw_signals.html#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-func docutils literal notranslate"><span class="pre">walk_rw_signals()</span></code></a>.</p></li>
+<li><p><strong>ignore</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>]</em><em>]</em>) – Optional list of PVs that should be ignored.</p></li>
 </ul>
-</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>Yields:</dt><dd><p>Iterator[Dict[str, Any]]: The Location of a signal</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing pv names and their associated values. Ignored pvs are
+set to None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, Any]</p>
 </dd>
 </dl>
 <div class="admonition seealso">
