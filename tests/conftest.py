@@ -68,7 +68,10 @@ def pva():
         assert not p.poll(), p.stdout.read()
 
     yield processes
-    [p.terminate() for p in processes]
+
+    for p in processes:
+        p.terminate()
+        p.communicate()
 
 
 @pytest.fixture

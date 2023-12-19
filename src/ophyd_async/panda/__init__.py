@@ -6,6 +6,7 @@ from .table import (
     seq_table_from_arrays,
     seq_table_from_rows,
 )
+from .utils import phase_sorter
 
 __all__ = [
     "PandA",
@@ -19,4 +20,5 @@ __all__ = [
     "SeqTableRow",
     "SeqTrigger",
     "pvi",
+    "phase_sorter",
 ]
