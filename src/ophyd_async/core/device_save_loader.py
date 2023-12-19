@@ -45,30 +45,29 @@ class OphydDumper(yaml.Dumper):
 def get_signal_values(
     signals: Dict[str, SignalRW[Any]], ignore: Optional[List[str]] = None
 ) -> Generator[Msg, Sequence[Location[Any]], Dict[str, Any]]:
-    """
-    Read the values of SignalRW's, to be used alongside `walk_rw_signals`. Used as part
-    of saving a device.
+    """Get signal values in bulk.
+
+    Used as part of saving the signals of a device to a yaml file.
+
     Parameters
     ----------
-        signals : Dict[str, SignalRW]: A dictionary matching the string attribute path
-        of a SignalRW to the signal itself
+    signals : Dict[str, SignalRW]
+        Dictionary with pv names and matching SignalRW values. Often the direct result
+        of :func:`walk_rw_signals`.
 
-        ignore : List of strings: . A list of string attribute paths to the SignalRW's
-        to be ignored.
+    ignore : Optional[List[str]]
+        Optional list of PVs that should be ignored.
 
     Returns
     -------
-        Dict[str, Any]: A dictionary matching the string attribute path of a SignalRW
-        to the value of that signal. Ignored attributes are set to None.
-
-    Yields:
-        Iterator[Dict[str, Any]]: The Location of a signal
+    Dict[str, Any]
+        A dictionary containing pv names and their associated values. Ignored pvs are
+        set to None.
 
     See Also
     --------
     :func:`ophyd_async.core.walk_rw_signals`
     :func:`ophyd_async.core.save_to_yaml`
-
     """
 
     ignore = ignore or []
@@ -93,9 +92,11 @@ def get_signal_values(
 def walk_rw_signals(
     device: Device, path_prefix: Optional[str] = ""
 ) -> Dict[str, SignalRW[Any]]:
-    """
-    Get all the SignalRWs from a device and store them with their dotted attribute
-    paths in a dictionary. Used as part of saving and loading a device
+    """Retrieve all SignalRWs from a device.
+
+    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
+    part of saving and loading a device.
+
     Parameters
     ----------
     device : Device
@@ -131,9 +132,7 @@ def walk_rw_signals(
 
 
 def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
-    """
-    Serialises and saves a phase or a set of phases of a device's SignalRW's to a
-    yaml file.
+    """Plan which serialises a phase or set of phases of SignalRWs to a yaml file.
 
     Parameters
     ----------
@@ -163,8 +162,7 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
 
 
 def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
-    """
-    Returns a list of dicts with saved signal values from a yaml file
+    """Plan that returns a list of dicts with saved signal values from a yaml file.
 
     Parameters
     ----------
@@ -183,18 +181,22 @@ def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
 def set_signal_values(
     signals: Dict[str, SignalRW[Any]], values: Sequence[Dict[str, Any]]
 ) -> Generator[Msg, None, None]:
-    """
-    Loads a phase or a set of phases from a yaml file and puts value to an Ophyd device
+    """Maps signals from a yaml file into device signals.
+
+    ``values`` contains signal values in phases, which are loaded in sequentially
+    into the provided signals, to ensure signals are set in the correct order.
 
     Parameters
     ----------
     signals : Dict[str, SignalRW[Any]]
         Dictionary of named signals to be updated if value found in values argument.
+        Can be the output of :func:`walk_rw_signals()` for a device.
 
     values : Sequence[Dict[str, Any]]
         List of dictionaries of signal name and value pairs, if a signal matches
         the name of one in the signals argument, sets the signal to that value.
         The groups of signals are loaded in their list order.
+        Can be the output of :func:`load_from_yaml()` for a yaml file.
 
     See Also
     --------
@@ -206,8 +208,79 @@ def set_signal_values(
     for phase_number, phase in enumerate(values):
         # Key is signal name
         for key, value in phase.items():
+            # Skip ignored values
+            if value is None:
+                continue
+
             if key in signals:
                 yield from abs_set(
                     signals[key], value, group=f"load-phase{phase_number}"
                 )
+
         yield from wait(f"load-phase{phase_number}")
+
+
+def load_device(device: Device, path: str):
+    """Plan which loads PVs from a yaml file into a device.
+
+    Parameters
+    ----------
+    device: Device
+        The device to load PVs into
+    path: str
+        Path of the yaml file to load
+
+    See Also
+    --------
+    :func:`ophyd_async.core.save_device`
+    """
+    values = load_from_yaml(path)
+    signals_to_set = walk_rw_signals(device)
+    yield from set_signal_values(signals_to_set, values)
+
+
+def all_at_once(values: Dict[str, Any]) -> Sequence[Dict[str, Any]]:
+    """Sort all the values into a single phase so they are set all at once"""
+    return [values]
+
+
+def save_device(
+    device: Device,
+    path: str,
+    sorter: Callable[[Dict[str, Any]], Sequence[Dict[str, Any]]] = all_at_once,
+    ignore: Optional[List[str]] = None,
+):
+    """Plan that saves the state of all PV's on a device using a sorter.
+
+    The default sorter assumes all saved PVs can be loaded at once, and therefore
+    can be saved at one time, i.e. all PVs will appear on one list in the
+    resulting yaml file.
+
+    This can be a problem, because when the yaml is ingested with
+    :func:`ophyd_async.core.load_device`, it will set all of those PVs at once.
+    However, some PV's need to be set before others - this is device specific.
+
+    Therefore, users should consider the order of device loading and write their
+    own sorter algorithms accordingly.
+
+    See :func:`ophyd_async.panda.phase_sorter` for a valid implementation of the
+    sorter.
+
+    Parameters
+    ----------
+    device : Device
+        The device whose PVs should be saved.
+
+    path : str
+        The path where the resulting yaml should be saved to
+
+    sorter : Callable[[Dict[str, Any]], Sequence[Dict[str, Any]]]
+
+    ignore : Optional[List[str]]
+
+    See Also
+    --------
+    :func:`ophyd_async.core.load_device`
+    """
+    values = yield from get_signal_values(walk_rw_signals(device), ignore=ignore)
+    save_to_yaml(sorter(values), path)
