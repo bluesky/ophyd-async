@@ -99,11 +99,11 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
 
 async def test_mover_stopped(sim_mover: demo.Mover):
     callbacks = []
-    set_sim_callback(sim_mover.stop_, lambda r, v: callbacks.append(v))
 
-    assert callbacks == [None]
-    await sim_mover.stop()
-    assert callbacks == [None, None]
+    with set_sim_callback(sim_mover.stop_, lambda r, v: callbacks.append(v)):
+        assert callbacks == [None]
+        await sim_mover.stop()
+        assert callbacks == [None, None]
 
 
 async def test_read_mover(sim_mover: demo.Mover):
