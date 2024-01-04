@@ -1,10 +1,10 @@
 import pytest
 
-from ophyd_async.core import Device, DeviceCollector, NotConnected
+from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, NotConnected
 
 
 class Dummy(Device):
-    async def connect(self, sim: bool = False):
+    async def connect(self, sim: bool = False, timeout=DEFAULT_TIMEOUT):
         raise AttributeError()
 
 

@@ -5,13 +5,17 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
-from contextlib import suppress
 from typing import Any, Dict, Generator, Iterator, Optional, Set, Tuple, TypeVar
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
 
-from .utils import NotConnected, wait_for_connection
+from .utils import (
+    DEFAULT_TIMEOUT,
+    ConnectionTimeoutError,
+    NotConnected,
+    wait_for_connection,
+)
 
 
 class Device(HasName):
@@ -51,16 +55,21 @@ class Device(HasName):
             child.set_name(child_name)
             child.parent = self
 
-    async def connect(self, sim: bool = False):
+    async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
         """Connect self and all child Devices.
+
+        Contains a timeout that gets propagated to child.connect methods.
 
         Parameters
         ----------
         sim:
             If True then connect in simulation mode.
+        timeout:
+            Time to wait before failing with a TimeoutError.
         """
         coros = {
-            name: child_device.connect(sim) for name, child_device in self.children()
+            name: child_device.connect(sim, timeout=timeout)
+            for name, child_device in self.children()
         }
         if coros:
             await wait_for_connection(**coros)
@@ -141,40 +150,52 @@ class DeviceCollector:
 
     async def _on_exit(self) -> None:
         # Name and kick off connect for devices
-        tasks: Dict[asyncio.Task, str] = {}
+        tasks: Dict[str, asyncio.Task] = {}
         for name, obj in self._objects_on_exit.items():
             if name not in self._names_on_enter and isinstance(obj, Device):
                 if self._set_name and not obj.name:
                     obj.set_name(name)
                 if self._connect:
-                    task = asyncio.create_task(obj.connect(self._sim))
-                    tasks[task] = name
+                    tasks[name] = asyncio.create_task(
+                        obj.connect(self._sim, timeout=self._timeout)
+                    )
         # Wait for all the signals to have finished
         if tasks:
             await self._wait_for_tasks(tasks)
 
-    async def _wait_for_tasks(self, tasks: Dict[asyncio.Task, str]):
-        done, pending = await asyncio.wait(tasks, timeout=self._timeout)
-        if pending:
-            msg = f"{len(pending)} Devices did not connect:"
-            for t in pending:
-                t.cancel()
-                with suppress(Exception):
-                    await t
-                e = t.exception()
-                msg += f"\n  {tasks[t]}: {type(e).__name__}"
-                lines = str(e).splitlines()
+    async def _wait_for_tasks(self, tasks: Dict[str, asyncio.Task]):
+        names = tasks.keys()
+        results = await asyncio.gather(*tasks.values(), return_exceptions=True)
+
+        disconnected = 0
+        failed: Dict[str, Exception] = {}
+
+        msg = ""
+
+        for name, result in zip(names, results):
+            if result and isinstance(result, ConnectionTimeoutError):
+                msg += f"\n  {name}: {type(result).__name__}"
+                lines = str(result).splitlines()
                 if len(lines) <= 1:
-                    msg += f": {e}"
+                    msg += f": {result}"
                 else:
                     msg += "".join(f"\n    {line}" for line in lines)
+
+                disconnected += 1
+
+            elif result and isinstance(result, Exception):
+                failed[name] = result
+
+        if disconnected:
+            msg = f"{disconnected} Devices did not connect:" + msg
             logging.error(msg)
-        raised = [t for t in done if t.exception()]
-        if raised:
-            logging.error(f"{len(raised)} Devices raised an error:")
-            for t in raised:
-                logging.exception(f"  {tasks[t]}:", exc_info=t.exception())
-        if pending or raised:
+
+        if failed:
+            logging.error(f"{len(failed)} Devices raised an error:")
+            for name, exception in failed.items():
+                logging.exception(f"  {name}:", exc_info=exception)
+
+        if disconnected or failed:
             raise NotConnected("Not all Devices connected")
 
     async def __aexit__(self, type, value, traceback):

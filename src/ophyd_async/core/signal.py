@@ -58,7 +58,7 @@ class Signal(Device, Generic[T]):
     def set_name(self, name: str = ""):
         self._name = name
 
-    async def connect(self, sim=False):
+    async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
             self._backend = SimSignalBackend(
                 datatype=self._init_backend.datatype, source=self._init_backend.source
@@ -67,7 +67,7 @@ class Signal(Device, Generic[T]):
         else:
             self._backend = self._init_backend
             _sim_backends.pop(self, None)
-        await self._backend.connect()
+        await self._backend.connect(timeout=timeout)
 
     @property
     def source(self) -> str:
