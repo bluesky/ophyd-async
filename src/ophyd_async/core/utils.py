@@ -31,7 +31,7 @@ async def wait_for_connection(**coros: Awaitable[None]):
     """Call many underlying signals, accumulating `ConnectionTimeoutError` exceptions
 
     Expected kwargs should be a mapping of names to coroutine tasks to execute.
-    
+
     Raises
     ------
     `ConnectionTimeoutError` if tasks timeout.
