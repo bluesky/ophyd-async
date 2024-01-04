@@ -12,7 +12,7 @@ from typing import Any, Dict, Generic, Optional, Type, Union, cast, get_origin
 from bluesky.protocols import Descriptor, Dtype, Reading
 
 from .signal_backend import SignalBackend
-from .utils import ReadingValueCallback, T, get_dtype
+from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
     str: "string",
@@ -123,7 +123,7 @@ class SimSignalBackend(SignalBackend[T]):
         self.put_proceeds.set()
         self.callback: Optional[ReadingValueCallback[T]] = None
 
-    async def connect(self) -> None:
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
         self.converter = make_converter(self.datatype)
         self._initial_value = self.converter.make_initial_value(self.datatype)
         self._severity = 0

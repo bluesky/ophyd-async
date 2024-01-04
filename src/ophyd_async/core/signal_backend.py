@@ -3,7 +3,7 @@ from typing import Generic, Optional, Type
 
 from bluesky.protocols import Descriptor, Reading
 
-from .utils import ReadingValueCallback, T
+from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
 class SignalBackend(Generic[T]):
@@ -16,7 +16,7 @@ class SignalBackend(Generic[T]):
     source: str = ""
 
     @abstractmethod
-    async def connect(self):
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         """Connect to underlying hardware"""
 
     @abstractmethod

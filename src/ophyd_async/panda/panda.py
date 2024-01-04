@@ -19,6 +19,8 @@ from typing import (
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    ConnectionTimeoutError,
     Device,
     DeviceVector,
     Signal,
@@ -93,8 +95,14 @@ def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
             del pvi_info[k]
 
 
-async def pvi(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
-    result = await pvi_get(pv, ctxt, timeout=timeout)
+async def pvi(
+    pv: str, ctxt: Context, timeout: float = DEFAULT_TIMEOUT
+) -> Dict[str, PVIEntry]:
+    try:
+        result = await pvi_get(pv, ctxt, timeout=timeout)
+    except TimeoutError:
+        raise ConnectionTimeoutError(pv)
+
     _remove_inconsistent_blocks(result)
     return result
 
@@ -241,7 +249,9 @@ class PandA(Device):
         else:
             setattr(self, name, block)
 
-    async def connect(self, sim=False) -> None:
+    async def connect(
+        self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+    ) -> None:
         """Initialises all blocks and connects them.
 
         First, checks for pvi information. If it exists, make all blocks from this.
@@ -250,7 +260,12 @@ class PandA(Device):
         If there's no pvi information, that's because we're in sim mode. In that case,
         makes all required blocks.
         """
-        pvi_info = await pvi(self._init_prefix + ":PVI", self.ctxt) if not sim else None
+        pvi_info = (
+            await pvi(self._init_prefix + ":PVI", self.ctxt, timeout=timeout)
+            if not sim
+            else None
+        )
+
         hints = {
             attr_name: attr_type
             for attr_name, attr_type in get_type_hints(self, globalns=globals()).items()

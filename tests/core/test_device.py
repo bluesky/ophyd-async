@@ -3,14 +3,20 @@ import traceback
 
 import pytest
 
-from ophyd_async.core import Device, DeviceCollector, DeviceVector, wait_for_connection
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    Device,
+    DeviceCollector,
+    DeviceVector,
+    wait_for_connection,
+)
 
 
 class DummyBaseDevice(Device):
     def __init__(self) -> None:
         self.connected = False
 
-    async def connect(self, sim=False):
+    async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         self.connected = True
 
 
@@ -83,7 +89,7 @@ async def test_wait_for_connection():
         def __init__(self, name) -> None:
             self.set_name(name)
 
-        async def connect(self, sim=False):
+        async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
             await asyncio.sleep(0.01)
             self.connected = True
 
