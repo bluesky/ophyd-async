@@ -13,8 +13,8 @@ ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
 
 
-class NotConnected(Exception):
-    """Exception to be raised if a `Device.connect` is cancelled"""
+class ConnectionTimeoutError(TimeoutError):
+    """Exception to be raised if a `Device.connect` has timed out."""
 
     def __init__(self, *lines: str):
         self.lines = list(lines)
@@ -23,34 +23,31 @@ class NotConnected(Exception):
         return "\n".join(self.lines)
 
 
+class NotConnected(Exception):
+    """Exception to be raised if a `Device.connect` is cancelled"""
+
+
 async def wait_for_connection(**coros: Awaitable[None]):
-    """Call many underlying signals, accumulating `NotConnected` exceptions
+    """Call many underlying signals, accumulating `ConnectionTimeoutError` exceptions
+
+    Expected kwargs should be a mapping of names to coroutine tasks to execute.
 
     Raises
     ------
-    `NotConnected` if cancelled
+    `ConnectionTimeoutError` if tasks timeout.
     """
-    ts = {k: asyncio.create_task(c) for (k, c) in coros.items()}  # type: ignore
-    try:
-        done, pending = await asyncio.wait(ts.values())
-    except asyncio.CancelledError:
-        for t in ts.values():
-            t.cancel()
-        lines: List[str] = []
-        for k, t in ts.items():
-            try:
-                await t
-            except NotConnected as e:
-                if len(e.lines) == 1:
-                    lines.append(f"{k}: {e.lines[0]}")
-                else:
-                    lines.append(f"{k}:")
-                    lines += [f"  {line}" for line in e.lines]
-        raise NotConnected(*lines)
-    else:
-        # Wait for everything to foreground the exceptions
-        for f in list(done) + list(pending):
-            await f
+    names = coros.keys()
+    results = await asyncio.gather(*coros.values(), return_exceptions=True)
+
+    lines: List[str] = []
+    for name, result in zip(names, results):
+        if isinstance(result, ConnectionTimeoutError):
+            lines.append(f"{name}: {result.lines[0]}")
+        elif isinstance(result, Exception):
+            raise result
+
+    if lines:
+        raise ConnectionTimeoutError(*lines)
 
 
 def get_dtype(typ: Type) -> Optional[np.dtype]:

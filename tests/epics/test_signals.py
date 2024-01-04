@@ -18,14 +18,8 @@ import pytest
 from aioca import purge_channel_caches
 from bluesky.protocols import Reading
 
-from ophyd_async.core import (
-    NotConnected,
-    SignalBackend,
-    T,
-    get_dtype,
-    load_from_yaml,
-    save_to_yaml,
-)
+from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
+from ophyd_async.core.utils import ConnectionTimeoutError
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
 from ophyd_async.epics.signal.signal import _make_backend
 
@@ -381,15 +375,9 @@ async def test_non_existant_errors(ioc: IOC):
     backend = await ioc.make_backend(str, "non-existant", connect=False)
     # Can't use asyncio.wait_for on python3.8 because of
     # https://github.com/python/cpython/issues/84787
-    done, pending = await asyncio.wait(
-        [asyncio.create_task(backend.connect())], timeout=0.1
-    )
-    assert len(done) == 0
-    assert len(pending) == 1
-    t = pending.pop()
-    t.cancel()
-    with pytest.raises(NotConnected, match=backend.source):
-        await t
+
+    with pytest.raises(ConnectionTimeoutError, match=backend.source):
+        await backend.connect(timeout=0.1)
 
 
 def test_make_backend_fails_for_different_transports():

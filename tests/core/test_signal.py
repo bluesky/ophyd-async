@@ -13,6 +13,7 @@ from ophyd_async.core import (
     set_sim_value,
     wait_for_value,
 )
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 
 class MySignal(Signal):
@@ -20,7 +21,7 @@ class MySignal(Signal):
     def source(self) -> str:
         return "me"
 
-    async def connect(self, sim=False):
+    async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         pass
 
 
