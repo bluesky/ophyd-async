@@ -154,7 +154,7 @@ async def test_sensor_disconnected():
         mock_logging.error.assert_called_once_with(
             """\
 1 Devices did not connect:
-  s: NotConnected
+  s: ConnectionTimeoutError
     value: ca://PRE:Value
     mode: ca://PRE:Mode"""
         )
