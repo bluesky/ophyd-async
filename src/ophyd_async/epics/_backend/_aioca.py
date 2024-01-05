@@ -1,5 +1,4 @@
 import sys
-from asyncio import CancelledError
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional, Sequence, Type, Union

@@ -18,14 +18,7 @@ import pytest
 from aioca import purge_channel_caches
 from bluesky.protocols import Reading
 
-from ophyd_async.core import (
-    NotConnected,
-    SignalBackend,
-    T,
-    get_dtype,
-    load_from_yaml,
-    save_to_yaml,
-)
+from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import ConnectionTimeoutError
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
 from ophyd_async.epics.signal.signal import _make_backend
