@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using existing Devices &#8212; ophyd-async 0.2.1.dev4+g4d416a5c documentation</title>
+    <title>Using existing Devices &#8212; ophyd-async 0.2.1.dev5+g2477d117 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=bd9e20870c6007c4c509"></script>
 
-    <script src="../../_static/documentation_options.js?v=e2eb918a"></script>
+    <script src="../../_static/documentation_options.js?v=f7483148"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -130,8 +130,8 @@
       
     
     
-    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev4+g4d416a5c documentation - Home"/>
-    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev4+g4d416a5c documentation - Home"/>`);</script>
+    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev5+g2477d117 documentation - Home"/>
+    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev5+g2477d117 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -712,12 +712,12 @@ can do a <a class="reference external" href="https://blueskyproject.io/bluesky/g
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 1     Time: 2024-01-04 17:41:40</span>
-<span class="go">Persistent Unique Scan ID: &#39;1156f981-a202-4671-94b1-979fc06993b0&#39;</span>
+<span class="go">Transient Scan ID: 1     Time: 2024-01-05 09:37:43</span>
+<span class="go">Persistent Unique Scan ID: &#39;e603834b-efa5-4d24-b701-70f1333f2eb2&#39;</span>
 
 
 
-<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;1156f981-a202-4671-94b1-979fc06993b0&#39;,), plan_result=&#39;1156f981-a202-4671-94b1-979fc06993b0&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;e603834b-efa5-4d24-b701-70f1333f2eb2&#39;,), plan_result=&#39;e603834b-efa5-4d24-b701-70f1333f2eb2&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/grid_scan1.png"><img alt="../../_images/grid_scan1.png" src="../../_images/grid_scan1.png" style="width: 4in;" /></a>
@@ -738,12 +738,12 @@ device we can see it gives the same result:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">,</span> <span class="n">det_old</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 2     Time: 2024-01-04 17:41:45</span>
-<span class="go">Persistent Unique Scan ID: &#39;79ed7669-9a87-4f73-9a69-2165285ad7bf&#39;</span>
+<span class="go">Transient Scan ID: 2     Time: 2024-01-05 09:37:48</span>
+<span class="go">Persistent Unique Scan ID: &#39;c9bd7966-f0ee-4034-b81a-2f11dcd2b6a4&#39;</span>
 
 
 
-<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;79ed7669-9a87-4f73-9a69-2165285ad7bf&#39;,), plan_result=&#39;79ed7669-9a87-4f73-9a69-2165285ad7bf&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;c9bd7966-f0ee-4034-b81a-2f11dcd2b6a4&#39;,), plan_result=&#39;c9bd7966-f0ee-4034-b81a-2f11dcd2b6a4&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../../_images/grid_scan2.png"><img alt="../../_images/grid_scan2.png" src="../../_images/grid_scan2.png" style="width: 4in;" /></a>
