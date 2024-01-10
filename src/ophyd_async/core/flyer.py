@@ -20,7 +20,7 @@ from bluesky.protocols import (
     Flyable,
     HasHints,
     Hints,
-    Movable,
+    Preparable,
     Reading,
     Stageable,
     WritesExternalAssets,
@@ -174,7 +174,7 @@ class TriggerLogic(ABC, Generic[T]):
 
 class HardwareTriggeredFlyable(
     Device,
-    Movable,
+    Preparable,
     Stageable,
     Flyable,
     Collectable,
@@ -210,18 +210,15 @@ class HardwareTriggeredFlyable(
         self._offset = 0
         self._current_frame = 0
 
-    def set(self, value: T) -> AsyncStatus:
+    def prepare(self, value: T) -> AsyncStatus:
         """Arm detectors and setup trajectories"""
         # index + offset = current_frame, but starting a new scan so want it to be 0
         # so subtract current_frame from both sides
-        return AsyncStatus(self._set(value))
+        return AsyncStatus(self._prepare(value))
 
-    async def _set(self, value: T) -> None:
+    async def _prepare(self, value: T) -> None:
         self._offset -= self._current_frame
         self._current_frame = 0
-        await self._prepare(value)
-
-    async def _prepare(self, value: T):
         trigger_info = self._trigger_logic.trigger_info(value)
         # Move to start and setup the flyscan, and arm dets in parallel
         await asyncio.gather(
