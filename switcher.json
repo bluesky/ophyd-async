@@ -36,6 +36,10 @@
     "url": "https://bluesky.github.io/ophyd-async/fix-sr-paths/"
   },
   {
+    "version": "flyer-preparable",
+    "url": "https://bluesky.github.io/ophyd-async/flyer-preparable/"
+  },
+  {
     "version": "flyingpanda",
     "url": "https://bluesky.github.io/ophyd-async/flyingpanda/"
   },
