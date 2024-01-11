@@ -107,7 +107,7 @@ class PandA(Device):
     pcap: PcapBlock
 
     def __init__(self, prefix: str, name: str = "") -> None:
-        super().__init__(self.name)
+        super().__init__(name)
         self._init_prefix = prefix
         self.pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
             frozenset({"r", "w"}): lambda dtype, rpv, wpv: epics_signal_rw(
