@@ -48,6 +48,10 @@
     "url": "https://bluesky.github.io/ophyd-async/get-count-to-work-with-async-aravis-detector/"
   },
   {
+    "version": "give_panda_name",
+    "url": "https://bluesky.github.io/ophyd-async/give_panda_name/"
+  },
+  {
     "version": "hdf-num-extra-dims",
     "url": "https://bluesky.github.io/ophyd-async/hdf-num-extra-dims/"
   },
