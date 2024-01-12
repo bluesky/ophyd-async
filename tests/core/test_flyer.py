@@ -166,7 +166,7 @@ async def test_hardware_triggered_flyable(
         assert trigger_logic.state == TriggerState.stopping
 
     # move the flyer to the correct place, before fly scanning.
-    RE(bps.mv(flyer, 1))
+    RE(bps.prepare(flyer, 1))
     assert trigger_logic.state == TriggerState.preparing
     for controller in detector_group._controllers:
         assert controller.disarm.called  # type: ignore

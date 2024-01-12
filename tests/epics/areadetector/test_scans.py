@@ -129,7 +129,7 @@ async def test_hdf_writer_fails_on_timeout_with_flyscan(
         finally:
             yield from bps.unstage_all(flyer)
 
-    RE(bps.mv(flyer, 1))
+    RE(bps.prepare(flyer, 1))
     with pytest.raises(Exception) as exc:
         RE(flying_plan())
 
