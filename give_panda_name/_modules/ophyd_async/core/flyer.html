@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.flyer &#8212; ophyd-async 0.2.1.dev3+g606a5135 documentation</title>
+    <title>ophyd_async.core.flyer &#8212; ophyd-async 0.2.1.dev4+g8423017e documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=bd9e20870c6007c4c509"></script>
 
-    <script src="../../../_static/documentation_options.js?v=6196fd5f"></script>
+    <script src="../../../_static/documentation_options.js?v=fac0b23c"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -127,8 +127,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev3+g606a5135 documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev3+g606a5135 documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev4+g8423017e documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev4+g8423017e documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -448,7 +448,7 @@ document.write(`
     <span class="n">Flyable</span><span class="p">,</span>
     <span class="n">HasHints</span><span class="p">,</span>
     <span class="n">Hints</span><span class="p">,</span>
-    <span class="n">Movable</span><span class="p">,</span>
+    <span class="n">Preparable</span><span class="p">,</span>
     <span class="n">Reading</span><span class="p">,</span>
     <span class="n">Stageable</span><span class="p">,</span>
     <span class="n">WritesExternalAssets</span><span class="p">,</span>
@@ -649,7 +649,7 @@ document.write(`
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.core.HardwareTriggeredFlyable.html#ophyd_async.core.HardwareTriggeredFlyable">[docs]</a>
 <span class="k">class</span> <span class="nc">HardwareTriggeredFlyable</span><span class="p">(</span>
     <span class="n">Device</span><span class="p">,</span>
-    <span class="n">Movable</span><span class="p">,</span>
+    <span class="n">Preparable</span><span class="p">,</span>
     <span class="n">Stageable</span><span class="p">,</span>
     <span class="n">Flyable</span><span class="p">,</span>
     <span class="n">Collectable</span><span class="p">,</span>
@@ -685,21 +685,18 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_frame</span> <span class="o">=</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="HardwareTriggeredFlyable.set">
-<a class="viewcode-back" href="../../../user/generated/ophyd_async.core.HardwareTriggeredFlyable.html#ophyd_async.core.HardwareTriggeredFlyable.set">[docs]</a>
-    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+<div class="viewcode-block" id="HardwareTriggeredFlyable.prepare">
+<a class="viewcode-back" href="../../../user/generated/ophyd_async.core.HardwareTriggeredFlyable.html#ophyd_async.core.HardwareTriggeredFlyable.prepare">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Arm detectors and setup trajectories&quot;&quot;&quot;</span>
         <span class="c1"># index + offset = current_frame, but starting a new scan so want it to be 0</span>
         <span class="c1"># so subtract current_frame from both sides</span>
-        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
 
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_frame</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_frame</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
         <span class="n">trigger_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">trigger_info</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="c1"># Move to start and setup the flyscan, and arm dets in parallel</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
