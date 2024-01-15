@@ -90,5 +90,5 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        await self._stop.execute(wait=False)
+        await self._stop.trigger()
 
