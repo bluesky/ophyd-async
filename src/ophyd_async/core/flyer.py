@@ -20,7 +20,7 @@ from bluesky.protocols import (
     Flyable,
     HasHints,
     Hints,
-    Preparable,
+    # Preparable,
     Reading,
     Stageable,
     WritesExternalAssets,
@@ -174,7 +174,7 @@ class TriggerLogic(ABC, Generic[T]):
 
 class HardwareTriggeredFlyable(
     Device,
-    Preparable,
+    # Preparable,
     Stageable,
     Flyable,
     # Collectable,

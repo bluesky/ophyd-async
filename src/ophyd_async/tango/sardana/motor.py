@@ -56,6 +56,7 @@ class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
                     time_elapsed=time.monotonic() - start,
                 )
 
+        # raise RuntimeError("Test")
         self.position.subscribe_value(update_watchers)
         try:
             await self.position.set(new_position)

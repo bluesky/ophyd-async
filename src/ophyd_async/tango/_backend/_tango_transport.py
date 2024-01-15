@@ -96,6 +96,10 @@ class TangoProxy:
         self._name = name
 
     # --------------------------------------------------------------------
+    async def connect(self):
+        """perform actions after proxy is connected, e.g. checks if signal can be subscribed"""
+
+    # --------------------------------------------------------------------
     @abstractmethod
     async def get(self) -> T:
         """Get value from TRL"""
@@ -138,9 +142,18 @@ class TangoProxy:
 # --------------------------------------------------------------------
 class AttributeProxy(TangoProxy):
 
-    support_events = True
+    support_events = False
     _event_callback = None
     _eid = None
+
+    # --------------------------------------------------------------------
+    async def connect(self) -> None:
+        try:
+            eid = await self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor)
+            await self._proxy.unsubscribe_event(eid)
+            self.support_events = True
+        except Exception:
+            pass
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
@@ -165,11 +178,10 @@ class AttributeProxy(TangoProxy):
                 finished = False
                 while not finished:
                     try:
-                        val = await dev.write_attribute_reply(rid)
+                        _ = await self._proxy.write_attribute_reply(rid)
                         finished = True
                     except:
                         await asyncio.sleep(A_BIT)
-
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
@@ -227,7 +239,7 @@ class CommandProxy(TangoProxy):
         return self._last_reading["value"]
 
     # --------------------------------------------------------------------
-    # @ensure_proper_executor
+    @ensure_proper_executor
     async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
         if wait:
             val = await self._proxy.command_inout(self._name, value)
@@ -238,7 +250,7 @@ class CommandProxy(TangoProxy):
                 finished = False
                 while not finished:
                     try:
-                        val = await dev.command_inout_reply(rid)
+                        val = await self._proxy.command_inout_reply(rid)
                         finished = True
                     except:
                         await asyncio.sleep(A_BIT)
@@ -246,7 +258,7 @@ class CommandProxy(TangoProxy):
         self._last_reading = dict(value=val, timestamp=time.time(), alarm_severity=0)
 
     # --------------------------------------------------------------------
-    # @ensure_proper_executor
+    @ensure_proper_executor
     async def get_config(self) -> CommandInfo:
         return await self._proxy.get_command_config(self._name)
 
@@ -330,12 +342,22 @@ def get_trl_descriptor(datatype: Optional[Type], tango_resource: str,
 # --------------------------------------------------------------------
 async def get_tango_trl(full_trl: str, device_proxy: Optional[DeviceProxy]) -> TangoProxy:
     device_trl, trl_name = full_trl.rsplit('/', 1)
+    trl_name = trl_name.lower()
     device_proxy = device_proxy or await DeviceProxy(device_trl)
-    if trl_name in device_proxy.get_attribute_list():
+
+    # all attributes can be always accessible with low register
+    all_attrs = [attr_name.lower() for attr_name in device_proxy.get_attribute_list()]
+    if trl_name in all_attrs:
         return AttributeProxy(device_proxy, trl_name)
-    if trl_name in device_proxy.get_command_list():
+
+    # all commands can be always accessible with low register
+    all_cmds = [cmd_name.lower() for cmd_name in device_proxy.get_command_list()]
+    if trl_name in all_cmds:
         return CommandProxy(device_proxy, trl_name)
-    if trl_name in device_proxy.get_pipe_list():
+
+    # all pipes can be always accessible with low register
+    all_pipes = [pipe_name.lower() for pipe_name in device_proxy.get_pipe_list()]
+    if trl_name in all_pipes:
         raise NotImplemented("Pipes are not supported")
 
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
@@ -361,6 +383,7 @@ class TangoTransport(TangoSignalBackend[T]):
     async def _connect_and_store_config(self, trl):
         try:
             self.proxies[trl] = await get_tango_trl(trl, self.proxies[trl])
+            await self.proxies[trl].connect()
             self.trl_configs[trl] = await self.proxies[trl].get_config()
         except CancelledError:
             raise NotConnected(self.source)
@@ -397,6 +420,10 @@ class TangoTransport(TangoSignalBackend[T]):
     # --------------------------------------------------------------------
     async def get_w_value(self) -> T:
         return await self.proxies[self.write_trl].get_w_value()
+
+    # --------------------------------------------------------------------
+    def is_cachable(self):
+        return self.proxies[self.read_trl].support_events
 
     # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:

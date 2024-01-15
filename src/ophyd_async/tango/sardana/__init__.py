@@ -1,3 +1,3 @@
-from ophyd_async.tango.sardana.devices import SardanaMotor
+from ophyd_async.tango.sardana.motor import SardanaMotor
 
 __all__ = ("SardanaMotor",)

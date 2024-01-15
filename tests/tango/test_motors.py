@@ -8,6 +8,7 @@ from unittest.mock import Mock, call
 from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.tango.sardana import SardanaMotor
+from ophyd_async.tango.device_controllers import OmsVME58Motor
 from ophyd_async.core import DeviceCollector
 
 from bluesky import RunEngine
@@ -19,6 +20,22 @@ from bluesky.plan_stubs import mv
 # all the tasks have a chance to run
 A_BIT = 0.001
 
+# dict: {class: tango trl}
+MOTORS_TO_TEST = {
+    SardanaMotor: "motor/dummy_mot_ctrl/1",
+    OmsVME58Motor: "p09/motor/eh.01"
+}
+
+
+# --------------------------------------------------------------------
+@pytest.fixture(
+    params=list(MOTORS_TO_TEST.items()),
+    ids=list(MOTORS_TO_TEST.keys()),
+)
+def motor_to_test(request):
+    return request.param
+
+
 # --------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
@@ -27,9 +44,9 @@ def reset_tango_asyncio():
 
 # --------------------------------------------------------------------
 @pytest.fixture
-async def dummy_motor():
+async def dummy_motor(motor_to_test):
     async with DeviceCollector():
-        dummy_motor = await SardanaMotor("motor/dummy_mot_ctrl/1")
+        dummy_motor = await motor_to_test[0](motor_to_test[1])
 
     yield dummy_motor
 

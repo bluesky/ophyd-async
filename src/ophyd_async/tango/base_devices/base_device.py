@@ -6,7 +6,7 @@ from abc import abstractmethod
 
 from tango.asyncio import DeviceProxy
 
-from ophyd_async.core import StandardReadable
+from ophyd_async.core import StandardReadable, AsyncStatus
 
 __all__ = ("TangoReadableDevice", )
 
@@ -43,3 +43,17 @@ class TangoReadableDevice(StandardReadable):
         """
         This method should be used to register signals
         """
+
+    # --------------------------------------------------------------------
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
+        for sig in self._read_signals + self._configuration_signals:
+            if hasattr(sig, "is_cachable") and sig.is_cachable():
+                await sig.stage().task
+
+    # --------------------------------------------------------------------
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        for sig in self._read_signals + self._configuration_signals:
+            if hasattr(sig, "is_cachable") and sig.is_cachable():
+                await sig.unstage().task
