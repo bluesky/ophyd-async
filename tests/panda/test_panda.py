@@ -47,6 +47,11 @@ def test_panda_names_correct(sim_panda: PandA):
     assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
 
 
+def test_panda_name_set():
+    panda = PandA("", "panda")
+    assert panda.name == "panda"
+
+
 async def test_pvi_get_for_inconsistent_blocks():
     dummy_pvi = {
         "pcap": {},
