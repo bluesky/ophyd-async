@@ -5,14 +5,14 @@ import asyncio
 import time
 from typing import List, Callable
 
-from bluesky.protocols import Triggerable
+from bluesky.protocols import Triggerable, Preparable
 
 from ophyd_async.core import AsyncStatus
 from ophyd_async.tango import TangoReadableDevice, tango_signal_rw, tango_signal_x
 
 
 # --------------------------------------------------------------------
-class DGG2Timer(TangoReadableDevice, Triggerable):
+class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
 
     # --------------------------------------------------------------------
     def __init__(self, trl: str, name="") -> None:
@@ -64,6 +64,10 @@ class DGG2Timer(TangoReadableDevice, Triggerable):
     def trigger(self) -> AsyncStatus:
         watchers: List[Callable] = []
         return AsyncStatus(self._trigger(watchers), watchers)
+
+    # --------------------------------------------------------------------
+    def prepare(self, time) -> AsyncStatus:
+        return self.sampletime.set(time)
 
     # --------------------------------------------------------------------
     async def set_time(self, time: float) -> None:

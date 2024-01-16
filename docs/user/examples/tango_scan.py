@@ -5,9 +5,11 @@ from ophyd_async.core.utils import merge_gathered_dicts
 from ophyd_async.tango.device_controllers import OmsVME58Motor, DGG2Timer, SIS3820Counter
 from ophyd_async.core import DeviceCollector
 
-from bluesky import RunEngine
+from bluesky import RunEngine, Msg
 from bluesky.callbacks import LiveTable
 from bluesky.plans import scan
+
+ACQUISITION_TIME = 0.1
 
 
 # --------------------------------------------------------------------
@@ -18,8 +20,15 @@ async def main():
         dgg2timer = await DGG2Timer("p09/dgg2/eh.01")
         sis3820 = await SIS3820Counter("p09/counter/eh.01")
 
+    # to set acquisition time we can use set_time method of dgg2timer
+    await dgg2timer.set_time(ACQUISITION_TIME)
+
     # create engine
     RE = RunEngine()
+
+    # more "Blueskyisch" set of acquisition time
+    RE([Msg("prepare", dgg2timer, ACQUISITION_TIME)])
+
     # do scan with LiveTable output
     # (seems LiveTable cannot work with async devices, so we have to generate keys by ourselves...)
     dets = [omsvme58_motor, sis3820, dgg2timer]

@@ -7,8 +7,9 @@ from tango.asyncio_executor import set_global_executor
 from ophyd_async.tango.device_controllers import DGG2Timer
 from ophyd_async.core import DeviceCollector
 
-from bluesky import RunEngine
+from bluesky import RunEngine, Msg
 from bluesky.plans import count
+
 
 # --------------------------------------------------------------------
 @pytest.fixture(autouse=True)
@@ -42,6 +43,8 @@ async def test_readout_with_bluesky(dgg2):
     readouts = Mock()
 
     RE = RunEngine()
+
+    RE([Msg("prepare", dgg2, TEST_TIME)])
     RE(count([dgg2], 3), readouts)
 
     description = [args[0][1]['configuration'] for args in readouts.call_args_list if args[0][0] == "descriptor"][0]

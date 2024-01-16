@@ -15,12 +15,12 @@ from typing import (
 
 from bluesky.protocols import (
     Asset,
-    # Collectable,
+    Collectable,
     Descriptor,
     Flyable,
     HasHints,
     Hints,
-    # Preparable,
+    Preparable,
     Reading,
     Stageable,
     WritesExternalAssets,
@@ -174,10 +174,10 @@ class TriggerLogic(ABC, Generic[T]):
 
 class HardwareTriggeredFlyable(
     Device,
-    # Preparable,
+    Preparable,
     Stageable,
     Flyable,
-    # Collectable,
+    Collectable,
     WritesExternalAssets,
     HasHints,
     Generic[T],
