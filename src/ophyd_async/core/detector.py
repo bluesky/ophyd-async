@@ -1,24 +1,32 @@
 """Module which defines abstract classes to work with detectors"""
 import asyncio
+import time
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import AsyncIterator, Dict, Optional, Sequence
+from typing import AsyncIterator, Dict, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
     Asset,
+    StreamAsset,
     Configurable,
     Descriptor,
+    Preparable,
     Readable,
     Reading,
     Stageable,
     Triggerable,
     WritesExternalAssets,
+    Collectable,
 )
+
+from event_model import StreamDatum
 
 from .async_status import AsyncStatus
 from .device import Device
 from .signal import SignalR
 from .utils import DEFAULT_TIMEOUT, merge_gathered_dicts
+
+T = TypeVar("T")
 
 
 class DetectorTrigger(str, Enum):
@@ -93,6 +101,7 @@ class StandardDetector(
     Readable,
     Triggerable,
     WritesExternalAssets,
+    Collectable,
 ):
     """Detector with useful default behaviour.
 
@@ -168,6 +177,9 @@ class StandardDetector(
 
     def describe(self) -> Dict[str, Descriptor]:
         return self._describe
+    
+    async def describe_collect(self) -> Dict[str, Descriptor]:
+        return self._describe
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
@@ -187,14 +199,13 @@ class StandardDetector(
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    async def collect_asset_docs(self) -> AsyncIterator[Asset]:
-        """Collect stream datum documents for all indices written."""
-        indices_written = await self.writer.get_indices_written()
+    async def get_index(self) -> int:
+        return await self.writer.get_indices_written()
 
-        async for doc in self.writer.collect_stream_docs(indices_written):
-            yield doc
-        # async for doc in self.writer.collect_stream_docs(indices_written):
-        #     yield doc
+    async def collect_asset_docs(self, index: Optional[int]) -> AsyncIterator[StreamAsset]:
+        """Collect stream datum documents for all indices written."""
+        async for doc in self.writer.collect_stream_docs(index):
+                yield doc
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
