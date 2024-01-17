@@ -85,12 +85,12 @@ class AsyncStatus(Status):
 
     def __repr__(self) -> str:
         if self.done:
-            if self.exception() is not None:
-                status = "errored"
+            if e := self.exception():
+                status = f"errored: {repr(e)}"
             else:
                 status = "done"
         else:
             status = "pending"
-        return f"<{type(self).__name__} {status}>"
+        return f"<{type(self).__name__}, task: {self.task.get_coro()}, {status}>"
 
     __str__ = __repr__
