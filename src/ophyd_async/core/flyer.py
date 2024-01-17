@@ -27,7 +27,7 @@ from bluesky.protocols import (
 )
 
 from .async_status import AsyncStatus
-from .detector import DetectorControl, DetectorTrigger, DetectorWriter
+from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
 from .device import Device
 from .signal import SignalR
 from .utils import DEFAULT_TIMEOUT, gather_list, merge_gathered_dicts
@@ -96,7 +96,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         return await merge_gathered_dicts(writer.open() for writer in self._writers)
 
     async def ensure_armed(self, trigger_info: TriggerInfo):
-        if (
+        if (    #
             not self._arm_statuses
             or any(status.done for status in self._arm_statuses)
             or trigger_info != self._trigger_info
@@ -184,13 +184,17 @@ class HardwareTriggeredFlyable(
 ):
     def __init__(
         self,
-        detector_group_logic: DetectorGroupLogic,
+        detectors: List[StandardDetector],
         trigger_logic: TriggerLogic[T],
         configuration_signals: Sequence[SignalR],
         trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
         name: str = "",
     ):
-        self._detector_group_logic = detector_group_logic
+        self._detectors = detectors
+        self._detector_group_logic = SameTriggerDetectorGroupLogic(
+            [det.controller for det in self._detectors],
+            [det.writer for det in self._detectors],
+        )
         self._trigger_logic = trigger_logic
         self._configuration_signals = tuple(configuration_signals)
         self._describe: Dict[str, Descriptor] = {}
@@ -202,6 +206,10 @@ class HardwareTriggeredFlyable(
         self._last_frame = 0  # The last frame that will be emitted
         self._trigger_to_frame_timeout = trigger_to_frame_timeout
         super().__init__(name=name)
+
+    @property
+    def detectors(self) -> List[StandardDetector]:
+        return self._detectors
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
