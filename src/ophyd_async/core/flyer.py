@@ -96,7 +96,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         return await merge_gathered_dicts(writer.open() for writer in self._writers)
 
     async def ensure_armed(self, trigger_info: TriggerInfo):
-        if (    #
+        if (  #
             not self._arm_statuses
             or any(status.done for status in self._arm_statuses)
             or trigger_info != self._trigger_info
@@ -262,32 +262,7 @@ class HardwareTriggeredFlyable(
         )
 
     async def collect_asset_docs(self) -> AsyncIterator[Asset]:
-        current_frame = self._current_frame
-        stream_datums: List[Asset] = []
-        async for asset in self._detector_group_logic.collect_asset_docs():
-            name, doc = asset
-            if name == "stream_datum":
-                current_frame = doc["indices"]["stop"] + self._offset
-                # Defer stream_datums until all stream_resources have been produced
-                # In a single collect, all the stream_resources are produced first
-                # followed by their stream_datums
-                stream_datums.append(asset)
-            else:
-                yield asset
-        for asset in stream_datums:
-            yield asset
-        if current_frame != self._current_frame:
-            self._current_frame = current_frame
-            for watcher in self._watchers:
-                watcher(
-                    name=self.name,
-                    current=current_frame,
-                    initial=0,
-                    target=self._last_frame,
-                    unit="",
-                    precision=0,
-                    time_elapsed=time.monotonic() - self._fly_start,
-                )
+        ...
 
     def complete(self) -> AsyncStatus:
         assert self._fly_status, "Kickoff not run"
