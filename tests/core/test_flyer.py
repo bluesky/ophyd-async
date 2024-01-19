@@ -106,7 +106,7 @@ class DummyWriter(DetectorWriter):
 
 
 @pytest.fixture
-async def detector_list(RE: RunEngine) -> SameTriggerDetectorGroupLogic:
+async def detector_list(RE: RunEngine) -> List[StandardDetector]:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
     await writers[0].dummy_signal.connect(sim=True)
 
