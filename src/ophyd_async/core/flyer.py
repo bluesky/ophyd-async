@@ -2,19 +2,9 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import (
-    AsyncIterator,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Optional,
-    Sequence,
-    TypeVar,
-)
+from typing import Callable, Dict, Generic, List, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
-    Asset,
     Collectable,
     Descriptor,
     Flyable,
@@ -23,7 +13,6 @@ from bluesky.protocols import (
     Preparable,
     Reading,
     Stageable,
-    WritesExternalAssets,
 )
 
 from .async_status import AsyncStatus
@@ -57,10 +46,6 @@ class DetectorGroupLogic(ABC):
     @abstractmethod
     async def ensure_armed(self, trigger_info: TriggerInfo):
         """Ensure the detectors are armed, return AsyncStatus that waits for disarm."""
-
-    @abstractmethod
-    def collect_asset_docs(self) -> AsyncIterator[Asset]:
-        """Collect asset docs from all writers"""
 
     @abstractmethod
     async def wait_for_index(
@@ -119,16 +104,6 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
             )
             self._trigger_info = trigger_info
 
-    async def collect_asset_docs(self) -> AsyncIterator[Asset]:
-        # the below is confusing: gather_list does return an awaitable, but it itself
-        # is a coroutine so we must call await twice...
-        indices_written = min(
-            await gather_list(writer.get_indices_written() for writer in self._writers)
-        )
-        for writer in self._writers:
-            async for doc in writer.collect_stream_docs(indices_written):
-                yield doc
-
     async def wait_for_index(
         self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
     ):
@@ -178,7 +153,6 @@ class HardwareTriggeredFlyable(
     Stageable,
     Flyable,
     Collectable,
-    WritesExternalAssets,
     HasHints,
     Generic[T],
 ):
@@ -260,9 +234,6 @@ class HardwareTriggeredFlyable(
         await self._detector_group_logic.wait_for_index(
             self._last_frame - self._offset, timeout=self._trigger_to_frame_timeout
         )
-
-    async def collect_asset_docs(self) -> AsyncIterator[Asset]:
-        ...
 
     def complete(self) -> AsyncStatus:
         assert self._fly_status, "Kickoff not run"
