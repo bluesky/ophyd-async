@@ -15,7 +15,6 @@ from ophyd_async.core import (
     DetectorTrigger,
     DetectorWriter,
     HardwareTriggeredFlyable,
-    SameTriggerDetectorGroupLogic,
     SignalRW,
     SimSignalBackend,
     TriggerInfo,
