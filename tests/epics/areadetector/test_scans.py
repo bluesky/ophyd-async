@@ -14,7 +14,6 @@ from ophyd_async.core import (
     DetectorTrigger,
     DeviceCollector,
     HardwareTriggeredFlyable,
-    SameTriggerDetectorGroupLogic,
     StandardDetector,
     StaticDirectoryProvider,
     TriggerInfo,
@@ -106,10 +105,11 @@ async def test_hdf_writer_fails_on_timeout_with_flyscan(
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
 
+    detector = StandardDetector(controller, writer)
     trigger_logic = DummyTriggerLogic()
-    detector_group = SameTriggerDetectorGroupLogic([controller], [writer])
+
     flyer = HardwareTriggeredFlyable(
-        detector_group, trigger_logic, [], name="flyer", trigger_to_frame_timeout=0.01
+        [detector], trigger_logic, [], name="flyer", trigger_to_frame_timeout=0.01
     )
 
     def flying_plan():
