@@ -1,26 +1,22 @@
 """Module which defines abstract classes to work with detectors"""
 
 import asyncio
-import time
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import AsyncIterator, Dict, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
     Asset,
-    StreamAsset,
+    Collectable,
     Configurable,
     Descriptor,
-    Preparable,
     Readable,
     Reading,
     Stageable,
+    StreamAsset,
     Triggerable,
     WritesExternalAssets,
-    Collectable,
 )
-
-from event_model import StreamDatum
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -178,7 +174,7 @@ class StandardDetector(
 
     def describe(self) -> Dict[str, Descriptor]:
         return self._describe
-    
+
     async def describe_collect(self) -> Dict[str, Descriptor]:
         return self._describe
 
@@ -203,10 +199,12 @@ class StandardDetector(
     async def get_index(self) -> int:
         return await self.writer.get_indices_written()
 
-    async def collect_asset_docs(self, index: Optional[int]) -> AsyncIterator[StreamAsset]:
+    async def collect_asset_docs(
+        self, index: Optional[int]
+    ) -> AsyncIterator[StreamAsset]:
         """Collect stream datum documents for all indices written."""
         async for doc in self.writer.collect_stream_docs(index):
-                yield doc
+            yield doc
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
