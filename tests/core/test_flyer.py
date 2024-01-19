@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-from typing import AsyncIterator, Dict, Optional, Sequence
+from typing import AsyncIterator, Dict, List, Optional, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -21,6 +21,7 @@ from ophyd_async.core import (
     TriggerInfo,
     TriggerLogic,
 )
+from ophyd_async.core.detector import StandardDetector
 
 
 class TriggerState(str, Enum):
@@ -105,31 +106,34 @@ class DummyWriter(DetectorWriter):
 
 
 @pytest.fixture
-async def detector_group(RE: RunEngine) -> SameTriggerDetectorGroupLogic:
+async def detector_list(RE: RunEngine) -> SameTriggerDetectorGroupLogic:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
     await writers[0].dummy_signal.connect(sim=True)
 
     async def dummy_arm(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)
 
-    controllers = [
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+    return [
+        StandardDetector(
+            Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+            writer,
+        )
+        for writer in writers
     ]
-
-    return SameTriggerDetectorGroupLogic(controllers, writers)
 
 
 async def test_hardware_triggered_flyable(
-    RE: RunEngine, detector_group: SameTriggerDetectorGroupLogic
+    RE: RunEngine, detector_list: List[StandardDetector]
 ):
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
 
+    assert len(detector_list) == 2
+
     trigger_logic = DummyTriggerLogic()
-    flyer = HardwareTriggeredFlyable(detector_group, trigger_logic, [], name="flyer")
+    flyer = HardwareTriggeredFlyable(detector_list, trigger_logic, [], name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(flyer)
@@ -152,14 +156,14 @@ async def test_hardware_triggered_flyable(
                 done = True
 
             yield from bps.collect(
-                flyer, stream=True, return_payload=False, name="primary"
+                flyer, stream=True, return_payload=False, name="Primary"
             )
             yield from bps.sleep(0.001)
         yield from bps.wait(group="complete")
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer)
-        for controller in detector_group._controllers:
+        for controller in flyer._detector_group_logic._controllers:
             assert controller.disarm.called  # type: ignore
             assert controller.disarm.call_count == 3  # type: ignore
         assert trigger_logic.state == TriggerState.stopping
@@ -167,7 +171,7 @@ async def test_hardware_triggered_flyable(
     # move the flyer to the correct place, before fly scanning.
     RE(bps.prepare(flyer, 1))
     assert trigger_logic.state == TriggerState.preparing
-    for controller in detector_group._controllers:
+    for controller in flyer._detector_group_logic._controllers:
         assert controller.disarm.called  # type: ignore
         assert controller.disarm.call_count == 1  # type: ignore
 
