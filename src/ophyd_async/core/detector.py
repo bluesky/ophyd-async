@@ -14,7 +14,7 @@ from bluesky.protocols import (
     Stageable,
     StreamAsset,
     Triggerable,
-    WritesExternalAssets,
+    WritesStreamAssets,
 )
 
 from .async_status import AsyncStatus
@@ -96,7 +96,7 @@ class StandardDetector(
     Configurable,
     Readable,
     Triggerable,
-    WritesExternalAssets,
+    WritesStreamAssets,
     Collectable,
 ):
     """Detector with useful default behaviour.
@@ -201,9 +201,18 @@ class StandardDetector(
     async def collect_asset_docs(
         self, index: Optional[int]
     ) -> AsyncIterator[StreamAsset]:
-        """Collect stream datum documents for all indices written."""
-        async for doc in self.writer.collect_stream_docs(index):
-            yield doc
+        """Collect stream datum documents for all indices written.
+
+        The index is optional, and provided for flyscans, however this needs to be
+        retrieved for stepscans.
+        """
+        if index:
+            async for doc in self.writer.collect_stream_docs(index):
+                yield doc
+        else:
+            index = await self.writer.get_indices_written()
+            async for doc in self.writer.collect_stream_docs(index):
+                yield doc
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
