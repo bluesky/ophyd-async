@@ -11,17 +11,17 @@ from ophyd_async.panda.utils import phase_sorter
 
 
 @pytest.fixture
-async def sim_panda():
-    async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDA")
-        sim_panda.phase_1_signal_units: SignalRW = epics_signal_rw(int, "")
-    assert sim_panda.name == "sim_panda"
-    yield sim_panda
+async def mock_panda():
+    async with DeviceCollector(mock=True):
+        mock_panda = PandA("PANDA")
+        mock_panda.phase_1_signal_units: SignalRW = epics_signal_rw(int, "")
+    assert mock_panda.name == "mock_panda"
+    yield mock_panda
 
 
 @patch("ophyd_async.core.device_save_loader.save_to_yaml")
-async def test_save_panda(mock_save_to_yaml, sim_panda, RE: RunEngine):
-    RE(save_device(sim_panda, "path", sorter=phase_sorter))
+async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
+    RE(save_device(mock_panda, "path", sorter=phase_sorter))
     mock_save_to_yaml.assert_called_once()
     assert mock_save_to_yaml.call_args[0] == (
         [

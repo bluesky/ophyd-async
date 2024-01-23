@@ -22,7 +22,7 @@ primitive_dtypes: Dict[type, Dtype] = {
 }
 
 
-class SimConverter(Generic[T]):
+class MockConverter(Generic[T]):
     def value(self, value: T) -> T:
         return value
 
@@ -50,7 +50,7 @@ class SimConverter(Generic[T]):
         return datatype()
 
 
-class SimArrayConverter(SimConverter):
+class MockArrayConverter(MockConverter):
     def descriptor(self, source: str, value) -> Descriptor:
         return dict(source=source, dtype="array", shape=[len(value)])
 
@@ -65,7 +65,7 @@ class SimArrayConverter(SimConverter):
 
 
 @dataclass
-class SimEnumConverter(SimConverter):
+class MockEnumConverter(MockConverter):
     enum_class: Type[Enum]
 
     def write_value(self, value: Union[Enum, str]) -> Enum:
@@ -87,7 +87,7 @@ class SimEnumConverter(SimConverter):
         return cast(T, list(datatype.__members__.values())[0])  # type: ignore
 
 
-class DisconnectedSimConverter(SimConverter):
+class DisconnectedMockConverter(MockConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
 
@@ -98,15 +98,15 @@ def make_converter(datatype):
     is_enum = issubclass(datatype, Enum) if inspect.isclass(datatype) else False
 
     if is_array or is_sequence:
-        return SimArrayConverter()
+        return MockArrayConverter()
     if is_enum:
-        return SimEnumConverter(datatype)
+        return MockEnumConverter(datatype)
 
-    return SimConverter()
+    return MockConverter()
 
 
-class SimSignalBackend(SignalBackend[T]):
-    """An simulated backend to a Signal, created with ``Signal.connect(sim=True)``"""
+class MockSignalBackend(SignalBackend[T]):
+    """An simulated backend to a Signal, created with ``Signal.connect(mock=True)``"""
 
     _value: T
     _initial_value: T
@@ -115,10 +115,10 @@ class SimSignalBackend(SignalBackend[T]):
 
     def __init__(self, datatype: Optional[Type[T]], source: str) -> None:
         pv = re.split(r"://", source)[-1]
-        self.source = f"sim://{pv}"
+        self.source = f"mock://{pv}"
         self.datatype = datatype
         self.pv = source
-        self.converter: SimConverter = DisconnectedSimConverter()
+        self.converter: MockConverter = DisconnectedMockConverter()
         self.put_proceeds = asyncio.Event()
         self.put_proceeds.set()
         self.callback: Optional[ReadingValueCallback[T]] = None

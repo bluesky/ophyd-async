@@ -17,7 +17,7 @@ from ophyd_async.core import (
     HardwareTriggeredFlyable,
     SameTriggerDetectorGroupLogic,
     SignalRW,
-    SimSignalBackend,
+    MockSignalBackend,
     TriggerInfo,
     TriggerLogic,
 )
@@ -52,7 +52,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int, source="test"))
+        self.dummy_signal = SignalRW(backend=MockSignalBackend(int, source="test"))
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
@@ -61,7 +61,7 @@ class DummyWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         return {
             self._name: Descriptor(
-                source="sim://some-source",
+                source="mock://some-source",
                 shape=self._shape,
                 dtype="number",
                 external="STREAM:",
@@ -108,7 +108,7 @@ class DummyWriter(DetectorWriter):
 @pytest.fixture
 async def detector_group(RE: RunEngine) -> SameTriggerDetectorGroupLogic:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
-    await writers[0].dummy_signal.connect(sim=True)
+    await writers[0].dummy_signal.connect(mock=True)
 
     async def dummy_arm(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)

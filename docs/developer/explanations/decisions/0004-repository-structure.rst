@@ -20,8 +20,8 @@ Context
 This repository will be a fusion between three existing code bases; Ophyd v2, ophyd-epics-devices
 and ophyd-tango-devices.
 
-Ophyd Async has been derived from a folder originally kept in the Ophyd repository. 
-Initially the structure of this folder was very simple, however it has since become quite bloated. 
+Ophyd Async has been derived from a folder originally kept in the Ophyd repository.
+Initially the structure of this folder was very simple, however it has since become quite bloated.
 In the transition to moving the v2/ folder into this repository (ophyd-async), we have decided to
 structure the library in a more cohesive way, especially as this repository is now going to contain
 implementation of Ophyd Async devices for EPICS and Tango control systems.
@@ -55,7 +55,7 @@ During this process, the folder structure should incrementally be changed to
     ophyd-async
     ├── docs (skeleton)
     ├── LICENCE.txt
-    ├── src        
+    ├── src
     │   └── ophyd_async
     │       ├── core
     │       │   ├── __init__.py
@@ -64,7 +64,7 @@ During this process, the folder structure should incrementally be changed to
     │       │   │   ├── _backend
     │       │   │   │   ├── __init__.py
     │       │   │   │   ├── signal_backend.py
-    │       │   │   │   └── sim.py
+    │       │   │   │   └── mock.py
     │       │   │   ├── _signal
     │       │   │   │   ├── __init__.py
     │       │   │   │   └── signal.py
@@ -99,7 +99,7 @@ During this process, the folder structure should incrementally be changed to
 
 The :bash:`__init__.py` files of each submodule (core, epics, panda and eventually tango) will
 be modified such that end users experience little disruption to how they use Ophyd Async.
-For such users, :python:`from ophyd.v2.core import ...` can be replaced with 
+For such users, :python:`from ophyd.v2.core import ...` can be replaced with
 :python:`from ophyd_async.core import ...`.
 
 

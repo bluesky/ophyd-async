@@ -34,17 +34,17 @@ class MockCtxt:
 
 
 @pytest.fixture
-async def sim_panda():
-    async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDAQSRV")
+async def mock_panda():
+    async with DeviceCollector(mock=True):
+        mock_panda = PandA("PANDAQSRV")
 
-    assert sim_panda.name == "sim_panda"
-    yield sim_panda
+    assert mock_panda.name == "mock_panda"
+    yield mock_panda
 
 
-def test_panda_names_correct(sim_panda: PandA):
-    assert sim_panda.seq[1].name == "sim_panda-seq-1"
-    assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
+def test_panda_names_correct(mock_panda: PandA):
+    assert mock_panda.seq[1].name == "mock_panda-seq-1"
+    assert mock_panda.pulse[1].name == "mock_panda-pulse-1"
 
 
 def test_panda_name_set():
@@ -67,7 +67,7 @@ async def test_pvi_get_for_inconsistent_blocks():
     assert "pcap1" not in resulting_pvi
 
 
-async def test_panda_children_connected(sim_panda: PandA):
+async def test_panda_children_connected(mock_panda: PandA):
     # try to set and retrieve from simulated values...
     table = SeqTable(
         repeats=np.array([1, 1, 1, 32]).astype(np.uint16),
@@ -93,11 +93,11 @@ async def test_panda_children_connected(sim_panda: PandA):
         oute2=np.array([1, 0, 1, 0]).astype(np.bool_),
         outf2=np.array([1, 0, 0, 0]).astype(np.bool_),
     )
-    await sim_panda.pulse[1].delay.set(20.0)
-    await sim_panda.seq[1].table.set(table)
+    await mock_panda.pulse[1].delay.set(20.0)
+    await mock_panda.seq[1].table.set(table)
 
-    readback_pulse = await sim_panda.pulse[1].delay.get_value()
-    readback_seq = await sim_panda.seq[1].table.get_value()
+    readback_pulse = await mock_panda.pulse[1].delay.get_value()
+    readback_seq = await mock_panda.seq[1].table.get_value()
 
     assert readback_pulse == 20.0
     assert readback_seq == table

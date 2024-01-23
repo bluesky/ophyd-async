@@ -51,7 +51,7 @@ class DummyDeviceGroup(Device):
 @pytest.fixture
 async def device() -> DummyDeviceGroup:
     device = DummyDeviceGroup("parent")
-    await device.connect(sim=True)
+    await device.connect(mock=True)
     return device
 
 

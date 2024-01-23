@@ -8,8 +8,8 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
-    set_sim_callback,
-    set_sim_value,
+    set_mock_callback,
+    set_mock_value,
 )
 from ophyd_async.epics import demo
 
@@ -19,26 +19,26 @@ A_WHILE = 0.001
 
 
 @pytest.fixture
-async def sim_mover():
-    async with DeviceCollector(sim=True):
-        sim_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
+async def mock_mover():
+    async with DeviceCollector(mock=True):
+        mock_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
         # Signals connected here
 
-    assert sim_mover.name == "sim_mover"
-    set_sim_value(sim_mover.units, "mm")
-    set_sim_value(sim_mover.precision, 3)
-    set_sim_value(sim_mover.velocity, 1)
-    yield sim_mover
+    assert mock_mover.name == "mock_mover"
+    set_mock_value(mock_mover.units, "mm")
+    set_mock_value(mock_mover.precision, 3)
+    set_mock_value(mock_mover.velocity, 1)
+    yield mock_mover
 
 
 @pytest.fixture
-async def sim_sensor():
-    async with DeviceCollector(sim=True):
-        sim_sensor = demo.Sensor("SIM:SENSOR:")
+async def mock_sensor():
+    async with DeviceCollector(mock=True):
+        mock_sensor = demo.Sensor("MOCK:SENSOR:")
         # Signals connected here
 
-    assert sim_sensor.name == "sim_sensor"
-    yield sim_sensor
+    assert mock_sensor.name == "mock_sensor"
+    yield mock_sensor
 
 
 class Watcher:
@@ -58,14 +58,14 @@ class Watcher:
         self._event.clear()
 
 
-async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
-    s = sim_mover.set(0.55)
+async def test_mover_moving_well(mock_mover: demo.Mover) -> None:
+    s = mock_mover.set(0.55)
     watcher = Watcher()
     s.watch(watcher)
     done = Mock()
     s.add_callback(done)
     await watcher.wait_for_call(
-        name="sim_mover",
+        name="mock_mover",
         current=0.0,
         initial=0.0,
         target=0.55,
@@ -73,13 +73,13 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
-    assert 0.55 == await sim_mover.setpoint.get_value()
+    assert 0.55 == await mock_mover.setpoint.get_value()
     assert not s.done
     done.assert_not_called()
     await asyncio.sleep(0.1)
-    set_sim_value(sim_mover.readback, 0.1)
+    set_mock_value(mock_mover.readback, 0.1)
     await watcher.wait_for_call(
-        name="sim_mover",
+        name="mock_mover",
         current=0.1,
         initial=0.0,
         target=0.55,
@@ -87,7 +87,7 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
-    set_sim_value(sim_mover.readback, 0.5499999)
+    set_mock_value(mock_mover.readback, 0.5499999)
     await asyncio.sleep(A_WHILE)
     assert s.done
     assert s.success
@@ -97,45 +97,45 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
     done2.assert_called_once_with(s)
 
 
-async def test_mover_stopped(sim_mover: demo.Mover):
+async def test_mover_stopped(mock_mover: demo.Mover):
     callbacks = []
-    set_sim_callback(sim_mover.stop_, lambda r, v: callbacks.append(v))
+    set_mock_callback(mock_mover.stop_, lambda r, v: callbacks.append(v))
 
     assert callbacks == [None]
-    await sim_mover.stop()
+    await mock_mover.stop()
     assert callbacks == [None, None]
 
 
-async def test_read_mover(sim_mover: demo.Mover):
-    await sim_mover.stage()
-    assert (await sim_mover.read())["sim_mover"]["value"] == 0.0
-    assert (await sim_mover.describe())["sim_mover"][
+async def test_read_mover(mock_mover: demo.Mover):
+    await mock_mover.stage()
+    assert (await mock_mover.read())["mock_mover"]["value"] == 0.0
+    assert (await mock_mover.describe())["mock_mover"][
         "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X:Readback"
-    assert (await sim_mover.read_configuration())["sim_mover-velocity"]["value"] == 1
-    assert (await sim_mover.describe_configuration())["sim_mover-units"]["shape"] == []
-    set_sim_value(sim_mover.readback, 0.5)
-    assert (await sim_mover.read())["sim_mover"]["value"] == 0.5
-    await sim_mover.unstage()
+    ] == "mock://BLxxI-MO-TABLE-01:X:Readback"
+    assert (await mock_mover.read_configuration())["mock_mover-velocity"]["value"] == 1
+    assert (await mock_mover.describe_configuration())["mock_mover-units"]["shape"] == []
+    set_mock_value(mock_mover.readback, 0.5)
+    assert (await mock_mover.read())["mock_mover"]["value"] == 0.5
+    await mock_mover.unstage()
     # Check we can still read and describe when not staged
-    set_sim_value(sim_mover.readback, 0.1)
-    assert (await sim_mover.read())["sim_mover"]["value"] == 0.1
-    assert await sim_mover.describe()
+    set_mock_value(mock_mover.readback, 0.1)
+    assert (await mock_mover.read())["mock_mover"]["value"] == 0.1
+    assert await mock_mover.describe()
 
 
-async def test_set_velocity(sim_mover: demo.Mover) -> None:
-    v = sim_mover.velocity
-    assert (await v.describe())["sim_mover-velocity"][
+async def test_set_velocity(mock_mover: demo.Mover) -> None:
+    v = mock_mover.velocity
+    assert (await v.describe())["mock_mover-velocity"][
         "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X:Velocity"
+    ] == "mock://BLxxI-MO-TABLE-01:X:Velocity"
     q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
-    assert (await q.get())["sim_mover-velocity"]["value"] == 1.0
+    assert (await q.get())["mock_mover-velocity"]["value"] == 1.0
     await v.set(2.0)
-    assert (await q.get())["sim_mover-velocity"]["value"] == 2.0
+    assert (await q.get())["mock_mover-velocity"]["value"] == 2.0
     v.clear_sub(q.put_nowait)
     await v.set(3.0)
-    assert (await v.read())["sim_mover-velocity"]["value"] == 3.0
+    assert (await v.read())["mock_mover-velocity"]["value"] == 3.0
     assert q.empty()
 
 
@@ -161,28 +161,28 @@ async def test_sensor_disconnected():
     assert s.name == "sensor"
 
 
-async def test_read_sensor(sim_sensor: demo.Sensor):
-    sim_sensor.stage()
-    assert (await sim_sensor.read())["sim_sensor-value"]["value"] == 0
-    assert (await sim_sensor.describe())["sim_sensor-value"][
+async def test_read_sensor(mock_sensor: demo.Sensor):
+    mock_sensor.stage()
+    assert (await mock_sensor.read())["mock_sensor-value"]["value"] == 0
+    assert (await mock_sensor.describe())["mock_sensor-value"][
         "source"
-    ] == "sim://SIM:SENSOR:Value"
-    assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
+    ] == "mock://MOCK:SENSOR:Value"
+    assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.low
-    desc = (await sim_sensor.describe_configuration())["sim_sensor-mode"]
+    desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
     assert desc["choices"] == ["Low Energy", "High Energy"]  # type: ignore
-    set_sim_value(sim_sensor.mode, demo.EnergyMode.high)
-    assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
+    set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
+    assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.high
-    await sim_sensor.unstage()
+    await mock_sensor.unstage()
 
 
 async def test_assembly_renaming() -> None:
     thing = demo.SampleStage("PRE")
-    await thing.connect(sim=True)
+    await thing.connect(mock=True)
     assert thing.x.name == ""
     assert thing.x.velocity.name == ""
     assert thing.x.stop_.name == ""
@@ -194,11 +194,11 @@ async def test_assembly_renaming() -> None:
     assert thing.x.stop_.name == "foo-x-stop"
 
 
-def test_mover_in_re(sim_mover: demo.Mover, RE) -> None:
-    sim_mover.move(0)
+def test_mover_in_re(mock_mover: demo.Mover, RE) -> None:
+    mock_mover.move(0)
 
     def my_plan():
-        sim_mover.move(0)
+        mock_mover.move(0)
         return
         yield
 

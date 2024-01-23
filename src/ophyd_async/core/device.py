@@ -50,16 +50,16 @@ class Device(HasName):
             child.set_name(child_name)
             child.parent = self
 
-    async def connect(self, sim: bool = False):
+    async def connect(self, mock: bool = False):
         """Connect self and all child Devices.
 
         Parameters
         ----------
-        sim:
+        mock:
             If True then connect in simulation mode.
         """
         coros = {
-            name: child_device.connect(sim) for name, child_device in self.children()
+            name: child_device.connect(mock) for name, child_device in self.children()
         }
         if coros:
             await wait_for_connection(**coros)
@@ -84,9 +84,9 @@ class DeviceCollector:
         If True, call ``device.set_name(variable_name)`` on all collected
         Devices
     connect:
-        If True, call ``device.connect(sim)`` in parallel on all
+        If True, call ``device.connect(mock)`` in parallel on all
         collected Devices
-    sim:
+    mock:
         If True, connect Signals in simulation mode
     timeout:
         How long to wait for connect before logging an exception
@@ -108,12 +108,12 @@ class DeviceCollector:
         self,
         set_name=True,
         connect=True,
-        sim=False,
+        mock=False,
         timeout: float = 10.0,
     ):
         self._set_name = set_name
         self._connect = connect
-        self._sim = sim
+        self._mock = mock
         self._timeout = timeout
         self._names_on_enter: Set[str] = set()
         self._objects_on_exit: Dict[str, Any] = {}
@@ -146,7 +146,7 @@ class DeviceCollector:
                 if self._set_name and not obj.name:
                     obj.set_name(name)
                 if self._connect:
-                    task = asyncio.create_task(obj.connect(self._sim))
+                    task = asyncio.create_task(obj.connect(self._mock))
                     tasks[task] = name
         # Wait for all the signals to have finished
         if tasks:
