@@ -72,6 +72,10 @@
     "url": "https://bluesky.github.io/ophyd-async/seq_tables/"
   },
   {
+    "version": "sim_mock",
+    "url": "https://bluesky.github.io/ophyd-async/sim_mock/"
+  },
+  {
     "version": "stall-timeout",
     "url": "https://bluesky.github.io/ophyd-async/stall-timeout/"
   }
