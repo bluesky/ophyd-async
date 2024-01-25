@@ -158,7 +158,7 @@ class HardwareTriggeredFlyable(
 ):
     def __init__(
         self,
-        detectors: List[StandardDetector],
+        detectors: tuple[StandardDetector],
         trigger_logic: TriggerLogic[T],
         configuration_signals: Sequence[SignalR],
         trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
@@ -182,8 +182,12 @@ class HardwareTriggeredFlyable(
         super().__init__(name=name)
 
     @property
-    def detectors(self) -> List[StandardDetector]:
+    def detectors(self) -> tuple[StandardDetector]:
         return self._detectors
+
+    @property
+    def trigger_logic(self) -> TriggerLogic[T]:
+        return self._trigger_logic
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
