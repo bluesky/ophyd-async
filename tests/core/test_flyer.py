@@ -105,24 +105,27 @@ class DummyWriter(DetectorWriter):
 
 
 @pytest.fixture
-async def detector_list(RE: RunEngine) -> List[StandardDetector]:
+async def detector_list(RE: RunEngine) -> tuple[StandardDetector]:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
     await writers[0].dummy_signal.connect(sim=True)
 
     async def dummy_arm(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)
-
-    return [
-        StandardDetector(
+    
+    detector_1 =  StandardDetector(
             Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
-            writer,
+            writers[0],
         )
-        for writer in writers
-    ]
+    detector_2=  StandardDetector(
+            Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+            writers[1],
+        )
+
+    return (detector_1, detector_2)
 
 
 async def test_hardware_triggered_flyable(
-    RE: RunEngine, detector_list: List[StandardDetector]
+    RE: RunEngine, detector_list: tuple[StandardDetector]
 ):
     names = []
     docs = []
@@ -135,8 +138,8 @@ async def test_hardware_triggered_flyable(
     flyer = HardwareTriggeredFlyable(detector_list, trigger_logic, [], name="flyer")
 
     def flying_plan():
-        yield from bps.stage_all(flyer)
-        assert trigger_logic.state == TriggerState.stopping
+        yield from bps.stage_all(*flyer.detectors, flyer)
+        assert flyer._trigger_logic.state == TriggerState.stopping
 
         yield from bps.open_run()
 
@@ -153,9 +156,8 @@ async def test_hardware_triggered_flyable(
                 pass
             else:
                 done = True
-
             yield from bps.collect(
-                flyer, stream=True, return_payload=False, name="Primary"
+                *flyer.detectors, stream=True, return_payload=False,
             )
             yield from bps.sleep(0.001)
         yield from bps.wait(group="complete")

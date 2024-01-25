@@ -192,7 +192,6 @@ class HardwareTriggeredFlyable(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         await self.unstage()
-        self._describe = await self._detector_group_logic.open()
         self._offset = 0
         self._current_frame = 0
 
@@ -245,11 +244,7 @@ class HardwareTriggeredFlyable(
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        await asyncio.gather(
-            self._trigger_logic.stop(),
-            self._detector_group_logic.close(),
-            self._detector_group_logic.disarm(),
-        )
+        await self._trigger_logic.stop()
 
     @property
     def hints(self) -> Hints:
