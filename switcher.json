@@ -16,6 +16,10 @@
     "url": "https://bluesky.github.io/ophyd-async/103_improve_asyncstatus_message/"
   },
   {
+    "version": "add-more-docs",
+    "url": "https://bluesky.github.io/ophyd-async/add-more-docs/"
+  },
+  {
     "version": "add-position-and-compression-to-hdf",
     "url": "https://bluesky.github.io/ophyd-async/add-position-and-compression-to-hdf/"
   },

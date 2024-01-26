@@ -1,0 +1,1161 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Making your own devices to run a gridscan &#8212; ophyd-async 0.2.1.dev7+gee59874f documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+
+    <script src="../../_static/documentation_options.js?v=f97857ad"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/tutorials/making-your-own-devices-to-run-a-gridscan';</script>
+    <link rel="icon" href="../../_static/ophyd_favicon.svg"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Using existing devices" href="using-existing-devices.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev7+gee59874f documentation - Home"/>
+    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev7+gee59874f documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../developer/index.html">
+                        Developer Guide
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://blueskyproject.io">
+                    Bluesky Project
+                  </a>
+                </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fas fa-cube fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://gitter.im/NSLS-II/DAMA" title="Gitter" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fas fa-person-circle-question fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">Gitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../developer/index.html">
+                        Developer Guide
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://blueskyproject.io">
+                    Bluesky Project
+                  </a>
+                </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fas fa-cube fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://gitter.im/NSLS-II/DAMA" title="Gitter" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fas fa-person-circle-question fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">Gitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Making your own devices to run a gridscan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-existing-devices.html">Using existing devices</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../how-to/create-devices.html">Create devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/create-detectors.html">Create Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/run-container.html">Run in a container</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanations</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../explanations/docs-structure.html">About the documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/demo-devices.html">Demo devices</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/api.html">API</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../generated/ophyd_async.core.html">ophyd_async.core</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.observe_value.html">ophyd_async.core.observe_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.set_and_wait_for_value.html">ophyd_async.core.set_and_wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.set_sim_callback.html">ophyd_async.core.set_sim_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.set_sim_put_proceeds.html">ophyd_async.core.set_sim_put_proceeds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.set_sim_value.html">ophyd_async.core.set_sim_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.get_dtype.html">ophyd_async.core.get_dtype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.get_unique.html">ophyd_async.core.get_unique</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.merge_gathered_dicts.html">ophyd_async.core.merge_gathered_dicts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.wait_for_connection.html">ophyd_async.core.wait_for_connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.get_signal_values.html">ophyd_async.core.get_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.load_from_yaml.html">ophyd_async.core.load_from_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.save_to_yaml.html">ophyd_async.core.save_to_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.set_signal_values.html">ophyd_async.core.set_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.walk_rw_signals.html">ophyd_async.core.walk_rw_signals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.load_device.html">ophyd_async.core.load_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.save_device.html">ophyd_async.core.save_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.SignalBackend.html">ophyd_async.core.SignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.SimSignalBackend.html">ophyd_async.core.SimSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DetectorControl.html">ophyd_async.core.DetectorControl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DetectorTrigger.html">ophyd_async.core.DetectorTrigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DetectorWriter.html">ophyd_async.core.DetectorWriter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.StandardDetector.html">ophyd_async.core.StandardDetector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.Device.html">ophyd_async.core.Device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DeviceCollector.html">ophyd_async.core.DeviceCollector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DeviceVector.html">ophyd_async.core.DeviceVector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.Signal.html">ophyd_async.core.Signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.SignalR.html">ophyd_async.core.SignalR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.SignalW.html">ophyd_async.core.SignalW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.SignalRW.html">ophyd_async.core.SignalRW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.SignalX.html">ophyd_async.core.SignalX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.AsyncStatus.html">ophyd_async.core.AsyncStatus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DirectoryInfo.html">ophyd_async.core.DirectoryInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DirectoryProvider.html">ophyd_async.core.DirectoryProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.NameProvider.html">ophyd_async.core.NameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.ShapeProvider.html">ophyd_async.core.ShapeProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.StaticDirectoryProvider.html">ophyd_async.core.StaticDirectoryProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.StandardReadable.html">ophyd_async.core.StandardReadable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.TriggerInfo.html">ophyd_async.core.TriggerInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.DetectorGroupLogic.html">ophyd_async.core.DetectorGroupLogic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.SameTriggerDetectorGroupLogic.html">ophyd_async.core.SameTriggerDetectorGroupLogic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.TriggerLogic.html">ophyd_async.core.TriggerLogic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.HardwareTriggeredFlyable.html">ophyd_async.core.HardwareTriggeredFlyable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.core.NotConnected.html">ophyd_async.core.NotConnected</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../generated/ophyd_async.epics.html">ophyd_async.epics</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.html">ophyd_async.epics.areadetector</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.ad_r.html">ophyd_async.epics.areadetector.ad_r</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.ad_rw.html">ophyd_async.epics.areadetector.ad_rw</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.SingleTriggerDet.html">ophyd_async.epics.areadetector.SingleTriggerDet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.FileWriteMode.html">ophyd_async.epics.areadetector.FileWriteMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.ImageMode.html">ophyd_async.epics.areadetector.ImageMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.NDAttributeDataType.html">ophyd_async.epics.areadetector.NDAttributeDataType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.areadetector.NDAttributesXML.html">ophyd_async.epics.areadetector.NDAttributesXML</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../generated/ophyd_async.epics.demo.html">ophyd_async.epics.demo</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.demo.start_ioc_subprocess.html">ophyd_async.epics.demo.start_ioc_subprocess</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.demo.EnergyMode.html">ophyd_async.epics.demo.EnergyMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.demo.Mover.html">ophyd_async.epics.demo.Mover</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.demo.SampleStage.html">ophyd_async.epics.demo.SampleStage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.demo.Sensor.html">ophyd_async.epics.demo.Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.demo.demo_ad_sim_detector.html">ophyd_async.epics.demo.demo_ad_sim_detector</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../generated/ophyd_async.epics.motion.html">ophyd_async.epics.motion</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.motion.Motor.html">ophyd_async.epics.motion.Motor</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../generated/ophyd_async.epics.signal.html">ophyd_async.epics.signal</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.signal.pvi_get.html">ophyd_async.epics.signal.pvi_get</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.signal.epics_signal_r.html">ophyd_async.epics.signal.epics_signal_r</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.signal.epics_signal_rw.html">ophyd_async.epics.signal.epics_signal_rw</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.signal.epics_signal_w.html">ophyd_async.epics.signal.epics_signal_w</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/ophyd_async.epics.signal.epics_signal_x.html">ophyd_async.epics.signal.epics_signal_x</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../generated/ophyd_async.panda.html">ophyd_async.panda</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.seq_table_from_arrays.html">ophyd_async.panda.seq_table_from_arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.seq_table_from_rows.html">ophyd_async.panda.seq_table_from_rows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.pvi.html">ophyd_async.panda.pvi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.phase_sorter.html">ophyd_async.panda.phase_sorter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.PandA.html">ophyd_async.panda.PandA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.PcapBlock.html">ophyd_async.panda.PcapBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.PulseBlock.html">ophyd_async.panda.PulseBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.PVIEntry.html">ophyd_async.panda.PVIEntry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.SeqBlock.html">ophyd_async.panda.SeqBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.SeqTable.html">ophyd_async.panda.SeqTable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.SeqTableRow.html">ophyd_async.panda.SeqTableRow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../generated/ophyd_async.panda.SeqTrigger.html">ophyd_async.panda.SeqTrigger</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Making your...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ophyd async is included on a provisional basis until the v1.0 release and
+may change API on minor release numbers before then</p>
+</div>
+<section id="making-your-own-devices-to-run-a-gridscan">
+<h1>Making your own devices to run a gridscan<a class="headerlink" href="#making-your-own-devices-to-run-a-gridscan" title="Link to this heading">#</a></h1>
+<p>This tutorial will guide you through the process of making ophyd-async devices
+to run bluesky plans on. It assumes you have some familiarity with Bluesky, and
+that you have already run through the tutorial on <a class="reference external" href="https://blueskyproject.io/bluesky/tutorial.html#tutorial-run-engine-setup" title="(in bluesky v1.12.0.post14+g407eea7c)"><code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">RunEngine</span></code></a>.</p>
+<p>We will be running EPICS IOCs, and writing devices to run <em>step scans</em> on them.
+This means the triggering of PVs will be handled entirely by our software.</p>
+<p>Please see the <a class="reference internal" href="using-existing-devices.html"><span class="doc">this tutorial</span></a> if you don’t
+really care about how to make your own devices and just want to get started
+with existing ones. The devices you will write by the end of this tutorial are
+the same devices this tutorial manipulates.</p>
+<section id="setting-up-the-epics-layer">
+<h2>Setting up the EPICS layer<a class="headerlink" href="#setting-up-the-epics-layer" title="Link to this heading">#</a></h2>
+<p>First, lets set up some PVs that we can communicate with. We are going to
+accomplish this by using the <a class="reference external" href="https://github.com/mdavidsaver/epicscorelibs">epicscorelibs</a> python library, which is a
+dependency of ophyd-async. Make sure to follow the <a class="reference internal" href="installation.html"><span class="doc">installation tutorial</span></a> first to ensure you have a virtual environment set up.
+This tutorial will also make use of IPython, which should also be packaged in
+your virtual environment provided you have installed the dependencies.</p>
+<p>Once you have activated the python virtual environment, open up an IPython REPL
+and type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ophyd_async.epics.demo</span>
+<span class="n">demo</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">(</span><span class="s2">&quot;TEST&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will start two IOCs - a sensor, and a motor with X and Y axes - and expose
+their PVs via the EPICS protocol. If you have <a class="reference external" href="https://epics-controls.org/resources-and-support/documents/getting-started/">EPICS</a> installed on your machine
+you should now be able to type the following into a regular terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>caget<span class="w"> </span>TEST:Mode
+caget<span class="w"> </span>TEST:X:Velocity
+caget<span class="w"> </span>TEST:Y:Readback
+</pre></div>
+</div>
+<p>If this command doesn’t work for you, it’s probably because you don’t have
+EPICS installed. For this tutorial, you don’t have to have EPICS installed; you
+can use <code class="docutils literal notranslate"><span class="pre">aioca</span></code> within an IPython terminal instead:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">aioca</span>
+<span class="k">await</span> <span class="n">aioca</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;TEST:Mode&quot;</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">aioca</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;TEST:X:Velocity&quot;</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">aioca</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;TEST:Y:Readback&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">demo.start_ioc_subprocess</span></code> function actually runs two .db files in the
+background. These can be found in <code class="docutils literal notranslate"><span class="pre">src/ophyd_async/epics/demo/</span></code> in the
+<code class="docutils literal notranslate"><span class="pre">mover.db</span></code> and <code class="docutils literal notranslate"><span class="pre">sensor.db</span></code> files. Here you can inspect all the PVs that are
+exposed by each file, e.g. the sensor (prefixed by <code class="docutils literal notranslate"><span class="pre">TEST:</span></code>) only has a
+<code class="docutils literal notranslate"><span class="pre">Mode</span></code> and <code class="docutils literal notranslate"><span class="pre">Value</span></code> PV.</p>
+<p>Notice the use of <code class="docutils literal notranslate"><span class="pre">await</span></code>. Ophyd-async is an <em>asynchronous</em> hardware
+abstraction layer, which means it delegates control to python’s asynchronous
+single-threaded event loop to run tasks concurrently. If any of these terms are
+unfamiliar to you, you should consult the <a class="reference external" href="https://docs.python.org/3/library/asyncio.html">official asyncio documentation</a>. BBC
+has a brilliant introduction into <a class="reference external" href="https://bbc.github.io/cloudfit-public-docs/asyncio/asyncio-part-1.html">Python’s asynchronous logic</a>, which is
+worth a read and accessible for beginners and more experienced programmers.
+Give it a look, and come back here when you are ready :)</p>
+</section>
+<section id="what-the-demo-epics-iocs-actually-do">
+<h2>What the demo EPICS IOCs actually do<a class="headerlink" href="#what-the-demo-epics-iocs-actually-do" title="Link to this heading">#</a></h2>
+<p>If you look at the <code class="docutils literal notranslate"><span class="pre">mover.db</span></code> and <code class="docutils literal notranslate"><span class="pre">sensor.db</span></code> files mentioned in the
+previous section, you can work out what each PV is actually doing. The sensor
+has a <code class="docutils literal notranslate"><span class="pre">Value</span></code> PV which calculates some combinations of sine and cosine
+functions of <code class="docutils literal notranslate"><span class="pre">X:Readback</span></code> and <code class="docutils literal notranslate"><span class="pre">Y:Readback</span></code> PVs. Specifically, it outputs:</p>
+<div class="math notranslate nohighlight">
+\[sin(x)^{10} + cos(E + xy)cos(x)\]</div>
+<p>… where x and y represent the <code class="docutils literal notranslate"><span class="pre">X:Readback</span></code> and <code class="docutils literal notranslate"><span class="pre">Y:Readback</span></code> PVs
+respectively, and E is a value taken from the <code class="docutils literal notranslate"><span class="pre">Mode</span></code> PV. If the mode is set
+to <code class="docutils literal notranslate"><span class="pre">Low</span> <span class="pre">Energy</span></code> (or 0), this is 10, and if it is set to <code class="docutils literal notranslate"><span class="pre">High</span> <span class="pre">Energy</span></code> (or
+1), it is 100.</p>
+<p>Therefore, what we probably want to do with these PVs is move the X and Y
+positions of the motor around in a grid scan, and get a heatmap of the
+<code class="docutils literal notranslate"><span class="pre">Value</span></code> PV to see the maxima and minima of this function.</p>
+</section>
+<section id="writing-devices-to-access-pvs">
+<h2>Writing Devices to access PVs<a class="headerlink" href="#writing-devices-to-access-pvs" title="Link to this heading">#</a></h2>
+<p>At this point, we have some PVs running in the background. By the end of this
+section, we will encapsulate them in ophyd-async devices, and be able to
+control them without directly interacting with <code class="docutils literal notranslate"><span class="pre">aioca</span></code> as we have done above.</p>
+<p>An ophyd-async <code class="docutils literal notranslate"><span class="pre">Device</span></code> is just a collection of PVs that can be coordinated
+to run plans. To connect an EPICS PV with such a device, we can use factory
+functions that generate an <code class="docutils literal notranslate"><span class="pre">ophyd_async.core.Signal</span></code> which can have 4
+flavours:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SignalR</span></code> which has the method <code class="docutils literal notranslate"><span class="pre">.get_value()</span></code> to get its value,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SignalW</span></code> which has the method <code class="docutils literal notranslate"><span class="pre">.set(value)</span></code> to set a value,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> which subclasses both <code class="docutils literal notranslate"><span class="pre">SignalR</span></code> and <code class="docutils literal notranslate"><span class="pre">SignalW</span></code> and,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SignalX</span></code> which has a <code class="docutils literal notranslate"><span class="pre">.trigger()</span></code> method on to set the PV to None, which
+will execute it.</p></li>
+</ul>
+<p>Each of these has a corresponding factory function to generate signals that
+use the EPICS protocol, which can be imported from <a class="reference internal" href="../generated/ophyd_async.epics.signal.html#module-ophyd_async.epics.signal" title="ophyd_async.epics.signal"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a>
+and includes <code class="docutils literal notranslate"><span class="pre">epics_signal_$mode</span></code> (where <code class="docutils literal notranslate"><span class="pre">$mode</span></code> is one of <code class="docutils literal notranslate"><span class="pre">r</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>,
+<code class="docutils literal notranslate"><span class="pre">rw</span></code> or <code class="docutils literal notranslate"><span class="pre">x</span></code>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ophyd_async.epics.signal</span> <span class="kn">import</span> <span class="n">epics_signal_r</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;TEST:Value&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Above, we call <code class="docutils literal notranslate"><span class="pre">epics_signal_r</span></code> with two arguments; the first describes the
+type of value we are manipulating (in this case, a float). The second is the
+PV name itself.</p>
+<p>Notice the use of <code class="docutils literal notranslate"><span class="pre">epics_signal_r</span></code> instead of, e.g. <code class="docutils literal notranslate"><span class="pre">epics_signal_rw</span></code>. This
+is because the <code class="docutils literal notranslate"><span class="pre">sensor.db</span></code> file shows us the <code class="docutils literal notranslate"><span class="pre">Value</span></code> PV of our IOC is a
+CALC record; we can <code class="docutils literal notranslate"><span class="pre">caput</span></code> to it, but it won’t mean anything. So we should
+only use this as a readable signal.</p>
+<p>Try to read the value of this signal now:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You should encounter an error telling you that you haven’t connected it yet.
+To connect it, you should call <code class="docutils literal notranslate"><span class="pre">signal.connect()</span></code> in the bluesky event loop,
+which means the bluesky event loop should already be running. The easiest way
+to ensure this is to set up a RunEngine, <code class="docutils literal notranslate"><span class="pre">RE</span> <span class="pre">=</span> <span class="pre">RunEngine()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.run_engine</span> <span class="kn">import</span> <span class="n">RunEngine</span><span class="p">,</span> <span class="n">call_in_bluesky_event_loop</span>
+
+<span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">()</span>
+<span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">connect</span><span class="p">())</span>
+<span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>So far, we have defined and connected a signal. Now try to write a device that
+contains both <code class="docutils literal notranslate"><span class="pre">TEST:Value</span></code> and <code class="docutils literal notranslate"><span class="pre">TEST:Mode</span></code> PVs. To do this, you should make
+a class that subclasses <code class="docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code>, and creates signals in its
+constructor in a similar way to what has been demonstrated above.</p>
+<p>To create a signal representing the <code class="docutils literal notranslate"><span class="pre">TEST:Mode</span></code> PV, the datatype will need to
+be a defined Enum, containing both the <code class="docutils literal notranslate"><span class="pre">Low</span> <span class="pre">Energy</span></code> and <code class="docutils literal notranslate"><span class="pre">High</span> <span class="pre">Energy</span></code>
+values that this PV can accept. This Enum should subclass <code class="docutils literal notranslate"><span class="pre">str</span></code> as well.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.epics.signal</span> <span class="kn">import</span> <span class="n">epics_signal_rw</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+
+<span class="k">class</span> <span class="nc">EnergyMode</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">low</span> <span class="o">=</span> <span class="s2">&quot;Low Energy&quot;</span>
+    <span class="n">high</span> <span class="o">=</span> <span class="s2">&quot;High Energy&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">EnergyMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Mode&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note the call to <code class="docutils literal notranslate"><span class="pre">super().__init__(self,</span> <span class="pre">name=name)</span></code> in the <code class="docutils literal notranslate"><span class="pre">Sensor</span></code>. This
+is useful because a <code class="docutils literal notranslate"><span class="pre">Device</span></code> names itself and all of its children in its
+constructor, and all devices (including <code class="docutils literal notranslate"><span class="pre">Signal</span></code>-s) should be named to work
+with Bluesky plans, as they will generate bluesky documents describing them.</p>
+<p>As an exercise, try to write an ophyd device to describe the PVs in the
+<code class="docutils literal notranslate"><span class="pre">mover.db</span></code> file. You should include the <code class="docutils literal notranslate"><span class="pre">Setpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">Velocity</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Readback</span></code> and <code class="docutils literal notranslate"><span class="pre">Stop.PROC</span></code> PVs, ensuring the last of these becomes a
+<code class="docutils literal notranslate"><span class="pre">SignalX</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ophyd_async.epics.signal</span> <span class="kn">import</span> <span class="n">epics_signal_x</span>
+
+<span class="k">class</span> <span class="nc">Mover</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Setpoint&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readback</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Readback&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Velocity&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">epics_signal_x</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As above, we can instantiate a <code class="docutils literal notranslate"><span class="pre">Mover</span></code> like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">()</span>
+<span class="n">mover_x</span> <span class="o">=</span> <span class="n">Mover</span><span class="p">(</span><span class="s2">&quot;TEST:X:&quot;</span><span class="p">,</span> <span class="s2">&quot;moverx&quot;</span><span class="p">)</span>
+<span class="n">mover_y</span> <span class="o">=</span> <span class="n">Mover</span><span class="p">(</span><span class="s2">&quot;TEST:Y:&quot;</span><span class="p">,</span> <span class="s2">&quot;movery&quot;</span><span class="p">)</span>
+<span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="n">mover_x</span><span class="o">.</span><span class="n">connect</span><span class="p">())</span>
+<span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="n">mover_y</span><span class="o">.</span><span class="n">connect</span><span class="p">())</span>
+<span class="k">await</span> <span class="n">mover_x</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+<span class="k">await</span> <span class="n">mover_y</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>It seems like a lot of effort to have to create the X and Y movers separately.
+So, we can make a device that creates them together:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SampleStage</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">Mover</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;X:&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">Mover</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Y:&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>… And use it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.run_engine</span> <span class="kn">import</span> <span class="n">RunEngine</span><span class="p">,</span> <span class="n">call_in_bluesky_event_loop</span>
+
+<span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">()</span>
+<span class="n">stage</span> <span class="o">=</span> <span class="n">SampleStage</span><span class="p">(</span><span class="s2">&quot;TEST:&quot;</span><span class="p">,</span> <span class="s2">&quot;stage&quot;</span><span class="p">)</span>
+<span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">connect</span><span class="p">())</span>
+<span class="k">await</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+<span class="k">await</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Experiment with setting the X and Y values, and see how it changes the sensor.
+For example, you can set both X and Y setpoints to 10:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>… and check that the sensor reads the correct value:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="mi">10</span> <span class="k">if</span> <span class="k">await</span> <span class="n">sensor</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="o">==</span> <span class="n">EnergyMode</span><span class="o">.</span><span class="n">low</span> <span class="k">else</span> <span class="mi">100</span>
+<span class="n">X</span> <span class="o">=</span> <span class="k">await</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="k">await</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+
+<span class="n">sensor_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sensor</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">**</span><span class="mi">10</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">E</span> <span class="o">+</span> <span class="n">Y</span><span class="o">*</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="using-plans-and-plan-stubs">
+<h2>Using plans and plan stubs<a class="headerlink" href="#using-plans-and-plan-stubs" title="Link to this heading">#</a></h2>
+<p>So far, all manipulation of PVs has been done through the ophyd layer. However,
+we can do a similar thing using bluesky, without interacting with the
+<code class="docutils literal notranslate"><span class="pre">.get_value</span></code> and <code class="docutils literal notranslate"><span class="pre">.set</span></code> methods on our signals:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bluesky.plan_stubs</span> <span class="k">as</span> <span class="nn">bps</span>
+
+<span class="n">RE</span><span class="p">(</span><span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">bluesky.plans</span></code> and <code class="docutils literal notranslate"><span class="pre">bluesky.plan_stubs</span></code> introduce more complex scanning
+logic to manipulate devices, using either <a class="reference external" href="https://blueskyproject.io/bluesky/plans.html">partial or complete recipes</a> of
+generated messages that get sent to the RunEngine. For example, <code class="docutils literal notranslate"><span class="pre">bps.mv</span></code> in
+the above example generates a <code class="docutils literal notranslate"><span class="pre">Msg(&quot;set&quot;,</span> <span class="pre">...)</span></code> for each pair of values it
+receives, where the first of these is a device and the second is a value to set
+this to.</p>
+<p>Upon receiving this message, the RunEngine tries to call <code class="docutils literal notranslate"><span class="pre">.set</span></code> on the object,
+which we get for free because <code class="docutils literal notranslate"><span class="pre">stage.x</span></code> is not just a <code class="docutils literal notranslate"><span class="pre">ophyd_async.core.</span>
+<span class="pre">Device</span></code> but also a <code class="docutils literal notranslate"><span class="pre">ophyd_async.core.signal.SignalW</span></code>, meaning it has a
+<code class="docutils literal notranslate"><span class="pre">.set</span></code> already.</p>
+<p>You can see how this works if we pass in a signal that doesn’t have a <code class="docutils literal notranslate"><span class="pre">.set</span></code>
+method, like for example <code class="docutils literal notranslate"><span class="pre">sensor.value</span></code>, which is readonly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RE</span><span class="p">(</span><span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">sensor</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>You will see an assertion error, <code class="docutils literal notranslate"><span class="pre">&lt;object&gt;</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">implement</span> <span class="pre">all</span> <span class="pre">Movable</span>
+<span class="pre">methods</span></code>. <code class="docutils literal notranslate"><span class="pre">Movable</span></code> refers to a <a class="reference external" href="https://github.com/bluesky/bluesky/blob/master/bluesky/protocols.py">bluesky protocol</a> that needs to be obeyed
+by a device in order for <code class="docutils literal notranslate"><span class="pre">bps.mv</span></code> to be run on it - <a class="reference external" href="https://mypy.readthedocs.io/en/stable/protocols.html">protocols</a> are similar to
+abstract classes as they only define signatures of methods, rather than
+implementations.</p>
+<p>You can usually inspect plans and plan stubs, as well as their logic in the
+RunEngine, to figure out what protocols need to be obeyed by a device. You may
+also be able to try running a plan or plan stub with a device, and read the
+error message to diagnose which protocol it needs, such as in the example
+above.</p>
+</section>
+<section id="running-a-gridscan">
+<h2>Running a gridscan<a class="headerlink" href="#running-a-gridscan" title="Link to this heading">#</a></h2>
+<p>A bluesky plan already exists to allow running a grid scan with our devices.
+This is <code class="docutils literal notranslate"><span class="pre">bluesky.plans.grid_scan</span></code>, and it’s call signature looks something
+like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RE</span><span class="p">(</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det1</span><span class="p">,</span> <span class="n">det2</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="n">start1</span><span class="p">,</span> <span class="n">stop1</span><span class="p">,</span> <span class="n">num1</span><span class="p">,</span> <span class="o">...</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>… where <code class="docutils literal notranslate"><span class="pre">det1</span></code> and <code class="docutils literal notranslate"><span class="pre">det2</span></code> are detectors similar to our <code class="docutils literal notranslate"><span class="pre">sensor</span></code> object,
+and <code class="docutils literal notranslate"><span class="pre">motor1</span></code> is a motor similar to our <code class="docutils literal notranslate"><span class="pre">mover</span></code> object. <code class="docutils literal notranslate"><span class="pre">start1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">stop1</span></code> and <code class="docutils literal notranslate"><span class="pre">num1</span></code> indicate the range of values this motor should be
+driven to, so values of 0, 1 and 2 respectively means the motor will be
+driven to 0, 0.5 and 1.</p>
+<p>At each stage of motor motion, the detectors <code class="docutils literal notranslate"><span class="pre">det1</span></code> and <code class="docutils literal notranslate"><span class="pre">det2</span></code> will be
+triggered.</p>
+<p>For this plan to work, the ophyd devices above, <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> and <code class="docutils literal notranslate"><span class="pre">Mover</span></code>, will
+have to change to allow for the following protocols for the <code class="docutils literal notranslate"><span class="pre">Sensor</span></code>:</p>
+<ol class="arabic simple">
+<li><p>Readable, so that we can get event documents each time we collect data,</p></li>
+<li><p>Stageable, so that we can plan how to setup and teardown the device for the
+scan.</p></li>
+</ol>
+<p>Note that all plans require their corresponding devices to be <code class="docutils literal notranslate"><span class="pre">Stageable</span></code>,
+because all plans will try to stage and unstage devices around the actual plan
+logic.</p>
+<p>Similarly, the <code class="docutils literal notranslate"><span class="pre">Mover</span></code> should be:</p>
+<ol class="arabic simple">
+<li><p>Both of the above; we also want event documents describing what the mover is
+doing.</p></li>
+<li><p>Movable, so we can drive it to move to specific motor values,</p></li>
+</ol>
+<p>As an exercise, have a go at trying to expand your existing definitions of
+<code class="docutils literal notranslate"><span class="pre">Sensor</span></code> and <code class="docutils literal notranslate"><span class="pre">Mover</span></code> so that they have these protocols, too. Both of these
+objects should delegate to the existing methods that their signals have.
+You will want to make use of <code class="docutils literal notranslate"><span class="pre">ophyd_async.core.AsyncStatus</span></code> for the <code class="docutils literal notranslate"><span class="pre">stage</span></code>
+and <code class="docutils literal notranslate"><span class="pre">unstage</span></code> methods, which can be used to wrap around the methods to return
+a status that can be awaited on. See <code class="docutils literal notranslate"><span class="pre">ophyd_async.core.SignalR</span></code> for an
+example of this.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Reading</span><span class="p">,</span> <span class="n">Descriptor</span><span class="p">,</span> <span class="n">Readable</span><span class="p">,</span> <span class="n">Stageable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
+
+<span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Readable</span><span class="p">,</span> <span class="n">Stageable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">EnergyMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Mode&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">read</span><span class="p">()),</span> <span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">read</span><span class="p">())}</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Descriptor</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">describe</span><span class="p">()),</span> <span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">describe</span><span class="p">())}</span>
+
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span>
+
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the above, <code class="docutils literal notranslate"><span class="pre">Sensor.stage</span></code> and <code class="docutils literal notranslate"><span class="pre">Sensor.unstage</span></code> simply delegate to each
+<code class="docutils literal notranslate"><span class="pre">SignalR</span></code>-s <code class="docutils literal notranslate"><span class="pre">.stage</span></code> and <code class="docutils literal notranslate"><span class="pre">.unstage</span></code> methods. In this case, both
+<code class="docutils literal notranslate"><span class="pre">self.mode</span></code> and <code class="docutils literal notranslate"><span class="pre">self.value</span></code> are instances of this class (recall that
+<code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> subclasses <code class="docutils literal notranslate"><span class="pre">SignalR</span></code>).</p>
+<p>Our <code class="docutils literal notranslate"><span class="pre">Mover</span></code> doesn’t just have <code class="docutils literal notranslate"><span class="pre">SignalR</span></code> devices, however. It has a
+<code class="docutils literal notranslate"><span class="pre">SignalX</span></code>, too. This doesn’t have a <code class="docutils literal notranslate"><span class="pre">.stage</span></code> or a <code class="docutils literal notranslate"><span class="pre">.unstage</span></code> method, nor
+does it have <code class="docutils literal notranslate"><span class="pre">.read</span></code> or <code class="docutils literal notranslate"><span class="pre">.describe</span></code>. With this in mind, the <code class="docutils literal notranslate"><span class="pre">Mover</span></code> can
+be written as,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Movable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">observe_value</span>
+
+<span class="k">class</span> <span class="nc">Mover</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Readable</span><span class="p">,</span> <span class="n">Stageable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Setpoint&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readback</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Readback&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Velocity&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">epics_signal_x</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">read</span><span class="p">()),</span>
+            <span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="p">}</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Descriptor</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">describe</span><span class="p">()),</span>
+            <span class="o">**</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
+        <span class="p">}</span>
+
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span>
+
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">current_position</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="k">break</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="p">[])</span>
+</pre></div>
+</div>
+<p>Notice in the above, that I have renamed <code class="docutils literal notranslate"><span class="pre">self.stop</span></code> to <code class="docutils literal notranslate"><span class="pre">self._stop</span></code>. This
+is because <code class="docutils literal notranslate"><span class="pre">self.stop</span></code> is actually reserved by the <code class="docutils literal notranslate"><span class="pre">Stoppable</span></code> protocol;
+during the grid scan the RunEngine will check if it can call <code class="docutils literal notranslate"><span class="pre">self.stop</span></code>.
+However, because of the limitations of python runtime typing systems, the
+RunEngine doesn’t recognise the difference between a property and a method on
+a class attribute; it will think <code class="docutils literal notranslate"><span class="pre">self.stop</span></code> is a method, not a <code class="docutils literal notranslate"><span class="pre">SignalX</span></code>.</p>
+<p>Also notice that <code class="docutils literal notranslate"><span class="pre">.read</span></code> and <code class="docutils literal notranslate"><span class="pre">.describe</span></code> do not include <code class="docutils literal notranslate"><span class="pre">self.setpoint</span></code>.
+This is deliberate; we want to capture the readback value, not the setpoint,
+to ensure the motor is doing what we expect it to be doing.</p>
+<p>Finally, notice the use of <code class="docutils literal notranslate"><span class="pre">observe_value</span></code> in <code class="docutils literal notranslate"><span class="pre">self._set</span></code>. This returns an
+async iterator, which yields values whenever the signal changes. Therefore,
+whenever <code class="docutils literal notranslate"><span class="pre">self.readback</span></code> has a change in its value, it is yielded in this for
+loop. This bit of logic ensures we only return from <code class="docutils literal notranslate"><span class="pre">self._set</span></code> when the
+motor’s readback value is close enough to what we asked it to be.</p>
+<p>We can now try running our grid scan. First, let’s look at the messages that
+<code class="docutils literal notranslate"><span class="pre">bluesky.plans.grid_scan</span></code> will emit with our system, after creating and
+connecting these devices:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bluesky.plans</span> <span class="k">as</span> <span class="nn">bp</span>
+
+<span class="n">sensor</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">(</span><span class="s2">&quot;TEST:&quot;</span><span class="p">,</span> <span class="s2">&quot;sensor&quot;</span><span class="p">)</span>
+<span class="n">stage</span> <span class="o">=</span> <span class="n">SampleStage</span><span class="p">(</span><span class="s2">&quot;TEST:&quot;</span><span class="p">,</span> <span class="s2">&quot;stage&quot;</span><span class="p">)</span>
+
+<span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">connect</span><span class="p">())</span>
+<span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="n">sensor</span><span class="o">.</span><span class="n">connect</span><span class="p">())</span>
+
+<span class="nb">list</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">sensor</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>It should be noted here that each device you use in a plan must have a unique
+name, which includes giving it a name in the first place. Bluesky documents use
+device names to configure python dictionaries, and overlapping keys are
+forbidden. If no name is given for both of these devices (the default), the
+RunEngine will recognize there are two devices with the same name (i.e. “”) and
+complain.</p>
+<p>The above code snippet will generate all the messages <code class="docutils literal notranslate"><span class="pre">bp.grid_scan</span></code> would
+yield to the RunEngine, which can be useful to identify any errors in the plan
+itself.</p>
+<p>For example, try doing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">list</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">sensor</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>… and you will see an error complaining because we have asked for a non-
+integer number of images to be taken. Now, we are ready to run the grid scan!</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">sensor</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>… did you see that? The result of this command should be a single output,
+of the uid of the scan. We ran a grid scan! But how do we get information out
+of it?</p>
+</section>
+<section id="subscriptions-and-documents">
+<h2>Subscriptions and documents<a class="headerlink" href="#subscriptions-and-documents" title="Link to this heading">#</a></h2>
+<p>We can add subscriptions to the RunEngine which will give us more information
+about the scan that is being run. For example, we can make a class that stores
+all the documents produced, and subscribe to a bluesky utility,
+<code class="docutils literal notranslate"><span class="pre">BestEffortCallback</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.callbacks.best_effort</span> <span class="kn">import</span> <span class="n">BestEffortCallback</span>
+
+<span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">DocHolder</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;doc&quot;</span><span class="p">:</span> <span class="n">doc</span><span class="p">})</span>
+
+<span class="n">holder</span> <span class="o">=</span> <span class="n">DocHolder</span><span class="p">()</span>
+<span class="n">bec_subscription</span> <span class="o">=</span> <span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
+<span class="n">holder_subscription</span> <span class="o">=</span> <span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">holder</span><span class="p">)</span>
+
+<span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">sensor</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>You can now inspect the documents produced, by inspecting <code class="docutils literal notranslate"><span class="pre">holder.docs</span></code>, and
+should see a table of the results along each point in the grid scan. You can
+write whatever subscriptions you want, including ones that make a live plot as
+the scan progresses.</p>
+</section>
+<section id="using-the-standardreadable">
+<h2>Using the StandardReadable<a class="headerlink" href="#using-the-standardreadable" title="Link to this heading">#</a></h2>
+<p>Congratulations! You have successfully made some ophyd devices to abstract
+EPICS IOCs, and run bluesky plans with them. However, I deliberately left out
+some finer details that you may now care about. The attentive reader may have
+noticed that any motor or detector they write will want to be <code class="docutils literal notranslate"><span class="pre">Readable</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Stageable</span></code>, and may think it’s a bit of a chore to have to re-write this
+every time they make a new device. Any readers more familiar with bluesky will
+notice we haven’t made any use of the concept of configuration signals, or the
+<code class="docutils literal notranslate"><span class="pre">Configurable</span></code> protocol. To help with this, ophyd-async comes with a class
+called <code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code> which subclasses these, and makes it easy to
+produce the correct documents from each scan by grouping signals into readable
+or configurable ones. Using this class, the Sensor can be re-written as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo sensor that produces a scalar value based on X and Y Movers&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Define some signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">EnergyMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Mode&quot;</span><span class="p">)</span>
+        <span class="c1"># Set name and signals for read() and read_configuration()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_readable_signals</span><span class="p">(</span>
+            <span class="n">read</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+            <span class="n">config</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The only difference between this and the Sensor as we defined previously, is
+now we have the <code class="docutils literal notranslate"><span class="pre">Mode</span></code> PV attached to a a configurational signal, instead
+of a readable one. This just changes how it appears in documents - try this
+definition out instead and notice the difference.</p>
+<p>There are a few more enhancements that could be made ontop of the existing
+<code class="docutils literal notranslate"><span class="pre">Mover</span></code> device. First of all, we can also make this subclass
+<code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code> to get the same benefits of staging/unstaging behaviour,
+and read/configuration signals. Secondly, we could include more PVs, for
+example to describe the units we’re working with - at the moment, we just have
+a ‘velocity’ PV without knowing its units. We could also make our device
+<code class="docutils literal notranslate"><span class="pre">Stoppable</span></code>, so that we could technically kill the motor motion if anything
+goes wrong (and finally make use of the <code class="docutils literal notranslate"><span class="pre">self.stop_</span></code> PV…).</p>
+<p>All of that and more is done in the <code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code> module, in the
+<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file, so have a look through that to observe the differences
+and experiment with what each of them do.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="installation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="using-existing-devices.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Using existing devices</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-epics-layer">Setting up the EPICS layer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-demo-epics-iocs-actually-do">What the demo EPICS IOCs actually do</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#writing-devices-to-access-pvs">Writing Devices to access PVs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-plans-and-plan-stubs">Using plans and plan stubs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-gridscan">Running a gridscan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subscriptions-and-documents">Subscriptions and documents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-standardreadable">Using the StandardReadable</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/master/docs/user/tutorials/making-your-own-devices-to-run-a-gridscan.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/user/tutorials/making-your-own-devices-to-run-a-gridscan.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
