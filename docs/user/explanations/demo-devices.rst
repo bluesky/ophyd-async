@@ -1,36 +1,43 @@
-.. note::
+Demo devices
+============
 
-   Ophyd async is included on a provisional basis until the v1.0 release and 
-   may change API on minor release numbers before then
-
-Make a Simple Device
-====================
-
-.. currentmodule:: ophyd_async.core
-
-To make a simple device, you need to subclass from the
-`StandardReadable` class, create some `Signal` instances, and optionally implement
-other suitable Bluesky `Protocols <hardware_interface>` like
-:class:`~bluesky.protocols.Movable`.
-
-The rest of this guide will show examples from ``src/ophyd_async/epics/demo/__init__.py``
+ophyd-async comes with a demo module for epics, `ophyd_async.epics.demo`.
+This :doc:`tutorial <../tutorials/making-your-own-devices-to-run-a-gridscan>`
+makes reference, towards the end, of the optimal way of constructing the basic
+devices contained therein. The purpose of this document is to explain why this
+is an optimal configuration.
 
 Readable
 --------
 
-For a simple :class:`~bluesky.protocols.Readable` object like a `Sensor`, you need to
-define some signals, then tell the superclass which signals should contribute to
-``read()`` and ``read_configuration()``:
+.. currentmodule:: ophyd_async.core
+
+For a simple :class:`~bluesky.protocols.Readable` object like a `Sensor`, it is
+`StandardReadable` should be subclassed as it comes with useful default
+behaviour, such as providing ``stage`` and ``unstage`` methods, and other
+methods to adhere to :class:`~bluesky.protocols.Readable` and :class:`~bluesky
+.protocols.Configurable`. These allow the construction of both readable signals
+(i.e. ones which change with each scan point) and configurable ones, which are
+more meant to describe slow-changing signals, or signals to define the state of
+the device.
+
+Here is an example, from the tutorials:
 
 .. literalinclude:: ../../../src/ophyd_async/epics/demo/__init__.py
    :pyobject: Sensor
+
+In this case, ``self.value`` changes very often, however ``self.mode`` is an
+Enum which is set once during a scan. Therefore, the latter is a configuration
+signal, but the former is a readable signal. They are passed as such to the
+constructor of `StandardReadable`, at the end of the constructor of the 
+``Sensor`` object itself.
 
 First some Signals are constructed and stored on the Device. Each one is passed
 its Python type, which could be:
 
 - A primitive (`str`, `int`, `float`)
 - An array (`numpy.typing.NDArray` or ``Sequence[str]``)
-- An enum (`enum.Enum`). 
+- An enum (`enum.Enum`), which must also subclass `str`. 
 
 The rest of the arguments are PV connection information, in this case the PV suffix.
 
@@ -45,7 +52,7 @@ Finally `super().__init__() <StandardReadable>` is called with:
 
 All signals passed into this init method will be monitored between ``stage()``
 and ``unstage()`` and their cached values returned on ``read()`` and 
-``read_configuration()`` for perfomance.
+``read_configuration()`` for performance.
 
 Movable
 -------

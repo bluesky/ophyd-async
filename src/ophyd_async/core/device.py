@@ -33,6 +33,7 @@ class Device(HasName):
         return self._name
 
     def children(self) -> Iterator[Tuple[str, Device]]:
+        """Get all attributes of the class which also subclass Device"""
         for attr_name, attr in self.__dict__.items():
             if attr_name != "parent" and isinstance(attr, Device):
                 yield attr_name, attr

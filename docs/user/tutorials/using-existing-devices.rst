@@ -3,7 +3,7 @@
     Ophyd async is included on a provisional basis until the v1.0 release and 
     may change API on minor release numbers before then
 
-Using existing Devices
+Using existing devices
 ======================
 
 To use an Ophyd Device that has already been written, you need to make a
@@ -171,4 +171,4 @@ device we can see it gives the same result:
 
 .. seealso::
 
-    How-to `../how-to/make-a-simple-device` to make your own Ophyd Async devices.
+    How-to `../how-to/create-devices` to learn how to make your own devices.
