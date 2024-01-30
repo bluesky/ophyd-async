@@ -1,4 +1,5 @@
 """Module which defines abstract classes to work with detectors"""
+
 import asyncio
 from abc import ABC, abstractmethod
 from enum import Enum

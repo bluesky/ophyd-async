@@ -26,8 +26,7 @@ from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 
 
 class DummyTriggerLogic(TriggerLogic[int]):
-    def __init__(self):
-        ...
+    def __init__(self): ...
 
     def trigger_info(self, value: int) -> TriggerInfo:
         return TriggerInfo(
@@ -37,16 +36,13 @@ class DummyTriggerLogic(TriggerLogic[int]):
     async def prepare(self, value: int):
         return value
 
-    async def start(self):
-        ...
+    async def start(self): ...
 
-    async def stop(self):
-        ...
+    async def stop(self): ...
 
 
 class DummyController(DetectorControl):
-    def __init__(self) -> None:
-        ...
+    def __init__(self) -> None: ...
 
     async def arm(
         self,
@@ -56,8 +52,7 @@ class DummyController(DetectorControl):
     ) -> AsyncStatus:
         return AsyncStatus(asyncio.sleep(0.1))
 
-    async def disarm(self):
-        ...
+    async def disarm(self): ...
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.002

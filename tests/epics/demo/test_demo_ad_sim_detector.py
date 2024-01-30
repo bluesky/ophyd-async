@@ -1,6 +1,5 @@
 """Integration tests for a StandardDetector using a HDFWriter and ADSimController."""
 
-
 import time
 from pathlib import Path
 from typing import List, cast

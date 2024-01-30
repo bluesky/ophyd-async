@@ -70,8 +70,7 @@ class DummyWriter(DetectorWriter):
 
     async def wait_for_index(
         self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ) -> None:
-        ...
+    ) -> None: ...
 
     async def get_indices_written(self) -> int:
         return 1
