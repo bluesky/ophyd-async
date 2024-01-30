@@ -4,6 +4,18 @@
     "url": "https://bluesky.github.io/ophyd-async/main/"
   },
   {
+    "version": "v0.2.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
+  },
+  {
+    "version": "v0.1.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
+  },
+  {
+    "version": "103_improve_asyncstatus_message",
+    "url": "https://bluesky.github.io/ophyd-async/103_improve_asyncstatus_message/"
+  },
+  {
     "version": "add-more-docs",
     "url": "https://bluesky.github.io/ophyd-async/add-more-docs/"
   },
@@ -70,13 +82,5 @@
   {
     "version": "stall-timeout",
     "url": "https://bluesky.github.io/ophyd-async/stall-timeout/"
-  },
-  {
-    "version": "v0.1.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
-  },
-  {
-    "version": "v0.2.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
   }
 ]
