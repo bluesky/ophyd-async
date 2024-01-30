@@ -32,13 +32,13 @@ from .signal import (
     SignalX,
     observe_value,
     set_and_wait_for_value,
-    set_sim_callback,
-    set_sim_put_proceeds,
-    set_sim_value,
+    set_mock_callback,
+    set_mock_put_proceeds,
+    set_mock_value,
     wait_for_value,
 )
 from .signal_backend import SignalBackend
-from .sim_signal_backend import SimSignalBackend
+from .mock_signal_backend import MockSignalBackend
 from .standard_readable import StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
@@ -54,7 +54,7 @@ from .utils import (
 
 __all__ = [
     "SignalBackend",
-    "SimSignalBackend",
+    "MockSignalBackend",
     "DetectorControl",
     "DetectorTrigger",
     "DetectorWriter",
@@ -69,9 +69,9 @@ __all__ = [
     "SignalX",
     "observe_value",
     "set_and_wait_for_value",
-    "set_sim_callback",
-    "set_sim_put_proceeds",
-    "set_sim_value",
+    "set_mock_callback",
+    "set_mock_put_proceeds",
+    "set_mock_value",
     "wait_for_value",
     "AsyncStatus",
     "DirectoryInfo",

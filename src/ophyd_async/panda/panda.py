@@ -26,7 +26,7 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalX,
-    SimSignalBackend,
+    MockSignalBackend,
 )
 from ophyd_async.epics.signal import (
     epics_signal_r,
@@ -149,24 +149,24 @@ class PandA(Device):
         return block
 
     async def _make_block(
-        self, name: str, num: Optional[int], block_pv: str, sim: bool = False
+        self, name: str, num: Optional[int], block_pv: str, mock: bool = False
     ):
         """Makes a block given a block name containing relevant signals.
 
         Loops through the signals in the block (found using type hints), if not in
-        sim mode then does a pvi call, and identifies this signal from the pvi call.
+        mock mode then does a pvi call, and identifies this signal from the pvi call.
         """
         block = self.verify_block(name, num)
 
         field_annos = get_type_hints(block, globalns=globals())
-        block_pvi = await pvi(block_pv, self.ctxt) if not sim else None
+        block_pvi = await pvi(block_pv, self.ctxt) if not mock else None
 
         # finds which fields this class actually has, e.g. delay, width...
         for sig_name, sig_type in field_annos.items():
             origin = get_origin(sig_type)
             args = get_args(sig_type)
 
-            # if not in sim mode,
+            # if not in mock mode,
             if block_pvi:
                 block_pvi = cast(Dict[str, PVIEntry], block_pvi)
                 # try to get this block in the pvi.
@@ -180,7 +180,7 @@ class PandA(Device):
                 signal = self._make_signal(entry, args[0] if len(args) > 0 else None)
 
             else:
-                backend: SignalBackend = SimSignalBackend(
+                backend: SignalBackend = MockSignalBackend(
                     args[0] if len(args) > 0 else None, block_pv
                 )
                 signal = SignalX(backend) if not origin else origin(backend)
@@ -242,16 +242,16 @@ class PandA(Device):
         else:
             setattr(self, name, block)
 
-    async def connect(self, sim=False) -> None:
+    async def connect(self, mock=False) -> None:
         """Initialises all blocks and connects them.
 
         First, checks for pvi information. If it exists, make all blocks from this.
         Then, checks that all required blocks in the PandA have been made.
 
-        If there's no pvi information, that's because we're in sim mode. In that case,
+        If there's no pvi information, that's because we're in mock mode. In that case,
         makes all required blocks.
         """
-        pvi_info = await pvi(self._init_prefix + ":PVI", self.ctxt) if not sim else None
+        pvi_info = await pvi(self._init_prefix + ":PVI", self.ctxt) if not mock else None
         hints = {
             attr_name: attr_type
             for attr_name, attr_type in get_type_hints(self, globalns=globals()).items()
@@ -272,7 +272,7 @@ class PandA(Device):
                 self.set_attribute(name, num, block)
 
         # then check if the ones defined in this class are in the pvi info
-        # make them if there is no pvi info, i.e. sim mode.
+        # make them if there is no pvi info, i.e. mock mode.
         for block_name in hints.keys():
             if pvi_info is not None:
                 pvi_name = block_name
@@ -288,8 +288,8 @@ class PandA(Device):
                 ], f"Expected PandA to only contain blocks, got {entry}"
             else:
                 num = 1 if get_origin(hints[block_name]) == DeviceVector else None
-                block = await self._make_block(block_name, num, "sim://", sim=sim)
+                block = await self._make_block(block_name, num, "mock://", mock=mock)
                 self.set_attribute(block_name, num, block)
 
         self.set_name(self.name)
-        await super().connect(sim)
+        await super().connect(mock)

@@ -4,7 +4,7 @@ from ophyd_async.core import Device, DeviceCollector, NotConnected
 
 
 class Dummy(Device):
-    async def connect(self, sim: bool = False):
+    async def connect(self, mock: bool = False):
         raise AttributeError()
 
 

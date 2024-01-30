@@ -18,10 +18,10 @@ from bluesky.protocols import (
 from .async_status import AsyncStatus
 from .device import Device
 from .signal_backend import SignalBackend
-from .sim_signal_backend import SimSignalBackend
+from .mock_signal_backend import MockSignalBackend
 from .utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
 
-_sim_backends: Dict[Signal, SimSignalBackend] = {}
+_mock_backends: Dict[Signal, MockSignalBackend] = {}
 
 
 def _add_timeout(func):
@@ -58,15 +58,15 @@ class Signal(Device, Generic[T]):
     def set_name(self, name: str = ""):
         self._name = name
 
-    async def connect(self, sim=False):
-        if sim:
-            self._backend = SimSignalBackend(
+    async def connect(self, mock=False):
+        if mock:
+            self._backend = MockSignalBackend(
                 datatype=self._init_backend.datatype, source=self._init_backend.source
             )
-            _sim_backends[self] = self._backend
+            _mock_backends[self] = self._backend
         else:
             self._backend = self._init_backend
-            _sim_backends.pop(self, None)
+            _mock_backends.pop(self, None)
         await self._backend.connect()
 
     @property
@@ -234,23 +234,23 @@ class SignalX(Signal):
         return AsyncStatus(coro)
 
 
-def set_sim_value(signal: Signal[T], value: T):
-    """Set the value of a signal that is in sim mode."""
-    _sim_backends[signal]._set_value(value)
+def set_mock_value(signal: Signal[T], value: T):
+    """Set the value of a signal that is in mock mode."""
+    _mock_backends[signal]._set_value(value)
 
 
-def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
+def set_mock_put_proceeds(signal: Signal[T], proceeds: bool):
     """Allow or block a put with wait=True from proceeding"""
-    event = _sim_backends[signal].put_proceeds
+    event = _mock_backends[signal].put_proceeds
     if proceeds:
         event.set()
     else:
         event.clear()
 
 
-def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
-    """Monitor the value of a signal that is in sim mode"""
-    return _sim_backends[signal].set_callback(callback)
+def set_mock_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
+    """Monitor the value of a signal that is in mock mode"""
+    return _mock_backends[signal].set_callback(callback)
 
 
 async def observe_value(signal: SignalR[T]) -> AsyncGenerator[T, None]:

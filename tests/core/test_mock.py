@@ -8,7 +8,7 @@ import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
-from ophyd_async.core import Signal, SignalBackend, SimSignalBackend, T
+from ophyd_async.core import Signal, SignalBackend, MockSignalBackend, T
 
 
 class MyEnum(str, Enum):
@@ -93,14 +93,14 @@ async def test_backend_get_put_monitor(
     put_value: T,
     descriptor: Callable[[Any], dict],
 ):
-    backend = SimSignalBackend(datatype, "")
+    backend = MockSignalBackend(datatype, "")
 
     await backend.connect()
     q = MonitorQueue(backend)
     try:
         # Check descriptor
         assert (
-            dict(source="sim://", **descriptor(initial_value))
+            dict(source="mock://", **descriptor(initial_value))
             == await backend.get_descriptor()
         )
         # Check initial value
@@ -114,27 +114,27 @@ async def test_backend_get_put_monitor(
         q.close()
 
 
-async def test_sim_backend_if_disconnected():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
+async def test_mock_backend_if_disconnected():
+    mock_backend = MockSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
     with pytest.raises(NotImplementedError):
-        await sim_backend.get_value()
+        await mock_backend.get_value()
 
 
-async def test_sim_backend_with_numpy_typing():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
-    await sim_backend.connect()
+async def test_mock_backend_with_numpy_typing():
+    mock_backend = MockSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
+    await mock_backend.connect()
 
-    array = await sim_backend.get_value()
+    array = await mock_backend.get_value()
     assert array.shape == (0,)
 
 
-async def test_sim_backend_descriptor_fails_for_invalid_class():
+async def test_mock_backend_descriptor_fails_for_invalid_class():
     class myClass:
         def __init__(self) -> None:
             pass
 
-    sim_signal = Signal(SimSignalBackend(myClass, "test"))
-    await sim_signal.connect(sim=True)
+    mock_signal = Signal(MockSignalBackend(myClass, "test"))
+    await mock_signal.connect(mock=True)
 
     with pytest.raises(AssertionError):
-        await sim_signal._backend.get_descriptor()
+        await mock_signal._backend.get_descriptor()

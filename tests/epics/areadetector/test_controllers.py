@@ -17,7 +17,7 @@ from ophyd_async.epics.areadetector.utils import ImageMode
 
 @pytest.fixture
 async def pilatus(RE) -> PilatusController:
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         drv = PilatusDriver("DRIVER:")
         controller = PilatusController(drv)
 
@@ -26,7 +26,7 @@ async def pilatus(RE) -> PilatusController:
 
 @pytest.fixture
 async def ad(RE) -> ADSimController:
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         drv = ADBase("DRIVER:")
         controller = ADSimController(drv)
 
