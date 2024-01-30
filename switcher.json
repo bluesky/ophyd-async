@@ -44,10 +44,6 @@
     "url": "https://bluesky.github.io/ophyd-async/fix-sr-paths/"
   },
   {
-    "version": "fix_linting",
-    "url": "https://bluesky.github.io/ophyd-async/fix_linting/"
-  },
-  {
     "version": "flyingpanda",
     "url": "https://bluesky.github.io/ophyd-async/flyingpanda/"
   },
