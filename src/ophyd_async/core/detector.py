@@ -2,6 +2,7 @@
 
 import asyncio
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 from typing import AsyncIterator, Dict, Optional, Sequence, TypeVar
 
@@ -35,6 +36,18 @@ class DetectorTrigger(str, Enum):
     constant_gate = "constant_gate"
     #: Expect a series of variable width external gate signals
     variable_gate = "variable_gate"
+
+
+@dataclass(frozen=True)
+class TriggerInfo:
+    #: Number of triggers that will be sent
+    num: int
+    #: Sort of triggers that will be sent
+    trigger: DetectorTrigger
+    #: What is the minimum deadtime between triggers
+    deadtime: float
+    #: What is the maximum high time of the triggers
+    livetime: float
 
 
 class DetectorControl(ABC):
@@ -133,6 +146,10 @@ class StandardDetector(
         self._describe: Dict[str, Descriptor] = {}
         self._config_sigs = list(config_sigs)
         self._frame_writing_timeout = writer_timeout
+
+        self._arm_status: Optional[AsyncStatus] = None
+        self._trigger_info: Optional[TriggerInfo] = None
+
         super().__init__(name)
 
     @property
@@ -142,6 +159,35 @@ class StandardDetector(
     @property
     def writer(self) -> DetectorWriter:
         return self._writer
+
+    def prepare(self, value: T) -> AsyncStatus:
+        """Arm detectors"""
+        # perpare for detector has value = TriggerInfo
+        return AsyncStatus(self._prepare(value))
+
+    async def _prepare(self, value: T) -> None:
+        """Arm detectors"""
+        await self.ensure_armed(value)
+
+    async def ensure_armed(self, trigger_info: TriggerInfo):
+        if (
+            not self._arm_status
+            or self._arm_status.done
+            or trigger_info != self._trigger_info
+        ):
+            # we need to re-arm
+            await self.controller.disarm()
+            required = self.controller.get_deadtime(trigger_info.livetime)
+            assert required <= trigger_info.deadtime, (
+                f"Detector {self.controller} needs at least {required}s deadtime, "
+                f"but trigger logic provides only {trigger_info.deadtime}s"
+            )
+            self._arm_status = await self.controller.arm(
+                num=trigger_info.num,
+                trigger=trigger_info.trigger,
+                exposure=trigger_info.livetime,
+            )
+            self._trigger_info = trigger_info
 
     async def check_config_sigs(self):
         """Checks configuration signals are named and connected."""

@@ -1,7 +1,5 @@
-import asyncio
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Callable, Dict, Generic, List, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
@@ -16,24 +14,12 @@ from bluesky.protocols import (
 )
 
 from .async_status import AsyncStatus
-from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
+from .detector import DetectorControl, DetectorWriter, TriggerInfo
 from .device import Device
 from .signal import SignalR
 from .utils import DEFAULT_TIMEOUT, gather_list, merge_gathered_dicts
 
 T = TypeVar("T")
-
-
-@dataclass(frozen=True)
-class TriggerInfo:
-    #: Number of triggers that will be sent
-    num: int
-    #: Sort of triggers that will be sent
-    trigger: DetectorTrigger
-    #: What is the minimum deadtime between triggers
-    deadtime: float
-    #: What is the maximum high time of the triggers
-    livetime: float
 
 
 class DetectorGroupLogic(ABC):
@@ -81,28 +67,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
         return await merge_gathered_dicts(writer.open() for writer in self._writers)
 
     async def ensure_armed(self, trigger_info: TriggerInfo):
-        if (  #
-            not self._arm_statuses
-            or any(status.done for status in self._arm_statuses)
-            or trigger_info != self._trigger_info
-        ):
-            # We need to re-arm
-            await self.disarm()
-            for controller in self._controllers:
-                required = controller.get_deadtime(trigger_info.livetime)
-                assert required <= trigger_info.deadtime, (
-                    f"Detector {controller} needs at least {required}s deadtime, "
-                    f"but trigger logic provides only {trigger_info.deadtime}s"
-                )
-            self._arm_statuses = await gather_list(
-                controller.arm(
-                    num=trigger_info.num,
-                    trigger=trigger_info.trigger,
-                    exposure=trigger_info.livetime,
-                )
-                for controller in self._controllers
-            )
-            self._trigger_info = trigger_info
+        ...
 
     async def wait_for_index(
         self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
@@ -158,17 +123,11 @@ class HardwareTriggeredFlyable(
 ):
     def __init__(
         self,
-        detectors: tuple[StandardDetector],
         trigger_logic: TriggerLogic[T],
         configuration_signals: Sequence[SignalR],
         trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
         name: str = "",
     ):
-        self._detectors = detectors
-        self._detector_group_logic = SameTriggerDetectorGroupLogic(
-            [det.controller for det in self._detectors],
-            [det.writer for det in self._detectors],
-        )
         self._trigger_logic = trigger_logic
         self._configuration_signals = tuple(configuration_signals)
         self._describe: Dict[str, Descriptor] = {}
@@ -179,15 +138,16 @@ class HardwareTriggeredFlyable(
         self._current_frame = 0  # The current frame we are on
         self._last_frame = 0  # The last frame that will be emitted
         self._trigger_to_frame_timeout = trigger_to_frame_timeout
+        self._trigger_info: Optional[TriggerInfo] = None
         super().__init__(name=name)
-
-    @property
-    def detectors(self) -> tuple[StandardDetector]:
-        return self._detectors
 
     @property
     def trigger_logic(self) -> TriggerLogic[T]:
         return self._trigger_logic
+
+    @property
+    def trigger_info(self) -> TriggerInfo:
+        return self._trigger_info
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -196,7 +156,7 @@ class HardwareTriggeredFlyable(
         self._current_frame = 0
 
     def prepare(self, value: T) -> AsyncStatus:
-        """Arm detectors and setup trajectories"""
+        """Setup trajectories"""
         # index + offset = current_frame, but starting a new scan so want it to be 0
         # so subtract current_frame from both sides
         return AsyncStatus(self._prepare(value))
@@ -205,11 +165,9 @@ class HardwareTriggeredFlyable(
         self._offset -= self._current_frame
         self._current_frame = 0
         trigger_info = self._trigger_logic.trigger_info(value)
-        # Move to start and setup the flyscan, and arm dets in parallel
-        await asyncio.gather(
-            self._detector_group_logic.ensure_armed(trigger_info),
-            self._trigger_logic.prepare(value),
-        )
+        self._trigger_info = trigger_info
+        # Move to start and setup the flyscan
+        await self._trigger_logic.prepare(value)
         self._last_frame = self._current_frame + trigger_info.num
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:

@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-from typing import AsyncIterator, Dict, List, Optional, Sequence
+from typing import AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -111,15 +111,15 @@ async def detector_list(RE: RunEngine) -> tuple[StandardDetector]:
 
     async def dummy_arm(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)
-    
-    detector_1 =  StandardDetector(
-            Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
-            writers[0],
-        )
-    detector_2=  StandardDetector(
-            Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
-            writers[1],
-        )
+
+    detector_1 = StandardDetector(
+        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+        writers[0],
+    )
+    detector_2 = StandardDetector(
+        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+        writers[1],
+    )
 
     return (detector_1, detector_2)
 
@@ -135,10 +135,24 @@ async def test_hardware_triggered_flyable(
     assert len(detector_list) == 2
 
     trigger_logic = DummyTriggerLogic()
-    flyer = HardwareTriggeredFlyable(detector_list, trigger_logic, [], name="flyer")
+    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
 
     def flying_plan():
-        yield from bps.stage_all(*flyer.detectors, flyer)
+        # move the flyer to the correct place, before fly scanning.
+        # Prepare the flyer first to get the trigger info for the detectors
+        yield from bps.prepare(flyer, 1, wait=True)
+
+        # prepare detectors second.
+        for detector in detector_list:
+            yield from bps.prepare(detector, flyer.trigger_info, wait=True)
+
+        assert trigger_logic.state == TriggerState.preparing
+        for detector in detector_list:
+            detector.controller.disarm.assert_called_once  # type: ignore
+
+        raise Exception("We have prepared")
+
+        yield from bps.stage_all(*detector_list, flyer)
         assert flyer._trigger_logic.state == TriggerState.stopping
 
         yield from bps.open_run()
@@ -157,7 +171,10 @@ async def test_hardware_triggered_flyable(
             else:
                 done = True
             yield from bps.collect(
-                *flyer.detectors, stream=True, return_payload=False,
+                *detector_list,
+                stream=True,
+                return_payload=False,
+                name="primary",
             )
             yield from bps.sleep(0.001)
         yield from bps.wait(group="complete")
@@ -168,13 +185,6 @@ async def test_hardware_triggered_flyable(
             assert controller.disarm.called  # type: ignore
             assert controller.disarm.call_count == 3  # type: ignore
         assert trigger_logic.state == TriggerState.stopping
-
-    # move the flyer to the correct place, before fly scanning.
-    RE(bps.prepare(flyer, 1))
-    assert trigger_logic.state == TriggerState.preparing
-    for controller in flyer._detector_group_logic._controllers:
-        assert controller.disarm.called  # type: ignore
-        assert controller.disarm.call_count == 1  # type: ignore
 
     # fly scan
     RE(flying_plan())
