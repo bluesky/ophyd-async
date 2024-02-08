@@ -1,6 +1,5 @@
-import time
 from abc import ABC, abstractmethod
-from typing import Callable, Dict, Generic, List, Optional, Sequence, TypeVar
+from typing import Dict, Generic, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
     Collectable,
@@ -131,13 +130,7 @@ class HardwareTriggeredFlyable(
         self._trigger_logic = trigger_logic
         self._configuration_signals = tuple(configuration_signals)
         self._describe: Dict[str, Descriptor] = {}
-        self._watchers: List[Callable] = []
         self._fly_status: Optional[AsyncStatus] = None
-        self._fly_start = 0.0
-        self._offset = 0  # Add this to index to get frame number
-        self._current_frame = 0  # The current frame we are on
-        self._last_frame = 0  # The last frame that will be emitted
-        self._trigger_to_frame_timeout = trigger_to_frame_timeout
         self._trigger_info: Optional[TriggerInfo] = None
         super().__init__(name=name)
 
@@ -156,36 +149,19 @@ class HardwareTriggeredFlyable(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         await self.unstage()
-        self._offset = 0
-        self._current_frame = 0
 
     def prepare(self, value: T) -> AsyncStatus:
         """Setup trajectories"""
-        # index + offset = current_frame, but starting a new scan so want it to be 0
-        # so subtract current_frame from both sides
         return AsyncStatus(self._prepare(value))
 
     async def _prepare(self, value: T) -> None:
-        self._offset -= self._current_frame
-        self._current_frame = 0
-        trigger_info = self._trigger_logic.trigger_info(value)
-        self._trigger_info = trigger_info
+        self._trigger_info = self._trigger_logic.trigger_info(value)
         # Move to start and setup the flyscan
         await self._trigger_logic.prepare(value)
-        self._last_frame = self._current_frame + trigger_info.num
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        self._watchers = []
-        self._fly_status = AsyncStatus(self._fly(), self._watchers)
-        self._fly_start = time.monotonic()
-
-    async def _fly(self) -> None:
-        await self._trigger_logic.start()
-        # Wait for all detectors to have written up to a particular frame
-        await self._detector_group_logic.wait_for_index(
-            self._last_frame - self._offset, timeout=self._trigger_to_frame_timeout
-        )
+        self._fly_status = AsyncStatus(await self._trigger_logic.start())
 
     def complete(self) -> AsyncStatus:
         assert self._fly_status, "Kickoff not run"
