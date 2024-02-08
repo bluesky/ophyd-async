@@ -1,10 +1,11 @@
 """Module which defines abstract classes to work with detectors"""
 
 import asyncio
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import AsyncIterator, Dict, Optional, Sequence, TypeVar
+from typing import AsyncIterator, Callable, Dict, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
     Asset,
@@ -146,9 +147,16 @@ class StandardDetector(
         self._describe: Dict[str, Descriptor] = {}
         self._config_sigs = list(config_sigs)
         self._frame_writing_timeout = writer_timeout
-
+        # For prepare
         self._arm_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
+        # For kickoff
+        self._watcher: Optional[Callable] = None
+        self._fly_status: Optional[AsyncStatus] = None
+
+        self._offset = 0  # Add this to index to get frame number
+        self._current_frame = 0  # The current frame we are on
+        self._last_frame = 0  # The last frame that will be emitted
 
         super().__init__(name)
 
@@ -160,14 +168,41 @@ class StandardDetector(
     def writer(self) -> DetectorWriter:
         return self._writer
 
-    def prepare(self, value: T) -> AsyncStatus:
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
+        """Disarm the detector, stop filewriting, and open file for writing."""
+        await self.check_config_sigs()
+        await asyncio.gather(self.writer.close(), self.controller.disarm())
+        self._describe = await self.writer.open()
+
+        self._current_frame = 0  # do we care about this?
+
+    def prepare(
+        self,
+        value: T,
+        current_frame=None,
+        last_frame=None,
+    ) -> AsyncStatus:
         """Arm detectors"""
         # perpare for detector has value = TriggerInfo
-        return AsyncStatus(self._prepare(value))
+        return AsyncStatus(self._prepare(value, current_frame, last_frame))
 
-    async def _prepare(self, value: T) -> None:
-        """Arm detectors"""
-        await self.ensure_armed(value)
+    async def _prepare(self, value: T, current_frame, last_frame) -> None:
+        """Arm detectors,
+
+        The frame information was managed in the flyer and now needs to be
+        managed in the plan level.
+        """
+
+        trigger_info = value
+
+        self._current_frame = current_frame
+        self._last_frame = last_frame
+
+        self._current_frame = 0
+        self._last_frame = self._current_frame + self._trigger_info.num
+
+        await self.ensure_armed(trigger_info)
 
     async def ensure_armed(self, trigger_info: TriggerInfo):
         if (
@@ -196,7 +231,6 @@ class StandardDetector(
                 raise Exception(
                     "config signal must be named before it is passed to the detector"
                 )
-
             try:
                 await signal.get_value()
             except NotImplementedError:
@@ -206,11 +240,25 @@ class StandardDetector(
                 )
 
     @AsyncStatus.wrap
-    async def stage(self) -> None:
-        """Disarm the detector, stop filewriting, and open file for writing."""
-        await self.check_config_sigs()
-        await asyncio.gather(self.writer.close(), self.controller.disarm())
-        self._describe = await self.writer.open()
+    async def kickoff(self) -> None:
+        self._fly_status = AsyncStatus(self._fly(), self._watcher)
+        self._fly_start = time.monotonic()  # do we care about this?
+
+    async def _fly(self) -> None:
+        # Wait for detector to have written up to a particular frame
+        await self.writer.wait_for_index(
+            self._last_frame - self._offset, timeout=self._frame_writing_timeout
+        )
+
+    @AsyncStatus.wrap
+    async def complete(self) -> None:
+        assert self._fly_status, "Kickoff not run"
+        return self._fly_status
+
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        """Stop data writing."""
+        await self.writer.close()
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:
         return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
@@ -260,8 +308,3 @@ class StandardDetector(
             index = await self.writer.get_indices_written()
             async for doc in self.writer.collect_stream_docs(index):
                 yield doc
-
-    @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        """Stop data writing."""
-        await self.writer.close()
