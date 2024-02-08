@@ -70,7 +70,8 @@ class DummyWriter(DetectorWriter):
 
     async def wait_for_index(
         self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ) -> None: ...
+    ) -> None:
+        ...
 
     async def get_indices_written(self) -> int:
         return 1
@@ -138,6 +139,9 @@ async def test_hardware_triggered_flyable(
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
 
     def flying_plan():
+        yield from bps.stage_all(*detector_list, flyer)
+        assert flyer._trigger_logic.state == TriggerState.stopping
+
         # move the flyer to the correct place, before fly scanning.
         # Prepare the flyer first to get the trigger info for the detectors
         yield from bps.prepare(flyer, 1, wait=True)
@@ -150,14 +154,11 @@ async def test_hardware_triggered_flyable(
         for detector in detector_list:
             detector.controller.disarm.assert_called_once  # type: ignore
 
-        raise Exception("We have prepared")
-
-        yield from bps.stage_all(*detector_list, flyer)
-        assert flyer._trigger_logic.state == TriggerState.stopping
-
         yield from bps.open_run()
 
         yield from bps.kickoff(flyer)
+        for detector in detector_list:
+            yield from bps.kickoff(detector)
 
         yield from bps.complete(flyer, wait=False, group="complete")
         assert trigger_logic.state == TriggerState.starting
