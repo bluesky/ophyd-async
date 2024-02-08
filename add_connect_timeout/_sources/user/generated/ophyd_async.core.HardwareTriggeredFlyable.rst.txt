@@ -28,8 +28,8 @@ ophyd\_async.core.HardwareTriggeredFlyable
       ~HardwareTriggeredFlyable.describe_collect
       ~HardwareTriggeredFlyable.describe_configuration
       ~HardwareTriggeredFlyable.kickoff
+      ~HardwareTriggeredFlyable.prepare
       ~HardwareTriggeredFlyable.read_configuration
-      ~HardwareTriggeredFlyable.set
       ~HardwareTriggeredFlyable.set_name
       ~HardwareTriggeredFlyable.stage
       ~HardwareTriggeredFlyable.unstage
