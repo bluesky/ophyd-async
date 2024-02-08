@@ -148,7 +148,9 @@ async def test_hardware_triggered_flyable(
 
         # prepare detectors second.
         for detector in detector_list:
-            yield from bps.prepare(detector, flyer.trigger_info, wait=True)
+            yield from bps.prepare(
+                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=10
+            )
 
         assert trigger_logic.state == TriggerState.preparing
         for detector in detector_list:
@@ -161,6 +163,8 @@ async def test_hardware_triggered_flyable(
             yield from bps.kickoff(detector)
 
         yield from bps.complete(flyer, wait=False, group="complete")
+        for detector in detector_list:
+            yield from bps.complete(detector, wait=False, group="complete")
         assert trigger_logic.state == TriggerState.starting
 
         done = False
@@ -181,7 +185,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.wait(group="complete")
         yield from bps.close_run()
 
-        yield from bps.unstage_all(flyer)
+        yield from bps.unstage_all(flyer, *detector_list)
         for controller in flyer._detector_group_logic._controllers:
             assert controller.disarm.called  # type: ignore
             assert controller.disarm.call_count == 3  # type: ignore
