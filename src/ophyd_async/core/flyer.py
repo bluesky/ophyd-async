@@ -142,6 +142,10 @@ class HardwareTriggeredFlyable(
         super().__init__(name=name)
 
     @property
+    def hints(self) -> Hints:
+        return self._detector_group_logic.hints()
+
+    @property
     def trigger_logic(self) -> TriggerLogic[T]:
         return self._trigger_logic
 
@@ -170,19 +174,6 @@ class HardwareTriggeredFlyable(
         await self._trigger_logic.prepare(value)
         self._last_frame = self._current_frame + trigger_info.num
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
-        return await merge_gathered_dicts(
-            [sig.describe() for sig in self._configuration_signals]
-        )
-
-    async def read_configuration(self) -> Dict[str, Reading]:
-        return await merge_gathered_dicts(
-            [sig.read() for sig in self._configuration_signals]
-        )
-
-    async def describe_collect(self) -> Dict[str, Descriptor]:
-        return self._describe
-
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
         self._watchers = []
@@ -204,6 +195,15 @@ class HardwareTriggeredFlyable(
     async def unstage(self) -> None:
         await self._trigger_logic.stop()
 
-    @property
-    def hints(self) -> Hints:
-        return self._detector_group_logic.hints()
+    async def describe_configuration(self) -> Dict[str, Descriptor]:
+        return await merge_gathered_dicts(
+            [sig.describe() for sig in self._configuration_signals]
+        )
+
+    async def read_configuration(self) -> Dict[str, Reading]:
+        return await merge_gathered_dicts(
+            [sig.read() for sig in self._configuration_signals]
+        )
+
+    async def describe_collect(self) -> Dict[str, Descriptor]:
+        return self._describe
