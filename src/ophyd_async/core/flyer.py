@@ -124,7 +124,6 @@ class HardwareTriggeredFlyable(
         self,
         trigger_logic: TriggerLogic[T],
         configuration_signals: Sequence[SignalR],
-        trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
         name: str = "",
     ):
         self._trigger_logic = trigger_logic
