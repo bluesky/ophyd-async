@@ -196,11 +196,12 @@ class StandardDetector(
 
         trigger_info = value
 
+        self._trigger_info = trigger_info
         self._current_frame = current_frame
         self._last_frame = last_frame
 
         self._current_frame = 0
-        self._last_frame = self._current_frame + self._trigger_info.num
+        self._last_frame = self._current_frame + trigger_info.num
 
         await self.ensure_armed(trigger_info)
 
@@ -222,7 +223,6 @@ class StandardDetector(
                 trigger=trigger_info.trigger,
                 exposure=trigger_info.livetime,
             )
-            self._trigger_info = trigger_info
 
     async def check_config_sigs(self):
         """Checks configuration signals are named and connected."""
