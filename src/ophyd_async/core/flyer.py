@@ -161,7 +161,7 @@ class HardwareTriggeredFlyable(
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        self._fly_status = AsyncStatus(await self._trigger_logic.start())
+        self._fly_status = AsyncStatus(self._trigger_logic.start())
 
     def complete(self) -> AsyncStatus:
         assert self._fly_status, "Kickoff not run"
