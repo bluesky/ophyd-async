@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Demo devices &#8212; ophyd-async 0.2.1.dev7+gee59874f documentation</title>
+    <title>Demo devices &#8212; ophyd-async 0.2.1.dev12+g438855df documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=f97857ad"></script>
+    <script src="../../_static/documentation_options.js?v=ffa0b4d4"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -127,8 +127,8 @@
       
     
     
-    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev7+gee59874f documentation - Home"/>
-    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev7+gee59874f documentation - Home"/>`);</script>
+    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev12+g438855df documentation - Home"/>
+    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev12+g438855df documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -560,10 +560,10 @@ devices contained therein. The purpose of this document is to explain why this
 is an optimal configuration.</p>
 <section id="readable">
 <h2>Readable<a class="headerlink" href="#readable" title="Link to this heading">#</a></h2>
-<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.12.0.post14+g407eea7c)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Readable</span></code></a> object like a <a class="reference internal" href="../generated/ophyd_async.epics.demo.Sensor.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, it is
+<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.12.0.post16+g8e32b99a)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Readable</span></code></a> object like a <a class="reference internal" href="../generated/ophyd_async.epics.demo.Sensor.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, it is
 <a class="reference internal" href="../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> should be subclassed as it comes with useful default
 behaviour, such as providing <code class="docutils literal notranslate"><span class="pre">stage</span></code> and <code class="docutils literal notranslate"><span class="pre">unstage</span></code> methods, and other
-methods to adhere to <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.12.0.post14+g407eea7c)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Readable</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Configurable</span></code>. These allow the construction of both readable signals
+methods to adhere to <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.12.0.post16+g8e32b99a)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Readable</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Configurable</span></code>. These allow the construction of both readable signals
 (i.e. ones which change with each scan point) and configurable ones, which are
 more meant to describe slow-changing signals, or signals to define the state of
 the device.</p>
@@ -686,7 +686,7 @@ and implement some addition protocols:</p>
         <span class="k">await</span> <span class="n">status</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.12.0.post14+g407eea7c)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Movable</span></code></a>. This
+<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.12.0.post16+g8e32b99a)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Movable</span></code></a>. This
 creates a <a class="reference external" href="https://docs.python.org/3/glossary.html#term-coroutine" title="(in Python v3.12)"><code class="xref any docutils literal notranslate"><span class="pre">coroutine</span></code></a> <code class="docutils literal notranslate"><span class="pre">do_set()</span></code> which gets the old position, units and
 precision in parallel, sets the setpoint, then observes the readback value,
 informing watchers of the progress. When it gets to the requested value it
