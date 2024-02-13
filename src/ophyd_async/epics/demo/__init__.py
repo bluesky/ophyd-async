@@ -127,12 +127,18 @@ class SampleStage(Device):
         super().__init__(name=name)
 
 
-def start_ioc_subprocess() -> str:
+def start_ioc_subprocess(pv_prefix: Optional[str] = None) -> str:
     """Start an IOC subprocess with EPICS database for sample stage and sensor
     with the same pv prefix
     """
 
-    pv_prefix = "".join(random.choice(string.ascii_uppercase) for _ in range(12)) + ":"
+    if not pv_prefix:
+        pv_prefix = (
+            "".join(random.choice(string.ascii_uppercase) for _ in range(12)) + ":"
+        )
+    elif not pv_prefix.endswith(":"):
+        pv_prefix += ":"
+
     here = Path(__file__).absolute().parent
     args = [sys.executable, "-m", "epicscorelibs.ioc"]
     args += ["-m", f"P={pv_prefix}"]

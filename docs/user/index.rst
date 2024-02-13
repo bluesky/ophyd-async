@@ -19,6 +19,7 @@ side-bar.
             :maxdepth: 1
 
             tutorials/installation
+            tutorials/making-your-own-devices-to-run-a-gridscan
             tutorials/using-existing-devices
 
         +++
@@ -31,7 +32,8 @@ side-bar.
             :caption: How-to Guides
             :maxdepth: 1
 
-            how-to/make-a-simple-device
+            how-to/create-devices
+            how-to/create-detectors
             how-to/run-container
 
         +++
@@ -45,6 +47,7 @@ side-bar.
             :maxdepth: 1
 
             explanations/docs-structure
+            explanations/demo-devices
 
         +++
 
