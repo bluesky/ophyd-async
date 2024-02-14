@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.panda.panda &#8212; ophyd-async 0.2.1.dev14+g4cd4aa7c documentation</title>
+    <title>ophyd_async.panda.panda &#8212; ophyd-async 0.2.1.dev15+ge1fd257d documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=94b9cf25"></script>
+    <script src="../../../_static/documentation_options.js?v=76b9c691"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev14+g4cd4aa7c documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev14+g4cd4aa7c documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev15+ge1fd257d documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev15+ge1fd257d documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -428,8 +428,8 @@ document.write(`
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">Type</span><span class="p">,</span>
-    <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">TypedDict</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">cast</span><span class="p">,</span>
     <span class="n">get_args</span><span class="p">,</span>
     <span class="n">get_origin</span><span class="p">,</span>
@@ -488,6 +488,7 @@ document.write(`
     <span class="n">x</span><span class="p">:</span> <span class="nb">str</span></div>
 
 
+
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 
 <span class="n">PVIMapping</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span>
@@ -534,13 +535,19 @@ document.write(`
     <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pvi_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">FrozenSet</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PVIMapping</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">),</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;rw&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">),</span>
+            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_rw</span><span class="p">(</span>
+                <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span>
+            <span class="p">),</span>
+            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;rw&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_rw</span><span class="p">(</span>
+                <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span>
+            <span class="p">),</span>
             <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;r&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">),</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;w&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_w</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">),</span>
+            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;w&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_w</span><span class="p">(</span>
+                <span class="n">dtype</span><span class="p">,</span> <span class="n">write_pv</span>
+            <span class="p">),</span>
             <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_x</span><span class="p">(</span><span class="n">write_pv</span><span class="p">),</span>
         <span class="p">}</span>
 
@@ -626,7 +633,9 @@ document.write(`
 
         <span class="k">return</span> <span class="n">block</span>
 
-    <span class="k">def</span> <span class="nf">_make_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_pvi</span><span class="p">:</span> <span class="n">PVIEntry</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_make_signal</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">signal_pvi</span><span class="p">:</span> <span class="n">PVIEntry</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a signal.</span>
 
 <span class="sd">        This assumes datatype is None so it can be used to create dynamic signals.</span>
