@@ -86,7 +86,6 @@ ophyd\_async.core
       :toctree:
       :nosignatures:
    
-      ConnectionTimeoutError
       NotConnected
    
    
