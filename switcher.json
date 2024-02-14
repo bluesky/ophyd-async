@@ -60,6 +60,10 @@
     "url": "https://bluesky.github.io/ophyd-async/hyperion_safe_panda/"
   },
   {
+    "version": "make-panda-use-backend",
+    "url": "https://bluesky.github.io/ophyd-async/make-panda-use-backend/"
+  },
+  {
     "version": "revert-101-give_panda_name",
     "url": "https://bluesky.github.io/ophyd-async/revert-101-give_panda_name/"
   },
