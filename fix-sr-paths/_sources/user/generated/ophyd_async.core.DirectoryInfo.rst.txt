@@ -33,6 +33,6 @@ ophyd\_async.core.DirectoryInfo
       ~DirectoryInfo.prefix
       ~DirectoryInfo.suffix
       ~DirectoryInfo.root
-      ~DirectoryInfo.cwd
+      ~DirectoryInfo.resource_dir
    
    
