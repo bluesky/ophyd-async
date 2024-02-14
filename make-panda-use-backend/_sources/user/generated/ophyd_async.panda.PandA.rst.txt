@@ -38,7 +38,6 @@ ophyd\_async.panda.PandA
    
       ~PandA.name
       ~PandA.parent
-      ~PandA.pvi_mapping
       ~PandA.pulse
       ~PandA.seq
       ~PandA.pcap
