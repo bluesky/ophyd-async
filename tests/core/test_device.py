@@ -8,6 +8,7 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     DeviceVector,
+    NotConnected,
     wait_for_connection,
 )
 
@@ -108,6 +109,6 @@ async def test_wait_for_connection_propagates_error(
 ):
     failing_coros = {"test": normal_coroutine(), "failing": failing_coroutine()}
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(NotConnected) as e:
         await wait_for_connection(**failing_coros)
         assert traceback.extract_tb(e.__traceback__)[-1].name == "failing_coroutine"

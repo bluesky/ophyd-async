@@ -1,17 +1,16 @@
-import asyncio
-
 import pytest
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    ConnectionTimeoutError,
     Device,
+    DeviceCollector,
     DirectoryInfo,
-    SignalBackend,
+    NotConnected,
     SignalRW,
     SimSignalBackend,
     StaticDirectoryProvider,
 )
+from ophyd_async.epics.signal import epics_signal_rw
 
 
 def test_static_directory_provider():
@@ -26,31 +25,225 @@ def test_static_directory_provider():
     assert provider() == DirectoryInfo(dir_path, filename)
 
 
-class FailingBackend(SimSignalBackend):
+class ValueErrorBackend(SimSignalBackend):
+    def __init__(self):
+        super().__init__(int, "VALUE_ERROR_SIGNAL")
+
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
-        await asyncio.sleep(timeout)
-        raise ConnectionTimeoutError(self.source)
+        raise ValueError("Some ValueError text")
 
 
-async def test_wait_for_connection():
-    """Checks that ConnectionTimeoutError is aggregated correctly across Devices."""
+class WorkingDummyChildDevice(Device):
+    def __init__(self, name: str = "working_dummy_child_device") -> None:
+        self.working_signal = SignalRW(backend=SimSignalBackend(int, "WORKING_SIGNAL"))
+        super().__init__(name=name)
 
-    class DummyChildDevice(Device):
-        def __init__(self, name: str = "") -> None:
-            self.failing_signal = SignalRW(
-                backend=FailingBackend(int, "FAILING_SIGNAL")
+
+class TimeoutDummyChildDeviceCA(Device):
+    def __init__(self, name: str = "timeout_dummy_child_device_ca") -> None:
+        self.timeout_signal = epics_signal_rw(int, "ca://A_NON_EXISTENT_SIGNAL")
+        super().__init__(name=name)
+
+
+class TimeoutDummyChildDevicePVA(Device):
+    def __init__(self, name: str = "timeout_dummy_child_device_pva") -> None:
+        self.timeout_signal = epics_signal_rw(int, "pva://A_NON_EXISTENT_SIGNAL")
+        super().__init__(name=name)
+
+
+class ValueErrorDummyChildDevice(Device):
+    def __init__(self, name: str = "value_error_dummy_child_device") -> None:
+        self.value_error_signal = SignalRW(backend=ValueErrorBackend())
+        super().__init__(name=name)
+
+
+class DummyDeviceOneWorkingOneTimeout(Device):
+    def __init__(self, name: str = "dummy_device_one_working_one_timeout") -> None:
+        self.working_child_device = WorkingDummyChildDevice()
+        self.timeout_child_device = TimeoutDummyChildDeviceCA()
+        super().__init__(name=name)
+
+
+ONE_WORKING_ONE_TIMEOUT_OUTPUT = {
+    "timeout_child_device": {
+        "timeout_signal": "signal ca://A_NON_EXISTENT_SIGNAL timed out"
+    }
+}
+
+
+class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
+    def __init__(
+        self,
+        name: str = "dummy_device_two_working_one_timeout_two_value_error",
+    ) -> None:
+        self.working_child_device1 = WorkingDummyChildDevice()
+        self.working_child_device2 = WorkingDummyChildDevice()
+        self.timeout_child_device_ca = TimeoutDummyChildDeviceCA()
+        self.timeout_child_device_pva = TimeoutDummyChildDevicePVA()
+        self.value_error_child_device1 = ValueErrorDummyChildDevice()
+        self.value_error_child_device2 = ValueErrorDummyChildDevice()
+        super().__init__(name=name)
+
+
+TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = {
+    "timeout_child_device_ca": {
+        "timeout_signal": "signal ca://A_NON_EXISTENT_SIGNAL timed out",
+    },
+    "timeout_child_device_pva": {
+        "timeout_signal": "signal pva://A_NON_EXISTENT_SIGNAL timed out",
+    },
+    "value_error_child_device1": {
+        "value_error_signal": "unexpected exception ValueError",
+    },
+    "value_error_child_device2": {
+        "value_error_signal": "unexpected exception ValueError",
+    },
+}
+
+
+class DummyDeviceCombiningTopLevelSignalAndSubDevice(Device):
+    def __init__(
+        self, name: str = "dummy_device_combining_top_level_signal_and_sub_device"
+    ) -> None:
+        self.timeout_signal = epics_signal_rw(int, "ca://A_NON_EXISTENT_SIGNAL")
+        self.sub_device = ValueErrorDummyChildDevice()
+        super().__init__(name=name)
+
+
+async def test_error_handling_connection_timeout(caplog):
+    caplog.set_level(10)
+
+    dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
+
+    # This should work since the error is a connection timeout
+    with pytest.raises(NotConnected) as e:
+        await dummy_device_one_working_one_timeout.connect(timeout=0.01)
+
+    assert e.value._errors == ONE_WORKING_ONE_TIMEOUT_OUTPUT
+
+    logs = caplog.get_records("call")
+    assert len(logs) == 1
+    assert "signal ca://A_NON_EXISTENT_SIGNAL timed out" == logs[0].message
+    assert logs[0].levelname == "DEBUG"
+
+
+async def test_error_handling_value_errors(caplog):
+    """Checks that NotConnected is aggregated correctly across Devices."""
+
+    caplog.set_level(10)
+
+    dummy_device_two_working_one_timeout_two_value_error = (
+        DummyDeviceTwoWorkingTwoTimeOutTwoValueError()
+    )
+
+    # This should fail since the error is a ValueError
+    with pytest.raises(NotConnected) as e:
+        await dummy_device_two_working_one_timeout_two_value_error.connect(
+            timeout=0.01
+        ),
+    assert e.value._errors == TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
+
+    logs = caplog.get_records("call")
+    logs = [log for log in logs if "ophyd_async" in log.pathname]
+    assert len(logs) == 4
+
+    for i in range(0, 2):
+        assert (
+            "device `value_error_signal` raised unexpected exception ValueError"
+            == logs[i].message
+        )
+        assert logs[i].levelname == "ERROR"
+
+    assert logs[2].levelname == "DEBUG"
+    assert logs[3].levelname == "DEBUG"
+    # These messages could come in any order
+    messages = [logs[idx].message for idx in (2, 3)]
+    for protocol in ("pva", "ca"):
+        assert f"signal {protocol}://A_NON_EXISTENT_SIGNAL timed out" in messages
+
+
+async def test_error_handling_device_collector(caplog):
+    caplog.set_level(10)
+    with pytest.raises(NotConnected) as e:
+        async with DeviceCollector(timeout=0.1):
+            # flake8: noqa
+            dummy_device_two_working_one_timeout_two_value_error = (
+                DummyDeviceTwoWorkingTwoTimeOutTwoValueError()
             )
-            super().__init__(name)
+            dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
 
-    class DummyDevice(Device):
-        def __init__(self, name: str = "") -> None:
-            self.working_signal = SignalRW(
-                backend=SimSignalBackend(int, "WORKING_SIGNAL")
-            )
-            self.child_device = DummyChildDevice("child_device")
-            super().__init__(name)
+    expected_output = {
+        "dummy_device_two_working_one_timeout_two_value_error": TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT,
+        "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
+    }
+    assert expected_output == e.value._errors
 
-    device = DummyDevice()
+    logs = caplog.get_records("call")
+    logs = [log for log in logs if "ophyd_async" in log.pathname]
+    assert len(logs) == 5
+    assert (
+        logs[0].message
+        == logs[1].message
+        == "device `value_error_signal` raised unexpected exception ValueError"
+    )
+    assert logs[0].levelname == logs[1].levelname == "ERROR"
 
-    with pytest.raises(ConnectionTimeoutError):
-        await device.connect(timeout=0.01)
+    assert logs[2].levelname == "DEBUG"
+    assert logs[3].levelname == "DEBUG"
+    # These messages could come in any order
+    messages = [logs[idx].message for idx in (2, 3)]
+    for protocol in ("pva", "ca"):
+        assert f"signal {protocol}://A_NON_EXISTENT_SIGNAL timed out" in messages
+
+
+def test_not_connected_error_output():
+    not_connected = NotConnected(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
+
+    assert str(not_connected) == (
+        "timeout_child_device_ca:\n"
+        "    timeout_signal: signal ca://A_NON_EXISTENT_SIGNAL timed out\n"
+        "timeout_child_device_pva:\n"
+        "    timeout_signal: signal pva://A_NON_EXISTENT_SIGNAL timed out\n"
+        "value_error_child_device1:\n"
+        "    value_error_signal: unexpected exception ValueError\n"
+        "value_error_child_device2:\n"
+        "    value_error_signal: unexpected exception ValueError\n"
+    )
+
+
+async def test_combining_top_level_signal_and_child_device():
+
+    dummy_device1 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
+    with pytest.raises(NotConnected) as e:
+        await dummy_device1.connect(timeout=0.01)
+    assert str(e.value) == (
+        "timeout_signal: signal ca://A_NON_EXISTENT_SIGNAL timed out\n"
+        "sub_device:\n"
+        "    value_error_signal: unexpected exception ValueError\n"
+    )
+
+    with pytest.raises(NotConnected) as e:
+        async with DeviceCollector(timeout=0.1):
+            dummy_device2 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
+    assert str(e.value) == (
+        "dummy_device2:\n"
+        "    timeout_signal: signal ca://A_NON_EXISTENT_SIGNAL timed out\n"
+        "    sub_device:\n"
+        "        value_error_signal: unexpected exception ValueError\n"
+    )
+
+
+async def test_format_error_string_input():
+    with pytest.raises(
+        RuntimeError,
+        match=("Unknown error type `<class 'int'>` " "expected `str` or `dict`"),
+    ):
+        not_connected = NotConnected(123)
+        str(not_connected)
+
+    with pytest.raises(
+        RuntimeError,
+        match=("`<class 'int'>` not a string or a dict"),
+    ):
+        not_connected = NotConnected({"test": 123})
+        str(not_connected)

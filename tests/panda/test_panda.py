@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from ophyd_async.core import DeviceCollector
-from ophyd_async.core.utils import ConnectionTimeoutError
+from ophyd_async.core.utils import NotConnected
 from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi
 
 
@@ -137,21 +137,21 @@ async def test_panda_block_missing_signals(pva):
 async def test_panda_unable_to_connect_to_pvi():
     panda = PandA("NON-EXISTENT")
 
-    with pytest.raises(ConnectionTimeoutError) as exc:
-        await panda.connect(timeout=0)
+    with pytest.raises(NotConnected) as exc:
+        await panda.connect(timeout=0.01)
 
-    assert exc.value.lines == ["NON-EXISTENT:PVI"]
+    assert exc.value._errors == "NON-EXISTENT:PVI"
 
     files = [
         __file__,
-        "src/ophyd_async/panda/panda.py",
-        "src/ophyd_async/panda/panda.py",
+        "ophyd_async/panda/panda.py",
+        "ophyd_async/panda/panda.py",
     ]
     funcs = ["test_panda_unable_to_connect_to_pvi", "connect", "pvi"]
     lines = [
-        "await panda.connect(timeout=0)",
+        "await panda.connect(timeout=0.01)",
         'await pvi(self._init_prefix + ":PVI", self.ctxt, timeout=timeout)',
-        "raise ConnectionTimeoutError(pv) from exc",
+        "raise NotConnected(pv) from exc",
     ]
 
     for idx, each_frame in enumerate(traceback.extract_tb(exc.tb)):

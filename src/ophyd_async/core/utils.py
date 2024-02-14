@@ -1,5 +1,18 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Awaitable, Callable, Dict, Iterable, List, Optional, Type, TypeVar
+import logging
+from typing import (
+    Awaitable,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -11,43 +24,75 @@ Callback = Callable[[T], None]
 #: monitor updates
 ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
-
-
-class ConnectionTimeoutError(TimeoutError):
-    """Exception to be raised if a `Device.connect` has timed out."""
-
-    def __init__(self, *lines: str):
-        self.lines = list(lines)
-
-    def __str__(self) -> str:
-        return "\n".join(self.lines)
+ErrorText = Union[str, Dict[str, "ErrorText"]]
 
 
 class NotConnected(Exception):
     """Exception to be raised if a `Device.connect` is cancelled"""
 
+    _indent_width = "    "
+
+    def __init__(self, errors: ErrorText):
+        """
+        Not connected holds a mapping of device/signal names to
+        subdevices, or further errors in subdevices
+
+        Parameters
+        ----------
+        errors: ErrorText
+            Mapping of device name to error or subdevice with errors.
+            Alternatively a string with the signal error.
+        """
+
+        self._errors = errors
+
+    def format_error_string(self, errors: ErrorText, indent="") -> str:
+        string = ""
+        if isinstance(errors, str):
+            return f"{errors}\n"
+        elif not isinstance(errors, dict):
+            raise RuntimeError(
+                f"Unknown error type `{type(errors)}` " "expected `str` or `dict`"
+            )
+
+        for name, value in errors.items():
+            string += indent + f"{name}:"
+            if isinstance(value, str):
+                string += " " + f"{value}\n"  # On the same line as the name
+            elif isinstance(value, dict):
+                string += "\n" + self.format_error_string(
+                    value, indent=(indent + self._indent_width)
+                )
+            else:
+                raise RuntimeError(f"`{type(value)}` not a string or a dict")
+        return string
+
+    def __str__(self) -> str:
+        return self.format_error_string(self._errors, indent="")
+
 
 async def wait_for_connection(**coros: Awaitable[None]):
-    """Call many underlying signals, accumulating `ConnectionTimeoutError` exceptions
+    """Call many underlying signals, accumulating exceptions and returning them
 
     Expected kwargs should be a mapping of names to coroutine tasks to execute.
-
-    Raises
-    ------
-    `ConnectionTimeoutError` if tasks timeout.
     """
-    names = coros.keys()
     results = await asyncio.gather(*coros.values(), return_exceptions=True)
+    exceptions = {}
 
-    lines: List[str] = []
-    for name, result in zip(names, results):
-        if isinstance(result, ConnectionTimeoutError):
-            lines.append(f"{name}: {result.lines[0]}")
-        elif isinstance(result, Exception):
-            raise result
+    for name, result in zip(coros, results):
+        if isinstance(result, Exception):
+            if isinstance(result, NotConnected):
+                exceptions[name] = result._errors
+            else:
+                exceptions[name] = f"unexpected exception {type(result).__name__}"
+                logging.exception(
+                    f"device `{name}` raised unexpected "
+                    f"exception {type(result).__name__}",
+                    exc_info=result,
+                )
 
-    if lines:
-        raise ConnectionTimeoutError(*lines)
+    if exceptions:
+        raise NotConnected(exceptions)
 
 
 def get_dtype(typ: Type) -> Optional[np.dtype]:

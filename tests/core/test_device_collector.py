@@ -8,9 +8,20 @@ class Dummy(Device):
         raise AttributeError()
 
 
-def test_device_collector_does_not_propagate_error(RE):
+def test_device_collector_handles_top_level_errors(RE, caplog):
+    caplog.set_level(10)
     with pytest.raises(NotConnected) as exc:
         with DeviceCollector():
             _ = Dummy("somename")
 
     assert not exc.value.__cause__
+
+    logs = caplog.get_records("call")
+    device_log = [
+        log
+        for log in logs
+        if log.message == "device `_` raised unexpected exception AttributeError"
+    ]  # In some environments the asyncio teardown will be logged as an error too
+
+    assert len(device_log) == 1
+    device_log[0].levelname == "ERROR"
