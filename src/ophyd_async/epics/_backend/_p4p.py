@@ -1,5 +1,6 @@
 import asyncio
 import atexit
+import logging
 from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum
@@ -17,7 +18,7 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, ConnectionTimeoutError
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -246,8 +247,9 @@ class PvaSignalBackend(SignalBackend[T]):
 
                 with suppress(asyncio.CancelledError):
                     await task
-
-            raise ConnectionTimeoutError(self.source)
+            message = f"signal pva://{pv} timed out"
+            logging.debug(message)
+            raise NotConnected(message)
 
         self.initial_values[pv] = [d.result() for d in done][0]
 

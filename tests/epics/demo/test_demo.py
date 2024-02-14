@@ -1,6 +1,6 @@
 import asyncio
 from typing import Dict
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -140,24 +140,22 @@ async def test_set_velocity(sim_mover: demo.Mover) -> None:
 
 
 async def test_mover_disconncted():
-    with pytest.raises(NotConnected, match="Not all Devices connected"):
+    with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
             m = demo.Mover("ca://PRE:", name="mover")
     assert m.name == "mover"
 
 
-async def test_sensor_disconnected():
-    with patch("ophyd_async.core.device.logging") as mock_logging:
-        with pytest.raises(NotConnected, match="Not all Devices connected"):
-            async with DeviceCollector(timeout=0.1):
-                s = demo.Sensor("ca://PRE:", name="sensor")
-        mock_logging.error.assert_called_once_with(
-            """\
-1 Devices did not connect:
-  s: ConnectionTimeoutError
-    value: ca://PRE:Value
-    mode: ca://PRE:Mode"""
-        )
+async def test_sensor_disconnected(caplog):
+    caplog.set_level(10)
+    with pytest.raises(NotConnected):
+        async with DeviceCollector(timeout=0.1):
+            s = demo.Sensor("ca://PRE:", name="sensor")
+    logs = caplog.get_records("call")
+    assert len(logs) == 2
+
+    assert logs[0].message == ("signal ca://PRE:Value timed out")
+    assert logs[1].message == ("signal ca://PRE:Mode timed out")
     assert s.name == "sensor"
 
 

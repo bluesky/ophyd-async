@@ -20,9 +20,9 @@ from p4p.client.thread import Context
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    ConnectionTimeoutError,
     Device,
     DeviceVector,
+    NotConnected,
     Signal,
     SignalBackend,
     SignalR,
@@ -101,7 +101,7 @@ async def pvi(
     try:
         result = await pvi_get(pv, ctxt, timeout=timeout)
     except TimeoutError as exc:
-        raise ConnectionTimeoutError(pv) from exc
+        raise NotConnected(pv) from exc
 
     _remove_inconsistent_blocks(result)
     return result

@@ -1,3 +1,4 @@
+import logging
 import sys
 from dataclasses import dataclass
 from enum import Enum
@@ -25,7 +26,7 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, ConnectionTimeoutError
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -190,7 +191,9 @@ class CaSignalBackend(SignalBackend[T]):
                 pv, format=FORMAT_CTRL, timeout=timeout
             )
         except CANothing:
-            raise ConnectionTimeoutError(self.source)
+            message = f"signal ca://{pv} timed out"
+            logging.debug(message)
+            raise NotConnected(message)
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         _use_pyepics_context_if_imported()

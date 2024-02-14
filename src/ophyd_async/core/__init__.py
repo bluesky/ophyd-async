@@ -43,7 +43,6 @@ from .standard_readable import StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
     Callback,
-    ConnectionTimeoutError,
     NotConnected,
     ReadingValueCallback,
     T,
@@ -88,7 +87,6 @@ __all__ = [
     "HardwareTriggeredFlyable",
     "DEFAULT_TIMEOUT",
     "Callback",
-    "ConnectionTimeoutError",
     "NotConnected",
     "ReadingValueCallback",
     "T",
