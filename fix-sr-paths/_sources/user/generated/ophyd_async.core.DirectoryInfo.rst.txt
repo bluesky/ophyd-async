@@ -30,7 +30,6 @@ ophyd\_async.core.DirectoryInfo
 
    .. autosummary::
    
-      ~DirectoryInfo.directory
       ~DirectoryInfo.prefix
       ~DirectoryInfo.suffix
       ~DirectoryInfo.root
