@@ -26,11 +26,12 @@ def test_static_directory_provider():
 
 
 class ValueErrorBackend(SimSignalBackend):
-    def __init__(self):
+    def __init__(self, exc_text=""):
+        self.exc_text = exc_text
         super().__init__(int, "VALUE_ERROR_SIGNAL")
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
-        raise ValueError("Some ValueError text")
+        raise ValueError(self.exc_text)
 
 
 class WorkingDummyChildDevice(Device):
@@ -52,8 +53,10 @@ class TimeoutDummyChildDevicePVA(Device):
 
 
 class ValueErrorDummyChildDevice(Device):
-    def __init__(self, name: str = "value_error_dummy_child_device") -> None:
-        self.value_error_signal = SignalRW(backend=ValueErrorBackend())
+    def __init__(
+        self, name: str = "value_error_dummy_child_device", exc_text=""
+    ) -> None:
+        self.value_error_signal = SignalRW(backend=ValueErrorBackend(exc_text=exc_text))
         super().__init__(name=name)
 
 
@@ -64,11 +67,13 @@ class DummyDeviceOneWorkingOneTimeout(Device):
         super().__init__(name=name)
 
 
-ONE_WORKING_ONE_TIMEOUT_OUTPUT = {
-    "timeout_child_device": {
-        "timeout_signal": "signal ca://A_NON_EXISTENT_SIGNAL timed out"
+ONE_WORKING_ONE_TIMEOUT_OUTPUT = NotConnected(
+    {
+        "timeout_child_device": NotConnected(
+            {"timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL")}
+        )
     }
-}
+)
 
 
 class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
@@ -80,25 +85,33 @@ class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
         self.working_child_device2 = WorkingDummyChildDevice()
         self.timeout_child_device_ca = TimeoutDummyChildDeviceCA()
         self.timeout_child_device_pva = TimeoutDummyChildDevicePVA()
-        self.value_error_child_device1 = ValueErrorDummyChildDevice()
+        self.value_error_child_device1 = ValueErrorDummyChildDevice(
+            exc_text="Some ValueError text"
+        )
         self.value_error_child_device2 = ValueErrorDummyChildDevice()
         super().__init__(name=name)
 
 
-TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = {
-    "timeout_child_device_ca": {
-        "timeout_signal": "signal ca://A_NON_EXISTENT_SIGNAL timed out",
-    },
-    "timeout_child_device_pva": {
-        "timeout_signal": "signal pva://A_NON_EXISTENT_SIGNAL timed out",
-    },
-    "value_error_child_device1": {
-        "value_error_signal": "unexpected exception ValueError",
-    },
-    "value_error_child_device2": {
-        "value_error_signal": "unexpected exception ValueError",
-    },
-}
+TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = NotConnected(
+    {
+        "timeout_child_device_ca": NotConnected(
+            {
+                "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL"),
+            }
+        ),
+        "timeout_child_device_pva": NotConnected(
+            {"timeout_signal": NotConnected("pva://A_NON_EXISTENT_SIGNAL")}
+        ),
+        "value_error_child_device1": NotConnected(
+            {"value_error_signal": ValueError("Some ValueError text")}
+        ),
+        "value_error_child_device2": NotConnected(
+            {
+                "value_error_signal": ValueError(),
+            }
+        ),
+    }
+)
 
 
 class DummyDeviceCombiningTopLevelSignalAndSubDevice(Device):
@@ -106,7 +119,7 @@ class DummyDeviceCombiningTopLevelSignalAndSubDevice(Device):
         self, name: str = "dummy_device_combining_top_level_signal_and_sub_device"
     ) -> None:
         self.timeout_signal = epics_signal_rw(int, "ca://A_NON_EXISTENT_SIGNAL")
-        self.sub_device = ValueErrorDummyChildDevice()
+        self.sub_device = ValueErrorDummyChildDevice(exc_text="Some ValueError text")
         super().__init__(name=name)
 
 
@@ -119,7 +132,7 @@ async def test_error_handling_connection_timeout(caplog):
     with pytest.raises(NotConnected) as e:
         await dummy_device_one_working_one_timeout.connect(timeout=0.01)
 
-    assert e.value._errors == ONE_WORKING_ONE_TIMEOUT_OUTPUT
+    assert str(e.value) == str(ONE_WORKING_ONE_TIMEOUT_OUTPUT)
 
     logs = caplog.get_records("call")
     assert len(logs) == 1
@@ -141,7 +154,7 @@ async def test_error_handling_value_errors(caplog):
         await dummy_device_two_working_one_timeout_two_value_error.connect(
             timeout=0.01
         ),
-    assert e.value._errors == TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
+    assert str(e.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
 
     logs = caplog.get_records("call")
     logs = [log for log in logs if "ophyd_async" in log.pathname]
@@ -172,11 +185,13 @@ async def test_error_handling_device_collector(caplog):
             )
             dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
 
-    expected_output = {
-        "dummy_device_two_working_one_timeout_two_value_error": TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT,
-        "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
-    }
-    assert expected_output == e.value._errors
+    expected_output = NotConnected(
+        {
+            "dummy_device_two_working_one_timeout_two_value_error": TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT,
+            "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
+        }
+    )
+    assert str(expected_output) == str(e.value)
 
     logs = caplog.get_records("call")
     logs = [log for log in logs if "ophyd_async" in log.pathname]
@@ -197,17 +212,15 @@ async def test_error_handling_device_collector(caplog):
 
 
 def test_not_connected_error_output():
-    not_connected = NotConnected(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
-
-    assert str(not_connected) == (
-        "timeout_child_device_ca:\n"
-        "    timeout_signal: signal ca://A_NON_EXISTENT_SIGNAL timed out\n"
-        "timeout_child_device_pva:\n"
-        "    timeout_signal: signal pva://A_NON_EXISTENT_SIGNAL timed out\n"
-        "value_error_child_device1:\n"
-        "    value_error_signal: unexpected exception ValueError\n"
-        "value_error_child_device2:\n"
-        "    value_error_signal: unexpected exception ValueError\n"
+    assert str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT) == (
+        "\ntimeout_child_device_ca: NotConnected:\n"
+        "    timeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
+        "timeout_child_device_pva: NotConnected:\n"
+        "    timeout_signal: NotConnected: pva://A_NON_EXISTENT_SIGNAL\n"
+        "value_error_child_device1: NotConnected:\n"
+        "    value_error_signal: ValueError: Some ValueError text\n"
+        "value_error_child_device2: NotConnected:\n"
+        "    value_error_signal: ValueError\n"
     )
 
 
@@ -217,33 +230,32 @@ async def test_combining_top_level_signal_and_child_device():
     with pytest.raises(NotConnected) as e:
         await dummy_device1.connect(timeout=0.01)
     assert str(e.value) == (
-        "timeout_signal: signal ca://A_NON_EXISTENT_SIGNAL timed out\n"
-        "sub_device:\n"
-        "    value_error_signal: unexpected exception ValueError\n"
+        "\ntimeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
+        "sub_device: NotConnected:\n"
+        "    value_error_signal: ValueError: Some ValueError text\n"
     )
 
     with pytest.raises(NotConnected) as e:
         async with DeviceCollector(timeout=0.1):
             dummy_device2 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
     assert str(e.value) == (
-        "dummy_device2:\n"
-        "    timeout_signal: signal ca://A_NON_EXISTENT_SIGNAL timed out\n"
-        "    sub_device:\n"
-        "        value_error_signal: unexpected exception ValueError\n"
+        "\ndummy_device2: NotConnected:\n"
+        "    timeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
+        "    sub_device: NotConnected:\n"
+        "        value_error_signal: ValueError: Some ValueError text\n"
     )
 
 
 async def test_format_error_string_input():
     with pytest.raises(
         RuntimeError,
-        match=("Unknown error type `<class 'int'>` " "expected `str` or `dict`"),
+        match=("Unexpected type `<class 'int'>` " "expected `str` or `dict`"),
     ):
         not_connected = NotConnected(123)
         str(not_connected)
 
     with pytest.raises(
-        RuntimeError,
-        match=("`<class 'int'>` not a string or a dict"),
+        RuntimeError, match=("Unexpected type `<class 'int'>`, expected an Exception")
     ):
         not_connected = NotConnected({"test": 123})
         str(not_connected)
