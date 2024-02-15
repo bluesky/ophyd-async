@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.device &#8212; ophyd-async 0.2.1.dev12+g925ada2e documentation</title>
+    <title>ophyd_async.core.device &#8212; ophyd-async 0.2.1.dev13+g084dddac documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=e99b2675"></script>
+    <script src="../../../_static/documentation_options.js?v=60eac564"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev12+g925ada2e documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev12+g925ada2e documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev13+g084dddac documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev13+g084dddac documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -617,7 +617,15 @@ document.write(`
 
     <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_objects_on_exit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller_locals</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_exit</span><span class="p">())</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fut</span> <span class="o">=</span> <span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_exit</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span>
+                <span class="s2">&quot;Could not connect devices. Is the bluesky event loop running? See &quot;</span>
+                <span class="s2">&quot;https://blueskyproject.io/ophyd-async/main/&quot;</span>
+                <span class="s2">&quot;user/explanations/event-loop-choice.html for more info.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">fut</span></div>
 
 </pre></div>
 
