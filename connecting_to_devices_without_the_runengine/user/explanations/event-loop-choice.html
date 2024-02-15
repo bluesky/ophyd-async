@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Device Collector Event-Loop Choice &#8212; ophyd-async 0.2.1.dev12+gc73c0af1 documentation</title>
+    <title>Device Collector Event-Loop Choice &#8212; ophyd-async 0.2.1.dev12+g925ada2e documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=ca57795e"></script>
+    <script src="../../_static/documentation_options.js?v=e99b2675"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -127,8 +127,8 @@
       
     
     
-    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev12+gc73c0af1 documentation - Home"/>
-    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev12+gc73c0af1 documentation - Home"/>`);</script>
+    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev12+g925ada2e documentation - Home"/>
+    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev12+g925ada2e documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -555,8 +555,8 @@ document.write(`
 to connect to devices. In an async context, it does not.</p>
 <section id="sync-context">
 <h2>Sync Context<a class="headerlink" href="#sync-context" title="Link to this heading">#</a></h2>
-<p>In a sync context the run-engine must be initialized prior to connecting to devices,
-we enfore usage of the bluesky event-loop in this context.</p>
+<p>In a sync context the run-engine must be initialized prior to connecting to devices.
+We enfore usage of the bluesky event-loop in this context.</p>
 <p>The following will fail if <code class="code highlight python docutils literal highlight-python"><span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">()</span></code> has not been called already:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">DeviceCollector</span><span class="p">():</span>
     <span class="n">device1</span> <span class="o">=</span> <span class="n">Device1</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
@@ -564,8 +564,7 @@ we enfore usage of the bluesky event-loop in this context.</p>
     <span class="n">device3</span> <span class="o">=</span> <span class="n">Device3</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> can then connect to devices in event-loop created in the run-engine,
-and the devices can be used in the run-engine.</p>
+<p>The <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> connects to devices in the event-loop created in the run-engine.</p>
 </section>
 <section id="async-context">
 <h2>Async Context<a class="headerlink" href="#async-context" title="Link to this heading">#</a></h2>
@@ -587,7 +586,7 @@ is not passed in with <code class="code highlight python docutils literal highli
 <p>If the user wants to use devices in the async <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> within the run-engine
 they can either:</p>
 <ul class="simple">
-<li><p>Run the <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> first and pass the event-loop same event-loop into the run-engine.</p></li>
+<li><p>Run the <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> first and pass the event-loop into the run-engine.</p></li>
 <li><p>Initialize the run-engine first and run the <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> using the bluesky event-loop.</p></li>
 </ul>
 </section>

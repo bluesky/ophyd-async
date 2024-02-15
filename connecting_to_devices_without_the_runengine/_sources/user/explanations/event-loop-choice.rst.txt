@@ -7,8 +7,8 @@ to connect to devices. In an async context, it does not.
 Sync Context
 ============
 
-In a sync context the run-engine must be initialized prior to connecting to devices,
-we enfore usage of the bluesky event-loop in this context.
+In a sync context the run-engine must be initialized prior to connecting to devices.
+We enfore usage of the bluesky event-loop in this context.
 
 The following will fail if :python:`RE = RunEngine()` has not been called already:
 
@@ -19,8 +19,7 @@ The following will fail if :python:`RE = RunEngine()` has not been called alread
       device2 = Device2(prefix)
       device3 = Device3(prefix)
 
-The :python:`DeviceCollector` can then connect to devices in event-loop created in the run-engine,
-and the devices can be used in the run-engine.
+The :python:`DeviceCollector` connects to devices in the event-loop created in the run-engine.
 
 
 Async Context
@@ -47,7 +46,7 @@ is not passed in with :python:`RunEngine(loop=loop)`.
 If the user wants to use devices in the async :python:`DeviceCollector` within the run-engine
 they can either:
 
-* Run the :python:`DeviceCollector` first and pass the event-loop same event-loop into the run-engine.
+* Run the :python:`DeviceCollector` first and pass the event-loop into the run-engine.
 * Initialize the run-engine first and run the :python:`DeviceCollector` using the bluesky event-loop.
 
 
