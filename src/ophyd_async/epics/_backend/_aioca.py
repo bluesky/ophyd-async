@@ -190,10 +190,9 @@ class CaSignalBackend(SignalBackend[T]):
             self.initial_values[pv] = await caget(
                 pv, format=FORMAT_CTRL, timeout=timeout
             )
-        except CANothing:
-            message = f"signal ca://{pv} timed out"
-            logging.debug(message)
-            raise NotConnected(message)
+        except CANothing as exc:
+            logging.debug(f"signal ca://{pv} timed out")
+            raise NotConnected(f"ca://{pv}") from exc
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         _use_pyepics_context_if_imported()

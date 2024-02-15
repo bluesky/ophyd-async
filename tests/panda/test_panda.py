@@ -135,12 +135,12 @@ async def test_panda_block_missing_signals(pva):
 
 
 async def test_panda_unable_to_connect_to_pvi():
-    panda = PandA("NON-EXISTENT")
+    panda = PandA("pva://NON-EXISTENT")
 
     with pytest.raises(NotConnected) as exc:
         await panda.connect(timeout=0.01)
 
-    assert exc.value._errors == "NON-EXISTENT:PVI"
+    assert exc.value._errors == "pva://NON-EXISTENT:PVI"
 
     files = [
         __file__,

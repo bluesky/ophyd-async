@@ -1,7 +1,6 @@
 import asyncio
 import atexit
 import logging
-from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
@@ -235,23 +234,13 @@ class PvaSignalBackend(SignalBackend[T]):
         return PvaSignalBackend._ctxt
 
     async def _store_initial_value(self, pv, timeout: float = DEFAULT_TIMEOUT):
-        done, pending = await asyncio.wait(
-            [asyncio.create_task(self.ctxt.get(pv))], timeout=timeout
-        )
-
-        if pending:
-            # getting the PV has timed out.
-            # Ensure tasks are cleaned up, i.e. properly destroyed.
-            for task in pending:
-                task.cancel()
-
-                with suppress(asyncio.CancelledError):
-                    await task
-            message = f"signal pva://{pv} timed out"
-            logging.debug(message)
-            raise NotConnected(message)
-
-        self.initial_values[pv] = [d.result() for d in done][0]
+        try:
+            self.initial_values[pv] = await asyncio.wait_for(
+                self.ctxt.get(pv), timeout=timeout
+            )
+        except asyncio.TimeoutError as exc:
+            logging.debug(f"signal pva://{pv} timed out", exc_info=True)
+            raise NotConnected(f"pva://{pv}") from exc
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         if self.read_pv != self.write_pv:

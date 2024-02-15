@@ -24,7 +24,7 @@ Callback = Callable[[T], None]
 #: monitor updates
 ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
-ErrorText = Union[str, Dict[str, "ErrorText"]]
+ErrorText = Union[str, Dict[str, Exception]]
 
 
 class NotConnected(Exception):
@@ -34,41 +34,47 @@ class NotConnected(Exception):
 
     def __init__(self, errors: ErrorText):
         """
-        Not connected holds a mapping of device/signal names to
-        subdevices, or further errors in subdevices
+        NotConnected holds a mapping of device/signal names to
+        errors.
 
         Parameters
         ----------
         errors: ErrorText
-            Mapping of device name to error or subdevice with errors.
-            Alternatively a string with the signal error.
+            Mapping of device name to Exception or another NotConnected.
+            Alternatively a string with the signal error text.
         """
 
         self._errors = errors
 
-    def format_error_string(self, errors: ErrorText, indent="") -> str:
-        string = ""
-        if isinstance(errors, str):
-            return f"{errors}\n"
-        elif not isinstance(errors, dict):
+    def _format_sub_errors(self, name: str, error: Exception, indent="") -> str:
+        if isinstance(error, NotConnected):
+            error_txt = ":" + error.format_error_string(indent + self._indent_width)
+        elif isinstance(error, Exception):
+            error_txt = ": " + err_str + "\n" if (err_str := str(error)) else "\n"
+        else:
             raise RuntimeError(
-                f"Unknown error type `{type(errors)}` " "expected `str` or `dict`"
+                f"Unexpected type `{type(error)}`, expected an Exception"
             )
 
-        for name, value in errors.items():
-            string += indent + f"{name}:"
-            if isinstance(value, str):
-                string += " " + f"{value}\n"  # On the same line as the name
-            elif isinstance(value, dict):
-                string += "\n" + self.format_error_string(
-                    value, indent=(indent + self._indent_width)
-                )
-            else:
-                raise RuntimeError(f"`{type(value)}` not a string or a dict")
+        string = f"{indent}{name}: {type(error).__name__}" + error_txt
+        return string
+
+    def format_error_string(self, indent="") -> str:
+        if not isinstance(self._errors, dict) and not isinstance(self._errors, str):
+            raise RuntimeError(
+                f"Unexpected type `{type(self._errors)}` " "expected `str` or `dict`"
+            )
+
+        if isinstance(self._errors, str):
+            return " " + self._errors + "\n"
+
+        string = "\n"
+        for name, error in self._errors.items():
+            string += self._format_sub_errors(name, error, indent=indent)
         return string
 
     def __str__(self) -> str:
-        return self.format_error_string(self._errors, indent="")
+        return self.format_error_string(indent="")
 
 
 async def wait_for_connection(**coros: Awaitable[None]):
@@ -81,13 +87,11 @@ async def wait_for_connection(**coros: Awaitable[None]):
 
     for name, result in zip(coros, results):
         if isinstance(result, Exception):
-            if isinstance(result, NotConnected):
-                exceptions[name] = result._errors
-            else:
-                exceptions[name] = f"unexpected exception {type(result).__name__}"
+            exceptions[name] = result
+            if not isinstance(result, NotConnected):
                 logging.exception(
-                    f"device `{name}` raised unexpected "
-                    f"exception {type(result).__name__}",
+                    f"device `{name}` raised unexpected exception "
+                    f"{type(result).__name__}",
                     exc_info=result,
                 )
 
