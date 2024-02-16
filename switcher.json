@@ -20,10 +20,6 @@
     "url": "https://bluesky.github.io/ophyd-async/add-position-and-compression-to-hdf/"
   },
   {
-    "version": "add_connect_timeout",
-    "url": "https://bluesky.github.io/ophyd-async/add_connect_timeout/"
-  },
-  {
     "version": "add_save_load",
     "url": "https://bluesky.github.io/ophyd-async/add_save_load/"
   },
