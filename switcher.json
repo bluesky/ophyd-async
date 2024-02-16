@@ -44,6 +44,10 @@
     "url": "https://bluesky.github.io/ophyd-async/design-docs/"
   },
   {
+    "version": "docstring_deadtime",
+    "url": "https://bluesky.github.io/ophyd-async/docstring_deadtime/"
+  },
+  {
     "version": "fix-sr-paths",
     "url": "https://bluesky.github.io/ophyd-async/fix-sr-paths/"
   },
