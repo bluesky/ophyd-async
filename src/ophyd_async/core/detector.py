@@ -36,7 +36,14 @@ class DetectorTrigger(str, Enum):
 class DetectorControl(ABC):
     @abstractmethod
     def get_deadtime(self, exposure: float) -> float:
-        """For a given exposure, how long should the time between exposures be"""
+        """For a given exposure, how long should the time between exposures be.
+
+        Args:
+            exposure (float): exposure time in seconds
+
+        Returns:
+            float: controller deadtime in seconds. Strictly > 0
+        """
 
     @abstractmethod
     async def arm(
