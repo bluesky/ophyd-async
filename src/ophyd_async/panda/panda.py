@@ -1,28 +1,12 @@
 from __future__ import annotations
 
-import atexit
 import re
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Optional,
-    Tuple,
-    Type,
-    TypedDict,
-    cast,
-    get_args,
-    get_origin,
-    get_type_hints,
-)
-
-from p4p.client.thread import Context
+from typing import Dict, Optional, Tuple, cast, get_args, get_origin, get_type_hints
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceVector,
-    NotConnected,
     Signal,
     SignalBackend,
     SignalR,
@@ -30,13 +14,7 @@ from ophyd_async.core import (
     SignalX,
     SimSignalBackend,
 )
-from ophyd_async.epics.signal import (
-    epics_signal_r,
-    epics_signal_rw,
-    epics_signal_w,
-    epics_signal_x,
-    pvi_get,
-)
+from ophyd_async.epics.pvi import PVIEntry, make_signal, pvi_get
 from ophyd_async.panda.table import SeqTable
 
 
@@ -52,14 +30,6 @@ class SeqBlock(Device):
 
 class PcapBlock(Device):
     active: SignalR[bool]
-
-
-class PVIEntry(TypedDict, total=False):
-    d: str
-    r: str
-    rw: str
-    w: str
-    x: str
 
 
 def _block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
@@ -80,7 +50,7 @@ def _block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
     return block_name, None
 
 
-def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
+def _remove_inconsistent_blocks(pvi_info: Optional[Dict[str, PVIEntry]]) -> None:
     """Remove blocks from pvi information.
 
     This is needed because some pandas have 'pcap' and 'pcap1' blocks, which are
@@ -88,6 +58,8 @@ def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
     for example.
 
     """
+    if pvi_info is None:
+        return
     pvi_keys = set(pvi_info.keys())
     for k in pvi_keys:
         kn = re.sub(r"\d*$", "", k)
@@ -95,51 +67,14 @@ def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
             del pvi_info[k]
 
 
-async def pvi(
-    pv: str, ctxt: Context, timeout: float = DEFAULT_TIMEOUT
-) -> Dict[str, PVIEntry]:
-    try:
-        result = await pvi_get(pv, ctxt, timeout=timeout)
-    except TimeoutError as exc:
-        raise NotConnected(pv) from exc
-
-    _remove_inconsistent_blocks(result)
-    return result
-
-
 class PandA(Device):
-    _ctxt: Optional[Context] = None
-
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
 
-    def __init__(self, prefix: str, name: str = "") -> None:
+    def __init__(self, prefix: str, name: str) -> None:
         super().__init__(name)
-        self._init_prefix = prefix
-        self.pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
-            frozenset({"r", "w"}): lambda dtype, rpv, wpv: epics_signal_rw(
-                dtype, rpv, wpv
-            ),
-            frozenset({"rw"}): lambda dtype, rpv, wpv: epics_signal_rw(dtype, rpv, wpv),
-            frozenset({"r"}): lambda dtype, rpv, wpv: epics_signal_r(dtype, rpv),
-            frozenset({"w"}): lambda dtype, rpv, wpv: epics_signal_w(dtype, wpv),
-            frozenset({"x"}): lambda dtype, rpv, wpv: epics_signal_x(wpv),
-        }
-
-    @property
-    def ctxt(self) -> Context:
-        if PandA._ctxt is None:
-            PandA._ctxt = Context("pva", nt=False)
-
-            @atexit.register
-            def _del_ctxt():
-                # If we don't do this we get messages like this on close:
-                #   Error in sys.excepthook:
-                #   Original exception was:
-                PandA._ctxt = None
-
-        return PandA._ctxt
+        self._prefix = prefix
 
     def verify_block(self, name: str, num: Optional[int]):
         """Given a block name and number, return information about a block."""
@@ -172,7 +107,7 @@ class PandA(Device):
         block = self.verify_block(name, num)
 
         field_annos = get_type_hints(block, globalns=globals())
-        block_pvi = await pvi(block_pv, self.ctxt, timeout=timeout) if not sim else None
+        block_pvi = await pvi_get(block_pv, timeout=timeout) if not sim else None
 
         # finds which fields this class actually has, e.g. delay, width...
         for sig_name, sig_type in field_annos.items():
@@ -181,7 +116,6 @@ class PandA(Device):
 
             # if not in sim mode,
             if block_pvi:
-                block_pvi = cast(Dict[str, PVIEntry], block_pvi)
                 # try to get this block in the pvi.
                 entry: Optional[PVIEntry] = block_pvi.get(sig_name)
                 if entry is None:
@@ -190,7 +124,7 @@ class PandA(Device):
                         + f"an {sig_name} signal which has not been retrieved by PVI."
                     )
 
-                signal = self._make_signal(entry, args[0] if len(args) > 0 else None)
+                signal: Signal = make_signal(entry, args[0] if len(args) > 0 else None)
 
             else:
                 backend: SignalBackend = SimSignalBackend(
@@ -205,8 +139,7 @@ class PandA(Device):
             for attr, attr_pvi in block_pvi.items():
                 if not hasattr(block, attr):
                     # makes any extra signals
-                    signal = self._make_signal(attr_pvi)
-                    setattr(block, attr, signal)
+                    setattr(block, attr, make_signal(attr_pvi))
 
         return block
 
@@ -219,27 +152,12 @@ class PandA(Device):
         included dynamically anyway.
         """
         block = Device()
-        block_pvi: Dict[str, PVIEntry] = await pvi(block_pv, self.ctxt, timeout=timeout)
+        block_pvi: Dict[str, PVIEntry] = await pvi_get(block_pv, timeout=timeout)
 
         for signal_name, signal_pvi in block_pvi.items():
-            signal = self._make_signal(signal_pvi)
-            setattr(block, signal_name, signal)
+            setattr(block, signal_name, make_signal(signal_pvi))
 
         return block
-
-    def _make_signal(self, signal_pvi: PVIEntry, dtype: Optional[Type] = None):
-        """Make a signal.
-
-        This assumes datatype is None so it can be used to create dynamic signals.
-        """
-        operations = frozenset(signal_pvi.keys())
-        pvs = [signal_pvi[i] for i in operations]  # type: ignore
-        signal_factory = self.pvi_mapping[operations]
-
-        write_pv = pvs[0]
-        read_pv = write_pv if len(pvs) == 1 else pvs[1]
-
-        return signal_factory(dtype, "pva://" + read_pv, "pva://" + write_pv)
 
     # TODO redo to set_panda_block? confusing name
     def set_attribute(self, name: str, num: Optional[int], block: Device):
@@ -269,10 +187,9 @@ class PandA(Device):
         makes all required blocks.
         """
         pvi_info = (
-            await pvi(self._init_prefix + ":PVI", self.ctxt, timeout=timeout)
-            if not sim
-            else None
+            await pvi_get(self._prefix + "PVI", timeout=timeout) if not sim else None
         )
+        _remove_inconsistent_blocks(pvi_info)
 
         hints = {
             attr_name: attr_type
