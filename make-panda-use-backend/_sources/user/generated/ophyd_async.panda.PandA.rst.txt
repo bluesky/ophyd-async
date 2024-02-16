@@ -23,7 +23,6 @@ ophyd\_async.panda.PandA
    
       ~PandA.children
       ~PandA.connect
-      ~PandA.pvi_get
       ~PandA.set_attribute
       ~PandA.set_name
       ~PandA.verify_block
