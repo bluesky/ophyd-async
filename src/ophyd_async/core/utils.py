@@ -1,5 +1,18 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Awaitable, Callable, Dict, Iterable, List, Optional, Type, TypeVar
+import logging
+from typing import (
+    Awaitable,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -11,46 +24,79 @@ Callback = Callable[[T], None]
 #: monitor updates
 ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
+ErrorText = Union[str, Dict[str, Exception]]
 
 
 class NotConnected(Exception):
     """Exception to be raised if a `Device.connect` is cancelled"""
 
-    def __init__(self, *lines: str):
-        self.lines = list(lines)
+    _indent_width = "    "
+
+    def __init__(self, errors: ErrorText):
+        """
+        NotConnected holds a mapping of device/signal names to
+        errors.
+
+        Parameters
+        ----------
+        errors: ErrorText
+            Mapping of device name to Exception or another NotConnected.
+            Alternatively a string with the signal error text.
+        """
+
+        self._errors = errors
+
+    def _format_sub_errors(self, name: str, error: Exception, indent="") -> str:
+        if isinstance(error, NotConnected):
+            error_txt = ":" + error.format_error_string(indent + self._indent_width)
+        elif isinstance(error, Exception):
+            error_txt = ": " + err_str + "\n" if (err_str := str(error)) else "\n"
+        else:
+            raise RuntimeError(
+                f"Unexpected type `{type(error)}`, expected an Exception"
+            )
+
+        string = f"{indent}{name}: {type(error).__name__}" + error_txt
+        return string
+
+    def format_error_string(self, indent="") -> str:
+        if not isinstance(self._errors, dict) and not isinstance(self._errors, str):
+            raise RuntimeError(
+                f"Unexpected type `{type(self._errors)}` " "expected `str` or `dict`"
+            )
+
+        if isinstance(self._errors, str):
+            return " " + self._errors + "\n"
+
+        string = "\n"
+        for name, error in self._errors.items():
+            string += self._format_sub_errors(name, error, indent=indent)
+        return string
 
     def __str__(self) -> str:
-        return "\n".join(self.lines)
+        return self.format_error_string(indent="")
 
 
 async def wait_for_connection(**coros: Awaitable[None]):
-    """Call many underlying signals, accumulating `NotConnected` exceptions
+    """Call many underlying signals, accumulating exceptions and returning them
 
-    Raises
-    ------
-    `NotConnected` if cancelled
+    Expected kwargs should be a mapping of names to coroutine tasks to execute.
     """
-    ts = {k: asyncio.create_task(c) for (k, c) in coros.items()}  # type: ignore
-    try:
-        done, pending = await asyncio.wait(ts.values())
-    except asyncio.CancelledError:
-        for t in ts.values():
-            t.cancel()
-        lines: List[str] = []
-        for k, t in ts.items():
-            try:
-                await t
-            except NotConnected as e:
-                if len(e.lines) == 1:
-                    lines.append(f"{k}: {e.lines[0]}")
-                else:
-                    lines.append(f"{k}:")
-                    lines += [f"  {line}" for line in e.lines]
-        raise NotConnected(*lines)
-    else:
-        # Wait for everything to foreground the exceptions
-        for f in list(done) + list(pending):
-            await f
+    results = await asyncio.gather(*coros.values(), return_exceptions=True)
+    exceptions = {}
+
+    for name, result in zip(coros, results):
+        if isinstance(result, Exception):
+            exceptions[name] = result
+            if not isinstance(result, NotConnected):
+                logging.exception(
+                    f"device `{name}` raised unexpected exception "
+                    f"{type(result).__name__}",
+                    exc_info=result,
+                )
+
+    if exceptions:
+        raise NotConnected(exceptions)
 
 
 def get_dtype(typ: Type) -> Optional[np.dtype]:
