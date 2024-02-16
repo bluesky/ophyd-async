@@ -18,7 +18,7 @@ from typing import (
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
 
-from .utils import DEFAULT_TIMEOUT, wait_for_connection
+from .utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
 class Device(HasName):
@@ -173,4 +173,12 @@ class DeviceCollector:
 
     def __exit__(self, type_, value, traceback):
         self._objects_on_exit = self._caller_locals()
-        return call_in_bluesky_event_loop(self._on_exit())
+        try:
+            fut = call_in_bluesky_event_loop(self._on_exit())
+        except RuntimeError:
+            raise NotConnected(
+                "Could not connect devices. Is the bluesky event loop running? See "
+                "https://blueskyproject.io/ophyd-async/main/"
+                "user/explanations/event-loop-choice.html for more info."
+            )
+        return fut
