@@ -1,5 +1,5 @@
+import logging
 import sys
-from asyncio import CancelledError
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional, Sequence, Type, Union
@@ -8,6 +8,7 @@ from aioca import (
     FORMAT_CTRL,
     FORMAT_RAW,
     FORMAT_TIME,
+    CANothing,
     Subscription,
     caget,
     camonitor,
@@ -18,7 +19,6 @@ from bluesky.protocols import Descriptor, Dtype, Reading
 from epicscorelibs.ca import dbr
 
 from ophyd_async.core import (
-    NotConnected,
     ReadingValueCallback,
     SignalBackend,
     T,
@@ -26,6 +26,7 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -184,23 +185,26 @@ class CaSignalBackend(SignalBackend[T]):
         self.source = f"ca://{self.read_pv}"
         self.subscription: Optional[Subscription] = None
 
-    async def _store_initial_value(self, pv):
+    async def _store_initial_value(self, pv, timeout: float = DEFAULT_TIMEOUT):
         try:
-            self.initial_values[pv] = await caget(pv, format=FORMAT_CTRL, timeout=None)
-        except CancelledError:
-            raise NotConnected(self.source)
+            self.initial_values[pv] = await caget(
+                pv, format=FORMAT_CTRL, timeout=timeout
+            )
+        except CANothing as exc:
+            logging.debug(f"signal ca://{pv} timed out")
+            raise NotConnected(f"ca://{pv}") from exc
 
-    async def connect(self):
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         _use_pyepics_context_if_imported()
         if self.read_pv != self.write_pv:
             # Different, need to connect both
             await wait_for_connection(
-                read_pv=self._store_initial_value(self.read_pv),
-                write_pv=self._store_initial_value(self.write_pv),
+                read_pv=self._store_initial_value(self.read_pv, timeout=timeout),
+                write_pv=self._store_initial_value(self.write_pv, timeout=timeout),
             )
         else:
             # The same, so only need to connect one
-            await self._store_initial_value(self.read_pv)
+            await self._store_initial_value(self.read_pv, timeout=timeout)
         self.converter = make_converter(self.datatype, self.initial_values)
 
     async def put(self, value: Optional[T], wait=True, timeout=None):

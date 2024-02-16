@@ -1,6 +1,6 @@
 import asyncio
 import atexit
-from asyncio import CancelledError
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
@@ -10,7 +10,6 @@ from p4p import Value
 from p4p.client.asyncio import Context, Subscription
 
 from ophyd_async.core import (
-    NotConnected,
     ReadingValueCallback,
     SignalBackend,
     T,
@@ -18,6 +17,7 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -233,22 +233,25 @@ class PvaSignalBackend(SignalBackend[T]):
 
         return PvaSignalBackend._ctxt
 
-    async def _store_initial_value(self, pv):
+    async def _store_initial_value(self, pv, timeout: float = DEFAULT_TIMEOUT):
         try:
-            self.initial_values[pv] = await self.ctxt.get(pv)
-        except CancelledError:
-            raise NotConnected(self.source)
+            self.initial_values[pv] = await asyncio.wait_for(
+                self.ctxt.get(pv), timeout=timeout
+            )
+        except asyncio.TimeoutError as exc:
+            logging.debug(f"signal pva://{pv} timed out", exc_info=True)
+            raise NotConnected(f"pva://{pv}") from exc
 
-    async def connect(self):
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         if self.read_pv != self.write_pv:
             # Different, need to connect both
             await wait_for_connection(
-                read_pv=self._store_initial_value(self.read_pv),
-                write_pv=self._store_initial_value(self.write_pv),
+                read_pv=self._store_initial_value(self.read_pv, timeout=timeout),
+                write_pv=self._store_initial_value(self.write_pv, timeout=timeout),
             )
         else:
             # The same, so only need to connect one
-            await self._store_initial_value(self.read_pv)
+            await self._store_initial_value(self.read_pv, timeout=timeout)
         self.converter = make_converter(self.datatype, self.initial_values)
 
     async def put(self, value: Optional[T], wait=True, timeout=None):

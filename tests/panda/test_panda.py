@@ -1,12 +1,14 @@
 """Test file specifying how we want to eventually interact with the panda..."""
 
 import copy
+import traceback
 from typing import Dict
 
 import numpy as np
 import pytest
 
 from ophyd_async.core import DeviceCollector
+from ophyd_async.core.utils import NotConnected
 from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi
 
 
@@ -130,3 +132,29 @@ async def test_panda_block_missing_signals(pva):
             == "PandA has a pulse block containing a width signal which has not been "
             + "retrieved by PVI."
         )
+
+
+async def test_panda_unable_to_connect_to_pvi():
+    panda = PandA("pva://NON-EXISTENT")
+
+    with pytest.raises(NotConnected) as exc:
+        await panda.connect(timeout=0.01)
+
+    assert exc.value._errors == "pva://NON-EXISTENT:PVI"
+
+    files = [
+        __file__,
+        "ophyd_async/panda/panda.py",
+        "ophyd_async/panda/panda.py",
+    ]
+    funcs = ["test_panda_unable_to_connect_to_pvi", "connect", "pvi"]
+    lines = [
+        "await panda.connect(timeout=0.01)",
+        'await pvi(self._init_prefix + ":PVI", self.ctxt, timeout=timeout)',
+        "raise NotConnected(pv) from exc",
+    ]
+
+    for idx, each_frame in enumerate(traceback.extract_tb(exc.tb)):
+        assert each_frame.filename.endswith(files[idx])
+        assert each_frame.name == funcs[idx]
+        assert each_frame.line == lines[idx]

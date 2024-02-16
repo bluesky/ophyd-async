@@ -19,8 +19,10 @@ from typing import (
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     Device,
     DeviceVector,
+    NotConnected,
     Signal,
     SignalBackend,
     SignalR,
@@ -93,8 +95,14 @@ def _remove_inconsistent_blocks(pvi_info: Dict[str, PVIEntry]) -> None:
             del pvi_info[k]
 
 
-async def pvi(pv: str, ctxt: Context, timeout: float = 5.0) -> Dict[str, PVIEntry]:
-    result = await pvi_get(pv, ctxt, timeout=timeout)
+async def pvi(
+    pv: str, ctxt: Context, timeout: float = DEFAULT_TIMEOUT
+) -> Dict[str, PVIEntry]:
+    try:
+        result = await pvi_get(pv, ctxt, timeout=timeout)
+    except TimeoutError as exc:
+        raise NotConnected(pv) from exc
+
     _remove_inconsistent_blocks(result)
     return result
 
@@ -149,7 +157,12 @@ class PandA(Device):
         return block
 
     async def _make_block(
-        self, name: str, num: Optional[int], block_pv: str, sim: bool = False
+        self,
+        name: str,
+        num: Optional[int],
+        block_pv: str,
+        sim: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
     ):
         """Makes a block given a block name containing relevant signals.
 
@@ -159,7 +172,7 @@ class PandA(Device):
         block = self.verify_block(name, num)
 
         field_annos = get_type_hints(block, globalns=globals())
-        block_pvi = await pvi(block_pv, self.ctxt) if not sim else None
+        block_pvi = await pvi(block_pv, self.ctxt, timeout=timeout) if not sim else None
 
         # finds which fields this class actually has, e.g. delay, width...
         for sig_name, sig_type in field_annos.items():
@@ -197,14 +210,16 @@ class PandA(Device):
 
         return block
 
-    async def _make_untyped_block(self, block_pv: str):
+    async def _make_untyped_block(
+        self, block_pv: str, timeout: float = DEFAULT_TIMEOUT
+    ):
         """Populates a block using PVI information.
 
         This block is not typed as part of the PandA interface but needs to be
         included dynamically anyway.
         """
         block = Device()
-        block_pvi: Dict[str, PVIEntry] = await pvi(block_pv, self.ctxt)
+        block_pvi: Dict[str, PVIEntry] = await pvi(block_pv, self.ctxt, timeout=timeout)
 
         for signal_name, signal_pvi in block_pvi.items():
             signal = self._make_signal(signal_pvi)
@@ -242,7 +257,9 @@ class PandA(Device):
         else:
             setattr(self, name, block)
 
-    async def connect(self, sim=False) -> None:
+    async def connect(
+        self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+    ) -> None:
         """Initialises all blocks and connects them.
 
         First, checks for pvi information. If it exists, make all blocks from this.
@@ -251,7 +268,12 @@ class PandA(Device):
         If there's no pvi information, that's because we're in sim mode. In that case,
         makes all required blocks.
         """
-        pvi_info = await pvi(self._init_prefix + ":PVI", self.ctxt) if not sim else None
+        pvi_info = (
+            await pvi(self._init_prefix + ":PVI", self.ctxt, timeout=timeout)
+            if not sim
+            else None
+        )
+
         hints = {
             attr_name: attr_type
             for attr_name, attr_type in get_type_hints(self, globalns=globals()).items()
@@ -265,9 +287,13 @@ class PandA(Device):
                 name, num = _block_name_number(block_name)
 
                 if name in hints:
-                    block = await self._make_block(name, num, block_pvi["d"])
+                    block = await self._make_block(
+                        name, num, block_pvi["d"], timeout=timeout
+                    )
                 else:
-                    block = await self._make_untyped_block(block_pvi["d"])
+                    block = await self._make_untyped_block(
+                        block_pvi["d"], timeout=timeout
+                    )
 
                 self.set_attribute(name, num, block)
 
@@ -288,7 +314,9 @@ class PandA(Device):
                 ], f"Expected PandA to only contain blocks, got {entry}"
             else:
                 num = 1 if get_origin(hints[block_name]) == DeviceVector else None
-                block = await self._make_block(block_name, num, "sim://", sim=sim)
+                block = await self._make_block(
+                    block_name, num, "sim://", sim=sim, timeout=timeout
+                )
                 self.set_attribute(block_name, num, block)
 
         self.set_name(self.name)
