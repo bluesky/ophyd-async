@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pvi &#8212; ophyd-async 0.2.1.dev21+gb5f7a108 documentation</title>
+    <title>ophyd_async.epics.pvi &#8212; ophyd-async 0.2.1.dev16+g76c4cd53 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=247ad049"></script>
+    <script src="../../../_static/documentation_options.js?v=6653ed34"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev21+gb5f7a108 documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev21+gb5f7a108 documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev16+g76c4cd53 documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev16+g76c4cd53 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -422,6 +422,7 @@ document.write(`
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core.signal</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.core.signal_backend</span> <span class="kn">import</span> <span class="n">SignalBackend</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics._backend._p4p</span> <span class="kn">import</span> <span class="n">PvaSignalBackend</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.signal.signal</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">epics_signal_r</span><span class="p">,</span>
@@ -459,7 +460,7 @@ document.write(`
 
 <div class="viewcode-block" id="pvi_get">
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.epics.pvi.pvi_get.html#ophyd_async.epics.pvi.pvi_get">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">pvi_get</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">]:</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">pvi_get</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Makes a PvaSignalBackend purely to connect to PVI information.</span>
 
 <span class="sd">    This backend is simply thrown away at the end of this method. This is useful</span>
@@ -468,7 +469,7 @@ document.write(`
 
     <span class="n">read_pv</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;PVI&quot;</span>
     <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span> <span class="o">=</span> <span class="n">PvaSignalBackend</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
     <span class="n">pv_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">backend</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
