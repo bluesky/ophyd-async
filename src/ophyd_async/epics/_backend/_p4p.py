@@ -141,6 +141,16 @@ class PvaTableConverter(PvaConverter):
         return dict(source=source, dtype="object", shape=[])  # type: ignore
 
 
+class PvaStructureConverter(PvaConverter):
+
+    def value(self, value):
+        return value.get("pvi")
+
+    def descriptor(self, source: str, value) -> Descriptor:
+        # This is wrong, but defer until we know how to actually describe a structure
+        return dict(source=source, dtype="object", shape=[])  # type: ignore
+
+
 class DisconnectedPvaConverter(PvaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
@@ -149,7 +159,9 @@ class DisconnectedPvaConverter(PvaConverter):
 def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConverter:
     pv = list(values)[0]
     typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
-    typ = get_unique({k: type(v["value"]) for k, v in values.items()}, "value types")
+    typ = get_unique(
+        {k: type(v.get("value")) for k, v in values.items()}, "value types"
+    )
     if "NTScalarArray" in typeid and typ == list:
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:
@@ -203,6 +215,8 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         return PvaConverter()
     elif "NTTable" in typeid:
         return PvaTableConverter()
+    elif "structure" in typeid:
+        return PvaStructureConverter()
     else:
         raise TypeError(f"{pv}: Unsupported typeid {typeid}")
 
