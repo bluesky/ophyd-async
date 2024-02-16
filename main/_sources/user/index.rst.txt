@@ -45,6 +45,7 @@ side-bar.
             :maxdepth: 1
 
             explanations/docs-structure
+            explanations/event-loop-choice
 
         +++
 
