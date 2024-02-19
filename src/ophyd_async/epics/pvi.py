@@ -45,8 +45,8 @@ async def pvi_get(
     timeout, and therefore can be used for error reporting."""
     backend: SignalBackend = PvaSignalBackend(None, read_pv, read_pv)
     await backend.connect(timeout=timeout)
-    pv_info: Dict[str, Dict[str, str]] = await backend.get_value()
-
+    d: Dict[str, Dict[str, Dict[str, str]]] = await backend.get_value()
+    pv_info = d.get("pvi") or {}
     result = {}
 
     for attr_name, attr_info in pv_info.items():

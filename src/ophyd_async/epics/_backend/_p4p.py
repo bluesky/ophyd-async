@@ -141,14 +141,13 @@ class PvaTableConverter(PvaConverter):
         return dict(source=source, dtype="object", shape=[])  # type: ignore
 
 
-class PvaStructureConverter(PvaConverter):
+class PvaDictConverter(PvaConverter):
 
     def value(self, value):
-        return value.get("pvi")
+        return value
 
     def descriptor(self, source: str, value) -> Descriptor:
-        # This is wrong, but defer until we know how to actually describe a structure
-        return dict(source=source, dtype="object", shape=[])  # type: ignore
+        raise NotImplementedError("Describing Dict signals not currently supported")
 
 
 class DisconnectedPvaConverter(PvaConverter):
@@ -216,7 +215,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
     elif "NTTable" in typeid:
         return PvaTableConverter()
     elif "structure" in typeid:
-        return PvaStructureConverter()
+        return PvaDictConverter()
     else:
         raise TypeError(f"{pv}: Unsupported typeid {typeid}")
 
