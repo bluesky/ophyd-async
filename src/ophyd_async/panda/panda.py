@@ -72,7 +72,7 @@ class PandA(Device):
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
 
-    def __init__(self, prefix: str, name: str) -> None:
+    def __init__(self, prefix: str, name: str = "") -> None:
         super().__init__(name)
         self._prefix = prefix
 
