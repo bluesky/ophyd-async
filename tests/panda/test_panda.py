@@ -107,13 +107,13 @@ async def test_panda_children_connected(sim_panda: PandA):
 
 
 async def test_panda_with_missing_blocks(pva):
-    panda = PandA("PANDAQSRVI:", "panda")
+    panda = PandA("PANDAQSRVI:")
     with pytest.raises(AssertionError):
         await panda.connect()
 
 
 async def test_panda_with_extra_blocks_and_signals(pva):
-    panda = PandA("PANDAQSRV:", "panda")
+    panda = PandA("PANDAQSRV:")
     await panda.connect()
 
     assert panda.extra  # type: ignore
@@ -123,7 +123,7 @@ async def test_panda_with_extra_blocks_and_signals(pva):
 
 
 async def test_panda_block_missing_signals(pva):
-    panda = PandA("PANDAQSRVIB:", "panda")
+    panda = PandA("PANDAQSRVIB:")
 
     with pytest.raises(Exception) as exc:
         await panda.connect()
@@ -135,7 +135,7 @@ async def test_panda_block_missing_signals(pva):
 
 
 async def test_panda_unable_to_connect_to_pvi():
-    panda = PandA("NON-EXISTENT:", "broken-panda")
+    panda = PandA("NON-EXISTENT:")
 
     with pytest.raises(NotConnected) as exc:
         await panda.connect(timeout=0.01)
