@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pvi &#8212; ophyd-async 0.2.1.dev16+g348438ff documentation</title>
+    <title>ophyd_async.epics.pvi &#8212; ophyd-async 0.2.1.dev17+g5653d9e5 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=a5f654fa"></script>
+    <script src="../../../_static/documentation_options.js?v=c385b933"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev16+g348438ff documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev16+g348438ff documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev17+g5653d9e5 documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev17+g5653d9e5 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -470,11 +470,11 @@ document.write(`
 <span class="sd">    timeout, and therefore can be used for error reporting.&quot;&quot;&quot;</span>
     <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span> <span class="o">=</span> <span class="n">PvaSignalBackend</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-    <span class="n">pv_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">backend</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+    <span class="n">pv_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">backend</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_info</span> <span class="ow">in</span> <span class="n">pv_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_info</span> <span class="ow">in</span> <span class="n">pv_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pvi&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">result</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">PVIEntry</span><span class="p">(</span><span class="o">**</span><span class="n">attr_info</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
     <span class="k">return</span> <span class="n">result</span></div>
