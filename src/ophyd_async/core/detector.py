@@ -131,6 +131,7 @@ class StandardDetector(
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
         writer_timeout: float = DEFAULT_TIMEOUT,
+        trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
     ) -> None:
         """
         Parameters
@@ -147,6 +148,8 @@ class StandardDetector(
         self._describe: Dict[str, Descriptor] = {}
         self._config_sigs = list(config_sigs)
         self._frame_writing_timeout = writer_timeout
+        # Is this unique from the frame_writing_timeout?
+        self._trigger_to_frame_timeout = trigger_to_frame_timeout
         # For prepare
         self._arm_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
@@ -247,7 +250,7 @@ class StandardDetector(
     async def _fly(self) -> None:
         # Wait for detector to have written up to a particular frame
         await self.writer.wait_for_index(
-            self._last_frame - self._offset, timeout=self._frame_writing_timeout
+            self._last_frame - self._offset, timeout=self._trigger_to_frame_timeout
         )
 
     @AsyncStatus.wrap
