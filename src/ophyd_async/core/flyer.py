@@ -65,8 +65,7 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
     async def open(self) -> Dict[str, Descriptor]:
         return await merge_gathered_dicts(writer.open() for writer in self._writers)
 
-    async def ensure_armed(self, trigger_info: TriggerInfo):
-        ...
+    async def ensure_armed(self, trigger_info: TriggerInfo): ...
 
     async def wait_for_index(
         self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
@@ -132,10 +131,6 @@ class HardwareTriggeredFlyable(
         self._fly_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
         super().__init__(name=name)
-
-    @property
-    def hints(self) -> Hints:
-        return self._detector_group_logic.hints()
 
     @property
     def trigger_logic(self) -> TriggerLogic[T]:
