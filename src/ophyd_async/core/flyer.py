@@ -5,8 +5,6 @@ from bluesky.protocols import (
     Collectable,
     Descriptor,
     Flyable,
-    HasHints,
-    Hints,
     Preparable,
     Reading,
     Stageable,
@@ -46,10 +44,6 @@ class DetectorGroupLogic(ABC):
     async def close(self):
         """Close all writers and wait for them to be closed"""
 
-    @abstractmethod
-    def hints(self) -> Hints:
-        """Produce hints specifying which dataset(s) are most important"""
-
 
 class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
     def __init__(
@@ -81,16 +75,6 @@ class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
     async def close(self):
         await gather_list(writer.close() for writer in self._writers)
 
-    def hints(self) -> Hints:
-        return {
-            "fields": [
-                field
-                for writer in self._writers
-                if hasattr(writer, "hints")
-                for field in writer.hints.get("fields")
-            ]
-        }
-
 
 class TriggerLogic(ABC, Generic[T]):
     @abstractmethod
@@ -116,7 +100,6 @@ class HardwareTriggeredFlyable(
     Stageable,
     Flyable,
     Collectable,
-    HasHints,
     Generic[T],
 ):
     def __init__(
