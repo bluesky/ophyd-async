@@ -187,7 +187,6 @@ class StandardDetector(
         last_frame=None,
     ) -> AsyncStatus:
         """Arm detectors"""
-        # perpare for detector has value = TriggerInfo
         return AsyncStatus(self._prepare(value, current_frame, last_frame))
 
     async def _prepare(self, value: T, current_frame, last_frame) -> None:
@@ -196,17 +195,15 @@ class StandardDetector(
         The frame information was managed in the flyer and now needs to be
         managed in the plan level.
         """
-
-        trigger_info = value
-
-        self._trigger_info = trigger_info
+        assert type(value) is TriggerInfo
+        self._trigger_info = value
         self._current_frame = current_frame
         self._last_frame = last_frame
 
         self._current_frame = 0
-        self._last_frame = self._current_frame + trigger_info.num
+        self._last_frame = self._current_frame + self._trigger_info.num
 
-        await self.ensure_armed(trigger_info)
+        await self.ensure_armed(self._trigger_info)
 
     async def ensure_armed(self, trigger_info: TriggerInfo):
         if (
@@ -254,7 +251,7 @@ class StandardDetector(
         )
 
     @AsyncStatus.wrap
-    async def complete(self) -> None:
+    async def complete(self) -> AsyncStatus:
         assert self._fly_status, "Kickoff not run"
         return self._fly_status
 
