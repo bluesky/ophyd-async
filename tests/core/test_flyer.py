@@ -105,7 +105,7 @@ class DummyWriter(DetectorWriter):
 
 
 @pytest.fixture
-async def detector_list(RE: RunEngine) -> tuple[StandardDetector]:
+async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
     await writers[0].dummy_signal.connect(sim=True)
 
@@ -131,10 +131,11 @@ async def test_hardware_triggered_flyable(
 ):
     names = []
     docs = []
-    
+
     def append_and_print(name, doc):
         names.append(name)
         docs.append(doc)
+
     RE.subscribe(append_and_print)
 
     assert len(detector_list) == 2
