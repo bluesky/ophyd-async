@@ -97,35 +97,42 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, TimeoutError)
 
 
+# Look at this
 @patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
-async def test_hdf_writer_fails_on_timeout_with_flyscan(
+def test_hdf_writer_fails_on_timeout_with_flyscan(
     patched_wait_for_value, RE: RunEngine, writer: HDFWriter
 ):
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
 
-    detector = StandardDetector(controller, writer)
+    detector = StandardDetector(controller, writer, trigger_to_frame_timeout=0.01)
     trigger_logic = DummyTriggerLogic()
 
-    flyer = HardwareTriggeredFlyable(
-        [detector], trigger_logic, [], name="flyer", trigger_to_frame_timeout=0.01
-    )
+    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
 
     def flying_plan():
         """NOTE: the following is a workaround to ensure tests always pass.
         See https://github.com/bluesky/bluesky/issues/1630 for more details.
         """
-        yield from bps.stage_all(flyer)
+        yield from bps.stage_all(detector, flyer)
         try:
+            # Prepare the flyer first to get the trigger info for the detectors
+            yield from bps.prepare(flyer, 1, wait=True)
+            # prepare detector second.
+            yield from bps.prepare(
+                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=10
+            )
+
             yield from bps.open_run()
             yield from bps.kickoff(flyer)
+            yield from bps.kickoff(detector)
             yield from bps.complete(flyer, wait=True)
+            yield from bps.complete(detector, wait=True)
             yield from bps.close_run()
         finally:
-            yield from bps.unstage_all(flyer)
+            yield from bps.unstage_all(detector, flyer)
 
-    RE(bps.prepare(flyer, 1))
-    with pytest.raises(Exception) as exc:
+    with pytest.raises(TimeoutError) as exc:
         RE(flying_plan())
 
     assert isinstance(exc.value.__cause__, TimeoutError)
