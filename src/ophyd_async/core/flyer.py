@@ -137,7 +137,7 @@ class HardwareTriggeredFlyable(
         return self._trigger_logic
 
     @property
-    def trigger_info(self) -> TriggerInfo:
+    def trigger_info(self) -> Optional[TriggerInfo]:
         return self._trigger_info
 
     @AsyncStatus.wrap
