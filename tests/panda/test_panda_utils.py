@@ -13,7 +13,7 @@ from ophyd_async.panda.utils import phase_sorter
 @pytest.fixture
 async def sim_panda():
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDA", "sim_panda")
+        sim_panda = PandA("PANDA")
         sim_panda.phase_1_signal_units: SignalRW = epics_signal_rw(int, "")
     assert sim_panda.name == "sim_panda"
     yield sim_panda
