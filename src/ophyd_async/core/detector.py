@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import AsyncIterator, Callable, Dict, Optional, Sequence, TypeVar
+from typing import AsyncIterator, Callable, Dict, List, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
     Asset,
@@ -154,7 +154,7 @@ class StandardDetector(
         self._arm_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
         # For kickoff
-        self._watcher: Optional[Callable] = None
+        self._watcher: List[Callable] = []
         self._fly_status: Optional[AsyncStatus] = None
 
         self._offset = 0  # Add this to index to get frame number
