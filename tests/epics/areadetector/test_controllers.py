@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector
-from ophyd_async.core.flyer import SameTriggerDetectorGroupLogic, TriggerInfo
 from ophyd_async.epics.areadetector.controllers import (
     ADSimController,
     PilatusController,
