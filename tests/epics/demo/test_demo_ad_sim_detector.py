@@ -1,7 +1,7 @@
 """Integration tests for a StandardDetector using a HDFWriter and ADSimController."""
 
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import List, cast
 
 import bluesky.plan_stubs as bps
@@ -241,9 +241,7 @@ async def test_trigger_logic():
     ...
 
 
-async def test_detector_with_unnamed_or_disconnected_config_sigs(
-    RE, tmp_path: Path
-):
+async def test_detector_with_unnamed_or_disconnected_config_sigs(RE, tmp_path: Path):
     dp = StaticDirectoryProvider(tmp_path, f"test-{new_uid()}")
     drv = ADBase("FOO:DRV:")
 
