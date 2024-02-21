@@ -45,8 +45,8 @@ class HDFWriter(DetectorWriter):
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
-            self.hdf.file_path.set(info.directory_path),
-            self.hdf.file_name.set(f"{info.filename_prefix}{self.hdf.name}"),
+            self.hdf.file_path.set(info.directory),
+            self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
             self.hdf.file_template.set("%s/%s.h5"),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
@@ -107,7 +107,7 @@ class HDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    self._directory_provider().directory_path,
+                    self._directory_provider().root,
                     await self.hdf.full_file_name.get_value(),
                     self._datasets,
                 )

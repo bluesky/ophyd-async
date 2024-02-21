@@ -1,12 +1,28 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Protocol, Sequence
+from pathlib import Path
+from typing import Optional, Protocol, Sequence, Union
 
 
 @dataclass
 class DirectoryInfo:
-    directory_path: str
-    filename_prefix: str
+    """
+    Information about where and how to write a file.
+    
+
+    :param root: Path of a root directory
+    :param cwd: Directory into which files should be written, relative to root
+    :param prefix: Optional filename prefix to add to all files
+    :param suffix: Optional filename suffix to add to all files   
+    """
+    root: Path
+    cwd: Path
+    prefix: Optional[str] = ""
+    suffix: Optional[str] = ""
+
+    @property
+    def directory(self):
+        return self.root / self.cwd
 
 
 class DirectoryProvider(Protocol):
@@ -16,8 +32,20 @@ class DirectoryProvider(Protocol):
 
 
 class StaticDirectoryProvider(DirectoryProvider):
-    def __init__(self, directory_path: str, filename_prefix: str) -> None:
-        self._directory_info = DirectoryInfo(directory_path, filename_prefix)
+    def __init__(
+        self,
+        directory_path: Union[str, Path],
+        filename_prefix: str = "",
+        filename_suffix: str = "",
+    ) -> None:
+        if isinstance(directory_path, str):
+            directory_path = Path(directory_path)
+        self._directory_info = DirectoryInfo(
+            root=directory_path,
+            cwd=directory_path,
+            prefix=filename_prefix,
+            suffix=filename_suffix,
+        )
 
     def __call__(self) -> DirectoryInfo:
         return self._directory_info
