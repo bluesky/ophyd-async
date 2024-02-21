@@ -143,12 +143,16 @@ async def test_two_detectors_step(
     info_a = writer_a._directory_provider()
     info_b = writer_b._directory_provider()
 
-    assert await writer_a.hdf.file_path.get_value() == str(info_a.root / info_a.cwd)
+    assert await writer_a.hdf.file_path.get_value() == str(
+        info_a.root / info_a.resource_dir
+    )
     file_name = await writer_a.hdf.file_name.get_value()
     assert file_name.startswith(info_a.prefix)
     assert file_name.endswith(info_a.suffix)
 
-    assert await writer_b.hdf.file_path.get_value() == str(info_b.root / info_b.cwd)
+    assert await writer_b.hdf.file_path.get_value() == str(
+        info_b.root / info_b.resource_dir
+    )
     file_name = await writer_b.hdf.file_name.get_value()
     assert file_name.startswith(info_b.prefix)
     assert file_name.endswith(info_b.suffix)

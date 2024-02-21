@@ -45,7 +45,7 @@ class HDFWriter(DetectorWriter):
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
-            self.hdf.file_path.set(str(info.root / info.cwd)),
+            self.hdf.file_path.set(str(info.root / info.resource_dir)),
             self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
             self.hdf.file_template.set("%s/%s.h5"),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
