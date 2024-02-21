@@ -16,7 +16,7 @@ class _HDFFile:
                 spec="AD_HDF5_SWMR_SLICE",
                 root=str(root),
                 data_key=ds.name,
-                resource_path=str(cwd.relative_to(root)/full_file_name),
+                resource_path=str(cwd.relative_to(root) / full_file_name),
                 resource_kwargs={
                     "path": ds.path,
                     "multiplier": ds.multiplier,

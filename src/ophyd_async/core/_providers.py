@@ -8,13 +8,14 @@ from typing import Optional, Protocol, Sequence, Union
 class DirectoryInfo:
     """
     Information about where and how to write a file.
-    
+
 
     :param root: Path of a root directory
     :param cwd: Directory into which files should be written, relative to root
     :param prefix: Optional filename prefix to add to all files
-    :param suffix: Optional filename suffix to add to all files   
+    :param suffix: Optional filename suffix to add to all files
     """
+
     root: Path
     cwd: Path
     prefix: Optional[str] = ""
