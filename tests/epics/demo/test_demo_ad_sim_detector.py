@@ -1,7 +1,7 @@
 """Integration tests for a StandardDetector using a HDFWriter and ADSimController."""
 
-import time
 from pathlib import Path
+import time
 from typing import List, cast
 
 import bluesky.plan_stubs as bps
@@ -22,11 +22,9 @@ from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
 
-CURRENT_DIRECTORY = Path(__file__).parent
 
-
-async def make_detector(prefix="", name="test"):
-    dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
+async def make_detector(prefix: str, name: str, tmp_path: Path):
+    dp = StaticDirectoryProvider(tmp_path, f"test-{new_uid()}")
 
     async with DeviceCollector(sim=True):
         drv = ADBase(f"{prefix}DRV:")
@@ -75,8 +73,8 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 
 
 @pytest.fixture
-async def single_detector(RE: RunEngine) -> StandardDetector:
-    detector = await make_detector(prefix="TEST:")
+async def single_detector(RE: RunEngine, tmp_path: Path) -> StandardDetector:
+    detector = await make_detector(prefix="TEST:", name="test", tmp_path=tmp_path)
 
     set_sim_value(detector._controller.driver.array_size_x, 10)
     set_sim_value(detector._controller.driver.array_size_y, 20)
@@ -84,9 +82,9 @@ async def single_detector(RE: RunEngine) -> StandardDetector:
 
 
 @pytest.fixture
-async def two_detectors():
-    deta = await make_detector(prefix="PREFIX1:", name="testa")
-    detb = await make_detector(prefix="PREFIX2:", name="testb")
+async def two_detectors(tmp_path: Path):
+    deta = await make_detector(prefix="PREFIX1:", name="testa", tmp_path=tmp_path)
+    detb = await make_detector(prefix="PREFIX2:", name="testb", tmp_path=tmp_path)
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
@@ -162,7 +160,7 @@ async def test_two_detectors_step(
 
 
 async def test_detector_writes_to_file(
-    RE: RunEngine, single_detector: StandardDetector
+    RE: RunEngine, single_detector: StandardDetector, tmp_path: Path
 ):
     names = []
     docs = []
@@ -174,7 +172,7 @@ async def test_detector_writes_to_file(
 
     assert (
         await cast(HDFWriter, single_detector.writer).hdf.file_path.get_value()
-        == CURRENT_DIRECTORY
+        == tmp_path
     )
 
     descriptor_index = names.index("descriptor")
@@ -244,21 +242,21 @@ async def test_trigger_logic():
 
 
 async def test_detector_with_unnamed_or_disconnected_config_sigs(
-    RE, prefix="", name="test"
+    RE, tmp_path: Path
 ):
-    dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
-    drv = ADBase(f"{prefix}DRV:")
+    dp = StaticDirectoryProvider(tmp_path, f"test-{new_uid()}")
+    drv = ADBase("FOO:DRV:")
 
     some_other_driver = ADBase("TEST")
 
     async with DeviceCollector(sim=True):
-        hdf = NDFileHDF(f"{prefix}HDF:")
+        hdf = NDFileHDF("FOO:HDF:")
         det = DemoADSimDetector(
             drv,
             hdf,
             dp,
             config_sigs=[some_other_driver.acquire_time, drv.acquire],
-            name=name,
+            name="foo",
         )
 
     with pytest.raises(Exception) as exc:

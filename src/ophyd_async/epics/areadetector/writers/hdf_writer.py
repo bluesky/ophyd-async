@@ -107,7 +107,9 @@ class HDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    await self.hdf.full_file_name.get_value(), self._datasets
+                    self._directory_provider().directory_path,
+                    await self.hdf.full_file_name.get_value(),
+                    self._datasets,
                 )
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc
