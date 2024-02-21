@@ -21,10 +21,6 @@ class DirectoryInfo:
     prefix: Optional[str] = ""
     suffix: Optional[str] = ""
 
-    @property
-    def directory(self):
-        return self.root / self.cwd
-
 
 class DirectoryProvider(Protocol):
     @abstractmethod
@@ -43,7 +39,7 @@ class StaticDirectoryProvider(DirectoryProvider):
             directory_path = Path(directory_path)
         self._directory_info = DirectoryInfo(
             root=directory_path,
-            cwd=directory_path,
+            cwd=Path("."),
             prefix=filename_prefix,
             suffix=filename_suffix,
         )
