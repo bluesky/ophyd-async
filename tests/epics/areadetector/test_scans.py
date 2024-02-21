@@ -98,7 +98,6 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, TimeoutError)
 
 
-# Look at this
 @patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
 def test_hdf_writer_fails_on_timeout_with_flyscan(
     patched_wait_for_value, RE: RunEngine, writer: HDFWriter
@@ -106,7 +105,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
 
-    detector = StandardDetector(controller, writer, trigger_to_frame_timeout=0.01)
+    detector = StandardDetector(controller, writer, writer_timeout=0.01)
     trigger_logic = DummyTriggerLogic()
 
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")

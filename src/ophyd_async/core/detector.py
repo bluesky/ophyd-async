@@ -5,7 +5,16 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import AsyncIterator, Callable, Dict, List, Optional, Sequence, TypeVar
+from typing import (
+    AsyncGenerator,
+    AsyncIterator,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    TypeVar,
+)
 
 from bluesky.protocols import (
     Collectable,
@@ -88,10 +97,10 @@ class DetectorWriter(ABC):
         """
 
     @abstractmethod
-    async def wait_for_index(
-        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ) -> None:
-        """Wait until a specific index is ready to be collected"""
+    async def observe_indices_written(
+        self, timeout=DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        """Yield each index as it is written"""
 
     @abstractmethod
     async def get_indices_written(self) -> int:
@@ -133,7 +142,6 @@ class StandardDetector(
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
         writer_timeout: float = DEFAULT_TIMEOUT,
-        trigger_to_frame_timeout: Optional[float] = DEFAULT_TIMEOUT,
     ) -> None:
         """
         Parameters
@@ -150,13 +158,11 @@ class StandardDetector(
         self._describe: Dict[str, Descriptor] = {}
         self._config_sigs = list(config_sigs)
         self._frame_writing_timeout = writer_timeout
-        # Is this unique from the frame_writing_timeout?
-        self._trigger_to_frame_timeout = trigger_to_frame_timeout
         # For prepare
         self._arm_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
         # For kickoff
-        self._watcher: List[Callable] = []
+        self._watchers: List[Callable] = []
         self._fly_status: Optional[AsyncStatus] = None
 
         self._offset = 0  # Add this to index to get frame number
@@ -179,8 +185,7 @@ class StandardDetector(
         await self.check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._describe = await self.writer.open()
-
-        self._current_frame = 0  # do we care about this?
+        self._current_frame = 0
 
     async def check_config_sigs(self):
         """Checks configuration signals are named and connected."""
@@ -225,9 +230,13 @@ class StandardDetector(
             trigger=DetectorTrigger.internal,
         )
         await written_status
-        await self.writer.wait_for_index(
-            indices_written + 1, timeout=self._frame_writing_timeout
-        )
+        async for index in self.writer.observe_indices_written(
+            self._frame_writing_timeout
+        ):
+            for watcher in self._watchers:
+                watcher(..., index, ...)
+            if index >= indices_written + 1:
+                break
 
     def prepare(
         self,
@@ -275,14 +284,17 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        self._fly_status = AsyncStatus(self._fly(), self._watcher)
-        self._fly_start = time.monotonic()  # do we care about this?
+        self._fly_status = AsyncStatus(self._fly(), self._watchers)
+        self._fly_start = time.monotonic()
 
     async def _fly(self) -> None:
-        # Wait for detector to have written up to a particular frame
-        await self.writer.wait_for_index(
-            self._last_frame - self._offset, timeout=self._trigger_to_frame_timeout
-        )
+        async for index in self.writer.observe_indices_written(
+            self._frame_writing_timeout
+        ):
+            for watcher in self._watchers:
+                watcher(..., index, ...)
+            if index >= self._last_frame - self._offset:
+                break
 
     @AsyncStatus.wrap
     async def complete(self) -> AsyncStatus:
@@ -300,13 +312,10 @@ class StandardDetector(
         The index is optional, and provided for flyscans, however this needs to be
         retrieved for stepscans.
         """
-        if index:
-            async for doc in self.writer.collect_stream_docs(index):
-                yield doc
-        else:
+        if not index:
             index = await self.writer.get_indices_written()
-            async for doc in self.writer.collect_stream_docs(index):
-                yield doc
+        async for doc in self.writer.collect_stream_docs(index):
+            yield doc
 
     async def get_index(self) -> int:
         return await self.writer.get_indices_written()

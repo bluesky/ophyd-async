@@ -253,7 +253,7 @@ def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> No
     return _sim_backends[signal].set_callback(callback)
 
 
-async def observe_value(signal: SignalR[T]) -> AsyncGenerator[T, None]:
+async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
     Parameters
@@ -270,10 +270,16 @@ async def observe_value(signal: SignalR[T]) -> AsyncGenerator[T, None]:
             do_something_with(value)
     """
     q: asyncio.Queue[T] = asyncio.Queue()
+    if timeout is None:
+        get_value = q.get
+    else:
+        async def get_value():
+            return await asyncio.wait_for(q.get(), timeout)
+
     signal.subscribe_value(q.put_nowait)
     try:
         while True:
-            yield await q.get()
+            yield await get_value()
     finally:
         signal.clear_sub(q.put_nowait)
 
