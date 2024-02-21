@@ -12,6 +12,8 @@ from bluesky.protocols import (
     Collectable,
     Configurable,
     Descriptor,
+    Flyable,
+    Preparable,
     Readable,
     Reading,
     Stageable,
@@ -111,17 +113,18 @@ class StandardDetector(
     Configurable,
     Readable,
     Triggerable,
-    WritesStreamAssets,
+    Preparable,
+    Flyable,
     Collectable,
+    WritesStreamAssets,
 ):
-    """Detector with useful default behaviour.
+    """Detector with useful step and flyscan behaviour.
 
     Must be supplied instances of classes that inherit from DetectorControl and
     DetectorData, to dictate how the detector will be controlled (i.e. arming and
     disarming) as well as how the detector data will be written (i.e. opening and
     closing the writer, and handling data writing indices).
 
-    NOTE: only for step-scans.
     """
 
     def __init__(
@@ -180,6 +183,53 @@ class StandardDetector(
 
         self._current_frame = 0  # do we care about this?
 
+    async def check_config_sigs(self):
+        """Checks configuration signals are named and connected."""
+        for signal in self._config_sigs:
+            if signal._name == "":
+                raise Exception(
+                    "config signal must be named before it is passed to the detector"
+                )
+            try:
+                await signal.get_value()
+            except NotImplementedError:
+                raise Exception(
+                    f"config signal {signal._name} must be connected before it is "
+                    + "passed to the detector"
+                )
+
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        """Stop data writing."""
+        await self.writer.close()
+
+    async def read_configuration(self) -> Dict[str, Reading]:
+        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
+
+    async def describe_configuration(self) -> Dict[str, Descriptor]:
+        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
+
+    async def read(self) -> Dict[str, Reading]:
+        """Read the detector"""
+        # All data is in StreamResources, not Events, so nothing to output here
+        return {}
+
+    def describe(self) -> Dict[str, Descriptor]:
+        return self._describe
+
+    @AsyncStatus.wrap
+    async def trigger(self) -> None:
+        """Arm the detector and wait for it to finish."""
+        indices_written = await self.writer.get_indices_written()
+        written_status = await self.controller.arm(
+            num=1,
+            trigger=DetectorTrigger.internal,
+        )
+        await written_status
+        await self.writer.wait_for_index(
+            indices_written + 1, timeout=self._frame_writing_timeout
+        )
+
     def prepare(
         self,
         value: T,
@@ -224,21 +274,6 @@ class StandardDetector(
                 exposure=trigger_info.livetime,
             )
 
-    async def check_config_sigs(self):
-        """Checks configuration signals are named and connected."""
-        for signal in self._config_sigs:
-            if signal._name == "":
-                raise Exception(
-                    "config signal must be named before it is passed to the detector"
-                )
-            try:
-                await signal.get_value()
-            except NotImplementedError:
-                raise Exception(
-                    f"config signal {signal._name} must be connected before it is "
-                    + "passed to the detector"
-                )
-
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
         self._fly_status = AsyncStatus(self._fly(), self._watcher)
@@ -255,43 +290,8 @@ class StandardDetector(
         assert self._fly_status, "Kickoff not run"
         return self._fly_status
 
-    @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        """Stop data writing."""
-        await self.writer.close()
-
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
-        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
-
-    async def read_configuration(self) -> Dict[str, Reading]:
-        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
-
-    def describe(self) -> Dict[str, Descriptor]:
-        return self._describe
-
     async def describe_collect(self) -> Dict[str, Descriptor]:
         return self._describe
-
-    @AsyncStatus.wrap
-    async def trigger(self) -> None:
-        """Arm the detector and wait for it to finish."""
-        indices_written = await self.writer.get_indices_written()
-        written_status = await self.controller.arm(
-            num=1,
-            trigger=DetectorTrigger.internal,
-        )
-        await written_status
-        await self.writer.wait_for_index(
-            indices_written + 1, timeout=self._frame_writing_timeout
-        )
-
-    async def read(self) -> Dict[str, Reading]:
-        """Read the detector"""
-        # All data is in StreamResources, not Events, so nothing to output here
-        return {}
-
-    async def get_index(self) -> int:
-        return await self.writer.get_indices_written()
 
     async def collect_asset_docs(
         self, index: Optional[int]
@@ -308,3 +308,6 @@ class StandardDetector(
             index = await self.writer.get_indices_written()
             async for doc in self.writer.collect_stream_docs(index):
                 yield doc
+
+    async def get_index(self) -> int:
+        return await self.writer.get_indices_written()
