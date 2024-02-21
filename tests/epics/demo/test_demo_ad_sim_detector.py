@@ -143,11 +143,15 @@ async def test_two_detectors_step(
     info_a = writer_a._directory_provider()
     info_b = writer_b._directory_provider()
 
-    assert await writer_a.hdf.file_path.get_value() == info_a.directory_path
-    assert (await writer_a.hdf.file_name.get_value()).startswith(info_a.filename_prefix)
+    assert await writer_a.hdf.file_path.get_value() == str(info_a.root / info_a.cwd)
+    file_name = await writer_a.hdf.file_name.get_value()
+    assert file_name.startswith(info_a.prefix)
+    assert file_name.endswith(info_a.suffix)
 
-    assert await writer_b.hdf.file_path.get_value() == info_b.directory_path
-    assert (await writer_b.hdf.file_name.get_value()).startswith(info_b.filename_prefix)
+    assert await writer_b.hdf.file_path.get_value() == str(info_b.root / info_b.cwd)
+    file_name = await writer_b.hdf.file_name.get_value()
+    assert file_name.startswith(info_b.prefix)
+    assert file_name.endswith(info_b.suffix)
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8
@@ -170,10 +174,9 @@ async def test_detector_writes_to_file(
 
     RE(count_sim([single_detector], times=3))
 
-    assert (
-        await cast(HDFWriter, single_detector.writer).hdf.file_path.get_value()
-        == tmp_path
-    )
+    assert await cast(
+        HDFWriter, single_detector.writer
+    ).hdf.file_path.get_value() == str(tmp_path)
 
     descriptor_index = names.index("descriptor")
 
@@ -242,7 +245,7 @@ async def test_trigger_logic():
 
 
 async def test_detector_with_unnamed_or_disconnected_config_sigs(RE, tmp_path: Path):
-    dp = StaticDirectoryProvider(tmp_path, f"test-{new_uid()}")
+    dp = StaticDirectoryProvider(tmp_path)
     drv = ADBase("FOO:DRV:")
 
     some_other_driver = ADBase("TEST")
