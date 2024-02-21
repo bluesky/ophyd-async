@@ -4,69 +4,12 @@ from typing import Dict, Generic, Optional, Sequence, TypeVar
 from bluesky.protocols import Descriptor, Flyable, Preparable, Reading, Stageable
 
 from .async_status import AsyncStatus
-from .detector import DetectorControl, DetectorWriter, TriggerInfo
+from .detector import TriggerInfo
 from .device import Device
 from .signal import SignalR
-from .utils import DEFAULT_TIMEOUT, gather_list, merge_gathered_dicts
+from .utils import merge_gathered_dicts
 
 T = TypeVar("T")
-
-
-class DetectorGroupLogic(ABC):
-    # Read multipliers here, exposure is set in the plan
-
-    @abstractmethod
-    async def open(self) -> Dict[str, Descriptor]:
-        """Open all writers, wait for them to be open and return their descriptors"""
-
-    @abstractmethod
-    async def ensure_armed(self, trigger_info: TriggerInfo):
-        """Ensure the detectors are armed, return AsyncStatus that waits for disarm."""
-
-    @abstractmethod
-    async def wait_for_index(
-        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ):
-        """Wait until a specific index is ready to be collected"""
-
-    @abstractmethod
-    async def disarm(self):
-        """Disarm detectors"""
-
-    @abstractmethod
-    async def close(self):
-        """Close all writers and wait for them to be closed"""
-
-
-class SameTriggerDetectorGroupLogic(DetectorGroupLogic):
-    def __init__(
-        self,
-        controllers: Sequence[DetectorControl],
-        writers: Sequence[DetectorWriter],
-    ) -> None:
-        self._controllers = controllers
-        self._writers = writers
-        self._arm_statuses: Sequence[AsyncStatus] = ()
-        self._trigger_info: Optional[TriggerInfo] = None
-
-    async def open(self) -> Dict[str, Descriptor]:
-        return await merge_gathered_dicts(writer.open() for writer in self._writers)
-
-    async def ensure_armed(self, trigger_info: TriggerInfo): ...
-
-    async def wait_for_index(
-        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ):
-        await gather_list(
-            writer.wait_for_index(index, timeout=timeout) for writer in self._writers
-        )
-
-    async def disarm(self):
-        await gather_list(controller.disarm() for controller in self._controllers)
-        await gather_list(self._arm_statuses)
-
-    async def close(self):
-        await gather_list(writer.close() for writer in self._writers)
 
 
 class TriggerLogic(ABC, Generic[T]):
