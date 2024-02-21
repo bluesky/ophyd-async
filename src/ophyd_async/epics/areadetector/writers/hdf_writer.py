@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncIterator, Dict, List, Optional
+from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 
 from bluesky.protocols import Descriptor, Hints, StreamAsset
 
@@ -13,6 +13,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
     wait_for_value,
 )
+from ophyd_async.core.signal import observe_value
 
 from ._hdfdataset import _HDFDataset
 from ._hdffile import _HDFFile
@@ -88,14 +89,12 @@ class HDFWriter(DetectorWriter):
         }
         return describe
 
-    async def wait_for_index(
-        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ):
-        def matcher(value: int) -> bool:
-            return value // self._multiplier >= index
-
-        matcher.__name__ = f"index_at_least_{index}"
-        await wait_for_value(self.hdf.num_captured, matcher, timeout=timeout)
+    async def observe_indices_written(
+        self, timeout=DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        """Wait until a specific index is ready to be collected"""
+        async for num_captured in observe_value(self.hdf.num_captured, timeout):
+            yield num_captured // self._multiplier
 
     async def get_indices_written(self) -> int:
         num_captured = await self.hdf.num_captured.get_value()
