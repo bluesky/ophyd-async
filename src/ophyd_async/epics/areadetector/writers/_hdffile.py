@@ -10,7 +10,7 @@ from ._hdfdataset import _HDFDataset
 class _HDFFile:
     def __init__(
         self,
-        directory_provider: DirectoryInfo,
+        directory_info: DirectoryInfo,
         full_file_name: str,
         datasets: List[_HDFDataset],
     ) -> None:
@@ -18,9 +18,9 @@ class _HDFFile:
         self._bundles = [
             compose_stream_resource(
                 spec="AD_HDF5_SWMR_SLICE",
-                root=str(directory_provider.root),
+                root=str(directory_info.root),
                 data_key=ds.name,
-                resource_path=str(directory_provider.resource_dir / full_file_name),
+                resource_path=str(directory_info.resource_dir / full_file_name),
                 resource_kwargs={
                     "path": ds.path,
                     "multiplier": ds.multiplier,
