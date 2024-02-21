@@ -53,7 +53,7 @@ class HDFWriter(DetectorWriter):
 
         assert (
             await self.hdf.file_path_exists.get_value()
-        ), f"File path {self.hdf.file_path} for hdf plugin does not exist"
+        ), f"File path {self.hdf.file_path.get_value()} for hdf plugin does not exist"
 
         # Overwrite num_capture to go forever
         await self.hdf.num_capture.set(0)
