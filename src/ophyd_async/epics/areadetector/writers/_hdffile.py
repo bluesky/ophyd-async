@@ -2,13 +2,17 @@ from typing import Iterator, List
 
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
-from ._hdfdataset import _HDFDataset
 from ophyd_async.core import DirectoryInfo
+
+from ._hdfdataset import _HDFDataset
 
 
 class _HDFFile:
     def __init__(
-        self, directory_provider: DirectoryInfo, full_file_name: str, datasets: List[_HDFDataset]
+        self,
+        directory_provider: DirectoryInfo,
+        full_file_name: str,
+        datasets: List[_HDFDataset],
     ) -> None:
         self._last_emitted = 0
         self._bundles = [
