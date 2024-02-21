@@ -1,22 +1,22 @@
-from pathlib import Path
 from typing import Iterator, List
 
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
 from ._hdfdataset import _HDFDataset
+from ophyd_async.core import DirectoryInfo
 
 
 class _HDFFile:
     def __init__(
-        self, root: Path, cwd: Path, full_file_name: str, datasets: List[_HDFDataset]
+        self, directory_provider: DirectoryInfo, full_file_name: str, datasets: List[_HDFDataset]
     ) -> None:
         self._last_emitted = 0
         self._bundles = [
             compose_stream_resource(
                 spec="AD_HDF5_SWMR_SLICE",
-                root=str(root),
+                root=str(directory_provider.root),
                 data_key=ds.name,
-                resource_path=str(cwd.relative_to(root) / full_file_name),
+                resource_path=str(directory_provider.cwd / full_file_name),
                 resource_kwargs={
                     "path": ds.path,
                     "multiplier": ds.multiplier,

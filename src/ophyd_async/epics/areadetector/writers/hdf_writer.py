@@ -45,7 +45,7 @@ class HDFWriter(DetectorWriter):
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
-            self.hdf.file_path.set(info.directory),
+            self.hdf.file_path.set(str(info.root / info.cwd)),
             self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
             self.hdf.file_template.set("%s/%s.h5"),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
@@ -53,7 +53,7 @@ class HDFWriter(DetectorWriter):
 
         assert (
             await self.hdf.file_path_exists.get_value()
-        ), f"File path {info.directory_path} for hdf plugin does not exist"
+        ), f"File path {self.hdf.file_path} for hdf plugin does not exist"
 
         # Overwrite num_capture to go forever
         await self.hdf.num_capture.set(0)
@@ -107,7 +107,7 @@ class HDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    self._directory_provider().root,
+                    self._directory_provider(),
                     await self.hdf.full_file_name.get_value(),
                     self._datasets,
                 )
