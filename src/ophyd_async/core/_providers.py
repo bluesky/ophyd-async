@@ -11,13 +11,13 @@ class DirectoryInfo:
 
 
     :param root: Path of a root directory
-    :param cwd: Directory into which files should be written, relative to root
+    :param resource_dir: Directory into which files should be written, relative to root
     :param prefix: Optional filename prefix to add to all files
     :param suffix: Optional filename suffix to add to all files
     """
 
     root: Path
-    cwd: Path
+    resource_dir: Path
     prefix: Optional[str] = ""
     suffix: Optional[str] = ""
 
@@ -39,7 +39,7 @@ class StaticDirectoryProvider(DirectoryProvider):
             directory_path = Path(directory_path)
         self._directory_info = DirectoryInfo(
             root=directory_path,
-            cwd=Path("."),
+            resource_dir=Path("."),
             prefix=filename_prefix,
             suffix=filename_suffix,
         )

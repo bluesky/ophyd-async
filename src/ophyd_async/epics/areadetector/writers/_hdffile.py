@@ -20,7 +20,7 @@ class _HDFFile:
                 spec="AD_HDF5_SWMR_SLICE",
                 root=str(directory_provider.root),
                 data_key=ds.name,
-                resource_path=str(directory_provider.cwd / full_file_name),
+                resource_path=str(directory_provider.resource_dir / full_file_name),
                 resource_kwargs={
                     "path": ds.path,
                     "multiplier": ds.multiplier,
