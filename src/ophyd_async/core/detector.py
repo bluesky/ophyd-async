@@ -8,7 +8,6 @@ from enum import Enum
 from typing import AsyncIterator, Callable, Dict, List, Optional, Sequence, TypeVar
 
 from bluesky.protocols import (
-    Asset,
     Collectable,
     Configurable,
     Descriptor,
@@ -99,7 +98,7 @@ class DetectorWriter(ABC):
         """Get the number of indices written"""
 
     @abstractmethod
-    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
         """Create Stream docs up to given number written"""
 
     @abstractmethod
