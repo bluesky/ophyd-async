@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.detector &#8212; ophyd-async 0.2.1.dev59+gf4479e6c documentation</title>
+    <title>ophyd_async.core.detector &#8212; ophyd-async 0.2.1.dev60+g966247ce documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=fd3143bc"></script>
+    <script src="../../../_static/documentation_options.js?v=e4f3719d"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev59+gf4479e6c documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev59+gf4479e6c documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev60+g966247ce documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev60+g966247ce documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -425,7 +425,16 @@ document.write(`
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncGenerator</span><span class="p">,</span>
+    <span class="n">AsyncIterator</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Collectable</span><span class="p">,</span>
@@ -530,13 +539,13 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorWriter.wait_for_index">
-<a class="viewcode-back" href="../../../user/generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter.wait_for_index">[docs]</a>
+<div class="viewcode-block" id="DetectorWriter.observe_indices_written">
+<a class="viewcode-back" href="../../../user/generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter.observe_indices_written">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_index</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait until a specific index is ready to be collected&quot;&quot;&quot;</span></div>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">observe_indices_written</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield each index as it is written&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DetectorWriter.get_indices_written">
@@ -591,7 +600,6 @@ document.write(`
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">writer_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-        <span class="n">trigger_to_frame_timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -608,13 +616,11 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Descriptor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config_sigs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frame_writing_timeout</span> <span class="o">=</span> <span class="n">writer_timeout</span>
-        <span class="c1"># Is this unique from the frame_writing_timeout?</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_to_frame_timeout</span> <span class="o">=</span> <span class="n">trigger_to_frame_timeout</span>
         <span class="c1"># For prepare</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TriggerInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># For kickoff</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_watcher</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Add this to index to get frame number</span>
@@ -639,8 +645,7 @@ document.write(`
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_config_sigs</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_current_frame</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># do we care about this?</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_frame</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.check_config_sigs">
@@ -697,9 +702,13 @@ document.write(`
             <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">await</span> <span class="n">written_status</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">wait_for_index</span><span class="p">(</span>
-            <span class="n">indices_written</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_frame_writing_timeout</span>
-        <span class="p">)</span></div>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_frame_writing_timeout</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">watcher</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span>
+                <span class="n">watcher</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">indices_written</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">break</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.prepare">
@@ -751,14 +760,17 @@ document.write(`
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span> <span class="o">=</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fly</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watcher</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>  <span class="c1"># do we care about this?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span> <span class="o">=</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fly</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_fly</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Wait for detector to have written up to a particular frame</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">wait_for_index</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_to_frame_timeout</span>
-        <span class="p">)</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_frame_writing_timeout</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">watcher</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span>
+                <span class="n">watcher</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="p">:</span>
+                <span class="k">break</span>
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
@@ -778,13 +790,10 @@ document.write(`
 <span class="sd">        The index is optional, and provided for flyscans, however this needs to be</span>
 <span class="sd">        retrieved for stepscans.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">index</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">doc</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="p">:</span>
             <span class="n">index</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">doc</span></div>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">doc</span></div>
 
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.DetectorWriter &#8212; ophyd-async 0.2.1.dev59+gf4479e6c documentation</title>
+    <title>ophyd_async.core.DetectorWriter &#8212; ophyd-async 0.2.1.dev60+g966247ce documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=fd3143bc"></script>
+    <script src="../../_static/documentation_options.js?v=e4f3719d"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -127,8 +127,8 @@
       
     
     
-    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev59+gf4479e6c documentation - Home"/>
-    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev59+gf4479e6c documentation - Home"/>`);</script>
+    <img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev60+g966247ce documentation - Home"/>
+    <script>document.write(`<img src="../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev60+g966247ce documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -578,11 +578,11 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DetectorWriter.get_indices_written" title="ophyd_async.core.DetectorWriter.get_indices_written"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_indices_written</span></code></a></p></td>
 <td><p>Get the number of indices written</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DetectorWriter.open" title="ophyd_async.core.DetectorWriter.open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">open</span></code></a></p></td>
-<td><p>Open writer and wait for it to be ready for data.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DetectorWriter.observe_indices_written" title="ophyd_async.core.DetectorWriter.observe_indices_written"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe_indices_written</span></code></a></p></td>
+<td><p>Yield each index as it is written</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DetectorWriter.wait_for_index" title="ophyd_async.core.DetectorWriter.wait_for_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_index</span></code></a></p></td>
-<td><p>Wait until a specific index is ready to be collected</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DetectorWriter.open" title="ophyd_async.core.DetectorWriter.open"><code class="xref py py-obj docutils literal notranslate"><span class="pre">open</span></code></a></p></td>
+<td><p>Open writer and wait for it to be ready for data.</p></td>
 </tr>
 </tbody>
 </table>
@@ -602,9 +602,9 @@ may change API on minor release numbers before then</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DetectorWriter.wait_for_index">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wait_for_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/detector.html#DetectorWriter.wait_for_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DetectorWriter.wait_for_index" title="Link to this definition">#</a></dt>
-<dd><p>Wait until a specific index is ready to be collected</p>
+<dt class="sig sig-object py" id="ophyd_async.core.DetectorWriter.observe_indices_written">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observe_indices_written</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.AsyncGenerator" title="(in Python v3.12)"><span class="pre">AsyncGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/detector.html#DetectorWriter.observe_indices_written"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DetectorWriter.observe_indices_written" title="Link to this definition">#</a></dt>
+<dd><p>Yield each index as it is written</p>
 </dd></dl>
 
 <dl class="py method">
@@ -677,7 +677,7 @@ may change API on minor release numbers before then</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorWriter"><code class="docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorWriter.open"><code class="docutils literal notranslate"><span class="pre">DetectorWriter.open()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorWriter.wait_for_index"><code class="docutils literal notranslate"><span class="pre">DetectorWriter.wait_for_index()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorWriter.observe_indices_written"><code class="docutils literal notranslate"><span class="pre">DetectorWriter.observe_indices_written()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorWriter.get_indices_written"><code class="docutils literal notranslate"><span class="pre">DetectorWriter.get_indices_written()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorWriter.collect_stream_docs"><code class="docutils literal notranslate"><span class="pre">DetectorWriter.collect_stream_docs()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorWriter.close"><code class="docutils literal notranslate"><span class="pre">DetectorWriter.close()</span></code></a></li>

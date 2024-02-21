@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.signal &#8212; ophyd-async 0.2.1.dev59+gf4479e6c documentation</title>
+    <title>ophyd_async.core.signal &#8212; ophyd-async 0.2.1.dev60+g966247ce documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=fd3143bc"></script>
+    <script src="../../../_static/documentation_options.js?v=e4f3719d"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev59+gf4479e6c documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev59+gf4479e6c documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev60+g966247ce documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev60+g966247ce documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -729,7 +729,7 @@ document.write(`
 
 <div class="viewcode-block" id="observe_value">
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.core.observe_value.html#ophyd_async.core.observe_value">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">observe_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">observe_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscribe to the value of a signal so it can be iterated from.</span>
 
 <span class="sd">    Parameters</span>
@@ -746,10 +746,16 @@ document.write(`
 <span class="sd">            do_something_with(value)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">q</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">get_value</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">():</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
+
     <span class="n">signal</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="k">await</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="k">await</span> <span class="n">get_value</span><span class="p">()</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">signal</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span></div>
 
