@@ -2,7 +2,7 @@ import asyncio
 from pathlib import Path
 from typing import AsyncIterator, Dict, List, Optional
 
-from bluesky.protocols import Asset, Descriptor, Hints
+from bluesky.protocols import Descriptor, Hints, StreamAsset
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -103,7 +103,9 @@ class HDFWriter(DetectorWriter):
         num_captured = await self.hdf.num_captured.get_value()
         return num_captured // self._multiplier
 
-    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    async def collect_stream_docs(
+        self, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         await self.hdf.flush_now.set(True)
         if indices_written:

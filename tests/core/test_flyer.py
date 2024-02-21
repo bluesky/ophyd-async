@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky.protocols import Asset, Descriptor
+from bluesky.protocols import StreamAsset, Descriptor
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
@@ -75,7 +75,9 @@ class DummyWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return 1
 
-    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    async def collect_stream_docs(
+        self, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._file:
                 self._file = compose_stream_resource(
