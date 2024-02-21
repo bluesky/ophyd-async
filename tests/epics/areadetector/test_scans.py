@@ -1,6 +1,7 @@
 import asyncio
+from pathlib import Path
 from typing import Optional
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -12,10 +13,10 @@ from ophyd_async.core import (
     DetectorControl,
     DetectorTrigger,
     DeviceCollector,
-    DirectoryInfo,
     HardwareTriggeredFlyable,
     SameTriggerDetectorGroupLogic,
     StandardDetector,
+    StaticDirectoryProvider,
     TriggerInfo,
     TriggerLogic,
     set_sim_value,
@@ -67,13 +68,13 @@ def controller(RE) -> ADSimController:
 
 
 @pytest.fixture
-def writer(RE) -> HDFWriter:
+def writer(RE, tmp_path: Path) -> HDFWriter:
     with DeviceCollector(sim=True):
         hdf = NDFileHDF("HDF")
 
     return HDFWriter(
         hdf,
-        directory_provider=Mock(return_value=DirectoryInfo("somepath", "someprefix")),
+        directory_provider=StaticDirectoryProvider(tmp_path),
         name_provider=lambda: "test",
         shape_provider=AsyncMock(),
     )
