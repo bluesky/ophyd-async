@@ -293,7 +293,7 @@ class StandardDetector(
         return self._describe
 
     async def collect_asset_docs(
-        self, index: Optional[int]
+        self, index: Optional[int] = None
     ) -> AsyncIterator[StreamAsset]:
         """Collect stream datum documents for all indices written.
 
