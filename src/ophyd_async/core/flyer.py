@@ -1,14 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Generic, Optional, Sequence, TypeVar
 
-from bluesky.protocols import (
-    Collectable,
-    Descriptor,
-    Flyable,
-    Preparable,
-    Reading,
-    Stageable,
-)
+from bluesky.protocols import Descriptor, Flyable, Preparable, Reading, Stageable
 
 from .async_status import AsyncStatus
 from .detector import DetectorControl, DetectorWriter, TriggerInfo
@@ -96,10 +89,9 @@ class TriggerLogic(ABC, Generic[T]):
 
 class HardwareTriggeredFlyable(
     Device,
-    Preparable,
     Stageable,
+    Preparable,
     Flyable,
-    Collectable,
     Generic[T],
 ):
     def __init__(
@@ -127,6 +119,10 @@ class HardwareTriggeredFlyable(
     async def stage(self) -> None:
         await self.unstage()
 
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        await self._trigger_logic.stop()
+
     def prepare(self, value: T) -> AsyncStatus:
         """Setup trajectories"""
         return AsyncStatus(self._prepare(value))
@@ -144,10 +140,6 @@ class HardwareTriggeredFlyable(
         assert self._fly_status, "Kickoff not run"
         return self._fly_status
 
-    @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        await self._trigger_logic.stop()
-
     async def describe_configuration(self) -> Dict[str, Descriptor]:
         return await merge_gathered_dicts(
             [sig.describe() for sig in self._configuration_signals]
@@ -157,6 +149,3 @@ class HardwareTriggeredFlyable(
         return await merge_gathered_dicts(
             [sig.read() for sig in self._configuration_signals]
         )
-
-    async def describe_collect(self) -> Dict[str, Descriptor]:
-        return self._describe
