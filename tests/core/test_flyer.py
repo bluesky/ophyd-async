@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky.protocols import StreamAsset, Descriptor
+from bluesky.protocols import Descriptor, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
