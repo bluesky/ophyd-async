@@ -64,6 +64,10 @@
     "url": "https://bluesky.github.io/ophyd-async/hyperion_safe_panda/"
   },
   {
+    "version": "improve_p4p_errorhandling",
+    "url": "https://bluesky.github.io/ophyd-async/improve_p4p_errorhandling/"
+  },
+  {
     "version": "make-panda-use-backend",
     "url": "https://bluesky.github.io/ophyd-async/make-panda-use-backend/"
   },
