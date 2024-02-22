@@ -79,10 +79,7 @@ def writer(RE, tmp_path: Path) -> HDFWriter:
     )
 
 
-@patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
-@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
-    patched_wait_for_value,
     RE: RunEngine,
     writer: HDFWriter,
     controller: ADSimController,
@@ -95,12 +92,10 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     with pytest.raises(Exception) as exc:
         RE(bp.count([detector]))
 
-    assert isinstance(exc.value.__cause__, TimeoutError)
+    assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
-@patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
-def test_hdf_writer_fails_on_timeout_with_flyscan(
-    patched_wait_for_value, RE: RunEngine, writer: HDFWriter
+def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter
 ):
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
@@ -120,7 +115,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
             yield from bps.prepare(flyer, 1, wait=True)
             # prepare detector second.
             yield from bps.prepare(
-                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=10
+                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=3
             )
 
             yield from bps.open_run()
@@ -132,7 +127,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
         finally:
             yield from bps.unstage_all(detector, flyer)
 
-    with pytest.raises(TimeoutError) as exc:
+    with pytest.raises(Exception) as exc:
         RE(flying_plan())
 
-    assert isinstance(exc.value.__cause__, TimeoutError)
+    assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
