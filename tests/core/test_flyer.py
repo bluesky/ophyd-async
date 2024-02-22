@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-from typing import AsyncIterator, Dict, Optional, Sequence
+from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -21,6 +21,7 @@ from ophyd_async.core import (
     TriggerLogic,
 )
 from ophyd_async.core.detector import StandardDetector
+from ophyd_async.core.signal import observe_value
 
 
 class TriggerState(str, Enum):
@@ -68,9 +69,11 @@ class DummyWriter(DetectorWriter):
             )
         }
 
-    async def wait_for_index(
-        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ) -> None: ...
+    async def observe_indices_written(
+        self, timeout = DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        async for num_captured in observe_value(self.dummy_signal, timeout):
+            yield num_captured
 
     async def get_indices_written(self) -> int:
         return 1
