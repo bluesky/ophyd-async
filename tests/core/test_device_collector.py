@@ -1,6 +1,11 @@
+import asyncio
+
 import pytest
+from bluesky import plan_stubs as bps
+from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, NotConnected
+from ophyd_async.epics.motion import motor
 
 
 class FailingDevice(Device):
@@ -56,19 +61,69 @@ def test_device_connector_sync_run_engine_created_connects(RE):
     assert working_device.connected
 
 
+def test_device_connector_async_run_engine_same_event_loop():
+    async def set_up_device():
+        async with DeviceCollector(sim=True):
+            sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+        return sim_motor
+
+    loop = asyncio.new_event_loop()
+    checking_loop = asyncio.new_event_loop()
+
+    try:
+        sim_motor = loop.run_until_complete(set_up_device())
+        RE = RunEngine(call_returns_result=True, loop=loop)
+
+        def my_plan():
+            yield from bps.mov(sim_motor, 3.14)
+
+        RE(my_plan())
+
+        assert (
+            checking_loop.run_until_complete(sim_motor.setpoint.read())[
+                "sim_motor-setpoint"
+            ]["value"]
+            == 3.14
+        )
+
+    finally:
+        if RE.state not in ("idle", "panicked"):
+            try:
+                RE.halt()
+            except TransitionError:
+                pass
+        loop.call_soon_threadsafe(loop.stop)
+        checking_loop.call_soon_threadsafe(checking_loop.stop)
+        RE._th.join()
+        loop.close()
+        checking_loop.close()
+
+
 """
-# TODO: Once passing a loop into the run-engine selector works, this should pass
-async def test_device_connector_async_run_engine_same_event_loop():
-    async with DeviceCollector(sim=True):
-        sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+# SimSignalBackend currently allows a different event loop to set the value
+# so this test is not working
+def test_device_connector_async_run_engine_different_event_loop():
+    async def set_up_device():
+        async with DeviceCollector(sim=True):
+            sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+        return sim_motor
 
-    RE = RunEngine(loop=asyncio.get_running_loop())
+    device_connector_loop = asyncio.new_event_loop()
+    run_engine_loop = asyncio.new_event_loop()
+    assert run_engine_loop is not device_connector_loop
 
+    sim_motor = device_connector_loop.run_until_complete(set_up_device())
+
+    RE = RunEngine(loop=run_engine_loop)
     def my_plan():
-        sim_motor.move(3.14)
-        return
-
+        yield from bps.mov(sim_motor, 3.14)
     RE(my_plan())
 
-    assert await sim_motor.readback.get_value() == 3.14
+    # The set should fail since the run engine is on a different event loop
+    assert (
+        device_connector_loop.run_until_complete(sim_motor.setpoint.read())[
+            "sim_motor-setpoint"
+        ]["value"]
+        != 3.14
+    )
 """
