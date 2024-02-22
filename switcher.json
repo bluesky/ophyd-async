@@ -28,6 +28,10 @@
     "url": "https://bluesky.github.io/ophyd-async/add_save_load/"
   },
   {
+    "version": "added_test_for_connecting_to_devices_before_the_runengine",
+    "url": "https://bluesky.github.io/ophyd-async/added_test_for_connecting_to_devices_before_the_runengine/"
+  },
+  {
     "version": "dependabot_github_actions_actions_checkout-4",
     "url": "https://bluesky.github.io/ophyd-async/dependabot_github_actions_actions_checkout-4/"
   },
