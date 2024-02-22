@@ -97,7 +97,7 @@ class DetectorWriter(ABC):
         """
 
     @abstractmethod
-    async def observe_indices_written(
+    def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         """Yield each index as it is written"""
