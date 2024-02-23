@@ -273,6 +273,7 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
     if timeout is None:
         get_value = q.get
     else:
+
         async def get_value():
             return await asyncio.wait_for(q.get(), timeout)
 

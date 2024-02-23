@@ -1,6 +1,6 @@
 import asyncio
 from typing import Optional
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -94,8 +94,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
-def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter
-):
+def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter):
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
 
