@@ -4,6 +4,14 @@
     "url": "https://bluesky.github.io/ophyd-async/main/"
   },
   {
+    "version": "v0.2.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
+  },
+  {
+    "version": "v0.1.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
+  },
+  {
     "version": "add-methods-to-standard-detector",
     "url": "https://bluesky.github.io/ophyd-async/add-methods-to-standard-detector/"
   },
@@ -18,6 +26,10 @@
   {
     "version": "add_save_load",
     "url": "https://bluesky.github.io/ophyd-async/add_save_load/"
+  },
+  {
+    "version": "added_test_for_connecting_to_devices_before_the_runengine",
+    "url": "https://bluesky.github.io/ophyd-async/added_test_for_connecting_to_devices_before_the_runengine/"
   },
   {
     "version": "dependabot_github_actions_actions_checkout-4",
@@ -82,14 +94,6 @@
   {
     "version": "stall-timeout",
     "url": "https://bluesky.github.io/ophyd-async/stall-timeout/"
-  },
-  {
-    "version": "v0.1.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
-  },
-  {
-    "version": "v0.2.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
   },
   {
     "version": "v0.2.1",
