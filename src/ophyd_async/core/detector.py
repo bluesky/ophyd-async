@@ -299,7 +299,7 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def complete(self) -> AsyncStatus:
         assert self._fly_status, "Kickoff not run"
-        return self._fly_status
+        return await self._fly_status
 
     async def describe_collect(self) -> Dict[str, Descriptor]:
         return self._describe
