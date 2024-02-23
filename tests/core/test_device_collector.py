@@ -42,7 +42,7 @@ async def test_device_collector_handles_top_level_errors(caplog):
     device_log[0].levelname == "ERROR"
 
 
-def test_device_connector_sync_no_run_engine_raises_error():
+def test_sync_device_connector_no_run_engine_raises_error():
     with pytest.raises(NotConnected) as e:
         with DeviceCollector():
             working_device = WorkingDevice("somename")
@@ -54,14 +54,34 @@ def test_device_connector_sync_no_run_engine_raises_error():
     assert not working_device.connected
 
 
-def test_device_connector_sync_run_engine_created_connects(RE):
+def test_sync_device_connector_run_engine_created_connects(RE):
     with DeviceCollector():
         working_device = WorkingDevice("somename")
 
     assert working_device.connected
 
 
-def test_device_connector_async_run_engine_same_event_loop():
+@pytest.fixture(scope="function")
+def get_loop_and_runengine(request):
+    loop = asyncio.new_event_loop()
+    loop.set_debug(True)
+    RE = RunEngine({}, call_returns_result=True, loop=loop)
+
+    def clean_event_loop():
+        if RE.state not in ("idle", "panicked"):
+            try:
+                RE.halt()
+            except TransitionError:
+                pass
+        loop.call_soon_threadsafe(loop.stop)
+        RE._th.join()
+        loop.close()
+
+    request.addfinalizer(clean_event_loop)
+    return RE
+
+
+def test_async_device_connector_run_engine_same_event_loop():
     async def set_up_device():
         async with DeviceCollector(sim=True):
             sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
@@ -99,10 +119,13 @@ def test_device_connector_async_run_engine_same_event_loop():
         checking_loop.close()
 
 
-"""
-# SimSignalBackend currently allows a different event loop to set the value
-# so this test is not working
-def test_device_connector_async_run_engine_different_event_loop():
+@pytest.mark.skip(
+    reason=(
+        "SimSignalBackend currently allows a different event-"
+        "loop to set the value, unlike real signals."
+    )
+)
+def test_async_device_connector_run_engine_different_event_loop():
     async def set_up_device():
         async with DeviceCollector(sim=True):
             sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
@@ -115,8 +138,10 @@ def test_device_connector_async_run_engine_different_event_loop():
     sim_motor = device_connector_loop.run_until_complete(set_up_device())
 
     RE = RunEngine(loop=run_engine_loop)
+
     def my_plan():
         yield from bps.mov(sim_motor, 3.14)
+
     RE(my_plan())
 
     # The set should fail since the run engine is on a different event loop
@@ -126,4 +151,3 @@ def test_device_connector_async_run_engine_different_event_loop():
         ]["value"]
         != 3.14
     )
-"""
