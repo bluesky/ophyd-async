@@ -1,5 +1,7 @@
 import asyncio
 import time
+import functools
+import logging
 
 import numpy as np
 from asyncio import CancelledError
@@ -14,6 +16,7 @@ from tango import (AttributeInfoEx, AttrDataFormat,
                    CommandInfo, AttrWriteType)
 
 from tango.asyncio import DeviceProxy
+from tango.asyncio_executor import get_global_executor, set_global_executor, AsyncioExecutor
 from tango.utils import is_int, is_float, is_bool, is_str, is_binary, is_array
 
 from bluesky.protocols import Descriptor, Reading
@@ -22,43 +25,39 @@ from ophyd_async.core import (
     NotConnected,
     ReadingValueCallback,
     SignalBackend,
-    SignalRW,
-    SignalW,
     T,
     get_dtype,
     get_unique,
     wait_for_connection,
 )
 
-from ophyd_async.core._device._signal.signal import _add_timeout
-
-__all__ = ("TangoTransport", "TangoSignalRW", "TangoSignalW", "TangoSignalBackend")
+__all__ = ("TangoTransport", "TangoSignalBackend")
 
 
 # --------------------------------------------------------------------
-# from tango attributes one can get setvalue, so we extend SignalRW and SignalW to add it
-class SignalWithSetpoit:
-    @_add_timeout
-    async def get_setpoint(self, cached: Optional[bool] = None) -> T:
-        """The last written value to TRL"""
-        return await self._backend_or_cache(cached).get_w_value()
 
+def ensure_proper_executor(func):
+    @functools.wraps(func)
+    async def wrapper(self, *args, **kwargs):
+        current_executor = get_global_executor()
+        if not current_executor.in_executor_context():
+            set_global_executor(AsyncioExecutor())
+        return await func(self, *args, **kwargs)
 
-# --------------------------------------------------------------------
-class TangoSignalW(SignalW[T], SignalWithSetpoit):
-    ...
-
-
-# --------------------------------------------------------------------
-class TangoSignalRW(SignalRW[T], SignalWithSetpoit):
-    ...
+    return wrapper
 
 
 # --------------------------------------------------------------------
 class TangoSignalBackend(SignalBackend[T]):
+    # --------------------------------------------------------------------
     @abstractmethod
     async def get_w_value(self) -> T:
         """The last written value"""
+
+    # --------------------------------------------------------------------
+    @abstractmethod
+    def get_signal_auto(self) -> str:
+        """return signal type, passing to tango attribute/command"""
 
 
 # --------------------------------------------------------------------
@@ -142,16 +141,19 @@ class AttributeProxy(TangoProxy):
     _eid = None
 
     # --------------------------------------------------------------------
+    @ensure_proper_executor
     async def get(self) -> T:
         attr = await self._proxy.read_attribute(self._name)
         return attr.value
 
     # --------------------------------------------------------------------
+    @ensure_proper_executor
     async def get_w_value(self) -> T:
         attr = await self._proxy.read_attribute(self._name)
         return attr.w_value
 
     # --------------------------------------------------------------------
+    @ensure_proper_executor
     async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
         if wait:
             if timeout:
@@ -164,10 +166,12 @@ class AttributeProxy(TangoProxy):
             await self._proxy.write_attribute(self._name, value)
 
     # --------------------------------------------------------------------
+    @ensure_proper_executor
     async def get_config(self) -> AttributeInfoEx:
         return await self._proxy.get_attribute_config(self._name)
 
     # --------------------------------------------------------------------
+    @ensure_proper_executor
     async def get_reading(self) -> Reading:
         attr = await self._proxy.read_attribute(self._name)
         return dict(
@@ -184,11 +188,12 @@ class AttributeProxy(TangoProxy):
     def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
         """add user callback to CHANGE event subscription"""
         self._event_callback = callback
-        self._eid = self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor)
+        self._eid = self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor,
+                                                green_mode=False)
 
     # --------------------------------------------------------------------
     def unsubscribe_callback(self, eid: int):
-        self._proxy.unsubscribe_event(self._eid)
+        self._proxy.unsubscribe_event(self._eid, green_mode=False)
         self._eid = None
         self._event_callback = None
 
@@ -214,6 +219,7 @@ class CommandProxy(TangoProxy):
         return self._last_reading["value"]
 
     # --------------------------------------------------------------------
+    # @ensure_proper_executor
     async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
         if wait:
             if timeout:
@@ -228,6 +234,7 @@ class CommandProxy(TangoProxy):
         self._last_reading = dict(value=val, timestamp=time.time(), alarm_severity=0)
 
     # --------------------------------------------------------------------
+    # @ensure_proper_executor
     async def get_config(self) -> CommandInfo:
         return await self._proxy.get_command_config(self._name)
 
@@ -248,62 +255,64 @@ def get_dtype_extended(datatype):
 
 
 # --------------------------------------------------------------------
-def get_trl_descriptor(datatype: Optional[Type], trl: str, trls_config: Dict[str, Union[AttributeInfoEx, CommandInfo]]) -> dict:
-    trls_dtype = {}
-    for trl_name, config in trls_config.items():
+def get_trl_descriptor(datatype: Optional[Type], tango_resource: str,
+                       tr_configs: Dict[str, Union[AttributeInfoEx, CommandInfo]]) -> dict:
+    tr_dtype = {}
+    for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
             _, dtype, descr = get_pyton_type(config.data_type)
-            trls_dtype[trl_name] = config.data_format, dtype, descr
+            tr_dtype[tr_name] = config.data_format, dtype, descr
         elif isinstance(config, CommandInfo):
             if config.in_type != CmdArgType.DevVoid and \
                     config.out_type != CmdArgType.DevVoid and \
                     config.in_type != config.out_type:
                 raise RuntimeError("Commands with different in and out dtypes are not supported")
             array, dtype, descr = get_pyton_type(config.in_type if config.in_type != CmdArgType.DevVoid else config.out_type)
-            trls_dtype[trl_name] = AttrDataFormat.SPECTRUM if array else AttrDataFormat.SCALAR, dtype, descr
+            tr_dtype[tr_name] = AttrDataFormat.SPECTRUM \
+                if array else AttrDataFormat.SCALAR, dtype, descr
         else:
             raise RuntimeError(f"Unknown config type: {type(config)}")
-    trl_format, trl_dtype, trl_dtype_desc = get_unique(trls_dtype, "typeids")
+    tr_format, tr_dtype, tr_dtype_desc = get_unique(tr_dtype, "typeids")
 
     # tango commands are limited in functionality: they do not have info about shape and Enum labels
-    trl_config = list(trls_config.values())[0]
+    trl_config = list(tr_configs.values())[0]
     max_x = trl_config.max_dim_x if hasattr(trl_config, "max_dim_x") else np.Inf
     max_y = trl_config.max_dim_y if hasattr(trl_config, "max_dim_y") else np.Inf
     is_attr = hasattr(trl_config, "enum_labels")
     trl_choices = list(trl_config.enum_labels) if is_attr else []
 
-    if trl_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
+    if tr_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
         # This is an array
         if datatype:
             # Check we wanted an array of this type
             dtype = get_dtype_extended(datatype)
             if not dtype:
-                raise TypeError(f"{trl} has type [{trl_dtype}] not {datatype.__name__}")
-            if dtype != trl_dtype:
-                raise TypeError(f"{trl} has type [{trl_dtype}] not [{dtype}]")
+                raise TypeError(f"{tango_resource} has type [{tr_dtype}] not {datatype.__name__}")
+            if dtype != tr_dtype:
+                raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
 
-        if trl_format == AttrDataFormat.SPECTRUM:
-            return dict(source=trl, dtype="array", shape=[max_x])
-        elif trl_format == AttrDataFormat.IMAGE:
-            return dict(source=trl, dtype="array", shape=[max_y, max_x])
+        if tr_format == AttrDataFormat.SPECTRUM:
+            return dict(source=tango_resource, dtype="array", shape=[max_x])
+        elif tr_format == AttrDataFormat.IMAGE:
+            return dict(source=tango_resource, dtype="array", shape=[max_y, max_x])
 
     else:
-        if trl_dtype in (Enum, CmdArgType.DevState):
-            if trl_dtype == CmdArgType.DevState:
+        if tr_dtype in (Enum, CmdArgType.DevState):
+            if tr_dtype == CmdArgType.DevState:
                 trl_choices = list(DevState.names.keys())
 
             if datatype:
                 if not issubclass(datatype, (Enum, DevState)):
-                    raise TypeError(f"{trl} has type Enum not {datatype.__name__}")
-                if trl_dtype == Enum and is_attr:
+                    raise TypeError(f"{tango_resource} has type Enum not {datatype.__name__}")
+                if tr_dtype == Enum and is_attr:
                     choices = tuple(v.name for v in datatype)
                     if set(choices) != set(trl_choices):
-                        raise TypeError(f"{trl} has choices {trl_choices} not {choices}")
-            return dict(source=trl, dtype="string", shape=[], choices=trl_choices)
+                        raise TypeError(f"{tango_resource} has choices {trl_choices} not {choices}")
+            return dict(source=tango_resource, dtype="string", shape=[], choices=trl_choices)
         else:
-            if datatype and not issubclass(trl_dtype, datatype):
-                raise TypeError(f"{trl} has type {trl_dtype.__name__} not {datatype.__name__}")
-            return dict(source=trl, dtype=trl_dtype_desc, shape=[])
+            if datatype and not issubclass(tr_dtype, datatype):
+                raise TypeError(f"{tango_resource} has type {tr_dtype.__name__} not {datatype.__name__}")
+            return dict(source=tango_resource, dtype=tr_dtype_desc, shape=[])
 
 
 # --------------------------------------------------------------------

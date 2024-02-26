@@ -2,11 +2,10 @@ import time
 
 import pytest
 
-from typing import get_type_hints, Any, Optional, Tuple, Type
+from typing import Type
 from enum import Enum, IntEnum
 
 import numpy as np
-import numpy.typing as npt
 
 from tango import AttrQuality, AttrDataFormat, AttrWriteType, DeviceProxy, DevState, CmdArgType
 from tango.test_utils import assert_close
@@ -15,8 +14,11 @@ from tango.asyncio_executor import set_global_executor
 from tango.test_context import MultiDeviceTestContext
 
 from ophyd_async.tango._backend._tango_transport import get_pyton_type
-from ophyd_async.tango.device import TangoStandardReadableDevice, ReadableSignal
+from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
 from ophyd_async.core import DeviceCollector, T
+
+from bluesky import RunEngine
+from bluesky.plans import count
 
 
 class TestEnum(IntEnum):
@@ -28,6 +30,10 @@ class TestEnum(IntEnum):
 # --------------------------------------------------------------------
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
+
+TESTED_FEATURES = ["array", "limitedvalue", "justvalue"]
+
+
 class TestDevice(Device):
     __test__ = False
 
@@ -56,6 +62,62 @@ class TestDevice(Device):
 
     def write_limitedvalue(self, value: float):
         self._limitedvalue = value
+
+
+# --------------------------------------------------------------------
+class TestReadableDevice(TangoReadableDevice):
+    __test__ = False
+
+    # --------------------------------------------------------------------
+    def register_signals(self):
+        for name in TESTED_FEATURES:
+            setattr(self, name, tango_signal_auto(None, f"{self.trl}/{name}", self.proxy))
+
+        self.set_readable_signals(read_uncached=[getattr(self, name) for name in TESTED_FEATURES])
+
+
+# --------------------------------------------------------------------
+def describe_class(fqtrl):
+    description = {}
+    values = {}
+    dev = DeviceProxy(fqtrl)
+
+    for name in TESTED_FEATURES:
+        if name in dev.get_attribute_list():
+            attr_conf = dev.get_attribute_config(name)
+            value = dev.read_attribute(name).value
+            _, _, descr = get_pyton_type(attr_conf.data_type)
+            max_x = attr_conf.max_dim_x
+            max_y = attr_conf.max_dim_y
+            if attr_conf.data_format == AttrDataFormat.SCALAR:
+                is_array = False
+                shape = []
+            elif attr_conf.data_format == AttrDataFormat.SPECTRUM:
+                is_array = True
+                shape = [max_x]
+            else:
+                is_array = True
+                shape = [max_y, max_x]
+
+        elif name in dev.get_command_list():
+            cmd_conf = dev.get_command_config(name)
+            _, _, descr = get_pyton_type(cmd_conf.in_type if cmd_conf.in_type != CmdArgType.DevVoid else cmd_conf.out_type)
+            is_array = False
+            shape = []
+            value = getattr(dev, name)()
+
+        else:
+            raise RuntimeError(f"Cannot find {name} in attributes/commands (pipes are not supported!)")
+
+        description[f"test_device-{name}"] = {'source': f'{fqtrl}/{name}',  # type: ignore
+                                              'dtype': 'array' if is_array else descr,
+                                              'shape': shape}
+
+        values[f"test_device-{name}"] = {'value': value,
+                                         'timestamp': pytest.approx(time.time()),
+                                         'alarm_severity': AttrQuality.ATTR_VALID}
+
+    return values, description
 
 
 # --------------------------------------------------------------------
@@ -89,58 +151,6 @@ def reset_tango_asyncio():
 
 
 # --------------------------------------------------------------------
-class TestReadableDevice(TangoStandardReadableDevice):
-    __test__ = False
-    justvalue: ReadableSignal[int]
-    array: ReadableSignal[npt.NDArray[float]]
-    limitedvalue: ReadableSignal[float]
-
-
-# --------------------------------------------------------------------
-def describe_class(cls, fqtrl):
-    description = {}
-    values = {}
-    dev = DeviceProxy(fqtrl)
-    hints = get_type_hints(cls)
-    for name, dtype in hints.items():
-        if name in dev.get_attribute_list():
-            attr_conf = dev.get_attribute_config(name)
-            value = dev.read_attribute(name).value
-            _, _, descr = get_pyton_type(attr_conf.data_type)
-            max_x = attr_conf.max_dim_x
-            max_y = attr_conf.max_dim_y
-            if attr_conf.data_format == AttrDataFormat.SCALAR:
-                is_array = False
-                shape = []
-            elif attr_conf.data_format == AttrDataFormat.SPECTRUM:
-                is_array = True
-                shape = [max_x]
-            else:
-                is_array = True
-                shape = [max_y, max_x]
-
-        elif name in dev.get_command_list():
-            cmd_conf = dev.get_command_config(name)
-            _, _, descr = get_pyton_type(cmd_conf.in_type if cmd_conf.in_type != CmdArgType.DevVoid else cmd_conf.out_type)
-            shape = []
-            is_array = False
-            value = getattr(dev, name)()
-
-        else:
-            raise RuntimeError(f"{name} cannot be found in {cls} attributes/commands")
-
-        description[f"test_device-{name}"] = {'source': f'{fqtrl}/{name}',  # type: ignore
-                                              'dtype': 'array' if is_array else descr,
-                                              'shape': shape}
-
-        values[f"test_device-{name}"] = {'value': value,
-                                         'timestamp': pytest.approx(time.time()),
-                                         'alarm_severity': AttrQuality.ATTR_VALID}
-
-    return values, description
-
-
-# --------------------------------------------------------------------
 def compare_values(expected, received):
     assert set(list(expected.keys())) == set(list(received.keys()))
     for k, v in expected.items():
@@ -151,7 +161,7 @@ def compare_values(expected, received):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
-    values, description = describe_class(TestReadableDevice(""), tango_test_device)
+    values, description = describe_class(tango_test_device)
 
     async with DeviceCollector():
         test_device = await TestReadableDevice(tango_test_device)
@@ -159,3 +169,14 @@ async def test_connect(tango_test_device):
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
     compare_values(values, await test_device.read())
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_with_bluesky(tango_test_device):
+    async with DeviceCollector():
+        ophyd_dev = await TestReadableDevice(tango_test_device)
+
+    # now let's do some bluesky stuff
+    RE = RunEngine()
+    RE(count([ophyd_dev], 1))

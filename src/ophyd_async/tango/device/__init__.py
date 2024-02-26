@@ -1,5 +1,3 @@
-from .device import (TangoDevice, TangoStandardReadableDevice,
-                     ReadableSignal, ReadableUncachedSignal, ConfigurableSignal)
+from .device import TangoReadableDevice
 
-__all__ = ("TangoDevice", "TangoStandardReadableDevice",
-           "ReadableSignal", "ReadableUncachedSignal", "ConfigurableSignal")
+__all__ = ("TangoReadableDevice",)

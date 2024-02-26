@@ -24,7 +24,7 @@ from .utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
 _sim_backends: Dict[Signal, SimSignalBackend] = {}
 
 
-def _add_timeout(func):
+def add_timeout(func):
     @functools.wraps(func)
     async def wrapper(self: Signal, *args, **kwargs):
         return await asyncio.wait_for(func(self, *args, **kwargs), self._timeout)
@@ -160,17 +160,17 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
             self._cache.close()
             self._cache = None
 
-    @_add_timeout
+    @add_timeout
     async def read(self, cached: Optional[bool] = None) -> Dict[str, Reading]:
         """Return a single item dict with the reading in it"""
         return {self.name: await self._backend_or_cache(cached).get_reading()}
 
-    @_add_timeout
+    @add_timeout
     async def describe(self) -> Dict[str, Descriptor]:
         """Return a single item dict with the descriptor in it"""
         return {self.name: await self._backend.get_descriptor()}
 
-    @_add_timeout
+    @add_timeout
     async def get_value(self, cached: Optional[bool] = None) -> T:
         """The current value"""
         return await self._backend_or_cache(cached).get_value()
