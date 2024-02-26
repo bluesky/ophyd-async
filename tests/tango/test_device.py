@@ -15,18 +15,21 @@ from tango.asyncio_executor import set_global_executor
 from tango.test_context import MultiDeviceTestContext
 
 from ophyd_async.tango._backend._tango_transport import get_pyton_type
-from ophyd_async.tango.device import TangoDevice, ReadableSignal
+from ophyd_async.tango.device import TangoStandardReadableDevice, ReadableSignal
 from ophyd_async.core import DeviceCollector, T
 
 
 class TestEnum(IntEnum):
+    __test__ = False
     A = 0
     B = 1
+
 
 # --------------------------------------------------------------------
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
 class TestDevice(Device):
+    __test__ = False
 
     _array = [[1, 2, 3],
               [4, 5, 6]]
@@ -72,9 +75,10 @@ def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
 
 
 # --------------------------------------------------------------------
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def tango_test_device():
-    with MultiDeviceTestContext([{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]) as context:
+    with MultiDeviceTestContext(
+            [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True) as context:
         yield context.get_device_access("test/device/1")
 
 
@@ -85,7 +89,8 @@ def reset_tango_asyncio():
 
 
 # --------------------------------------------------------------------
-class TestReadableDevice(TangoDevice):
+class TestReadableDevice(TangoStandardReadableDevice):
+    __test__ = False
     justvalue: ReadableSignal[int]
     array: ReadableSignal[npt.NDArray[float]]
     limitedvalue: ReadableSignal[float]

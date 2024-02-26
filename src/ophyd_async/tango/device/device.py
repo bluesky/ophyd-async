@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 from inspect import isclass
-from typing import get_type_hints, Union, Generic, get_origin, get_args
+from typing import get_type_hints, Union, Generic, Tuple, Sequence, Type, get_origin, get_args
 
 from tango import AttrWriteType, CmdArgType
 from tango.asyncio import DeviceProxy
 
-from ophyd_async.core import StandardReadable, SignalW, SignalX, SignalR, SignalRW, T
+from ophyd_async.core import StandardReadable, SignalW, SignalX, SignalR, SignalRW, Signal, T
 from ophyd_async.tango.signal import tango_signal_r, tango_signal_rw, tango_signal_w, tango_signal_x
 
 __all__ = ("TangoDevice",
+           "TangoStandardReadableDevice",
            "ReadableSignal",
            "ReadableUncachedSignal",
            "ConfigurableSignal")
@@ -19,23 +20,14 @@ __all__ = ("TangoDevice",
 
 # --------------------------------------------------------------------
 
-class _AutoSignal:
+class _AutoSignal(Signal):
     """
     To mark attribute/command in devices type hits as the one, which has to be read every step
     """
 
 
 # --------------------------------------------------------------------
-class ReadableSignal(Generic[T], _AutoSignal):
-    """
-    To mark attribute/command in devices type hits as the one, which has to be read every step
-    """
-
-    _add_me_to = "_read_signals"
-
-
-# --------------------------------------------------------------------
-class ReadableUncachedSignal(Generic[T], _AutoSignal):
+class ReadableSignal(_AutoSignal, Generic[T]):
     """
     To mark attribute/command in devices type hits as the one, which has to be read every step
     """
@@ -44,14 +36,25 @@ class ReadableUncachedSignal(Generic[T], _AutoSignal):
 
 
 # --------------------------------------------------------------------
-class ConfigurableSignal(Generic[T], _AutoSignal):
+class ReadableUncachedSignal(_AutoSignal, Generic[T]):
+    """
+    To mark attribute/command in devices type hits as the one, which has to be read every step
+    """
+
+    _add_me_to = "_read_uncached_signals"
+
+
+# --------------------------------------------------------------------
+class ConfigurableSignal(_AutoSignal, Generic[T]):
     """
     To mark attribute/command in devices type hits as the one, which has to be read only as startup
     """
 
+    _add_me_to = "_configuration_signals"
+
 
 # --------------------------------------------------------------------
-def get_signal(dtype: T, name: str, trl: str, device_proxy: DeviceProxy) -> Union[SignalW, SignalX, SignalR, SignalRW]:
+def get_signal(dtype: Type[T], name: str, trl: str, device_proxy: DeviceProxy) -> Union[SignalW, SignalX, SignalR, SignalRW]:
     ftrl = trl + '/' + name
     if name in device_proxy.get_attribute_list():
         conf = device_proxy.get_attribute_config(name, green_mode=False)
@@ -79,7 +82,7 @@ def get_signal(dtype: T, name: str, trl: str, device_proxy: DeviceProxy) -> Unio
 
 
 # --------------------------------------------------------------------
-class TangoDevice(StandardReadable):
+class TangoDevice:
     """
     General class for TangoDevices
 
@@ -89,11 +92,9 @@ class TangoDevice(StandardReadable):
     """
 
     # --------------------------------------------------------------------
-    def __init__(self, trl: str, name="") -> None:
+    def __init__(self, trl: str) -> None:
         self.trl = trl
         self.proxy: DeviceProxy = None
-
-        super().__init__(name=name)
 
     # --------------------------------------------------------------------
     def __await__(self):
@@ -116,8 +117,50 @@ class TangoDevice(StandardReadable):
                         signals[add_to].append(getattr(self, name))
             for name, signals_set in signals.items():
                 setattr(self, name, tuple(signals_set))
+
+            self.register_signals()
+
             return self
 
         return closure().__await__()
 
+    # --------------------------------------------------------------------
+    def register_signals(self):
+        """
+        This method can be used to manually register signals
+        """
+
+
+# --------------------------------------------------------------------
+class TangoStandardReadableDevice(TangoDevice, StandardReadable):
+
+    _read_signals: Tuple[Union[SignalR, SignalRW], ...] = ()
+    _configuration_signals: Tuple[Union[SignalR, SignalRW], ...] = ()
+    _read_uncached_signals: Tuple[Union[SignalR, SignalRW], ...] = ()
+
+    # --------------------------------------------------------------------
+    def __init__(self, trl: str, name="") -> None:
+        TangoDevice.__init__(self, trl)
+        StandardReadable.__init__(self, name=name)
+
+    # --------------------------------------------------------------------
+    def set_readable_signals(
+        self,
+        read: Sequence[Union[SignalR, SignalRW]] = (),
+        config: Sequence[Union[SignalR, SignalRW]] = (),
+        read_uncached: Sequence[Union[SignalR, SignalRW]] = (),
+    ):
+        """
+        Parameters
+        ----------
+        read:
+            Signals to make up :meth:`~StandardReadable.read`
+        config:
+            Signals to make up :meth:`~StandardReadable.read_configuration`
+        read_uncached:
+            Signals to make up :meth:`~StandardReadable.read` that won't be cached
+        """
+        self._read_signals = tuple(read)
+        self._configuration_signals = tuple(config)
+        self._read_uncached_signals = tuple(read_uncached)
 

@@ -31,6 +31,7 @@ Since TangoTest does not support EchoMode, we create our own Device.
 
 
 class TestEnum(IntEnum):
+    __test__ = False
     A = 0
     B = 1
 
@@ -142,9 +143,10 @@ def assert_enum(initial_value, readout_value):
 # --------------------------------------------------------------------
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def echo_device():
-    with MultiDeviceTestContext([{"class": EchoDevice, "devices": [{"name": "test/device/1"}]}]) as context:
+    with MultiDeviceTestContext(
+            [{"class": EchoDevice, "devices": [{"name": "test/device/1"}]}], process=True) as context:
         yield context.get_device_access("test/device/1")
 
 
