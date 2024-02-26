@@ -1,16 +1,18 @@
 import pytest
 import asyncio
 import time
+import textwrap
 
 import numpy as np
 import numpy.typing as npt
 
+from random import choice
 from typing import Any, Optional, Tuple, Type
 
 from enum import Enum, IntEnum
 
 from tango import AttrWriteType, AttrDataFormat, DeviceProxy, DevState
-from tango.server import Device, attribute
+from tango.server import Device, attribute, command
 from tango.test_utils import assert_close
 from tango.test_context import MultiDeviceTestContext
 from tango.asyncio_executor import set_global_executor
@@ -33,81 +35,45 @@ class TestEnum(IntEnum):
     B = 1
 
 
-def get_enum_labels(enum_cls):
-    if enum_cls == DevState:
-        return list(enum_cls.names.keys())
+BASE_TYPES_SET = (
+    # type_name, tango_name,    py_type,    sample_values
+    ("boolean", 'DevBoolean',   bool,       (True, False)),
+    ("short",   'DevShort',     int,        (1, 2, 3, 4, 5)),
+    ("ushort",  'DevUShort',    int,        (1, 2, 3, 4, 5)),
+    ("long",    'DevLong',      int,        (1, 2, 3, 4, 5)),
+    ("ulong",   'DevULong',     int,        (1, 2, 3, 4, 5)),
+    ("long64",  'DevLong64',    int,        (1, 2, 3, 4, 5)),
+    ("char",    'DevUChar',     int,        (1, 2, 3, 4, 5)),
+    ("float",   'DevFloat',     float,      (1.1, 2.2, 3.3, 4.4, 5.5)),
+    ("double",  'DevDouble',    float,      (1.1, 2.2, 3.3, 4.4, 5.5)),
+    ("string",  'DevString',    str,        ('aaa', 'bbb', 'ccc')),
+    ("state",   'DevState',     DevState,   (DevState.ON, DevState.MOVING, DevState.ALARM)),
+    ("enum",    'DevEnum',      TestEnum,   (TestEnum.A, TestEnum.B)),
+    # ("encoded", 'DevEncoded', TestEnum, (TestEnum.A, TestEnum.B)),
+)
+
+ATTRIBUTES_SET = []
+COMMANDS_SET = []
+
+for type_name, tango_type_name, py_type, values in BASE_TYPES_SET:
+    ATTRIBUTES_SET.extend([
+        (f"{type_name}_scalar_attr", tango_type_name, AttrDataFormat.SCALAR, py_type, choice(values), choice(values)),
+        (f"{type_name}_spectrum_attr", tango_type_name, AttrDataFormat.SPECTRUM, npt.NDArray[py_type],
+         [choice(values), choice(values)], [choice(values), choice(values)]),
+        (f"{type_name}_image_attr", tango_type_name, AttrDataFormat.IMAGE, npt.NDArray[py_type],
+         [[choice(values), choice(values)], [choice(values), choice(values)]],
+         [[choice(values), choice(values)], [choice(values), choice(values)]])
+        ])
+
+    if tango_type_name == 'DevUChar':
+        continue
     else:
-        return [member.name for member in enum_cls]
-
-
-TEST_ENUM_CLASS_LABELS = get_enum_labels(TestEnum)
-
-
-TYPES_TO_TEST = (
-                 ("boolean_scalar", 'DevBoolean', AttrDataFormat.SCALAR, bool, True, False),
-                 ("boolean_spectrum", 'DevBoolean', AttrDataFormat.SPECTRUM, npt.NDArray[np.bool_], [True, False], [False, True]),
-                 ("boolean_image", 'DevBoolean', AttrDataFormat.IMAGE, npt.NDArray[np.bool_], [[True, False], [False, True]],
-                  np.array([[False, True], [True, False]])),
-
-                 ("short_scalar", 'DevShort', AttrDataFormat.SCALAR, int, 1, 2),
-                 ("short_spectrum", 'DevShort', AttrDataFormat.SPECTRUM, npt.NDArray[np.int_], [1, 2], [3, 4]),
-                 ("short_image", 'DevShort', AttrDataFormat.IMAGE, npt.NDArray[np.int_], [[1, 2], [3, 4]], [[5, 6], [7, 8]]),
-
-                 ("long_scalar", 'DevLong', AttrDataFormat.SCALAR, int, 1, 2),
-                 ("long_spectrum", 'DevLong', AttrDataFormat.SPECTRUM, npt.NDArray[np.int_], [1, 2], [3, 4]),
-                 ("long_image", 'DevLong', AttrDataFormat.IMAGE, npt.NDArray[np.int_], [[1, 2], [3, 4]], [[5, 6], [7, 8]]),
-
-                 ("ushort_scalar", 'DevUShort', AttrDataFormat.SCALAR, int, 1, 2),
-                 ("ushort_spectrum", 'DevUShort', AttrDataFormat.SPECTRUM, npt.NDArray[np.int_], [1, 2], [3, 4]),
-                 ("ushort_image", 'DevUShort', AttrDataFormat.IMAGE, npt.NDArray[np.int_], [[1, 2], [3, 4]], [[5, 6], [7, 8]]),
-
-                 ("ulong_scalar", 'DevLong', AttrDataFormat.SCALAR, int, 1, 2),
-                 ("ulong_spectrum", 'DevLong', AttrDataFormat.SPECTRUM, npt.NDArray[np.int_], [1, 2], [3, 4]),
-                 ("ulong_image", 'DevLong', AttrDataFormat.IMAGE, npt.NDArray[np.int_], [[1, 2], [3, 4]], [[5, 6], [7, 8]]),
-
-                 ("ulong64_scalar", 'DevULong64', AttrDataFormat.SCALAR, int, 1, 2),
-                 ("ulong64_spectrum", 'DevULong64', AttrDataFormat.SPECTRUM, npt.NDArray[np.int_], [1, 2], [3, 4]),
-                 ("ulong64_image", 'DevULong64', AttrDataFormat.IMAGE, npt.NDArray[np.int_], [[1, 2], [3, 4]], [[5, 6], [7, 8]]),
-
-                 ("long64_scalar", 'DevLong64', AttrDataFormat.SCALAR, int, 1, 2),
-                 ("long64_spectrum", 'DevLong64', AttrDataFormat.SPECTRUM, npt.NDArray[np.int_], [1, 2], [3, 4]),
-                 ("long64_image", 'DevLong64', AttrDataFormat.IMAGE, npt.NDArray[np.int_], [[1, 2], [3, 4]], [[5, 6], [7, 8]]),
-
-                 ("char_scalar", 'DevUChar', AttrDataFormat.SCALAR, int, 1, 2),
-                 ("char_spectrum", 'DevUChar', AttrDataFormat.SPECTRUM, npt.NDArray[np.int_], [1, 2], [3, 4]),
-                 ("char_image", 'DevUChar', AttrDataFormat.IMAGE, npt.NDArray[np.int_], [[1, 2], [3, 4]], [[5, 6], [7, 8]]),
-
-                 ("float_scalar", 'DevFloat', AttrDataFormat.SCALAR, float, 1.1, 2.2),
-                 ("float_spectrum", 'DevFloat', AttrDataFormat.SPECTRUM, npt.NDArray[np.float_], [1.1, 2.2], [3.3, 4.4]),
-                 ("float_image", 'DevFloat', AttrDataFormat.IMAGE, npt.NDArray[np.float_], [[1.1, 2.2], [3.3, 4.4]],
-                  [[5.5, 6.6], [7.7, 8.8]]),
-
-                 ("double_scalar", 'DevDouble', AttrDataFormat.SCALAR, float, 1.1, 2.2),
-                 ("double_spectrum", 'DevDouble', AttrDataFormat.SPECTRUM, npt.NDArray[np.float_], [1.1, 2.2], [3.3, 4.4]),
-                 ("double_image", 'DevDouble', AttrDataFormat.IMAGE, npt.NDArray[np.float_], [[1.1, 2.2], [3.3, 4.4]],
-                  [[5.5, 6.6], [7.7, 8.8]]),
-
-                 ("string_scalar", 'DevString', AttrDataFormat.SCALAR, str, "aaa", "bbb"),
-                 ("string_spectrum", 'DevString', AttrDataFormat.SPECTRUM, npt.NDArray[str], ["aaa", "bbb"], ["ccc", "ddd"]),
-                 ("string_image", 'DevString', AttrDataFormat.IMAGE, npt.NDArray[str], [["aaa", "bbb"], ["ccc", "ddd"]],
-                  [["eee", "fff"], ["ggg", "hhh"]]),
-
-                 ("state_scalar", 'DevState', AttrDataFormat.SCALAR, DevState, DevState.ON, DevState.OFF),
-                 ("state_spectrum", 'DevState', AttrDataFormat.SPECTRUM, npt.NDArray[DevState], [DevState.ON, DevState.OFF],
-                  [DevState.OFF, DevState.ON]),
-                 ("state_image", 'DevState', AttrDataFormat.IMAGE, npt.NDArray[DevState],
-                  [[DevState.ON, DevState.OFF], [DevState.OFF, DevState.ON]],
-                  [[DevState.OFF, DevState.ON], [DevState.ON, DevState.OFF]]),
-
-                  ("enum_scalar", 'DevEnum', AttrDataFormat.SCALAR, TestEnum, TestEnum.A, TestEnum.B),
-                  ("enum_spectrum", 'DevEnum', AttrDataFormat.SPECTRUM, npt.NDArray[TestEnum], [TestEnum.A, TestEnum.B],
-                   [TestEnum.B, TestEnum.A]),
-                  ("enum_image", 'DevEnum', AttrDataFormat.IMAGE, npt.NDArray[TestEnum],
-                   [[TestEnum.A, TestEnum.B], [TestEnum.B, TestEnum.A]],
-                   [[TestEnum.B, TestEnum.A], [TestEnum.A, TestEnum.B]]),
-
-                 # ('DevEncoded': tango._tango.CmdArgType.DevEncoded,
-                 )
+        COMMANDS_SET.append((f"{type_name}_scalar_cmd", tango_type_name, AttrDataFormat.SCALAR, py_type, choice(values), choice(values)))
+        if tango_type_name in ['DevState', 'DevEnum']:
+            continue
+        else:
+            COMMANDS_SET.append((f"{type_name}_spectrum_cmd", tango_type_name, AttrDataFormat.SPECTRUM,
+                                 npt.NDArray[py_type], [choice(values), choice(values)], [choice(values), choice(values)]))
 
 
 # --------------------------------------------------------------------
@@ -117,7 +83,7 @@ class EchoDevice(Device):
     attr_values = {}
 
     def initialize_dynamic_attributes(self):
-        for name, typ, form, _, _, _ in TYPES_TO_TEST:
+        for name, typ, form, _, _, _ in ATTRIBUTES_SET:
             attr = attribute(
                 name=name,
                 dtype=typ,
@@ -127,10 +93,20 @@ class EchoDevice(Device):
                 fset=self.write,
                 max_dim_x=2,
                 max_dim_y=2,
-                enum_labels=TEST_ENUM_CLASS_LABELS
+                enum_labels=[member.name for member in TestEnum]
             )
             self.add_attribute(attr)
             self.set_change_event(name, True, False)
+
+        for name, typ, form, _, _, _ in COMMANDS_SET:
+            cmd = command(
+                f=getattr(self, name),
+                dtype_in=typ,
+                dformat_in=form,
+                dtype_out=typ,
+                dformat_out=form
+            )
+            self.add_command(cmd)
 
     def read(self, attr):
         attr.set_value(self.attr_values[attr.get_name()])
@@ -140,6 +116,15 @@ class EchoDevice(Device):
         self.attr_values[attr.get_name()] = new_value
         self.push_change_event(attr.get_name(), new_value)
 
+    echo_command_code = textwrap.dedent(
+        """\
+            def echo_command(self, arg):
+                return arg
+            """
+    )
+
+    for name, _, _, _, _, _ in COMMANDS_SET:
+        exec(echo_command_code.replace("echo_command", name))
 
 # --------------------------------------------------------------------
 def assert_enum(initial_value, readout_value):
@@ -167,17 +152,19 @@ def reset_tango_asyncio():
 # --------------------------------------------------------------------
 #               helpers to run tests
 # --------------------------------------------------------------------
-def get_test_descriptor(python_type: Type[T], value: T) -> dict:
+def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [bool, int]:
         return dict(dtype="integer", shape=[])
     if python_type in [float]:
         return dict(dtype="number", shape=[])
     if python_type in [str]:
         return dict(dtype="string", shape=[])
-    if issubclass(python_type, (Enum, DevState)):
-        return dict(dtype="string", shape=[], choices=get_enum_labels(value.__class__))
+    if issubclass(python_type, DevState):
+        return dict(dtype="string", shape=[], choices=list(DevState.names.keys()))
+    if issubclass(python_type, Enum):
+        return dict(dtype="string", shape=[], choices=[] if is_cmd else [member.name for member in value.__class__])
 
-    return dict(dtype="array", shape=list(np.array(value).shape))
+    return dict(dtype="array", shape=[np.Inf] if is_cmd else list(np.array(value).shape))
 
 
 # --------------------------------------------------------------------
@@ -254,17 +241,64 @@ async def assert_monitor_then_put(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pv, tango_type, d_format, py_type, initial_value, put_value", TYPES_TO_TEST)
-async def test_backend_get_put_monitor(echo_device: str,
-                                       pv: str,
-                                       tango_type: str,
-                                       d_format: AttrDataFormat,
-                                       py_type: Type[T],
-                                       initial_value: T,
-                                       put_value: T):
+@pytest.mark.parametrize("pv, tango_type, d_format, py_type, initial_value, put_value", ATTRIBUTES_SET,
+                         ids=[x[0] for x in ATTRIBUTES_SET])
+async def test_backend_get_put_monitor_attr(echo_device: str,
+                                            pv: str,
+                                            tango_type: str,
+                                            d_format: AttrDataFormat,
+                                            py_type: Type[T],
+                                            initial_value: T,
+                                            put_value: T):
     # With the given datatype, check we have the correct initial value and putting
     # works
-    descriptor = get_test_descriptor(py_type, initial_value)
+    descriptor = get_test_descriptor(py_type, initial_value, False)
     await assert_monitor_then_put(echo_device, pv, initial_value, put_value, descriptor, py_type)
     # # With datatype guessed from CA/PVA, check we can set it back to the initial value
-    await assert_monitor_then_put(echo_device, pv, initial_value, put_value, descriptor, datatype=None)
+    await assert_monitor_then_put(echo_device, pv, initial_value, put_value, descriptor)
+
+
+# --------------------------------------------------------------------
+async def assert_put_read(
+        echo_device: str,
+        pv: str,
+        put_value: T,
+        descriptor: dict,
+        datatype: Optional[Type[T]] = None,
+):
+    source = echo_device + '/' + pv
+    backend = await make_backend(datatype, source)
+    # Make a monitor queue that will monitor for updates
+    assert dict(source=source, **descriptor) == await backend.get_descriptor()
+    # Put to new value and check that
+    await backend.put(put_value)
+
+    expected_reading = {
+        "timestamp": pytest.approx(time.time(), rel=0.1),
+        "alarm_severity": 0,
+    }
+
+    assert_close(await backend.get_value(), put_value)
+
+    get_reading = dict(await backend.get_reading())
+    get_reading.pop('value')
+    assert expected_reading == get_reading
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.parametrize("pv, tango_type, d_format, py_type, initial_value, put_value", COMMANDS_SET,
+                         ids=[x[0] for x in COMMANDS_SET])
+async def test_backend_get_put_monitor_cmd(echo_device: str,
+                                           pv: str,
+                                           tango_type: str,
+                                           d_format: AttrDataFormat,
+                                           py_type: Type[T],
+                                           initial_value: T,
+                                           put_value: T):
+    # With the given datatype, check we have the correct initial value and putting
+    # works
+    descriptor = get_test_descriptor(py_type, initial_value, True)
+    await assert_put_read(echo_device, pv, put_value, descriptor, py_type)
+    # # With datatype guessed from CA/PVA, check we can set it back to the initial value
+    await assert_put_read(echo_device, pv,  put_value, descriptor)
