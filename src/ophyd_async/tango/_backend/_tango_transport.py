@@ -28,6 +28,7 @@ from ophyd_async.core import (
     get_dtype,
     get_unique,
     wait_for_connection,
+    DEFAULT_TIMEOUT,
 )
 
 __all__ = ("TangoTransport", "TangoSignalBackend")
@@ -389,7 +390,7 @@ class TangoTransport(TangoSignalBackend[T]):
             raise NotConnected(self.source)
 
     # --------------------------------------------------------------------
-    async def connect(self):
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         if self.read_trl != self.write_trl:
             # Different, need to connect both
             await wait_for_connection(
