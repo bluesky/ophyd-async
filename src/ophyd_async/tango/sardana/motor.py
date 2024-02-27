@@ -52,9 +52,7 @@ class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
         self._state = tango_signal_r(DevState, self.trl + "/State", self.proxy)
 
     # --------------------------------------------------------------------
-    async def _move(self, new_position: float, watchers: List[Callable] = None):
-        if watchers is None:
-            watchers = []
+    async def _move(self, new_position: float, watchers: List[Callable] = []):
         self._set_success = True
         start = time.monotonic()
         start_position = await self.position.get_value()
