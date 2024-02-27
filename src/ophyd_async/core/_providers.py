@@ -9,8 +9,13 @@ class DirectoryInfo:
     """
     Information about where and how to write a file.
 
+    The bluesky event model splits the URI for a resource into two segments to aid in
+    different applications mounting filesystems at different mount points.
+    The portion of this path which is relevant only for the writer is the 'root',
+    while the path from an agreed upon mutual mounting is the resource_path.
+    The resource_dir is used with the filename to construct the resource_path.
 
-    :param root: Path of a root directory
+    :param root: Path of a root directory, relevant only for the file writer
     :param resource_dir: Directory into which files should be written, relative to root
     :param prefix: Optional filename prefix to add to all files
     :param suffix: Optional filename suffix to add to all files
