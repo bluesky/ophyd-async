@@ -115,7 +115,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
             yield from bps.prepare(flyer, 1, wait=True)
             # prepare detector second.
             yield from bps.prepare(
-                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=3
+                detector, flyer.trigger_info, wait=True, current_frame=0
             )
 
             yield from bps.open_run()

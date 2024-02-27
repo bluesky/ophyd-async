@@ -163,7 +163,7 @@ async def test_hardware_triggered_flyable(
         # prepare detectors second.
         for detector in detector_list:
             yield from bps.prepare(
-                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=4
+                detector, flyer.trigger_info, wait=True, current_frame=0
             )
 
         assert trigger_logic.state == TriggerState.preparing
