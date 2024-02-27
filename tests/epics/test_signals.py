@@ -25,7 +25,7 @@ from unittest.mock import ANY
 import numpy as np
 import numpy.typing as npt
 import pytest
-from aioca import purge_channel_caches
+from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import Reading
 
 from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
@@ -136,6 +136,20 @@ async def assert_monitor_then_put(
         q.close()
 
 
+async def put_error(
+    ioc: IOC,
+    suffix: str,
+    put_value: T,
+    datatype: Optional[Type[T]] = None,
+):
+    backend = await ioc.make_backend(datatype, suffix)
+    # The below will work without error
+    await backend.put(put_value)
+    # Change the name of write_pv to mock disconnection
+    backend.__setattr__("write_pv", "Disconnect")
+    await backend.put(put_value, timeout=3)
+
+
 class MyEnum(str, Enum):
     a = "Aaa"
     b = "Bbb"
@@ -241,6 +255,22 @@ async def test_bool_conversion_of_enum(ioc: IOC) -> None:
         put_value=False,
         datatype=bool,
     )
+
+
+async def test_error_raised_on_disconnected_PV(ioc: IOC) -> None:
+    if ioc.protocol == "pva":
+        err = NotConnected
+        expected = "pva://Disconnect"
+    elif ioc.protocol == "ca":
+        err = CANothing
+        expected = "Disconnect: User specified timeout on IO operation expired"
+    with pytest.raises(err, match=expected):
+        await put_error(
+            ioc,
+            suffix="bool",
+            put_value=False,
+            datatype=bool,
+        )
 
 
 class BadEnum(str, Enum):
