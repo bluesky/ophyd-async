@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import Dict
@@ -20,13 +19,16 @@ class SIS3820Counter(TangoReadableDevice):  # Triggerable
     # --------------------------------------------------------------------
     def register_signals(self):
 
-        self.counts = tango_signal_rw(float, self.trl + '/counts', device_proxy=self.proxy)
-        self.offset = tango_signal_rw(float, self.trl + '/offset', device_proxy=self.proxy)
+        self.counts = tango_signal_rw(
+            float, self.trl + "/counts", device_proxy=self.proxy
+        )
+        self.offset = tango_signal_rw(
+            float, self.trl + "/offset", device_proxy=self.proxy
+        )
 
-        self.set_readable_signals(read_uncached=[self.counts],
-                                  config=[self.offset])
+        self.set_readable_signals(read_uncached=[self.counts], config=[self.offset])
 
-        self.reset = tango_signal_x(self.trl + '/reset', device_proxy=self.proxy)
+        self.reset = tango_signal_x(self.trl + "/reset", device_proxy=self.proxy)
 
     # --------------------------------------------------------------------
     # Theoretically counter has to be reset before triggering, but I do not how to do it

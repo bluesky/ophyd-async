@@ -1,11 +1,9 @@
-
 from __future__ import annotations
 
-import asyncio
 import time
-from typing import List, Callable
+from typing import Callable, List
 
-from bluesky.protocols import Triggerable, Preparable
+from bluesky.protocols import Preparable, Triggerable
 
 from ophyd_async.core import AsyncStatus
 from ophyd_async.tango import TangoReadableDevice, tango_signal_rw, tango_signal_x
@@ -16,22 +14,35 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
 
     # --------------------------------------------------------------------
     def __init__(self, trl: str, name="") -> None:
+        self.sampletime = None
+        self.remainingtime = None
+        self.startandwaitfortimer = None
+
         TangoReadableDevice.__init__(self, trl, name)
         self._set_success = True
 
     # --------------------------------------------------------------------
     def register_signals(self):
 
-        self.sampletime = tango_signal_rw(float, self.trl + '/sampletime', device_proxy=self.proxy)
-        self.remainingtime = tango_signal_rw(float, self.trl + '/remainingtime', device_proxy=self.proxy)
+        self.sampletime = tango_signal_rw(
+            float, self.trl + "/sampletime", device_proxy=self.proxy
+        )
+        self.remainingtime = tango_signal_rw(
+            float, self.trl + "/remainingtime", device_proxy=self.proxy
+        )
 
-        self.set_readable_signals(read_uncached=[self.sampletime],
-                                  config=[self.sampletime])
+        self.set_readable_signals(
+            read_uncached=[self.sampletime], config=[self.sampletime]
+        )
 
-        self.startandwaitfortimer = tango_signal_x(self.trl+'/startandwaitfortimer', device_proxy=self.proxy)
+        self.startandwaitfortimer = tango_signal_x(
+            self.trl + "/startandwaitfortimer", device_proxy=self.proxy
+        )
 
     # --------------------------------------------------------------------
-    async def _trigger(self, watchers: List[Callable] = []):
+    async def _trigger(self, watchers: List[Callable] = None):
+        if watchers is None:
+            watchers = []
         self._set_success = True
         start = time.monotonic()
         total_time = await self.sampletime.get_value()
@@ -66,9 +77,9 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
         return AsyncStatus(self._trigger(watchers), watchers)
 
     # --------------------------------------------------------------------
-    def prepare(self, time) -> AsyncStatus:
-        return self.sampletime.set(time)
+    def prepare(self, p_time) -> AsyncStatus:
+        return self.sampletime.set(p_time)
 
     # --------------------------------------------------------------------
-    async def set_time(self, time: float) -> None:
-        await self.sampletime.set(time)
+    async def set_time(self, s_time: float) -> None:
+        await self.sampletime.set(s_time)

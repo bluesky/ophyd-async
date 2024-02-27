@@ -1,17 +1,19 @@
-
 from __future__ import annotations
 
 import asyncio
 import time
+from typing import Callable, List, Optional
 
-from typing import Optional, List, Callable
-
-from bluesky.protocols import Locatable, Stoppable, Location
-
+from bluesky.protocols import Locatable, Location, Stoppable
 from tango import DevState
 
-from ophyd_async.tango import TangoReadableDevice, tango_signal_x, tango_signal_r, tango_signal_rw, tango_signal_w
-from ophyd_async.core import AsyncStatus, Signal
+from ophyd_async.core import AsyncStatus
+from ophyd_async.tango import (
+    TangoReadableDevice,
+    tango_signal_r,
+    tango_signal_rw,
+    tango_signal_x,
+)
 
 
 # --------------------------------------------------------------------
@@ -25,23 +27,34 @@ class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
     # --------------------------------------------------------------------
     def register_signals(self):
 
-        self.position = tango_signal_rw(float, self.trl + '/Position', device_proxy=self.proxy)
-        self.baserate = tango_signal_rw(float, self.trl + '/Base_rate', device_proxy=self.proxy)
-        self.velocity = tango_signal_rw(float, self.trl + '/Velocity', device_proxy=self.proxy)
-        self.acceleration = tango_signal_rw(float, self.trl + '/Acceleration', device_proxy=self.proxy)
-        self.deceleration = tango_signal_rw(float, self.trl + '/Deceleration', device_proxy=self.proxy)
+        self.position = tango_signal_rw(
+            float, self.trl + "/Position", device_proxy=self.proxy
+        )
+        self.baserate = tango_signal_rw(
+            float, self.trl + "/Base_rate", device_proxy=self.proxy
+        )
+        self.velocity = tango_signal_rw(
+            float, self.trl + "/Velocity", device_proxy=self.proxy
+        )
+        self.acceleration = tango_signal_rw(
+            float, self.trl + "/Acceleration", device_proxy=self.proxy
+        )
+        self.deceleration = tango_signal_rw(
+            float, self.trl + "/Deceleration", device_proxy=self.proxy
+        )
 
-        self.set_readable_signals(read_uncached=[self.position],
-                                  config=[self.baserate,
-                                          self.velocity,
-                                          self.acceleration,
-                                          self.deceleration])
+        self.set_readable_signals(
+            read_uncached=[self.position],
+            config=[self.baserate, self.velocity, self.acceleration, self.deceleration],
+        )
 
-        self._stop = tango_signal_x(self.trl + '/Stop', self.proxy)
-        self._state = tango_signal_r(DevState, self.trl + '/State', self.proxy)
+        self._stop = tango_signal_x(self.trl + "/Stop", self.proxy)
+        self._state = tango_signal_r(DevState, self.trl + "/State", self.proxy)
 
     # --------------------------------------------------------------------
-    async def _move(self, new_position: float, watchers: List[Callable] = []):
+    async def _move(self, new_position: float, watchers: List[Callable] = None):
+        if watchers is None:
+            watchers = []
         self._set_success = True
         start = time.monotonic()
         start_position = await self.position.get_value()
@@ -84,4 +97,3 @@ class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
         await self._stop.execute(wait=False)
-

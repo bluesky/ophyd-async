@@ -6,9 +6,9 @@ from abc import abstractmethod
 
 from tango.asyncio import DeviceProxy
 
-from ophyd_async.core import StandardReadable, AsyncStatus
+from ophyd_async.core import AsyncStatus, StandardReadable
 
-__all__ = ("TangoReadableDevice", )
+__all__ = ("TangoReadableDevice",)
 
 
 # --------------------------------------------------------------------

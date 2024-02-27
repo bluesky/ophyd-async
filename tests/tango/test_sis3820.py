@@ -1,14 +1,12 @@
-import pytest
-
 from unittest.mock import Mock
 
-from tango.asyncio_executor import set_global_executor
-
-from ophyd_async.tango.device_controllers import SIS3820Counter
-from ophyd_async.core import DeviceCollector
-
+import pytest
 from bluesky import RunEngine
 from bluesky.plans import count
+from tango.asyncio_executor import set_global_executor
+
+from ophyd_async.core import DeviceCollector
+from ophyd_async.tango.device_controllers import SIS3820Counter
 
 
 # --------------------------------------------------------------------
@@ -43,10 +41,16 @@ async def test_readout_with_bluesky(sis3820):
     RE = RunEngine()
     RE(count([sis3820], 3), readouts)
 
-    description = [args[0][1]['configuration'] for args in readouts.call_args_list if args[0][0] == "descriptor"][0]
+    description = [
+        args[0][1]["configuration"]
+        for args in readouts.call_args_list
+        if args[0][0] == "descriptor"
+    ][0]
     assert "sis3820" in description
-    assert 'sis3820-offset' in description["sis3820"]["data"]
+    assert "sis3820-offset" in description["sis3820"]["data"]
 
-    readings = [args[0][1]['data'] for args in readouts.call_args_list if args[0][0] == "event"]
+    readings = [
+        args[0][1]["data"] for args in readouts.call_args_list if args[0][0] == "event"
+    ]
     assert len(readings) == 3
     assert "sis3820-counts" in readings[0]

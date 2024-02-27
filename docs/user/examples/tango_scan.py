@@ -1,13 +1,17 @@
 # simple example to scan motor and acquire in each point counter value
 import asyncio
 
-from ophyd_async.core.utils import merge_gathered_dicts
-from ophyd_async.tango.device_controllers import OmsVME58Motor, DGG2Timer, SIS3820Counter
-from ophyd_async.core import DeviceCollector
-
-from bluesky import RunEngine, Msg
+from bluesky import Msg, RunEngine
 from bluesky.callbacks import LiveTable
 from bluesky.plans import scan
+
+from ophyd_async.core import DeviceCollector
+from ophyd_async.core.utils import merge_gathered_dicts
+from ophyd_async.tango.device_controllers import (
+    DGG2Timer,
+    OmsVME58Motor,
+    SIS3820Counter,
+)
 
 ACQUISITION_TIME = 0.1
 
@@ -30,7 +34,8 @@ async def main():
     RE([Msg("prepare", dgg2timer, ACQUISITION_TIME)])
 
     # do scan with LiveTable output
-    # (seems LiveTable cannot work with async devices, so we have to generate keys by ourselves...)
+    # (seems LiveTable cannot work with async devices,
+    # so we have to generate keys by ourselves...)
     dets = [omsvme58_motor, sis3820, dgg2timer]
     dets_descr = await merge_gathered_dicts([det.describe() for det in dets])
     RE(scan(dets, omsvme58_motor, 0, 1, num=11), LiveTable(list(dets_descr.keys())))

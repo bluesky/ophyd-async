@@ -1,20 +1,16 @@
-import pytest
 import asyncio
-
-import numpy as np
-
 from unittest.mock import Mock, call
 
+import numpy as np
+import pytest
+from bluesky import RunEngine
+from bluesky.plan_stubs import mv
+from bluesky.plans import count, scan
 from tango.asyncio_executor import set_global_executor
 
-from ophyd_async.tango.sardana import SardanaMotor
-from ophyd_async.tango.device_controllers import OmsVME58Motor
 from ophyd_async.core import DeviceCollector
-
-from bluesky import RunEngine
-from bluesky.plans import count, scan
-from bluesky.plan_stubs import mv
-
+from ophyd_async.tango.device_controllers import OmsVME58Motor
+from ophyd_async.tango.sardana import SardanaMotor
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -23,7 +19,7 @@ A_BIT = 0.001
 # dict: {class: tango trl}
 MOTORS_TO_TEST = {
     SardanaMotor: "motor/dummy_mot_ctrl/1",
-    OmsVME58Motor: "p09/motor/eh.01"
+    OmsVME58Motor: "p09/motor/eh.01",
 }
 
 
@@ -88,7 +84,10 @@ async def test_move(dummy_motor):
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
     await status
-    assert pytest.approx(target_position, abs=0.1) == await dummy_motor.position.get_value()
+    assert (
+        pytest.approx(target_position, abs=0.1)
+        == await dummy_motor.position.get_value()
+    )
     assert status.done
     done.assert_called_once_with(status)
 
@@ -115,8 +114,17 @@ async def test_scan_motor_vs_motor_position(dummy_motor):
     RE(scan([dummy_motor.position], dummy_motor, 0, 1, num=11), readouts)
 
     assert readouts.call_count == 14
-    assert set([args[0][0] for args in readouts.call_args_list]) == {'descriptor', 'event', 'start', 'stop'}
+    assert set([args[0][0] for args in readouts.call_args_list]) == {
+        "descriptor",
+        "event",
+        "start",
+        "stop",
+    }
 
-    positions = [args[0][1]['data']['dummy_motor-position'] for args in readouts.call_args_list if args[0][0] == "event"]
+    positions = [
+        args[0][1]["data"]["dummy_motor-position"]
+        for args in readouts.call_args_list
+        if args[0][0] == "event"
+    ]
     for got, expected in zip(positions, np.arange(0, 1.1, 0.1)):
         assert pytest.approx(got, abs=0.1) == expected

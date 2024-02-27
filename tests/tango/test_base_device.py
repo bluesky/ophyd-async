@@ -1,24 +1,27 @@
 import time
-
-import pytest
-
-from typing import Type
 from enum import Enum, IntEnum
+from typing import Type
 
 import numpy as np
-
-from tango import AttrQuality, AttrDataFormat, AttrWriteType, DeviceProxy, DevState, CmdArgType
-from tango.test_utils import assert_close
-from tango.server import Device, attribute, command
-from tango.asyncio_executor import set_global_executor
-from tango.test_context import MultiDeviceTestContext
-
-from ophyd_async.tango._backend._tango_transport import get_pyton_type
-from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
-from ophyd_async.core import DeviceCollector, T
-
+import pytest
 from bluesky import RunEngine
 from bluesky.plans import count
+from tango import (
+    AttrDataFormat,
+    AttrQuality,
+    AttrWriteType,
+    CmdArgType,
+    DeviceProxy,
+    DevState,
+)
+from tango.asyncio_executor import set_global_executor
+from tango.server import Device, attribute
+from tango.test_context import MultiDeviceTestContext
+from tango.test_utils import assert_close
+
+from ophyd_async.core import DeviceCollector, T
+from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
+from ophyd_async.tango._backend._tango_transport import get_pyton_type
 
 
 class TestEnum(IntEnum):
@@ -37,8 +40,7 @@ TESTED_FEATURES = ["array", "limitedvalue", "justvalue"]
 class TestDevice(Device):
     __test__ = False
 
-    _array = [[1, 2, 3],
-              [4, 5, 6]]
+    _array = [[1, 2, 3], [4, 5, 6]]
 
     _limitedvalue = 3
 
@@ -46,17 +48,29 @@ class TestDevice(Device):
     def justvalue(self):
         return 5
 
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE,
-               dformat=AttrDataFormat.IMAGE, max_dim_x=3, max_dim_y=2)
+    @attribute(
+        dtype=float,
+        access=AttrWriteType.READ_WRITE,
+        dformat=AttrDataFormat.IMAGE,
+        max_dim_x=3,
+        max_dim_y=2,
+    )
     def array(self) -> list[list[float]]:
         return self._array
 
     def write_array(self, array: list[list[float]]):
         self._array = array
 
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE,
-               min_value=0, min_alarm=1, min_warning=2,
-               max_warning=4, max_alarm=5, max_value=6)
+    @attribute(
+        dtype=float,
+        access=AttrWriteType.READ_WRITE,
+        min_value=0,
+        min_alarm=1,
+        min_warning=2,
+        max_warning=4,
+        max_alarm=5,
+        max_value=6,
+    )
     def limitedvalue(self) -> float:
         return self._limitedvalue
 
@@ -71,9 +85,13 @@ class TestReadableDevice(TangoReadableDevice):
     # --------------------------------------------------------------------
     def register_signals(self):
         for name in TESTED_FEATURES:
-            setattr(self, name, tango_signal_auto(None, f"{self.trl}/{name}", self.proxy))
+            setattr(
+                self, name, tango_signal_auto(None, f"{self.trl}/{name}", self.proxy)
+            )
 
-        self.set_readable_signals(read_uncached=[getattr(self, name) for name in TESTED_FEATURES])
+        self.set_readable_signals(
+            read_uncached=[getattr(self, name) for name in TESTED_FEATURES]
+        )
 
 
 # --------------------------------------------------------------------
@@ -101,21 +119,31 @@ def describe_class(fqtrl):
 
         elif name in dev.get_command_list():
             cmd_conf = dev.get_command_config(name)
-            _, _, descr = get_pyton_type(cmd_conf.in_type if cmd_conf.in_type != CmdArgType.DevVoid else cmd_conf.out_type)
+            _, _, descr = get_pyton_type(
+                cmd_conf.in_type
+                if cmd_conf.in_type != CmdArgType.DevVoid
+                else cmd_conf.out_type
+            )
             is_array = False
             shape = []
             value = getattr(dev, name)()
 
         else:
-            raise RuntimeError(f"Cannot find {name} in attributes/commands (pipes are not supported!)")
+            raise RuntimeError(
+                f"Cannot find {name} in attributes/commands (pipes are not supported!)"
+            )
 
-        description[f"test_device-{name}"] = {'source': f'{fqtrl}/{name}',  # type: ignore
-                                              'dtype': 'array' if is_array else descr,
-                                              'shape': shape}
+        description[f"test_device-{name}"] = {
+            "source": f"{fqtrl}/{name}",  # type: ignore
+            "dtype": "array" if is_array else descr,
+            "shape": shape,
+        }
 
-        values[f"test_device-{name}"] = {'value': value,
-                                         'timestamp': pytest.approx(time.time()),
-                                         'alarm_severity': AttrQuality.ATTR_VALID}
+        values[f"test_device-{name}"] = {
+            "value": value,
+            "timestamp": pytest.approx(time.time()),
+            "alarm_severity": AttrQuality.ATTR_VALID,
+        }
 
     return values, description
 
@@ -131,16 +159,23 @@ def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
     if issubclass(python_type, DevState):
         return dict(dtype="string", shape=[], choices=list(DevState.names.keys()))
     if issubclass(python_type, Enum):
-        return dict(dtype="string", shape=[], choices=[] if is_cmd else [member.name for member in value.__class__])
+        return dict(
+            dtype="string",
+            shape=[],
+            choices=[] if is_cmd else [member.name for member in value.__class__],
+        )
 
-    return dict(dtype="array", shape=[np.Inf] if is_cmd else list(np.array(value).shape))
+    return dict(
+        dtype="array", shape=[np.Inf] if is_cmd else list(np.array(value).shape)
+    )
 
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
 def tango_test_device():
     with MultiDeviceTestContext(
-            [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True) as context:
+        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True
+    ) as context:
         yield context.get_device_access("test/device/1")
 
 

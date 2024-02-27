@@ -1,26 +1,31 @@
 import asyncio
-import time
 import functools
-
-import numpy as np
-from asyncio import CancelledError
-
+import time
 from abc import abstractmethod
+from asyncio import CancelledError
 from enum import Enum
 from typing import Dict, Optional, Type, Union
 
-from tango import (AttributeInfoEx, AttrDataFormat,
-                   CmdArgType, EventType,
-                   GreenMode, DevState,
-                   CommandInfo, AttrWriteType)
-
-from tango.asyncio import DeviceProxy
-from tango.asyncio_executor import get_global_executor, set_global_executor, AsyncioExecutor
-from tango.utils import is_int, is_float, is_bool, is_str, is_binary, is_array
-
+import numpy as np
 from bluesky.protocols import Descriptor, Reading
+from tango import (
+    AttrDataFormat,
+    AttributeInfoEx,
+    CmdArgType,
+    CommandInfo,
+    DevState,
+    EventType,
+)
+from tango.asyncio import DeviceProxy
+from tango.asyncio_executor import (
+    AsyncioExecutor,
+    get_global_executor,
+    set_global_executor,
+)
+from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     NotConnected,
     ReadingValueCallback,
     SignalBackend,
@@ -28,7 +33,6 @@ from ophyd_async.core import (
     get_dtype,
     get_unique,
     wait_for_connection,
-    DEFAULT_TIMEOUT,
 )
 
 __all__ = ("TangoTransport", "TangoSignalBackend")
@@ -38,6 +42,7 @@ __all__ = ("TangoTransport", "TangoSignalBackend")
 A_BIT = 1e-5
 
 # --------------------------------------------------------------------
+
 
 def ensure_proper_executor(func):
     @functools.wraps(func)
@@ -98,7 +103,8 @@ class TangoProxy:
 
     # --------------------------------------------------------------------
     async def connect(self):
-        """perform actions after proxy is connected, e.g. checks if signal can be subscribed"""
+        """perform actions after proxy is connected, e.g. checks if signal
+        can be subscribed"""
 
     # --------------------------------------------------------------------
     @abstractmethod
@@ -112,7 +118,9 @@ class TangoProxy:
 
     # --------------------------------------------------------------------
     @abstractmethod
-    async def put(self, value: Optional[T], wait: bool=True, timeout: Optional[float]=None) -> None:
+    async def put(
+        self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
+    ) -> None:
         """Put value to TRL"""
 
     # --------------------------------------------------------------------
@@ -150,7 +158,9 @@ class AttributeProxy(TangoProxy):
     # --------------------------------------------------------------------
     async def connect(self) -> None:
         try:
-            eid = await self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor)
+            eid = await self._proxy.subscribe_event(
+                self._name, EventType.CHANGE_EVENT, self._event_processor
+            )
             await self._proxy.unsubscribe_event(eid)
             self.support_events = True
         except Exception:
@@ -170,7 +180,9 @@ class AttributeProxy(TangoProxy):
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
-    async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
+    async def put(
+        self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
+    ) -> None:
         if wait:
             await self._proxy.write_attribute(self._name, value)
         else:
@@ -181,7 +193,7 @@ class AttributeProxy(TangoProxy):
                     try:
                         _ = await self._proxy.write_attribute_reply(rid)
                         finished = True
-                    except:
+                    except Exception:
                         await asyncio.sleep(A_BIT)
 
     # --------------------------------------------------------------------
@@ -208,8 +220,12 @@ class AttributeProxy(TangoProxy):
         """add user callback to CHANGE event subscription"""
         self._event_callback = callback
         if not self._eid:
-            self._eid = self._proxy.subscribe_event(self._name, EventType.CHANGE_EVENT, self._event_processor,
-                                                    green_mode=False)
+            self._eid = self._proxy.subscribe_event(
+                self._name,
+                EventType.CHANGE_EVENT,
+                self._event_processor,
+                green_mode=False,
+            )
 
     # --------------------------------------------------------------------
     def unsubscribe_callback(self):
@@ -222,9 +238,11 @@ class AttributeProxy(TangoProxy):
     def _event_processor(self, event):
         if not event.err:
             value = event.attr_value.value
-            reading = dict(value=value,
-                           timestamp=event.get_date().totime(),
-                           alarm_severity=event.attr_value.quality)
+            reading = dict(
+                value=value,
+                timestamp=event.get_date().totime(),
+                alarm_severity=event.attr_value.quality,
+            )
 
             self._event_callback(reading, value)
 
@@ -241,7 +259,9 @@ class CommandProxy(TangoProxy):
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
-    async def put(self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None) -> None:
+    async def put(
+        self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
+    ) -> None:
         if wait:
             val = await self._proxy.command_inout(self._name, value)
         else:
@@ -253,7 +273,7 @@ class CommandProxy(TangoProxy):
                     try:
                         val = await self._proxy.command_inout_reply(rid)
                         finished = True
-                    except:
+                    except Exception:
                         await asyncio.sleep(A_BIT)
 
         self._last_reading = dict(value=val, timestamp=time.time(), alarm_severity=0)
@@ -273,33 +293,51 @@ def get_dtype_extended(datatype):
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
-        print(f"{datatype.__args__[1].__args__[0]=}, {datatype.__args__[1].__args__[0]==Enum}")
+        print(
+            f"{datatype.__args__[1].__args__[0]=},"
+            f"{datatype.__args__[1].__args__[0]==Enum}"
+        )
         if datatype.__args__[1].__args__[0] == DevState:
             dtype = CmdArgType.DevState
     return dtype
 
 
 # --------------------------------------------------------------------
-def get_trl_descriptor(datatype: Optional[Type], tango_resource: str,
-                       tr_configs: Dict[str, Union[AttributeInfoEx, CommandInfo]]) -> dict:
+def get_trl_descriptor(
+    datatype: Optional[Type],
+    tango_resource: str,
+    tr_configs: Dict[str, Union[AttributeInfoEx, CommandInfo]],
+) -> dict:
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
             _, dtype, descr = get_pyton_type(config.data_type)
             tr_dtype[tr_name] = config.data_format, dtype, descr
         elif isinstance(config, CommandInfo):
-            if config.in_type != CmdArgType.DevVoid and \
-                    config.out_type != CmdArgType.DevVoid and \
-                    config.in_type != config.out_type:
-                raise RuntimeError("Commands with different in and out dtypes are not supported")
-            array, dtype, descr = get_pyton_type(config.in_type if config.in_type != CmdArgType.DevVoid else config.out_type)
-            tr_dtype[tr_name] = AttrDataFormat.SPECTRUM \
-                if array else AttrDataFormat.SCALAR, dtype, descr
+            if (
+                config.in_type != CmdArgType.DevVoid
+                and config.out_type != CmdArgType.DevVoid
+                and config.in_type != config.out_type
+            ):
+                raise RuntimeError(
+                    "Commands with different in and out dtypes are not supported"
+                )
+            array, dtype, descr = get_pyton_type(
+                config.in_type
+                if config.in_type != CmdArgType.DevVoid
+                else config.out_type
+            )
+            tr_dtype[tr_name] = (
+                AttrDataFormat.SPECTRUM if array else AttrDataFormat.SCALAR,
+                dtype,
+                descr,
+            )
         else:
             raise RuntimeError(f"Unknown config type: {type(config)}")
     tr_format, tr_dtype, tr_dtype_desc = get_unique(tr_dtype, "typeids")
 
-    # tango commands are limited in functionality: they do not have info about shape and Enum labels
+    # tango commands are limited in functionality:
+    # they do not have info about shape and Enum labels
     trl_config = list(tr_configs.values())[0]
     max_x = trl_config.max_dim_x if hasattr(trl_config, "max_dim_x") else np.Inf
     max_y = trl_config.max_dim_y if hasattr(trl_config, "max_dim_y") else np.Inf
@@ -312,7 +350,9 @@ def get_trl_descriptor(datatype: Optional[Type], tango_resource: str,
             # Check we wanted an array of this type
             dtype = get_dtype_extended(datatype)
             if not dtype:
-                raise TypeError(f"{tango_resource} has type [{tr_dtype}] not {datatype.__name__}")
+                raise TypeError(
+                    f"{tango_resource} has type [{tr_dtype}] not {datatype.__name__}"
+                )
             if dtype != tr_dtype:
                 raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
 
@@ -328,21 +368,32 @@ def get_trl_descriptor(datatype: Optional[Type], tango_resource: str,
 
             if datatype:
                 if not issubclass(datatype, (Enum, DevState)):
-                    raise TypeError(f"{tango_resource} has type Enum not {datatype.__name__}")
+                    raise TypeError(
+                        f"{tango_resource} has type Enum not {datatype.__name__}"
+                    )
                 if tr_dtype == Enum and is_attr:
                     choices = tuple(v.name for v in datatype)
                     if set(choices) != set(trl_choices):
-                        raise TypeError(f"{tango_resource} has choices {trl_choices} not {choices}")
-            return dict(source=tango_resource, dtype="string", shape=[], choices=trl_choices)
+                        raise TypeError(
+                            f"{tango_resource} has choices {trl_choices} not {choices}"
+                        )
+            return dict(
+                source=tango_resource, dtype="string", shape=[], choices=trl_choices
+            )
         else:
             if datatype and not issubclass(tr_dtype, datatype):
-                raise TypeError(f"{tango_resource} has type {tr_dtype.__name__} not {datatype.__name__}")
+                raise TypeError(
+                    f"{tango_resource} has type {tr_dtype.__name__} "
+                    f"not {datatype.__name__}"
+                )
             return dict(source=tango_resource, dtype=tr_dtype_desc, shape=[])
 
 
 # --------------------------------------------------------------------
-async def get_tango_trl(full_trl: str, device_proxy: Optional[DeviceProxy]) -> TangoProxy:
-    device_trl, trl_name = full_trl.rsplit('/', 1)
+async def get_tango_trl(
+    full_trl: str, device_proxy: Optional[DeviceProxy]
+) -> TangoProxy:
+    device_trl, trl_name = full_trl.rsplit("/", 1)
     trl_name = trl_name.lower()
     device_proxy = device_proxy or await DeviceProxy(device_trl)
 
@@ -359,7 +410,7 @@ async def get_tango_trl(full_trl: str, device_proxy: Optional[DeviceProxy]) -> T
     # all pipes can be always accessible with low register
     all_pipes = [pipe_name.lower() for pipe_name in device_proxy.get_pipe_list()]
     if trl_name in all_pipes:
-        raise NotImplemented("Pipes are not supported")
+        raise NotImplementedError("Pipes are not supported")
 
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
@@ -367,15 +418,20 @@ async def get_tango_trl(full_trl: str, device_proxy: Optional[DeviceProxy]) -> T
 # --------------------------------------------------------------------
 class TangoTransport(TangoSignalBackend[T]):
 
-    def __init__(self,
-                 datatype: Optional[Type[T]],
-                 read_trl: str,
-                 write_trl: str,
-                 device_proxy: Optional[DeviceProxy] = None):
+    def __init__(
+        self,
+        datatype: Optional[Type[T]],
+        read_trl: str,
+        write_trl: str,
+        device_proxy: Optional[DeviceProxy] = None,
+    ):
         self.datatype = datatype
         self.read_trl = read_trl
         self.write_trl = write_trl
-        self.proxies: Dict[str, TangoProxy] = {read_trl: device_proxy, write_trl: device_proxy}
+        self.proxies: Dict[str, TangoProxy] = {
+            read_trl: device_proxy,
+            write_trl: device_proxy,
+        }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
         self.source = f"{self.read_trl}"
         self.descriptor: Descriptor = {}  # type: ignore
@@ -400,7 +456,9 @@ class TangoTransport(TangoSignalBackend[T]):
         else:
             # The same, so only need to connect one
             await self._connect_and_store_config(self.read_trl)
-        self.descriptor = get_trl_descriptor(self.datatype, self.read_trl, self.trl_configs)
+        self.descriptor = get_trl_descriptor(
+            self.datatype, self.read_trl, self.trl_configs
+        )
 
     # --------------------------------------------------------------------
     async def put(self, write_value: Optional[T], wait=True, timeout=None):
@@ -428,15 +486,21 @@ class TangoTransport(TangoSignalBackend[T]):
 
     # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
-        assert self.proxies[self.read_trl].support_events, f"{self.source} does not support events"
+        assert self.proxies[
+            self.read_trl
+        ].support_events, f"{self.source} does not support events"
 
         if callback:
-            assert (not self.proxies[self.read_trl].has_subscription()), "Cannot set a callback when one is already set"
+            assert not self.proxies[
+                self.read_trl
+            ].has_subscription(), "Cannot set a callback when one is already set"
             try:
                 self.proxies[self.read_trl].subscribe_callback(callback)
-            except Exception as err:
-                raise RuntimeError(f"Cannot set event for {self.read_trl}. "
-                                   f"This signal should be used only as non-cached!")
+            except AssertionError or RuntimeError:
+                raise RuntimeError(
+                    f"Cannot set event for {self.read_trl}. "
+                    f"This signal should be used only as non-cached!"
+                )
 
         else:
             self.proxies[self.read_trl].unsubscribe_callback()

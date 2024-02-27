@@ -3,29 +3,37 @@
 from __future__ import annotations
 
 from typing import Optional, Type, Union
-from tango.asyncio import DeviceProxy
-from tango import DeviceProxy as SyncDeviceProxy
-from tango import AttrWriteType, CmdArgType
 
+from tango import AttrWriteType, CmdArgType
+from tango import DeviceProxy as SyncDeviceProxy
+from tango.asyncio import DeviceProxy
 
 from ophyd_async.core import T
+from ophyd_async.tango._backend import (
+    TangoSignalBackend,
+    TangoSignalR,
+    TangoSignalRW,
+    TangoSignalW,
+    TangoSignalX,
+    TangoTransport,
+)
 
-from ophyd_async.tango._backend import (TangoTransport, TangoSignalRW, TangoSignalW,
-                                        TangoSignalX, TangoSignalR, TangoSignalBackend)
-
-__all__ = ("tango_signal_rw",
-           "tango_signal_r",
-           "tango_signal_w",
-           "tango_signal_x",
-           "tango_signal_auto")
+__all__ = (
+    "tango_signal_rw",
+    "tango_signal_r",
+    "tango_signal_w",
+    "tango_signal_x",
+    "tango_signal_auto",
+)
 
 
 # --------------------------------------------------------------------
-def tango_signal_rw(datatype: Type[T],
-                    read_trl: str,
-                    write_trl: Optional[str] = None,
-                    device_proxy: Optional[DeviceProxy] = None
-                    ) -> TangoSignalRW[T]:
+def tango_signal_rw(
+    datatype: Type[T],
+    read_trl: str,
+    write_trl: Optional[str] = None,
+    device_proxy: Optional[DeviceProxy] = None,
+) -> TangoSignalRW[T]:
     """Create a `SignalRW` backed by 1 or 2 Tango Attribute/Command
 
     Parameters
@@ -44,10 +52,9 @@ def tango_signal_rw(datatype: Type[T],
 
 
 # --------------------------------------------------------------------
-def tango_signal_r(datatype: Type[T],
-                   read_trl: str,
-                   device_proxy: Optional[DeviceProxy] = None
-                   ) -> TangoSignalR[T]:
+def tango_signal_r(
+    datatype: Type[T], read_trl: str, device_proxy: Optional[DeviceProxy] = None
+) -> TangoSignalR[T]:
     """Create a `SignalR` backed by 1 Tango Attribute/Command
 
     Parameters
@@ -64,10 +71,9 @@ def tango_signal_r(datatype: Type[T],
 
 
 # --------------------------------------------------------------------
-def tango_signal_w(datatype: Type[T],
-                   write_trl: str,
-                   device_proxy: Optional[DeviceProxy] = None
-                   ) -> TangoSignalW[T]:
+def tango_signal_w(
+    datatype: Type[T], write_trl: str, device_proxy: Optional[DeviceProxy] = None
+) -> TangoSignalW[T]:
     """Create a `TangoSignalW` backed by 1 Tango Attribute/Command
 
     Parameters
@@ -84,9 +90,9 @@ def tango_signal_w(datatype: Type[T],
 
 
 # --------------------------------------------------------------------
-def tango_signal_x(write_trl: str,
-                   device_proxy: Optional[DeviceProxy] = None
-                   ) -> TangoSignalX:
+def tango_signal_x(
+    write_trl: str, device_proxy: Optional[DeviceProxy] = None
+) -> TangoSignalX:
     """Create a `SignalX` backed by 1 Tango Attribute/Command
 
     Parameters
@@ -96,16 +102,21 @@ def tango_signal_x(write_trl: str,
     device_proxy:
         If given, this DeviceProxy will be used
     """
-    backend: TangoSignalBackend = TangoTransport(None, write_trl, write_trl, device_proxy)
+    backend: TangoSignalBackend = TangoTransport(
+        None, write_trl, write_trl, device_proxy
+    )
     return TangoSignalX(backend)
 
 
 # --------------------------------------------------------------------
-def tango_signal_auto(datatype: Type[T], full_trl: str, device_proxy: Optional[DeviceProxy] = None) -> \
-        Union[TangoSignalW, TangoSignalX, TangoSignalR, TangoSignalRW]:
-    backend: TangoSignalBackend = TangoTransport(datatype, full_trl, full_trl, device_proxy)
+def tango_signal_auto(
+    datatype: Type[T], full_trl: str, device_proxy: Optional[DeviceProxy] = None
+) -> Union[TangoSignalW, TangoSignalX, TangoSignalR, TangoSignalRW]:
+    backend: TangoSignalBackend = TangoTransport(
+        datatype, full_trl, full_trl, device_proxy
+    )
 
-    device_trl, tr_name = full_trl.rsplit('/', 1)
+    device_trl, tr_name = full_trl.rsplit("/", 1)
     device_proxy = SyncDeviceProxy(device_trl)
     if tr_name in device_proxy.get_attribute_list():
         config = device_proxy.get_attribute_config(tr_name)
@@ -126,6 +137,6 @@ def tango_signal_auto(datatype: Type[T], full_trl: str, device_proxy: Optional[D
             return TangoSignalX(backend)
 
     if tr_name in device_proxy.get_pipe_list():
-        raise NotImplemented("Pipes are not supported")
+        raise NotImplementedError("Pipes are not supported")
 
     raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")

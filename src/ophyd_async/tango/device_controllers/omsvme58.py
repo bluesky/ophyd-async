@@ -1,17 +1,19 @@
-
 from __future__ import annotations
 
 import asyncio
 import time
+from typing import Callable, List, Optional
 
-from typing import Optional, List, Callable
-
-from bluesky.protocols import Locatable, Stoppable, Location
-
+from bluesky.protocols import Locatable, Location, Stoppable
 from tango import DevState
 
-from ophyd_async.tango import TangoReadableDevice, tango_signal_x, tango_signal_r, tango_signal_rw
 from ophyd_async.core import AsyncStatus
+from ophyd_async.tango import (
+    TangoReadableDevice,
+    tango_signal_r,
+    tango_signal_rw,
+    tango_signal_x,
+)
 
 
 # --------------------------------------------------------------------
@@ -25,20 +27,29 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
     # --------------------------------------------------------------------
     def register_signals(self):
 
-        self.position = tango_signal_rw(float, self.trl + '/position', device_proxy=self.proxy)
-        self.baserate = tango_signal_rw(int, self.trl + '/baserate', device_proxy=self.proxy)
-        self.slewrate = tango_signal_rw(int, self.trl + '/slewrate', device_proxy=self.proxy)
-        self.conversion = tango_signal_rw(float, self.trl + '/conversion', device_proxy=self.proxy)
-        self.acceleration = tango_signal_rw(int, self.trl + '/acceleration', device_proxy=self.proxy)
+        self.position = tango_signal_rw(
+            float, self.trl + "/position", device_proxy=self.proxy
+        )
+        self.baserate = tango_signal_rw(
+            int, self.trl + "/baserate", device_proxy=self.proxy
+        )
+        self.slewrate = tango_signal_rw(
+            int, self.trl + "/slewrate", device_proxy=self.proxy
+        )
+        self.conversion = tango_signal_rw(
+            float, self.trl + "/conversion", device_proxy=self.proxy
+        )
+        self.acceleration = tango_signal_rw(
+            int, self.trl + "/acceleration", device_proxy=self.proxy
+        )
 
-        self.set_readable_signals(read_uncached=[self.position],
-                                  config=[self.baserate,
-                                          self.slewrate,
-                                          self.conversion,
-                                          self.acceleration])
+        self.set_readable_signals(
+            read_uncached=[self.position],
+            config=[self.baserate, self.slewrate, self.conversion, self.acceleration],
+        )
 
-        self._stop = tango_signal_x(self.trl + '/stopmove', self.proxy)
-        self._state = tango_signal_r(DevState, self.trl + '/state', self.proxy)
+        self._stop = tango_signal_x(self.trl + "/stopmove", self.proxy)
+        self._state = tango_signal_r(DevState, self.trl + "/state", self.proxy)
 
     # --------------------------------------------------------------------
     async def _move(self, new_position: float, watchers: List[Callable] = []):
@@ -91,4 +102,3 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
         await self._stop.trigger()
-

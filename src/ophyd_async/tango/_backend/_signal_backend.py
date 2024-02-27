@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from ophyd_async.core import T, SignalW, SignalRW, SignalR, SignalX
+from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.core.signal import add_timeout
 
 
@@ -24,20 +24,16 @@ class CachableOrNot:
 
 
 # --------------------------------------------------------------------
-class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoit):
-    ...
+class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoit): ...  # noqa: E701
 
 
 # --------------------------------------------------------------------
-class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoit):
-    ...
+class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoit): ...  # noqa: E701
 
 
 # --------------------------------------------------------------------
-class TangoSignalR(SignalR[T], CachableOrNot):
-    ...
+class TangoSignalR(SignalR[T], CachableOrNot): ...  # noqa: E701
 
 
 # --------------------------------------------------------------------
-class TangoSignalX(SignalX, CachableOrNot):
-    ...
+class TangoSignalX(SignalX, CachableOrNot): ...  # noqa: E701
