@@ -230,12 +230,16 @@ class StandardDetector(
             trigger=DetectorTrigger.internal,
         )
         await written_status
+        end_observation = indices_written + 1
+        await self._observe_writer_indicies(end_observation)
+
+    async def _observe_writer_indicies(self, end_observation: int):
         async for index in self.writer.observe_indices_written(
             self._frame_writing_timeout
         ):
             for watcher in self._watchers:
                 watcher(..., index, ...)
-            if index >= indices_written + 1:
+            if index >= end_observation:
                 break
 
     def prepare(
@@ -288,13 +292,8 @@ class StandardDetector(
         self._fly_start = time.monotonic()
 
     async def _fly(self) -> None:
-        async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
-        ):
-            for watcher in self._watchers:
-                watcher(..., index, ...)
-            if index >= self._last_frame - self._offset:
-                break
+        end_observation = self._last_frame - self._offset
+        await self._observe_writer_indicies(end_observation)
 
     @AsyncStatus.wrap
     async def complete(self) -> AsyncStatus:
@@ -319,3 +318,4 @@ class StandardDetector(
 
     async def get_index(self) -> int:
         return await self.writer.get_indices_written()
+
