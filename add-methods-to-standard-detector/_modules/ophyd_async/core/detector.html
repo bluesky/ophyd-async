@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.detector &#8212; ophyd-async 0.2.1.dev72+g9683753d documentation</title>
+    <title>ophyd_async.core.detector &#8212; ophyd-async 0.2.1.dev74+g7d80af00 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=1f4070b9"></script>
+    <script src="../../../_static/documentation_options.js?v=47c9079f"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev72+g9683753d documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev72+g9683753d documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev74+g7d80af00 documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev74+g7d80af00 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -728,10 +728,15 @@ document.write(`
 
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">current_frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Arm detectors,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Arm detectors.</span>
 
-<span class="sd">        The frame information was managed in the flyer and now needs to be</span>
-<span class="sd">        managed in the plan level.</span>
+<span class="sd">        Prepare the detector with trigger information. This is determined at and passed</span>
+<span class="sd">        in from the plan level.</span>
+
+<span class="sd">        This currently only prepares detectors for flyscans and stepscans just use the</span>
+<span class="sd">        trigger information determined in trigger.</span>
+
+<span class="sd">        To do: Unify prepare to be use for both fly and step scans.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="n">TriggerInfo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
