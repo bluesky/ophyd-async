@@ -252,10 +252,15 @@ class StandardDetector(
         return AsyncStatus(self._prepare(value, current_frame))
 
     async def _prepare(self, value: T, current_frame) -> None:
-        """Arm detectors,
+        """Arm detectors.
 
-        The frame information was managed in the flyer and now needs to be
-        managed in the plan level.
+        Prepare the detector with trigger information. This is determined at and passed
+        in from the plan level.
+
+        This currently only prepares detectors for flyscans and stepscans just use the
+        trigger information determined in trigger.
+
+        To do: Unify prepare to be use for both fly and step scans.
         """
         assert type(value) is TriggerInfo
         self._trigger_info = value
