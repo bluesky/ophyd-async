@@ -69,7 +69,7 @@ class TangoSignalBackend(SignalBackend[T]):
 
 
 # --------------------------------------------------------------------
-def get_pyton_type(tango_type) -> tuple[bool, T, str]:
+def get_python_type(tango_type) -> tuple[bool, T, str]:
     array = is_array(tango_type)
     if is_int(tango_type, True):
         return array, int, "integer"
@@ -311,7 +311,7 @@ def get_trl_descriptor(
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
-            _, dtype, descr = get_pyton_type(config.data_type)
+            _, dtype, descr = get_python_type(config.data_type)
             tr_dtype[tr_name] = config.data_format, dtype, descr
         elif isinstance(config, CommandInfo):
             if (
@@ -322,7 +322,7 @@ def get_trl_descriptor(
                 raise RuntimeError(
                     "Commands with different in and out dtypes are not supported"
                 )
-            array, dtype, descr = get_pyton_type(
+            array, dtype, descr = get_python_type(
                 config.in_type
                 if config.in_type != CmdArgType.DevVoid
                 else config.out_type

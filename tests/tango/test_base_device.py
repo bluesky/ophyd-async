@@ -21,7 +21,7 @@ from tango.test_utils import assert_close
 
 from ophyd_async.core import DeviceCollector, T
 from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
-from ophyd_async.tango._backend._tango_transport import get_pyton_type
+from ophyd_async.tango._backend._tango_transport import get_python_type
 
 
 class TestEnum(IntEnum):
@@ -104,7 +104,7 @@ def describe_class(fqtrl):
         if name in dev.get_attribute_list():
             attr_conf = dev.get_attribute_config(name)
             value = dev.read_attribute(name).value
-            _, _, descr = get_pyton_type(attr_conf.data_type)
+            _, _, descr = get_python_type(attr_conf.data_type)
             max_x = attr_conf.max_dim_x
             max_y = attr_conf.max_dim_y
             if attr_conf.data_format == AttrDataFormat.SCALAR:
@@ -119,7 +119,7 @@ def describe_class(fqtrl):
 
         elif name in dev.get_command_list():
             cmd_conf = dev.get_command_config(name)
-            _, _, descr = get_pyton_type(
+            _, _, descr = get_python_type(
                 cmd_conf.in_type
                 if cmd_conf.in_type != CmdArgType.DevVoid
                 else cmd_conf.out_type

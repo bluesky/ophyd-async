@@ -8,7 +8,7 @@ from ophyd_async.core.signal import add_timeout
 
 # --------------------------------------------------------------------
 # from tango attributes one can get setvalue, so we extend SignalRW and SignalW
-class SignalWithSetpoit:
+class SignalWithSetpoint:
     @add_timeout
     async def get_setpoint(self, cached: Optional[bool] = None) -> T:
         """The last written value to TRL"""
@@ -24,11 +24,11 @@ class CachableOrNot:
 
 
 # --------------------------------------------------------------------
-class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoit): ...  # noqa: E701
+class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoint): ...  # noqa: E701
 
 
 # --------------------------------------------------------------------
-class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoit): ...  # noqa: E701
+class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoint): ...  # noqa: E701
 
 
 # --------------------------------------------------------------------
