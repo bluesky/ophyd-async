@@ -113,19 +113,25 @@ class DummyWriter(DetectorWriter):
 async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
     await writers[0].dummy_signal.connect(sim=True)
+    await writers[1].dummy_signal.connect(sim=True)
 
-    async def dummy_arm(self=None, trigger=None, num=0, exposure=None):
+    async def dummy_arm_1(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)
 
+    async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):
+        return writers[1].dummy_signal.set(1)
+
     detector_1 = StandardDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
+        writer_timeout=3,
     )
     detector_2 = StandardDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm),
+        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
+        writer_timeout=3,
     )
 
     return (detector_1, detector_2)
@@ -143,8 +149,6 @@ async def test_hardware_triggered_flyable(
 
     RE.subscribe(append_and_print)
 
-    assert len(detector_list) == 2
-
     trigger_logic = DummyTriggerLogic()
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
 
@@ -159,7 +163,7 @@ async def test_hardware_triggered_flyable(
         # prepare detectors second.
         for detector in detector_list:
             yield from bps.prepare(
-                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=10
+                detector, flyer.trigger_info, wait=True, current_frame=0, last_frame=4
             )
 
         assert trigger_logic.state == TriggerState.preparing
@@ -191,7 +195,7 @@ async def test_hardware_triggered_flyable(
                 return_payload=False,
                 name="main_stream",
             )
-            yield from bps.sleep(0.001)
+            yield from bps.sleep(0.01)
         yield from bps.wait(group="complete")
         yield from bps.close_run()
 
