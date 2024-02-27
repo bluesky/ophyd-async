@@ -185,6 +185,7 @@ class StandardDetector(
         await self.check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._describe = await self.writer.open()
+        self._offset = 0
         self._current_frame = 0
 
     async def check_config_sigs(self):
@@ -246,12 +247,11 @@ class StandardDetector(
         self,
         value: T,
         current_frame=None,
-        last_frame=None,
     ) -> AsyncStatus:
         """Arm detectors"""
-        return AsyncStatus(self._prepare(value, current_frame, last_frame))
+        return AsyncStatus(self._prepare(value, current_frame))
 
-    async def _prepare(self, value: T, current_frame, last_frame) -> None:
+    async def _prepare(self, value: T, current_frame) -> None:
         """Arm detectors,
 
         The frame information was managed in the flyer and now needs to be
@@ -260,8 +260,8 @@ class StandardDetector(
         assert type(value) is TriggerInfo
         self._trigger_info = value
         self._current_frame = current_frame
-        self._last_frame = last_frame
 
+        self._offset -= self._current_frame
         self._current_frame = 0
         self._last_frame = self._current_frame + self._trigger_info.num
 
@@ -318,4 +318,3 @@ class StandardDetector(
 
     async def get_index(self) -> int:
         return await self.writer.get_indices_written()
-
