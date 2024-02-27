@@ -218,3 +218,25 @@ async def test_hardware_triggered_flyable(
         "stream_datum",
         "stop",
     ]
+
+
+def test_flyer_has_trigger_logic_property():
+    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
+    trigger_info = flyer.trigger_logic.trigger_info(1)
+    assert type(trigger_info) is TriggerInfo
+    assert trigger_info.num == 1
+    assert trigger_info.trigger == "constant_gate"
+    assert trigger_info.deadtime == 2
+    assert trigger_info.livetime == 2
+
+
+# To do: Populate configuration signals
+async def test_describe_configuration():
+    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
+    assert await flyer.describe_configuration() == {}
+
+
+# To do: Populate configuration signals
+async def test_read_configuration():
+    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
+    assert await flyer.read_configuration() == {}
