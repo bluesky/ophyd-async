@@ -350,11 +350,23 @@ async def test_pvi_structure(ioc: IOC) -> None:
     backend = await ioc.make_backend(Dict[str, Any], "pvi")
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
+    expected = {
+        "pvi": {
+            "width": {
+                "rw": f"{PV_PREFIX}:{ioc.protocol}:width",
+            },
+            "height": {
+                "rw": f"{PV_PREFIX}:{ioc.protocol}:height",
+            },
+        }
+    }
     try:
-        # Check initial value
+        # Check descriptor
         with pytest.raises(NotImplementedError):
-            # Check descriptor
             await backend.get_descriptor()
+        # Check initial value
+        await q.assert_updates(expected)
+
 
     finally:
         q.close()
