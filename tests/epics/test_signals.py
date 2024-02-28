@@ -10,7 +10,17 @@ from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, Sequence, Tuple, Type, TypedDict
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypedDict,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -330,6 +340,24 @@ async def test_pva_table(ioc: IOC) -> None:
             await q.assert_updates(approx_table(p))
         finally:
             q.close()
+
+
+async def test_pvi_structure(ioc: IOC) -> None:
+    if ioc.protocol == "ca":
+        # CA can't do structure
+        return
+    # Make and connect the backend
+    backend = await ioc.make_backend(Dict[str, Any], "pvi")
+    # Make a monitor queue that will monitor for updates
+    q = MonitorQueue(backend)
+    try:
+        # Check initial value
+        with pytest.raises(NotImplementedError):
+            # Check descriptor
+            await backend.get_descriptor()
+
+    finally:
+        q.close()
 
 
 async def test_pva_ntdarray(ioc: IOC):
