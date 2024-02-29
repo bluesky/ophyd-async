@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from typing import AsyncIterator, Dict, List, Optional
 
 from bluesky.protocols import Asset, Descriptor, Hints
@@ -45,6 +46,7 @@ class HDFWriter(DetectorWriter):
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
+            # See https://github.com/bluesky/ophyd-async/issues/122
             self.hdf.file_path.set(str(info.root / info.resource_dir)),
             self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
             self.hdf.file_template.set("%s/%s.h5"),
@@ -108,7 +110,8 @@ class HDFWriter(DetectorWriter):
             if not self._file:
                 self._file = _HDFFile(
                     self._directory_provider(),
-                    await self.hdf.full_file_name.get_value(),
+                    # See https://github.com/bluesky/ophyd-async/issues/122
+                    Path(await self.hdf.full_file_name.get_value()),
                     self._datasets,
                 )
                 for doc in self._file.stream_resources():

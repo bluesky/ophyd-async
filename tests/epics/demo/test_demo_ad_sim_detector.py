@@ -14,6 +14,7 @@ from ophyd_async.core import (
     DeviceCollector,
     StandardDetector,
     StaticDirectoryProvider,
+    set_sim_callback,
     set_sim_value,
 )
 from ophyd_async.epics.areadetector.controllers import ADSimController
@@ -32,6 +33,11 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
         det = DemoADSimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
+        
+    def _set_full_file_name(_, val):
+        set_sim_value(hdf.full_file_name, str(tmp_path / val))
+        
+    set_sim_callback(hdf.file_name, _set_full_file_name)
 
     return det
 
