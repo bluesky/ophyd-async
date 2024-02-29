@@ -33,10 +33,10 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
         det = DemoADSimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
-        
+
     def _set_full_file_name(_, val):
         set_sim_value(hdf.full_file_name, str(tmp_path / val))
-        
+
     set_sim_callback(hdf.file_name, _set_full_file_name)
 
     return det
@@ -152,16 +152,16 @@ async def test_two_detectors_step(
     assert await writer_a.hdf.file_path.get_value() == str(
         info_a.root / info_a.resource_dir
     )
-    file_name = await writer_a.hdf.file_name.get_value()
-    assert file_name.startswith(info_a.prefix)
-    assert file_name.endswith(info_a.suffix)
+    file_name_a = await writer_a.hdf.file_name.get_value()
+    assert file_name_a.startswith(info_a.prefix)
+    assert file_name_a.endswith(info_a.suffix)
 
     assert await writer_b.hdf.file_path.get_value() == str(
         info_b.root / info_b.resource_dir
     )
-    file_name = await writer_b.hdf.file_name.get_value()
-    assert file_name.startswith(info_b.prefix)
-    assert file_name.endswith(info_b.suffix)
+    file_name_b = await writer_b.hdf.file_name.get_value()
+    assert file_name_b.startswith(info_b.prefix)
+    assert file_name_b.endswith(info_b.suffix)
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8
@@ -170,6 +170,10 @@ async def test_two_detectors_step(
     assert descriptor["data_keys"]["testb"]["shape"] == (769, 1025)
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
+    assert sra["root"] == str(info_a.root)
+    assert sra["resource_path"] == str(info_a.resource_dir / file_name_a)
+    assert srb["root"] == str(info_b.root)
+    assert srb["resource_path"] == str(info_b.resource_dir / file_name_b)
     assert event["data"] == {}
 
 
