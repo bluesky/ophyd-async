@@ -43,7 +43,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 
     yield from bps.stage_all(*dets)
     for det in dets:
-        yield from bps.prepare(dets)
+        yield from bps.prepare(det)
     yield from bps.open_run()
     yield from bps.declare_stream(*dets, name="primary", collect=False)
     for _ in range(times):
