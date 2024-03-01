@@ -171,6 +171,7 @@ class StandardDetector(
         self._current_frame = 0  # The current frame we are on
         self._last_frame = 0  # The last frame that will be emitted
 
+
         super().__init__(name)
 
     @property
@@ -186,9 +187,6 @@ class StandardDetector(
         """Disarm the detector, stop filewriting, and open file for writing."""
         await self.check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
-        self._describe = await self.writer.open()
-        self._offset = 0
-        self._current_frame = 0
 
     async def check_config_sigs(self):
         """Checks configuration signals are named and connected."""
@@ -249,11 +247,12 @@ class StandardDetector(
         self,
         value: T,
         current_frame=None,
+        trigger_multiplier=1,
     ) -> AsyncStatus:
         """Arm detectors"""
-        return AsyncStatus(self._prepare(value, current_frame))
+        return AsyncStatus(self._prepare(value, current_frame, trigger_multiplier))
 
-    async def _prepare(self, value: T, current_frame) -> None:
+    async def _prepare(self, value: T, current_frame, trigger_multiplier) -> None:
         """Arm detectors.
 
         Prepare the detector with trigger information. This is determined at and passed
@@ -266,6 +265,17 @@ class StandardDetector(
         """
         assert type(value) is TriggerInfo
         self._trigger_info = value
+
+        if trigger_multiplier < 1:
+            raise ValueError("Trigger multiplier must be an integer greater than or equal to 1!")
+        elif trigger_multiplier > 1:
+            self._trigger_info.multiplier = trigger_multiplier
+            # Set number of triggers based on baseline number and multiplier
+            self._trigger_info.num = self._trigger_info.num * self._trigger_info.multiplier
+
+        # Open writer with multiplier
+        self._describe = await self.writer.open(multiplier=self._trigger_info.multiplier)
+
         self._current_frame = current_frame
 
         self._offset -= self._current_frame
