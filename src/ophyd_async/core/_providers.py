@@ -37,6 +37,7 @@ class StaticDirectoryProvider(DirectoryProvider):
     def __init__(
         self,
         directory_path: Union[str, Path],
+        resource_dir: Path = Path("."),
         filename_prefix: str = "",
         filename_suffix: str = "",
     ) -> None:
@@ -44,7 +45,7 @@ class StaticDirectoryProvider(DirectoryProvider):
             directory_path = Path(directory_path)
         self._directory_info = DirectoryInfo(
             root=directory_path,
-            resource_dir=Path("."),
+            resource_dir=resource_dir,
             prefix=filename_prefix,
             suffix=filename_suffix,
         )
