@@ -37,9 +37,9 @@ class StaticDirectoryProvider(DirectoryProvider):
     def __init__(
         self,
         directory_path: Union[str, Path],
-        resource_dir: Path = Path("."),
         filename_prefix: str = "",
         filename_suffix: str = "",
+        resource_dir: Path = Path("."),
     ) -> None:
         if isinstance(directory_path, str):
             directory_path = Path(directory_path)
