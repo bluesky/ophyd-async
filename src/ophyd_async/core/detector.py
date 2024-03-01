@@ -59,6 +59,8 @@ class TriggerInfo:
     deadtime: float
     #: What is the maximum high time of the triggers
     livetime: float
+    #: How many triggers per single trigger sent to slowest detector
+    multiplier: int
 
 
 class DetectorControl(ABC):
