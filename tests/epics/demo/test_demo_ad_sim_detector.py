@@ -42,6 +42,8 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 
     yield from bps.stage_all(*dets)
+    for det in dets:
+        yield from bps.prepare(dets)
     yield from bps.open_run()
     yield from bps.declare_stream(*dets, name="primary", collect=False)
     for _ in range(times):
