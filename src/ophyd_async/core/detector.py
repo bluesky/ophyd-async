@@ -225,9 +225,12 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def trigger(self) -> None:
         """Arm the detector and wait for it to finish."""
+
+        if self._trigger_info is not None and self._trigger_info.trigger != DetectorTrigger.internal:
+            raise Exception(f"Detector {self._name} is prepared for a flyscan, cannot be used in step scan mode!")
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(
-            num=1,
+            num=1 if self._trigger_info is None else self._trigger_info.num,
             trigger=DetectorTrigger.internal,
         )
         await written_status
