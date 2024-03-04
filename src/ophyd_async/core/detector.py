@@ -164,6 +164,7 @@ class StandardDetector(
         # For kickoff
         self._watchers: List[Callable] = []
         self._fly_status: Optional[AsyncStatus] = None
+        self._fly_start: float
 
         self._current_frame: int
         super().__init__(name)
@@ -228,14 +229,10 @@ class StandardDetector(
         )
         await written_status
         end_observation = indices_written + 1
-        await self._observe_writer_indicies(end_observation)
 
-    async def _observe_writer_indicies(self, end_observation: int):
         async for index in self.writer.observe_indices_written(
             self._frame_writing_timeout
         ):
-            for watcher in self._watchers:
-                watcher(..., index, ...)
             if index >= end_observation:
                 break
 
@@ -281,6 +278,23 @@ class StandardDetector(
 
     async def _fly(self) -> None:
         await self._observe_writer_indicies(self._last_frame)
+
+    async def _observe_writer_indicies(self, end_observation: int):
+        async for index in self.writer.observe_indices_written(
+            self._frame_writing_timeout
+        ):
+            for watcher in self._watchers:
+                watcher(
+                    name=self.name,
+                    current=index,
+                    initial=0,
+                    target=end_observation,
+                    unit="",
+                    precision=0,
+                    time_elapsed=time.monotonic() - self._fly_start,
+                )
+            if index >= end_observation:
+                break
 
     @AsyncStatus.wrap
     async def complete(self) -> AsyncStatus:
