@@ -14,6 +14,7 @@ from ophyd_async.core import (
     DeviceCollector,
     StandardDetector,
     StaticDirectoryProvider,
+    set_sim_callback,
     set_sim_value,
 )
 from ophyd_async.epics.areadetector.controllers import ADSimController
@@ -22,11 +23,9 @@ from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
 
-CURRENT_DIRECTORY = Path(__file__).parent
 
-
-async def make_detector(prefix="", name="test"):
-    dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
+async def make_detector(prefix: str, name: str, tmp_path: Path):
+    dp = StaticDirectoryProvider(tmp_path, f"test-{new_uid()}")
 
     async with DeviceCollector(sim=True):
         drv = ADBase(f"{prefix}DRV:")
@@ -34,6 +33,11 @@ async def make_detector(prefix="", name="test"):
         det = DemoADSimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
+
+    def _set_full_file_name(_, val):
+        set_sim_value(hdf.full_file_name, str(tmp_path / val))
+
+    set_sim_callback(hdf.file_name, _set_full_file_name)
 
     return det
 
@@ -75,8 +79,8 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 
 
 @pytest.fixture
-async def single_detector(RE: RunEngine) -> StandardDetector:
-    detector = await make_detector(prefix="TEST:")
+async def single_detector(RE: RunEngine, tmp_path: Path) -> StandardDetector:
+    detector = await make_detector(prefix="TEST:", name="test", tmp_path=tmp_path)
 
     set_sim_value(detector._controller.driver.array_size_x, 10)
     set_sim_value(detector._controller.driver.array_size_y, 20)
@@ -84,9 +88,9 @@ async def single_detector(RE: RunEngine) -> StandardDetector:
 
 
 @pytest.fixture
-async def two_detectors():
-    deta = await make_detector(prefix="PREFIX1:", name="testa")
-    detb = await make_detector(prefix="PREFIX2:", name="testb")
+async def two_detectors(tmp_path: Path):
+    deta = await make_detector(prefix="PREFIX1:", name="testa", tmp_path=tmp_path)
+    detb = await make_detector(prefix="PREFIX2:", name="testb", tmp_path=tmp_path)
 
     # Simulate backend IOCs being in slightly different states
     for i, det in enumerate((deta, detb)):
@@ -145,11 +149,19 @@ async def test_two_detectors_step(
     info_a = writer_a._directory_provider()
     info_b = writer_b._directory_provider()
 
-    assert await writer_a.hdf.file_path.get_value() == info_a.directory_path
-    assert (await writer_a.hdf.file_name.get_value()).startswith(info_a.filename_prefix)
+    assert await writer_a.hdf.file_path.get_value() == str(
+        info_a.root / info_a.resource_dir
+    )
+    file_name_a = await writer_a.hdf.file_name.get_value()
+    assert file_name_a.startswith(info_a.prefix)
+    assert file_name_a.endswith(info_a.suffix)
 
-    assert await writer_b.hdf.file_path.get_value() == info_b.directory_path
-    assert (await writer_b.hdf.file_name.get_value()).startswith(info_b.filename_prefix)
+    assert await writer_b.hdf.file_path.get_value() == str(
+        info_b.root / info_b.resource_dir
+    )
+    file_name_b = await writer_b.hdf.file_name.get_value()
+    assert file_name_b.startswith(info_b.prefix)
+    assert file_name_b.endswith(info_b.suffix)
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8
@@ -158,11 +170,15 @@ async def test_two_detectors_step(
     assert descriptor["data_keys"]["testb"]["shape"] == (769, 1025)
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
+    assert sra["root"] == str(info_a.root)
+    assert sra["resource_path"] == str(info_a.resource_dir / file_name_a)
+    assert srb["root"] == str(info_b.root)
+    assert srb["resource_path"] == str(info_b.resource_dir / file_name_b)
     assert event["data"] == {}
 
 
 async def test_detector_writes_to_file(
-    RE: RunEngine, single_detector: StandardDetector
+    RE: RunEngine, single_detector: StandardDetector, tmp_path: Path
 ):
     names = []
     docs = []
@@ -172,10 +188,9 @@ async def test_detector_writes_to_file(
 
     RE(count_sim([single_detector], times=3))
 
-    assert (
-        await cast(HDFWriter, single_detector.writer).hdf.file_path.get_value()
-        == CURRENT_DIRECTORY
-    )
+    assert await cast(
+        HDFWriter, single_detector.writer
+    ).hdf.file_path.get_value() == str(tmp_path)
 
     descriptor_index = names.index("descriptor")
 
@@ -243,22 +258,20 @@ async def test_trigger_logic():
     ...
 
 
-async def test_detector_with_unnamed_or_disconnected_config_sigs(
-    RE, prefix="", name="test"
-):
-    dp = StaticDirectoryProvider(CURRENT_DIRECTORY, f"test-{new_uid()}")
-    drv = ADBase(f"{prefix}DRV:")
+async def test_detector_with_unnamed_or_disconnected_config_sigs(RE, tmp_path: Path):
+    dp = StaticDirectoryProvider(tmp_path)
+    drv = ADBase("FOO:DRV:")
 
     some_other_driver = ADBase("TEST")
 
     async with DeviceCollector(sim=True):
-        hdf = NDFileHDF(f"{prefix}HDF:")
+        hdf = NDFileHDF("FOO:HDF:")
         det = DemoADSimDetector(
             drv,
             hdf,
             dp,
             config_sigs=[some_other_driver.acquire_time, drv.acquire],
-            name=name,
+            name="foo",
         )
 
     with pytest.raises(Exception) as exc:
