@@ -100,16 +100,16 @@ class MonitorQueue:
             "timestamp": pytest.approx(time.time(), rel=0.1),
             "alarm_severity": 0,
         }
-        reading, value = asyncio.wait_for(self.updates.get(), timeout=5)
+        reading, value = await asyncio.wait_for(self.updates.get(), timeout=5)
         assert (
             value
             == expected_value
-            == asyncio.wait_for(self.backend.get_value(), timeout=5)
+            == await asyncio.wait_for(self.backend.get_value(), timeout=5)
         )
         assert (
             reading
             == expected_reading
-            == asyncio.wait_for(self.backend.get_reading(), timeout=5)
+            == await asyncio.wait_for(self.backend.get_reading(), timeout=5)
         )
 
     def close(self):
