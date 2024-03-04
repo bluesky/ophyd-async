@@ -166,7 +166,8 @@ class StandardDetector(
         self._fly_status: Optional[AsyncStatus] = None
         self._fly_start: float
 
-        self._current_frame: int
+        self._intial_frame: int
+        self._last_frame: int
         super().__init__(name)
 
     @property
@@ -183,7 +184,6 @@ class StandardDetector(
         await self.check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._describe = await self.writer.open()
-        self._current_frame = 0
 
     async def check_config_sigs(self):
         """Checks configuration signals are named and connected."""
@@ -256,8 +256,8 @@ class StandardDetector(
         """
         assert type(value) is TriggerInfo
         self._trigger_info = value
-        self._current_frame = await self.writer.get_indices_written()
-        self._last_frame = self._current_frame + self._trigger_info.num
+        self._initial_frame = await self.writer.get_indices_written()
+        self._last_frame = self._initial_frame + self._trigger_info.num
 
         required = self.controller.get_deadtime(self._trigger_info.livetime)
         assert required <= self._trigger_info.deadtime, (
@@ -287,7 +287,7 @@ class StandardDetector(
                 watcher(
                     name=self.name,
                     current=index,
-                    initial=0,
+                    initial=self._initial_frame,
                     target=end_observation,
                     unit="",
                     precision=0,
