@@ -73,6 +73,7 @@ class DummyWriter(DetectorWriter):
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
+        num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):
             yield num_captured
 
