@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 from unittest.mock import AsyncMock
 
-
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import pytest
