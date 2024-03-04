@@ -29,7 +29,6 @@ ophyd\_async.epics.demo.demo\_ad\_sim\_detector.DemoADSimDetector
       ~DemoADSimDetector.describe
       ~DemoADSimDetector.describe_collect
       ~DemoADSimDetector.describe_configuration
-      ~DemoADSimDetector.ensure_armed
       ~DemoADSimDetector.get_index
       ~DemoADSimDetector.kickoff
       ~DemoADSimDetector.prepare

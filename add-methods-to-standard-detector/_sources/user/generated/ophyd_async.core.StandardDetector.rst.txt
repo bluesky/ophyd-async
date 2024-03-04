@@ -29,7 +29,6 @@ ophyd\_async.core.StandardDetector
       ~StandardDetector.describe
       ~StandardDetector.describe_collect
       ~StandardDetector.describe_configuration
-      ~StandardDetector.ensure_armed
       ~StandardDetector.get_index
       ~StandardDetector.kickoff
       ~StandardDetector.prepare
