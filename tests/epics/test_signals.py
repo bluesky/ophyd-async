@@ -107,9 +107,17 @@ class MonitorQueue:
             "timestamp": pytest.approx(time.time(), rel=0.1),
             "alarm_severity": 0,
         }
-        reading, value = await self.updates.get()
-        assert value == expected_value == await self.backend.get_value()
-        assert reading == expected_reading == await self.backend.get_reading()
+        reading, value = asyncio.wait_for(self.updates.get(), timeout=5)
+        assert (
+            value
+            == expected_value
+            == asyncio.wait_for(self.backend.get_value(), timeout=5)
+        )
+        assert (
+            reading
+            == expected_reading
+            == asyncio.wait_for(self.backend.get_reading(), timeout=5)
+        )
 
     def close(self):
         self.backend.set_callback(None)
@@ -366,7 +374,6 @@ async def test_pvi_structure(ioc: IOC) -> None:
             await backend.get_descriptor()
         # Check initial value
         await q.assert_updates(expected)
-
 
     finally:
         q.close()
