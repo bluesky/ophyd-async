@@ -1,0 +1,36 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.DetectorGroupLogic
+====================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: DetectorGroupLogic
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~DetectorGroupLogic.close
+      ~DetectorGroupLogic.collect_asset_docs
+      ~DetectorGroupLogic.disarm
+      ~DetectorGroupLogic.ensure_armed
+      ~DetectorGroupLogic.hints
+      ~DetectorGroupLogic.open
+      ~DetectorGroupLogic.wait_for_index
+   
+   
+
+   
+   
+   
