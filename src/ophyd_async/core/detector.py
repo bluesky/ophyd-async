@@ -165,10 +165,7 @@ class StandardDetector(
         self._watchers: List[Callable] = []
         self._fly_status: Optional[AsyncStatus] = None
 
-        self._offset = 0  # Add this to index to get frame number
-        self._current_frame = 0  # The current frame we are on
-        self._last_frame = 0  # The last frame that will be emitted
-
+        self._current_frame: int
         super().__init__(name)
 
     @property
@@ -185,7 +182,6 @@ class StandardDetector(
         await self.check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._describe = await self.writer.open()
-        self._offset = 0
         self._current_frame = 0
 
     async def check_config_sigs(self):
@@ -246,13 +242,12 @@ class StandardDetector(
     def prepare(
         self,
         value: T,
-        current_frame=None,
     ) -> AsyncStatus:
-        """Arm detectors"""
-        return AsyncStatus(self._prepare(value, current_frame))
+        """Arm detector"""
+        return AsyncStatus(self._prepare(value))
 
-    async def _prepare(self, value: T, current_frame) -> None:
-        """Arm detectors.
+    async def _prepare(self, value: T) -> None:
+        """Arm detector.
 
         Prepare the detector with trigger information. This is determined at and passed
         in from the plan level.
@@ -264,12 +259,8 @@ class StandardDetector(
         """
         assert type(value) is TriggerInfo
         self._trigger_info = value
-        self._current_frame = current_frame
-
-        self._offset -= self._current_frame
-        self._current_frame = 0
+        self._current_frame = await self.writer.get_indices_written()
         self._last_frame = self._current_frame + self._trigger_info.num
-
         await self.ensure_armed(self._trigger_info)
 
     async def ensure_armed(self, trigger_info: TriggerInfo):
@@ -297,8 +288,7 @@ class StandardDetector(
         self._fly_start = time.monotonic()
 
     async def _fly(self) -> None:
-        end_observation = self._last_frame - self._offset
-        await self._observe_writer_indicies(end_observation)
+        await self._observe_writer_indicies(self._last_frame)
 
     @AsyncStatus.wrap
     async def complete(self) -> AsyncStatus:

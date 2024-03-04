@@ -58,6 +58,7 @@ class DummyWriter(DetectorWriter):
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
         self._last_emitted = 0
+        self.index = 0
 
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         return {
@@ -76,7 +77,7 @@ class DummyWriter(DetectorWriter):
             yield num_captured
 
     async def get_indices_written(self) -> int:
-        return 1
+        return self.index
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -163,7 +164,9 @@ async def test_hardware_triggered_flyable(
         # prepare detectors second.
         for detector in detector_list:
             yield from bps.prepare(
-                detector, flyer.trigger_info, wait=True, current_frame=0
+                detector,
+                flyer.trigger_info,
+                wait=True,
             )
 
         assert trigger_logic.state == TriggerState.preparing
@@ -180,6 +183,10 @@ async def test_hardware_triggered_flyable(
         for detector in detector_list:
             yield from bps.complete(detector, wait=False, group="complete")
         assert trigger_logic.state == TriggerState.starting
+
+        # Manually incremenet the index as if a frame was taken
+        for detector in detector_list:
+            detector.writer.index += 1
 
         done = False
         while not done:
@@ -202,8 +209,6 @@ async def test_hardware_triggered_flyable(
         yield from bps.unstage_all(flyer, *detector_list)
         for detector in detector_list:
             assert detector.controller.disarm.called  # type: ignore
-            # why is disarm called 3 times?
-            # assert detector.controller.disarm.call_count == 3  # type: ignore
         assert trigger_logic.state == TriggerState.stopping
 
     # fly scan
