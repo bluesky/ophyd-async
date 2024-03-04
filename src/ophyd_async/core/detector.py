@@ -261,26 +261,18 @@ class StandardDetector(
         self._trigger_info = value
         self._current_frame = await self.writer.get_indices_written()
         self._last_frame = self._current_frame + self._trigger_info.num
-        await self.ensure_armed(self._trigger_info)
 
-    async def ensure_armed(self, trigger_info: TriggerInfo):
-        if (
-            not self._arm_status
-            or self._arm_status.done
-            or trigger_info != self._trigger_info
-        ):
-            # we need to re-arm
-            await self.controller.disarm()
-            required = self.controller.get_deadtime(trigger_info.livetime)
-            assert required <= trigger_info.deadtime, (
-                f"Detector {self.controller} needs at least {required}s deadtime, "
-                f"but trigger logic provides only {trigger_info.deadtime}s"
-            )
-            self._arm_status = await self.controller.arm(
-                num=trigger_info.num,
-                trigger=trigger_info.trigger,
-                exposure=trigger_info.livetime,
-            )
+        required = self.controller.get_deadtime(self._trigger_info.livetime)
+        assert required <= self._trigger_info.deadtime, (
+            f"Detector {self.controller} needs at least {required}s deadtime, "
+            f"but trigger logic provides only {self._trigger_info.deadtime}s"
+        )
+
+        self._arm_status = await self.controller.arm(
+            num=self._trigger_info.num,
+            trigger=self._trigger_info.trigger,
+            exposure=self._trigger_info.livetime,
+        )
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
