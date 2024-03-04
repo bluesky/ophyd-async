@@ -1,5 +1,4 @@
 import asyncio
-import os
 import random
 import re
 import string
@@ -35,12 +34,6 @@ from ophyd_async.epics.signal.signal import _make_backend
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
-
-
-@pytest.fixture
-def _ensure_removed():
-    yield
-    os.remove("test.yaml")
 
 
 @dataclass
@@ -209,13 +202,13 @@ ca_dtype_mapping = {
     ],
 )
 async def test_backend_get_put_monitor(
-    _ensure_removed: None,
     ioc: IOC,
     datatype: Type[T],
     suffix: str,
     initial_value: T,
     put_value: T,
     descriptor: Callable[[Any], dict],
+    tmp_path,
 ):
     # ca can't support all the types
     dtype = get_dtype(datatype)
@@ -237,8 +230,9 @@ async def test_backend_get_put_monitor(
         ioc, suffix, descriptor(put_value), put_value, initial_value, datatype=None
     )
 
-    save_to_yaml([{"test": put_value}], "test.yaml")
-    loaded = load_from_yaml("test.yaml")
+    yaml_path = tmp_path / "test.yaml"
+    save_to_yaml([{"test": put_value}], yaml_path)
+    loaded = load_from_yaml(yaml_path)
     assert np.all(loaded[0]["test"] == put_value)
 
 
