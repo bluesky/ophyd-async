@@ -48,10 +48,6 @@
     "url": "https://bluesky.github.io/ophyd-async/docstring_deadtime/"
   },
   {
-    "version": "fix-sr-paths",
-    "url": "https://bluesky.github.io/ophyd-async/fix-sr-paths/"
-  },
-  {
     "version": "flyingpanda",
     "url": "https://bluesky.github.io/ophyd-async/flyingpanda/"
   },
