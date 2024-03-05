@@ -1,6 +1,7 @@
 import asyncio
 import atexit
 import logging
+import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
@@ -119,9 +120,7 @@ class PvaEnumConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(
-            source=source, dtype="string", shape=[], choices=choices
-        )  # type: ignore
+        return dict(source=source, dtype="string", shape=[], choices=choices)
 
 
 class PvaEnumBoolConverter(PvaConverter):
@@ -142,9 +141,14 @@ class PvaTableConverter(PvaConverter):
 
 
 class PvaDictConverter(PvaConverter):
+    def reading(self, value):
+        ts = time.time()
+        value = value.todict()
+        # Alarm severity is vacuously 0 for a table
+        return dict(value=value, timestamp=ts, alarm_severity=0)
 
-    def value(self, value):
-        return value
+    def value(self, value: Value):
+        return value.todict()
 
     def descriptor(self, source: str, value) -> Descriptor:
         raise NotImplementedError("Describing Dict signals not currently supported")
