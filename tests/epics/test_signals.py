@@ -20,6 +20,7 @@ from typing import (
     Type,
     TypedDict,
 )
+from unittest.mock import ANY
 
 import numpy as np
 import numpy.typing as npt
@@ -100,17 +101,12 @@ class MonitorQueue:
             "timestamp": pytest.approx(time.time(), rel=0.1),
             "alarm_severity": 0,
         }
+        backend_reading = await asyncio.wait_for(self.backend.get_reading(), timeout=5)
         reading, value = await asyncio.wait_for(self.updates.get(), timeout=5)
-        assert (
-            value
-            == expected_value
-            == await asyncio.wait_for(self.backend.get_value(), timeout=5)
-        )
-        assert (
-            reading
-            == expected_reading
-            == await asyncio.wait_for(self.backend.get_reading(), timeout=5)
-        )
+        backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
+
+        assert value == expected_value == backend_value
+        assert reading == expected_reading == backend_reading
 
     def close(self):
         self.backend.set_callback(None)
@@ -350,8 +346,10 @@ async def test_pvi_structure(ioc: IOC) -> None:
         return
     # Make and connect the backend
     backend = await ioc.make_backend(Dict[str, Any], "pvi")
+
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
+
     expected = {
         "pvi": {
             "width": {
@@ -360,8 +358,10 @@ async def test_pvi_structure(ioc: IOC) -> None:
             "height": {
                 "rw": f"{PV_PREFIX}:{ioc.protocol}:height",
             },
-        }
+        },
+        "record": ANY,
     }
+
     try:
         # Check descriptor
         with pytest.raises(NotImplementedError):
