@@ -388,6 +388,7 @@ document.write(`
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../explanations/docs-structure.html">About the documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/event-loop-choice.html">Device Collector Event-Loop Choice</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current nav bd-sidenav">
@@ -589,7 +590,7 @@ may change API on minor release numbers before then</p>
 <td><p>Merge dictionaries produced by a sequence of coroutines.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.wait_for_connection.html#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
-<td><p>Call many underlying signals, accumulating <a class="reference internal" href="ophyd_async.core.NotConnected.html#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref any py py-exc docutils literal notranslate"><span class="pre">NotConnected</span></code></a> exceptions</p></td>
+<td><p>Call many underlying signals, accumulating exceptions and returning them</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.get_signal_values.html#ophyd_async.core.get_signal_values" title="ophyd_async.core.get_signal_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_signal_values</span></code></a></p></td>
 <td><p>Get signal values in bulk.</p></td>
@@ -663,7 +664,7 @@ may change API on minor release numbers before then</p>
 <td><p>Convert asyncio awaitable to bluesky Status interface</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.DirectoryInfo.html#ophyd_async.core.DirectoryInfo" title="ophyd_async.core.DirectoryInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirectoryInfo</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Information about where and how to write a file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.DirectoryProvider.html#ophyd_async.core.DirectoryProvider" title="ophyd_async.core.DirectoryProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirectoryProvider</span></code></a></p></td>
 <td><p></p></td>

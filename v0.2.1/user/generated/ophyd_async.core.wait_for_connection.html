@@ -388,6 +388,7 @@ document.write(`
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../explanations/docs-structure.html">About the documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/event-loop-choice.html">Device Collector Event-Loop Choice</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current nav bd-sidenav">
@@ -561,12 +562,8 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.wait_for_connection">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">wait_for_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">coros</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.12)"><span class="pre">Awaitable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/utils.html#wait_for_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.wait_for_connection" title="Link to this definition">#</a></dt>
-<dd><p>Call many underlying signals, accumulating <a class="reference internal" href="ophyd_async.core.NotConnected.html#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref any py py-exc docutils literal notranslate"><span class="pre">NotConnected</span></code></a> exceptions</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="ophyd_async.core.NotConnected.html#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><strong>NotConnected</strong></a> – </p>
-</dd>
-</dl>
+<dd><p>Call many underlying signals, accumulating exceptions and returning them</p>
+<p>Expected kwargs should be a mapping of names to coroutine tasks to execute.</p>
 </dd></dl>
 
 </section>

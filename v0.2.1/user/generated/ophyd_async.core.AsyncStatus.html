@@ -388,6 +388,7 @@ document.write(`
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanations</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../explanations/docs-structure.html">About the documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explanations/event-loop-choice.html">Device Collector Event-Loop Choice</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current nav bd-sidenav">
@@ -566,7 +567,7 @@ may change API on minor release numbers before then</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.AsyncStatus">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">AsyncStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">awaitable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.12)"><span class="pre">Awaitable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">watchers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/async_status.html#AsyncStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.AsyncStatus" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Status" title="(in bluesky v1.12.0.post14+g407eea7c)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Status</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#bluesky.protocols.Status" title="(in bluesky v1.12.0.post16+g8e32b99a)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Status</span></code></a></p>
 <p>Convert asyncio awaitable to bluesky Status interface</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
@@ -600,7 +601,7 @@ may change API on minor release numbers before then</p>
 <dt class="sig sig-object py" id="ophyd_async.core.AsyncStatus.watch">
 <span class="sig-name descname"><span class="pre">watch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">watcher</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/async_status.html#AsyncStatus.watch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.AsyncStatus.watch" title="Link to this definition">#</a></dt>
 <dd><p>Add watcher to the list of interested parties.</p>
-<p>Arguments as per Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#watch" title="(in bluesky v1.12.0.post14+g407eea7c)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">watch()</span></code></a> protocol.</p>
+<p>Arguments as per Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/hardware.html#watch" title="(in bluesky v1.12.0.post16+g8e32b99a)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">watch()</span></code></a> protocol.</p>
 </dd></dl>
 
 </dd></dl>

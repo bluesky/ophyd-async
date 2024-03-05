@@ -4,6 +4,10 @@
     "url": "https://bluesky.github.io/ophyd-async/main/"
   },
   {
+    "version": "v0.2.1",
+    "url": "https://bluesky.github.io/ophyd-async/v0.2.1/"
+  },
+  {
     "version": "v0.2.0",
     "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
   },
@@ -90,9 +94,5 @@
   {
     "version": "stall-timeout",
     "url": "https://bluesky.github.io/ophyd-async/stall-timeout/"
-  },
-  {
-    "version": "v0.2.1",
-    "url": "https://bluesky.github.io/ophyd-async/v0.2.1/"
   }
 ]
