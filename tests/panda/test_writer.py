@@ -47,7 +47,7 @@ async def sim_writer(tmp_path) -> PandaHDFWriter:
 
 
 @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-async def test_open_returns_descriptors(sim_writer):
+async def test_open_returns_descriptors(sim_writer: PandaHDFWriter):
     await sim_writer.hdf5.capturing.set(1)
     description = await sim_writer.open()  # to make capturing status not time out
     assert isinstance(description, dict)
@@ -114,3 +114,10 @@ async def test_collect_stream_docs(sim_writer):
 
     [item async for item in sim_writer.collect_stream_docs(1)]
     assert sim_writer._file
+
+
+async def test_to_capture():
+    # Make sure that _to_capture property holds a dictionary of block names to signals.
+    # On connecting or initialising, writer should check all of panda PV's to see if
+    # they are being captured, and what kind of capture
+    pass

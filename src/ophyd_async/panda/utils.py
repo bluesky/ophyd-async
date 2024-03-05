@@ -1,4 +1,12 @@
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Sequence, TypedDict
+
+
+class PVIEntry(TypedDict, total=False):  # TODO: better naming
+    d: str
+    r: str
+    rw: str
+    w: str
+    x: str
 
 
 def phase_sorter(panda_signal_values: Dict[str, Any]) -> Sequence[Dict[str, Any]]:

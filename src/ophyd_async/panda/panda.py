@@ -3,6 +3,7 @@ from __future__ import annotations
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceVector, SignalR, SignalRW
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.panda.table import SeqTable
+from ophyd_async.panda.utils import PVIEntry
 
 
 class PulseBlock(Device):
