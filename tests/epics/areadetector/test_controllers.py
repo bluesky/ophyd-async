@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector
-from ophyd_async.core.flyer import SameTriggerDetectorGroupLogic, TriggerInfo
 from ophyd_async.epics.areadetector.controllers import (
     ADSimController,
     PilatusController,
@@ -66,17 +65,3 @@ async def test_pilatus_controller(RE, pilatus: PilatusController):
         await pilatus.disarm()
 
     assert await driver.acquire.get_value() is False
-
-
-async def test_arming_pilatus_for_detector_group(
-    RE, pilatus: PilatusController, ad: ADSimController
-):
-    detector_group = SameTriggerDetectorGroupLogic(
-        controllers=[ad, pilatus], writers=[]
-    )
-    trigger_info = TriggerInfo(
-        num=3, trigger=DetectorTrigger.constant_gate, deadtime=0.0015, livetime=0
-    )
-
-    with pytest.raises(AssertionError):
-        await detector_group.ensure_armed(trigger_info)
