@@ -1,7 +1,20 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, Optional, Tuple, cast, get_args, get_origin, get_type_hints
+from typing import (
+    Callable,
+    Dict,
+    FrozenSet,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
+
+from p4p.client.thread import Context
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -16,6 +29,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.pvi import PVIEntry, make_signal, pvi_get
 from ophyd_async.panda.table import SeqTable
+from ophyd_async.panda.utils import PVIEntry
 
 
 class PulseBlock(Device):
