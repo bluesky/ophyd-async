@@ -24,9 +24,14 @@ ophyd\_async.core.StandardDetector
       ~StandardDetector.check_config_sigs
       ~StandardDetector.children
       ~StandardDetector.collect_asset_docs
+      ~StandardDetector.complete
       ~StandardDetector.connect
       ~StandardDetector.describe
+      ~StandardDetector.describe_collect
       ~StandardDetector.describe_configuration
+      ~StandardDetector.get_index
+      ~StandardDetector.kickoff
+      ~StandardDetector.prepare
       ~StandardDetector.read
       ~StandardDetector.read_configuration
       ~StandardDetector.set_name
