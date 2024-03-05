@@ -20,7 +20,8 @@ class DataBlock(Device):
 
 @dataclass
 class _HDFDataset:
-    device_name: str
+    device_name: str  # TODO: not sure about some of these names. We should have
+    # device_name (always panda?), block name, signal name, path, shape, multiplier
     block: str
     name: str
     path: str

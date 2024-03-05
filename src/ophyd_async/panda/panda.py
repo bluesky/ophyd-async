@@ -16,6 +16,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.pvi import PVIEntry, make_signal, pvi_get
 from ophyd_async.panda.table import SeqTable
+from ophyd_async.panda.utils import PVIEntry
 
 
 class PulseBlock(Device):
