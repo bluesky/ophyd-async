@@ -68,13 +68,15 @@ def _remove_inconsistent_blocks(pvi_info: Optional[Dict[str, PVIEntry]]) -> None
             del pvi_info[k]
 
 
-class PandA(Device):
+class CommonPandABlocks(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
 
+
+class PandA(CommonPandABlocks, Device):
     def __init__(self, prefix: str, name: str = "") -> None:
-        super().__init__(name)
+        Device.__init__(self, name)
         self._prefix = prefix
 
     def verify_block(self, name: str, num: Optional[int]):
@@ -238,4 +240,4 @@ class PandA(Device):
                 self.set_attribute(block_name, num, block)
 
         self.set_name(self.name)
-        await super().connect(sim)
+        await Device.connect(self, sim)
