@@ -3,19 +3,16 @@ from typing import Iterator, List
 
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
-from ophyd_async.core import SignalR, SignalRW
+from ophyd_async.core import SignalRW
 from ophyd_async.core.device import Device
 
 
 class DataBlock(Device):
-    filepath: SignalRW[str]
-    filename: SignalRW[str]
-    fullfilename: SignalR[str]
-    numcapture: SignalRW[int]
-    flushnow: SignalRW[bool]
-    capture: SignalRW[bool]
-    capturing: SignalR[bool]
-    numwritten_rbv: SignalR[int]
+    file_path: SignalRW[str]  # _directory_record
+    file_name: SignalRW[str]  # _file_name_record
+    num_capture: SignalRW[int]  # _num_capture_record (number we want to capture)
+    num_captured: SignalRW[int]  # _num_captured_record
+    capture: SignalRW[bool]  # _capture_control_record
 
 
 @dataclass
