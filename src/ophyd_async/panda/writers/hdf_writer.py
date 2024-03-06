@@ -1,22 +1,9 @@
 import asyncio
 import atexit
 from enum import Enum
-from typing import (
-    Any,
-    AsyncIterator,
-    Callable,
-    Dict,
-    FrozenSet,
-    Generator,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    get_type_hints,
-)
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-from bluesky.protocols import Asset, Descriptor, Hints, Reading
-from bluesky.utils import Msg
+from bluesky.protocols import Asset, Descriptor, Hints
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -26,25 +13,12 @@ from ophyd_async.core import (
     Device,
     DirectoryProvider,
     NameProvider,
-    NotConnected,
-    Signal,
+    SignalR,
     wait_for_value,
 )
-from ophyd_async.epics.signal import (
-    epics_signal_r,
-    epics_signal_rw,
-    epics_signal_w,
-    epics_signal_x,
-    pvi_get,
-)
-from ophyd_async.panda.utils import PVIEntry
+from ophyd_async.panda.panda import PandA
 
 from .panda_hdf import DataBlock, _HDFDataset, _HDFFile
-
-
-class SimpleCapture(str, Enum):
-    No = "No"
-    Value = "Value"
 
 
 class Capture(str, Enum):
@@ -59,52 +33,49 @@ class Capture(str, Enum):
     MinMaxMean = "Min Max Mean"
 
 
-async def pvi(
-    pv: str, ctxt: Context, timeout: float = DEFAULT_TIMEOUT
-) -> Dict[str, PVIEntry]:
-    try:
-        result = await pvi_get(pv, ctxt, timeout=timeout)
-    except TimeoutError as exc:
-        raise NotConnected(pv) from exc
-    return result
+def get_capture_signals(
+    panda: Device, path_prefix: Optional[str] = ""
+) -> Dict[str, SignalR]:
+    """Get dict mapping a capture signal's name to the signal itself"""
+    # TODO makecommon with code from device_save_loader?
+    if not path_prefix:
+        path_prefix = ""
+    signals: Dict[str, SignalR[Any]] = {}
+    for attr_name, attr in panda.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        if isinstance(attr, SignalR) and attr_name.endswith("_capture"):
+            signals[dot_path] = attr
+        attr_signals = get_capture_signals(attr, path_prefix=dot_path + ".")
+        signals.update(attr_signals)
+    return signals
 
 
-def get_signals_to_capture(
-    panda: Device,
-) -> Generator[
-    Msg, Sequence[Dict[str, Reading]], Dict[str, Capture]
-]:  # Key of dotted attribute path, goes to capture type
-
-    capture_signals = _get_capture_signals(panda)
-
+# This should return a dictionary which maps to a dict which contains the Capture
+# signal object,
+# and the value of that signal
+async def get_signals_marked_for_capture(
+    capture_signals: Dict[str, SignalR]
+) -> Dict[str, Union[SignalR, Capture]]:
     # Read signals to see if they should be captured
-    signals_read: Dict = yield Msg("read", *capture_signals.values())
-    signal_values = [item["value"] for item in signals_read]
+
+    do_read = [signal.get_value() for signal in capture_signals.values()]
+
+    signal_values = await asyncio.gather(*do_read)
+
     assert len(signal_values) == len(
         capture_signals.keys()
     ), "Length of read signals are different to length of signals"
-    signals_to_capture: Dict[str, Capture] = {}
-    for signal, signal_value in zip(capture_signals.keys(), signal_values):
-        if isinstance(signal_value, Capture) and signal_value != Capture.No:
-            signals_to_capture[signal] = signal_value
+    signals_to_capture: Dict[str, Dict[str, SignalR | Capture]] = {}
+    for signal_path, signal_object, signal_value in zip(
+        capture_signals.keys(), capture_signals.values(), signal_values
+    ):
+        if (isinstance(signal_value, Capture)) and (signal_value != Capture.No):
+            signals_to_capture[signal_path] = {
+                "signal": signal_object,
+                "capture_type": signal_value,
+            }
+
     return signals_to_capture
-
-
-def _get_capture_signals(
-    panda: Device, path_prefix: Optional[str] = ""
-) -> Dict[str, Signal]:
-    # Get dict with all capture signals. Uses code from device_save_loader
-    # TODO makecommon?
-    if not path_prefix:
-        path_prefix = ""
-    signals: Dict[str, Signal[Any]] = {}
-    for attr_name, attr in Signal.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if type(attr) is Signal and attr_name.endswith("_capture"):
-            signals[dot_path] = attr
-        attr_signals = _get_capture_signals(attr, path_prefix=dot_path + ".")
-        signals.update(attr_signals)
-    return signals
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -125,71 +96,14 @@ class PandaHDFWriter(DetectorWriter):
 
         return PandaHDFWriter._ctxt
 
-    async def connect(self, sim=False) -> None:
-
-        pvi_info = await pvi(self._prefix + ":PVI", self.ctxt) if not sim else []
-
-        # signals to connect, giving block name, signal name and datatype
-        desired_signals: Dict[str, List[Tuple[str, type]]] = {}
-        for block_name, block in self._to_capture.items():
-            if block_name not in desired_signals:
-                desired_signals[block_name] = []
-            for signal_name in block:
-                desired_signals[block_name].append(
-                    (f"{signal_name}_capture", SimpleCapture)
-                )
-        # add signals from DataBlock using type hints
-
-        if "hdf5" not in desired_signals:
-            desired_signals["hdf5"] = []
-        for signal_name, hint in get_type_hints(self.hdf5).items():
-            dtype = hint.__args__[0]  # TODO: test that this gives dtype
-            desired_signals["hdf5"].append((signal_name, dtype))
-
-        # loop over desired signals and set
-        for block_name, block_signals in desired_signals.items():
-            if block_name not in pvi_info:
-                continue  # TODO: is some kind of warning needed here? Why would a
-                # desired block not show up from pvi info?
-            if not hasattr(self, block_name):
-                setattr(self, block_name, Device())
-            block_pvi = await pvi(pvi_info[block_name]["d"], self.ctxt)
-            block: Device = getattr(self, block_name)
-
-            for signal_name, dtype in block_signals:
-                if signal_name not in block_pvi:
-                    continue  # TODO: is some kind of warning needed here?
-                signal_pvi = block_pvi[signal_name]
-                operations = frozenset(signal_pvi.keys())
-                pvs = [signal_pvi[i] for i in operations]
-                write_pv = pvs[0]
-                read_pv = write_pv if len(pvs) == 1 else pvs[1]
-                pv_ctxt = self.ctxt.get(read_pv)  # TODO: rename this variable?
-                if dtype is SimpleCapture:  # capture record
-                    # some :CAPTURE PVs have only 2 values, many have 9
-                    if set(pv_ctxt.value.choices) == set(
-                        v.value for v in Capture
-                    ):  # TODO: can we use .choices for both sides of this statement?
-                        # Test this line
-                        dtype = Capture
-                signal = self.pvi_mapping[operations](
-                    dtype, "pva://" + read_pv, "pva://" + write_pv
-                )
-                setattr(block, signal_name, signal)
-
-        # TODO: Does this actually need to be in a seperate loop?
-        for block_name in desired_signals.keys():
-            block: Device = getattr(self, block_name)
-            if block:
-                await block.connect(sim=sim)
-
     def __init__(
         self,
         prefix: str,
         directory_provider: DirectoryProvider,
         name_provider: NameProvider,
+        panda_device: PandA,
     ) -> None:
-        self._connected_pvs = Device()
+        self.panda_device = panda_device
         self._prefix = prefix
         self.hdf5 = DataBlock()  # needs a name
         self._directory_provider = directory_provider
@@ -198,24 +112,16 @@ class PandaHDFWriter(DetectorWriter):
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
         self._multiplier = 1
-        self.pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = (
-            {  # TODO move this PVI mapping to utils
-                frozenset({"r", "w"}): lambda dtype, rpv, wpv: epics_signal_rw(
-                    dtype, rpv, wpv
-                ),
-                frozenset({"rw"}): lambda dtype, rpv, wpv: epics_signal_rw(
-                    dtype, rpv, wpv
-                ),
-                frozenset({"r"}): lambda dtype, rpv, wpv: epics_signal_r(dtype, rpv),
-                frozenset({"w"}): lambda dtype, rpv, wpv: epics_signal_w(dtype, wpv),
-                frozenset({"x"}): lambda dtype, rpv, wpv: epics_signal_x(wpv),
-            }
-        )
 
+        # Get capture PVs by looking at panda. Gives mapping of dotted attribute path
+        # to Signal object
+        self.capture_signals = get_capture_signals(self.panda_device)
+
+    # Triggered on PCAP arm
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
-        self._to_capture = await get_signals_to_capture(
-            self._connected_pvs
-        )  # TODO change this to panda device?
+        """Retrieve and get descriptor of all PandA signals marked for capture"""
+
+        self.to_capture = await get_signals_marked_for_capture(self.capture_signals)
         self._file = None
         info = self._directory_provider()
         await asyncio.gather(
@@ -231,9 +137,6 @@ class PandaHDFWriter(DetectorWriter):
         await self.hdf5.numcapture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.hdf5.capture.set(True)
-        self._capture_status = await wait_for_value(  # TODO should be set and?
-            self.hdf5.capturing, True, DEFAULT_TIMEOUT
-        )
         name = self._name_provider()
         if multiplier > 1:
             raise ValueError(
@@ -241,20 +144,35 @@ class PandaHDFWriter(DetectorWriter):
             )
         self._multiplier = multiplier
         self._datasets = []
+        for attribute_path, value in self.to_capture.items():
+            # TODO check that a 'abc_capture' signal always records an 'abc_val' signal
+            signal_name = attribute_path.split(".")[-1]
+            block_name = attribute_path.split(".")[-2]
 
-        for block, block_signals in self._to_capture.items():
-            for signal in block_signals:
-                self._datasets.append(
-                    _HDFDataset(
-                        name, block, signal, f"{block}:{signal}".upper(), [], multiplier
-                    )
+            if value["capture_type"] == Capture.MinMaxMean:
+                shape = [3]
+            elif value["capture_type"] == Capture.MinMax:
+                shape = [2]
+            else:
+                shape = [1]
+                # TODO check if this is correct format
+
+            self._datasets.append(
+                _HDFDataset(
+                    name,
+                    block_name,
+                    f"{name}.{block_name}.{signal_name}",
+                    f"{block_name}:{signal_name}".upper(),
+                    shape,
+                    multiplier,
                 )
+            )  # TODO check if we need shape or multiplier here
 
         describe = {
             ds.name: Descriptor(
-                source=self.hdf5.fullfilename.source,
+                source=self.hdf5.filepath.source,
                 shape=ds.shape,
-                dtype="array" if ds.shape else "number",
+                dtype="array" if ds.shape != [1] else "number",
                 external="STREAM:",
             )
             for ds in self._datasets
@@ -291,7 +209,8 @@ class PandaHDFWriter(DetectorWriter):
                 block = getattr(self, ds_block, None)
                 if block is not None:
                     capturing = getattr(block, f"{ds_name}_capture")
-                    if capturing and await capturing.get_value() != Capture.No:
+                    capture_value = await capturing.get_value()
+                    if capture_value != Capture.No:
                         yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
                 yield "stream_datum", doc
