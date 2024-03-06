@@ -17,5 +17,17 @@ class SimPatternDetector(StandardDetector):
         config_sigs: Sequence[SignalR] = ...,
         name: str = "",
         writer_timeout: float = ...,
+        path: str = ...,
     ) -> None:
-        super().__init__(controller, writer, config_sigs, name, writer_timeout)
+
+        super().__init__(
+            controller=controller,
+            writer=writer,
+            config_sigs=config_sigs,
+            name=name,
+            writer_timeout=writer_timeout,
+        )
+
+    
+
+

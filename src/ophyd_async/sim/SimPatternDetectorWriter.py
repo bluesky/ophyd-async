@@ -1,29 +1,31 @@
 from typing import Any, AsyncGenerator, AsyncIterator, Coroutine, Dict
 
 
+from bluesky.protocols import Descriptor
+
 from ophyd_async.core.detector import DetectorWriter
 from ophyd_async.sim.PatternGenerator import PatternGenerator
 
 
 class SimPatternDetectorWriter(DetectorWriter):
     patternGenerator: PatternGenerator
+    indices_written: int
 
     def __init__(self, patternGenerator: PatternGenerator) -> None:
         self.patternGenerator = patternGenerator
+        self.indices_written = 0
 
-        super().__init__()
-
-    def open(self, multiplier: int = 1) -> Coroutine[Any, Any, Dict[str, DataKey]]:
-        return super().open(multiplier)
+    def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+        pass
 
     def close(self) -> Coroutine[Any, Any, None]:
-        return super().close()
+        pass
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
-        return super().collect_stream_docs(indices_written)
+        pass
 
     def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
-        return super().observe_indices_written(timeout)
+        pass
 
-    def get_indices_written(self) -> Coroutine[Any, Any, int]:
-        return super().get_indices_written()
+    def get_indices_written(self) -> int:
+        return self.indices_written
