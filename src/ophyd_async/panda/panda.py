@@ -30,6 +30,8 @@ class SeqBlock(Device):
 
 class PcapBlock(Device):
     active: SignalR[bool]
+    arm: SignalX
+    disarm: SignalX
 
 
 def _block_name_number(block_name: str) -> Tuple[str, Optional[int]]:

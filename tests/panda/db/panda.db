@@ -58,6 +58,30 @@ record(bi, "$(IOC_NAME=PANDAQSRV):PCAP:ACTIVE")
     })
 }
 
+record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:ARM")
+{
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
+            "pvi.arm.x": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:DISARM")
+{
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
+            "pvi.disarm.x": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
 record(waveform, "BOOL:PLEASE")
 {
     field(NELM, 10)
