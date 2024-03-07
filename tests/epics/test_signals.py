@@ -1,5 +1,4 @@
 import asyncio
-import os
 import random
 import re
 import string
@@ -10,7 +9,18 @@ from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, Sequence, Tuple, Type, TypedDict
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypedDict,
+)
+from unittest.mock import ANY
 
 import numpy as np
 import numpy.typing as npt
@@ -25,12 +35,6 @@ from ophyd_async.epics.signal.signal import _make_backend
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
-
-
-@pytest.fixture
-def _ensure_removed():
-    yield
-    os.remove("test.yaml")
 
 
 @dataclass
@@ -97,9 +101,12 @@ class MonitorQueue:
             "timestamp": pytest.approx(time.time(), rel=0.1),
             "alarm_severity": 0,
         }
-        reading, value = await self.updates.get()
-        assert value == expected_value == await self.backend.get_value()
-        assert reading == expected_reading == await self.backend.get_reading()
+        backend_reading = await asyncio.wait_for(self.backend.get_reading(), timeout=5)
+        reading, value = await asyncio.wait_for(self.updates.get(), timeout=5)
+        backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
+
+        assert value == expected_value == backend_value
+        assert reading == expected_reading == backend_reading
 
     def close(self):
         self.backend.set_callback(None)
@@ -191,13 +198,13 @@ ca_dtype_mapping = {
     ],
 )
 async def test_backend_get_put_monitor(
-    _ensure_removed: None,
     ioc: IOC,
     datatype: Type[T],
     suffix: str,
     initial_value: T,
     put_value: T,
     descriptor: Callable[[Any], dict],
+    tmp_path,
 ):
     # ca can't support all the types
     dtype = get_dtype(datatype)
@@ -219,8 +226,9 @@ async def test_backend_get_put_monitor(
         ioc, suffix, descriptor(put_value), put_value, initial_value, datatype=None
     )
 
-    save_to_yaml([{"test": put_value}], "test.yaml")
-    loaded = load_from_yaml("test.yaml")
+    yaml_path = tmp_path / "test.yaml"
+    save_to_yaml([{"test": put_value}], yaml_path)
+    loaded = load_from_yaml(yaml_path)
     assert np.all(loaded[0]["test"] == put_value)
 
 
@@ -330,6 +338,39 @@ async def test_pva_table(ioc: IOC) -> None:
             await q.assert_updates(approx_table(p))
         finally:
             q.close()
+
+
+async def test_pvi_structure(ioc: IOC) -> None:
+    if ioc.protocol == "ca":
+        # CA can't do structure
+        return
+    # Make and connect the backend
+    backend = await ioc.make_backend(Dict[str, Any], "pvi")
+
+    # Make a monitor queue that will monitor for updates
+    q = MonitorQueue(backend)
+
+    expected = {
+        "pvi": {
+            "width": {
+                "rw": f"{PV_PREFIX}:{ioc.protocol}:width",
+            },
+            "height": {
+                "rw": f"{PV_PREFIX}:{ioc.protocol}:height",
+            },
+        },
+        "record": ANY,
+    }
+
+    try:
+        # Check descriptor
+        with pytest.raises(NotImplementedError):
+            await backend.get_descriptor()
+        # Check initial value
+        await q.assert_updates(expected)
+
+    finally:
+        q.close()
 
 
 async def test_pva_ntdarray(ioc: IOC):
