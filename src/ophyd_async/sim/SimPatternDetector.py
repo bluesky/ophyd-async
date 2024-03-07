@@ -1,6 +1,9 @@
 from typing import Sequence
 from ophyd_async.core.detector import DetectorControl, DetectorWriter, StandardDetector
 from ophyd_async.core.signal import SignalR
+from ophyd_async.sim.PatternGenerator import PatternGenerator
+from .SimPatternDetectorWriter import SimPatternDetectorWriter
+from .SimPatternDetectorControl import SimPatternDetectorControl
 
 
 class SimPatternDetector(StandardDetector):
@@ -12,14 +15,15 @@ class SimPatternDetector(StandardDetector):
 
     def __init__(
         self,
-        controller: DetectorControl,
-        writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = ...,
-        name: str = "",
+        name: str = "sim_pattern_detector",
         writer_timeout: float = ...,
         path: str = ...,
     ) -> None:
 
+        pattern_generator = PatternGenerator()
+        writer  = SimPatternDetectorWriter(patternGenerator=pattern_generator)
+        controller = SimPatternDetectorControl(patternGenerator=pattern_generator)
         super().__init__(
             controller=controller,
             writer=writer,

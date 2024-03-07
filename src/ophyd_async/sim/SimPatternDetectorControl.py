@@ -17,3 +17,9 @@ class SimPatternDetectorControl(DetectorControl):
 
     async def arm(self) -> AsyncStatus:
         return asyncio.create_task(self.patternGenerator.write_image_to_file())
+    
+    async def get_deadtime(self, exposure: float) -> float:
+        return super().get_deadtime(exposure)
+
+    async def disarm(self):
+        return await super().disarm()

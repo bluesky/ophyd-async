@@ -1,5 +1,6 @@
 from typing import Any, AsyncGenerator, AsyncIterator, Coroutine, Dict
 
+from ophyd_async.core import DirectoryProvider
 
 from bluesky.protocols import Descriptor
 
@@ -10,18 +11,24 @@ from ophyd_async.sim.PatternGenerator import PatternGenerator
 class SimPatternDetectorWriter(DetectorWriter):
     patternGenerator: PatternGenerator
     indices_written: int
+    directory_provider:DirectoryProvider
 
-    def __init__(self, patternGenerator: PatternGenerator) -> None:
+    def __init__(
+        self, patternGenerator: PatternGenerator, directoryProvider: DirectoryProvider
+    ) -> None:
         self.patternGenerator = patternGenerator
         self.indices_written = 0
+        self.directory_provider = directoryProvider
 
     def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+        self.patternGenerator.open_file(self.directory_provider)
         pass
 
-    def close(self) -> Coroutine[Any, Any, None]:
+    def close(self) -> None:
         pass
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
+        self.patternGenerator.write_image_to_file()
         pass
 
     def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
