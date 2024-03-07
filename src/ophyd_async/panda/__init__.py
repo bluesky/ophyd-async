@@ -1,4 +1,4 @@
-from .panda import PandA, PcapBlock, PulseBlock, PVIEntry, SeqBlock, SeqTable
+from .panda import PandA, PcapBlock, PulseBlock, PVIEntry, SeqBlock, SeqTable, pvi
 from .table import (
     SeqTable,
     SeqTableRow,
@@ -19,5 +19,6 @@ __all__ = [
     "SeqTable",
     "SeqTableRow",
     "SeqTrigger",
+    "pvi",
     "phase_sorter",
 ]

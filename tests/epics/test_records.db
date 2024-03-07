@@ -281,27 +281,3 @@ record(waveform, "$(P)ntndarray:data")
         }
     })
 }
-
-record(ao, "$(P)width")
-{
-    info(Q:group, {
-        "$(P)pvi": {
-            "pvi.width.rw": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}
-
-record(ao, "$(P)height")
-{
-    info(Q:group, {
-        "$(P)pvi": {
-            "pvi.height.rw": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}

@@ -1,6 +1,7 @@
 """Test file specifying how we want to eventually interact with the panda..."""
 
 import copy
+import traceback
 from typing import Dict
 
 import numpy as np
@@ -8,8 +9,7 @@ import pytest
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.core.utils import NotConnected
-from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger
-from ophyd_async.panda.panda import _remove_inconsistent_blocks
+from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger, pvi
 
 
 class DummyDict:
@@ -39,7 +39,7 @@ class MockCtxt:
 @pytest.fixture
 async def sim_panda():
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDAQSRV:", "sim_panda")
+        sim_panda = PandA("PANDAQSRV")
 
     assert sim_panda.name == "sim_panda"
     yield sim_panda
@@ -55,7 +55,7 @@ def test_panda_name_set():
     assert panda.name == "panda"
 
 
-async def test_inconsistent_blocks():
+async def test_pvi_get_for_inconsistent_blocks():
     dummy_pvi = {
         "pcap": {},
         "pcap1": {},
@@ -65,9 +65,9 @@ async def test_inconsistent_blocks():
         "sfp3_sync_out": {},
     }
 
-    _remove_inconsistent_blocks(dummy_pvi)
-    assert "sfp3_sync_out1" not in dummy_pvi
-    assert "pcap1" not in dummy_pvi
+    resulting_pvi = await pvi("", MockCtxt(dummy_pvi))
+    assert "sfp3_sync_out1" not in resulting_pvi
+    assert "pcap1" not in resulting_pvi
 
 
 async def test_panda_children_connected(sim_panda: PandA):
@@ -107,13 +107,13 @@ async def test_panda_children_connected(sim_panda: PandA):
 
 
 async def test_panda_with_missing_blocks(pva):
-    panda = PandA("PANDAQSRVI:")
+    panda = PandA("PANDAQSRVI")
     with pytest.raises(AssertionError):
         await panda.connect()
 
 
 async def test_panda_with_extra_blocks_and_signals(pva):
-    panda = PandA("PANDAQSRV:")
+    panda = PandA("PANDAQSRV")
     await panda.connect()
 
     assert panda.extra  # type: ignore
@@ -123,7 +123,7 @@ async def test_panda_with_extra_blocks_and_signals(pva):
 
 
 async def test_panda_block_missing_signals(pva):
-    panda = PandA("PANDAQSRVIB:")
+    panda = PandA("PANDAQSRVIB")
 
     with pytest.raises(Exception) as exc:
         await panda.connect()
@@ -135,9 +135,26 @@ async def test_panda_block_missing_signals(pva):
 
 
 async def test_panda_unable_to_connect_to_pvi():
-    panda = PandA("NON-EXISTENT:")
+    panda = PandA("pva://NON-EXISTENT")
 
     with pytest.raises(NotConnected) as exc:
         await panda.connect(timeout=0.01)
 
     assert exc.value._errors == "pva://NON-EXISTENT:PVI"
+
+    files = [
+        __file__,
+        "ophyd_async/panda/panda.py",
+        "ophyd_async/panda/panda.py",
+    ]
+    funcs = ["test_panda_unable_to_connect_to_pvi", "connect", "pvi"]
+    lines = [
+        "await panda.connect(timeout=0.01)",
+        'await pvi(self._init_prefix + ":PVI", self.ctxt, timeout=timeout)',
+        "raise NotConnected(pv) from exc",
+    ]
+
+    for idx, each_frame in enumerate(traceback.extract_tb(exc.tb)):
+        assert each_frame.filename.endswith(files[idx])
+        assert each_frame.name == funcs[idx]
+        assert each_frame.line == lines[idx]
