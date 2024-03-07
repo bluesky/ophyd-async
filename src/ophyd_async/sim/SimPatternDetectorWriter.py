@@ -28,7 +28,7 @@ class SimPatternDetectorWriter(DetectorWriter):
         pass
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
-        self.patternGenerator.write_image_to_file()
+        self.patternGenerator.open_file()
         pass
 
     def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:

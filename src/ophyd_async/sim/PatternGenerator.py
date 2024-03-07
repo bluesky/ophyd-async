@@ -1,6 +1,8 @@
+from pathlib import Path
 from typing import Optional
 import h5py
 import numpy as np
+from ophyd_async.core import DirectoryProvider
 
 
 def make_gaussian_blob(width: int, height: int) -> np.ndarray:
@@ -25,6 +27,9 @@ DATA_PATH = "/entry/data/data"
 UID_PATH = "/entry/uid"
 # pixel sum path
 SUM_PATH = "/entry/sum"
+
+DEFAULT_WIDTH = 100
+DEFAULT_HEIGHT = 100
 
 
 class PatternGenerator:
@@ -51,8 +56,10 @@ class PatternGenerator:
         self.exposure = exposure
         self.initial_blob = make_gaussian_blob(width=100, height=100) * 255
 
-    def open_file(self, path: str):
-        pass
+    def write_image_to_file(self, counter:int, image: np.ndarray):
+        assert self.file, 'no file has been opened!'
+        self.file.create_dataset(name=f"pattern-generator-file-{counter}", dtype=np.ndarray)
+        self.file.
 
     def set_exposure(self, value: float) -> None:
         self.exposure = value
@@ -63,8 +70,11 @@ class PatternGenerator:
     def set_y(self, value: float) -> None:
         self.y = value
 
-    def write_image_to_file(self, image: np.ndarray, path: str):
-        hdf5_file = h5py.File(path, "w")
+    def open_file(self, dir: DirectoryProvider) -> None:
+        new_path: Path = dir().resource_dir
+        hdf5_file = h5py.File(new_path, "w")
+        height = DEFAULT_HEIGHT
+        width = DEFAULT_WIDTH
         hdf5_file.create_dataset(
             DATA_PATH,
             dtype=np.uint8,
