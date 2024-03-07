@@ -17,8 +17,12 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.setpoint = epics_signal_rw(float, prefix + ".VAL")
         self.readback = epics_signal_r(float, prefix + ".RBV")
         self.velocity = epics_signal_rw(float, prefix + ".VELO")
+        self.acceleration = epics_signal_rw(float, prefix + ".ACCL")
         self.units = epics_signal_r(str, prefix + ".EGU")
         self.precision = epics_signal_r(int, prefix + ".PREC")
+        self.low_limit_travel = epics_signal_rw(int, prefix + ".LLM")
+        self.high_limit_travel = epics_signal_rw(int, prefix + ".HLM")
+
         # Signals that collide with standard methods should have a trailing underscore
         self.stop_ = epics_signal_x(prefix + ".STOP")
         # Whether set() should complete successfully or not
