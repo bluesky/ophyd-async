@@ -102,5 +102,9 @@
   {
     "version": "stall-timeout",
     "url": "https://bluesky.github.io/ophyd-async/stall-timeout/"
+  },
+  {
+    "version": "standard_detector_remove_readable",
+    "url": "https://bluesky.github.io/ophyd-async/standard_detector_remove_readable/"
   }
 ]
