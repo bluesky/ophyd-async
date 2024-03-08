@@ -76,10 +76,6 @@
     "url": "https://bluesky.github.io/ophyd-async/hyperion_safe_panda/"
   },
   {
-    "version": "improve_p4p_errorhandling",
-    "url": "https://bluesky.github.io/ophyd-async/improve_p4p_errorhandling/"
-  },
-  {
     "version": "panda-controller",
     "url": "https://bluesky.github.io/ophyd-async/panda-controller/"
   },
@@ -94,6 +90,10 @@
   {
     "version": "rosesyrett-patch-1",
     "url": "https://bluesky.github.io/ophyd-async/rosesyrett-patch-1/"
+  },
+  {
+    "version": "signal_meta",
+    "url": "https://bluesky.github.io/ophyd-async/signal_meta/"
   },
   {
     "version": "signal_metadata",
