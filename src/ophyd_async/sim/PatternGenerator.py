@@ -51,15 +51,18 @@ class PatternGenerator:
     y: float
     initial_blob: np.ndarray
     file: Optional[h5py.File]
+    indices_written: int
 
     def __init__(self, exposure: float = 0.01) -> None:
         self.exposure = exposure
         self.initial_blob = make_gaussian_blob(width=100, height=100) * 255
 
-    def write_image_to_file(self, counter:int, image: np.ndarray):
-        assert self.file, 'no file has been opened!'
-        self.file.create_dataset(name=f"pattern-generator-file-{counter}", dtype=np.ndarray)
-        self.file.
+    async def write_image_to_file(self, counter: int, image: np.ndarray):
+        assert self.file, "no file has been opened!"
+        self.file.create_dataset(
+            name=f"pattern-generator-file-{counter}", dtype=np.ndarray
+        )
+        await self.file.flush_now.set(True)
 
     def set_exposure(self, value: float) -> None:
         self.exposure = value
