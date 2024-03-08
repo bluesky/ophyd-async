@@ -277,7 +277,15 @@ class PvaSignalBackend(SignalBackend[T]):
         else:
             write_value = self.converter.write_value(value)
         coro = self.ctxt.put(self.write_pv, dict(value=write_value), wait=wait)
-        await asyncio.wait_for(coro, timeout)
+        try:
+            await asyncio.wait_for(coro, timeout)
+        except asyncio.TimeoutError as exc:
+            logging.debug(
+                f"signal pva://{self.write_pv} timed out \
+                          put value: {write_value}",
+                exc_info=True,
+            )
+            raise NotConnected(f"pva://{self.write_pv}") from exc
 
     async def get_descriptor(self) -> Descriptor:
         value = await self.ctxt.get(self.read_pv)
