@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.panda.panda &#8212; ophyd-async 0.2.1.dev20+g383bf7f8 documentation</title>
+    <title>ophyd_async.panda.panda &#8212; ophyd-async 0.2.2.dev15+g8421f1fc documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=d7462eba"></script>
+    <script src="../../../_static/documentation_options.js?v=6f80a8fd"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.1.dev20+g383bf7f8 documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.1.dev20+g383bf7f8 documentation - Home"/>`);</script>
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.2.2.dev15+g8421f1fc documentation - Home"/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.2.2.dev15+g8421f1fc documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -420,29 +420,13 @@ document.write(`
   <h1>Source code for ophyd_async.panda.panda</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">atexit</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Callable</span><span class="p">,</span>
-    <span class="n">Dict</span><span class="p">,</span>
-    <span class="n">FrozenSet</span><span class="p">,</span>
-    <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Tuple</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
-    <span class="n">TypedDict</span><span class="p">,</span>
-    <span class="n">cast</span><span class="p">,</span>
-    <span class="n">get_args</span><span class="p">,</span>
-    <span class="n">get_origin</span><span class="p">,</span>
-    <span class="n">get_type_hints</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="kn">from</span> <span class="nn">p4p.client.thread</span> <span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">get_origin</span><span class="p">,</span> <span class="n">get_type_hints</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">Device</span><span class="p">,</span>
     <span class="n">DeviceVector</span><span class="p">,</span>
-    <span class="n">NotConnected</span><span class="p">,</span>
     <span class="n">Signal</span><span class="p">,</span>
     <span class="n">SignalBackend</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
@@ -450,13 +434,7 @@ document.write(`
     <span class="n">SignalX</span><span class="p">,</span>
     <span class="n">SimSignalBackend</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics.signal</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">epics_signal_r</span><span class="p">,</span>
-    <span class="n">epics_signal_rw</span><span class="p">,</span>
-    <span class="n">epics_signal_w</span><span class="p">,</span>
-    <span class="n">epics_signal_x</span><span class="p">,</span>
-    <span class="n">pvi_get</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.epics.pvi</span> <span class="kn">import</span> <span class="n">PVIEntry</span><span class="p">,</span> <span class="n">make_signal</span><span class="p">,</span> <span class="n">pvi_get</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.panda.table</span> <span class="kn">import</span> <span class="n">SeqTable</span>
 
 
@@ -483,17 +461,6 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="PVIEntry">
-<a class="viewcode-back" href="../../../user/generated/ophyd_async.panda.PVIEntry.html#ophyd_async.panda.PVIEntry">[docs]</a>
-<span class="k">class</span> <span class="nc">PVIEntry</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">d</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">r</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">rw</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">w</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">x</span><span class="p">:</span> <span class="nb">str</span></div>
-
-
-
 <span class="k">def</span> <span class="nf">_block_name_number</span><span class="p">(</span><span class="n">block_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Maps a panda block name to a block and number.</span>
 
@@ -512,7 +479,7 @@ document.write(`
     <span class="k">return</span> <span class="n">block_name</span><span class="p">,</span> <span class="kc">None</span>
 
 
-<span class="k">def</span> <span class="nf">_remove_inconsistent_blocks</span><span class="p">(</span><span class="n">pvi_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_remove_inconsistent_blocks</span><span class="p">(</span><span class="n">pvi_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove blocks from pvi information.</span>
 
 <span class="sd">    This is needed because some pandas have &#39;pcap&#39; and &#39;pcap1&#39; blocks, which are</span>
@@ -520,6 +487,8 @@ document.write(`
 <span class="sd">    for example.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pvi_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
     <span class="n">pvi_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">pvi_info</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pvi_keys</span><span class="p">:</span>
         <span class="n">kn</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\d*$&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
@@ -527,56 +496,16 @@ document.write(`
             <span class="k">del</span> <span class="n">pvi_info</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="pvi">
-<a class="viewcode-back" href="../../../user/generated/ophyd_async.panda.pvi.html#ophyd_async.panda.pvi">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">pvi</span><span class="p">(</span>
-    <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ctxt</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">]:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pvi_get</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="n">ctxt</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
-
-    <span class="n">_remove_inconsistent_blocks</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span></div>
-
-
-
 <div class="viewcode-block" id="PandA">
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.panda.PandA.html#ophyd_async.panda.PandA">[docs]</a>
 <span class="k">class</span> <span class="nc">PandA</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-    <span class="n">_ctxt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Context</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-
     <span class="n">pulse</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">PulseBlock</span><span class="p">]</span>
     <span class="n">seq</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">SeqBlock</span><span class="p">]</span>
     <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pvi_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">FrozenSet</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Signal</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">,</span> <span class="n">wpv</span><span class="p">:</span> <span class="n">epics_signal_rw</span><span class="p">(</span>
-                <span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">,</span> <span class="n">wpv</span>
-            <span class="p">),</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;rw&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">,</span> <span class="n">wpv</span><span class="p">:</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">,</span> <span class="n">wpv</span><span class="p">),</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;r&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">,</span> <span class="n">wpv</span><span class="p">:</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">),</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;w&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">,</span> <span class="n">wpv</span><span class="p">:</span> <span class="n">epics_signal_w</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">wpv</span><span class="p">),</span>
-            <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">rpv</span><span class="p">,</span> <span class="n">wpv</span><span class="p">:</span> <span class="n">epics_signal_x</span><span class="p">(</span><span class="n">wpv</span><span class="p">),</span>
-        <span class="p">}</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">ctxt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Context</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">PandA</span><span class="o">.</span><span class="n">_ctxt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">PandA</span><span class="o">.</span><span class="n">_ctxt</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="s2">&quot;pva&quot;</span><span class="p">,</span> <span class="n">nt</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-            <span class="nd">@atexit</span><span class="o">.</span><span class="n">register</span>
-            <span class="k">def</span> <span class="nf">_del_ctxt</span><span class="p">():</span>
-                <span class="c1"># If we don&#39;t do this we get messages like this on close:</span>
-                <span class="c1">#   Error in sys.excepthook:</span>
-                <span class="c1">#   Original exception was:</span>
-                <span class="n">PandA</span><span class="o">.</span><span class="n">_ctxt</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">return</span> <span class="n">PandA</span><span class="o">.</span><span class="n">_ctxt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
 
 <div class="viewcode-block" id="PandA.verify_block">
 <a class="viewcode-back" href="../../../user/generated/ophyd_async.panda.PandA.html#ophyd_async.panda.PandA.verify_block">[docs]</a>
@@ -612,7 +541,7 @@ document.write(`
         <span class="n">block</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify_block</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
 
         <span class="n">field_annos</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">globalns</span><span class="o">=</span><span class="nb">globals</span><span class="p">())</span>
-        <span class="n">block_pvi</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pvi</span><span class="p">(</span><span class="n">block_pv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctxt</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">sim</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">block_pvi</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pvi_get</span><span class="p">(</span><span class="n">block_pv</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">sim</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="c1"># finds which fields this class actually has, e.g. delay, width...</span>
         <span class="k">for</span> <span class="n">sig_name</span><span class="p">,</span> <span class="n">sig_type</span> <span class="ow">in</span> <span class="n">field_annos</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -621,7 +550,6 @@ document.write(`
 
             <span class="c1"># if not in sim mode,</span>
             <span class="k">if</span> <span class="n">block_pvi</span><span class="p">:</span>
-                <span class="n">block_pvi</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">],</span> <span class="n">block_pvi</span><span class="p">)</span>
                 <span class="c1"># try to get this block in the pvi.</span>
                 <span class="n">entry</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PVIEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_pvi</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sig_name</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -630,7 +558,7 @@ document.write(`
                         <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;an </span><span class="si">{</span><span class="n">sig_name</span><span class="si">}</span><span class="s2"> signal which has not been retrieved by PVI.&quot;</span>
                     <span class="p">)</span>
 
-                <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_signal</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span> <span class="o">=</span> <span class="n">make_signal</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span> <span class="o">=</span> <span class="n">SimSignalBackend</span><span class="p">(</span>
@@ -645,8 +573,7 @@ document.write(`
             <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">attr_pvi</span> <span class="ow">in</span> <span class="n">block_pvi</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
                     <span class="c1"># makes any extra signals</span>
-                    <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_signal</span><span class="p">(</span><span class="n">attr_pvi</span><span class="p">)</span>
-                    <span class="nb">setattr</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">signal</span><span class="p">)</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">make_signal</span><span class="p">(</span><span class="n">attr_pvi</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">block</span>
 
@@ -659,27 +586,12 @@ document.write(`
 <span class="sd">        included dynamically anyway.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">block</span> <span class="o">=</span> <span class="n">Device</span><span class="p">()</span>
-        <span class="n">block_pvi</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pvi</span><span class="p">(</span><span class="n">block_pv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctxt</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">block_pvi</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PVIEntry</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pvi_get</span><span class="p">(</span><span class="n">block_pv</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">signal_name</span><span class="p">,</span> <span class="n">signal_pvi</span> <span class="ow">in</span> <span class="n">block_pvi</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_signal</span><span class="p">(</span><span class="n">signal_pvi</span><span class="p">)</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">signal_name</span><span class="p">,</span> <span class="n">signal</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">signal_name</span><span class="p">,</span> <span class="n">make_signal</span><span class="p">(</span><span class="n">signal_pvi</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">block</span>
-
-    <span class="k">def</span> <span class="nf">_make_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_pvi</span><span class="p">:</span> <span class="n">PVIEntry</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a signal.</span>
-
-<span class="sd">        This assumes datatype is None so it can be used to create dynamic signals.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">operations</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">signal_pvi</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">pvs</span> <span class="o">=</span> <span class="p">[</span><span class="n">signal_pvi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">operations</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
-        <span class="n">signal_factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvi_mapping</span><span class="p">[</span><span class="n">operations</span><span class="p">]</span>
-
-        <span class="n">write_pv</span> <span class="o">=</span> <span class="n">pvs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">read_pv</span> <span class="o">=</span> <span class="n">write_pv</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pvs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">pvs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="n">signal_factory</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="s2">&quot;pva://&quot;</span> <span class="o">+</span> <span class="n">read_pv</span><span class="p">,</span> <span class="s2">&quot;pva://&quot;</span> <span class="o">+</span> <span class="n">write_pv</span><span class="p">)</span>
 
     <span class="c1"># TODO redo to set_panda_block? confusing name</span>
 <div class="viewcode-block" id="PandA.set_attribute">
@@ -714,10 +626,9 @@ document.write(`
 <span class="sd">        makes all required blocks.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pvi_info</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="k">await</span> <span class="n">pvi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_prefix</span> <span class="o">+</span> <span class="s2">&quot;:PVI&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctxt</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">sim</span>
-            <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">await</span> <span class="n">pvi_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">+</span> <span class="s2">&quot;PVI&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">sim</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="p">)</span>
+        <span class="n">_remove_inconsistent_blocks</span><span class="p">(</span><span class="n">pvi_info</span><span class="p">)</span>
 
         <span class="n">hints</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">attr_name</span><span class="p">:</span> <span class="n">attr_type</span>

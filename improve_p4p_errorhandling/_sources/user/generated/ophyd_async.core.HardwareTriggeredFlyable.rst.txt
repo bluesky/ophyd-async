@@ -22,10 +22,8 @@ ophyd\_async.core.HardwareTriggeredFlyable
       :nosignatures:
    
       ~HardwareTriggeredFlyable.children
-      ~HardwareTriggeredFlyable.collect_asset_docs
       ~HardwareTriggeredFlyable.complete
       ~HardwareTriggeredFlyable.connect
-      ~HardwareTriggeredFlyable.describe_collect
       ~HardwareTriggeredFlyable.describe_configuration
       ~HardwareTriggeredFlyable.kickoff
       ~HardwareTriggeredFlyable.prepare
@@ -42,8 +40,9 @@ ophyd\_async.core.HardwareTriggeredFlyable
 
    .. autosummary::
    
-      ~HardwareTriggeredFlyable.hints
       ~HardwareTriggeredFlyable.name
       ~HardwareTriggeredFlyable.parent
+      ~HardwareTriggeredFlyable.trigger_info
+      ~HardwareTriggeredFlyable.trigger_logic
    
    

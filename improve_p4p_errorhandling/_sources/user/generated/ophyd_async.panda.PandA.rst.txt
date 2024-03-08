@@ -35,7 +35,6 @@ ophyd\_async.panda.PandA
 
    .. autosummary::
    
-      ~PandA.ctxt
       ~PandA.name
       ~PandA.parent
       ~PandA.pulse

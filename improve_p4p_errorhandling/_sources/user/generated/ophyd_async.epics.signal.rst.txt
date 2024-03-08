@@ -20,7 +20,6 @@ ophyd\_async.epics.signal
       :toctree:
       :nosignatures:
    
-      pvi_get
       epics_signal_r
       epics_signal_rw
       epics_signal_w
