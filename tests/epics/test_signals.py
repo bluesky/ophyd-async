@@ -398,6 +398,7 @@ async def test_pvi_structure(ioc: IOC) -> None:
             await backend.get_descriptor()
         # Check initial value
         await q.assert_updates(expected)
+        await backend.get_value()
 
     finally:
         q.close()
