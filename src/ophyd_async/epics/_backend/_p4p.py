@@ -153,6 +153,18 @@ class PvaDictConverter(PvaConverter):
     def descriptor(self, source: str, value) -> Descriptor:
         raise NotImplementedError("Describing Dict signals not currently supported")
 
+    def metadata_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for metadata.
+        """
+        return []
+
+    def value_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for the value.
+        """
+        return []
+
 
 class DisconnectedPvaConverter(PvaConverter):
     def __getattribute__(self, __name: str) -> Any:
