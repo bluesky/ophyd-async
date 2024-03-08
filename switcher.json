@@ -92,10 +92,6 @@
     "url": "https://bluesky.github.io/ophyd-async/rosesyrett-patch-1/"
   },
   {
-    "version": "signal_meta",
-    "url": "https://bluesky.github.io/ophyd-async/signal_meta/"
-  },
-  {
     "version": "signal_metadata",
     "url": "https://bluesky.github.io/ophyd-async/signal_metadata/"
   },
