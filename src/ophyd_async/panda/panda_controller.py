@@ -26,7 +26,8 @@ class PandaPcapController(DetectorControl):
             trigger == DetectorTrigger.internal
         ), "Only internal triggering is supported on the PandA"
         self.pandaPcap.arm.trigger()
-        return AsyncStatus(asyncio.sleep(0.1))
+        await wait_for_value(self.pcap.active, True, timeout=1)
+        return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
 
     async def disarm(self):
         self.pandaPcap.disarm.trigger(),
