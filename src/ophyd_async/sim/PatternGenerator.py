@@ -7,7 +7,7 @@ import numpy as np
 from ophyd_async.core import DirectoryProvider
 
 
-def make_gaussian_blob(width: int, height: int) -> np.ndarray:
+def make_gaussian_blob(height: int, width: int) -> np.ndarray:
     """Make a Gaussian Blob with float values in range 0..1"""
     x, y = np.meshgrid(np.linspace(-1, 1, width), np.linspace(-1, 1, height))
     d = np.sqrt(x * x + y * y)
@@ -25,13 +25,8 @@ def interesting_pattern(x: float, y: float) -> float:
 
 # raw data path
 DATA_PATH = "/entry/data/data"
-# blobs path
-UID_PATH = "/entry/uid"
 # pixel sum path
 SUM_PATH = "/entry/sum"
-
-DEFAULT_WIDTH = 100
-DEFAULT_HEIGHT = 100
 
 
 class PatternGenerator:
@@ -39,8 +34,9 @@ class PatternGenerator:
     order of events
     1. a definition of a new scan is created
     2. file is opened
+        - before anythign else happens, descriptors are defined and sent to bluesky for each dataset
     3. exposure time is set
-    4. x and y are set
+    4. x and y are set -
     5. interesting pattern is made
     6. image is written to file
     7. number of images is incremented
@@ -48,36 +44,57 @@ class PatternGenerator:
     9. when all x and y are done, file is closed
     """
 
-    exposure: float
-    x: float
-    y: float
-    initial_blob: np.ndarray
-    file: Optional[h5py.File]
-    indices_written: int
+    def __init__(
+        self,
+        saturation_exposure_time: float = 1,
+        detector_width: int = 320,
+        detector_height: int = 240,
+    ) -> None:
+        self.saturation_exposure_time = saturation_exposure_time
+        self.exposure = saturation_exposure_time
+        self.x = 0.0
+        self.y = 0.0
+        self.height = detector_height
+        self.width = detector_width
+        self.written_images_counter: int = 0
+        self.initial_blob = (
+            make_gaussian_blob(width=detector_width, height=detector_height)
+            * np.uint8.max
+        )
+        self.file: Optional[h5py.File] = None
 
-    def __init__(self, exposure: float = 0.01) -> None:
-        self.exposure = exposure
-        self.initial_blob = make_gaussian_blob(width=100, height=100) * 255
-
-    async def write_image_to_file(self, counter: int, image: np.ndarray):
+    async def write_image_to_file(self) -> None:
         assert self.file, "no file has been opened!"
         self.file.create_dataset(
-            name=f"pattern-generator-file-{counter}", dtype=np.ndarray
+            name=f"pattern-generator-file-{self.written_images_counter}",
+            dtype=np.ndarray,
         )
 
-        # TODO UNKNOWNS
-        offset = 1 + counter
-        period = 1
+        # prepare - resize the fixed hdf5 data structure so that the new image can be written
+        target_dimensions = (
+            self.written_images_counter + 1,
+            self.height,
+            self.width,
+        )
+        self.file[DATA_PATH].resize(target_dimensions)
+        self.file[SUM_PATH].resize(self.written_images_counter + 1)
 
+        # generate the simulated data
         intensity: float = interesting_pattern(self.x, self.y)
         detector_data: np.uint8 = (
-            self.blob * intensity * self.exposure / period
+            self.blob * intensity * self.exposure / self.saturation_exposure_time
         ).astype(np.uint8)
-        self.file[DATA_PATH][offset] = detector_data
-        self.file[UID_PATH][offset] = counter
-        self.file[SUM_PATH][offset] = np.sum(detector_data)
 
-        await self.file.flush_now.set(True)
+        # write data to disc (intermediate step)
+        self.file[DATA_PATH][self.written_images_counter] = detector_data
+        self.file[SUM_PATH][self.written_images_counter] = np.sum(detector_data)
+
+        # save metadata - so that it's discoverable
+        self.file[DATA_PATH].flush()
+        self.file[SUM_PATH].flush()
+
+        # coutner increment is last as only at this point the new data is visible from the outside
+        self.written_images_counter += 1
 
     def set_exposure(self, value: float) -> None:
         self.exposure = value
@@ -91,30 +108,25 @@ class PatternGenerator:
     def open_file(self, dir: DirectoryProvider) -> None:
         new_path: Path = dir().resource_dir
         hdf5_file = h5py.File(new_path, "w")
-        height = DEFAULT_HEIGHT
-        width = DEFAULT_WIDTH
         hdf5_file.create_dataset(
             DATA_PATH,
             dtype=np.uint8,
-            shape=(1, height, width),
-            maxshape=(None, height, width),
-        )
-
-        hdf5_file.create_dataset(
-            UID_PATH,
-            dtype=np.int32,
-            shape=(1, 1, 1),
-            maxshape=(None, 1, 1),
-            fillvalue=-1,
+            shape=(1, self.height, self.width),
+            maxshape=(None, self.height, self.width),
         )
 
         hdf5_file.create_dataset(
             SUM_PATH,
             dtype=np.float64,
-            shape=(1, 1, 1),
-            maxshape=(None, 1, 1),
+            shape=(1,),
+            maxshape=(None),
             fillvalue=-1,
         )
         hdf5_file.swmr_mode = True
         self.file = hdf5_file
-        print('file opened')
+        print("file opened")
+
+    def close(self) -> None:
+        self.file.close()
+        print("file closed")
+        self.file = None

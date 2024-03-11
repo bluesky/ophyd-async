@@ -18,9 +18,9 @@ class SimPatternDetector(StandardDetector):
         path: str = ...,
     ) -> None:
 
-        pattern_generator = PatternGenerator()
-        writer = SimPatternDetectorWriter(patternGenerator=pattern_generator)
-        controller = SimPatternDetectorControl(patternGenerator=pattern_generator)
+        self.pattern_generator = PatternGenerator()
+        writer = SimPatternDetectorWriter(patternGenerator=self.pattern_generator)
+        controller = SimPatternDetectorControl(pattern_generator=self.pattern_generator)
         super().__init__(
             controller=controller,
             writer=writer,

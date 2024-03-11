@@ -19,6 +19,7 @@ class SimPatternDetectorWriter(DetectorWriter):
 
     def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         self.patternGenerator.open_file(self.directory_provider)
+        # todo replicate description-generating logic from HDFWriter
 
     def close(self) -> None:
         self.patternGenerator.file.close()
@@ -29,9 +30,9 @@ class SimPatternDetectorWriter(DetectorWriter):
 
     async def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(
-            self.patternGenerator.indices_written, timeout=timeout
+            self.patternGenerator.written_images_counter, timeout=timeout
         ):
             yield num_captured // self.patternGenerator.multiplier
 
     def get_indices_written(self) -> int:
-        return self.patternGenerator.indices_written
+        return self.patternGenerator.written_images_counter
