@@ -1,5 +1,6 @@
 import asyncio
 import atexit
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
@@ -8,17 +9,26 @@ from p4p.client.thread import Context
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    AsyncStatus,
     DetectorWriter,
     Device,
     DirectoryProvider,
     NameProvider,
     SignalR,
+    SignalRW,
     wait_for_value,
 )
 from ophyd_async.panda.panda import PandA
 
-from .panda_hdf import DataBlock, _HDFDataset, _HDFFile
+from .panda_hdf import _HDFDataset, _HDFFile
+
+
+@dataclass()
+class HdfSignals:
+    file_path: SignalR
+    file_name: SignalRW
+    num_capture: SignalRW
+    num_captured: SignalR
+    capture: SignalRW
 
 
 class Capture(str, Enum):
@@ -105,13 +115,19 @@ class PandaHDFWriter(DetectorWriter):
     ) -> None:
         self.panda_device = panda_device
         self._prefix = prefix
-        self.hdf5 = DataBlock()  # needs a name
         self._directory_provider = directory_provider
         self._name_provider = name_provider
-        self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
-        self._multiplier = 1
+
+        # TODO add panda.data to the Panda device instead, as a typed block
+        self.hdf = HdfSignals(
+            panda_device.data.hdffullfilepath,
+            panda_device.data.hdffilename,
+            panda_device.data.numcapture,
+            panda_device.data.numcaptured,
+            panda_device.data.capture,
+        )
 
         # Get capture PVs by looking at panda. Gives mapping of dotted attribute path
         # to Signal object
@@ -121,12 +137,15 @@ class PandaHDFWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         """Retrieve and get descriptor of all PandA signals marked for capture"""
 
+        # Ensure flushes are immediate
+        await self.panda_device.data.flushperiod.set(0)
+
         self.to_capture = await get_signals_marked_for_capture(self.capture_signals)
         self._file = None
         info = self._directory_provider()
         await asyncio.gather(
-            self.hdf5.filepath.set(info.directory_path),
-            self.hdf5.filename.set(f"{info.filename_prefix}.h5"),
+            self.hdf.file_path.set(info.directory_path),
+            self.hdf.file_name.set(f"{info.filename_prefix}.h5"),
         )
 
         # TODO can these await statements be inlcuding in the gather?
@@ -134,15 +153,14 @@ class PandaHDFWriter(DetectorWriter):
 
         # TODO confirm all missing functionality from AD writer isn't needed here
 
-        await self.hdf5.numcapture.set(0)
+        await self.hdf.num_capture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes
-        await self.hdf5.capture.set(True)
+        await self.hdf.capture.set(True)
         name = self._name_provider()
         if multiplier > 1:
             raise ValueError(
                 "All PandA datasets should be scalar, multiplier should be 1"
             )
-        self._multiplier = multiplier
         self._datasets = []
         for attribute_path, value in self.to_capture.items():
             # TODO check that a 'abc_capture' signal always records an 'abc_val' signal
@@ -164,13 +182,13 @@ class PandaHDFWriter(DetectorWriter):
                     f"{name}.{block_name}.{signal_name}",
                     f"{block_name}:{signal_name}".upper(),
                     shape,
-                    multiplier,
+                    multiplier=1,
                 )
-            )  # TODO check if we need shape or multiplier here
+            )
 
         describe = {
             ds.name: Descriptor(
-                source=self.hdf5.filepath.source,
+                source=self.hdf.file_path.source,
                 shape=ds.shape,
                 dtype="array" if ds.shape != [1] else "number",
                 external="STREAM:",
@@ -179,50 +197,35 @@ class PandaHDFWriter(DetectorWriter):
         }
         return describe
 
-    # TODO same as AD version, move to somewhere common? Make these default methods in
-    # DetectorWriter
+    # Next two functions are exactly the same as AD writer. Could move as default
+    # StandardDetector behavior
     async def wait_for_index(
         self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
     ):
         def matcher(value: int) -> bool:
-            return value // self._multiplier >= index
+            return value >= index
 
         matcher.__name__ = f"index_at_least_{index}"
-        await wait_for_value(self.hdf5.numwritten_rbv, matcher, timeout=timeout)
+        await wait_for_value(self.hdf.num_captured, matcher, timeout=timeout)
 
     async def get_indices_written(self) -> int:
-        num_written = await self.hdf5.numwritten_rbv.get_value()
-        return num_written // self._multiplier
+        return await self.hdf.num_captured.get_value()
 
     async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
         # TODO: fail if we get dropped frames
-        await self.hdf5.flushnow.set(True)
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    await self.hdf5.fullfilename.get_value(), self._datasets
+                    await self.hdf.file_name.get_value(), self._datasets
                 )
-            # TODO this is indented differently to AD
-            for doc in self._file.stream_resources():
-                ds_name = doc["resource_kwargs"]["name"]
-                ds_block = doc["resource_kwargs"]["block"]
-                block = getattr(self, ds_block, None)
-                if block is not None:
-                    capturing = getattr(block, f"{ds_name}_capture")
-                    capture_value = await capturing.get_value()
-                    if capture_value != Capture.No:
-                        yield "stream_resource", doc
+                for doc in self._file.stream_resources():
+                    yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
                 yield "stream_datum", doc
 
-    # TODO: also move to defualt
+    # Could put this function as default for StandardDetector
     async def close(self):
-        # Already done a caput callback in _capture_status, so can't do one here
-        await self.hdf5.capture.set(False, wait=False)
-        await wait_for_value(self.hdf5.capturing, False, DEFAULT_TIMEOUT)
-        if self._capture_status:
-            # We kicked off an open, so wait for it to return
-            await self._capture_status
+        await self.hdf.capture.set(False, wait=True, timeout=DEFAULT_TIMEOUT)
 
     @property
     def hints(self) -> Hints:
