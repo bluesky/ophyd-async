@@ -9,9 +9,9 @@ from .panda import PcapBlock
 class PandaPcapController(DetectorControl):
     def __init__(
         self,
-        pandaPcap: PcapBlock,
+        pcap: PcapBlock,
     ) -> None:
-        self.pandaPcap = pandaPcap
+        self.pcap = pcap
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.000000008
