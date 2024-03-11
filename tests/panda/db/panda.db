@@ -62,19 +62,7 @@ record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:ARM")
 {
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
-            "pvi.arm.x": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}
-
-record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:DISARM")
-{
-    info(Q:group, {
-        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
-            "pvi.disarm.x": {
+            "pvi.arm.rw": {
                 "+channel": "NAME",
                 "+type": "plain"
             }
