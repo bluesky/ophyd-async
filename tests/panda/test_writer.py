@@ -23,7 +23,7 @@ from ophyd_async.panda.writers.hdf_writer import (
 @pytest.fixture
 async def sim_panda() -> PandA:
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDAQSRV")
+        sim_panda = PandA("SIM_PANDA")
         # TODO check if real signal names end with _capture
         sim_panda.block1 = Device("BLOCK1")
         sim_panda.block2 = Device("BLOCK2")
@@ -33,9 +33,33 @@ async def sim_panda() -> PandA:
         sim_panda.block2.test_capture = SignalR(
             backend=SimSignalBackend(str, source="BLOCK2_capture")
         )
+
+        # TODO this part of the sim writer won't be needed once panda.data is a
+        # typed block in panda class
+        sim_panda.data = Device()
+        sim_panda.data.hdffullfilepath = SignalRW(
+            backend=SimSignalBackend(str, source="hdf_filepath")
+        )
+        sim_panda.data.hdffilename = SignalRW(
+            backend=SimSignalBackend(str, source="hdf_name")
+        )
+        sim_panda.data.numcapture = SignalRW(
+            backend=SimSignalBackend(str, source="hdf_numcapture")
+        )
+        sim_panda.data.numcaptured = SignalRW(
+            backend=SimSignalBackend(str, source="hdf_numcaptured")
+        )
+        sim_panda.data.capture = SignalRW(
+            backend=SimSignalBackend(str, source="hdf_capture")
+        )
+        sim_panda.data.flushperiod = SignalRW(
+            backend=SimSignalBackend(str, source="hdf_capture")
+        )
+
         await asyncio.gather(
             sim_panda.block1.connect(sim=True),
             sim_panda.block2.connect(sim=True),
+            sim_panda.data.connect(sim=True),
             sim_panda.connect(sim=True),
         )
         return sim_panda
@@ -48,26 +72,6 @@ async def sim_writer(tmp_path, sim_panda: PandA) -> PandaHDFWriter:
         writer = PandaHDFWriter(
             "TEST-PANDA", dir_prov, lambda: "test-panda", panda_device=sim_panda
         )
-        writer.hdf5.filepath = SignalRW(
-            backend=SimSignalBackend(str, source="TEST-PANDA:HDF5:FilePath")
-        )
-        writer.hdf5.filename = SignalRW(
-            backend=SimSignalBackend(str, source="TEST-PANDA:HDF5:FileName")
-        )
-        writer.hdf5.numcapture = SignalRW(
-            backend=SimSignalBackend(int, source="TEST-PANDA:HDF5:NumCapture")
-        )
-        writer.hdf5.capture = SignalRW(
-            backend=SimSignalBackend(bool, source="TEST-PANDA:HDF5:Capture")
-        )
-        writer.hdf5.numcaptured = SignalRW(
-            backend=SimSignalBackend(int, source="TEST-PANDA:HDF5:NumCaptured")
-        )
-        writer.hdf5.numrecieved = SignalRW(
-            backend=SimSignalBackend(int, source="TEST-PANDA:HDF5:NumRecieved")
-        )
-        hdf = writer.hdf5
-        await asyncio.gather(hdf.filepath.connect(), hdf.filename.connect())
 
     return writer
 
@@ -112,7 +116,6 @@ async def test_get_signals_marked_for_capture(sim_panda):
     )  # TODO does the dict returned by this function still need to contain the signal?
 
 
-@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
     set_sim_value(sim_writer.panda_device.block1.test_capture, Capture.MinMaxMean)
     set_sim_value(sim_writer.panda_device.block2.test_capture, Capture.Value)
@@ -130,65 +133,50 @@ async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
         assert entry.get("external") == "STREAM:"
 
 
-# @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-# async def test_open_close_sets_capture(sim_writer):
-#     await sim_writer.hdf5.capturing.set(1)
-#     return_val = await sim_writer.open()  # to make capturing status not time out
-#     assert isinstance(return_val, dict)
-#     capture = await sim_writer.hdf5.capture.get_value()
-#     assert capture is True
-#     await sim_writer.hdf5.capturing.set(0)
-#     await sim_writer.close()
-#     capture = await sim_writer.hdf5.capture.get_value()
-#     assert capture is False
+async def test_open_close_sets_capture(sim_writer: PandaHDFWriter):
+    assert not await sim_writer.hdf.capture.get_value()
+    assert isinstance(await sim_writer.open(), dict)
+    assert await sim_writer.hdf.capture.get_value()
+    await sim_writer.close()
+    assert not await sim_writer.hdf.capture.get_value()
 
 
-# @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-# async def test_open_sets_file_path(sim_writer, tmp_path):
-#     path = await sim_writer.hdf5.filepath.get_value()
-#     assert path == ""
-#     await sim_writer.hdf5.capturing.set(1)  # to make capturing status not time out
-#     await sim_writer.open()
-#     path = await sim_writer.hdf5.filepath.get_value()
-#     assert path == str(tmp_path)
-#     name = await sim_writer.hdf5.filename.get_value()
-#     assert name == "test.h5"
+async def test_open_sets_file_path_and_name(sim_writer: PandaHDFWriter, tmp_path):
+    path = await sim_writer.hdf.file_path.get_value()
+    assert path == ""
+    await sim_writer.open()
+    path = await sim_writer.hdf.file_path.get_value()
+    assert path == str(tmp_path)
+    name = await sim_writer.hdf.file_name.get_value()
+    assert name == "test.h5"
 
 
-# @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-# async def test_get_indices_written(sim_writer):
-#     written = await sim_writer.get_indices_written()
-#     assert written == 0, f"{written} != 0"
-
-#     async def get_twentyfive():
-#         return 25
-
-#     with patch("ophyd_async.core.SignalR.get_value", wraps=get_twentyfive):
-#         written = await sim_writer.get_indices_written()
-#     assert written == 25, f"{written} != 25"
+async def test_open_errors_when_multiplier_not_one(sim_writer: PandaHDFWriter):
+    with pytest.raises(ValueError):
+        await sim_writer.open(2)
 
 
-# @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-# async def test_wait_for_index(sim_writer):
-#     # usually numwritten_rbv is a SignalR so can't be set from ophyd,
-#     # overload with SignalRW for testing
-#     await set_and_wait_for_value(sim_writer.hdf5.numwritten_rbv, 25)
-#     assert (await sim_writer.hdf5.numwritten_rbv.get_value()) == 25
-#     await sim_writer.wait_for_index(25, timeout=1)
-#     with pytest.raises(TimeoutError):
-#         await sim_writer.wait_for_index(27, timeout=1)
+async def test_get_indices_written(sim_writer: PandaHDFWriter):
+    set_sim_value(sim_writer.hdf.num_captured, 4)
+    written = await sim_writer.get_indices_written()
+    assert written == 4
 
 
-# @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-# async def test_collect_stream_docs(sim_writer):
-#     assert sim_writer._file is None
+async def test_wait_for_index(sim_writer: PandaHDFWriter):
+    set_sim_value(sim_writer.hdf.num_captured, 3)
+    await sim_writer.wait_for_index(3, timeout=1)
+    set_sim_value(sim_writer.hdf.num_captured, 2)
+    with pytest.raises(TimeoutError):
+        await sim_writer.wait_for_index(3, timeout=0.1)
 
-#     [item async for item in sim_writer.collect_stream_docs(1)]
-#     assert sim_writer._file
 
+# TODO improve this test
+async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
+    # Give the sim writer datasets
+    set_sim_value(sim_writer.panda_device.block1.test_capture, Capture.MinMaxMean)
+    set_sim_value(sim_writer.panda_device.block2.test_capture, Capture.Value)
+    await sim_writer.open()
 
-async def test_to_capture():
-    # Make sure that _to_capture property holds a dictionary of block names to signals.
-    # On connecting or initialising, writer should check all of panda PV's to see if
-    # they are being captured, and what kind of capture
-    pass
+    assert sim_writer._file is None
+    [item async for item in sim_writer.collect_stream_docs(1)]
+    assert sim_writer._file
