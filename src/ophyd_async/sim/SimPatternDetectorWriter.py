@@ -4,6 +4,7 @@ from bluesky.protocols import Descriptor
 
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.detector import DetectorWriter
+from ophyd_async.core.signal import observe_value
 from ophyd_async.sim.PatternGenerator import PatternGenerator
 
 
@@ -23,10 +24,14 @@ class SimPatternDetectorWriter(DetectorWriter):
         self.patternGenerator.file.close()
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
-        self.patternGenerator.open_file()
+        # self.patternGenerator.open_file()
+        for doc in self.patternGenerator.file.stream
 
-    def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
-        pass
+    async def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
+        async for num_captured in observe_value(
+            self.patternGenerator.indices_written, timeout=timeout
+        ):
+            yield num_captured // self.patternGenerator.multiplier
 
     def get_indices_written(self) -> int:
         return self.patternGenerator.indices_written

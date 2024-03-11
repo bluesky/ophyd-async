@@ -1,7 +1,9 @@
 from pathlib import Path
 from typing import Optional
+
 import h5py
 import numpy as np
+
 from ophyd_async.core import DirectoryProvider
 
 
@@ -62,7 +64,8 @@ class PatternGenerator:
         self.file.create_dataset(
             name=f"pattern-generator-file-{counter}", dtype=np.ndarray
         )
-        # UNKNOWNS
+
+        # TODO UNKNOWNS
         offset = 1
         period = 1
 
