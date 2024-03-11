@@ -3,17 +3,6 @@ from typing import Iterator, List
 
 from event_model import StreamDatum, StreamResource, compose_stream_resource
 
-from ophyd_async.core import SignalRW
-from ophyd_async.core.device import Device
-
-
-class DataBlock(Device):
-    file_path: SignalRW[str]  # _directory_record
-    file_name: SignalRW[str]  # _file_name_record
-    num_capture: SignalRW[int]  # _num_capture_record (number we want to capture)
-    num_captured: SignalRW[int]  # _num_captured_record
-    capture: SignalRW[bool]  # _capture_control_record
-
 
 @dataclass
 class _HDFDataset:
@@ -26,6 +15,7 @@ class _HDFDataset:
     multiplier: int
 
 
+# TODO can we make this common with AD version for this entire file
 class _HDFFile:
     def __init__(self, full_file_name: str, datasets: List[_HDFDataset]) -> None:
         self._last_emitted = 0
