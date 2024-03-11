@@ -18,14 +18,12 @@ class SimPatternDetectorWriter(DetectorWriter):
 
     def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         self.patternGenerator.open_file(self.directory_provider)
-        pass
 
     def close(self) -> None:
-        pass
+        self.patternGenerator.file.close()
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
         self.patternGenerator.open_file()
-        pass
 
     def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
         pass

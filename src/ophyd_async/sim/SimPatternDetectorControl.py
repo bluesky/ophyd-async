@@ -22,4 +22,4 @@ class SimPatternDetectorControl(DetectorControl):
         return super().get_deadtime(exposure)
 
     async def disarm(self):
-        return await super().disarm()
+        return await super().disarm

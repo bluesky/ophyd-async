@@ -62,6 +62,18 @@ class PatternGenerator:
         self.file.create_dataset(
             name=f"pattern-generator-file-{counter}", dtype=np.ndarray
         )
+        # UNKNOWNS
+        offset = 1
+        period = 1
+
+        intensity: float = interesting_pattern(self.x, self.y)
+        detector_data: np.uint8 = (
+            self.blob * intensity * self.exposure / period
+        ).astype(np.uint8)
+        self.file[DATA_PATH][offset] = detector_data
+        self.file[UID_PATH][offset] = counter
+        self.file[SUM_PATH][offset] = np.sum(detector_data)
+
         await self.file.flush_now.set(True)
 
     def set_exposure(self, value: float) -> None:
@@ -102,3 +114,4 @@ class PatternGenerator:
         )
         hdf5_file.swmr_mode = True
         self.file = hdf5_file
+        print('file opened')

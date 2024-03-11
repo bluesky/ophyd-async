@@ -13,4 +13,5 @@ def test_writes_pattern_to_file():
         config_sigs=sim_motor.rw, path=file_path, width=width, height=height
     )
     # assert that the file is created and non-empty
+
     # assert that the file contains data in expected dimensions
