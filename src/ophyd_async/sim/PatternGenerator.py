@@ -66,7 +66,7 @@ class PatternGenerator:
         )
 
         # TODO UNKNOWNS
-        offset = 1
+        offset = 1 + counter
         period = 1
 
         intensity: float = interesting_pattern(self.x, self.y)
