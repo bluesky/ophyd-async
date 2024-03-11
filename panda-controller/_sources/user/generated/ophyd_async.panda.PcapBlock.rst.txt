@@ -37,6 +37,5 @@ ophyd\_async.panda.PcapBlock
       ~PcapBlock.parent
       ~PcapBlock.active
       ~PcapBlock.arm
-      ~PcapBlock.disarm
    
    
