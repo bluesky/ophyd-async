@@ -17,7 +17,6 @@ class TriggerLogic(ABC, Generic[T]):
     def trigger_info(self, value: T) -> TriggerInfo:
         """Return info about triggers that will be produced for a given value"""
 
-    
     async def prepare(self, value: T):
         """Move to the start of the flyscan"""
 

@@ -26,7 +26,8 @@ class SimPatternDetectorWriter(DetectorWriter):
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
         # self.patternGenerator.open_file()
-        for doc in self.patternGenerator.file.stream
+        # for doc in self.patternGenerator.file.stream
+        pass
 
     async def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(

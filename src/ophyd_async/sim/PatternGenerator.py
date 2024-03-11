@@ -34,7 +34,8 @@ class PatternGenerator:
     order of events
     1. a definition of a new scan is created
     2. file is opened
-        - before anythign else happens, descriptors are defined and sent to bluesky for each dataset
+        - before anythign else happens,
+        - descriptors are defined and sent to bluesky for each dataset
     3. exposure time is set
     4. x and y are set -
     5. interesting pattern is made
@@ -70,7 +71,8 @@ class PatternGenerator:
             dtype=np.ndarray,
         )
 
-        # prepare - resize the fixed hdf5 data structure so that the new image can be written
+        # prepare - resize the fixed hdf5 data structure
+        # so that the new image can be written
         target_dimensions = (
             self.written_images_counter + 1,
             self.height,
@@ -93,7 +95,8 @@ class PatternGenerator:
         self.file[DATA_PATH].flush()
         self.file[SUM_PATH].flush()
 
-        # coutner increment is last as only at this point the new data is visible from the outside
+        # coutner increment is last
+        # as only at this point the new data is visible from the outside
         self.written_images_counter += 1
 
     def set_exposure(self, value: float) -> None:

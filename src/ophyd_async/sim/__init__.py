@@ -1,7 +1,7 @@
 from .PatternGenerator import PatternGenerator
+from .SimPatternDetector import SimPatternDetector
 from .SimPatternDetectorControl import SimPatternDetectorControl
 from .SimPatternDetectorWriter import SimPatternDetectorWriter
-from .SimPatternDetector import SimPatternDetector
 
 __all__ = [
     "PatternGenerator",
