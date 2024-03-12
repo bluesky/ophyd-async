@@ -13,7 +13,6 @@ class SimSample:
 
     def set_x(self, value: float) -> None:
         self.patternGenerator.set_x(value)
-        # self.x_motor.set(value)
 
     def set_y(self, value: float) -> None:
         self.patternGenerator.set_y(value)

@@ -1,5 +1,7 @@
+from pathlib import Path
 from typing import Sequence
 
+from ophyd_async.core import DirectoryProvider, StaticDirectoryProvider
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.signal import SignalR
 from ophyd_async.sim.PatternGenerator import PatternGenerator
@@ -9,17 +11,19 @@ from .SimPatternDetectorWriter import SimPatternDetectorWriter
 
 
 class SimPatternDetector(StandardDetector):
-
     def __init__(
         self,
         config_sigs: Sequence[SignalR] = ...,
         name: str = "sim_pattern_detector",
         writer_timeout: float = ...,
-        path: str = ...,
+        path: Path = ...,
     ) -> None:
-
+        self.directory_provider: DirectoryProvider = StaticDirectoryProvider(path)
         self.pattern_generator = PatternGenerator()
-        writer = SimPatternDetectorWriter(patternGenerator=self.pattern_generator)
+        writer = SimPatternDetectorWriter(
+            patternGenerator=self.pattern_generator,
+            directoryProvider=self.directory_provider,
+        )
         controller = SimPatternDetectorControl(pattern_generator=self.pattern_generator)
         super().__init__(
             controller=controller,

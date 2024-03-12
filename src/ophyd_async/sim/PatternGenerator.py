@@ -34,10 +34,10 @@ class PatternGenerator:
     order of events
     1. a definition of a new scan is created
     2. file is opened
-        - before anythign else happens,
+        - before anything else happens,
         - descriptors are defined and sent to bluesky for each dataset
     3. exposure time is set
-    4. x and y are set -
+    4. x and y are set
     5. interesting pattern is made
     6. image is written to file
     7. number of images is incremented
