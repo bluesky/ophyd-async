@@ -28,6 +28,8 @@ DATA_PATH = "/entry/data/data"
 # pixel sum path
 SUM_PATH = "/entry/sum"
 
+MAX_UINT8_VALUE = np.iinfo(np.uint8).max
+
 
 class PatternGenerator:
     """
@@ -60,7 +62,7 @@ class PatternGenerator:
         self.written_images_counter: int = 0
         self.initial_blob = (
             make_gaussian_blob(width=detector_width, height=detector_height)
-            * np.uint8.max
+            * MAX_UINT8_VALUE
         )
         self.file: Optional[h5py.File] = None
 
@@ -109,7 +111,8 @@ class PatternGenerator:
         self.y = value
 
     def open_file(self, dir: DirectoryProvider) -> None:
-        new_path: Path = dir().resource_dir
+        new_path: Path = dir().resource_dir / 'test.h5'
+        # todo might change filename
         hdf5_file = h5py.File(new_path, "w")
         hdf5_file.create_dataset(
             DATA_PATH,

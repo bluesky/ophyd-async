@@ -24,7 +24,10 @@ class SimPatternDetector(StandardDetector):
             patternGenerator=self.pattern_generator,
             directoryProvider=self.directory_provider,
         )
-        controller = SimPatternDetectorControl(pattern_generator=self.pattern_generator)
+        controller = SimPatternDetectorControl(
+            pattern_generator=self.pattern_generator,
+            directory_provider=self.directory_provider,
+        )
         super().__init__(
             controller=controller,
             writer=writer,

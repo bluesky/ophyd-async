@@ -5,6 +5,8 @@ from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.motion import motor
 from ophyd_async.sim.SimPatternDetector import SimPatternDetector
 
+# todo make tests that integration test the writer
+# do IO testing like in files: `test_writers`, `test_panda`, `test_device_save_loader`
 
 @pytest.fixture
 async def sim_pattern_detector(tmp_path_factory):
@@ -15,7 +17,7 @@ async def sim_pattern_detector(tmp_path_factory):
     assert sim_pattern_detector.name == "PATTERN1"
     yield sim_pattern_detector
 
-def test_sim_pattern_detector_initialization(sim_pattern_detector: SimPatternDetector, ):
+async def test_sim_pattern_detector_initialization(sim_pattern_detector: SimPatternDetector, ):
     assert (
         sim_pattern_detector.pattern_generator
     ), "PatternGenerator was not initialized correctly."
