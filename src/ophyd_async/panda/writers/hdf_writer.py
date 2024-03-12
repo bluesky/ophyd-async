@@ -24,7 +24,7 @@ from .panda_hdf import _HDFDataset, _HDFFile
 
 @dataclass()
 class HdfSignals:
-    file_path: SignalR
+    file_path: SignalRW  # This is the directory rather than path. Path is read only
     file_name: SignalRW
     num_capture: SignalRW
     num_captured: SignalR
@@ -79,10 +79,10 @@ async def get_signals_marked_for_capture(
     for signal_path, signal_object, signal_value in zip(
         capture_signals.keys(), capture_signals.values(), signal_values
     ):
-        if (isinstance(signal_value, Capture)) and (signal_value != Capture.No):
+        if (signal_value.value in iter(Capture)) and (signal_value.value != Capture.No):
             signals_to_capture[signal_path] = {
                 "signal": signal_object,
-                "capture_type": signal_value,
+                "capture_type": signal_value.value,
             }
 
     return signals_to_capture
@@ -122,7 +122,7 @@ class PandaHDFWriter(DetectorWriter):
 
         # TODO add panda.data to the Panda device instead, as a typed block
         self.hdf = HdfSignals(
-            panda_device.data.hdffullfilepath,
+            panda_device.data.hdfdirectory,
             panda_device.data.hdffilename,
             panda_device.data.numcapture,
             panda_device.data.numcaptured,
@@ -148,9 +148,6 @@ class PandaHDFWriter(DetectorWriter):
             self.hdf.file_name.set(f"{info.filename_prefix}.h5"),
         )
 
-        # TODO can these await statements be inlcuding in the gather?
-        # Overwrite num_capture to go forever
-
         # TODO confirm all missing functionality from AD writer isn't needed here
 
         await self.hdf.num_capture.set(0)
@@ -166,6 +163,11 @@ class PandaHDFWriter(DetectorWriter):
             # TODO check that a 'abc_capture' signal always records an 'abc_val' signal
             signal_name = attribute_path.split(".")[-1]
             block_name = attribute_path.split(".")[-2]
+
+            # Get block names from numbered blocks, eg INENC[1]
+            if block_name.isnumeric():
+                actual_block = attribute_path.split(".")[-3]
+                block_name = f"{actual_block}.{block_name}"
 
             if value["capture_type"] == Capture.MinMaxMean:
                 shape = [3]

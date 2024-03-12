@@ -23,7 +23,7 @@ from ophyd_async.panda.writers.hdf_writer import (
 @pytest.fixture
 async def sim_panda() -> PandA:
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("SIM_PANDA")
+        sim_panda = PandA("SIM_PANDA", name="sim_panda")
         # TODO check if real signal names end with _capture
         sim_panda.block1 = Device("BLOCK1")
         sim_panda.block2 = Device("BLOCK2")
@@ -170,7 +170,6 @@ async def test_wait_for_index(sim_writer: PandaHDFWriter):
         await sim_writer.wait_for_index(3, timeout=0.1)
 
 
-# TODO improve this test
 async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     # Give the sim writer datasets
     set_sim_value(sim_writer.panda_device.block1.test_capture, Capture.MinMaxMean)
@@ -179,4 +178,7 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
 
     assert sim_writer._file is None
     [item async for item in sim_writer.collect_stream_docs(1)]
-    assert sim_writer._file
+    assert sim_writer._file._last_emitted == 1
+    resource_doc = sim_writer._file._bundles[0].stream_resource_doc
+    assert resource_doc["data_key"] == "test-panda.block1.test_capture"
+    assert resource_doc["resource_path"] == "test.h5"
