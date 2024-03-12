@@ -1,18 +1,14 @@
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.motion import motor
-from ophyd_async.sim.PatternGenerator import PatternGenerator
 from ophyd_async.sim.SimPatternDetector import SimPatternDetector
-
-
 
 
 @pytest.fixture
 async def sim_pattern_detector(tmp_path_factory):
-    path:Path = tmp_path_factory.mktemp('/tmp')
+    path:Path = tmp_path_factory.mktemp('tmp')
     async with DeviceCollector(sim=True):
         sim_pattern_detector = SimPatternDetector("PATTERN1", path)
 
@@ -49,15 +45,16 @@ async def test_writes_pattern_to_file(sim_pattern_detector: SimPatternDetector):
 
     # assert that the file contains data in expected dimensions
 
+async def test_exposure(sim_pattern_detector):
+    pass
 
-# @pytest.fixture
-# def writer(RE, tmp_path: Path) -> HDFWriter:
-#     with DeviceCollector(sim=True):
-#         hdf = NDFileHDF("HDF")
+async def test_set_x_and_y(sim_pattern_detector):
+    pass
 
-#     return HDFWriter(
-#         hdf,
-#         directory_provider=StaticDirectoryProvider(tmp_path),
-#         name_provider=lambda: "test",
-#         shape_provider=AsyncMock(),
-#     )
+
+async def test_initial_blob(sim_pattern_detector):
+    assert sim_pattern_detector.pattern_generator.initial_blob
+
+    
+async def test_open_and_close_file(sim_pattern_detector):
+    pass

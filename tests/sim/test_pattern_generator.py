@@ -8,21 +8,11 @@ from ophyd_async.sim.PatternGenerator import DATA_PATH, SUM_PATH, PatternGenerat
 
 
 @pytest.fixture
-def tmp_hdf5_file(tmp_path):
-    file = tmp_path / "test_file.hdf5"
-    return file
-
-
-@pytest.fixture
-def pattern_generator():
+async def pattern_generator():
     return PatternGenerator()
 
 
-async def test_init():
-
-    from ophyd_async.sim.PatternGenerator import PatternGenerator
-
-    pattern_generator = PatternGenerator()
+async def test_init(pattern_generator: PatternGenerator):
     assert pattern_generator.exposure == 1
     assert pattern_generator.height == 240
     assert pattern_generator.width == 320
