@@ -22,6 +22,7 @@ from ophyd_async.panda.panda import PandA
 from .panda_hdf import _HDFDataset, _HDFFile
 
 
+# Uses proper naming convention. Won't need this after pandablocks issue #101
 @dataclass()
 class HdfSignals:
     file_path: SignalRW  # This is the directory rather than path. Path is read only
@@ -47,7 +48,7 @@ def get_capture_signals(
     panda: Device, path_prefix: Optional[str] = ""
 ) -> Dict[str, SignalR]:
     """Get dict mapping a capture signal's name to the signal itself"""
-    # TODO makecommon with code from device_save_loader?
+    # TODO make common with code from device_save_loader?
     if not path_prefix:
         path_prefix = ""
     signals: Dict[str, SignalR[Any]] = {}
@@ -65,7 +66,7 @@ def get_capture_signals(
 # and the value of that signal
 async def get_signals_marked_for_capture(
     capture_signals: Dict[str, SignalR]
-) -> Dict[str, Union[SignalR, Capture]]:
+) -> Dict[str, Dict[str, Union[SignalR, Capture]]]:
     # Read signals to see if they should be captured
 
     do_read = [signal.get_value() for signal in capture_signals.values()]
@@ -75,7 +76,7 @@ async def get_signals_marked_for_capture(
     assert len(signal_values) == len(
         capture_signals.keys()
     ), "Length of read signals are different to length of signals"
-    signals_to_capture: Dict[str, Dict[str, SignalR | Capture]] = {}
+    signals_to_capture: Dict[str, Dict[str, Union[SignalR, Capture]]] = {}
     for signal_path, signal_object, signal_value in zip(
         capture_signals.keys(), capture_signals.values(), signal_values
     ):
@@ -122,7 +123,8 @@ class PandaHDFWriter(DetectorWriter):
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
 
-        # TODO add panda.data to the Panda device instead, as a typed block
+        # Convert the convert the ioc PV names to have a better underscore convention.
+        # Can remove this after Pandablocks issue #101
         self.hdf = HdfSignals(
             panda_device.data.hdfdirectory,
             panda_device.data.hdffilename,
@@ -170,7 +172,7 @@ class PandaHDFWriter(DetectorWriter):
                 actual_block = attribute_path.split(".")[-3]
                 block_name = f"{actual_block}{block_name}"
 
-            for suffix in value["capture_type"].split(" "):
+            for suffix in str(value["capture_type"]).split(" "):
 
                 self._datasets.append(
                     _HDFDataset(
