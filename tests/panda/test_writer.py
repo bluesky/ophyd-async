@@ -27,17 +27,17 @@ async def sim_panda() -> PandA:
         # TODO check if real signal names end with _capture
         sim_panda.block1 = Device("BLOCK1")
         sim_panda.block2 = Device("BLOCK2")
-        sim_panda.block1.test_capture = SignalR(
+        sim_panda.block1.test_capture = SignalRW(
             backend=SimSignalBackend(str, source="BLOCK1_capture")
         )
-        sim_panda.block2.test_capture = SignalR(
+        sim_panda.block2.test_capture = SignalRW(
             backend=SimSignalBackend(str, source="BLOCK2_capture")
         )
 
         # TODO this part of the sim writer won't be needed once panda.data is a
         # typed block in panda class
         sim_panda.data = Device()
-        sim_panda.data.hdffullfilepath = SignalRW(
+        sim_panda.data.hdfdirectory = SignalRW(
             backend=SimSignalBackend(str, source="hdf_filepath")
         )
         sim_panda.data.hdffilename = SignalRW(
@@ -62,7 +62,11 @@ async def sim_panda() -> PandA:
             sim_panda.data.connect(sim=True),
             sim_panda.connect(sim=True),
         )
-        return sim_panda
+
+    set_sim_value(sim_panda.block1.test_capture, Capture.MinMaxMean)
+    set_sim_value(sim_panda.block2.test_capture, Capture.No)
+
+    return sim_panda
 
 
 @pytest.fixture
@@ -102,8 +106,7 @@ async def test_get_capture_signals_gets_all_signals(sim_panda):
 
 
 async def test_get_signals_marked_for_capture(sim_panda):
-    set_sim_value(sim_panda.block1.test_capture, Capture.MinMaxMean)
-    set_sim_value(sim_panda.block2.test_capture, Capture.No)
+
     capture_signals = {
         "block1.test_capture": sim_panda.block1.test_capture,
         "block2.test_capture": sim_panda.block2.test_capture,
@@ -113,24 +116,28 @@ async def test_get_signals_marked_for_capture(sim_panda):
     assert (
         signals_marked_for_capture["block1.test_capture"]["capture_type"]
         == Capture.MinMaxMean
-    )  # TODO does the dict returned by this function still need to contain the signal?
+    )
 
 
 async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
     set_sim_value(sim_writer.panda_device.block1.test_capture, Capture.MinMaxMean)
     set_sim_value(sim_writer.panda_device.block2.test_capture, Capture.Value)
     description = await sim_writer.open()  # to make capturing status not time out
-    assert len(description) == 2
+    assert len(description) == 4
     for key, entry in description.items():
-        if key == "test-panda.block1.test_capture":
-            assert entry.get("shape") == [3]
-        else:
-            assert entry.get("shape") == [1]
-            assert entry.get("dtype") == "number"
+        assert entry.get("shape") == [1]
+        assert entry.get("dtype") == "number"
         assert isinstance(key, str)
         assert "source" in entry
-
         assert entry.get("external") == "STREAM:"
+    expected_datakeys = [
+        "test-panda.block1.test_capture.Min",
+        "test-panda.block1.test_capture.Max",
+        "test-panda.block1.test_capture.Mean",
+        "test-panda.block2.test_capture.Value",
+    ]
+    for key in expected_datakeys:
+        assert "test-panda.block1.test_capture.Min" in description
 
 
 async def test_open_close_sets_capture(sim_writer: PandaHDFWriter):
@@ -180,5 +187,5 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     [item async for item in sim_writer.collect_stream_docs(1)]
     assert sim_writer._file._last_emitted == 1
     resource_doc = sim_writer._file._bundles[0].stream_resource_doc
-    assert resource_doc["data_key"] == "test-panda.block1.test_capture"
+    assert resource_doc["data_key"] == "test-panda.block1.test_capture.Min"
     assert resource_doc["resource_path"] == "test.h5"

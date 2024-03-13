@@ -169,24 +169,18 @@ class PandaHDFWriter(DetectorWriter):
                 actual_block = attribute_path.split(".")[-3]
                 block_name = f"{actual_block}.{block_name}"
 
-            if value["capture_type"] == Capture.MinMaxMean:
-                shape = [3]
-            elif value["capture_type"] == Capture.MinMax:
-                shape = [2]
-            else:
-                shape = [1]
-                # TODO check if this is correct format
+            for suffix in value["capture_type"].split(" "):
 
-            self._datasets.append(
-                _HDFDataset(
-                    name,
-                    block_name,
-                    f"{name}.{block_name}.{signal_name}",
-                    f"{block_name}:{signal_name}".upper(),
-                    shape,
-                    multiplier=1,
+                self._datasets.append(
+                    _HDFDataset(
+                        name,
+                        block_name,
+                        f"{name}.{block_name}.{signal_name}.{suffix}",
+                        f"{block_name}:{signal_name}.{suffix}".upper(),
+                        [1],
+                        multiplier=1,
+                    )
                 )
-            )
 
         describe = {
             ds.name: Descriptor(
