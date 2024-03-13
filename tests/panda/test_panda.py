@@ -110,8 +110,8 @@ async def test_panda_with_missing_blocks(panda_pva):
 
 async def test_panda_with_extra_blocks_and_signals(panda_pva):
     panda = PandA("PANDAQSRV:")
+    del panda.__annotations__["data"]  # This block isn't included in the test ioc
     await panda.connect()
-
     assert panda.extra  # type: ignore
     assert panda.extra[1]  # type: ignore
     assert panda.extra[2]  # type: ignore
