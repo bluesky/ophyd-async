@@ -28,6 +28,8 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
+from .common import get_supported_enum_class
+
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
     dbr.DBR_SHORT: "integer",
@@ -138,21 +140,7 @@ def make_converter(
         pv_choices = get_unique(
             {k: tuple(v.enums) for k, v in values.items()}, "choices"
         )
-        if datatype:
-            if not issubclass(datatype, Enum):
-                raise TypeError(f"{pv} has type Enum not {datatype.__name__}")
-            if not issubclass(datatype, str):
-                raise TypeError(f"{pv} has type Enum but doesn't inherit from String")
-            choices = tuple(v.value for v in datatype)
-            if set(choices).difference(pv_choices):
-                raise TypeError(
-                    f"{pv} has choices {pv_choices} not including all in {choices}"
-                )
-            enum_class = datatype
-        else:
-            enum_class = Enum(  # type: ignore
-                "GeneratedChoices", {x: x for x in pv_choices}, type=str
-            )
+        enum_class = get_supported_enum_class(pv, datatype, pv_choices)
         return CaEnumConverter(dbr.DBR_STRING, None, enum_class)
     else:
         value = list(values.values())[0]
