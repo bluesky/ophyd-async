@@ -25,6 +25,7 @@ class CommonPandABlocks(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
+    data: DataBlock
 
 
 class PandA(CommonPandABlocks):

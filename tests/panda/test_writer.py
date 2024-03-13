@@ -18,53 +18,35 @@ from ophyd_async.panda.writers.hdf_writer import (
     get_capture_signals,
     get_signals_marked_for_capture,
 )
+from ophyd_async.panda.writers.panda_hdf import _HDFFile
 
 
 @pytest.fixture
 async def sim_panda() -> PandA:
     async with DeviceCollector(sim=True):
         sim_panda = PandA("SIM_PANDA", name="sim_panda")
-        # TODO check if real signal names end with _capture
         sim_panda.block1 = Device("BLOCK1")  # type: ignore[attr-defined]
         sim_panda.block2 = Device("BLOCK2")  # type: ignore[attr-defined]
-        sim_panda.block1.test_capture = SignalRW(
+        sim_panda.block1.test_capture = SignalRW(  # type: ignore[attr-defined]
             backend=SimSignalBackend(str, source="BLOCK1_capture")
-        )  # type: ignore[attr-defined]
-        sim_panda.block2.test_capture = SignalRW(
+        )
+        sim_panda.block2.test_capture = SignalRW(  # type: ignore[attr-defined]
             backend=SimSignalBackend(str, source="BLOCK2_capture")
-        )  # type: ignore[attr-defined]
-
-        # TODO this part of the sim writer won't be needed once panda.data is a
-        # typed block in panda class
-        sim_panda.data = Device()
-        sim_panda.data.hdfdirectory = SignalRW(
-            backend=SimSignalBackend(str, source="hdf_filepath")
-        )
-        sim_panda.data.hdffilename = SignalRW(
-            backend=SimSignalBackend(str, source="hdf_name")
-        )
-        sim_panda.data.numcapture = SignalRW(
-            backend=SimSignalBackend(str, source="hdf_numcapture")
-        )
-        sim_panda.data.numcaptured = SignalRW(
-            backend=SimSignalBackend(str, source="hdf_numcaptured")
-        )
-        sim_panda.data.capture = SignalRW(
-            backend=SimSignalBackend(str, source="hdf_capture")
-        )
-        sim_panda.data.flushperiod = SignalRW(
-            backend=SimSignalBackend(str, source="hdf_capture")
         )
 
         await asyncio.gather(
-            sim_panda.block1.connect(sim=True),
-            sim_panda.block2.connect(sim=True),
-            sim_panda.data.connect(sim=True),
+            sim_panda.block1.connect(sim=True),  # type: ignore[attr-defined]
+            sim_panda.block2.connect(sim=True),  # type: ignore[attr-defined]
             sim_panda.connect(sim=True),
         )
 
-    set_sim_value(sim_panda.block1.test_capture, Capture.MinMaxMean)
-    set_sim_value(sim_panda.block2.test_capture, Capture.No)
+    set_sim_value(
+        sim_panda.block1.test_capture, Capture.MinMaxMean  # type: ignore[attr-defined]
+    )
+
+    set_sim_value(
+        sim_panda.block2.test_capture, Capture.No  # type: ignore[attr-defined]
+    )
 
     return sim_panda
 
@@ -119,8 +101,10 @@ async def test_get_signals_marked_for_capture(sim_panda):
 
 
 async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
-    set_sim_value(sim_writer.panda_device.block1.test_capture, Capture.MinMaxMean)
-    set_sim_value(sim_writer.panda_device.block2.test_capture, Capture.Value)
+    cap1 = sim_writer.panda_device.block1.test_capture  # type: ignore[attr-defined]
+    cap2 = sim_writer.panda_device.block2.test_capture  # type: ignore[attr-defined]
+    set_sim_value(cap1, Capture.MinMaxMean)
+    set_sim_value(cap2, Capture.Value)
     description = await sim_writer.open()  # to make capturing status not time out
     assert len(description) == 4
     for key, entry in description.items():
@@ -178,12 +162,14 @@ async def test_wait_for_index(sim_writer: PandaHDFWriter):
 
 async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     # Give the sim writer datasets
-    set_sim_value(sim_writer.panda_device.block1.test_capture, Capture.MinMaxMean)
-    set_sim_value(sim_writer.panda_device.block2.test_capture, Capture.Value)
+    cap1 = sim_writer.panda_device.block1.test_capture  # type: ignore[attr-defined]
+    cap2 = sim_writer.panda_device.block2.test_capture  # type: ignore[attr-defined]
+    set_sim_value(cap1, Capture.MinMaxMean)
+    set_sim_value(cap2, Capture.Value)
     await sim_writer.open()
 
-    assert sim_writer._file is None
     [item async for item in sim_writer.collect_stream_docs(1)]
+    assert type(sim_writer._file) is _HDFFile
     assert sim_writer._file._last_emitted == 1
     resource_doc = sim_writer._file._bundles[0].stream_resource_doc
     assert resource_doc["data_key"] == "test-panda.block1.test.Min"
