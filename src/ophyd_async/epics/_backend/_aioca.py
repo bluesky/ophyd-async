@@ -92,9 +92,7 @@ class CaEnumConverter(CaConverter):
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(
-            source=source, dtype="string", shape=[], choices=choices
-        )  # type: ignore
+        return dict(source=source, dtype="string", shape=[], choices=choices)
 
 
 class DisconnectedCaConverter(CaConverter):
