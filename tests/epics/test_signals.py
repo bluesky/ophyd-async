@@ -286,7 +286,7 @@ class EnumNoString(Enum):
 @pytest.mark.parametrize(
     "typ, suff, error",
     [
-        (BadEnum, "enum", "has choices ('Aaa', 'Bbb', 'Ccc') not ('Aaa', 'B', 'Ccc')"),
+        (BadEnum, "enum", "has choices ('Aaa', 'Bbb', 'Ccc') not including all in ('Aaa', 'B', 'Ccc')"),
         (int, "str", "has type str not int"),
         (str, "float", "has type float not str"),
         (str, "stra", "has type [str] not str"),

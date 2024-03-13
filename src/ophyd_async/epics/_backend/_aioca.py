@@ -144,8 +144,10 @@ def make_converter(
             if not issubclass(datatype, str):
                 raise TypeError(f"{pv} has type Enum but doesn't inherit from String")
             choices = tuple(v.value for v in datatype)
-            if set(choices) != set(pv_choices):
-                raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
+            if set(choices).difference(pv_choices):
+                raise TypeError(
+                    f"{pv} has choices {pv_choices} not including all in {choices}"
+                )
             enum_class = datatype
         else:
             enum_class = Enum(  # type: ignore
