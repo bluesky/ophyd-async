@@ -1,7 +1,7 @@
 from typing import Any, Dict, Sequence, TypedDict
 
 
-class PVIEntry(TypedDict, total=False):  # TODO: better naming
+class PVIEntry(TypedDict, total=False):
     d: str
     r: str
     rw: str
