@@ -79,6 +79,8 @@ async def get_signals_marked_for_capture(
     for signal_path, signal_object, signal_value in zip(
         capture_signals.keys(), capture_signals.values(), signal_values
     ):
+        # use .val instead of .val_capture
+        signal_path = signal_path.replace("_capture", "")
         if (signal_value.value in iter(Capture)) and (signal_value.value != Capture.No):
             signals_to_capture[signal_path] = {
                 "signal": signal_object,
@@ -160,14 +162,13 @@ class PandaHDFWriter(DetectorWriter):
             )
         self._datasets = []
         for attribute_path, value in self.to_capture.items():
-            # TODO check that a 'abc_capture' signal always records an 'abc_val' signal
             signal_name = attribute_path.split(".")[-1]
             block_name = attribute_path.split(".")[-2]
 
             # Get block names from numbered blocks, eg INENC[1]
             if block_name.isnumeric():
                 actual_block = attribute_path.split(".")[-3]
-                block_name = f"{actual_block}.{block_name}"
+                block_name = f"{actual_block}{block_name}"
 
             for suffix in value["capture_type"].split(" "):
 
@@ -176,7 +177,7 @@ class PandaHDFWriter(DetectorWriter):
                         name,
                         block_name,
                         f"{name}.{block_name}.{signal_name}.{suffix}",
-                        f"{block_name}:{signal_name}.{suffix}".upper(),
+                        f"{block_name}.{signal_name}".upper() + f".{suffix}",
                         [1],
                         multiplier=1,
                     )
