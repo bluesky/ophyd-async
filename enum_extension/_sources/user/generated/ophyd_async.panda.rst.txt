@@ -43,6 +43,7 @@ ophyd\_async.panda
       SeqTable
       SeqTableRow
       SeqTrigger
+      PandaPcapController
    
    
 
