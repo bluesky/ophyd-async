@@ -20,6 +20,8 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
+from .common import get_supported_enum_class
+
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
     "?": "integer",  # bool
@@ -212,18 +214,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        if datatype:
-            if not issubclass(datatype, Enum):
-                raise TypeError(f"{pv} has type Enum not {datatype.__name__}")
-            choices = tuple(v.value for v in datatype)
-            if set(choices) != set(pv_choices):
-                raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
-            enum_class = datatype
-        else:
-            enum_class = Enum(  # type: ignore
-                "GeneratedChoices", {x or "_": x for x in pv_choices}, type=str
-            )
-        return PvaEnumConverter(enum_class)
+        return PvaEnumConverter(get_supported_enum_class(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
         if datatype and not issubclass(typ, datatype):
             raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
