@@ -25,14 +25,14 @@ async def sim_panda() -> PandA:
     async with DeviceCollector(sim=True):
         sim_panda = PandA("SIM_PANDA", name="sim_panda")
         # TODO check if real signal names end with _capture
-        sim_panda.block1 = Device("BLOCK1")
-        sim_panda.block2 = Device("BLOCK2")
+        sim_panda.block1 = Device("BLOCK1")  # type: ignore[attr-defined]
+        sim_panda.block2 = Device("BLOCK2")  # type: ignore[attr-defined]
         sim_panda.block1.test_capture = SignalRW(
             backend=SimSignalBackend(str, source="BLOCK1_capture")
-        )
+        )  # type: ignore[attr-defined]
         sim_panda.block2.test_capture = SignalRW(
             backend=SimSignalBackend(str, source="BLOCK2_capture")
-        )
+        )  # type: ignore[attr-defined]
 
         # TODO this part of the sim writer won't be needed once panda.data is a
         # typed block in panda class
@@ -114,8 +114,7 @@ async def test_get_signals_marked_for_capture(sim_panda):
     signals_marked_for_capture = await get_signals_marked_for_capture(capture_signals)
     assert len(signals_marked_for_capture) == 1
     assert (
-        signals_marked_for_capture["block1.test_capture"]["capture_type"]
-        == Capture.MinMaxMean
+        signals_marked_for_capture["block1.test"]["capture_type"] == Capture.MinMaxMean
     )
 
 
@@ -131,13 +130,13 @@ async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
         assert "source" in entry
         assert entry.get("external") == "STREAM:"
     expected_datakeys = [
-        "test-panda.block1.test_capture.Min",
-        "test-panda.block1.test_capture.Max",
-        "test-panda.block1.test_capture.Mean",
-        "test-panda.block2.test_capture.Value",
+        "test-panda.block1.test.Min",
+        "test-panda.block1.test.Max",
+        "test-panda.block1.test.Mean",
+        "test-panda.block2.test.Value",
     ]
     for key in expected_datakeys:
-        assert "test-panda.block1.test_capture.Min" in description
+        assert "test-panda.block1.test.Min" in description
 
 
 async def test_open_close_sets_capture(sim_writer: PandaHDFWriter):
@@ -187,5 +186,5 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     [item async for item in sim_writer.collect_stream_docs(1)]
     assert sim_writer._file._last_emitted == 1
     resource_doc = sim_writer._file._bundles[0].stream_resource_doc
-    assert resource_doc["data_key"] == "test-panda.block1.test_capture.Min"
+    assert resource_doc["data_key"] == "test-panda.block1.test.Min"
     assert resource_doc["resource_path"] == "test.h5"
