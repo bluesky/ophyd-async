@@ -41,5 +41,6 @@ ophyd\_async.panda.PandA
       ~PandA.pulse
       ~PandA.seq
       ~PandA.pcap
+      ~PandA.data
    
    
