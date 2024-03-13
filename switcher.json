@@ -4,6 +4,18 @@
     "url": "https://bluesky.github.io/ophyd-async/main/"
   },
   {
+    "version": "v0.2.1",
+    "url": "https://bluesky.github.io/ophyd-async/v0.2.1/"
+  },
+  {
+    "version": "v0.2.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
+  },
+  {
+    "version": "v0.1.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
+  },
+  {
     "version": "125_panda_type_annotations_parent_class",
     "url": "https://bluesky.github.io/ophyd-async/125_panda_type_annotations_parent_class/"
   },
@@ -68,6 +80,10 @@
     "url": "https://bluesky.github.io/ophyd-async/hyperion_safe_panda/"
   },
   {
+    "version": "panda-controller",
+    "url": "https://bluesky.github.io/ophyd-async/panda-controller/"
+  },
+  {
     "version": "revert-101-give_panda_name",
     "url": "https://bluesky.github.io/ophyd-async/revert-101-give_panda_name/"
   },
@@ -98,17 +114,5 @@
   {
     "version": "standard_detector_remove_readable",
     "url": "https://bluesky.github.io/ophyd-async/standard_detector_remove_readable/"
-  },
-  {
-    "version": "v0.1.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.1.0/"
-  },
-  {
-    "version": "v0.2.0",
-    "url": "https://bluesky.github.io/ophyd-async/v0.2.0/"
-  },
-  {
-    "version": "v0.2.1",
-    "url": "https://bluesky.github.io/ophyd-async/v0.2.1/"
   }
 ]
