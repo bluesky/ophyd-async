@@ -279,6 +279,38 @@ class BadEnum(str, Enum):
     c = "Ccc"
 
 
+def test_enum_equality():
+    """Check that we are allowed to replace the passed datatype enum from a signal with
+    a version generated from the signal with at least all of the same values, but
+    possibly more.
+    """
+
+    class GeneratedChoices(str, Enum):
+        a = "Aaa"
+        b = "B"
+        c = "Ccc"
+
+    class ExtendedGeneratedChoices(str, Enum):
+        a = "Aaa"
+        b = "B"
+        c = "Ccc"
+        d = "Ddd"
+
+    for enum_class in (GeneratedChoices, ExtendedGeneratedChoices):
+        assert BadEnum.a == enum_class.a
+        assert BadEnum.a.value == enum_class.a
+        assert BadEnum.a.value == enum_class.a.value
+        assert BadEnum(enum_class.a) is BadEnum.a
+        assert BadEnum(enum_class.a.value) is BadEnum.a
+        assert not BadEnum == enum_class
+
+    # We will always PUT BadEnum by String, and GET GeneratedChoices by index,
+    # so shouldn't ever run across this from conversion code, but may occur if
+    # casting returned values or passing as enum rather than value.
+    with pytest.raises(ValueError):
+        BadEnum(ExtendedGeneratedChoices.d)
+
+
 class EnumNoString(Enum):
     a = "Aaa"
 
@@ -286,7 +318,11 @@ class EnumNoString(Enum):
 @pytest.mark.parametrize(
     "typ, suff, error",
     [
-        (BadEnum, "enum", "has choices ('Aaa', 'Bbb', 'Ccc') not including all in ('Aaa', 'B', 'Ccc')"),
+        (
+            BadEnum,
+            "enum",
+            "has choices ('Aaa', 'Bbb', 'Ccc'): not all in ('Aaa', 'B', 'Ccc')",
+        ),
         (int, "str", "has type str not int"),
         (str, "float", "has type float not str"),
         (str, "stra", "has type [str] not str"),
