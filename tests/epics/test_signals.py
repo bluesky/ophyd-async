@@ -281,15 +281,38 @@ async def test_backend_get_put_monitor(
 
 
 @pytest.mark.parametrize("suffix", ["bool", "bool_unnamed"])
-async def test_bool_conversion_of_enum(ioc: IOC, suffix: str) -> None:
+async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path) -> None:
+    """Booleans are converted to Short Enumerations with values 0,1 as database does
+    not support boolean natively.
+    The flow of test_backend_get_put_monitor Gets a value with a dtype of None: we
+    cannot tell the difference between an enum with 2 members and a boolean, so
+    cannot get a DataKey that does not mutate form.
+    This test otherwise performs the same.
+    """
+    # With the given datatype, check we have the correct initial value and putting
+    # works
     await assert_monitor_then_put(
         ioc,
-        suffix=suffix,
-        descriptor=descriptor(ioc.protocol, "bool"),
-        initial_value=True,
-        put_value=False,
-        datatype=bool,
+        suffix,
+        descriptor(ioc.protocol, suffix),
+        True,
+        False,
+        bool,
     )
+    # With datatype guessed from CA/PVA, check we can set it back to the initial value
+    await assert_monitor_then_put(
+        ioc,
+        suffix,
+        descriptor(ioc.protocol, suffix, suffix),
+        False,
+        True,
+        bool,
+    )
+
+    yaml_path = tmp_path / "test.yaml"
+    save_to_yaml([{"test": False}], yaml_path)
+    loaded = load_from_yaml(yaml_path)
+    assert np.all(loaded[0]["test"] is False)
 
 
 async def test_error_raised_on_disconnected_PV(ioc: IOC) -> None:
