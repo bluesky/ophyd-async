@@ -7,6 +7,12 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Union
 from bluesky.protocols import Asset, Descriptor, Hints
 from p4p.client.thread import Context
 
+from ophyd_async.core.signal import observe_value
+
+
+import asyncio
+from pathlib import Path
+from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorWriter,
@@ -122,6 +128,7 @@ class PandaHDFWriter(DetectorWriter):
         self._name_provider = name_provider
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
+        self._multiplier = 1
 
         # Convert the convert the ioc PV names to have a better underscore convention.
         # Can remove this after Pandablocks issue #101
@@ -143,13 +150,14 @@ class PandaHDFWriter(DetectorWriter):
 
         # Ensure flushes are immediate
         await self.panda_device.data.flushperiod.set(0)
+        self._multiplier = multiplier
 
         self.to_capture = await get_signals_marked_for_capture(self.capture_signals)
         self._file = None
         info = self._directory_provider()
         await asyncio.gather(
-            self.hdf.file_path.set(info.directory_path),
-            self.hdf.file_name.set(f"{info.filename_prefix}.h5"),
+            self.hdf.file_path.set(f"{info.root}"),
+            self.hdf.file_name.set(f"{info.prefix}.h5"),
         )
 
         # TODO confirm all missing functionality from AD writer isn't needed here
@@ -178,7 +186,7 @@ class PandaHDFWriter(DetectorWriter):
                     _HDFDataset(
                         name,
                         block_name,
-                        f"{name}.{block_name}.{signal_name}.{suffix}",
+                        f"{name}-{block_name}-{signal_name}-{suffix}",
                         f"{block_name}.{signal_name}".upper() + f".{suffix}",
                         [1],
                         multiplier=1,
@@ -206,6 +214,12 @@ class PandaHDFWriter(DetectorWriter):
 
         matcher.__name__ = f"index_at_least_{index}"
         await wait_for_value(self.hdf.num_captured, matcher, timeout=timeout)
+
+    async def observe_indices_written(
+        self, timeout=DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        async for num_captured in observe_value(self.hdf.num_captured, timeout):
+            yield num_captured // self._multiplier
 
     async def get_indices_written(self) -> int:
         return await self.hdf.num_captured.get_value()
