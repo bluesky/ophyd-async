@@ -92,7 +92,6 @@ async def get_signals_marked_for_capture(
 
 
 class PandaHDFWriter(DetectorWriter):
-    # hdf: DataBlock
     _ctxt: Optional[Context] = None
 
     @property

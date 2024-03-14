@@ -113,8 +113,15 @@ async def test_panda_with_missing_blocks(pva):
 
 
 async def test_panda_with_extra_blocks_and_signals(pva):
-    panda = PandA("PANDAQSRV:")
-    del panda.__annotations__["data"]  # This block isn't included in the test ioc
+
+    class PandaNoData(PandA):
+        data: None
+
+    panda = PandaNoData("PANDAQSRV")
+    del panda.__annotations__[
+        "data"
+    ]  # Hacky way to not include data PVs in this test without affecting other tests
+
     await panda.connect()
     assert panda.extra  # type: ignore
     assert panda.extra[1]  # type: ignore

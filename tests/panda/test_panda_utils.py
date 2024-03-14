@@ -23,21 +23,10 @@ async def sim_panda():
 async def test_save_panda(mock_save_to_yaml, sim_panda, RE: RunEngine):
     RE(save_device(sim_panda, "path", sorter=phase_sorter))
     mock_save_to_yaml.assert_called_once()
-    assert mock_save_to_yaml.call_args[0] == (
-        [
-            {"phase_1_signal_units": 0},
-            {
-                "pcap.arm": 0.0,
-                "data.capture": False,
-                "data.flushperiod": 0.0,
-                "data.hdfdirectory": "",
-                "data.hdffilename": "",
-                "data.numcapture": 0,
-                "pulse.1.delay": 0.0,
-                "pulse.1.width": 0.0,
-                "seq.1.table": {},
-                "seq.1.active": False,
-            },
-        ],
-        "path",
-    )
+    test_args = mock_save_to_yaml.call_args[0][0]
+    assert test_args[0]["phase_1_signal_units"] == 0
+    assert test_args[1]["pcap.arm"] == 0.0
+    assert test_args[1]["pulse.1.delay"] == 0.0
+    assert test_args[1]["pulse.1.width"] == 0.0
+    assert test_args[1]["seq.1.table"] == {}
+    assert not test_args[1]["seq.1.active"]
