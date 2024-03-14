@@ -2,7 +2,7 @@ import logging
 import sys
 from dataclasses import dataclass, field
 from enum import Enum
-from math import isnan
+from math import isnan, nan
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 from aioca import (
@@ -47,7 +47,9 @@ _common_meta = {
 }
 
 
-def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> DataKey:
+def _data_key_from_augmented_value(
+    value: AugmentedValue, *, choices: Optional[List[str]] = None
+) -> DataKey:
     """Use the return value of get with FORMAT_CTRL to construct a DataKey
     describing the signal. See docstring of AugmentedValue for expected
     value fields by DBR type.
@@ -73,15 +75,12 @@ def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> DataKey:
         shape=[] if scalar else [len(value)],
     )
     for key in _common_meta:
-        if hasattr(value, key):
-            attr = getattr(value, key)
-            if isinstance(attr, str) or not isnan(attr):
-                d[key] = attr
+        attr = getattr(value, key, nan)
+        if isinstance(attr, str) or not isnan(attr):
+            d[key] = attr
 
-    if value.datatype is dbr.DBR_ENUM:
-        d["choices"] = value.enums
-    d.update(kwargs)
-
+    if choices is not None:
+        d["choices"] = choices
     return d
 
 
@@ -119,6 +118,11 @@ class CaLongStrConverter(CaConverter):
 
 @dataclass
 class CaEnumConverter(CaConverter):
+    """To prevent issues when a signal is restarted and returns with different enum
+    values or orders, we put treat an Enum signal as a DBR_STRING, and cache the
+    choices on this class.
+    """
+
     enum_class: Type[Enum]
     choices: List[str] = field(init=False)
 
@@ -137,6 +141,7 @@ class CaEnumConverter(CaConverter):
     def descriptor(self, value: AugmentedValue) -> DataKey:
         # Sometimes DBR_TYPE returns as String, must pass choices still
         return _data_key_from_augmented_value(value, choices=self.choices)
+
 
 class DisconnectedCaConverter(CaConverter):
     def __getattribute__(self, __name: str) -> Any:
