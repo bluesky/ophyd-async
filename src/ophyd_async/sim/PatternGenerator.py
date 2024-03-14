@@ -110,7 +110,7 @@ class PatternGenerator:
     def set_y(self, value: float) -> None:
         self.y = value
 
-    def open_file(self, dir: DirectoryProvider) -> None:
+    async def open_file(self, dir: DirectoryProvider) -> None:
         new_path: Path = dir().resource_dir / 'test.h5'
         # todo might change filename
         hdf5_file = h5py.File(new_path, "w")

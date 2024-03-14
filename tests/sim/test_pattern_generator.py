@@ -1,15 +1,16 @@
-from unittest import MagicMock
-
 import h5py
 import numpy as np
 import pytest
+from ophyd_async.core import StaticDirectoryProvider
 
 from ophyd_async.sim.PatternGenerator import DATA_PATH, SUM_PATH, PatternGenerator
 
 
 @pytest.fixture
 async def pattern_generator():
-    return PatternGenerator()
+    # path: Path = tmp_path_factory.mktemp("tmp")
+    pattern_generator = PatternGenerator()
+    yield pattern_generator
 
 
 async def test_init(pattern_generator: PatternGenerator):
@@ -21,7 +22,7 @@ async def test_init(pattern_generator: PatternGenerator):
     assert pattern_generator.initial_blob.shape == (240, 320)
 
 
-def test_initialization(pattern_generator):
+def test_initialization(pattern_generator: PatternGenerator):
     assert pattern_generator.saturation_exposure_time == 1
     assert pattern_generator.exposure == 1
     assert pattern_generator.x == 0.0
@@ -32,8 +33,9 @@ def test_initialization(pattern_generator):
     assert isinstance(pattern_generator.initial_blob, np.ndarray)
 
 
-async def test_open_and_close_file(tmp_hdf5_file, pattern_generator):
-    dir_provider = MagicMock(return_value=tmp_hdf5_file.parent)
+async def test_open_and_close_file(tmp_path, pattern_generator: PatternGenerator):
+
+    dir_provider = StaticDirectoryProvider(str(tmp_path))
     pattern_generator.open_file(dir_provider)
     assert pattern_generator.file is not None
     assert isinstance(pattern_generator.file, h5py.File)
@@ -41,24 +43,24 @@ async def test_open_and_close_file(tmp_hdf5_file, pattern_generator):
     assert pattern_generator.file is None
 
 
-def test_set_exposure(pattern_generator):
+def test_set_exposure(pattern_generator: PatternGenerator):
     pattern_generator.set_exposure(0.5)
     assert pattern_generator.exposure == 0.5
 
 
-def test_set_x(pattern_generator):
+def test_set_x(pattern_generator: PatternGenerator):
     pattern_generator.set_x(5.0)
     assert pattern_generator.x == 5.0
 
 
-def test_set_y(pattern_generator):
+def test_set_y(pattern_generator: PatternGenerator):
     pattern_generator.set_y(-3.0)
     assert pattern_generator.y == -3.0
 
 
 @pytest.mark.asyncio
-async def test_write_image_to_file(tmp_hdf5_file, pattern_generator):
-    dir_provider = MagicMock(return_value=tmp_hdf5_file.parent)
+async def test_write_image_to_file(tmp_path, pattern_generator: PatternGenerator):
+    dir_provider = StaticDirectoryProvider(str(tmp_path))
     pattern_generator.open_file(dir_provider)  # Open file for real to simplify
 
     await pattern_generator.write_image_to_file()
