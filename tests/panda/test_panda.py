@@ -117,12 +117,13 @@ async def test_panda_with_extra_blocks_and_signals(pva):
     class PandaNoData(PandA):
         data: DataBlock
 
-    panda = PandaNoData("PANDAQSRV")
-    del panda.__annotations__[
-        "data"
-    ]  # Hacky way to not include data PVs in this test without affecting other tests
+    panda = PandaNoData("PANDAQSRV:")
+
+    # Hacky way to not include data PVs in this test without affecting other tests
+    del panda.__annotations__["data"]
 
     await panda.connect()
+
     assert panda.extra  # type: ignore
     assert panda.extra[1]  # type: ignore
     assert panda.extra[2]  # type: ignore

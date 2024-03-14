@@ -1,9 +1,9 @@
 import asyncio
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
-from bluesky.protocols import Asset, Descriptor
+from bluesky.protocols import Descriptor, StreamAsset
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -16,6 +16,7 @@ from ophyd_async.core import (
     SignalRW,
     wait_for_value,
 )
+from ophyd_async.core.signal import observe_value
 from ophyd_async.panda.panda import PandA
 
 from .panda_hdf import _HDFDataset, _HDFFile
@@ -131,8 +132,10 @@ class PandaHDFWriter(DetectorWriter):
         self._file = None
         info = self._directory_provider()
         await asyncio.gather(
-            self.hdf.file_path.set(info.directory_path),
-            self.hdf.file_name.set(f"{info.filename_prefix}.h5"),
+            self.hdf.file_path.set(str(info.root / info.resource_dir)),
+            self.hdf.file_name.set(
+                f"{info.prefix}.{self.panda_device.name}{info.suffix}.h5"
+            ),
         )
 
         await self.hdf.num_capture.set(0)
@@ -177,7 +180,7 @@ class PandaHDFWriter(DetectorWriter):
         }
         return describe
 
-    # Next two functions are exactly the same as AD writer. Could move as default
+    # Next few functions are exactly the same as AD writer. Could move as default
     # StandardDetector behavior
     async def wait_for_index(
         self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
@@ -191,7 +194,16 @@ class PandaHDFWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return await self.hdf.num_captured.get_value()
 
-    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    async def observe_indices_written(
+        self, timeout=DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        """Wait until a specific index is ready to be collected"""
+        async for num_captured in observe_value(self.hdf.num_captured, timeout):
+            yield num_captured // self._multiplier
+
+    async def collect_stream_docs(
+        self, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         if indices_written:
             if not self._file:
