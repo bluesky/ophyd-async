@@ -16,7 +16,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
-from bluesky.protocols import Descriptor, Reading
+from bluesky.protocols import DataKey, Reading
 
 from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
@@ -169,7 +169,7 @@ _metadata: Dict[str, Dict[str, Any]] = {
 }
 
 
-def descriptor(protocol: str, suffix: str, value=None) -> Descriptor:
+def descriptor(protocol: str, suffix: str, value=None) -> DataKey:
     def get_internal_dtype(suffix: str) -> str:
         # uint32, [u]int64 backed by DBR_DOUBLE, have precision
         if "float" in suffix or "uint32" in suffix or "int64" in suffix:
@@ -430,7 +430,6 @@ async def test_pva_table(ioc: IOC) -> None:
         try:
             # Check descriptor
             dict(source=backend.source, **descriptor) == await backend.get_descriptor()
-
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
