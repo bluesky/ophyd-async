@@ -116,10 +116,7 @@ async def assert_monitor_then_put(
     try:
         # Check descriptor
         source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert (
-            dict(source=source, **descriptor).items()
-            <= (await backend.get_descriptor()).items()
-        )
+        assert dict(source=source, **descriptor) == await backend.get_descriptor()
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -157,20 +154,28 @@ _common_metadata = {
     "lower_ctrl_limit": ANY,
 }
 
+_int_metadata = {
+    "lower_alarm_limit": 0,
+    "lower_warning_limit": 0,
+    "upper_alarm_limit": 0,
+    "upper_warning_limit": 0,
+}
+
 _metadata: Dict[str, Dict[str, Any]] = {
+    "enum": {"timestamp": ANY},
     "string": {"timestamp": ANY},
-    "integer": _common_metadata,
+    "integer": {**_int_metadata, **_common_metadata},
     "number": {**_common_metadata, "precision": ANY},
-    "enum": {},
 }
 
 
 def descriptor(protocol: str, suffix: str, value=None) -> Descriptor:
     def get_internal_dtype(suffix: str) -> str:
+        # uint32, int64, uint64 all backed by DBR_DOUBLE which has precision
+        if "float" in suffix or "uint32" in suffix or "int64" in suffix:
+            return "number"
         if "int" in suffix or "bool" in suffix:
             return "integer"
-        if "float" in suffix:
-            return "number"
         if "enum" in suffix:
             return "enum"
         return "string"
@@ -424,9 +429,7 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check descriptor
-            dict(source=backend.source, **descriptor).items() <= (
-                await backend.get_descriptor()
-            ).items()
+            dict(source=backend.source, **descriptor) == await backend.get_descriptor()
 
             # Check initial value
             await q.assert_updates(approx_table(i))
@@ -492,7 +495,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": backend.source,
                 "dtype": "array",
                 "shape": [2, 3],
-            }.items() <= (await backend.get_descriptor()).items()
+            } == await backend.get_descriptor()
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())
