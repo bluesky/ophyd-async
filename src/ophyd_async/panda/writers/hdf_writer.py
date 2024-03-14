@@ -48,7 +48,6 @@ def get_capture_signals(
     panda: Device, path_prefix: Optional[str] = ""
 ) -> Dict[str, SignalR]:
     """Get dict mapping a capture signal's name to the signal itself"""
-    # TODO make common with code from device_save_loader?
     if not path_prefix:
         path_prefix = ""
     signals: Dict[str, SignalR[Any]] = {}
@@ -61,14 +60,13 @@ def get_capture_signals(
     return signals
 
 
-# This should return a dictionary which maps to a dict which contains the Capture
-# signal object,
-# and the value of that signal
+# This should return a dictionary which contains a dict, containing the Capture
+# signal object, and the value of that signal
 async def get_signals_marked_for_capture(
     capture_signals: Dict[str, SignalR]
 ) -> Dict[str, Dict[str, Union[SignalR, Capture]]]:
-    # Read signals to see if they should be captured
 
+    # Read signals to see if they should be captured
     do_read = [signal.get_value() for signal in capture_signals.values()]
 
     signal_values = await asyncio.gather(*do_read)
@@ -80,7 +78,7 @@ async def get_signals_marked_for_capture(
     for signal_path, signal_object, signal_value in zip(
         capture_signals.keys(), capture_signals.values(), signal_values
     ):
-        # use .val instead of .val_capture
+
         signal_path = signal_path.replace("_capture", "")
         if (signal_value.value in iter(Capture)) and (signal_value.value != Capture.No):
             signals_to_capture[signal_path] = {
@@ -121,6 +119,7 @@ class PandaHDFWriter(DetectorWriter):
         self._name_provider = name_provider
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
+        self._multiplier = 1
 
         # Convert the convert the ioc PV names to have a better underscore convention.
         # Can remove this after Pandablocks issue #101
@@ -150,8 +149,6 @@ class PandaHDFWriter(DetectorWriter):
             self.hdf.file_path.set(info.directory_path),
             self.hdf.file_name.set(f"{info.filename_prefix}.h5"),
         )
-
-        # TODO confirm all missing functionality from AD writer isn't needed here
 
         await self.hdf.num_capture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes

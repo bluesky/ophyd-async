@@ -121,7 +121,7 @@ async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
         "test-panda.block2.test.Value",
     ]
     for key in expected_datakeys:
-        assert "test-panda.block1.test.Min" in description
+        assert key in description
 
 
 async def test_open_close_sets_capture(sim_writer: PandaHDFWriter, sim_panda):
