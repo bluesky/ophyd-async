@@ -3,7 +3,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan
-from typing import Any, Dict, Optional, Sequence, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 from aioca import (
     FORMAT_CTRL,
@@ -40,58 +40,68 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_DOUBLE: "number",
     dbr.DBR_ENUM: "string",
 }
-_num_dbr = {dbr.DBR_SHORT, dbr.DBR_CHAR, dbr.DBR_LONG, dbr.DBR_FLOAT, dbr.DBR_DOUBLE}
+_number_dbr = {dbr.DBR_SHORT, dbr.DBR_CHAR, dbr.DBR_LONG, dbr.DBR_FLOAT, dbr.DBR_DOUBLE}
 _floating_dbr = {dbr.DBR_FLOAT, dbr.DBR_DOUBLE}
+_number_meta = {
+    "units",
+    "lower_alarm_limit",
+    "upper_alarm_limit",
+    "lower_ctrl_limit",
+    "upper_ctrl_limit",
+    "lower_disp_limit",
+    "upper_disp_limit",
+    "lower_warning_limit",
+    "upper_warning_limit",
+}
 
 
-def _data_key_from_augmented_value(source: str, value: AugmentedValue) -> Descriptor:
+def _if_has_meta_add_meta(
+    d: Dict[str, Any], value: AugmentedValue, key: Union[str, List[str]]
+):
+    if isinstance(key, str):
+        key = [key]
+    for k in key:
+        if not hasattr(value, k):
+            continue
+        attr = getattr(value, k)
+        if isinstance(attr, str) or not isnan(attr):
+            d[k] = attr
+
+
+def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descriptor:
     """Use the return value of get with FORMAT_CTRL to construct a Descriptor
     describing the signal. See docstring of AugmentedValue for expected
     value fields by DBR type.
 
     Args:
         value (AugmentedValue): Description of the the return type of a DB record
+        kwargs: Overrides for the returned values. 
+            e.g. to treat a value as an Enumeration by passing choices
 
     Returns:
         Descriptor: A rich DataKey describing the DB record
     """
-
-    if not value.ok:
-        raise Exception(f"{source} error: {value.errorcode}: {str(value)}")
+    source = f"ca://{value.name}"
+    assert value.ok, f"Error reading {source}: {value}"
 
     scalar = value.element_count == 1
 
     d = Descriptor(
         source=source,
         dtype=dbr_to_dtype[value.datatype] if scalar else "array",
+        # strictly value.element_count >= len(value)
         shape=[] if scalar else [len(value)],
     )
 
-    if value.datatype in _num_dbr:
-        d["units"] = value.units
-        if not isnan(value.lower_alarm_limit):
-            d["lower_alarm_limit"] = value.lower_alarm_limit
-        if not isnan(value.upper_alarm_limit):
-            d["upper_alarm_limit"] = value.upper_alarm_limit
-        if not isnan(value.lower_ctrl_limit):
-            d["lower_ctrl_limit"] = value.lower_ctrl_limit
-        if not isnan(value.upper_ctrl_limit):
-            d["upper_ctrl_limit"] = value.upper_ctrl_limit
-        if not isnan(value.lower_disp_limit):
-            d["lower_disp_limit"] = value.lower_disp_limit
-        if not isnan(value.upper_disp_limit):
-            d["upper_disp_limit"] = value.upper_disp_limit
-        if not isnan(value.lower_warning_limit):
-            d["lower_warning_limit"] = value.lower_warning_limit
-        if not isnan(value.upper_warning_limit):
-            d["upper_warning_limit"] = value.upper_warning_limit
-
-    if value.datatype in _floating_dbr and not isnan(value.precision):
-        d["precision"] = value.precision
+    if value.datatype in _number_dbr:
+        _if_has_meta_add_meta(d, value, _number_meta)
+    if value.datatype in _floating_dbr:
+        _if_has_meta_add_meta(d, value, "precision")
     if value.datatype is dbr.DBR_ENUM:
         d["choices"] = value.enums
-    if value.datatype is dbr.DBR_STRING and not isnan(value.timestamp):
-        d["timestamp"] = value.timestamp
+    if value.datatype is dbr.DBR_STRING:
+        _if_has_meta_add_meta(d, value, "timestamp")
+    d.update(kwargs)
 
     return d
 
@@ -114,8 +124,8 @@ class CaConverter:
             alarm_severity=-1 if value.severity > 2 else value.severity,
         )
 
-    def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
-        return _data_key_from_augmented_value(source, value)
+    def descriptor(self, value: AugmentedValue, **kwargs) -> Descriptor:
+        return _data_key_from_augmented_value(value, **kwargs)
 
 
 class CaLongStrConverter(CaConverter):
@@ -140,6 +150,10 @@ class CaEnumConverter(CaConverter):
 
     def value(self, value: AugmentedValue):
         return self.enum_class(value)
+    
+    def descriptor(self, value: AugmentedValue) -> Descriptor:
+        choices = [e.value for e in self.enum_class]
+        return super().descriptor(value, choices=choices)
 
 class DisconnectedCaConverter(CaConverter):
     def __getattribute__(self, __name: str) -> Any:
@@ -264,7 +278,7 @@ class CaSignalBackend(SignalBackend[T]):
 
     async def get_descriptor(self) -> Descriptor:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.descriptor(self.source, value)
+        return self.converter.descriptor(value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)
