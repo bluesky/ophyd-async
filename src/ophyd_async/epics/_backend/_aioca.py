@@ -43,16 +43,7 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
 }
 _common_meta = {
     "units",
-    "lower_alarm_limit",
-    "upper_alarm_limit",
-    "lower_ctrl_limit",
-    "upper_ctrl_limit",
-    "lower_disp_limit",
-    "upper_disp_limit",
-    "lower_warning_limit",
-    "upper_warning_limit",
     "precision",
-    "timestamp",
 }
 
 

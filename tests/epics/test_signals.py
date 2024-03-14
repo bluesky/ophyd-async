@@ -162,26 +162,11 @@ class MyEnum(str, Enum):
     c = "Ccc"
 
 
-_common_metadata = {
-    "units": ANY,
-    "upper_disp_limit": ANY,
-    "lower_disp_limit": ANY,
-    "upper_ctrl_limit": ANY,
-    "lower_ctrl_limit": ANY,
-}
-
-_int_metadata = {
-    "lower_alarm_limit": ANY,
-    "lower_warning_limit": ANY,
-    "upper_alarm_limit": ANY,
-    "upper_warning_limit": ANY,
-}
-
 _metadata: Dict[str, Dict[str, Any]] = {
-    "enum": {"timestamp": ANY},
-    "string": {"timestamp": ANY},
-    "integer": {**_int_metadata, **_common_metadata},
-    "number": {**_common_metadata, "precision": ANY},
+    "enum": {},
+    "string": {},
+    "integer": {"units": ANY},
+    "number": {"units": ANY, "precision": ANY},
 }
 
 
