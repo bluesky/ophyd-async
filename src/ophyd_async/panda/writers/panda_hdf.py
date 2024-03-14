@@ -6,8 +6,7 @@ from event_model import StreamDatum, StreamResource, compose_stream_resource
 
 @dataclass
 class _HDFDataset:
-    device_name: str  # TODO: not sure about some of these names. We should have
-    # device_name (always panda?), block name, signal name, path, shape, multiplier
+    device_name: str
     block: str
     name: str
     path: str
@@ -15,7 +14,6 @@ class _HDFDataset:
     multiplier: int
 
 
-# TODO can we make this common with AD version for this entire file
 class _HDFFile:
     def __init__(self, full_file_name: str, datasets: List[_HDFDataset]) -> None:
         self._last_emitted = 0
