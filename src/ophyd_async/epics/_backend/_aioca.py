@@ -40,9 +40,7 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_DOUBLE: "number",
     dbr.DBR_ENUM: "string",
 }
-_number_dbr = {dbr.DBR_SHORT, dbr.DBR_CHAR, dbr.DBR_LONG, dbr.DBR_FLOAT, dbr.DBR_DOUBLE}
-_floating_dbr = {dbr.DBR_FLOAT, dbr.DBR_DOUBLE}
-_number_meta = {
+_common_meta = {
     "units",
     "lower_alarm_limit",
     "upper_alarm_limit",
@@ -52,20 +50,18 @@ _number_meta = {
     "upper_disp_limit",
     "lower_warning_limit",
     "upper_warning_limit",
+    "precision",
+    "timestamp",
 }
 
 
-def _if_has_meta_add_meta(
-    d: Dict[str, Any], value: AugmentedValue, key: Union[str, Set[str]]
-):
-    if isinstance(key, str):
-        key = {key}
-    for k in key:
-        if not hasattr(value, k):
+def _if_has_meta_add_meta(d: Dict[str, Any], value: AugmentedValue, keys: Set[str]):
+    for key in keys:
+        if not hasattr(value, key):
             continue
-        attr = getattr(value, k)
+        attr = getattr(value, key)
         if isinstance(attr, str) or not isnan(attr):
-            d[k] = attr
+            d[key] = attr
 
 
 def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descriptor:
@@ -85,22 +81,18 @@ def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descripto
     assert value.ok, f"Error reading {source}: {value}"
 
     scalar = value.element_count == 1
+    dtype = dbr_to_dtype[value.datatype]
 
     d = Descriptor(
         source=source,
-        dtype=dbr_to_dtype[value.datatype] if scalar else "array",
+        dtype=dtype if scalar else "array",
         # strictly value.element_count >= len(value)
         shape=[] if scalar else [len(value)],
     )
 
-    if value.datatype in _number_dbr:
-        _if_has_meta_add_meta(d, value, _number_meta)
-    if value.datatype in _floating_dbr:
-        _if_has_meta_add_meta(d, value, "precision")
+    _if_has_meta_add_meta(d, value, _common_meta)
     if value.datatype is dbr.DBR_ENUM:
         d["choices"] = value.enums
-    if value.datatype is dbr.DBR_STRING:
-        _if_has_meta_add_meta(d, value, "timestamp")
     d.update(kwargs)
 
     return d
