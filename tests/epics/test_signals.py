@@ -9,23 +9,14 @@ from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import (
-    Any,
-    Dict,
-    Literal,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    TypedDict,
-)
+from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
 from unittest.mock import ANY
 
 import numpy as np
 import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
-from bluesky.protocols import Reading, Descriptor
+from bluesky.protocols import Descriptor, Reading
 
 from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
@@ -125,7 +116,10 @@ async def assert_monitor_then_put(
     try:
         # Check descriptor
         source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=source, **descriptor).items() <= (await backend.get_descriptor()).items()
+        assert (
+            dict(source=source, **descriptor).items()
+            <= (await backend.get_descriptor()).items()
+        )
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -163,15 +157,15 @@ _common_metadata = {
     "lower_ctrl_limit": ANY,
 }
 
-_metadata = {
+_metadata: Dict[str, Dict[str, Any]] = {
     "string": {"timestamp": ANY},
     "integer": _common_metadata,
     "number": {**_common_metadata, "precision": ANY},
-    "enum": {}
+    "enum": {},
 }
 
 
-def descriptor(protocol: str, suffix: str, value: Optional[Any] = None) -> Descriptor:
+def descriptor(protocol: str, suffix: str, value=None) -> Descriptor:
     def get_internal_dtype(suffix: str) -> str:
         if "int" in suffix or "bool" in suffix:
             return "integer"
@@ -187,13 +181,6 @@ def descriptor(protocol: str, suffix: str, value: Optional[Any] = None) -> Descr
         if "enum" in suffix:
             return "string"
         return get_internal_dtype(suffix)
-
-    def ca_metadata(dtype: str, internal_dtype: str) -> Dict[str, Any]:
-        if internal_dtype == "string":
-            return _metadata[internal_dtype]
-        if dtype == "array":
-            return _metadata[dtype]
-        return 
 
     dtype = get_dtype(suffix)
 
@@ -437,7 +424,9 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check descriptor
-            dict(source=backend.source, **descriptor).items() <= (await backend.get_descriptor()).items()
+            dict(source=backend.source, **descriptor).items() <= (
+                await backend.get_descriptor()
+            ).items()
 
             # Check initial value
             await q.assert_updates(approx_table(i))

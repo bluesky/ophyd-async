@@ -3,7 +3,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, Dict, Optional, Sequence, Set, Type, Union
 
 from aioca import (
     FORMAT_CTRL,
@@ -56,10 +56,10 @@ _number_meta = {
 
 
 def _if_has_meta_add_meta(
-    d: Dict[str, Any], value: AugmentedValue, key: Union[str, List[str]]
+    d: Dict[str, Any], value: AugmentedValue, key: Union[str, Set[str]]
 ):
     if isinstance(key, str):
-        key = [key]
+        key = {key}
     for k in key:
         if not hasattr(value, k):
             continue
@@ -75,7 +75,7 @@ def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descripto
 
     Args:
         value (AugmentedValue): Description of the the return type of a DB record
-        kwargs: Overrides for the returned values. 
+        kwargs: Overrides for the returned values.
             e.g. to treat a value as an Enumeration by passing choices
 
     Returns:
@@ -124,8 +124,8 @@ class CaConverter:
             alarm_severity=-1 if value.severity > 2 else value.severity,
         )
 
-    def descriptor(self, value: AugmentedValue, **kwargs) -> Descriptor:
-        return _data_key_from_augmented_value(value, **kwargs)
+    def descriptor(self, value: AugmentedValue) -> Descriptor:
+        return _data_key_from_augmented_value(value)
 
 
 class CaLongStrConverter(CaConverter):
@@ -150,10 +150,10 @@ class CaEnumConverter(CaConverter):
 
     def value(self, value: AugmentedValue):
         return self.enum_class(value)
-    
+
     def descriptor(self, value: AugmentedValue) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return super().descriptor(value, choices=choices)
+        return _data_key_from_augmented_value(value, choices=choices)
 
 class DisconnectedCaConverter(CaConverter):
     def __getattribute__(self, __name: str) -> Any:
