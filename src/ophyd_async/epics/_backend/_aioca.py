@@ -1,9 +1,9 @@
 import logging
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from math import isnan
-from typing import Any, Dict, Optional, Sequence, Set, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 from aioca import (
     FORMAT_CTRL,
@@ -55,15 +55,6 @@ _common_meta = {
 }
 
 
-def _if_has_meta_add_meta(d: Dict[str, Any], value: AugmentedValue, keys: Set[str]):
-    for key in keys:
-        if not hasattr(value, key):
-            continue
-        attr = getattr(value, key)
-        if isinstance(attr, str) or not isnan(attr):
-            d[key] = attr
-
-
 def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descriptor:
     """Use the return value of get with FORMAT_CTRL to construct a Descriptor
     describing the signal. See docstring of AugmentedValue for expected
@@ -89,8 +80,13 @@ def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descripto
         # strictly value.element_count >= len(value)
         shape=[] if scalar else [len(value)],
     )
+    for key in _common_meta:
+        if not hasattr(value, key):
+            continue
+        attr = getattr(value, key)
+        if isinstance(attr, str) or not isnan(attr):
+            d[key] = attr
 
-    _if_has_meta_add_meta(d, value, _common_meta)
     if value.datatype is dbr.DBR_ENUM:
         d["choices"] = value.enums
     d.update(kwargs)
@@ -132,7 +128,11 @@ class CaLongStrConverter(CaConverter):
 
 @dataclass
 class CaEnumConverter(CaConverter):
-    choices: dict[str, str]
+    enum_class: Type[Enum]
+    choices: List[str] = field(init=False)
+
+    def __post_init__(self):
+        self.choices = [e.value for e in self.enum_class]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -144,8 +144,7 @@ class CaEnumConverter(CaConverter):
         return self.enum_class(value)
 
     def descriptor(self, value: AugmentedValue) -> Descriptor:
-        choices = [e.value for e in self.enum_class]
-        return _data_key_from_augmented_value(value, choices=choices)
+        return _data_key_from_augmented_value(value, choices=self.choices)
 
 class DisconnectedCaConverter(CaConverter):
     def __getattribute__(self, __name: str) -> Any:
