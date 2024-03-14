@@ -2,6 +2,7 @@ import logging
 import sys
 from dataclasses import dataclass
 from enum import Enum
+from math import isnan
 from typing import Any, Dict, Optional, Sequence, Type, Union
 
 from aioca import (
@@ -37,7 +38,62 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_CHAR: "string",
     dbr.DBR_LONG: "integer",
     dbr.DBR_DOUBLE: "number",
+    dbr.DBR_ENUM: "string",
 }
+_num_dbr = {dbr.DBR_SHORT, dbr.DBR_CHAR, dbr.DBR_LONG, dbr.DBR_FLOAT, dbr.DBR_DOUBLE}
+_floating_dbr = {dbr.DBR_FLOAT, dbr.DBR_DOUBLE}
+
+
+def _data_key_from_augmented_value(source: str, value: AugmentedValue) -> Descriptor:
+    """Use the return value of get with FORMAT_CTRL to construct a Descriptor
+    describing the signal. See docstring of AugmentedValue for expected
+    value fields by DBR type.
+
+    Args:
+        value (AugmentedValue): Description of the the return type of a DB record
+
+    Returns:
+        Descriptor: A rich DataKey describing the DB record
+    """
+
+    if not value.ok:
+        raise Exception(f"{source} error: {value.errorcode}: {str(value)}")
+
+    scalar = value.element_count == 1
+
+    d = Descriptor(
+        source=source,
+        dtype=dbr_to_dtype[value.datatype] if scalar else "array",
+        shape=[] if scalar else [len(value)],
+    )
+
+    if value.datatype in _num_dbr:
+        d["units"] = value.units
+        if not isnan(value.lower_alarm_limit):
+            d["lower_alarm_limit"] = value.lower_alarm_limit
+        if not isnan(value.upper_alarm_limit):
+            d["upper_alarm_limit"] = value.upper_alarm_limit
+        if not isnan(value.lower_ctrl_limit):
+            d["lower_ctrl_limit"] = value.lower_ctrl_limit
+        if not isnan(value.upper_ctrl_limit):
+            d["upper_ctrl_limit"] = value.upper_ctrl_limit
+        if not isnan(value.lower_disp_limit):
+            d["lower_disp_limit"] = value.lower_disp_limit
+        if not isnan(value.upper_disp_limit):
+            d["upper_disp_limit"] = value.upper_disp_limit
+        if not isnan(value.lower_warning_limit):
+            d["lower_warning_limit"] = value.lower_warning_limit
+        if not isnan(value.upper_warning_limit):
+            d["upper_warning_limit"] = value.upper_warning_limit
+
+    if value.datatype in _floating_dbr and not isnan(value.precision):
+        d["precision"] = value.precision
+    if value.datatype is dbr.DBR_ENUM:
+        d["choices"] = value.enums
+    if value.datatype is dbr.DBR_STRING and not isnan(value.timestamp):
+        d["timestamp"] = value.timestamp
+
+    return d
 
 
 @dataclass
@@ -58,8 +114,8 @@ class CaConverter:
             "alarm_severity": -1 if value.severity > 2 else value.severity,
         }
 
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
+    def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
+        return _data_key_from_augmented_value(source, value)
 
 
 class CaLongStrConverter(CaConverter):
@@ -70,11 +126,6 @@ class CaLongStrConverter(CaConverter):
         # Add a null in here as this is what the commandline caput does
         # TODO: this should be in the server so check if it can be pushed to asyn
         return value + "\0"
-
-
-class CaArrayConverter(CaConverter):
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value)]}
 
 
 @dataclass
@@ -89,15 +140,6 @@ class CaEnumConverter(CaConverter):
 
     def value(self, value: AugmentedValue):
         return self.choices[value]
-
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {
-            "source": source,
-            "dtype": "string",
-            "shape": [],
-            "choices": list(self.choices),
-        }
-
 
 class DisconnectedCaConverter(CaConverter):
     def __getattribute__(self, __name: str) -> Any:
@@ -117,7 +159,7 @@ def make_converter(
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:
             raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
-        return CaArrayConverter(pv_dbr, None)
+        return CaConverter(pv_dbr, None)
     elif is_array:
         pv_dtype = get_unique({k: v.dtype for k, v in values.items()}, "dtypes")
         # This is an array
@@ -128,7 +170,7 @@ def make_converter(
                 raise TypeError(f"{pv} has type [{pv_dtype}] not {datatype.__name__}")
             if dtype != pv_dtype:
                 raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
-        return CaArrayConverter(pv_dbr, None)
+        return CaConverter(pv_dbr, None)
     elif pv_dbr == dbr.DBR_ENUM and datatype is bool:
         # Database can't do bools, so are often representated as enums, CA can do int
         pv_choices_len = get_unique(
