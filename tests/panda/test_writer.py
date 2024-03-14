@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import patch
 
 import pytest
 
@@ -124,7 +125,7 @@ async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
         assert key in description
 
 
-async def test_open_close_sets_capture(sim_writer: PandaHDFWriter, sim_panda):
+async def test_open_close_sets_capture(sim_writer: PandaHDFWriter):
     assert not await sim_writer.hdf.capture.get_value()
     assert isinstance(await sim_writer.open(), dict)
     assert await sim_writer.hdf.capture.get_value()
@@ -132,9 +133,7 @@ async def test_open_close_sets_capture(sim_writer: PandaHDFWriter, sim_panda):
     assert not await sim_writer.hdf.capture.get_value()
 
 
-async def test_open_sets_file_path_and_name(
-    sim_writer: PandaHDFWriter, tmp_path, sim_panda
-):
+async def test_open_sets_file_path_and_name(sim_writer: PandaHDFWriter, tmp_path):
     path = await sim_writer.hdf.file_path.get_value()
     assert path == ""
     await sim_writer.open()
@@ -144,20 +143,18 @@ async def test_open_sets_file_path_and_name(
     assert name == "test.h5"
 
 
-async def test_open_errors_when_multiplier_not_one(
-    sim_writer: PandaHDFWriter, sim_panda
-):
+async def test_open_errors_when_multiplier_not_one(sim_writer: PandaHDFWriter):
     with pytest.raises(ValueError):
         await sim_writer.open(2)
 
 
-async def test_get_indices_written(sim_writer: PandaHDFWriter, sim_panda):
+async def test_get_indices_written(sim_writer: PandaHDFWriter):
     set_sim_value(sim_writer.hdf.num_captured, 4)
     written = await sim_writer.get_indices_written()
     assert written == 4
 
 
-async def test_wait_for_index(sim_writer: PandaHDFWriter, sim_panda):
+async def test_wait_for_index(sim_writer: PandaHDFWriter):
     set_sim_value(sim_writer.hdf.num_captured, 3)
     await sim_writer.wait_for_index(3, timeout=1)
     set_sim_value(sim_writer.hdf.num_captured, 2)
@@ -165,7 +162,7 @@ async def test_wait_for_index(sim_writer: PandaHDFWriter, sim_panda):
         await sim_writer.wait_for_index(3, timeout=0.1)
 
 
-async def test_collect_stream_docs(sim_writer: PandaHDFWriter, sim_panda):
+async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     # Give the sim writer datasets
     cap1 = sim_writer.panda_device.block1.test_capture  # type: ignore[attr-defined]
     cap2 = sim_writer.panda_device.block2.test_capture  # type: ignore[attr-defined]
@@ -179,3 +176,20 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter, sim_panda):
     resource_doc = sim_writer._file._bundles[0].stream_resource_doc
     assert resource_doc["data_key"] == "test-panda.block1.test.Min"
     assert resource_doc["resource_path"] == "test.h5"
+
+
+async def test_numeric_blocks_correctly_formated(sim_writer: PandaHDFWriter):
+
+    async def get_numeric_signal(_):
+        return {
+            "device.block.1": {
+                "signal": SignalR(backend=SimSignalBackend(str, source="test_signal")),
+                "capture_type": Capture.Value,
+            }
+        }
+
+    with patch(
+        "ophyd_async.panda.writers.hdf_writer.get_signals_marked_for_capture",
+        get_numeric_signal,
+    ):
+        assert "test-panda.block.1.Capture.Value" in await sim_writer.open()

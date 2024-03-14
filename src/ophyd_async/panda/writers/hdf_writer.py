@@ -1,10 +1,9 @@
 import asyncio
-import atexit
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-from bluesky.protocols import Asset, Descriptor, Hints
+from bluesky.protocols import Asset, Descriptor
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -91,20 +90,6 @@ async def get_signals_marked_for_capture(
 
 class PandaHDFWriter(DetectorWriter):
     _ctxt: Optional[Context] = None
-
-    @property
-    def ctxt(self) -> Context:
-        if PandaHDFWriter._ctxt is None:
-            PandaHDFWriter._ctxt = Context("pva", nt=False)
-
-            @atexit.register
-            def _del_ctxt():
-                # If we don't do this we get messages like this on close:
-                #   Error in sys.excepthook:
-                #   Original exception was:
-                PandaHDFWriter._ctxt = None
-
-        return PandaHDFWriter._ctxt
 
     def __init__(
         self,
@@ -221,7 +206,3 @@ class PandaHDFWriter(DetectorWriter):
     # Could put this function as default for StandardDetector
     async def close(self):
         await self.hdf.capture.set(False, wait=True, timeout=DEFAULT_TIMEOUT)
-
-    @property
-    def hints(self) -> Hints:
-        return {"fields": [self._name_provider()]}
