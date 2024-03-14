@@ -54,7 +54,7 @@ async def sim_panda() -> PandA:
 
 @pytest.fixture
 async def sim_writer(tmp_path, sim_panda) -> PandaHDFWriter:
-    dir_prov = StaticDirectoryProvider(str(tmp_path), "test")
+    dir_prov = StaticDirectoryProvider(str(tmp_path), "filename")
     async with DeviceCollector(sim=True):
         writer = PandaHDFWriter(
             "TEST-PANDA", dir_prov, lambda: "test-panda", panda_device=sim_panda
@@ -140,7 +140,7 @@ async def test_open_sets_file_path_and_name(sim_writer: PandaHDFWriter, tmp_path
     path = await sim_writer.hdf.file_path.get_value()
     assert path == str(tmp_path)
     name = await sim_writer.hdf.file_name.get_value()
-    assert name == "test.h5"
+    assert name == "filename.sim_panda.h5"
 
 
 async def test_open_errors_when_multiplier_not_one(sim_writer: PandaHDFWriter):
@@ -175,7 +175,7 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     assert sim_writer._file._last_emitted == 1
     resource_doc = sim_writer._file._bundles[0].stream_resource_doc
     assert resource_doc["data_key"] == "test-panda.block1.test.Min"
-    assert resource_doc["resource_path"] == "test.h5"
+    assert resource_doc["resource_path"] == "filename.sim_panda.h5"
 
 
 async def test_numeric_blocks_correctly_formated(sim_writer: PandaHDFWriter):
