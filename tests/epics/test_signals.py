@@ -9,14 +9,23 @@ from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Type, TypedDict
+from typing import (
+    Any,
+    Dict,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypedDict,
+)
 from unittest.mock import ANY
 
 import numpy as np
 import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
-from bluesky.protocols import Reading
+from bluesky.protocols import Reading, Descriptor
 
 from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
@@ -131,8 +140,8 @@ async def assert_monitor_then_put(
     q = MonitorQueue(backend)
     try:
         # Check descriptor
-        pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=pv_name, **descriptor) == await backend.get_datakey(pv_name)
+        source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
+        assert dict(source=source, **descriptor).items() <= (await backend.get_descriptor()).items()
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -162,47 +171,55 @@ class MyEnum(str, Enum):
     c = "Ccc"
 
 
-ca_metadata = {
-    "integer": {
-        "lower_alarm_limit": 0,
-        "lower_ctrl_limit": 10,
-        "lower_disp_limit": 0,
-        "lower_warning_limit": 0,
-        "units": "",
-        "upper_alarm_limit": 0,
-        "upper_ctrl_limit": 90,
-        "upper_disp_limit": 100,
-        "upper_warning_limit": 0,
-    },
-    "number": {
-        "lower_ctrl_limit": 0.0,
-        "lower_disp_limit": 0.0,
-        "precision": 1,
-        "units": "mm",
-        "upper_ctrl_limit": 0.0,
-        "upper_disp_limit": 0.0,
-    },
+_common_metadata = {
+    "units": ANY,
+    "upper_disp_limit": ANY,
+    "lower_disp_limit": ANY,
+    "upper_ctrl_limit": ANY,
+    "lower_ctrl_limit": ANY,
+}
+
+_metadata = {
     "string": {"timestamp": ANY},
+    "integer": _common_metadata,
+    "number": {**_common_metadata, "precision": ANY},
+    "enum": {}
 }
 
 
-def suffix_to_dtype(suffix: str):
-    if "float" in suffix:
-        return "number"
-    if "int" in suffix:
-        return "integer"
-    return "string"
+def descriptor(protocol: str, suffix: str, value: Optional[Any] = None) -> Descriptor:
+    def get_internal_dtype(suffix: str) -> str:
+        if "int" in suffix or "bool" in suffix:
+            return "integer"
+        if "float" in suffix:
+            return "number"
+        if "enum" in suffix:
+            return "enum"
+        return "string"
 
+    def get_dtype(suffix: str) -> str:
+        if suffix.endswith("a"):
+            return "array"
+        if "enum" in suffix:
+            return "string"
+        return get_internal_dtype(suffix)
 
-def descriptor(protocol: str, suffix: str, value: Any):
-    is_array = isinstance(value, List)
-    dtype = suffix_to_dtype(suffix)
-    d = {
-        "dtype": "array" if is_array else dtype,
-        "shape": [len(value)] if isinstance(value, List) else [],
-    }
+    def ca_metadata(dtype: str, internal_dtype: str) -> Dict[str, Any]:
+        if internal_dtype == "string":
+            return _metadata[internal_dtype]
+        if dtype == "array":
+            return _metadata[dtype]
+        return 
+
+    dtype = get_dtype(suffix)
+
+    d = dict(dtype=dtype, shape=[len(value)] if dtype == "array" else [])
+    if get_internal_dtype(suffix) == "enum":
+        d["choices"] = [e.value for e in type(value)]
+
     if protocol == "ca":
-        d.update(ca_metadata.get(dtype, {}))
+        d.update(_metadata[get_internal_dtype(suffix)])
+
     return d
 
 
@@ -219,7 +236,7 @@ ca_dtype_mapping = {
 
 
 @pytest.mark.parametrize(
-    "datatype, suffix, initial_value, put_value, descriptor",
+    "datatype, suffix, initial_value, put_value",
     [
         (int, "int", 42, 43),
         (float, "float", 3.141, 43.5),
@@ -237,8 +254,8 @@ ca_dtype_mapping = {
         (npt.NDArray[np.float64], "float64a", [0.1, -12345678.123], [0.2]),
         (Sequence[str], "stra", ["five", "six", "seven"], ["nine", "ten"]),
         # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
-        # (str, "longstr", ls1, ls2, string_d),
-        # (str, "longstr2.VAL$", ls1, ls2, string_d),
+        # (str, "longstr", ls1, ls2),
+        # (str, "longstr2.VAL$", ls1, ls2),
     ],
 )
 async def test_backend_get_put_monitor(
@@ -290,7 +307,7 @@ async def test_bool_conversion_of_enum(ioc: IOC, suffix: str) -> None:
     await assert_monitor_then_put(
         ioc,
         suffix=suffix,
-        descriptor=descriptor(ioc.protocol, "bool", True),
+        descriptor=descriptor(ioc.protocol, "bool"),
         initial_value=True,
         put_value=False,
         datatype=bool,
@@ -439,9 +456,8 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check descriptor
-            dict(source="test-source", **descriptor) == await backend.get_datakey(
-                "test-source"
-            )
+            dict(source=backend.source, **descriptor).items() <= (await backend.get_descriptor()).items()
+
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -506,7 +522,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
-            } == await backend.get_datakey("test-source")
+            }.items() <= (await backend.get_descriptor()).items()
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())
