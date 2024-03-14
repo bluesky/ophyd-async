@@ -171,10 +171,10 @@ _common_metadata = {
 }
 
 _int_metadata = {
-    "lower_alarm_limit": 0,
-    "lower_warning_limit": 0,
-    "upper_alarm_limit": 0,
-    "upper_warning_limit": 0,
+    "lower_alarm_limit": ANY,
+    "lower_warning_limit": ANY,
+    "upper_alarm_limit": ANY,
+    "upper_warning_limit": ANY,
 }
 
 _metadata: Dict[str, Dict[str, Any]] = {
@@ -187,7 +187,7 @@ _metadata: Dict[str, Dict[str, Any]] = {
 
 def descriptor(protocol: str, suffix: str, value=None) -> Descriptor:
     def get_internal_dtype(suffix: str) -> str:
-        # uint32, int64, uint64 all backed by DBR_DOUBLE which has precision
+        # uint32, [u]int64 backed by DBR_DOUBLE, have precision
         if "float" in suffix or "uint32" in suffix or "int64" in suffix:
             return "number"
         if "int" in suffix or "bool" in suffix:
