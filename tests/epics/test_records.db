@@ -5,6 +5,13 @@ record(bo, "$(P)bool") {
   field(PINI, "YES")
 }
 
+record(bo, "$(P)blank_bool") {
+  field(ZNAM, "")
+  field(ONAM, "")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
 record(longout, "$(P)int") {
   field(HOPR, "100")
   field(HIHI, "98")
