@@ -47,7 +47,10 @@ _common_meta = {
 
 
 def _data_key_from_augmented_value(
-    value: AugmentedValue, *, choices: Optional[List[str]] = None
+    value: AugmentedValue,
+    *,
+    choices: Optional[List[str]] = None,
+    dtype: Optional[str] = None,
 ) -> DataKey:
     """Use the return value of get with FORMAT_CTRL to construct a DataKey
     describing the signal. See docstring of AugmentedValue for expected
@@ -65,7 +68,7 @@ def _data_key_from_augmented_value(
     assert value.ok, f"Error reading {source}: {value}"
 
     scalar = value.element_count == 1
-    dtype = dbr_to_dtype[value.datatype]
+    dtype = dtype or dbr_to_dtype[value.datatype]
 
     d = DataKey(
         source=source,
@@ -142,6 +145,16 @@ class CaEnumConverter(CaConverter):
         return _data_key_from_augmented_value(value, choices=self.choices)
 
 
+@dataclass
+class CaBoolConverter(CaConverter):
+
+    def value(self, value: AugmentedValue) -> bool:
+        return bool(value)
+
+    def descriptor(self, value: AugmentedValue) -> DataKey:
+        return _data_key_from_augmented_value(value, dtype="bool")
+
+
 class DisconnectedCaConverter(CaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
@@ -179,7 +192,7 @@ def make_converter(
         )
         if pv_choices_len != 2:
             raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
-        return CaConverter(dbr.DBR_SHORT, dbr.DBR_SHORT)
+        return CaBoolConverter(dbr.DBR_SHORT, dbr.DBR_SHORT)
     elif pv_dbr == dbr.DBR_ENUM:
         # This is an Enum
         pv_choices = get_unique(

@@ -147,9 +147,8 @@ class MyEnum(str, Enum):
 
 
 _metadata: Dict[str, Dict[str, Any]] = {
-    "enum": {},
-    "string": {},
     "integer": {"units": ANY},
+    "bool": {"units": ANY},
     "number": {"units": ANY, "precision": ANY},
 }
 
@@ -159,8 +158,10 @@ def descriptor(protocol: str, suffix: str, value=None) -> DataKey:
         # uint32, [u]int64 backed by DBR_DOUBLE, have precision
         if "float" in suffix or "uint32" in suffix or "int64" in suffix:
             return "number"
-        if "int" in suffix or "bool" in suffix:
+        if "int" in suffix:
             return "integer"
+        if "bool" in suffix:
+            return "bool"
         if "enum" in suffix:
             return "enum"
         return "string"
@@ -179,7 +180,7 @@ def descriptor(protocol: str, suffix: str, value=None) -> DataKey:
         d["choices"] = [e.value for e in type(value)]
 
     if protocol == "ca":
-        d.update(_metadata[get_internal_dtype(suffix)])
+        d.update(_metadata.get(get_internal_dtype(suffix), {}))
 
     return d
 

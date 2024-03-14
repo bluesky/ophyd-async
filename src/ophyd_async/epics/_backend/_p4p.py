@@ -133,12 +133,12 @@ class PvaEnumConverter(PvaConverter):
         return dict(source=source, dtype="string", shape=[], choices=self.choices)
 
 
-class PvaEnumBoolConverter(PvaConverter):
+class PvaBoolConverter(PvaConverter):
     def value(self, value):
-        return value["value"]["index"]
+        return bool(value["value"]["index"])
 
     def descriptor(self, source: str, value) -> Descriptor:
-        return dict(source=source, dtype="integer", shape=[])
+        return dict(source=source, dtype="bool", shape=[])
 
 
 class PvaTableConverter(PvaConverter):
@@ -216,7 +216,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         )
         if pv_choices_len != 2:
             raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
-        return PvaEnumBoolConverter()
+        return PvaBoolConverter()
     elif "NTEnum" in typeid:
         # This is an Enum
         pv_choices = get_unique(
