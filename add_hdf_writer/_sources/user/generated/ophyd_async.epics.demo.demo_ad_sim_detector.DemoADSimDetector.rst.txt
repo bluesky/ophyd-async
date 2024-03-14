@@ -24,9 +24,14 @@ ophyd\_async.epics.demo.demo\_ad\_sim\_detector.DemoADSimDetector
       ~DemoADSimDetector.check_config_sigs
       ~DemoADSimDetector.children
       ~DemoADSimDetector.collect_asset_docs
+      ~DemoADSimDetector.complete
       ~DemoADSimDetector.connect
       ~DemoADSimDetector.describe
+      ~DemoADSimDetector.describe_collect
       ~DemoADSimDetector.describe_configuration
+      ~DemoADSimDetector.get_index
+      ~DemoADSimDetector.kickoff
+      ~DemoADSimDetector.prepare
       ~DemoADSimDetector.read
       ~DemoADSimDetector.read_configuration
       ~DemoADSimDetector.set_name

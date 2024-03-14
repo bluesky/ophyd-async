@@ -22,7 +22,6 @@ ophyd\_async.panda
    
       seq_table_from_arrays
       seq_table_from_rows
-      pvi
       phase_sorter
    
    
@@ -44,6 +43,7 @@ ophyd\_async.panda
       SeqTable
       SeqTableRow
       SeqTrigger
+      PandaPcapController
    
    
 
