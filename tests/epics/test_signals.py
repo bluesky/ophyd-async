@@ -246,10 +246,11 @@ async def test_backend_get_put_monitor(
     assert np.all(loaded[0]["test"] == put_value)
 
 
-async def test_bool_conversion_of_enum(ioc: IOC) -> None:
+@pytest.mark.parametrize("suffix", ["bool", "bool_unnamed"])
+async def test_bool_conversion_of_enum(ioc: IOC, suffix: str) -> None:
     await assert_monitor_then_put(
         ioc,
-        suffix="bool",
+        suffix=suffix,
         descriptor=integer_d(True),
         initial_value=True,
         put_value=False,
