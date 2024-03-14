@@ -9,17 +9,7 @@ from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Literal,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    TypedDict,
-)
+from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Type, TypedDict
 from unittest.mock import ANY
 
 import numpy as np
@@ -156,24 +146,48 @@ class MyEnum(str, Enum):
     c = "Ccc"
 
 
-def integer_d(value):
-    return dict(dtype="integer", shape=[])
+ca_metadata = {
+    "integer": {
+        "lower_alarm_limit": 0,
+        "lower_ctrl_limit": 10,
+        "lower_disp_limit": 0,
+        "lower_warning_limit": 0,
+        "units": "",
+        "upper_alarm_limit": 0,
+        "upper_ctrl_limit": 90,
+        "upper_disp_limit": 100,
+        "upper_warning_limit": 0,
+    },
+    "number": {
+        "lower_ctrl_limit": 0.0,
+        "lower_disp_limit": 0.0,
+        "precision": 1,
+        "units": "mm",
+        "upper_ctrl_limit": 0.0,
+        "upper_disp_limit": 0.0,
+    },
+    "string": {"timestamp": ANY},
+}
 
 
-def number_d(value):
-    return dict(dtype="number", shape=[])
+def suffix_to_dtype(suffix: str):
+    if "float" in suffix:
+        return "number"
+    if "int" in suffix:
+        return "integer"
+    return "string"
 
 
-def string_d(value):
-    return dict(dtype="string", shape=[])
-
-
-def enum_d(value):
-    return dict(dtype="string", shape=[], choices=["Aaa", "Bbb", "Ccc"])
-
-
-def waveform_d(value):
-    return dict(dtype="array", shape=[len(value)])
+def descriptor(protocol: str, suffix: str, value: Any):
+    is_array = isinstance(value, List)
+    dtype = suffix_to_dtype(suffix)
+    d = {
+        "dtype": "array" if is_array else dtype,
+        "shape": [len(value)] if isinstance(value, List) else [],
+    }
+    if protocol == "ca":
+        d.update(ca_metadata.get(dtype, {}))
+    return d
 
 
 ls1 = "a string that is just longer than forty characters"
@@ -191,21 +205,21 @@ ca_dtype_mapping = {
 @pytest.mark.parametrize(
     "datatype, suffix, initial_value, put_value, descriptor",
     [
-        (int, "int", 42, 43, integer_d),
-        (float, "float", 3.141, 43.5, number_d),
-        (str, "str", "hello", "goodbye", string_d),
-        (MyEnum, "enum", MyEnum.b, MyEnum.c, enum_d),
-        (npt.NDArray[np.int8], "int8a", [-128, 127], [-8, 3, 44], waveform_d),
-        (npt.NDArray[np.uint8], "uint8a", [0, 255], [218], waveform_d),
-        (npt.NDArray[np.int16], "int16a", [-32768, 32767], [-855], waveform_d),
-        (npt.NDArray[np.uint16], "uint16a", [0, 65535], [5666], waveform_d),
-        (npt.NDArray[np.int32], "int32a", [-2147483648, 2147483647], [-2], waveform_d),
-        (npt.NDArray[np.uint32], "uint32a", [0, 4294967295], [1022233], waveform_d),
-        (npt.NDArray[np.int64], "int64a", [-2147483649, 2147483648], [-3], waveform_d),
-        (npt.NDArray[np.uint64], "uint64a", [0, 4294967297], [995444], waveform_d),
-        (npt.NDArray[np.float32], "float32a", [0.000002, -123.123], [1.0], waveform_d),
-        (npt.NDArray[np.float64], "float64a", [0.1, -12345678.123], [0.2], waveform_d),
-        (Sequence[str], "stra", ["five", "six", "seven"], ["nine", "ten"], waveform_d),
+        (int, "int", 42, 43),
+        (float, "float", 3.141, 43.5),
+        (str, "str", "hello", "goodbye"),
+        (MyEnum, "enum", MyEnum.b, MyEnum.c),
+        (npt.NDArray[np.int8], "int8a", [-128, 127], [-8, 3, 44]),
+        (npt.NDArray[np.uint8], "uint8a", [0, 255], [218]),
+        (npt.NDArray[np.int16], "int16a", [-32768, 32767], [-855]),
+        (npt.NDArray[np.uint16], "uint16a", [0, 65535], [5666]),
+        (npt.NDArray[np.int32], "int32a", [-2147483648, 2147483647], [-2]),
+        (npt.NDArray[np.uint32], "uint32a", [0, 4294967295], [1022233]),
+        (npt.NDArray[np.int64], "int64a", [-2147483649, 2147483648], [-3]),
+        (npt.NDArray[np.uint64], "uint64a", [0, 4294967297], [995444]),
+        (npt.NDArray[np.float32], "float32a", [0.000002, -123.123], [1.0]),
+        (npt.NDArray[np.float64], "float64a", [0.1, -12345678.123], [0.2]),
+        (Sequence[str], "stra", ["five", "six", "seven"], ["nine", "ten"]),
         # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
         # (str, "longstr", ls1, ls2, string_d),
         # (str, "longstr2.VAL$", ls1, ls2, string_d),
@@ -217,7 +231,6 @@ async def test_backend_get_put_monitor(
     suffix: str,
     initial_value: T,
     put_value: T,
-    descriptor: Callable[[Any], dict],
     tmp_path,
 ):
     # ca can't support all the types
@@ -233,11 +246,21 @@ async def test_backend_get_put_monitor(
     # With the given datatype, check we have the correct initial value and putting
     # works
     await assert_monitor_then_put(
-        ioc, suffix, descriptor(initial_value), initial_value, put_value, datatype
+        ioc,
+        suffix,
+        descriptor(ioc.protocol, suffix, initial_value),
+        initial_value,
+        put_value,
+        datatype,
     )
     # With datatype guessed from CA/PVA, check we can set it back to the initial value
     await assert_monitor_then_put(
-        ioc, suffix, descriptor(put_value), put_value, initial_value, datatype=None
+        ioc,
+        suffix,
+        descriptor(ioc.protocol, suffix, put_value),
+        put_value,
+        initial_value,
+        datatype=None,
     )
 
     yaml_path = tmp_path / "test.yaml"
@@ -251,7 +274,7 @@ async def test_bool_conversion_of_enum(ioc: IOC, suffix: str) -> None:
     await assert_monitor_then_put(
         ioc,
         suffix=suffix,
-        descriptor=integer_d(True),
+        descriptor=descriptor(ioc.protocol, "bool", True),
         initial_value=True,
         put_value=False,
         datatype=bool,
