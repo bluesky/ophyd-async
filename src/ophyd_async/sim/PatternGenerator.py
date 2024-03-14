@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Optional
+from ophyd_async.epics.areadetector.writers import _HDFDataset
+from typing import List, Optional
 
 import h5py
 import numpy as np
@@ -60,6 +61,7 @@ class PatternGenerator:
         self.height = detector_height
         self.width = detector_width
         self.written_images_counter: int = 0
+        self._datasets: List[_HDFDataset] = []
         self.initial_blob = (
             make_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
@@ -111,18 +113,22 @@ class PatternGenerator:
         self.y = value
 
     async def open_file(self, dir: DirectoryProvider) -> None:
-        new_path: Path = dir().resource_dir / 'test.h5'
+        new_path: Path = dir().resource_dir / "test.h5"
         # todo might change filename
+        
+        self._datasets = [
+            _HDFDataset('test', "/entry/data/data", detector_shape, multiplier)
+        ]
         hdf5_file = h5py.File(new_path, "w")
         hdf5_file.create_dataset(
-            DATA_PATH,
+            name=DATA_PATH,
             dtype=np.uint8,
             shape=(1, self.height, self.width),
             maxshape=(None, self.height, self.width),
         )
 
         hdf5_file.create_dataset(
-            SUM_PATH,
+            name=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
             maxshape=(None),

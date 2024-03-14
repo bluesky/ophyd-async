@@ -16,7 +16,7 @@ class SimPatternDetectorControl(DetectorControl):
     ) -> None:
         self.pattern_generator: PatternGenerator = pattern_generator
         self.pattern_generator.set_exposure(exposure)
-        self.pattern_generator.open_file(directory_provider)
+        self.directory_provider: DirectoryProvider = directory_provider
         self.task: Optional[asyncio.Task] = None
         super().__init__()
 
@@ -27,6 +27,7 @@ class SimPatternDetectorControl(DetectorControl):
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         period: float = exposure + await self.get_deadtime(exposure)
+        await self.pattern_generator.open_file(self.directory_provider)
         task = asyncio.create_task(self.image_writing_task(exposure, period, num))
         self.task = task
         return AsyncStatus(task)

@@ -33,10 +33,11 @@ def test_initialization(pattern_generator: PatternGenerator):
     assert isinstance(pattern_generator.initial_blob, np.ndarray)
 
 
+@pytest.mark.asyncio
 async def test_open_and_close_file(tmp_path, pattern_generator: PatternGenerator):
 
     dir_provider = StaticDirectoryProvider(str(tmp_path))
-    pattern_generator.open_file(dir_provider)
+    await pattern_generator.open_file(dir_provider)
     assert pattern_generator.file is not None
     assert isinstance(pattern_generator.file, h5py.File)
     pattern_generator.close()
@@ -61,8 +62,8 @@ def test_set_y(pattern_generator: PatternGenerator):
 @pytest.mark.asyncio
 async def test_write_image_to_file(tmp_path, pattern_generator: PatternGenerator):
     dir_provider = StaticDirectoryProvider(str(tmp_path))
-    pattern_generator.open_file(dir_provider)  # Open file for real to simplify
-
+    await pattern_generator.open_file(dir_provider)  # Open file for real to simplify
+    
     await pattern_generator.write_image_to_file()
     assert pattern_generator.written_images_counter == 1
     assert DATA_PATH in pattern_generator.file

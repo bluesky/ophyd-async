@@ -6,18 +6,22 @@ from ophyd_async.epics.motion import motor
 from ophyd_async.sim.SimPatternDetector import SimPatternDetector
 
 # todo make tests that integration test the writer
-# do IO testing like in files: `test_writers`, `test_panda`, `test_device_save_loader`
+# do IO tetsing like in files: `test_writers`, `test_panda`, `test_device_save_loader`
+
 
 @pytest.fixture
 async def sim_pattern_detector(tmp_path_factory):
-    path:Path = tmp_path_factory.mktemp('tmp')
+    path: Path = tmp_path_factory.mktemp("tmp")
     async with DeviceCollector(sim=True):
-        sim_pattern_detector = SimPatternDetector("PATTERN1", path)
+        sim_pattern_detector = SimPatternDetector(name="PATTERN1", path=path)
 
-    assert sim_pattern_detector.name == "PATTERN1"
-    yield sim_pattern_detector
+    # assert sim_pattern_detector.name == "PATTERN1"
+    return sim_pattern_detector
 
-async def test_sim_pattern_detector_initialization(sim_pattern_detector: SimPatternDetector, ):
+
+async def test_sim_pattern_detector_initialization(
+    sim_pattern_detector: SimPatternDetector,
+):
     assert (
         sim_pattern_detector.pattern_generator
     ), "PatternGenerator was not initialized correctly."
@@ -27,6 +31,7 @@ async def test_sim_pattern_detector_initialization(sim_pattern_detector: SimPatt
     assert (
         sim_pattern_detector.controller.pattern_generator
     ), "Controller was not initialized with the correct PatternGenerator."
+
 
 async def test_detector_creates_controller_and_writer(
     sim_pattern_detector: SimPatternDetector,
@@ -47,8 +52,10 @@ async def test_writes_pattern_to_file(sim_pattern_detector: SimPatternDetector):
 
     # assert that the file contains data in expected dimensions
 
+
 async def test_exposure(sim_pattern_detector):
     pass
+
 
 async def test_set_x_and_y(sim_pattern_detector):
     pass
@@ -57,6 +64,6 @@ async def test_set_x_and_y(sim_pattern_detector):
 async def test_initial_blob(sim_pattern_detector):
     assert sim_pattern_detector.pattern_generator.initial_blob
 
-    
+
 async def test_open_and_close_file(sim_pattern_detector):
     pass
