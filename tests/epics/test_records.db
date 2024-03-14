@@ -5,13 +5,6 @@ record(bo, "$(P)bool") {
   field(PINI, "YES")
 }
 
-record(bo, "$(P)bool_blank") {
-  field(ZNAM, "")
-  field(ONAM, "")
-  field(VAL, "1")
-  field(PINI, "YES")
-}
-
 record(bo, "$(P)bool_unnamed") {
   field(VAL, "1")
   field(PINI, "YES")
