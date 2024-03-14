@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
-from bluesky.protocols import Descriptor, Dtype, Reading
+from bluesky.protocols import DataKey, Dtype, Reading
 from p4p import Value
 from p4p.client.asyncio import Context, Subscription
 
@@ -55,7 +55,7 @@ class PvaConverter:
             alarm_severity=-1 if sv > 2 else sv,
         )
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         dtype = specifier_to_dtype[value.type().aspy("value")]
         return dict(source=source, dtype=dtype, shape=[])
 
@@ -73,7 +73,7 @@ class PvaConverter:
 
 
 class PvaArrayConverter(PvaConverter):
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         return dict(source=source, dtype="array", shape=[len(value["value"])])
 
 
@@ -96,7 +96,7 @@ class PvaNDArrayConverter(PvaConverter):
         dims = self._get_dimensions(value)
         return value["value"].reshape(dims)
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         dims = self._get_dimensions(value)
         return dict(source=source, dtype="array", shape=dims)
 
@@ -120,7 +120,7 @@ class PvaEnumConverter(PvaConverter):
     def value(self, value):
         return list(self.enum_class)[value["value"]["index"]]
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         choices = [e.value for e in self.enum_class]
         return dict(source=source, dtype="string", shape=[], choices=choices)
 
@@ -129,7 +129,7 @@ class PvaEnumBoolConverter(PvaConverter):
     def value(self, value):
         return value["value"]["index"]
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         return dict(source=source, dtype="integer", shape=[])
 
 
@@ -137,7 +137,7 @@ class PvaTableConverter(PvaConverter):
     def value(self, value):
         return value["value"].todict()
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         # This is wrong, but defer until we know how to actually describe a table
         return dict(source=source, dtype="object", shape=[])  # type: ignore
 
@@ -152,7 +152,7 @@ class PvaDictConverter(PvaConverter):
     def value(self, value: Value):
         return value.todict()
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         raise NotImplementedError("Describing Dict signals not currently supported")
 
     def metadata_fields(self) -> List[str]:
@@ -290,9 +290,9 @@ class PvaSignalBackend(SignalBackend[T]):
             )
             raise NotConnected(f"pva://{self.write_pv}") from exc
 
-    async def get_descriptor(self) -> Descriptor:
+    async def make_datakey(self) -> DataKey:
         value = await self.ctxt.get(self.read_pv)
-        return self.converter.descriptor(self.source, value)
+        return self.converter.make_datakey(self.source, value)
 
     def _pva_request_string(self, fields: List[str]) -> str:
         """

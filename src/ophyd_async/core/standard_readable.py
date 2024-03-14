@@ -1,6 +1,6 @@
 from typing import Dict, Sequence, Tuple
 
-from bluesky.protocols import Configurable, Descriptor, Readable, Reading, Stageable
+from bluesky.protocols import Configurable, DataKey, Readable, Reading, Stageable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -50,7 +50,7 @@ class StandardReadable(Device, Readable, Configurable, Stageable):
         for sig in self._read_signals + self._configuration_signals:
             await sig.unstage().task
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(
             [sig.describe() for sig in self._configuration_signals]
         )
@@ -60,7 +60,7 @@ class StandardReadable(Device, Readable, Configurable, Stageable):
             [sig.read() for sig in self._configuration_signals]
         )
 
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(
             [sig.describe() for sig in self._read_signals + self._read_uncached_signals]
         )

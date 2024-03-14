@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Generic, Optional, Sequence, TypeVar
 
-from bluesky.protocols import Descriptor, Flyable, Preparable, Reading, Stageable
+from bluesky.protocols import DataKey, Flyable, Preparable, Reading, Stageable
 
 from .async_status import AsyncStatus
 from .detector import TriggerInfo
@@ -45,7 +45,7 @@ class HardwareTriggeredFlyable(
     ):
         self._trigger_logic = trigger_logic
         self._configuration_signals = tuple(configuration_signals)
-        self._describe: Dict[str, Descriptor] = {}
+        self._describe: Dict[str, DataKey] = {}
         self._fly_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
         super().__init__(name=name)
@@ -83,7 +83,7 @@ class HardwareTriggeredFlyable(
         assert self._fly_status, "Kickoff not run"
         return self._fly_status
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(
             [sig.describe() for sig in self._configuration_signals]
         )
