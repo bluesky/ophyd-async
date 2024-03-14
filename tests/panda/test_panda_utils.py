@@ -27,15 +27,12 @@ async def test_save_panda(mock_save_to_yaml, sim_panda, RE: RunEngine):
         [
             {"phase_1_signal_units": 0},
             {
-<<<<<<< HEAD
                 "pcap.arm": 0.0,
-=======
                 "data.capture": False,
                 "data.flushperiod": 0.0,
                 "data.hdfdirectory": "",
                 "data.hdffilename": "",
                 "data.numcapture": 0,
->>>>>>> 58d47dcb4 (Change test)
                 "pulse.1.delay": 0.0,
                 "pulse.1.width": 0.0,
                 "seq.1.table": {},
