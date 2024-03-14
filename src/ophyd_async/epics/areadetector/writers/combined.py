@@ -1,13 +1,26 @@
 import asyncio
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
+from typing import (
+    AsyncGenerator,
+    AsyncIterator,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+)
 
-from bluesky.protocols import Descriptor, Hints, StreamAsset
+from bluesky.protocols import Descriptor, StreamAsset
+from event_model import StreamDatum, StreamResource, compose_stream_resource
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DetectorWriter,
+    Device,
+    DirectoryInfo,
     DirectoryProvider,
     NameProvider,
     ShapeProvider,
@@ -15,10 +28,121 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value
+from ophyd_async.epics.signal import epics_signal_rw
 
-from ._hdfdataset import _HDFDataset
-from ._hdffile import _HDFFile
-from .nd_file_hdf import FileWriteMode, NDFileHDF
+from ..utils import FileWriteMode, ad_r, ad_rw
+
+
+@dataclass
+class _HDFDataset:
+    name: str
+    path: str
+    shape: Sequence[int]
+    multiplier: int
+
+
+class Compression(str, Enum):
+    none = "None"
+    nbit = "N-bit"
+    szip = "szip"
+    zlib = "zlib"
+    blosc = "Blosc"
+    bslz4 = "BSLZ4"
+    lz4 = "LZ4"
+    jpeg = "JPEG"
+
+
+class Callback(str, Enum):
+    Enable = "Enable"
+    Disable = "Disable"
+
+
+class NDArrayBase(Device):
+    def __init__(self, prefix: str, name: str = "") -> None:
+        self.unique_id = ad_r(int, prefix + "UniqueId")
+        self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile")
+        super().__init__(name)
+
+
+class NDPluginBase(NDArrayBase):
+    def __init__(self, prefix: str, name: str = "") -> None:
+        self.nd_array_port = ad_rw(str, prefix + "NDArrayPort")
+        # todo why no boolean flag?
+        self.enable_callback = ad_rw(Callback, prefix + "EnableCallbacks")
+        self.nd_array_address = ad_rw(int, prefix + "NDArrayAddress")
+        super().__init__(prefix, name)
+
+
+class NDFileHDF(NDPluginBase):
+    def __init__(self, prefix: str, name="") -> None:
+        # Define some signals
+        self.position_mode = ad_rw(bool, prefix + "PositionMode")
+        self.compression = ad_rw(Compression, prefix + "Compression")
+        self.num_extra_dims = ad_rw(int, prefix + "NumExtraDims")
+        self.file_path = ad_rw(str, prefix + "FilePath")
+        self.file_name = ad_rw(str, prefix + "FileName")
+        self.file_path_exists = ad_r(bool, prefix + "FilePathExists")
+        self.file_template = ad_rw(str, prefix + "FileTemplate")
+        self.full_file_name = ad_r(str, prefix + "FullFileName")
+        self.file_write_mode = ad_rw(FileWriteMode, prefix + "FileWriteMode")
+        self.num_capture = ad_rw(int, prefix + "NumCapture")
+        self.num_captured = ad_r(int, prefix + "NumCaptured")
+        self.swmr_mode = ad_rw(bool, prefix + "SWMRMode")
+        self.lazy_open = ad_rw(bool, prefix + "LazyOpen")
+        self.capture = ad_rw(bool, prefix + "Capture")
+        self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
+        self.array_size0 = ad_r(int, prefix + "ArraySize0")
+        self.array_size1 = ad_r(int, prefix + "ArraySize1")
+        super().__init__(prefix, name)
+
+
+class HdfStreamProvider:
+    """
+    :param directory_info: Contains information about how to construct a StreamResource
+    :param full_file_name: Absolute path to the file to be written
+    :param datasets: Datasets to write into the file
+    """
+
+    def __init__(
+        self,
+        directory_info: DirectoryInfo,
+        full_file_name: Path,
+        datasets: List[_HDFDataset],
+    ) -> None:
+        self._last_emitted = 0
+        path = str(full_file_name.relative_to(directory_info.root))
+        root = str(directory_info.root)
+
+        self._bundles = [
+            compose_stream_resource(
+                spec="AD_HDF5_SWMR_SLICE",
+                root=root,
+                data_key=ds.name,
+                resource_path=path,
+                resource_kwargs={
+                    "path": ds.path,
+                    "multiplier": ds.multiplier,
+                    "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                },
+            )
+            for ds in datasets
+        ]
+
+    def stream_resources(self) -> Iterator[StreamResource]:
+        for bundle in self._bundles:
+            yield bundle.stream_resource_doc
+
+    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
+        # Indices are relative to resource
+        if indices_written > self._last_emitted:
+            indices = dict(
+                start=self._last_emitted,
+                stop=indices_written,
+            )
+            self._last_emitted = indices_written
+            for bundle in self._bundles:
+                yield bundle.compose_stream_datum(indices)
+        return None
 
 
 class HDFWriter(DetectorWriter):
@@ -37,7 +161,7 @@ class HDFWriter(DetectorWriter):
         self._scalar_datasets_paths = scalar_datasets_paths
         self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[_HDFDataset] = []
-        self._file: Optional[_HDFFile] = None
+        self._file: Optional[HdfStreamProvider] = None
         self._multiplier = 1
 
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
@@ -110,7 +234,7 @@ class HDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 path = Path(await self.hdf.full_file_name.get_value())
-                self._file = _HDFFile(
+                self._file = HdfStreamProvider(
                     self._directory_provider(),
                     # See https://github.com/bluesky/ophyd-async/issues/122
                     path,
@@ -128,7 +252,3 @@ class HDFWriter(DetectorWriter):
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status
-
-    @property
-    def hints(self) -> Hints:
-        return {"fields": [self._name_provider()]}

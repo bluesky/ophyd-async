@@ -66,11 +66,11 @@ class PatternGenerator:
             make_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
         )
-        self.file: Optional[h5py.File] = None
+        self.handle_for_h5_file: Optional[h5py.File] = None
 
     async def write_image_to_file(self) -> None:
-        assert self.file, "no file has been opened!"
-        self.file.create_dataset(
+        assert self.handle_for_h5_file, "no file has been opened!"
+        self.handle_for_h5_file.create_dataset(
             name=f"pattern-generator-file-{self.written_images_counter}",
             dtype=np.ndarray,
         )
@@ -82,8 +82,8 @@ class PatternGenerator:
             self.height,
             self.width,
         )
-        self.file[DATA_PATH].resize(target_dimensions)
-        self.file[SUM_PATH].resize(self.written_images_counter + 1)
+        self.handle_for_h5_file[DATA_PATH].resize(target_dimensions)
+        self.handle_for_h5_file[SUM_PATH].resize(self.written_images_counter + 1)
 
         # generate the simulated data
         intensity: float = interesting_pattern(self.x, self.y)
@@ -92,12 +92,14 @@ class PatternGenerator:
         ).astype(np.uint8)
 
         # write data to disc (intermediate step)
-        self.file[DATA_PATH][self.written_images_counter] = detector_data
-        self.file[SUM_PATH][self.written_images_counter] = np.sum(detector_data)
+        self.handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
+        self.handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
+            detector_data
+        )
 
         # save metadata - so that it's discoverable
-        self.file[DATA_PATH].flush()
-        self.file[SUM_PATH].flush()
+        self.handle_for_h5_file[DATA_PATH].flush()
+        self.handle_for_h5_file[SUM_PATH].flush()
 
         # coutner increment is last
         # as only at this point the new data is visible from the outside
@@ -113,12 +115,11 @@ class PatternGenerator:
         self.y = value
 
     async def open_file(self, dir: DirectoryProvider) -> None:
-        new_path: Path = dir().resource_dir / "test.h5"
-        # todo might change filename
-        
-        self._datasets = [
-            _HDFDataset('test', "/entry/data/data", detector_shape, multiplier)
-        ]
+        info = dir()
+        filename = f"{info.prefix}pattern{info.suffix}.h5"
+        new_path: Path = info.root / info.resource_dir / filename
+
+        self._datasets = []
         hdf5_file = h5py.File(new_path, "w")
         hdf5_file.create_dataset(
             name=DATA_PATH,
@@ -135,10 +136,10 @@ class PatternGenerator:
             fillvalue=-1,
         )
         hdf5_file.swmr_mode = True
-        self.file = hdf5_file
+        self.handle_for_h5_file = hdf5_file
         print("file opened")
 
     def close(self) -> None:
-        self.file.close()
+        self.handle_for_h5_file.close()
         print("file closed")
-        self.file = None
+        self.handle_for_h5_file = None

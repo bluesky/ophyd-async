@@ -32,9 +32,21 @@ class SimPatternDetectorWriter(DetectorWriter):
         return describe
 
     def close(self) -> None:
-        self.patternGenerator.file.close()
+        self.patternGenerator.handle_for_h5_file.close()
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
+        # todo fillout 
+        self.patternGenerator.handle_for_h5_file.flush()
+        if self.patternGenerator.indices_written:
+            if not self.patternGenerator.file:
+                self._filestream_
+                self.patternGenerator.file = _HDFFile(
+                    self.directory_provider,
+                    self.patternGenerator.handle_for_h5_file,
+                    self.patternGenerator._datasets,
+                )
+                for doc in self.patternGenerator.file.stream_resources():
+                    yield "stream_resource", doc
         # self.patternGenerator.open_file()
         # for doc in self.patternGenerator.file.stream
         pass
