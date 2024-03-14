@@ -2,7 +2,7 @@ import asyncio
 import atexit
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
@@ -109,7 +109,16 @@ class PvaNDArrayConverter(PvaConverter):
 
 @dataclass
 class PvaEnumConverter(PvaConverter):
+    """To prevent issues when a signal is restarted and returns with different enum
+    values or orders, we put treat an Enum signal as a DBR_STRING, and cache the
+    choices on this class.
+    """
+
     enum_class: Type[Enum]
+    choices: List[str] = field(init=False)
+
+    def __post_init__(self):
+        self.choices = [e.value for e in self.enum_class]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -121,8 +130,7 @@ class PvaEnumConverter(PvaConverter):
         return list(self.enum_class)[value["value"]["index"]]
 
     def descriptor(self, source: str, value) -> Descriptor:
-        choices = [e.value for e in self.enum_class]
-        return dict(source=source, dtype="string", shape=[], choices=choices)
+        return dict(source=source, dtype="string", shape=[], choices=self.choices)
 
 
 class PvaEnumBoolConverter(PvaConverter):
