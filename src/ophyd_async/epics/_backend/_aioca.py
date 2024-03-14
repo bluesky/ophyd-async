@@ -17,6 +17,7 @@ from aioca import (
 )
 from aioca.types import AugmentedValue, Dbr, Format
 from bluesky.protocols import DataKey, Dtype, Reading
+from bluesky.protocols import DataKey, Dtype, Reading
 from epicscorelibs.ca import dbr
 
 from ophyd_async.core import (
@@ -55,18 +56,18 @@ _common_meta = {
 }
 
 
-def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descriptor:
-    """Use the return value of get with FORMAT_CTRL to construct a Descriptor
+def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> DataKey:
+    """Use the return value of get with FORMAT_CTRL to construct a DataKey
     describing the signal. See docstring of AugmentedValue for expected
     value fields by DBR type.
 
     Args:
         value (AugmentedValue): Description of the the return type of a DB record
         kwargs: Overrides for the returned values.
-            e.g. to treat a value as an Enumeration by passing choices
+            e.g. to force treating a value as an Enum by passing choices
 
     Returns:
-        Descriptor: A rich DataKey describing the DB record
+        DataKey: A rich DataKey describing the DB record
     """
     source = f"ca://{value.name}"
     assert value.ok, f"Error reading {source}: {value}"
@@ -74,18 +75,17 @@ def _data_key_from_augmented_value(value: AugmentedValue, **kwargs) -> Descripto
     scalar = value.element_count == 1
     dtype = dbr_to_dtype[value.datatype]
 
-    d = Descriptor(
+    d = DataKey(
         source=source,
         dtype=dtype if scalar else "array",
         # strictly value.element_count >= len(value)
         shape=[] if scalar else [len(value)],
     )
     for key in _common_meta:
-        if not hasattr(value, key):
-            continue
-        attr = getattr(value, key)
-        if isinstance(attr, str) or not isnan(attr):
-            d[key] = attr
+        if hasattr(value, key):
+            attr = getattr(value, key)
+            if isinstance(attr, str) or not isnan(attr):
+                d[key] = attr
 
     if value.datatype is dbr.DBR_ENUM:
         d["choices"] = value.enums
@@ -112,7 +112,7 @@ class CaConverter:
             "alarm_severity": -1 if value.severity > 2 else value.severity,
         }
 
-    def descriptor(self, value: AugmentedValue) -> Descriptor:
+    def descriptor(self, value: AugmentedValue) -> DataKey:
         return _data_key_from_augmented_value(value)
 
 
@@ -143,7 +143,8 @@ class CaEnumConverter(CaConverter):
     def value(self, value: AugmentedValue):
         return self.enum_class(value)
 
-    def descriptor(self, value: AugmentedValue) -> Descriptor:
+    def descriptor(self, value: AugmentedValue) -> DataKey:
+        # Sometimes DBR_TYPE returns as String, must pass choices still
         return _data_key_from_augmented_value(value, choices=self.choices)
 
 class DisconnectedCaConverter(CaConverter):
@@ -269,7 +270,7 @@ class CaSignalBackend(SignalBackend[T]):
             timeout=None,
         )
 
-    async def get_datakey(self, source: str) -> DataKey:
+    async def get_descriptor(self) -> DataKey:
         value = await self._caget(FORMAT_CTRL)
         return self.converter.descriptor(value)
 
