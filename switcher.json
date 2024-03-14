@@ -24,10 +24,6 @@
     "url": "https://bluesky.github.io/ophyd-async/131-make-a-simulated-detector-that-can-write-hdf-files/"
   },
   {
-    "version": "149-fix-blank-enums",
-    "url": "https://bluesky.github.io/ophyd-async/149-fix-blank-enums/"
-  },
-  {
     "version": "add-more-docs",
     "url": "https://bluesky.github.io/ophyd-async/add-more-docs/"
   },
