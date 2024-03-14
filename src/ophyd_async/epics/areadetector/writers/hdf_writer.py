@@ -1,7 +1,8 @@
 import asyncio
-from typing import AsyncIterator, Dict, List, Optional
+from pathlib import Path
+from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 
-from bluesky.protocols import Asset, Descriptor, Hints
+from bluesky.protocols import Descriptor, Hints, StreamAsset
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -13,6 +14,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
     wait_for_value,
 )
+from ophyd_async.core.signal import observe_value
 
 from ._hdfdataset import _HDFDataset
 from ._hdffile import _HDFFile
@@ -45,15 +47,16 @@ class HDFWriter(DetectorWriter):
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
-            self.hdf.file_path.set(info.directory_path),
-            self.hdf.file_name.set(f"{info.filename_prefix}{self.hdf.name}"),
+            # See https://github.com/bluesky/ophyd-async/issues/122
+            self.hdf.file_path.set(str(info.root / info.resource_dir)),
+            self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
             self.hdf.file_template.set("%s/%s.h5"),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
         )
 
         assert (
             await self.hdf.file_path_exists.get_value()
-        ), f"File path {info.directory_path} for hdf plugin does not exist"
+        ), f"File path {self.hdf.file_path.get_value()} for hdf plugin does not exist"
 
         # Overwrite num_capture to go forever
         await self.hdf.num_capture.set(0)
@@ -88,26 +91,29 @@ class HDFWriter(DetectorWriter):
         }
         return describe
 
-    async def wait_for_index(
-        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ):
-        def matcher(value: int) -> bool:
-            return value // self._multiplier >= index
-
-        matcher.__name__ = f"index_at_least_{index}"
-        await wait_for_value(self.hdf.num_captured, matcher, timeout=timeout)
+    async def observe_indices_written(
+        self, timeout=DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        """Wait until a specific index is ready to be collected"""
+        async for num_captured in observe_value(self.hdf.num_captured, timeout):
+            yield num_captured // self._multiplier
 
     async def get_indices_written(self) -> int:
         num_captured = await self.hdf.num_captured.get_value()
         return num_captured // self._multiplier
 
-    async def collect_stream_docs(self, indices_written: int) -> AsyncIterator[Asset]:
+    async def collect_stream_docs(
+        self, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         await self.hdf.flush_now.set(True)
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    await self.hdf.full_file_name.get_value(), self._datasets
+                    self._directory_provider(),
+                    # See https://github.com/bluesky/ophyd-async/issues/122
+                    Path(await self.hdf.full_file_name.get_value()),
+                    self._datasets,
                 )
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc

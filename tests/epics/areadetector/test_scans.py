@@ -1,6 +1,7 @@
 import asyncio
+from pathlib import Path
 from typing import Optional
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -12,10 +13,9 @@ from ophyd_async.core import (
     DetectorControl,
     DetectorTrigger,
     DeviceCollector,
-    DirectoryInfo,
     HardwareTriggeredFlyable,
-    SameTriggerDetectorGroupLogic,
     StandardDetector,
+    StaticDirectoryProvider,
     TriggerInfo,
     TriggerLogic,
     set_sim_value,
@@ -67,22 +67,19 @@ def controller(RE) -> ADSimController:
 
 
 @pytest.fixture
-def writer(RE) -> HDFWriter:
+def writer(RE, tmp_path: Path) -> HDFWriter:
     with DeviceCollector(sim=True):
         hdf = NDFileHDF("HDF")
 
     return HDFWriter(
         hdf,
-        directory_provider=Mock(return_value=DirectoryInfo("somepath", "someprefix")),
+        directory_provider=StaticDirectoryProvider(tmp_path),
         name_provider=lambda: "test",
         shape_provider=AsyncMock(),
     )
 
 
-@patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
-@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
-    patched_wait_for_value,
     RE: RunEngine,
     writer: HDFWriter,
     controller: ADSimController,
@@ -95,37 +92,38 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     with pytest.raises(Exception) as exc:
         RE(bp.count([detector]))
 
-    assert isinstance(exc.value.__cause__, TimeoutError)
+    assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
-@patch("ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None)
-async def test_hdf_writer_fails_on_timeout_with_flyscan(
-    patched_wait_for_value, RE: RunEngine, writer: HDFWriter
-):
+def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter):
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
 
+    detector = StandardDetector(controller, writer, writer_timeout=0.01)
     trigger_logic = DummyTriggerLogic()
-    detector_group = SameTriggerDetectorGroupLogic([controller], [writer])
-    flyer = HardwareTriggeredFlyable(
-        detector_group, trigger_logic, [], name="flyer", trigger_to_frame_timeout=0.01
-    )
+
+    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
 
     def flying_plan():
         """NOTE: the following is a workaround to ensure tests always pass.
         See https://github.com/bluesky/bluesky/issues/1630 for more details.
         """
-        yield from bps.stage_all(flyer)
+        yield from bps.stage_all(detector, flyer)
         try:
+            # Prepare the flyer first to get the trigger info for the detectors
+            yield from bps.prepare(flyer, 1, wait=True)
+            # prepare detector second.
+            yield from bps.prepare(detector, flyer.trigger_info, wait=True)
             yield from bps.open_run()
             yield from bps.kickoff(flyer)
+            yield from bps.kickoff(detector)
             yield from bps.complete(flyer, wait=True)
+            yield from bps.complete(detector, wait=True)
             yield from bps.close_run()
         finally:
-            yield from bps.unstage_all(flyer)
+            yield from bps.unstage_all(detector, flyer)
 
-    RE(bps.prepare(flyer, 1))
     with pytest.raises(Exception) as exc:
         RE(flying_plan())
 
-    assert isinstance(exc.value.__cause__, TimeoutError)
+    assert isinstance(exc.value.__cause__, asyncio.TimeoutError)

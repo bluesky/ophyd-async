@@ -17,13 +17,7 @@ from .device_save_loader import (
     set_signal_values,
     walk_rw_signals,
 )
-from .flyer import (
-    DetectorGroupLogic,
-    HardwareTriggeredFlyable,
-    SameTriggerDetectorGroupLogic,
-    TriggerInfo,
-    TriggerLogic,
-)
+from .flyer import HardwareTriggeredFlyable, TriggerInfo, TriggerLogic
 from .signal import (
     Signal,
     SignalR,
@@ -81,8 +75,6 @@ __all__ = [
     "StaticDirectoryProvider",
     "StandardReadable",
     "TriggerInfo",
-    "DetectorGroupLogic",
-    "SameTriggerDetectorGroupLogic",
     "TriggerLogic",
     "HardwareTriggeredFlyable",
     "DEFAULT_TIMEOUT",

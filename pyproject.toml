@@ -18,11 +18,11 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky @ git+https://github.com/bluesky/bluesky",
+    "bluesky @ git+https://github.com/bluesky/bluesky.git@collect-multiple-detectors", # Pin to Bluesky branch while still under work
     "event-model",
     "p4p",
     "pyyaml",
-] # Add project dependencies here, e.g. ["click", "numpy"]
+]
 
 dynamic = ["version"]
 license.file = "LICENSE"
