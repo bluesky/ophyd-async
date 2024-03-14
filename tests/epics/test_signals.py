@@ -115,7 +115,7 @@ class MonitorQueue:
 async def assert_monitor_then_put(
     ioc: IOC,
     suffix: str,
-    descriptor: dict,
+    datakey: dict,
     initial_value: T,
     put_value: T,
     datatype: Optional[Type[T]] = None,
@@ -124,9 +124,9 @@ async def assert_monitor_then_put(
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
     try:
-        # Check descriptor
+        # Check datakey
         source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=source, **descriptor) == await backend.get_descriptor()
+        assert dict(source=source, **datakey) == await backend.get_datakey()
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -189,7 +189,7 @@ ca_dtype_mapping = {
 
 
 @pytest.mark.parametrize(
-    "datatype, suffix, initial_value, put_value, descriptor",
+    "datatype, suffix, initial_value, put_value, datakey",
     [
         (int, "int", 42, 43, integer_d),
         (float, "float", 3.141, 43.5, number_d),
@@ -217,7 +217,7 @@ async def test_backend_get_put_monitor(
     suffix: str,
     initial_value: T,
     put_value: T,
-    descriptor: Callable[[Any], dict],
+    datakey: Callable[[Any], dict],
     tmp_path,
 ):
     # ca can't support all the types
@@ -233,11 +233,11 @@ async def test_backend_get_put_monitor(
     # With the given datatype, check we have the correct initial value and putting
     # works
     await assert_monitor_then_put(
-        ioc, suffix, descriptor(initial_value), initial_value, put_value, datatype
+        ioc, suffix, datakey(initial_value), initial_value, put_value, datatype
     )
     # With datatype guessed from CA/PVA, check we can set it back to the initial value
     await assert_monitor_then_put(
-        ioc, suffix, descriptor(put_value), put_value, initial_value, datatype=None
+        ioc, suffix, datakey(put_value), put_value, initial_value, datatype=None
     )
 
     yaml_path = tmp_path / "test.yaml"
@@ -250,7 +250,7 @@ async def test_bool_conversion_of_enum(ioc: IOC) -> None:
     await assert_monitor_then_put(
         ioc,
         suffix="bool",
-        descriptor=integer_d(True),
+        datakey=integer_d(True),
         initial_value=True,
         put_value=False,
         datatype=bool,
@@ -388,15 +388,15 @@ async def test_pva_table(ioc: IOC) -> None:
         enum=[MyEnum.c, MyEnum.b],
     )
     # TODO: what should this be for a variable length table?
-    descriptor = dict(dtype="object", shape=[])
+    datakey = dict(dtype="object", shape=[])
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")
         # Make a monitor queue that will monitor for updates
         q = MonitorQueue(backend)
         try:
-            # Check descriptor
-            dict(source=backend.source, **descriptor) == await backend.get_descriptor()
+            # Check datakey
+            dict(source=backend.source, **datakey) == await backend.make_datakey()
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -429,9 +429,9 @@ async def test_pvi_structure(ioc: IOC) -> None:
     }
 
     try:
-        # Check descriptor
+        # Check datakey
         with pytest.raises(NotImplementedError):
-            await backend.get_descriptor()
+            await backend.make_datakey()
         # Check initial value
         await q.assert_updates(expected)
         await backend.get_value()
@@ -461,7 +461,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": backend.source,
                 "dtype": "array",
                 "shape": [2, 3],
-            } == await backend.get_descriptor()
+            } == await backend.make_datakey()
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())

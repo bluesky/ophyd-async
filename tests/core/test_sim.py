@@ -65,7 +65,7 @@ class MonitorQueue:
 
 
 @pytest.mark.parametrize(
-    "datatype, initial_value, put_value, descriptor",
+    "datatype, initial_value, put_value, datakey",
     [
         (int, 0, 43, integer_d),
         (float, 0.0, 43.5, number_d),
@@ -91,17 +91,17 @@ async def test_backend_get_put_monitor(
     datatype: Type[T],
     initial_value: T,
     put_value: T,
-    descriptor: Callable[[Any], dict],
+    datakey: Callable[[Any], dict],
 ):
     backend = SimSignalBackend(datatype, "")
 
     await backend.connect()
     q = MonitorQueue(backend)
     try:
-        # Check descriptor
+        # Check datakey
         assert (
-            dict(source="sim://", **descriptor(initial_value))
-            == await backend.get_descriptor()
+            dict(source="sim://", **datakey(initial_value))
+            == await backend.make_datakey()
         )
         # Check initial value
         await q.assert_updates(
@@ -128,7 +128,7 @@ async def test_sim_backend_with_numpy_typing():
     assert array.shape == (0,)
 
 
-async def test_sim_backend_descriptor_fails_for_invalid_class():
+async def test_sim_backend_make_datakey_fails_for_invalid_class():
     class myClass:
         def __init__(self) -> None:
             pass
@@ -137,4 +137,4 @@ async def test_sim_backend_descriptor_fails_for_invalid_class():
     await sim_signal.connect(sim=True)
 
     with pytest.raises(AssertionError):
-        await sim_signal._backend.get_descriptor()
+        await sim_signal._backend.make_datakey()

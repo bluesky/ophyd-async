@@ -33,12 +33,12 @@ async def hdf_writer(RE) -> HDFWriter:
     )
 
 
-async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
+async def test_correct_make_datakey_doc_after_open(hdf_writer: HDFWriter):
     set_sim_value(hdf_writer.hdf.file_path_exists, True)
     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-        descriptor = await hdf_writer.open()
+        datakeys = await hdf_writer.open()
 
-    assert descriptor == {
+    assert datakeys == {
         "test": {
             "source": "sim://HDF:FullFileName_RBV",
             "shape": (10, 10),

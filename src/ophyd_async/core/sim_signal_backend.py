@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Generic, Optional, Type, Union, cast, get_origin
 
-from bluesky.protocols import Descriptor, Dtype, Reading
+from bluesky.protocols import DataKey, Dtype, Reading
 
 from .signal_backend import SignalBackend
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
@@ -36,7 +36,7 @@ class SimConverter(Generic[T]):
             alarm_severity=-1 if severity > 2 else severity,
         )
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         assert (
             type(value) in primitive_dtypes
         ), f"invalid converter for value of type {type(value)}"
@@ -51,7 +51,7 @@ class SimConverter(Generic[T]):
 
 
 class SimArrayConverter(SimConverter):
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         return dict(source=source, dtype="array", shape=[len(value)])
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
@@ -74,7 +74,7 @@ class SimEnumConverter(SimConverter):
         else:
             return self.enum_class(value)
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def make_datakey(self, source: str, value) -> DataKey:
         choices = [e.value for e in self.enum_class]
         return dict(
             source=source, dtype="string", shape=[], choices=choices
@@ -152,8 +152,8 @@ class SimSignalBackend(SignalBackend[T]):
         if self.callback:
             self.callback(reading, self._value)
 
-    async def get_descriptor(self) -> Descriptor:
-        return self.converter.descriptor(self.source, self._value)
+    async def make_datakey(self) -> DataKey:
+        return self.converter.make_datakey(self.source, self._value)
 
     async def get_reading(self) -> Reading:
         return self.converter.reading(self._value, self._timestamp, self._severity)
