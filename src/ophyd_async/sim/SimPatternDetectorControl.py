@@ -24,7 +24,7 @@ class SimPatternDetectorControl(DetectorControl):
         self,
         num: int,
         trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
+        exposure: Optional[float] = 0.01,
     ) -> AsyncStatus:
         period: float = exposure + await self.get_deadtime(exposure)
         await self.pattern_generator.open_file(self.directory_provider)

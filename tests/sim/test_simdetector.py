@@ -15,8 +15,14 @@ async def sim_pattern_detector(tmp_path_factory):
     async with DeviceCollector(sim=True):
         sim_pattern_detector = SimPatternDetector(name="PATTERN1", path=path)
 
-    # assert sim_pattern_detector.name == "PATTERN1"
     return sim_pattern_detector
+
+
+@pytest.fixture
+async def sim_motor():
+    async with DeviceCollector(sim=True):
+        sim_motor = motor.Motor("test")
+    return sim_motor
 
 
 async def test_sim_pattern_detector_initialization(
@@ -40,14 +46,17 @@ async def test_detector_creates_controller_and_writer(
     assert sim_pattern_detector.controller
 
 
-async def test_writes_pattern_to_file(sim_pattern_detector: SimPatternDetector):
-    file_path = "/tmp/test.h5"
+async def test_writes_pattern_to_file(
+    sim_pattern_detector: SimPatternDetector, sim_motor: motor.Motor
+):
+    file_path = "/tmp"
     # mydir = StaticDirectoryProvider(file_path)
-    sim_motor = motor.Motor("test")
-    sim_pattern_detector = SimPatternDetector(config_sigs=sim_motor.rw, path=file_path)
+    sim_pattern_detector = SimPatternDetector(
+        config_sigs=[sim_motor.describe], path=file_path
+    )
 
     images_number = 2
-    sim_pattern_detector.controller.arm(num=images_number)
+    await sim_pattern_detector.controller.arm(num=images_number)
     # assert that the file is created and non-empty
 
     # assert that the file contains data in expected dimensions
@@ -62,7 +71,7 @@ async def test_set_x_and_y(sim_pattern_detector):
 
 
 async def test_initial_blob(sim_pattern_detector):
-    assert sim_pattern_detector.pattern_generator.initial_blob
+    assert sim_pattern_detector.pattern_generator.initial_blob.any()
 
 
 async def test_open_and_close_file(sim_pattern_detector):
