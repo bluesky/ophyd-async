@@ -89,6 +89,8 @@ class PandA(Device):
 
     def __init__(self, prefix: str, name: str = "") -> None:
         super().__init__(name)
+        if not prefix.endswith(":"):
+            prefix = prefix + ":"
         self._prefix = prefix
 
     def verify_block(self, name: str, num: Optional[int]):
@@ -202,7 +204,7 @@ class PandA(Device):
         makes all required blocks.
         """
         pvi_info = (
-            await pvi_get(self._prefix + ":PVI", timeout=timeout) if not sim else None
+            await pvi_get(self._prefix + "PVI", timeout=timeout) if not sim else None
         )
         _remove_inconsistent_blocks(pvi_info)
 
