@@ -162,8 +162,8 @@ class PandaHDFWriter(DetectorWriter):
                     _HDFDataset(
                         name,
                         block_name,
-                        f"{name}.{block_name}.{signal_name}.{suffix}",
-                        f"{block_name}.{signal_name}".upper() + f".{suffix}",
+                        f"{name}-{block_name}-{signal_name}-{suffix}",
+                        f"{block_name}-{signal_name}".upper() + f"-{suffix}",
                         [1],
                         multiplier=1,
                     )

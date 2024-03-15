@@ -116,10 +116,10 @@ async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
         assert "source" in entry
         assert entry.get("external") == "STREAM:"
     expected_datakeys = [
-        "test-panda.block1.test.Min",
-        "test-panda.block1.test.Max",
-        "test-panda.block1.test.Mean",
-        "test-panda.block2.test.Value",
+        "test-panda-block1-test-Min",
+        "test-panda-block1-test-Max",
+        "test-panda-block1-test-Mean",
+        "test-panda-block2-test-Value",
     ]
     for key in expected_datakeys:
         assert key in description
@@ -174,7 +174,7 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     assert type(sim_writer._file) is _HDFFile
     assert sim_writer._file._last_emitted == 1
     resource_doc = sim_writer._file._bundles[0].stream_resource_doc
-    assert resource_doc["data_key"] == "test-panda.block1.test.Min"
+    assert resource_doc["data_key"] == "test-panda-block1-test-Min"
     assert resource_doc["resource_path"] == "filename.sim_panda.h5"
 
 
@@ -192,4 +192,4 @@ async def test_numeric_blocks_correctly_formated(sim_writer: PandaHDFWriter):
         "ophyd_async.panda.writers.hdf_writer.get_signals_marked_for_capture",
         get_numeric_signal,
     ):
-        assert "test-panda.block.1.Capture.Value" in await sim_writer.open()
+        assert "test-panda-block-1-Capture.Value" in await sim_writer.open()
