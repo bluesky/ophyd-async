@@ -202,7 +202,7 @@ class PandA(Device):
         makes all required blocks.
         """
         pvi_info = (
-            await pvi_get(self._prefix + "PVI", timeout=timeout) if not sim else None
+            await pvi_get(self._prefix + ":PVI", timeout=timeout) if not sim else None
         )
         _remove_inconsistent_blocks(pvi_info)
 
