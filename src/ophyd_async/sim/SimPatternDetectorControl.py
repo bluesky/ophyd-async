@@ -3,18 +3,18 @@ from typing import Optional
 
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
-from ophyd_async.sim.PatternGenerator import PatternGenerator
+from ophyd_async.sim.SimDriver import SimDriver
 from ophyd_async.core import DirectoryProvider
 
 
 class SimPatternDetectorControl(DetectorControl):
     def __init__(
         self,
-        pattern_generator: PatternGenerator,
+        pattern_generator: SimDriver,
         directory_provider: DirectoryProvider,
         exposure: float = 0.1,
     ) -> None:
-        self.pattern_generator: PatternGenerator = pattern_generator
+        self.pattern_generator: SimDriver = pattern_generator
         self.pattern_generator.set_exposure(exposure)
         self.directory_provider: DirectoryProvider = directory_provider
         self.task: Optional[asyncio.Task] = None

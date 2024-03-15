@@ -19,8 +19,6 @@ async def test_streaming_plan(
     def basic_plan():
         yield from bps.stage_all(sim_motor, sim_pattern_detector)
 
-        # move the flyer to the correct place, before fly scanning.
-        # Prepare the motor first to get the trigger info for the detectors
         yield from bps.prepare(sim_motor, 1, wait=True)
 
         # prepare detectors second.

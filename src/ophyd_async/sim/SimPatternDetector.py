@@ -4,7 +4,7 @@ from typing import Sequence
 from ophyd_async.core import DirectoryProvider, StaticDirectoryProvider
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.signal import SignalR
-from ophyd_async.sim.PatternGenerator import PatternGenerator
+from ophyd_async.sim.SimDriver import SimDriver
 
 from .SimPatternDetectorControl import SimPatternDetectorControl
 from .SimPatternDetectorWriter import SimPatternDetectorWriter
@@ -19,7 +19,7 @@ class SimPatternDetector(StandardDetector):
         writer_timeout: float = 1,
     ) -> None:
         self.directory_provider: DirectoryProvider = StaticDirectoryProvider(path)
-        self.pattern_generator = PatternGenerator()
+        self.pattern_generator = SimDriver()
         writer = SimPatternDetectorWriter(
             patternGenerator=self.pattern_generator,
             directoryProvider=self.directory_provider,

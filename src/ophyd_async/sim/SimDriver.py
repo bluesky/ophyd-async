@@ -32,7 +32,7 @@ SUM_PATH = "/entry/sum"
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 
 
-class PatternGenerator:
+class SimDriver:
     """
     order of events
     1. a definition of a new scan is created

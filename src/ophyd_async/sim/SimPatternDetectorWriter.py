@@ -5,14 +5,14 @@ from bluesky.protocols import Descriptor
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.detector import DetectorWriter
 from ophyd_async.core.signal import observe_value
-from ophyd_async.sim.PatternGenerator import PatternGenerator
+from ophyd_async.sim.SimDriver import SimDriver
 
 
 class SimPatternDetectorWriter(DetectorWriter):
-    patternGenerator: PatternGenerator
+    patternGenerator: SimDriver
 
     def __init__(
-        self, patternGenerator: PatternGenerator, directoryProvider: DirectoryProvider
+        self, patternGenerator: SimDriver, directoryProvider: DirectoryProvider
     ) -> None:
         self.patternGenerator = patternGenerator
         self.directory_provider = directoryProvider

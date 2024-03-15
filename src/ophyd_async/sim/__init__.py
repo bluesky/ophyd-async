@@ -1,10 +1,10 @@
-from .PatternGenerator import PatternGenerator
+from .SimDriver import SimDriver
 from .SimPatternDetector import SimPatternDetector
 from .SimPatternDetectorControl import SimPatternDetectorControl
 from .SimPatternDetectorWriter import SimPatternDetectorWriter
 
 __all__ = [
-    "PatternGenerator",
+    "SimDriver",
     "SimPatternDetectorControl",
     "SimPatternDetectorWriter",
     "SimPatternDetector",
