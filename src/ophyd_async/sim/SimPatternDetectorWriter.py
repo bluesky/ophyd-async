@@ -49,7 +49,6 @@ class SimPatternDetectorWriter(DetectorWriter):
                     yield "stream_resource", doc
         # self.patternGenerator.open_file()
         # for doc in self.patternGenerator.file.stream
-        pass
 
     async def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(
