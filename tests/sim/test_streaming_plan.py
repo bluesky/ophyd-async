@@ -1,11 +1,11 @@
 import bluesky.plan_stubs as bps
 from bluesky.run_engine import RunEngine
 from ophyd_async.epics.motion.motor import Motor
-from ophyd_async.sim.SimPatternDetector import SimPatternDetector
+from ophyd_async.sim.SimPatternDetector import SimDetector
 
 
 async def test_streaming_plan(
-    RE: RunEngine, sim_motor: Motor, sim_pattern_detector: SimPatternDetector
+    RE: RunEngine, sim_motor: Motor, sim_pattern_detector: SimDetector
 ):
     names = []
     docs = []

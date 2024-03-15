@@ -10,7 +10,7 @@ from .SimPatternDetectorControl import SimPatternDetectorControl
 from .SimPatternDetectorWriter import SimPatternDetectorWriter
 
 
-class SimPatternDetector(StandardDetector):
+class SimDetector(StandardDetector):
     def __init__(
         self,
         path: Path, 
@@ -21,11 +21,11 @@ class SimPatternDetector(StandardDetector):
         self.directory_provider: DirectoryProvider = StaticDirectoryProvider(path)
         self.pattern_generator = SimDriver()
         writer = SimPatternDetectorWriter(
-            patternGenerator=self.pattern_generator,
+            driver=self.pattern_generator,
             directoryProvider=self.directory_provider,
         )
         controller = SimPatternDetectorControl(
-            pattern_generator=self.pattern_generator,
+            driver=self.pattern_generator,
             directory_provider=self.directory_provider,
         )
         super().__init__(

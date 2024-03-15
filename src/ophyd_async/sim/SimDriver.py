@@ -1,28 +1,29 @@
+from dataclasses import dataclass
+from event_model import (
+    StreamDatum,
+    StreamResource,
+    ComposeStreamResource,
+    ComposeStreamResourceBundle,
+)
 from pathlib import Path
-from ophyd_async.epics.areadetector.writers import _HDFDataset
-from typing import List, Optional
+from bluesky.protocols import Descriptor, StreamAsset
+from typing import (
+    Any,
+    AsyncGenerator,
+    AsyncIterator,
+    Dict,
+    Optional,
+    Sequence,
+    List,
+    Iterator,
+)
 
 import h5py
 import numpy as np
 
-from ophyd_async.core import DirectoryProvider
-
-
-def make_gaussian_blob(height: int, width: int) -> np.ndarray:
-    """Make a Gaussian Blob with float values in range 0..1"""
-    x, y = np.meshgrid(np.linspace(-1, 1, width), np.linspace(-1, 1, height))
-    d = np.sqrt(x * x + y * y)
-    blob = np.exp(-(d**2))
-    return blob
-
-
-def interesting_pattern(x: float, y: float) -> float:
-    """This function is interesting in x and y in range -10..10, returning
-    a float value in range 0..1
-    """
-    z = 0.5 + (np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)) / 2
-    return z
-
+from ophyd_async.core import DirectoryProvider, DirectoryInfo
+from ophyd_async.core.signal import observe_value
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
 DATA_PATH = "/entry/data/data"
@@ -31,22 +32,103 @@ SUM_PATH = "/entry/sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 
+SLICE_NAME = "AD_HDF5_SWMR_SLICE"
+
+
+@dataclass
+class DatasetConfig:
+    name: str
+    path: str
+    shape: Sequence[int]
+    # todo possibly multiplier is extraneous relative to the original args
+    multiplier: int
+    dtype: Any | None = None
+
+
+def get_full_file_description(datasets: List[DatasetConfig], outer_shape: tuple[int]):
+    full_file_description: Dict[str, Descriptor] = {}
+    for d in datasets:
+        shape = outer_shape + tuple(d.shape)
+        source = (f"sim://{d.name}",)
+        dtype = ("number" if d.shape == [1] else "array",)
+        value = Descriptor(source=source, shape=shape, dtype=dtype, external="stream:")
+        full_file_description[d.name] = value
+    return full_file_description
+
+
+def generate_gaussian_blob(height: int, width: int) -> np.ndarray:
+    """Make a Gaussian Blob with float values in range 0..1"""
+    x, y = np.meshgrid(np.linspace(-1, 1, width), np.linspace(-1, 1, height))
+    d = np.sqrt(x * x + y * y)
+    blob = np.exp(-(d**2))
+    return blob
+
+
+def generate_interesting_pattern(x: float, y: float) -> float:
+    """This function is interesting in x and y in range -10..10, returning
+    a float value in range 0..1
+    """
+    z = 0.5 + (np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)) / 2
+    return z
+
+
+class HdfStreamProvider:
+    def __init__(
+        self,
+        directory_info: DirectoryInfo,
+        full_file_name: Path,
+        datasets: List[DatasetConfig],
+    ) -> None:
+        self._last_emitted = 0
+        self._bundles: List[ComposeStreamResourceBundle] = self._compose_bundles(
+            directory_info, full_file_name, datasets
+        )
+
+    def _compose_bundles(
+        self,
+        directory_info: DirectoryInfo,
+        full_file_name: Path,
+        datasets: List[DatasetConfig],
+    ) -> List[StreamAsset]:
+        path = str(full_file_name.relative_to(directory_info.root))
+        root = str(directory_info.root)
+        bundler_composer = ComposeStreamResource()
+
+        bundles: List[ComposeStreamResourceBundle] = []
+
+        for d in datasets:
+            bundle: ComposeStreamResourceBundle = bundler_composer(
+                spec=SLICE_NAME,
+                root=root,
+                resource_path=path,
+                data_key=d.name,
+                resource_kwargs={
+                    "path": d.path,
+                    "multiplier": d.multiplier,
+                    "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                },
+            )
+            bundles += bundle
+        return bundles
+
+    def stream_resources(self) -> Iterator[StreamResource]:
+        for bundle in self._bundles:
+            yield bundle.stream_resource_doc
+
+    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
+        # Indices are relative to resource
+        if indices_written > self._last_emitted:
+            indices = dict(
+                start=self._last_emitted,
+                stop=indices_written,
+            )
+            self._last_emitted = indices_written
+            for bundle in self._bundles:
+                yield bundle.compose_stream_datum(indices)
+        return None
+
 
 class SimDriver:
-    """
-    order of events
-    1. a definition of a new scan is created
-    2. file is opened
-        - before anything else happens,
-        - descriptors are defined and sent to bluesky for each dataset
-    3. exposure time is set
-    4. x and y are set
-    5. interesting pattern is made
-    6. image is written to file
-    7. number of images is incremented
-    8. x and y move to next position
-    9. when all x and y are done, file is closed
-    """
 
     def __init__(
         self,
@@ -61,47 +143,48 @@ class SimDriver:
         self.height = detector_height
         self.width = detector_width
         self.written_images_counter: int = 0
-        self._datasets: List[_HDFDataset] = []
-        self.initial_blob = (
-            make_gaussian_blob(width=detector_width, height=detector_height)
+        self.STARTING_BLOB = (
+            generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
         )
-        self.handle_for_h5_file: Optional[h5py.File] = None
+        self._hdf_stream_provider: Optional[HdfStreamProvider] = None
+        self._handle_for_h5_file: Optional[h5py.File] = None
 
     async def write_image_to_file(self) -> None:
-        assert self.handle_for_h5_file, "no file has been opened!"
-        self.handle_for_h5_file.create_dataset(
+        assert self._handle_for_h5_file, "no file has been opened!"
+        self._handle_for_h5_file.create_dataset(
             name=f"pattern-generator-file-{self.written_images_counter}",
             dtype=np.ndarray,
         )
 
         # prepare - resize the fixed hdf5 data structure
         # so that the new image can be written
-        target_dimensions = (
-            self.written_images_counter + 1,
-            self.height,
-            self.width,
-        )
-        self.handle_for_h5_file[DATA_PATH].resize(target_dimensions)
-        self.handle_for_h5_file[SUM_PATH].resize(self.written_images_counter + 1)
+        new_layer = self.written_images_counter + 1
+        target_dimensions = (new_layer, self.height, self.width)
+
+        self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
+        self._handle_for_h5_file[SUM_PATH].resize(new_layer)
 
         # generate the simulated data
-        intensity: float = interesting_pattern(self.x, self.y)
+        intensity: float = generate_interesting_pattern(self.x, self.y)
         detector_data: np.uint8 = (
-            self.blob * intensity * self.exposure / self.saturation_exposure_time
+            self.STARTING_BLOB
+            * intensity
+            * self.exposure
+            / self.saturation_exposure_time
         ).astype(np.uint8)
 
         # write data to disc (intermediate step)
-        self.handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
-        self.handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
+        self._handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
+        self._handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
             detector_data
         )
 
         # save metadata - so that it's discoverable
-        self.handle_for_h5_file[DATA_PATH].flush()
-        self.handle_for_h5_file[SUM_PATH].flush()
+        self._handle_for_h5_file[DATA_PATH].flush()
+        self._handle_for_h5_file[SUM_PATH].flush()
 
-        # coutner increment is last
+        # counter increment is last
         # as only at this point the new data is visible from the outside
         self.written_images_counter += 1
 
@@ -114,32 +197,79 @@ class SimDriver:
     def set_y(self, value: float) -> None:
         self.y = value
 
-    async def open_file(self, dir: DirectoryProvider) -> None:
-        info = dir()
-        filename = f"{info.prefix}pattern{info.suffix}.h5"
-        new_path: Path = info.root / info.resource_dir / filename
+    async def open_file(
+        self, directory: DirectoryProvider, multiplier: int = 1
+    ) -> Dict[str, Descriptor]:
+        file_ref_object = self._get_file_ref_object(directory)
 
-        self._datasets = []
-        hdf5_file = h5py.File(new_path, "w")
-        hdf5_file.create_dataset(
+        datasets = self._get_datasets()
+
+        for d in datasets:
+            file_ref_object.create_dataset(*d)
+        file_ref_object.swmr_mode = True
+
+        self._handle_for_h5_file = file_ref_object
+        self._hdf_stream_provider = HdfStreamProvider(
+            self.directory_provider,
+            self._handle_for_h5_file,
+            datasets,
+        )
+
+        outer_shape = (multiplier,) if multiplier > 1 else ()
+        print("file opened")
+        full_file_description = get_full_file_description(datasets, outer_shape)
+        return full_file_description
+
+    def _get_datasets(self):
+        raw_dataset = DatasetConfig(
             name=DATA_PATH,
             dtype=np.uint8,
             shape=(1, self.height, self.width),
             maxshape=(None, self.height, self.width),
         )
 
-        hdf5_file.create_dataset(
+        sum_dataset = DatasetConfig(
             name=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
             maxshape=(None),
             fillvalue=-1,
         )
-        hdf5_file.swmr_mode = True
-        self.handle_for_h5_file = hdf5_file
-        print("file opened")
+
+        datasets: List[DatasetConfig] = [raw_dataset, sum_dataset]
+        return datasets
+
+    def _get_file_ref_object(self, dir: DirectoryProvider) -> h5py.File:
+        info = dir()
+        filename = f"{info.prefix}pattern{info.suffix}.h5"
+        new_path: Path = info.root / info.resource_dir / filename
+        h5py_file_ref_object = h5py.File(new_path, "w")
+        return h5py_file_ref_object
+
+    def collect_stream_docs(self) -> AsyncIterator[StreamAsset]:
+        self._handle_for_h5_file.flush()
+        # when already something was written to the file
+        if self.indices_written:
+            if not self._hdf_stream_provider:
+                self._hdf_stream_provider = HdfStreamProvider(
+                    self.directory_provider,
+                    self._handle_for_h5_file,
+                    self._datasets,
+                )
+                for doc in self._hdf_stream_provider.stream_resources():
+                    yield "stream_resource", doc
+        for doc in self.patternGenerator.file.stream_data(self.indices_written):
+            yield "stream_datum", doc
 
     def close(self) -> None:
-        self.handle_for_h5_file.close()
+        self._handle_for_h5_file.close()
         print("file closed")
-        self.handle_for_h5_file = None
+        self._handle_for_h5_file = None
+
+    async def observe_indices_written(
+        self, timeout=DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        async for num_captured in observe_value(
+            self.written_images_counter, timeout=timeout
+        ):
+            yield num_captured // self.multiplier

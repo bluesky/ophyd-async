@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.motion import motor
-from ophyd_async.sim.SimPatternDetector import SimPatternDetector
+from ophyd_async.sim.SimPatternDetector import SimDetector
 
 # todo make tests that integration test the writer
 # do IO tetsing like in files: `test_writers`, `test_panda`, `test_device_save_loader`
@@ -13,7 +13,7 @@ from ophyd_async.sim.SimPatternDetector import SimPatternDetector
 async def sim_pattern_detector(tmp_path_factory):
     path: Path = tmp_path_factory.mktemp("tmp")
     async with DeviceCollector(sim=True):
-        sim_pattern_detector = SimPatternDetector(name="PATTERN1", path=path)
+        sim_pattern_detector = SimDetector(name="PATTERN1", path=path)
 
     return sim_pattern_detector
 
@@ -26,7 +26,7 @@ async def sim_motor():
 
 
 async def test_sim_pattern_detector_initialization(
-    sim_pattern_detector: SimPatternDetector,
+    sim_pattern_detector: SimDetector,
 ):
     assert (
         sim_pattern_detector.pattern_generator
@@ -40,18 +40,18 @@ async def test_sim_pattern_detector_initialization(
 
 
 async def test_detector_creates_controller_and_writer(
-    sim_pattern_detector: SimPatternDetector,
+    sim_pattern_detector: SimDetector,
 ):
     assert sim_pattern_detector.writer
     assert sim_pattern_detector.controller
 
 
 async def test_writes_pattern_to_file(
-    sim_pattern_detector: SimPatternDetector, sim_motor: motor.Motor
+    sim_pattern_detector: SimDetector, sim_motor: motor.Motor
 ):
     file_path = "/tmp"
     # mydir = StaticDirectoryProvider(file_path)
-    sim_pattern_detector = SimPatternDetector(
+    sim_pattern_detector = SimDetector(
         config_sigs=[sim_motor.describe], path=file_path
     )
 
