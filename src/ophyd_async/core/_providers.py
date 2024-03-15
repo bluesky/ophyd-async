@@ -2,6 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Protocol, Sequence, Union
+import uuid
 
 
 @dataclass
@@ -52,6 +53,19 @@ class StaticDirectoryProvider(DirectoryProvider):
 
     def __call__(self) -> DirectoryInfo:
         return self._directory_info
+
+
+class UUIDDirectoryProvider(DirectoryProvider):
+    def __init__(self, directory_path, resource_dir="."):
+        self._directory_path = directory_path
+        self._resource_dir = resource_dir
+
+    def __call__(self):
+        return DirectoryInfo(
+            root=Path(self._directory_path),
+            resource_dir=Path(self._resource_dir),
+            prefix=str(uuid.uuid4()),
+        )
 
 
 class NameProvider(Protocol):

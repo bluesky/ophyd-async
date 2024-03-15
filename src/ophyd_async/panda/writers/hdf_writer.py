@@ -133,9 +133,7 @@ class PandaHDFWriter(DetectorWriter):
         info = self._directory_provider()
         await asyncio.gather(
             self.hdf.file_path.set(str(info.root / info.resource_dir)),
-            self.hdf.file_name.set(
-                f"{info.prefix}.{self.panda_device.name}{info.suffix}.h5"
-            ),
+            self.hdf.file_name.set(f"{info.prefix}{info.suffix}.h5"),
         )
 
         await self.hdf.num_capture.set(0)
@@ -208,7 +206,9 @@ class PandaHDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    await self.hdf.file_path.get_value(), await self.hdf.file_name.get_value(), self._datasets
+                    await self.hdf.file_path.get_value(),
+                    await self.hdf.file_name.get_value(),
+                    self._datasets,
                 )
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc
