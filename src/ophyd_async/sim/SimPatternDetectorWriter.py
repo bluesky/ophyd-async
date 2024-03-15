@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, AsyncIterator, Dict, List
+from typing import AsyncGenerator, AsyncIterator, Dict
 
 from bluesky.protocols import Descriptor
 
@@ -11,15 +11,12 @@ from ophyd_async.sim.SimDriver import SimDriver
 class SimPatternDetectorWriter(DetectorWriter):
     driver: SimDriver
 
-    def __init__(
-        self, driver: SimDriver, directoryProvider: DirectoryProvider
-    ) -> None:
+    def __init__(self, driver: SimDriver, directoryProvider: DirectoryProvider) -> None:
         self.driver = driver
         self.directory_provider = directoryProvider
 
     def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         self.driver.open_file(self.directory_provider, multiplier)
-        
 
     def close(self) -> None:
         self.driver.close()

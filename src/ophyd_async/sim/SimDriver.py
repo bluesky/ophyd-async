@@ -1,27 +1,27 @@
 from dataclasses import dataclass
-from event_model import (
-    StreamDatum,
-    StreamResource,
-    ComposeStreamResource,
-    ComposeStreamResourceBundle,
-)
 from pathlib import Path
-from bluesky.protocols import Descriptor, StreamAsset
 from typing import (
     Any,
     AsyncGenerator,
     AsyncIterator,
     Dict,
+    Iterator,
+    List,
     Optional,
     Sequence,
-    List,
-    Iterator,
 )
 
 import h5py
 import numpy as np
+from bluesky.protocols import Descriptor, StreamAsset
+from event_model import (
+    ComposeStreamResource,
+    ComposeStreamResourceBundle,
+    StreamDatum,
+    StreamResource,
+)
 
-from ophyd_async.core import DirectoryProvider, DirectoryInfo
+from ophyd_async.core import DirectoryInfo, DirectoryProvider
 from ophyd_async.core.signal import observe_value
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 

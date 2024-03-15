@@ -51,9 +51,7 @@ async def test_writes_pattern_to_file(
 ):
     file_path = "/tmp"
     # mydir = StaticDirectoryProvider(file_path)
-    sim_pattern_detector = SimDetector(
-        config_sigs=[sim_motor.describe], path=file_path
-    )
+    sim_pattern_detector = SimDetector(config_sigs=[sim_motor.describe], path=file_path)
 
     images_number = 2
     await sim_pattern_detector.controller.arm(num=images_number)

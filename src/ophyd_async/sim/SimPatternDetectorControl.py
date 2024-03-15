@@ -1,10 +1,10 @@
 import asyncio
 from typing import Optional
 
+from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.sim.SimDriver import SimDriver
-from ophyd_async.core import DirectoryProvider
 
 
 class SimPatternDetectorControl(DetectorControl):
@@ -48,7 +48,7 @@ class SimPatternDetectorControl(DetectorControl):
     async def _coroutine_for_image_writing(
         self, exposure: float, period: float, frames_number: int
     ):
-        async for i in range(frames_number):
+        async for _ in range(frames_number):
             self.driver.set_exposure(exposure)
             await asyncio.sleep(period)
             self.driver.write_image_to_file()

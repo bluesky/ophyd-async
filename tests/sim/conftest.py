@@ -1,6 +1,6 @@
 from pathlib import Path
-import pytest
 
+import pytest
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.motion import motor
 from ophyd_async.sim import SimDetector

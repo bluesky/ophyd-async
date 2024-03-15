@@ -1,8 +1,8 @@
 import h5py
 import numpy as np
 import pytest
-from ophyd_async.core import StaticDirectoryProvider
 
+from ophyd_async.core import StaticDirectoryProvider
 from ophyd_async.sim.SimDriver import DATA_PATH, SUM_PATH, SimDriver
 
 
@@ -35,7 +35,6 @@ def test_initialization(pattern_generator: SimDriver):
 
 @pytest.mark.asyncio
 async def test_open_and_close_file(tmp_path, pattern_generator: SimDriver):
-
     dir_provider = StaticDirectoryProvider(str(tmp_path))
     await pattern_generator.open_file(dir_provider)
     assert pattern_generator._handle_for_h5_file is not None
@@ -62,8 +61,8 @@ def test_set_y(pattern_generator: SimDriver):
 @pytest.mark.asyncio
 async def test_write_image_to_file(tmp_path, pattern_generator: SimDriver):
     dir_provider = StaticDirectoryProvider(str(tmp_path))
-    await pattern_generator.open_file(dir_provider) 
-    
+    await pattern_generator.open_file(dir_provider)
+
     await pattern_generator.write_image_to_file()
     assert pattern_generator.written_images_counter == 1
     assert DATA_PATH in pattern_generator._handle_for_h5_file

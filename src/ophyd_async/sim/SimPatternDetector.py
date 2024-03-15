@@ -13,7 +13,7 @@ from .SimPatternDetectorWriter import SimPatternDetectorWriter
 class SimDetector(StandardDetector):
     def __init__(
         self,
-        path: Path, 
+        path: Path,
         config_sigs: Sequence[SignalR] = [],
         name: str = "sim_pattern_detector",
         writer_timeout: float = 1,
