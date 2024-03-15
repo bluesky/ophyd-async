@@ -208,7 +208,7 @@ class PandaHDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    await self.hdf.file_name.get_value(), self._datasets
+                    await self.hdf.file_path.get_value(), await self.hdf.file_name.get_value(), self._datasets
                 )
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc
