@@ -10,6 +10,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Union,
 )
 
 import h5py
@@ -40,7 +41,7 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 class DatasetConfig:
     name: str
     shape: Sequence[int]
-    maxshape: tuple[int, ...] = (None,)
+    maxshape: tuple[Union[None, int], ...] = (None, None, None)
     path: Optional[str] = None
     multiplier: Optional[int] = 1
     dtype: Optional[Any] = None
@@ -216,7 +217,7 @@ class SimDriver:
 
         self._handle_for_h5_file = file_ref_object
         self._hdf_stream_provider = HdfStreamProvider(
-            directory_provider,
+            directory,
             self._handle_for_h5_file,
             datasets,
         )
@@ -273,13 +274,14 @@ class SimDriver:
             yield "stream_datum", doc
 
     def close(self) -> None:
-        self._handle_for_h5_file.close()
+        # self._handle_for_h5_file.close()
         print("file closed")
         self._handle_for_h5_file = None
 
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
+        # todo possibly need to use NDFileHDF
         async for num_captured in observe_value(
             self.written_images_counter, timeout=timeout
         ):
