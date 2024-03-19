@@ -1,12 +1,11 @@
 from pathlib import Path
+from ophyd_async.core import StaticDirectoryProvider
 
 import pytest
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.motion import motor
+from ophyd_async.sim import SimDriver
 from ophyd_async.sim.SimPatternDetector import SimDetector
-
-# todo make tests that integration test the writer
-# do IO tetsing like in files: `test_writers`, `test_panda`, `test_device_save_loader`
 
 
 @pytest.fixture
@@ -14,7 +13,6 @@ async def sim_pattern_detector(tmp_path_factory):
     path: Path = tmp_path_factory.mktemp("tmp")
     async with DeviceCollector(sim=True):
         sim_pattern_detector = SimDetector(name="PATTERN1", path=path)
-
     return sim_pattern_detector
 
 
@@ -32,7 +30,7 @@ async def test_sim_pattern_detector_initialization(
         sim_pattern_detector.pattern_generator
     ), "PatternGenerator was not initialized correctly."
     assert (
-        sim_pattern_detector.writer.patternGenerator
+        sim_pattern_detector.writer.pattern_generator
     ), "Writer was not initialized with the correct PatternGenerator."
     assert (
         sim_pattern_detector.controller.pattern_generator
@@ -50,27 +48,26 @@ async def test_writes_pattern_to_file(
     sim_pattern_detector: SimDetector, sim_motor: motor.Motor
 ):
     file_path = "/tmp"
-    # mydir = StaticDirectoryProvider(file_path)
     sim_pattern_detector = SimDetector(config_sigs=[sim_motor.describe], path=file_path)
 
     images_number = 2
     await sim_pattern_detector.controller.arm(num=images_number)
     # assert that the file is created and non-empty
+    assert sim_pattern_detector.writer
 
     # assert that the file contains data in expected dimensions
 
 
-async def test_exposure(sim_pattern_detector):
-    pass
-
-
 async def test_set_x_and_y(sim_pattern_detector):
-    pass
+    assert sim_pattern_detector.pattern_generator.x == 0
+    sim_pattern_detector.pattern_generator.set_x(200)
+    assert sim_pattern_detector.pattern_generator.x == 200
 
 
-async def test_initial_blob(sim_pattern_detector):
-    assert sim_pattern_detector.pattern_generator.initial_blob.any()
+async def test_initial_blob(sim_pattern_detector: SimDetector):
+    assert sim_pattern_detector.pattern_generator.STARTING_BLOB.any()
 
 
-async def test_open_and_close_file(sim_pattern_detector):
+@pytest.mark.asyncio
+async def test_open_and_close_file(tmp_path, sim_pattern_detector: SimDetector):
     pass

@@ -15,14 +15,14 @@ class SimPatternDetectorWriter(DetectorWriter):
         self.driver = driver
         self.directory_provider = directoryProvider
 
-    def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         self.driver.open_file(self.directory_provider, multiplier)
 
-    def close(self) -> None:
+    async def close(self) -> None:
         self.driver.close()
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
-        return self.driver.collect_stream_docs()
+        return self.driver.collect_stream_docs(indices_written)
 
     async def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(

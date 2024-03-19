@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import dataclasses
 from pathlib import Path
 from typing import (
     Any,
@@ -38,11 +39,12 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 @dataclass
 class DatasetConfig:
     name: str
-    path: str
     shape: Sequence[int]
-    # todo possibly multiplier is extraneous relative to the original args
-    multiplier: int
-    dtype: Any | None = None
+    maxshape: tuple[int, ...] = (None,)
+    path: Optional[str] = None
+    multiplier: Optional[int] = 1
+    dtype: Optional[Any] = None
+    fillvalue: Optional[int] = None
 
 
 def get_full_file_description(datasets: List[DatasetConfig], outer_shape: tuple[int]):
@@ -205,7 +207,8 @@ class SimDriver:
         datasets = self._get_datasets()
 
         for d in datasets:
-            file_ref_object.create_dataset(*d)
+            refdict = dataclasses.asdict(d)
+            file_ref_object.create_dataset(refdict)
         file_ref_object.swmr_mode = True
 
         self._handle_for_h5_file = file_ref_object
@@ -220,7 +223,7 @@ class SimDriver:
         full_file_description = get_full_file_description(datasets, outer_shape)
         return full_file_description
 
-    def _get_datasets(self):
+    def _get_datasets(self) -> List[DatasetConfig]:
         raw_dataset = DatasetConfig(
             name=DATA_PATH,
             dtype=np.uint8,
@@ -246,10 +249,13 @@ class SimDriver:
         h5py_file_ref_object = h5py.File(new_path, "w")
         return h5py_file_ref_object
 
-    def collect_stream_docs(self) -> AsyncIterator[StreamAsset]:
-        self._handle_for_h5_file.flush()
+    async def collect_stream_docs(self) -> AsyncIterator[StreamAsset]:
+        if self._handle_for_h5_file:
+            self._handle_for_h5_file.flush()
         # when already something was written to the file
         if self.indices_written:
+            # if no frames arrived yet, there's no file to speak of
+            # cannot get the full filename the HDF writer will write until the first frame comes in
             if not self._hdf_stream_provider:
                 self._hdf_stream_provider = HdfStreamProvider(
                     self.directory_provider,

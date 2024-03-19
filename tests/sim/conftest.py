@@ -15,8 +15,3 @@ async def sim_pattern_detector(tmp_path_factory):
     return sim_pattern_detector
 
 
-@pytest.fixture
-async def sim_motor():
-    async with DeviceCollector(sim=True):
-        sim_motor = motor.Motor("test")
-    return sim_motor

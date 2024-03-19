@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 from ophyd_async.core import StaticDirectoryProvider
+from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
 from ophyd_async.sim.SimDriver import DATA_PATH, SUM_PATH, SimDriver
 
 
