@@ -176,8 +176,12 @@ class SimDriver:
 
         # generate the simulated data
         intensity: float = generate_interesting_pattern(self.x, self.y)
-        numerator: np.uint8 = self.STARTING_BLOB * intensity * self.exposure
-        detector_data: np.uint8 = numerator / self.saturation_exposure_time
+        detector_data: np.uint8 = np.uint8(
+            self.STARTING_BLOB
+            * intensity
+            * self.exposure
+            / self.saturation_exposure_time
+        )
 
         # write data to disc (intermediate step)
         self._handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
@@ -207,6 +211,7 @@ class SimDriver:
     ) -> Dict[str, Descriptor]:
         file_ref_object = self._get_file_ref_object(directory)
         self.multiplier = multiplier
+        self._directory_provider = directory
 
         datasets = self._get_datasets()
 
@@ -217,7 +222,7 @@ class SimDriver:
 
         self._handle_for_h5_file = file_ref_object
         self._hdf_stream_provider = HdfStreamProvider(
-            directory,
+            directory(),
             self._handle_for_h5_file,
             datasets,
         )
@@ -225,6 +230,7 @@ class SimDriver:
         outer_shape = (multiplier,) if multiplier > 1 else ()
         print("file opened")
         full_file_description = get_full_file_description(datasets, outer_shape)
+        self._datasets = datasets
         return full_file_description
 
     def _get_datasets(self) -> List[DatasetConfig]:
@@ -239,7 +245,7 @@ class SimDriver:
             name=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
-            maxshape=(None),
+            maxshape=(None, None, None),
             fillvalue=-1,
         )
 
@@ -263,8 +269,11 @@ class SimDriver:
             # if no frames arrived yet, there's no file to speak of
             # cannot get the full filename the HDF writer will write until the first frame comes in
             if not self._hdf_stream_provider:
+                assert not self._datasets, "datasets not initialized"
+                datasets =self._get_datasets()
+                self._datasets = datasets
                 self._hdf_stream_provider = HdfStreamProvider(
-                    self.directory_provider,
+                    self._directory_provider(),
                     self._handle_for_h5_file,
                     self._datasets,
                 )
