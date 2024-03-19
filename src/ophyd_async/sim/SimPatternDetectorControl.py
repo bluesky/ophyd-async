@@ -26,7 +26,8 @@ class SimPatternDetectorControl(DetectorControl):
         trigger: DetectorTrigger = DetectorTrigger.internal,
         exposure: Optional[float] = 0.01,
     ) -> AsyncStatus:
-        period: float = exposure + await self.get_deadtime(exposure)
+        assert exposure is not None
+        period: float = exposure + self.get_deadtime(exposure)
         await self.driver.open_file(self.directory_provider)
         task = asyncio.create_task(
             self._coroutine_for_image_writing(exposure, period, num)
@@ -42,13 +43,13 @@ class SimPatternDetectorControl(DetectorControl):
             pass
         self.task = None
 
-    async def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float) -> float:
         return 0.001
 
     async def _coroutine_for_image_writing(
         self, exposure: float, period: float, frames_number: int
     ):
-        async for _ in range(frames_number):
+        for _ in range(frames_number):
             self.driver.set_exposure(exposure)
             await asyncio.sleep(period)
-            self.driver.write_image_to_file()
+            await self.driver.write_image_to_file()

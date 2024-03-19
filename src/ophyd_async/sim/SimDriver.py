@@ -47,7 +47,9 @@ class DatasetConfig:
     fillvalue: Optional[int] = None
 
 
-def get_full_file_description(datasets: List[DatasetConfig], outer_shape: tuple[int]):
+def get_full_file_description(
+    datasets: List[DatasetConfig], outer_shape: tuple[int, ...]
+):
     full_file_description: Dict[str, Descriptor] = {}
     for d in datasets:
         shape = outer_shape + tuple(d.shape)
@@ -129,6 +131,10 @@ class HdfStreamProvider:
                 yield bundle.compose_stream_datum(indices)
         return None
 
+    def close(self) -> None:
+        for bundle in self._bundles:
+            bundle.close()
+
 
 class SimDriver:
 
@@ -169,12 +175,8 @@ class SimDriver:
 
         # generate the simulated data
         intensity: float = generate_interesting_pattern(self.x, self.y)
-        detector_data: np.uint8 = (
-            self.STARTING_BLOB
-            * intensity
-            * self.exposure
-            / self.saturation_exposure_time
-        ).astype(np.uint8)
+        numerator: np.uint8 = self.STARTING_BLOB * intensity * self.exposure
+        detector_data: np.uint8 = numerator / self.saturation_exposure_time
 
         # write data to disc (intermediate step)
         self._handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
@@ -203,6 +205,7 @@ class SimDriver:
         self, directory: DirectoryProvider, multiplier: int = 1
     ) -> Dict[str, Descriptor]:
         file_ref_object = self._get_file_ref_object(directory)
+        self.multiplier = multiplier
 
         datasets = self._get_datasets()
 
@@ -213,7 +216,7 @@ class SimDriver:
 
         self._handle_for_h5_file = file_ref_object
         self._hdf_stream_provider = HdfStreamProvider(
-            self.directory_provider,
+            directory_provider,
             self._handle_for_h5_file,
             datasets,
         )
@@ -249,11 +252,13 @@ class SimDriver:
         h5py_file_ref_object = h5py.File(new_path, "w")
         return h5py_file_ref_object
 
-    async def collect_stream_docs(self) -> AsyncIterator[StreamAsset]:
+    async def collect_stream_docs(
+        self, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         if self._handle_for_h5_file:
             self._handle_for_h5_file.flush()
         # when already something was written to the file
-        if self.indices_written:
+        if indices_written:
             # if no frames arrived yet, there's no file to speak of
             # cannot get the full filename the HDF writer will write until the first frame comes in
             if not self._hdf_stream_provider:
@@ -264,7 +269,7 @@ class SimDriver:
                 )
                 for doc in self._hdf_stream_provider.stream_resources():
                     yield "stream_resource", doc
-        for doc in self.patternGenerator.file.stream_data(self.indices_written):
+        for doc in self._handle_for_h5_file.stream_data(indices_written):
             yield "stream_datum", doc
 
     def close(self) -> None:

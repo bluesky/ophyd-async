@@ -16,7 +16,7 @@ class SimPatternDetectorWriter(DetectorWriter):
         self.directory_provider = directoryProvider
 
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
-        self.driver.open_file(self.directory_provider, multiplier)
+        return await self.driver.open_file(self.directory_provider, multiplier)
 
     async def close(self) -> None:
         self.driver.close()
@@ -30,5 +30,5 @@ class SimPatternDetectorWriter(DetectorWriter):
         ):
             yield num_captured // self.driver.multiplier
 
-    def get_indices_written(self) -> int:
+    async def get_indices_written(self) -> int:
         return self.driver.written_images_counter
