@@ -26,7 +26,7 @@ class _HDFFile:
                 resource_kwargs={
                     "name": ds.name,
                     "block": ds.block,
-                    "path": ds.path + ".VALUE",
+                    "path": ds.path,
                     "multiplier": ds.multiplier,
                 },
             )

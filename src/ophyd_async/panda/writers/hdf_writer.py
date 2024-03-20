@@ -161,7 +161,7 @@ class PandaHDFWriter(DetectorWriter):
                         name,
                         block_name,
                         f"{name}-{block_name}-{signal_name}-{suffix}",
-                        f"{block_name}-{signal_name}".upper() + f"-{suffix}",
+                        f"{block_name}.{signal_name}".upper() + f".{suffix}",
                         [1],
                         multiplier=1,
                     )
