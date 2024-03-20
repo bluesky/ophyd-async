@@ -15,7 +15,9 @@ class _HDFDataset:
 
 
 class _HDFFile:
-    def __init__(self, file_path: str, full_file_name: str, datasets: List[_HDFDataset]) -> None:
+    def __init__(
+        self, file_path: str, full_file_name: str, datasets: List[_HDFDataset]
+    ) -> None:
         self._last_emitted = 0
         self._bundles = [
             compose_stream_resource(
