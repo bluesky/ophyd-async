@@ -9,6 +9,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    ParamSpec,
     Type,
     TypeVar,
     Union,
@@ -18,6 +19,7 @@ import numpy as np
 from bluesky.protocols import Reading
 
 T = TypeVar("T")
+P = ParamSpec("P")
 Callback = Callable[[T], None]
 
 #: A function that will be called with the Reading and value when the

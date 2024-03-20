@@ -6,7 +6,7 @@ from typing import Awaitable, Callable, Coroutine, List, Optional, cast
 
 from bluesky.protocols import Status
 
-from .utils import Callback, T
+from .utils import Callback, P
 
 
 class AsyncStatus(Status):
@@ -76,7 +76,7 @@ class AsyncStatus(Status):
             self._watchers.append(watcher)
 
     @classmethod
-    def wrap(cls, f: Callable[[T], Coroutine]) -> Callable[[T], "AsyncStatus"]:
+    def wrap(cls, f: Callable[P, Coroutine]) -> Callable[P, "AsyncStatus"]:
         @functools.wraps(f)
         def wrap_f(self) -> AsyncStatus:
             return AsyncStatus(f(self))
