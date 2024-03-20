@@ -4,6 +4,7 @@ from ._providers import (
     NameProvider,
     ShapeProvider,
     StaticDirectoryProvider,
+    UUIDDirectoryProvider,
 )
 from .async_status import AsyncStatus
 from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
