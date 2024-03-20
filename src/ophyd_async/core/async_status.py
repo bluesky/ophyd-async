@@ -78,8 +78,8 @@ class AsyncStatus(Status):
     @classmethod
     def wrap(cls, f: Callable[P, Coroutine]) -> Callable[P, "AsyncStatus"]:
         @functools.wraps(f)
-        def wrap_f(self) -> AsyncStatus:
-            return AsyncStatus(f(self))
+        def wrap_f(self, *args, **kwargs) -> AsyncStatus:
+            return AsyncStatus(f(self, *args, **kwargs))
 
         return wrap_f
 
