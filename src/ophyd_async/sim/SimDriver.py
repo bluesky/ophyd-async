@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import dataclasses
+from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     Any,
@@ -24,7 +24,8 @@ from event_model import (
 )
 
 from ophyd_async.core import DirectoryInfo, DirectoryProvider
-from ophyd_async.core.signal import observe_value
+from ophyd_async.core.signal import SignalR, observe_value
+from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
@@ -138,7 +139,6 @@ class HdfStreamProvider:
 
 
 class SimDriver:
-
     def __init__(
         self,
         saturation_exposure_time: float = 1,
@@ -152,6 +152,10 @@ class SimDriver:
         self.height = detector_height
         self.width = detector_width
         self.written_images_counter: int = 0
+
+        self.sim_signal = SignalR(
+            SimSignalBackend(int, str(self.written_images_counter))
+        )
         self.STARTING_BLOB = (
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
@@ -166,6 +170,7 @@ class SimDriver:
             dtype=np.ndarray,
         )
 
+        await self.sim_signal.connect(sim=True)
         # prepare - resize the fixed hdf5 data structure
         # so that the new image can be written
         new_layer = self.written_images_counter + 1
@@ -216,8 +221,11 @@ class SimDriver:
         datasets = self._get_datasets()
 
         for d in datasets:
-            refdict = dataclasses.asdict(d)
-            file_ref_object.create_dataset(refdict)
+            file_ref_object.create_dataset(
+                name=d.name,
+                shape=d.shape,
+                dtype=d.dtype,
+            )
         file_ref_object.swmr_mode = True
 
         self._handle_for_h5_file = file_ref_object
@@ -267,10 +275,11 @@ class SimDriver:
         # when already something was written to the file
         if indices_written:
             # if no frames arrived yet, there's no file to speak of
-            # cannot get the full filename the HDF writer will write until the first frame comes in
+            # cannot get the full filename the HDF writer will write
+            # until the first frame comes in
             if not self._hdf_stream_provider:
                 assert not self._datasets, "datasets not initialized"
-                datasets =self._get_datasets()
+                datasets = self._get_datasets()
                 self._datasets = datasets
                 self._hdf_stream_provider = HdfStreamProvider(
                     self._directory_provider(),
@@ -290,8 +299,5 @@ class SimDriver:
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        # todo possibly need to use NDFileHDF
-        async for num_captured in observe_value(
-            self.written_images_counter, timeout=timeout
-        ):
+        async for num_captured in observe_value(self.sim_signal, timeout=timeout):
             yield num_captured // self.multiplier

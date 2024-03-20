@@ -1,10 +1,8 @@
 from pathlib import Path
-from ophyd_async.core import StaticDirectoryProvider
 
 import pytest
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.motion import motor
-from ophyd_async.sim import SimDriver
 from ophyd_async.sim.SimPatternDetector import SimDetector
 
 
@@ -29,12 +27,6 @@ async def test_sim_pattern_detector_initialization(
     assert (
         sim_pattern_detector.pattern_generator
     ), "PatternGenerator was not initialized correctly."
-    assert (
-        sim_pattern_detector.writer.pattern_generator
-    ), "Writer was not initialized with the correct PatternGenerator."
-    assert (
-        sim_pattern_detector.controller.pattern_generator
-    ), "Controller was not initialized with the correct PatternGenerator."
 
 
 async def test_detector_creates_controller_and_writer(

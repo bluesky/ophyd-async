@@ -36,12 +36,13 @@ class SimPatternDetectorControl(DetectorControl):
         return AsyncStatus(task)
 
     async def disarm(self):
-        self.task.cancel()
-        try:
-            await self.task
-        except asyncio.CancelledError:
-            pass
-        self.task = None
+        if self.task:
+            self.task.cancel()
+            try:
+                await self.task
+            except asyncio.CancelledError:
+                pass
+            self.task = None
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.001

@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 from ophyd_async.core.device import DeviceCollector
-from ophyd_async.epics.motion import motor
 from ophyd_async.sim import SimDetector
 
 
@@ -13,5 +12,3 @@ async def sim_pattern_detector(tmp_path_factory):
         sim_pattern_detector = SimDetector(name="PATTERN1", path=path)
 
     return sim_pattern_detector
-
-

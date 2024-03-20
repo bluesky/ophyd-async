@@ -1,8 +1,8 @@
 from unittest.mock import patch
-import pytest
 
-from ophyd_async.core.device import DeviceCollector
+import pytest
 from ophyd_async.core import StaticDirectoryProvider
+from ophyd_async.core.device import DeviceCollector
 from ophyd_async.sim import SimDriver
 from ophyd_async.sim.SimPatternDetectorWriter import SimPatternDetectorWriter
 
