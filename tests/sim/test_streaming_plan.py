@@ -3,6 +3,7 @@ from typing import Dict
 
 from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
+
 from ophyd_async.sim.SimPatternDetector import SimDetector
 
 

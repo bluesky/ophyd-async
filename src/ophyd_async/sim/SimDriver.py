@@ -1,4 +1,3 @@
-import dataclasses
 from dataclasses import dataclass
 from pathlib import Path
 from typing import (
@@ -162,6 +161,7 @@ class SimDriver:
         )
         self._hdf_stream_provider: Optional[HdfStreamProvider] = None
         self._handle_for_h5_file: Optional[h5py.File] = None
+        self.target_path: Optional[Path] = None
 
     async def write_image_to_file(self) -> None:
         assert self._handle_for_h5_file, "no file has been opened!"
@@ -214,10 +214,11 @@ class SimDriver:
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
     ) -> Dict[str, Descriptor]:
-        file_ref_object = self._get_file_ref_object(directory)
+        path, file_ref_object = await self._get_file_ref_object(directory)
         self.multiplier = multiplier
         self._directory_provider = directory
 
+        self.target_path = path
         datasets = self._get_datasets()
 
         for d in datasets:
@@ -231,7 +232,7 @@ class SimDriver:
         self._handle_for_h5_file = file_ref_object
         self._hdf_stream_provider = HdfStreamProvider(
             directory(),
-            self._handle_for_h5_file,
+            self.target_path,
             datasets,
         )
 
@@ -260,12 +261,14 @@ class SimDriver:
         datasets: List[DatasetConfig] = [raw_dataset, sum_dataset]
         return datasets
 
-    def _get_file_ref_object(self, dir: DirectoryProvider) -> h5py.File:
+    async def _get_file_ref_object(
+        self, dir: DirectoryProvider
+    ) -> tuple[Path, h5py.File]:
         info = dir()
         filename = f"{info.prefix}pattern{info.suffix}.h5"
         new_path: Path = info.root / info.resource_dir / filename
-        h5py_file_ref_object = h5py.File(new_path, "w")
-        return h5py_file_ref_object
+        h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
+        return new_path, h5py_file_ref_object
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -277,13 +280,13 @@ class SimDriver:
             # if no frames arrived yet, there's no file to speak of
             # cannot get the full filename the HDF writer will write
             # until the first frame comes in
-            if not self._hdf_stream_provider:
+            if not self._hdf_stream_provider and self.target_path:
                 assert not self._datasets, "datasets not initialized"
                 datasets = self._get_datasets()
                 self._datasets = datasets
                 self._hdf_stream_provider = HdfStreamProvider(
                     self._directory_provider(),
-                    self._handle_for_h5_file,
+                    self.target_path,
                     self._datasets,
                 )
                 for doc in self._hdf_stream_provider.stream_resources():
