@@ -212,14 +212,31 @@ class SimDriver:
     def set_y(self, value: float) -> None:
         self.y = value
 
+    # todo wrap here with asyncio routines or in the test https://www.reddit.com/r/learnpython/comments/vl09en/how_does_threadpoolexecutor_work_with_asyncio/
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
     ) -> Dict[str, Descriptor]:
-        path, file_ref_object = await self._get_file_ref_object(directory)
+        info = directory()
+        filename = f"{info.prefix}pattern{info.suffix}.h5"
+        new_path: Path = info.root / info.resource_dir / filename
+        lock = asyncio.Lock()
+        await lock.acquire()
+        h5py_file_ref_object: Optional[h5py.File] = None
+        loop = asyncio.get_running_loop()
+
+        def open_h5py_file() -> h5py.File:
+            return h5py.File(new_path, "w", libver="latest")
+
+        try:
+            h5py_file_ref_object = await loop.run_in_executor(None, open_h5py_file)
+        finally:
+            lock.release()
+        assert h5py_file_ref_object, "not loaded the file right"
+        file_ref_object = h5py_file_ref_object
         self.multiplier = multiplier
         self._directory_provider = directory
 
-        self.target_path = path
+        self.target_path = new_path
         datasets = self._get_datasets()
 
         for d in datasets:
@@ -263,9 +280,9 @@ class SimDriver:
         return datasets
 
     async def _get_file_ref_object(
-        self, dir: DirectoryProvider
+        self, directory: DirectoryProvider
     ) -> tuple[Path, h5py.File]:
-        info = dir()
+        info = directory()
         filename = f"{info.prefix}pattern{info.suffix}.h5"
         new_path: Path = info.root / info.resource_dir / filename
         lock = asyncio.Lock()

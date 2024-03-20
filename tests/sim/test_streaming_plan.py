@@ -12,6 +12,9 @@ def assert_emitted(docs: Dict[str, list], **numbers: int):
     assert {name: len(d) for name, d in docs.items()} == numbers
 
 
+# NOTE the async operations with h5py are non-trival because of lack of native support for async operations
+# see https://github.com/h5py/h5py/issues/837
+ # also this https://github.com/PandABlocks/PandABlocks-client/blob/9c01c185e723810b0e10263a593f1f186c25570f/src/pandablocks/hdf.py#L74-L155
 async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
     names = []
     docs = []
