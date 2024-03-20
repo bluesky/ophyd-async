@@ -2,7 +2,7 @@
 
 import asyncio
 import functools
-from typing import Awaitable, Callable, Coroutine, List, Optional, cast
+from typing import Awaitable, Callable, List, Optional, cast
 
 from bluesky.protocols import Status
 
@@ -76,10 +76,12 @@ class AsyncStatus(Status):
             self._watchers.append(watcher)
 
     @classmethod
-    def wrap(cls, f: Callable[P, Coroutine]) -> Callable[P, "AsyncStatus"]:
+    def wrap(cls, f: Callable[P, Awaitable]) -> Callable[P, "AsyncStatus"]:
+        """Makes a function returning an Awaitable return an AsyncStatus instead."""
+
         @functools.wraps(f)
-        def wrap_f(self, *args, **kwargs) -> AsyncStatus:
-            return AsyncStatus(f(self, *args, **kwargs))
+        def wrap_f(*args, **kwargs) -> AsyncStatus:
+            return AsyncStatus(f(*args, **kwargs))
 
         return wrap_f
 
