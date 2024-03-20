@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from pathlib import Path
 from typing import (
@@ -267,7 +268,13 @@ class SimDriver:
         info = dir()
         filename = f"{info.prefix}pattern{info.suffix}.h5"
         new_path: Path = info.root / info.resource_dir / filename
-        h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
+        lock = asyncio.Lock()
+        await lock.acquire()
+        h5py_file_ref_object: Optional[h5py.File] = None
+        try:
+            h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
+        finally:
+            lock.release()
         return new_path, h5py_file_ref_object
 
     async def collect_stream_docs(
@@ -296,8 +303,10 @@ class SimDriver:
 
     def close(self) -> None:
         # self._handle_for_h5_file.close()
-        print("file closed")
-        self._handle_for_h5_file = None
+        if self._handle_for_h5_file:
+            self._handle_for_h5_file.close()
+            print("file closed")
+            self._handle_for_h5_file = None
 
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT

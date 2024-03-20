@@ -37,7 +37,7 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
     ]
 
 
-def test_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
+async def test_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
     docs = defaultdict(list)
     RE(bp.count([sim_pattern_detector]), lambda name, doc: docs[name].append(doc))
     assert_emitted(docs, start=1, descriptor=1, resource=1, datum=1, event=1, stop=1)
