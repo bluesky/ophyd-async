@@ -30,8 +30,10 @@ from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
+# DATA_PATH = "/entry/data/data"
 DATA_PATH = "/entry/data/data"
 # pixel sum path
+# SUM_PATH = "/entry/sum"
 SUM_PATH = "/entry/sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
@@ -55,8 +57,8 @@ def get_full_file_description(
 ):
     full_file_description: Dict[str, Descriptor] = {}
     for d in datasets:
-        shape = outer_shape + tuple(d.shape)
         source = f"sim://{d.name}"
+        shape = outer_shape + tuple(d.shape)
         dtype = "number" if d.shape == [1] else "array"
         descriptor = Descriptor(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
@@ -170,19 +172,10 @@ class PatternGenerator:
 
     async def write_image_to_file(self) -> None:
         assert self._handle_for_h5_file, "no file has been opened!"
-        # self._handle_for_h5_file.create_dataset(
-        #     name=f"pattern-generator-file-{self.written_images_counter}",
-        #     dtype=np.ndarray,
-        # )
-
-        # await self.sim_signal.connect(sim=True)
         # prepare - resize the fixed hdf5 data structure
         # so that the new image can be written
         new_layer = self.written_images_counter + 1
         target_dimensions = (new_layer, self.height, self.width)
-
-        self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
-        self._handle_for_h5_file[SUM_PATH].resize((new_layer,))
 
         # generate the simulated data
         intensity: float = generate_interesting_pattern(self.x, self.y)
@@ -193,16 +186,33 @@ class PatternGenerator:
             / self.saturation_exposure_time
         )
 
-        # write data to disc (intermediate step)
-        self._handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
-        self._handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
-            detector_data
-        )
+        lock = asyncio.Lock()
+        await lock.acquire()
+        loop = asyncio.get_running_loop()
 
-        # save metadata - so that it's discoverable
-        self._handle_for_h5_file[DATA_PATH].flush()
-        self._handle_for_h5_file[SUM_PATH].flush()
+        def do_all_single_threaded_stuff() -> int:
+            assert self._handle_for_h5_file, "no file has been opened!"
+            self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
+            self._handle_for_h5_file[SUM_PATH].resize((new_layer,))
 
+            # write data to disc (intermediate step)
+            self._handle_for_h5_file[DATA_PATH][
+                self.written_images_counter
+            ] = detector_data
+            self._handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
+                detector_data
+            )
+
+            # save metadata - so that it's discoverable
+            self._handle_for_h5_file[DATA_PATH].flush()
+            self._handle_for_h5_file[SUM_PATH].flush()
+            return 0
+
+        try:
+            res = await loop.run_in_executor(None, do_all_single_threaded_stuff)
+            print(f"res: {res}")
+        finally:
+            lock.release()
         # counter increment is last
         # as only at this point the new data is visible from the outside
         self.written_images_counter += 1
@@ -217,46 +227,30 @@ class PatternGenerator:
     def set_y(self, value: float) -> None:
         self.y = value
 
-    # todo wrap here with asyncio routines or in the test https://www.reddit.com/r/learnpython/comments/vl09en/how_does_threadpoolexecutor_work_with_asyncio/
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
     ) -> Dict[str, Descriptor]:
-        # await self.signal_backend.connect()
         await self.sim_signal.connect()
-        info = directory()
-        filename = f"{info.prefix}pattern{info.suffix}.h5"
-        new_path: Path = info.root / info.resource_dir / filename
-        # lock = asyncio.Lock()
-        # await lock.acquire()
-        # h5py_file_ref_object: Optional[h5py.File] = None
-        # loop = asyncio.get_running_loop()
 
-        # def open_h5py_file() -> h5py.File:
-        #     return h5py.File(new_path, "w", libver="latest")
+        self.target_path = self._get_new_path(directory)
 
-        # try:
-        #     h5py_file_ref_object = await loop.run_in_executor(None, open_h5py_file)
-        # finally:
-        #     lock.release()
-        h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
-        assert h5py_file_ref_object, "not loaded the file right"
-        file_ref_object = h5py_file_ref_object
-        self.multiplier = multiplier
-        self._directory_provider = directory
+        self._handle_for_h5_file = h5py.File(self.target_path, "w", libver="latest")
 
-        self.target_path = new_path
+        assert self._handle_for_h5_file, "not loaded the file right"
+
         datasets = self._get_datasets()
-
         for d in datasets:
-            file_ref_object.create_dataset(
+            self._handle_for_h5_file.create_dataset(
                 name=d.name,
                 shape=d.shape,
                 dtype=d.dtype,
                 maxshape=d.maxshape,
             )
-        file_ref_object.swmr_mode = True
 
-        self._handle_for_h5_file = file_ref_object
+        # once datasets written, can switch the model to single writer multiple reader
+        self._handle_for_h5_file.swmr_mode = True
+
+        assert self.target_path, "target path not set"
         self._hdf_stream_provider = HdfStreamProvider(
             directory(),
             self.target_path,
@@ -264,21 +258,32 @@ class PatternGenerator:
         )
 
         outer_shape = (multiplier,) if multiplier > 1 else ()
-        print("file opened")
         full_file_description = get_full_file_description(datasets, outer_shape)
+
+        # cache state to self
         self._datasets = datasets
+        self.multiplier = multiplier
+        self._directory_provider = directory
         return full_file_description
 
+    def _get_new_path(self, directory: DirectoryProvider) -> Path:
+        info = directory()
+        filename = f"{info.prefix}pattern{info.suffix}.h5"
+        new_path: Path = info.root / info.resource_dir / filename
+        return new_path
+
     def _get_datasets(self) -> List[DatasetConfig]:
+        data_name = DATA_PATH.replace("/", "_")
+        sum_name = SUM_PATH.replace("/", "_")
         raw_dataset = DatasetConfig(
-            name=DATA_PATH,
+            name=data_name,
             dtype=np.uint8,
             shape=(1, self.height, self.width),
             maxshape=(None, self.height, self.width),
         )
 
         sum_dataset = DatasetConfig(
-            name=SUM_PATH,
+            name=sum_name,
             dtype=np.float64,
             shape=(1,),
             maxshape=(None,),
