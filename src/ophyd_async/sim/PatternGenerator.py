@@ -20,6 +20,7 @@ from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
     StreamDatum,
+    StreamRange,
     StreamResource,
 )
 
@@ -104,8 +105,8 @@ class HdfStreamProvider:
 
         bundles: List[ComposeStreamResourceBundle] = []
 
-        for d in datasets:
-            bundle: ComposeStreamResourceBundle = bundler_composer(
+        bundles = [
+            bundler_composer(
                 spec=SLICE_NAME,
                 root=root,
                 resource_path=path,
@@ -116,7 +117,8 @@ class HdfStreamProvider:
                     "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
                 },
             )
-            bundles += bundle
+            for d in datasets
+        ]
         return bundles
 
     def stream_resources(self) -> Iterator[StreamResource]:
@@ -126,13 +128,13 @@ class HdfStreamProvider:
     def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
         # Indices are relative to resource
         if indices_written > self._last_emitted:
-            indices = dict(
+            updated_stream_range = StreamRange(
                 start=self._last_emitted,
                 stop=indices_written,
             )
             self._last_emitted = indices_written
             for bundle in self._bundles:
-                yield bundle.compose_stream_datum(indices)
+                yield bundle.compose_stream_datum(indices=updated_stream_range)
         return None
 
     def close(self) -> None:
@@ -327,8 +329,9 @@ class PatternGenerator:
                 )
                 for doc in self._hdf_stream_provider.stream_resources():
                     yield "stream_resource", doc
-        for doc in self._hdf_stream_provider.stream_data(indices_written):
-            yield "stream_datum", doc
+        if self._hdf_stream_provider:
+            for doc in self._hdf_stream_provider.stream_data(indices_written):
+                yield "stream_datum", doc
 
     def close(self) -> None:
         # self._handle_for_h5_file.close()
