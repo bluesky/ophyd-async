@@ -166,10 +166,10 @@ class SimDriver:
 
     async def write_image_to_file(self) -> None:
         assert self._handle_for_h5_file, "no file has been opened!"
-        self._handle_for_h5_file.create_dataset(
-            name=f"pattern-generator-file-{self.written_images_counter}",
-            dtype=np.ndarray,
-        )
+        # self._handle_for_h5_file.create_dataset(
+        #     name=f"pattern-generator-file-{self.written_images_counter}",
+        #     dtype=np.ndarray,
+        # )
 
         await self.sim_signal.connect(sim=True)
         # prepare - resize the fixed hdf5 data structure
@@ -279,20 +279,20 @@ class SimDriver:
         datasets: List[DatasetConfig] = [raw_dataset, sum_dataset]
         return datasets
 
-    async def _get_file_ref_object(
-        self, directory: DirectoryProvider
-    ) -> tuple[Path, h5py.File]:
-        info = directory()
-        filename = f"{info.prefix}pattern{info.suffix}.h5"
-        new_path: Path = info.root / info.resource_dir / filename
-        lock = asyncio.Lock()
-        await lock.acquire()
-        h5py_file_ref_object: Optional[h5py.File] = None
-        try:
-            h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
-        finally:
-            lock.release()
-        return new_path, h5py_file_ref_object
+    # async def _get_file_ref_object(
+    #     self, directory: DirectoryProvider
+    # ) -> tuple[Path, h5py.File]:
+    #     info = directory()
+    #     filename = f"{info.prefix}pattern{info.suffix}.h5"
+    #     new_path: Path = info.root / info.resource_dir / filename
+    #     lock = asyncio.Lock()
+    #     await lock.acquire()
+    #     h5py_file_ref_object: Optional[h5py.File] = None
+    #     try:
+    #         h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
+    #     finally:
+    #         lock.release()
+    #     return new_path, h5py_file_ref_object
 
     async def collect_stream_docs(
         self, indices_written: int

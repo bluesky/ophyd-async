@@ -38,6 +38,7 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
         "event",
         "stop",
     ]
+    sim_pattern_detector.writer.close()
 
 
 async def test_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
@@ -45,3 +46,5 @@ async def test_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
     RE(bp.count([sim_pattern_detector]), lambda name, doc: docs[name].append(doc))
     assert_emitted(docs, start=1, descriptor=1, resource=1, datum=1, event=1, stop=1)
     assert docs["event"][0]["data"] == defaultdict(list, {"sim_pattern_detector": [1]})
+    sim_pattern_detector.writer.close()
+
