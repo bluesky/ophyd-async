@@ -1,14 +1,14 @@
 from ophyd_async.epics.motion.motor import Motor
 from ophyd_async.epics.signal.signal import epics_signal_rw
-from ophyd_async.sim import SimDriver
+from ophyd_async.sim import PatternGenerator
 
 
 class SimSample:
     x_motor = epics_signal_rw(Motor, "x_motor")
     y_motor = epics_signal_rw(Motor, "y_motor")
-    patternGenerator: SimDriver
+    patternGenerator: PatternGenerator
 
-    def __init__(self, patternGenerator: SimDriver) -> None:
+    def __init__(self, patternGenerator: PatternGenerator) -> None:
         self.patternGenerator = patternGenerator
 
     def set_x(self, value: float) -> None:

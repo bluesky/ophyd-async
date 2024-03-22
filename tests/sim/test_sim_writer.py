@@ -4,14 +4,14 @@ import pytest
 
 from ophyd_async.core import StaticDirectoryProvider
 from ophyd_async.core.device import DeviceCollector
-from ophyd_async.sim import SimDriver
+from ophyd_async.sim import PatternGenerator
 from ophyd_async.sim.SimPatternDetectorWriter import SimPatternDetectorWriter
 
 
 @pytest.fixture
 async def writer(tmp_path) -> SimPatternDetectorWriter:
     async with DeviceCollector(sim=True):
-        driver = SimDriver()
+        driver = PatternGenerator()
     directory = StaticDirectoryProvider(tmp_path)
 
     return SimPatternDetectorWriter(driver, directory)
@@ -22,9 +22,9 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
         descriptor = await writer.open()
 
     assert descriptor == {
-        "test": {
+        "/entry/data/data": {
             "source": "sim://HDF:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": (1, 240, 320),
             "dtype": "array",
             "external": "STREAM:",
         }
@@ -34,7 +34,7 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
 
 
 async def test_collect_stream_docs(writer: SimPatternDetectorWriter):
-    assert writer.driver._handle_for_h5_file is None
+    assert writer.pattern_generator._handle_for_h5_file is None
 
     [item async for item in writer.collect_stream_docs(1)]
-    assert writer.driver._handle_for_h5_file
+    assert writer.pattern_generator._handle_for_h5_file

@@ -4,18 +4,18 @@ from typing import Optional
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
-from ophyd_async.sim.SimDriver import SimDriver
+from ophyd_async.sim.PatternGenerator import PatternGenerator
 
 
 class SimPatternDetectorControl(DetectorControl):
     def __init__(
         self,
-        driver: SimDriver,
+        pattern_generator: PatternGenerator,
         directory_provider: DirectoryProvider,
         exposure: float = 0.1,
     ) -> None:
-        self.driver: SimDriver = driver
-        self.driver.set_exposure(exposure)
+        self.pattern_generator: PatternGenerator = pattern_generator
+        self.pattern_generator.set_exposure(exposure)
         self.directory_provider: DirectoryProvider = directory_provider
         self.task: Optional[asyncio.Task] = None
         super().__init__()
@@ -28,7 +28,6 @@ class SimPatternDetectorControl(DetectorControl):
     ) -> AsyncStatus:
         assert exposure is not None
         period: float = exposure + self.get_deadtime(exposure)
-        await self.driver.open_file(self.directory_provider)
         task = asyncio.create_task(
             self._coroutine_for_image_writing(exposure, period, num)
         )
@@ -51,6 +50,6 @@ class SimPatternDetectorControl(DetectorControl):
         self, exposure: float, period: float, frames_number: int
     ):
         for _ in range(frames_number):
-            self.driver.set_exposure(exposure)
+            self.pattern_generator.set_exposure(exposure)
             await asyncio.sleep(period)
-            await self.driver.write_image_to_file()
+            await self.pattern_generator.write_image_to_file()

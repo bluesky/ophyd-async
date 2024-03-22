@@ -116,6 +116,10 @@ class HDFWriter(DetectorWriter):
                     path,
                     self._datasets,
                 )
+                # stream resource says "here is a dataset",
+                # stream datum says "here are N frames in that stream resource",
+                # you get one stream resource and many stream datums per scan
+
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):

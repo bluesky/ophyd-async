@@ -42,7 +42,7 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 class DatasetConfig:
     name: str
     shape: Sequence[int]
-    maxshape: tuple[Union[None, int], ...] = (None, None, None)
+    maxshape: tuple[Any, ...] = (None,)
     path: Optional[str] = None
     multiplier: Optional[int] = 1
     dtype: Optional[Any] = None
@@ -55,10 +55,12 @@ def get_full_file_description(
     full_file_description: Dict[str, Descriptor] = {}
     for d in datasets:
         shape = outer_shape + tuple(d.shape)
-        source = (f"sim://{d.name}",)
-        dtype = ("number" if d.shape == [1] else "array",)
-        value = Descriptor(source=source, shape=shape, dtype=dtype, external="stream:")
-        full_file_description[d.name] = value
+        source = f"sim://{d.name}"
+        dtype = "number" if d.shape == [1] else "array"
+        descriptor = Descriptor(
+            source=source, shape=shape, dtype=dtype, external="STREAM:"
+        )
+        full_file_description[d.name] = descriptor
     return full_file_description
 
 
@@ -138,7 +140,7 @@ class HdfStreamProvider:
             bundle.close()
 
 
-class SimDriver:
+class PatternGenerator:
     def __init__(
         self,
         saturation_exposure_time: float = 1,
@@ -153,9 +155,9 @@ class SimDriver:
         self.width = detector_width
         self.written_images_counter: int = 0
 
-        self.sim_signal = SignalR(
-            SimSignalBackend(int, str(self.written_images_counter))
-        )
+        # it automatically initializes to 0
+        self.signal_backend = SimSignalBackend(int, "sim://sim_images_counter")
+        self.sim_signal = SignalR(self.signal_backend)
         self.STARTING_BLOB = (
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
@@ -171,14 +173,14 @@ class SimDriver:
         #     dtype=np.ndarray,
         # )
 
-        await self.sim_signal.connect(sim=True)
+        # await self.sim_signal.connect(sim=True)
         # prepare - resize the fixed hdf5 data structure
         # so that the new image can be written
         new_layer = self.written_images_counter + 1
         target_dimensions = (new_layer, self.height, self.width)
 
         self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
-        self._handle_for_h5_file[SUM_PATH].resize(new_layer)
+        self._handle_for_h5_file[SUM_PATH].resize((new_layer,))
 
         # generate the simulated data
         intensity: float = generate_interesting_pattern(self.x, self.y)
@@ -202,6 +204,7 @@ class SimDriver:
         # counter increment is last
         # as only at this point the new data is visible from the outside
         self.written_images_counter += 1
+        await self.signal_backend.put(self.written_images_counter)
 
     def set_exposure(self, value: float) -> None:
         self.exposure = value
@@ -216,21 +219,24 @@ class SimDriver:
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
     ) -> Dict[str, Descriptor]:
+        # await self.signal_backend.connect()
+        await self.sim_signal.connect()
         info = directory()
         filename = f"{info.prefix}pattern{info.suffix}.h5"
         new_path: Path = info.root / info.resource_dir / filename
-        lock = asyncio.Lock()
-        await lock.acquire()
-        h5py_file_ref_object: Optional[h5py.File] = None
-        loop = asyncio.get_running_loop()
+        # lock = asyncio.Lock()
+        # await lock.acquire()
+        # h5py_file_ref_object: Optional[h5py.File] = None
+        # loop = asyncio.get_running_loop()
 
-        def open_h5py_file() -> h5py.File:
-            return h5py.File(new_path, "w", libver="latest")
+        # def open_h5py_file() -> h5py.File:
+        #     return h5py.File(new_path, "w", libver="latest")
 
-        try:
-            h5py_file_ref_object = await loop.run_in_executor(None, open_h5py_file)
-        finally:
-            lock.release()
+        # try:
+        #     h5py_file_ref_object = await loop.run_in_executor(None, open_h5py_file)
+        # finally:
+        #     lock.release()
+        h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
         assert h5py_file_ref_object, "not loaded the file right"
         file_ref_object = h5py_file_ref_object
         self.multiplier = multiplier
@@ -244,6 +250,7 @@ class SimDriver:
                 name=d.name,
                 shape=d.shape,
                 dtype=d.dtype,
+                maxshape=d.maxshape,
             )
         file_ref_object.swmr_mode = True
 
@@ -272,7 +279,7 @@ class SimDriver:
             name=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
-            maxshape=(None, None, None),
+            maxshape=(None,),
             fillvalue=-1,
         )
 
@@ -297,6 +304,11 @@ class SimDriver:
     async def collect_stream_docs(
         self, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
+        """
+        stream resource says "here is a dataset",
+        stream datum says "here are N frames in that stream resource",
+        you get one stream resource and many stream datums per scan
+        """
         if self._handle_for_h5_file:
             self._handle_for_h5_file.flush()
         # when already something was written to the file
@@ -315,7 +327,7 @@ class SimDriver:
                 )
                 for doc in self._hdf_stream_provider.stream_resources():
                     yield "stream_resource", doc
-        for doc in self._handle_for_h5_file.stream_data(indices_written):
+        for doc in self._hdf_stream_provider.stream_data(indices_written):
             yield "stream_datum", doc
 
     def close(self) -> None:
