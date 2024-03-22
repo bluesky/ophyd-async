@@ -22,9 +22,15 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
         descriptor = await writer.open()
 
     assert descriptor == {
-        "/entry/data/data": {
-            "source": "sim://HDF:FullFileName_RBV",
+        "_entry_data_data": {
+            "source": "sim://_entry_data_data",
             "shape": (1, 240, 320),
+            "dtype": "array",
+            "external": "STREAM:",
+        },
+        "_entry_sum": {
+            "source": "sim://_entry_sum",
+            "shape": (1, ),
             "dtype": "array",
             "external": "STREAM:",
         }
@@ -34,7 +40,6 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
 
 
 async def test_collect_stream_docs(writer: SimPatternDetectorWriter):
-    assert writer.pattern_generator._handle_for_h5_file is None
 
     [item async for item in writer.collect_stream_docs(1)]
     assert writer.pattern_generator._handle_for_h5_file
