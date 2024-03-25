@@ -8,7 +8,6 @@ import pytest
 from bluesky.protocols import Descriptor, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
-
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorControl,
@@ -175,6 +174,7 @@ async def test_hardware_triggered_flyable(
             detector.controller.disarm.assert_called_once  # type: ignore
 
         yield from bps.open_run()
+        yield from bps.declare_stream(flyer, detector, name="main_stream")
 
         yield from bps.kickoff(flyer)
         for detector in detector_list:
