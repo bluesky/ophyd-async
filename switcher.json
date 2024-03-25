@@ -76,6 +76,10 @@
     "url": "https://bluesky.github.io/ophyd-async/hyperion_safe_panda/"
   },
   {
+    "version": "pin-to-bluesky-alpha",
+    "url": "https://bluesky.github.io/ophyd-async/pin-to-bluesky-alpha/"
+  },
+  {
     "version": "revert-101-give_panda_name",
     "url": "https://bluesky.github.io/ophyd-async/revert-101-give_panda_name/"
   },
