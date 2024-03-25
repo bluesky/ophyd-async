@@ -175,6 +175,7 @@ async def test_hardware_triggered_flyable(
             detector.controller.disarm.assert_called_once  # type: ignore
 
         yield from bps.open_run()
+        yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)
 
         yield from bps.kickoff(flyer)
         for detector in detector_list:
@@ -199,9 +200,8 @@ async def test_hardware_triggered_flyable(
                 done = True
             yield from bps.collect(
                 *detector_list,
-                stream=True,
                 return_payload=False,
-                name="main_stream",
+                # name="main_stream",
             )
             yield from bps.sleep(0.01)
         yield from bps.wait(group="complete")
