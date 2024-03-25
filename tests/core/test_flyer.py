@@ -199,7 +199,6 @@ async def test_hardware_triggered_flyable(
                 done = True
             yield from bps.collect(
                 *detector_list,
-                stream=True,
                 return_payload=False,
                 name="main_stream",
             )

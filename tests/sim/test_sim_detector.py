@@ -28,10 +28,9 @@ async def test_detector_creates_controller_and_writer(
 
 
 async def test_writes_pattern_to_file(
-    sim_pattern_detector: SimDetector, sim_motor: motor.Motor
+    sim_pattern_detector: SimDetector, sim_motor: motor.Motor, tmp_path
 ):
-    file_path = "/tmp"
-    sim_pattern_detector = SimDetector(config_sigs=[sim_motor.describe], path=file_path)
+    sim_pattern_detector = SimDetector(config_sigs=[*sim_motor._read_signals], path=tmp_path)
 
     images_number = 2
     await sim_pattern_detector.controller.arm(num=images_number)

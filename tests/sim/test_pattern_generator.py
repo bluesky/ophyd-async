@@ -65,6 +65,7 @@ async def test_write_image_to_file(tmp_path, pattern_generator: PatternGenerator
 
     await pattern_generator.write_image_to_file()
     assert pattern_generator.written_images_counter == 1
+    assert pattern_generator._handle_for_h5_file
     assert DATA_PATH in pattern_generator._handle_for_h5_file
     assert SUM_PATH in pattern_generator._handle_for_h5_file
 
