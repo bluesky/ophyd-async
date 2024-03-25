@@ -1,4 +1,3 @@
-
 import pytest
 
 from ophyd_async.core.device import DeviceCollector

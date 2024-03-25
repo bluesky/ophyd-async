@@ -286,7 +286,7 @@ class PatternGenerator:
 
         datasets: List[DatasetConfig] = [raw_dataset, sum_dataset]
         return datasets
-    
+
     async def collect_stream_docs(
         self, indices_written: int
     ) -> AsyncIterator[StreamAsset]:

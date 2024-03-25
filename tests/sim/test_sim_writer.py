@@ -30,10 +30,10 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
         },
         "_entry_sum": {
             "source": "sim:///entry/sum",
-            "shape": (1, ),
+            "shape": (1,),
             "dtype": "array",
             "external": "STREAM:",
-        }
+        },
     }
 
     await writer.close()
