@@ -1,4 +1,3 @@
-import asyncio
 from dataclasses import dataclass
 from pathlib import Path
 from typing import (
@@ -10,7 +9,6 @@ from typing import (
     List,
     Optional,
     Sequence,
-    Union,
 )
 
 import h5py
@@ -30,10 +28,9 @@ from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
-# DATA_PATH = "/entry/data/data"
 DATA_PATH = "/entry/data/data"
+
 # pixel sum path
-# SUM_PATH = "/entry/sum"
 SUM_PATH = "/entry/sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max

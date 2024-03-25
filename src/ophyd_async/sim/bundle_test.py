@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Iterator
+
 from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
