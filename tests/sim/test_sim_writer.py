@@ -40,6 +40,6 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
 
 
 async def test_collect_stream_docs(writer: SimPatternDetectorWriter):
-
+    await writer.open()
     [item async for item in writer.collect_stream_docs(1)]
     assert writer.pattern_generator._handle_for_h5_file
