@@ -28,8 +28,8 @@ async def hdf_writer(RE) -> HDFWriter:
     return HDFWriter(
         hdf,
         StaticDirectoryProvider("some_path", "some_prefix"),
-        lambda: "test",
-        DummyShapeProvider(),
+        name_provider=lambda: "test",
+        shape_provider=DummyShapeProvider(),
     )
 
 
