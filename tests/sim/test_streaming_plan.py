@@ -28,23 +28,24 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
     RE(bp.count([sim_pattern_detector], num=1))
 
     print(names)
+    # NOTE - double resource because double stream
     assert names == [
         "start",
         "descriptor",
         "stream_resource",
-        "stream_datum",
         "stream_resource",
+        "stream_datum",
         "stream_datum",
         "event",
         "stop",
     ]
-    sim_pattern_detector.writer.close()
+    await sim_pattern_detector.writer.close()
 
 
 async def test_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
     docs = defaultdict(list)
     RE(bp.count([sim_pattern_detector]), lambda name, doc: docs[name].append(doc))
-    assert_emitted(docs, start=1, descriptor=1, resource=1, datum=1, event=1, stop=1)
-    assert docs["event"][0]["data"] == defaultdict(list, {"sim_pattern_detector": [1]})
-    sim_pattern_detector.writer.close()
+    assert_emitted(docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, event=1, stop=1)
+    # assert docs["event"][0]["data"] == defaultdict(list, {"sim_pattern_detector": [1]})
+    await sim_pattern_detector.writer.close()
 

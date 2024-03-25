@@ -63,7 +63,8 @@ def get_full_file_description(
         descriptor = Descriptor(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
         )
-        full_file_description[d.name] = descriptor
+        key = d.name.replace("/", "_")
+        full_file_description[key] = descriptor
     return full_file_description
 
 
@@ -112,7 +113,7 @@ class HdfStreamProvider:
                 spec=SLICE_NAME,
                 root=root,
                 resource_path=path,
-                data_key=d.name,
+                data_key=d.name.replace("/", "_"),
                 resource_kwargs={
                     "path": d.path,
                     "multiplier": d.multiplier,
@@ -186,33 +187,24 @@ class PatternGenerator:
             / self.saturation_exposure_time
         )
 
-        lock = asyncio.Lock()
-        await lock.acquire()
-        loop = asyncio.get_running_loop()
+        self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
 
-        def do_all_single_threaded_stuff() -> int:
-            assert self._handle_for_h5_file, "no file has been opened!"
-            self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
-            self._handle_for_h5_file[SUM_PATH].resize((new_layer,))
+        print(f"writing image {new_layer}")
+        assert self._handle_for_h5_file, "no file has been opened!"
+        self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
 
-            # write data to disc (intermediate step)
-            self._handle_for_h5_file[DATA_PATH][
-                self.written_images_counter
-            ] = detector_data
-            self._handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
-                detector_data
-            )
+        self._handle_for_h5_file[SUM_PATH].resize((new_layer,))
 
-            # save metadata - so that it's discoverable
-            self._handle_for_h5_file[DATA_PATH].flush()
-            self._handle_for_h5_file[SUM_PATH].flush()
-            return 0
+        # write data to disc (intermediate step)
+        self._handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
+        self._handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
+            detector_data
+        )
 
-        try:
-            res = await loop.run_in_executor(None, do_all_single_threaded_stuff)
-            print(f"res: {res}")
-        finally:
-            lock.release()
+        # save metadata - so that it's discoverable
+        self._handle_for_h5_file[DATA_PATH].flush()
+        self._handle_for_h5_file[SUM_PATH].flush()
+
         # counter increment is last
         # as only at this point the new data is visible from the outside
         self.written_images_counter += 1
@@ -250,12 +242,12 @@ class PatternGenerator:
         # once datasets written, can switch the model to single writer multiple reader
         self._handle_for_h5_file.swmr_mode = True
 
-        assert self.target_path, "target path not set"
-        self._hdf_stream_provider = HdfStreamProvider(
-            directory(),
-            self.target_path,
-            datasets,
-        )
+        # assert self.target_path, "target path not set"
+        # self._hdf_stream_provider = HdfStreamProvider(
+        #     directory(),
+        #     self.target_path,
+        #     datasets,
+        # )
 
         outer_shape = (multiplier,) if multiplier > 1 else ()
         full_file_description = get_full_file_description(datasets, outer_shape)
@@ -273,17 +265,19 @@ class PatternGenerator:
         return new_path
 
     def _get_datasets(self) -> List[DatasetConfig]:
-        data_name = DATA_PATH.replace("/", "_")
-        sum_name = SUM_PATH.replace("/", "_")
+        # data_name = DATA_PATH.replace("/", "_")
+        # sum_name = SUM_PATH.replace("/", "_")
         raw_dataset = DatasetConfig(
-            name=data_name,
+            # name=data_name,
+            name=DATA_PATH,
             dtype=np.uint8,
             shape=(1, self.height, self.width),
             maxshape=(None, self.height, self.width),
         )
 
         sum_dataset = DatasetConfig(
-            name=sum_name,
+            # name=sum_name,
+            name=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
             maxshape=(None,),
@@ -292,22 +286,7 @@ class PatternGenerator:
 
         datasets: List[DatasetConfig] = [raw_dataset, sum_dataset]
         return datasets
-
-    # async def _get_file_ref_object(
-    #     self, directory: DirectoryProvider
-    # ) -> tuple[Path, h5py.File]:
-    #     info = directory()
-    #     filename = f"{info.prefix}pattern{info.suffix}.h5"
-    #     new_path: Path = info.root / info.resource_dir / filename
-    #     lock = asyncio.Lock()
-    #     await lock.acquire()
-    #     h5py_file_ref_object: Optional[h5py.File] = None
-    #     try:
-    #         h5py_file_ref_object = h5py.File(new_path, "w", libver="latest")
-    #     finally:
-    #         lock.release()
-    #     return new_path, h5py_file_ref_object
-
+    
     async def collect_stream_docs(
         self, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
@@ -323,8 +302,9 @@ class PatternGenerator:
             # if no frames arrived yet, there's no file to speak of
             # cannot get the full filename the HDF writer will write
             # until the first frame comes in
-            if not self._hdf_stream_provider and self.target_path:
-                assert not self._datasets, "datasets not initialized"
+            if not self._hdf_stream_provider:
+                assert self.target_path, "open file has not been called"
+                # assert not self._datasets, "datasets not initialized"
                 datasets = self._get_datasets()
                 self._datasets = datasets
                 self._hdf_stream_provider = HdfStreamProvider(
@@ -334,9 +314,9 @@ class PatternGenerator:
                 )
                 for doc in self._hdf_stream_provider.stream_resources():
                     yield "stream_resource", doc
-        if self._hdf_stream_provider:
-            for doc in self._hdf_stream_provider.stream_data(indices_written):
-                yield "stream_datum", doc
+            if self._hdf_stream_provider:
+                for doc in self._hdf_stream_provider.stream_data(indices_written):
+                    yield "stream_datum", doc
 
     def close(self) -> None:
         # self._handle_for_h5_file.close()
