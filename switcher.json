@@ -36,6 +36,10 @@
     "url": "https://bluesky.github.io/ophyd-async/add-position-and-compression-to-hdf/"
   },
   {
+    "version": "add-vimba-support",
+    "url": "https://bluesky.github.io/ophyd-async/add-vimba-support/"
+  },
+  {
     "version": "add_hdf_writer",
     "url": "https://bluesky.github.io/ophyd-async/add_hdf_writer/"
   },
