@@ -9,7 +9,7 @@ import pytest
 from ophyd_async.core import DeviceCollector
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger
-from ophyd_async.panda.panda import _remove_inconsistent_blocks
+from ophyd_async.panda.panda import DataBlock, _remove_inconsistent_blocks
 
 
 class DummyDict:
@@ -113,7 +113,15 @@ async def test_panda_with_missing_blocks(pva):
 
 
 async def test_panda_with_extra_blocks_and_signals(pva):
-    panda = PandA("PANDAQSRV:")
+
+    class PandaNoData(PandA):
+        data: DataBlock
+
+    panda = PandaNoData("PANDAQSRV:")
+
+    # Hacky way to not include data PVs in this test without affecting other tests
+    del panda.__annotations__["data"]
+
     await panda.connect()
 
     assert panda.extra  # type: ignore

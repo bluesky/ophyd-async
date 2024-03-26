@@ -16,6 +16,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.pvi import PVIEntry, make_signal, pvi_get
 from ophyd_async.panda.table import SeqTable
+from ophyd_async.panda.utils import PVIEntry
 
 
 class PulseBlock(Device):
@@ -31,6 +32,18 @@ class SeqBlock(Device):
 class PcapBlock(Device):
     active: SignalR[bool]
     arm: SignalRW[bool]
+
+
+# When finished, use PR #147 to get the correct enum
+class DataBlock(Device):
+    hdfdirectory: SignalRW[
+        str
+    ]  # This is the directory rather than path. Path is read only
+    hdffilename: SignalRW[str]
+    numcapture: SignalRW[int]
+    numcaptured: SignalR[int]
+    capture: SignalRW[bool]  # This is actually an Enum
+    flushperiod: SignalRW[float]
 
 
 def _block_name_number(block_name: str) -> Tuple[str, Optional[int]]:
@@ -72,9 +85,12 @@ class PandA(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
+    data: DataBlock
 
     def __init__(self, prefix: str, name: str = "") -> None:
         super().__init__(name)
+        if not prefix.endswith(":"):
+            prefix = prefix + ":"
         self._prefix = prefix
 
     def verify_block(self, name: str, num: Optional[int]):
