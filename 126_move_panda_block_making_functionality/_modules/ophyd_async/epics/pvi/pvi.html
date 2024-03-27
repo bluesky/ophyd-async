@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a2.dev3+g027b366d3 documentation</title>
+    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a2.dev3+g288e53efd documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=9131aa80"></script>
+    <script src="../../../../_static/documentation_options.js?v=196d9725"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.3a2.dev3+g027b366d3 documentation - Home"/>
-    <script>document.write(`<img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.3a2.dev3+g027b366d3 documentation - Home"/>`);</script>
+    <img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.3a2.dev3+g288e53efd documentation - Home"/>
+    <script>document.write(`<img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.3a2.dev3+g288e53efd documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -698,8 +698,6 @@ document.write(`
 
         <span class="k">if</span> <span class="n">is_signal</span><span class="p">:</span>
             <span class="n">signal_type</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">sub_device_t</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DEBUG: SIGNAL TYPE&quot;</span><span class="p">,</span> <span class="n">signal_type</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DEBUG: SIGNAL ARGS&quot;</span><span class="p">,</span> <span class="n">get_args</span><span class="p">(</span><span class="n">sub_device_t</span><span class="p">))</span>
             <span class="n">sub_device</span> <span class="o">=</span> <span class="n">sub_device_t</span><span class="p">(</span><span class="n">SimSignalBackend</span><span class="p">(</span><span class="n">signal_type</span><span class="p">,</span> <span class="n">sub_name</span><span class="p">))</span>
         <span class="k">elif</span> <span class="n">is_device_vector</span><span class="p">:</span>
             <span class="n">sub_device</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
