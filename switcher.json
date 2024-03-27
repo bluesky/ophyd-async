@@ -24,6 +24,10 @@
     "url": "https://bluesky.github.io/ophyd-async/125_panda_type_annotations_parent_class/"
   },
   {
+    "version": "126_move_panda_block_making_functionality",
+    "url": "https://bluesky.github.io/ophyd-async/126_move_panda_block_making_functionality/"
+  },
+  {
     "version": "131-make-a-simulated-detector-that-can-write-hdf-files",
     "url": "https://bluesky.github.io/ophyd-async/131-make-a-simulated-detector-that-can-write-hdf-files/"
   },

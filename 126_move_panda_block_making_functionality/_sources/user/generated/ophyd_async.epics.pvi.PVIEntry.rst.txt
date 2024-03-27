@@ -1,0 +1,40 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.pvi.PVIEntry
+===============================
+
+.. currentmodule:: ophyd_async.epics.pvi
+
+.. autoclass:: PVIEntry
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PVIEntry.device
+      ~PVIEntry.is_pvi_table
+      ~PVIEntry.sub_entries
+      ~PVIEntry.name
+      ~PVIEntry.access
+      ~PVIEntry.values
+   
+   
