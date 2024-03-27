@@ -29,7 +29,7 @@ from ophyd_async.epics.signal.signal import (
 
 T = TypeVar("T")
 Access = FrozenSet[
-    Literal["r"] | Literal["w"] | Literal["rw"] | Literal["x"] | Literal["d"]
+    Union[Literal["r"], Literal["w"], Literal["rw"], Literal["x"], Literal["d"]]
 ]
 
 
@@ -170,11 +170,15 @@ class PVIParser:
     ):
         """Recursively iterates through the tree of PVI entries and creates devices.
 
-        Args:
-            entry: The current PVI entry
-            common_device_type: The common device type for the current entry
+        Parameters
+        ----------
+            entry:
+                The current PVI entry
+            common_device_type:
+                The common device type for the current entry
                 if it exists, else None
-        Returns:
+        Returns
+        -------
             The initialised device containing it's signals, all typed.
         """
 
@@ -262,8 +266,6 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
 
         if is_signal:
             signal_type = get_args(sub_device_t)[0]
-            print("DEBUG: SIGNAL TYPE", signal_type)
-            print("DEBUG: SIGNAL ARGS", get_args(sub_device_t))
             sub_device = sub_device_t(SimSignalBackend(signal_type, sub_name))
         elif is_device_vector:
             sub_device = DeviceVector(
@@ -289,9 +291,9 @@ async def fill_pvi_entries(
     device: Device, root_pv: str, timeout=DEFAULT_TIMEOUT, sim=True
 ):
     """
-    Fills a `device` with signals from a the `root_pvi:PVI` table.
+    Fills a ``device`` with signals from a the ``root_pvi:PVI`` table.
 
-    If the device names match with parent devices of `device` then types are used.
+    If the device names match with parent devices of ``device`` then types are used.
     """
     if not sim:
         # check the pvi table for devices and fill the device with them
