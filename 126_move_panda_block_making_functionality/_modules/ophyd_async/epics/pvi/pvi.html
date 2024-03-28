@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a2.dev4+g9d4a1f4b7 documentation</title>
+    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a2.dev4+geaecd00d3 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=06fad2f5"></script>
+    <script src="../../../../_static/documentation_options.js?v=ed06e1f8"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.3a2.dev4+g9d4a1f4b7 documentation - Home"/>
-    <script>document.write(`<img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.3a2.dev4+g9d4a1f4b7 documentation - Home"/>`);</script>
+    <img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.3a2.dev4+geaecd00d3 documentation - Home"/>
+    <script>document.write(`<img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.3a2.dev4+geaecd00d3 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -572,11 +572,11 @@ document.write(`
         <span class="n">pva_table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pvi_table_signal_backend</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="n">entry</span><span class="o">.</span><span class="n">sub_entries</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">for</span> <span class="n">sub_name</span><span class="p">,</span> <span class="n">pva_enties</span> <span class="ow">in</span> <span class="n">pva_table</span><span class="p">[</span><span class="s2">&quot;pvi&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">sub_name</span><span class="p">,</span> <span class="n">pva_entries</span> <span class="ow">in</span> <span class="n">pva_table</span><span class="p">[</span><span class="s2">&quot;pvi&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">sub_entry</span> <span class="o">=</span> <span class="n">PVIEntry</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">sub_name</span><span class="p">,</span>
-                <span class="n">access</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">pva_enties</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                <span class="n">values</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">pva_enties</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                <span class="n">access</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">pva_entries</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                <span class="n">values</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">pva_entries</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
                 <span class="n">sub_entries</span><span class="o">=</span><span class="p">{},</span>
             <span class="p">)</span>
 
