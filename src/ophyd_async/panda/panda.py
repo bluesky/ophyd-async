@@ -26,7 +26,7 @@ class CommonPandABlocks(Device):
     pcap: PcapBlock
 
 
-class PandA(CommonPandABlocks, Device):
+class PandA(CommonPandABlocks):
     def __init__(self, prefix: str, name: str = "") -> None:
         self._prefix = prefix
         super().__init__(name)

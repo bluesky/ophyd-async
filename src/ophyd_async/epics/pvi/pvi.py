@@ -50,7 +50,6 @@ def _strip_union(field: Union[Union[T], T]) -> T:
         for arg in args:
             if arg is not type(None):
                 return arg
-
     return field
 
 
@@ -60,10 +59,6 @@ def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]
     return False, field
 
 
-def _get_common_device_typeypes(name: str, common_device: Type[Device]) -> Type[Device]:
-    return get_type_hints(common_device).get(name, {})
-
-
 @dataclass
 class PVIEntry:
     """
@@ -71,7 +66,6 @@ class PVIEntry:
     This could either be a signal or a sub-table.
     """
 
-    name: Optional[str]
     access: Access
     values: List[str]
     # `sub_entries` if the signal is a PVI table
@@ -85,14 +79,23 @@ class PVIEntry:
 
 
 def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
+    if not entry.sub_entries:
+        return
     common_sub_devices = get_type_hints(common_device)
     for sub_name, sub_device in common_sub_devices.items():
         if sub_name in ("_name", "parent"):
             continue
         assert entry.sub_entries
-        if sub_name not in entry.sub_entries:
+        if sub_name not in entry.sub_entries and get_origin(sub_device) is not Optional:
             raise RuntimeError(
                 f"sub device `{sub_name}:{type(sub_device)}` was not provided by pvi"
+            )
+        if isinstance(entry.sub_entries[sub_name], dict):
+            for sub_sub_entry in entry.sub_entries[sub_name].values():  # type: ignore
+                _verify_common_blocks(sub_sub_entry, sub_device)  # type: ignore
+        else:
+            _verify_common_blocks(
+                entry.sub_entries[sub_name], sub_device  # type: ignore
             )
 
 
@@ -118,7 +121,7 @@ class PVIParser:
         timeout=DEFAULT_TIMEOUT,
     ):
         self.root_entry = PVIEntry(
-            name=None, access=frozenset({"d"}), values=[root_pv], sub_entries={}
+            access=frozenset({"d"}), values=[root_pv], sub_entries={}
         )
         self.timeout = timeout
 
@@ -142,7 +145,6 @@ class PVIParser:
 
         for sub_name, pva_entries in pva_table["pvi"].items():
             sub_entry = PVIEntry(
-                name=sub_name,
                 access=frozenset(pva_entries.keys()),
                 values=list(pva_entries.values()),
                 sub_entries={},
@@ -183,12 +185,13 @@ class PVIParser:
         """
 
         assert entry.sub_entries
+        common_device_type_hints = (
+            get_type_hints(common_device_type) if common_device_type else None
+        )
         for sub_name, sub_entries in entry.sub_entries.items():
             sub_common_device_type = None
-            if common_device_type:
-                sub_common_device_type = _get_common_device_typeypes(
-                    sub_name, common_device_type
-                )
+            if common_device_type_hints:
+                sub_common_device_type = common_device_type_hints.get(sub_name, None)
                 sub_common_device_type = _strip_union(sub_common_device_type)
                 pre_defined_device_vector, sub_common_device_type = (
                     _strip_device_vector(sub_common_device_type)
@@ -253,7 +256,6 @@ class PVIParser:
 
 
 def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
-
     device_t = stripped_type or type(device)
     for sub_name, sub_device_t in get_type_hints(device_t).items():
         if sub_name in ("_name", "parent"):
@@ -262,18 +264,30 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
         # we'll take the first type in the union which isn't NoneType
         sub_device_t = _strip_union(sub_device_t)
         is_device_vector, sub_device_t = _strip_device_vector(sub_device_t)
-        is_signal = (origin := get_origin(sub_device_t)) and issubclass(origin, Signal)
+        is_signal = (
+            (origin := get_origin(sub_device_t)) and issubclass(origin, Signal)
+        ) or (issubclass(sub_device_t, Signal))
 
-        if is_signal:
-            signal_type = get_args(sub_device_t)[0]
-            sub_device = sub_device_t(SimSignalBackend(signal_type, sub_name))
-        elif is_device_vector:
+        if is_device_vector and is_signal:
+            signal_type = args[0] if (args := get_args(sub_device_t)) else None
+            sub_device_1 = sub_device_t(SimSignalBackend(signal_type, sub_name))
+            sub_device_2 = sub_device_t(SimSignalBackend(signal_type, sub_name))
+            sub_device = DeviceVector(
+                {
+                    1: sub_device_1,
+                    2: sub_device_2,
+                }
+            )
+        elif is_device_vector and not is_signal:
             sub_device = DeviceVector(
                 {
                     1: sub_device_t(name=f"{device.name}-{sub_name}-1"),
                     2: sub_device_t(name=f"{device.name}-{sub_name}-2"),
                 }
             )
+        elif is_signal:
+            signal_type = args[0] if (args := get_args(sub_device_t)) else None
+            sub_device = sub_device_t(SimSignalBackend(signal_type, sub_name))
         else:
             sub_device = sub_device_t(name=f"{device.name}-{sub_name}")
 
@@ -288,20 +302,19 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
 
 
 async def fill_pvi_entries(
-    device: Device, root_pv: str, timeout=DEFAULT_TIMEOUT, sim=True
+    device: Device, root_pv: str, timeout=DEFAULT_TIMEOUT, sim=False
 ):
     """
     Fills a ``device`` with signals from a the ``root_pvi:PVI`` table.
 
     If the device names match with parent devices of ``device`` then types are used.
     """
-    if not sim:
+    if sim:
+        # set up sim signals for the common annotations
+        _sim_common_blocks(device)
+    else:
         # check the pvi table for devices and fill the device with them
         parser = PVIParser(root_pv, timeout=timeout)
         await parser.get_pvi_entries()
         parser.root_entry.device = device
         parser.initialize_device(parser.root_entry, common_device_type=type(device))
-
-    if sim:
-        # set up sim signals for the common annotations
-        _sim_common_blocks(device)
