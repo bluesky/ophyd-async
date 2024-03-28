@@ -6,10 +6,17 @@ from typing import Dict
 import numpy as np
 import pytest
 
-from ophyd_async.core import DeviceCollector
+from ophyd_async.core import Device, DeviceCollector
 from ophyd_async.core.utils import NotConnected
-from ophyd_async.panda import PandA, PVIEntry, SeqTable, SeqTrigger
-from ophyd_async.panda.panda import _remove_inconsistent_blocks
+from ophyd_async.epics.pvi import PVIEntry
+from ophyd_async.panda import (
+    PandA,
+    PcapBlock,
+    PulseBlock,
+    SeqBlock,
+    SeqTable,
+    SeqTrigger,
+)
 
 
 class DummyDict:
@@ -55,21 +62,6 @@ def test_panda_name_set():
     assert panda.name == "panda"
 
 
-async def test_inconsistent_blocks():
-    dummy_pvi = {
-        "pcap": {},
-        "pcap1": {},
-        "pulse1": {},
-        "pulse2": {},
-        "sfp3_sync_out1": {},
-        "sfp3_sync_out": {},
-    }
-
-    _remove_inconsistent_blocks(dummy_pvi)
-    assert "sfp3_sync_out1" not in dummy_pvi
-    assert "pcap1" not in dummy_pvi
-
-
 async def test_panda_children_connected(sim_panda: PandA):
     # try to set and retrieve from simulated values...
     table = SeqTable(
@@ -106,13 +98,17 @@ async def test_panda_children_connected(sim_panda: PandA):
     assert readback_seq == table
 
 
-async def test_panda_with_missing_blocks(pva):
+async def test_panda_with_missing_blocks(panda_pva):
     panda = PandA("PANDAQSRVI:")
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError) as exc:
         await panda.connect()
+    assert (
+        str(exc.value)
+        == "sub device `pcap:<class 'typing._ProtocolMeta'>` was not provided by pvi"
+    )
 
 
-async def test_panda_with_extra_blocks_and_signals(pva):
+async def test_panda_with_extra_blocks_and_signals(panda_pva):
     panda = PandA("PANDAQSRV:")
     await panda.connect()
 
@@ -122,13 +118,35 @@ async def test_panda_with_extra_blocks_and_signals(pva):
     assert panda.pcap.newsignal  # type: ignore
 
 
-async def test_panda_block_missing_signals(pva):
+async def test_panda_gets_types_from_common_class(panda_pva):
+    panda = PandA("PANDAQSRV:")
+    await panda.connect()
+
+    # sub devices have the correct types
+    assert isinstance(panda.pcap, PcapBlock)
+    assert isinstance(panda.seq[1], SeqBlock)
+    assert isinstance(panda.pulse[1], PulseBlock)
+
+    # others are just Devices
+    assert isinstance(panda.extra, Device)
+
+    # predefined signals get set up with the correct datatype
+    assert panda.pcap.active._backend.datatype is bool
+
+    # works with custom datatypes
+    assert panda.seq[1].table._backend.datatype is SeqTable
+
+    # others are given the None datatype
+    assert panda.pcap.newsignal._backend.datatype is None
+
+
+async def test_panda_block_missing_signals(panda_pva):
     panda = PandA("PANDAQSRVIB:")
 
     with pytest.raises(Exception) as exc:
         await panda.connect()
         assert (
-            exc.__str__
+            str(exc)
             == "PandA has a pulse block containing a width signal which has not been "
             + "retrieved by PVI."
         )
