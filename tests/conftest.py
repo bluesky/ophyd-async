@@ -8,7 +8,7 @@ from typing import Any, Callable
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
-RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
+PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
     Path(__file__).parent / "panda" / "db" / "incomplete_block_panda.db"
 )
@@ -39,7 +39,7 @@ def RE(request):
 
 
 @pytest.fixture(scope="module", params=["pva"])
-def pva():
+def panda_pva():
     processes = [
         subprocess.Popen(
             [
@@ -49,7 +49,7 @@ def pva():
                 "-m",
                 macros,
                 "-d",
-                RECORD,
+                PANDA_RECORD,
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,

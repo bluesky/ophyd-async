@@ -98,7 +98,7 @@ async def test_panda_children_connected(sim_panda: PandA):
     assert readback_seq == table
 
 
-async def test_panda_with_missing_blocks(pva):
+async def test_panda_with_missing_blocks(panda_pva):
     panda = PandA("PANDAQSRVI:")
     with pytest.raises(RuntimeError) as exc:
         await panda.connect()
@@ -108,7 +108,7 @@ async def test_panda_with_missing_blocks(pva):
     )
 
 
-async def test_panda_with_extra_blocks_and_signals(pva):
+async def test_panda_with_extra_blocks_and_signals(panda_pva):
     panda = PandA("PANDAQSRV:")
     await panda.connect()
 
@@ -118,7 +118,7 @@ async def test_panda_with_extra_blocks_and_signals(pva):
     assert panda.pcap.newsignal  # type: ignore
 
 
-async def test_panda_gets_types_from_common_class(pva):
+async def test_panda_gets_types_from_common_class(panda_pva):
     panda = PandA("PANDAQSRV:")
     await panda.connect()
 
@@ -133,11 +133,14 @@ async def test_panda_gets_types_from_common_class(pva):
     # predefined signals get set up with the correct datatype
     assert panda.pcap.active._backend.datatype is bool
 
+    # works with custom datatypes
+    assert panda.seq[1].table._backend.datatype is SeqTable
+
     # others are given the None datatype
     assert panda.pcap.newsignal._backend.datatype is None
 
 
-async def test_panda_block_missing_signals(pva):
+async def test_panda_block_missing_signals(panda_pva):
     panda = PandA("PANDAQSRVIB:")
 
     with pytest.raises(Exception) as exc:

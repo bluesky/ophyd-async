@@ -60,10 +60,6 @@ def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]
     return False, field
 
 
-def _get_common_device_typeypes(name: str, common_device: Type[Device]) -> Type[Device]:
-    return get_type_hints(common_device).get(name, {})
-
-
 @dataclass
 class PVIEntry:
     """
@@ -85,14 +81,23 @@ class PVIEntry:
 
 
 def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
+    if not entry.sub_entries:
+        return
     common_sub_devices = get_type_hints(common_device)
     for sub_name, sub_device in common_sub_devices.items():
         if sub_name in ("_name", "parent"):
             continue
         assert entry.sub_entries
-        if sub_name not in entry.sub_entries:
+        if sub_name not in entry.sub_entries and get_origin(sub_device) is not Optional:
             raise RuntimeError(
                 f"sub device `{sub_name}:{type(sub_device)}` was not provided by pvi"
+            )
+        if isinstance(entry.sub_entries[sub_name], dict):
+            for sub_sub_entry in entry.sub_entries[sub_name].values():  # type: ignore
+                _verify_common_blocks(sub_sub_entry, sub_device)  # type: ignore
+        else:
+            _verify_common_blocks(
+                entry.sub_entries[sub_name], sub_device  # type: ignore
             )
 
 
@@ -183,12 +188,13 @@ class PVIParser:
         """
 
         assert entry.sub_entries
+        common_device_type_hints = (
+            get_type_hints(common_device_type) if common_device_type else None
+        )
         for sub_name, sub_entries in entry.sub_entries.items():
             sub_common_device_type = None
-            if common_device_type:
-                sub_common_device_type = _get_common_device_typeypes(
-                    sub_name, common_device_type
-                )
+            if common_device_type_hints:
+                sub_common_device_type = common_device_type_hints.get(sub_name, None)
                 sub_common_device_type = _strip_union(sub_common_device_type)
                 pre_defined_device_vector, sub_common_device_type = (
                     _strip_device_vector(sub_common_device_type)
@@ -262,18 +268,30 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
         # we'll take the first type in the union which isn't NoneType
         sub_device_t = _strip_union(sub_device_t)
         is_device_vector, sub_device_t = _strip_device_vector(sub_device_t)
-        is_signal = (origin := get_origin(sub_device_t)) and issubclass(origin, Signal)
+        is_signal = (
+            (origin := get_origin(sub_device_t)) and issubclass(origin, Signal)
+        ) or (issubclass(sub_device_t, Signal))
 
-        if is_signal:
-            signal_type = get_args(sub_device_t)[0]
-            sub_device = sub_device_t(SimSignalBackend(signal_type, sub_name))
-        elif is_device_vector:
+        if is_device_vector and is_signal:
+            signal_type = args[0] if (args := get_args(sub_device_t)) else None
+            sub_device_1 = sub_device_t(SimSignalBackend(signal_type, sub_name))
+            sub_device_2 = sub_device_t(SimSignalBackend(signal_type, sub_name))
+            sub_device = DeviceVector(
+                {
+                    1: sub_device_1,
+                    2: sub_device_2,
+                }
+            )
+        elif is_device_vector and not is_signal:
             sub_device = DeviceVector(
                 {
                     1: sub_device_t(name=f"{device.name}-{sub_name}-1"),
                     2: sub_device_t(name=f"{device.name}-{sub_name}-2"),
                 }
             )
+        elif is_signal:
+            signal_type = args[0] if (args := get_args(sub_device_t)) else None
+            sub_device = sub_device_t(SimSignalBackend(signal_type, sub_name))
         else:
             sub_device = sub_device_t(name=f"{device.name}-{sub_name}")
 
