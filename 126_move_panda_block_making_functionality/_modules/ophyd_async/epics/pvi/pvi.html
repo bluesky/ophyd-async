@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a2.dev4+g1252ffac7 documentation</title>
+    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a2.dev4+g9d4a1f4b7 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=f96021f4"></script>
+    <script src="../../../../_static/documentation_options.js?v=06fad2f5"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -124,8 +124,8 @@
       
     
     
-    <img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.3a2.dev4+g1252ffac7 documentation - Home"/>
-    <script>document.write(`<img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.3a2.dev4+g1252ffac7 documentation - Home"/>`);</script>
+    <img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt="ophyd-async 0.3a2.dev4+g9d4a1f4b7 documentation - Home"/>
+    <script>document.write(`<img src="../../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt="ophyd-async 0.3a2.dev4+g9d4a1f4b7 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -431,7 +431,6 @@ document.write(`
     <span class="n">Type</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
-    <span class="n">cast</span><span class="p">,</span>
     <span class="n">get_args</span><span class="p">,</span>
     <span class="n">get_origin</span><span class="p">,</span>
     <span class="n">get_type_hints</span><span class="p">,</span>
@@ -520,7 +519,9 @@ document.write(`
             <span class="k">for</span> <span class="n">sub_sub_entry</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">sub_entries</span><span class="p">[</span><span class="n">sub_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
                 <span class="n">_verify_common_blocks</span><span class="p">(</span><span class="n">sub_sub_entry</span><span class="p">,</span> <span class="n">sub_device</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">_verify_common_blocks</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">sub_entries</span><span class="p">[</span><span class="n">sub_name</span><span class="p">],</span> <span class="n">sub_device</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">_verify_common_blocks</span><span class="p">(</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">sub_entries</span><span class="p">[</span><span class="n">sub_name</span><span class="p">],</span> <span class="n">sub_device</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
 
 
 <span class="n">_pvi_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">FrozenSet</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Signal</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
