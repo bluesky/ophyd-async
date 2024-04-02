@@ -1,10 +1,9 @@
 import asyncio
 from typing import Dict
-from unittest.mock import Mock, call
+from unittest.mock import ANY, Mock, call
 
 import pytest
 from bluesky.protocols import Reading
-
 from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
@@ -95,6 +94,28 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
     done2 = Mock()
     s.add_callback(done2)
     done2.assert_called_once_with(s)
+
+
+async def test_sensor_reading_shows_value(sim_sensor: demo.Sensor):
+    # Check default value
+    assert (await sim_sensor.value.get_value()) == pytest.approx(0.0)
+    assert (await sim_sensor.read()) == {
+        "sim_sensor-value": {
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": 0.0,
+        }
+    }
+
+    # Check different value
+    set_sim_value(sim_sensor.value, 5.0)
+    assert (await sim_sensor.read()) == {
+        "sim_sensor-value": {
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": 5.0,
+        }
+    }
 
 
 async def test_mover_stopped(sim_mover: demo.Mover):
