@@ -11,7 +11,7 @@ Testing ophyd-async devices using tools like mocking, patching, and fixtures can
 Async Tests
 -----------
 
-`pytest-asyncio <https://github.com/pytest-dev/pytest-asyncio>`_ is required for async tests. It is should be included as a dev dependency of your project. Tests can either be decorated with `@pytest.mark.asyncio` or the project can be automatically configured to detect async tests.
+`pytest-asyncio <https://github.com/pytest-dev/pytest-asyncio>`_ is required for async tests. It is should be included as a dev dependency of your project. Tests can either be decorated with ``@pytest.mark.asyncio`` or the project can be automatically configured to detect async tests.
 
 .. code:: toml
 
