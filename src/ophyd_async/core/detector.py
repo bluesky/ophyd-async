@@ -83,20 +83,21 @@ class DetectorControl(ABC):
         trigger: DetectorTrigger = DetectorTrigger.internal,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
-        """Arm detector, do all necessary steps to prepare detector for triggers.
+        """
+        Arm detector, do all necessary steps to prepare detector for triggers.
 
         Args:
             num: Expected number of frames
             trigger: Type of trigger for which to prepare the detector. Defaults to
-                DetectorTrigger.internal.
+            DetectorTrigger.internal.
             exposure: Exposure time with which to set up the detector. Defaults to None
-                if not applicable or the detector is expected to use its previously-set
-                exposure time.
+            if not applicable or the detector is expected to use its previously-set
+            exposure time.
 
         Returns:
             AsyncStatus: Status representing the arm operation. This function returning
-                represents the start of the arm. The returned status completing means
-                the detector is now armed.
+            represents the start of the arm. The returned status completing means
+            the detector is now armed.
         """
 
     @abstractmethod
@@ -151,8 +152,10 @@ class StandardDetector(
     WritesStreamAssets,
     Generic[T],
 ):
-    """Useful detector base class for step and fly scanning detectors.
-    Aggregates controller and writer logic together."""
+    """
+    Useful detector base class for step and fly scanning detectors.
+    Aggregates controller and writer logic together.
+    """
 
     def __init__(
         self,
@@ -169,12 +172,12 @@ class StandardDetector(
             controller: Logic for arming and disarming the detector
             writer: Logic for making the detector write persistent data
             config_sigs: Signals to read when describe and read
-                configuration are called. Defaults to ().
+            configuration are called. Defaults to ().
             name: Device name. Defaults to "".
             writer_timeout: Timeout for frame writing to start, if the
-                timeout is reached, ophyd-async assumes the detector
-                has a problem and raises an error.
-                Defaults to DEFAULT_TIMEOUT.
+            timeout is reached, ophyd-async assumes the detector
+            has a problem and raises an error.
+            Defaults to DEFAULT_TIMEOUT.
         """
         self._controller = controller
         self._writer = writer
@@ -266,7 +269,8 @@ class StandardDetector(
         return AsyncStatus(self._prepare(value))
 
     async def _prepare(self, value: T) -> None:
-        """Arm detector.
+        """
+        Arm detector.
 
         Prepare the detector with trigger information. This is determined at and passed
         in from the plan level.
