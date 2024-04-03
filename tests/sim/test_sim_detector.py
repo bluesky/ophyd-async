@@ -51,9 +51,6 @@ async def test_set_x_and_y(sim_pattern_detector):
 async def test_initial_blob(sim_pattern_detector: SimDetector):
     assert sim_pattern_detector.pattern_generator.STARTING_BLOB.any()
 
+
 async def test_initial_blob(sim_pattern_detector: SimDetector):
     assert sim_pattern_detector.pattern_generator.STARTING_BLOB.any()
-
-@pytest.mark.asyncio
-async def test_open_and_close_file(tmp_path, sim_pattern_detector: SimDetector):
-    pass
