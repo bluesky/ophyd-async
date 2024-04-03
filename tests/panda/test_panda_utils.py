@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import SignalRW, save_device
+from ophyd_async.core import save_device
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.panda import PandA
@@ -14,7 +14,7 @@ from ophyd_async.panda.utils import phase_sorter
 async def sim_panda():
     async with DeviceCollector(sim=True):
         sim_panda = PandA("PANDA")
-        sim_panda.phase_1_signal_units: SignalRW = epics_signal_rw(int, "")
+        sim_panda.phase_1_signal_units = epics_signal_rw(int, "")
     assert sim_panda.name == "sim_panda"
     yield sim_panda
 

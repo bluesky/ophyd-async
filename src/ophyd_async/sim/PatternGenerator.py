@@ -160,7 +160,10 @@ class PatternGenerator:
         # it automatically initializes to 0
         self.signal_backend = SimSignalBackend(int, "sim://sim_images_counter")
         self.sim_signal = SignalR(self.signal_backend)
-        blob = generate_gaussian_blob(width=detector_width, height=detector_height) * MAX_UINT8_VALUE
+        blob = np.array(
+            generate_gaussian_blob(width=detector_width, height=detector_height)
+            * MAX_UINT8_VALUE
+        )
         self.STARTING_BLOB = blob
         self._hdf_stream_provider: Optional[HdfStreamProvider] = None
         self._handle_for_h5_file: Optional[h5py.File] = None

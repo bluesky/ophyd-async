@@ -7,7 +7,7 @@ from ophyd_async.sim import SimDetector
 
 
 @pytest.fixture
-async def sim_pattern_detector(tmp_path_factory):
+async def sim_pattern_detector(tmp_path_factory) -> SimDetector:
     path: Path = tmp_path_factory.mktemp("tmp")
     async with DeviceCollector(sim=True):
         sim_pattern_detector = SimDetector(name="PATTERN1", path=path)
