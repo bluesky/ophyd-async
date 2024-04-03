@@ -157,7 +157,6 @@ async def test_hardware_triggered_flyable(
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
         assert flyer._trigger_logic.state == TriggerState.stopping
-        yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)
 
         # move the flyer to the correct place, before fly scanning.
         # Prepare the flyer first to get the trigger info for the detectors
@@ -176,6 +175,7 @@ async def test_hardware_triggered_flyable(
             detector.controller.disarm.assert_called_once  # type: ignore
 
         yield from bps.open_run()
+        yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)
 
         yield from bps.kickoff(flyer)
         for detector in detector_list:
