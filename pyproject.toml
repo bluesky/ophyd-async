@@ -106,6 +106,7 @@ exclude = [".tox", "venv"]
 addopts = """
     --tb=native -vv --strict-markers --doctest-modules --doctest-glob="*.rst"
     --ignore=docs/user/examples --ignore=docs/examples
+    --cov=src/ophyd_async --cov-report term --cov-report xml:cov.xml
 """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = ["error", "ignore::DeprecationWarning:pkg_resources"]

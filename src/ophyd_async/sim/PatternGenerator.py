@@ -160,10 +160,8 @@ class PatternGenerator:
         # it automatically initializes to 0
         self.signal_backend = SimSignalBackend(int, "sim://sim_images_counter")
         self.sim_signal = SignalR(self.signal_backend)
-        self.STARTING_BLOB = (
-            generate_gaussian_blob(width=detector_width, height=detector_height)
-            * MAX_UINT8_VALUE
-        )
+        blob = generate_gaussian_blob(width=detector_width, height=detector_height) * MAX_UINT8_VALUE
+        self.STARTING_BLOB = blob
         self._hdf_stream_provider: Optional[HdfStreamProvider] = None
         self._handle_for_h5_file: Optional[h5py.File] = None
         self.target_path: Optional[Path] = None
@@ -239,13 +237,6 @@ class PatternGenerator:
         # once datasets written, can switch the model to single writer multiple reader
         self._handle_for_h5_file.swmr_mode = True
 
-        # assert self.target_path, "target path not set"
-        # self._hdf_stream_provider = HdfStreamProvider(
-        #     directory(),
-        #     self.target_path,
-        #     datasets,
-        # )
-
         outer_shape = (multiplier,) if multiplier > 1 else ()
         full_file_description = get_full_file_description(datasets, outer_shape)
 
@@ -262,8 +253,6 @@ class PatternGenerator:
         return new_path
 
     def _get_datasets(self) -> List[DatasetConfig]:
-        # data_name = DATA_PATH.replace("/", "_")
-        # sum_name = SUM_PATH.replace("/", "_")
         raw_dataset = DatasetConfig(
             # name=data_name,
             name=DATA_PATH,
@@ -273,7 +262,6 @@ class PatternGenerator:
         )
 
         sum_dataset = DatasetConfig(
-            # name=sum_name,
             name=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
@@ -301,7 +289,6 @@ class PatternGenerator:
             # until the first frame comes in
             if not self._hdf_stream_provider:
                 assert self.target_path, "open file has not been called"
-                # assert not self._datasets, "datasets not initialized"
                 datasets = self._get_datasets()
                 self._datasets = datasets
                 self._hdf_stream_provider = HdfStreamProvider(
@@ -316,7 +303,6 @@ class PatternGenerator:
                     yield "stream_datum", doc
 
     def close(self) -> None:
-        # self._handle_for_h5_file.close()
         if self._handle_for_h5_file:
             self._handle_for_h5_file.close()
             print("file closed")
