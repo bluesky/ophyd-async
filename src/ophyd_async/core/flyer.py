@@ -4,7 +4,6 @@ from typing import Dict, Generic, Optional, Sequence, TypeVar
 from bluesky.protocols import Descriptor, Flyable, Preparable, Reading, Stageable
 
 from .async_status import AsyncStatus
-from .detector import TriggerInfo
 from .device import Device
 from .signal import SignalR
 from .utils import merge_gathered_dicts
@@ -13,10 +12,6 @@ T = TypeVar("T")
 
 
 class TriggerLogic(ABC, Generic[T]):
-    @abstractmethod
-    def trigger_info(self, value: T) -> TriggerInfo:
-        """Return info about triggers that will be produced for a given value"""
-
     @abstractmethod
     async def prepare(self, value: T):
         """Move to the start of the flyscan"""
@@ -47,16 +42,11 @@ class HardwareTriggeredFlyable(
         self._configuration_signals = tuple(configuration_signals)
         self._describe: Dict[str, Descriptor] = {}
         self._fly_status: Optional[AsyncStatus] = None
-        self._trigger_info: Optional[TriggerInfo] = None
         super().__init__(name=name)
 
     @property
     def trigger_logic(self) -> TriggerLogic[T]:
         return self._trigger_logic
-
-    @property
-    def trigger_info(self) -> Optional[TriggerInfo]:
-        return self._trigger_info
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -71,7 +61,6 @@ class HardwareTriggeredFlyable(
         return AsyncStatus(self._prepare(value))
 
     async def _prepare(self, value: T) -> None:
-        self._trigger_info = self._trigger_logic.trigger_info(value)
         # Move to start and setup the flyscan
         await self._trigger_logic.prepare(value)
 
