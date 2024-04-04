@@ -4,7 +4,7 @@ from ophyd_async.core.detector import DetectorTrigger, StandardDetector, Trigger
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
 from ophyd_async.panda.table import SeqTable, SeqTableRow, seq_table_from_rows
-from ophyd_async.triggers.static_seq_table_trigger import RepeatedSequenceTable
+from ophyd_async.triggers.static_seq_table_trigger import SequenceTableInfo
 
 
 def prepare_static_seq_table_flyer_and_detector(
@@ -48,8 +48,8 @@ def prepare_static_seq_table_flyer_and_detector(
         SeqTableRow(time2=in_micros(shutter_time)),
     )
 
-    repeated_table = RepeatedSequenceTable(table, repeats)
+    table_info = SequenceTableInfo(table, repeats)
 
     yield from bps.prepare(detector, trigger_info, wait=False, group="thing")
-    yield from bps.prepare(flyer, repeated_table, wait=False, group="thing")
+    yield from bps.prepare(flyer, table_info, wait=False, group="thing")
     yield from bps.wait(group="thing")
