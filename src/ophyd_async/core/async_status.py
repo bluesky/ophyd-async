@@ -2,11 +2,13 @@
 
 import asyncio
 import functools
-from typing import Awaitable, Callable, Coroutine, List, Optional, cast
+from typing import Awaitable, Callable, List, Optional, Type, TypeVar, cast
 
 from bluesky.protocols import Status
 
-from .utils import Callback, T
+from .utils import Callback, P
+
+AS = TypeVar("AS", bound="AsyncStatus")
 
 
 class AsyncStatus(Status):
@@ -76,12 +78,14 @@ class AsyncStatus(Status):
             self._watchers.append(watcher)
 
     @classmethod
-    def wrap(cls, f: Callable[[T], Coroutine]) -> Callable[[T], "AsyncStatus"]:
+    def wrap(cls: Type[AS], f: Callable[P, Awaitable]) -> Callable[P, AS]:
         @functools.wraps(f)
-        def wrap_f(self) -> AsyncStatus:
-            return AsyncStatus(f(self))
+        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AS:
+            return cls(f(*args, **kwargs))
 
-        return wrap_f
+        # type is actually functools._Wrapped[P, Awaitable, P, AS]
+        # but functools._Wrapped is not necessarily available
+        return cast(Callable[P, AS], wrap_f)
 
     def __repr__(self) -> str:
         if self.done:
