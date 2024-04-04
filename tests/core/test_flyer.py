@@ -148,7 +148,9 @@ async def test_hardware_triggered_flyable(
 
     trigger_logic = DummyTriggerLogic()
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
-    trigger_info = TriggerInfo(num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2)
+    trigger_info = TriggerInfo(
+        num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+    )
 
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
@@ -220,6 +222,7 @@ async def test_hardware_triggered_flyable(
         "stream_datum",
         "stop",
     ]
+
 
 # To do: Populate configuration signals
 async def test_describe_configuration():
