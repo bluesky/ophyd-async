@@ -1,6 +1,7 @@
 import asyncio
 import atexit
 import logging
+import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
@@ -18,6 +19,8 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
+
+from .common import get_supported_enum_class
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -119,9 +122,7 @@ class PvaEnumConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(
-            source=source, dtype="string", shape=[], choices=choices
-        )  # type: ignore
+        return dict(source=source, dtype="string", shape=[], choices=choices)
 
 
 class PvaEnumBoolConverter(PvaConverter):
@@ -141,6 +142,32 @@ class PvaTableConverter(PvaConverter):
         return dict(source=source, dtype="object", shape=[])  # type: ignore
 
 
+class PvaDictConverter(PvaConverter):
+    def reading(self, value):
+        ts = time.time()
+        value = value.todict()
+        # Alarm severity is vacuously 0 for a table
+        return dict(value=value, timestamp=ts, alarm_severity=0)
+
+    def value(self, value: Value):
+        return value.todict()
+
+    def descriptor(self, source: str, value) -> Descriptor:
+        raise NotImplementedError("Describing Dict signals not currently supported")
+
+    def metadata_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for metadata.
+        """
+        return []
+
+    def value_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for the value.
+        """
+        return []
+
+
 class DisconnectedPvaConverter(PvaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
@@ -149,7 +176,9 @@ class DisconnectedPvaConverter(PvaConverter):
 def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConverter:
     pv = list(values)[0]
     typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
-    typ = get_unique({k: type(v["value"]) for k, v in values.items()}, "value types")
+    typ = get_unique(
+        {k: type(v.get("value")) for k, v in values.items()}, "value types"
+    )
     if "NTScalarArray" in typeid and typ == list:
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:
@@ -185,24 +214,15 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        if datatype:
-            if not issubclass(datatype, Enum):
-                raise TypeError(f"{pv} has type Enum not {datatype.__name__}")
-            choices = tuple(v.value for v in datatype)
-            if set(choices) != set(pv_choices):
-                raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
-            enum_class = datatype
-        else:
-            enum_class = Enum(  # type: ignore
-                "GeneratedChoices", {x or "_": x for x in pv_choices}, type=str
-            )
-        return PvaEnumConverter(enum_class)
+        return PvaEnumConverter(get_supported_enum_class(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
         if datatype and not issubclass(typ, datatype):
             raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
         return PvaTableConverter()
+    elif "structure" in typeid:
+        return PvaDictConverter()
     else:
         raise TypeError(f"{pv}: Unsupported typeid {typeid}")
 
@@ -260,7 +280,15 @@ class PvaSignalBackend(SignalBackend[T]):
         else:
             write_value = self.converter.write_value(value)
         coro = self.ctxt.put(self.write_pv, dict(value=write_value), wait=wait)
-        await asyncio.wait_for(coro, timeout)
+        try:
+            await asyncio.wait_for(coro, timeout)
+        except asyncio.TimeoutError as exc:
+            logging.debug(
+                f"signal pva://{self.write_pv} timed out \
+                          put value: {write_value}",
+                exc_info=True,
+            )
+            raise NotConnected(f"pva://{self.write_pv}") from exc
 
     async def get_descriptor(self) -> Descriptor:
         value = await self.ctxt.get(self.read_pv)

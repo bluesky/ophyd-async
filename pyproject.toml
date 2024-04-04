@@ -18,7 +18,7 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky @ git+https://github.com/bluesky/bluesky.git@collect-multiple-detectors", # Pin to Bluesky branch while still under work
+    "bluesky>=1.13.0a3",
     "event-model",
     "p4p",
     "pyyaml",
