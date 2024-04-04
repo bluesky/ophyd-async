@@ -35,11 +35,6 @@ class DummyTriggerLogic(TriggerLogic[int]):
     def __init__(self):
         self.state = TriggerState.null
 
-    def trigger_info(self, value: int) -> TriggerInfo:
-        return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
-        )
-
     async def prepare(self, value: int):
         self.state = TriggerState.preparing
         return value
@@ -153,6 +148,7 @@ async def test_hardware_triggered_flyable(
 
     trigger_logic = DummyTriggerLogic()
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    trigger_info = TriggerInfo(num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2)
 
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
@@ -166,7 +162,7 @@ async def test_hardware_triggered_flyable(
         for detector in detector_list:
             yield from bps.prepare(
                 detector,
-                flyer.trigger_info,
+                trigger_info,
                 wait=True,
             )
 
@@ -201,7 +197,7 @@ async def test_hardware_triggered_flyable(
             yield from bps.collect(
                 *detector_list,
                 return_payload=False,
-                # name="main_stream",
+                name="main_stream",
             )
             yield from bps.sleep(0.01)
         yield from bps.wait(group="complete")
@@ -224,17 +220,6 @@ async def test_hardware_triggered_flyable(
         "stream_datum",
         "stop",
     ]
-
-
-def test_flyer_has_trigger_logic_property():
-    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
-    trigger_info = flyer.trigger_logic.trigger_info(1)
-    assert type(trigger_info) is TriggerInfo
-    assert trigger_info.num == 1
-    assert trigger_info.trigger == "constant_gate"
-    assert trigger_info.deadtime == 2
-    assert trigger_info.livetime == 2
-
 
 # To do: Populate configuration signals
 async def test_describe_configuration():
