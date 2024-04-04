@@ -168,7 +168,7 @@ async def test_hardware_triggered_flyable(
                 wait=True,
             )
 
-        assert trigger_logic.state == TriggerState.preparing
+        assert flyer._trigger_logic.state == TriggerState.preparing
         for detector in detector_list:
             detector.controller.disarm.assert_called_once  # type: ignore
 
@@ -182,7 +182,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detector_list:
             yield from bps.complete(detector, wait=False, group="complete")
-        assert trigger_logic.state == TriggerState.starting
+        assert flyer._trigger_logic.state == TriggerState.starting
 
         # Manually incremenet the index as if a frame was taken
         for detector in detector_list:
