@@ -27,9 +27,11 @@ class CommonPandABlocks(Device):
 
 
 class PandA(CommonPandABlocks):
+    """A PandA device. For the StandardDetector version of PandA, see HDFPandA."""
+
     def __init__(self, prefix: str, name: str = "") -> None:
         self._prefix = prefix
-        super().__init__(name)
+        CommonPandABlocks.__init__(self, name=name)
 
     async def connect(
         self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT

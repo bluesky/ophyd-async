@@ -7,16 +7,25 @@ from ophyd_async.core import (
     DetectorTrigger,
     wait_for_value,
 )
+from ophyd_async.epics.pvi import PVIDependent
 
-from .panda import PcapBlock
+from .panda import PandA, PcapBlock
 
 
-class PandaPcapController(DetectorControl):
-    def __init__(
-        self,
-        pcap: PcapBlock,
-    ) -> None:
-        self.pcap = pcap
+def _check_for_blocks(device, *blocks):
+    for block in blocks:
+        if not hasattr(device, block):
+            raise RuntimeError(
+                f"{block} block not found in {type(device)}, "
+                "are you sure the panda has been connected?"
+            )
+
+
+class PandaPcapController(DetectorControl, PVIDependent):
+    pcap: PcapBlock  # pcap will be given by the panda post connect
+
+    def __init__(self) -> None:
+        pass
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.000000008
@@ -27,6 +36,7 @@ class PandaPcapController(DetectorControl):
         trigger: DetectorTrigger = DetectorTrigger.constant_gate,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
+        _check_for_blocks(self, "pcap")
         assert trigger in (
             DetectorTrigger.constant_gate,
             trigger == DetectorTrigger.variable_gate,
@@ -35,7 +45,12 @@ class PandaPcapController(DetectorControl):
         await wait_for_value(self.pcap.active, True, timeout=1)
         return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
 
-    async def disarm(self):
+    async def disarm(self) -> AsyncStatus:
+        _check_for_blocks(self, "pcap")
         await asyncio.gather(self.pcap.arm.set(False))
         await wait_for_value(self.pcap.active, False, timeout=1)
         return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
+
+    def fill_blocks(self, connected_panda: PandA) -> None:
+        _check_for_blocks(connected_panda, "pcap")
+        self.pcap = connected_panda.pcap

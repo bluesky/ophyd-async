@@ -1,4 +1,5 @@
 import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from inspect import isclass
 from typing import (
@@ -296,3 +297,11 @@ async def fill_pvi_entries(
     # We call set name now the parent field has been set in all of the
     # introspect-initialized devices. This will recursively set the names.
     device.set_name(device.name)
+
+
+class PVIDependent(ABC):
+    """A baseclass used to denote that the class will have signals set up during PVI"""
+
+    @abstractmethod
+    def fill_blocks(pvi_device: Device):
+        """Add neccessary blocks to attributes from the passed in pvi_device"""

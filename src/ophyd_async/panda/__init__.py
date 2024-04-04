@@ -1,4 +1,5 @@
-from .panda import PandA, PcapBlock, PulseBlock, SeqBlock
+from .hdf_panda import HDFPandA
+from .panda import CommonPandABlocks, PandA, PcapBlock, PulseBlock, SeqBlock
 from .panda_controller import PandaPcapController
 from .table import (
     SeqTable,
@@ -11,6 +12,8 @@ from .utils import phase_sorter
 
 __all__ = [
     "PandA",
+    "CommonPandABlocks",
+    "HDFPandA",
     "PcapBlock",
     "PulseBlock",
     "seq_table_from_arrays",

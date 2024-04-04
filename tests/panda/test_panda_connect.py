@@ -1,4 +1,4 @@
-"""Test file specifying how we want to eventually interact with the panda..."""
+"""Used to test setting up signals for a PandA"""
 
 import copy
 from typing import Dict
