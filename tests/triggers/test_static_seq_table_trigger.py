@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_trigger_logic_contains_seq_block():
     assert 1 == 0
 

@@ -1,4 +1,5 @@
 from typing import List
+
 import bluesky.plan_stubs as bps
 
 from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo

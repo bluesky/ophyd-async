@@ -1,5 +1,4 @@
 import time
-from enum import Enum
 from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock
 
