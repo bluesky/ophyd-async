@@ -1,3 +1,4 @@
+from typing import List
 import bluesky.plan_stubs as bps
 
 from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo
@@ -7,9 +8,9 @@ from ophyd_async.panda.table import SeqTable, SeqTableRow, seq_table_from_rows
 from ophyd_async.triggers.static_seq_table_trigger import SequenceTableInfo
 
 
-def prepare_static_seq_table_flyer_and_detector(
+def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     flyer: HardwareTriggeredFlyable[SeqTable],
-    detector: StandardDetector,
+    detectors: List[StandardDetector],
     num: int,
     width: float,
     deadtime: float,
@@ -50,6 +51,7 @@ def prepare_static_seq_table_flyer_and_detector(
 
     table_info = SequenceTableInfo(table, repeats)
 
-    yield from bps.prepare(detector, trigger_info, wait=False, group="thing")
-    yield from bps.prepare(flyer, table_info, wait=False, group="thing")
-    yield from bps.wait(group="thing")
+    for det in detectors:
+        yield from bps.prepare(det, trigger_info, wait=False, group="prep")
+    yield from bps.prepare(flyer, table_info, wait=False, group="prep")
+    yield from bps.wait(group="prep")
