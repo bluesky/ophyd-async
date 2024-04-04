@@ -5,7 +5,7 @@ import pytest
 from ophyd_async.core import StaticDirectoryProvider
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.sim import PatternGenerator
-from ophyd_async.sim.SimPatternDetectorWriter import SimPatternDetectorWriter
+from ophyd_async.sim.simpatterndetectorwriter import SimPatternDetectorWriter
 
 
 @pytest.fixture

@@ -4,7 +4,7 @@ from typing import Dict
 from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.sim.SimPatternDetector import SimDetector
+from ophyd_async.sim.simpatterngenerator import SimPatternDetector
 
 
 def assert_emitted(docs: Dict[str, list], **numbers: int):
@@ -15,7 +15,7 @@ def assert_emitted(docs: Dict[str, list], **numbers: int):
 # NOTE the async operations with h5py are non-trival
 # because of lack of native support for async operations
 # see https://github.com/h5py/h5py/issues/837
-async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
+async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimPatternDetector):
     names = []
     docs = []
 
@@ -42,7 +42,7 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
     await sim_pattern_detector.writer.close()
 
 
-async def test_plan(RE: RunEngine, sim_pattern_detector: SimDetector):
+async def test_plan(RE: RunEngine, sim_pattern_detector: SimPatternDetector):
     docs = defaultdict(list)
     RE(bp.count([sim_pattern_detector]), lambda name, doc: docs[name].append(doc))
     assert_emitted(
