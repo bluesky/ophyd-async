@@ -3,7 +3,7 @@
 # The devcontainer should use the build target and run as root with podman
 # or docker with user namespaces.
 #
-FROM python:3.9 as build
+FROM python:3.10 as build
 
 ARG PIP_OPTIONS
 
@@ -24,7 +24,7 @@ WORKDIR /context
 # install python package into /venv
 RUN pip install ${PIP_OPTIONS}
 
-FROM python:3.9-slim as runtime
+FROM python:3.10-slim as runtime
 
 # Add apt-get system dependecies for runtime here if needed
 
