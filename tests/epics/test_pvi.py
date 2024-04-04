@@ -10,7 +10,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.pvi import fill_pvi_entries
+from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
 
 
 class Block1(Device):
@@ -94,3 +94,47 @@ async def test_fill_pvi_entries_sim_mode(pvi_test_device_t):
 
     # top level signals are typed
     assert test_device.signal_rw._backend.datatype is int
+
+
+@pytest.fixture
+def pvi_test_device_pre_initialize_blocks_t():
+    """A fixture since pytest discourages init in test case classes"""
+
+    class TestDevice(Block3, Device):
+        def __init__(self, prefix: str, name: str = ""):
+            self._prefix = prefix
+            super().__init__(name)
+            pre_initialize_blocks(self)
+
+        async def connect(
+            self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+        ) -> None:
+            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
+
+            await super().connect(sim)
+
+    yield TestDevice
+
+
+async def test_device_pre_initialize_blocks(pvi_test_device_pre_initialize_blocks_t):
+    device = pvi_test_device_pre_initialize_blocks_t("PREFIX:")
+
+    block_2_device = device.device
+    block_1_device = device.device.device
+    top_block_1_device = device.signal_device
+
+    # The pre_initialize_blocks has only made blocks,
+    # not signals or device vectors
+    assert isinstance(block_2_device, Block2)
+    assert isinstance(block_1_device, Block1)
+    assert isinstance(top_block_1_device, Block1)
+    assert not hasattr(device, "signal_x")
+    assert not hasattr(device, "signal_rw")
+    assert not hasattr(top_block_1_device, "signal_rw")
+
+    await device.connect(sim=True)
+
+    # The memory addresses have not changed
+    assert device.device is block_2_device
+    assert device.device.device is block_1_device
+    assert device.signal_device is top_block_1_device

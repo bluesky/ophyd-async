@@ -17,7 +17,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value
-from ophyd_async.panda.panda import PandA
+from ophyd_async.panda import CommonPandaBlocks
 
 from .panda_hdf_file import _HDFDataset, _HDFFile
 
@@ -96,7 +96,7 @@ class PandaHDFWriter(DetectorWriter):
         prefix: str,
         directory_provider: DirectoryProvider,
         name_provider: NameProvider,
-        panda_device: PandA,
+        panda_device: CommonPandaBlocks,
     ) -> None:
         self.panda_device = panda_device
         self._prefix = prefix

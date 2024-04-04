@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
     SignalR,
@@ -11,8 +12,9 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_sim_value,
 )
+from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
 from ophyd_async.epics.signal.signal import SignalRW
-from ophyd_async.panda import PandA
+from ophyd_async.panda.common_panda import CommonPandaBlocks, DataBlock
 from ophyd_async.panda.writers import PandaHDFWriter
 from ophyd_async.panda.writers.hdf_writer import (
     Capture,
@@ -24,9 +26,26 @@ from ophyd_async.panda.writers.panda_hdf_file import _HDFFile
 
 
 @pytest.fixture
-async def sim_panda() -> PandA:
+async def panda_t():
+    class Panda(CommonPandaBlocks):
+        data: DataBlock
+
+        def __init__(self, prefix: str, name: str = ""):
+            self._prefix = prefix
+            pre_initialize_blocks(self)
+            super().__init__(name)
+
+        async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
+            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
+            await super().connect(sim, timeout)
+
+    yield Panda
+
+
+@pytest.fixture
+async def sim_panda(panda_t):
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("SIM_PANDA:", name="sim_panda")
+        sim_panda = panda_t("SIM_PANDA:", name="sim_panda")
         sim_panda.block1 = Device("BLOCK1")  # type: ignore[attr-defined]
         sim_panda.block2 = Device("BLOCK2")  # type: ignore[attr-defined]
         sim_panda.block1.test_capture = SignalRW(  # type: ignore[attr-defined]

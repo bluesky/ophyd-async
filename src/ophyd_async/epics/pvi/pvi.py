@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from inspect import isclass
 from typing import (
     Any,
     Callable,
@@ -59,10 +60,11 @@ def _split_subscript(tp: T) -> Union[Tuple[Any, Tuple[Any]], Tuple[T, None]]:
 def _strip_union(field: Union[Union[T], T]) -> T:
     if get_origin(field) is Union:
         args = get_args(field)
-        for arg in args:
-            if arg is not type(None):
-                return arg
-    return field
+        is_optional = type(None) in args
+        for field in args:
+            if field is not type(None):
+                break
+    return field, is_optional
 
 
 def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]]:
@@ -92,10 +94,15 @@ def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
         if sub_name in ("_name", "parent"):
             continue
         assert entry.sub_entries
-        if sub_name not in entry.sub_entries and get_origin(sub_device) is not Optional:
-            raise RuntimeError(
-                f"sub device `{sub_name}:{type(sub_device)}` was not provided by pvi"
-            )
+        device_t, is_optional = _strip_union(sub_device)
+        if sub_name not in entry.sub_entries:
+            if is_optional:
+                continue
+            else:
+                raise RuntimeError(
+                    f"sub device `{sub_name}:{type(sub_device)}` "
+                    "was not provided by pvi"
+                )
         if isinstance(entry.sub_entries[sub_name], dict):
             for sub_sub_entry in entry.sub_entries[sub_name].values():  # type: ignore
                 _verify_common_blocks(sub_sub_entry, sub_device)  # type: ignore
@@ -223,7 +230,10 @@ async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
         if is_signal:
             device = _pvi_mapping[frozenset(pva_entries.keys())](signal_dtype, *pvs)
         else:
-            device = device_type()
+            if hasattr(entry.device, sub_name):
+                device = getattr(entry.device, sub_name)
+            else:
+                device = device_type()
 
         sub_entry = PVIEntry(
             device=device, common_device_type=device_type, sub_entries={}
@@ -291,3 +301,30 @@ async def fill_pvi_entries(
     # We call set name now the parent field has been set in all of the
     # introspect-initialized devices. This will recursively set the names.
     device.set_name(device.name)
+
+
+def pre_initialize_blocks(
+    device: Device, included_optional_fields: Optional[Tuple[str, ...]] = None
+):
+    """For intializing blocks at __init__ of ``device``."""
+    for name, device_type in get_type_hints(type(device)).items():
+        if name in ("_name", "parent"):
+            continue
+        device_type, is_optional = _strip_union(device_type)
+        if (
+            is_optional
+            and included_optional_fields
+            and name not in included_optional_fields
+        ):
+            continue
+        is_device_vector, device_type = _strip_device_vector(device_type)
+        if (
+            is_device_vector
+            or ((origin := get_origin(device_type)) and issubclass(origin, Signal))
+            or (isclass(device_type) and issubclass(device_type, Signal))
+        ):
+            continue
+
+        sub_device = device_type()
+        setattr(device, name, sub_device)
+        pre_initialize_blocks(sub_device)

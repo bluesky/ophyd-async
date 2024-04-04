@@ -19,7 +19,8 @@ from ophyd_async.core import (
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.signal import observe_value, set_sim_value
-from ophyd_async.panda import PandA
+from ophyd_async.epics.pvi.pvi import fill_pvi_entries
+from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda.trigger import StaticSeqTableTriggerLogic
 from ophyd_async.planstubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
@@ -115,8 +116,17 @@ async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetect
 
 @pytest.fixture
 async def panda():
+    class Panda(CommonPandaBlocks):
+        def __init__(self, prefix: str, name: str = ""):
+            self._prefix = prefix
+            super().__init__(name)
+
+        async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
+            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
+            await super().connect(sim, timeout)
+
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDAQSRV:", "sim_panda")
+        sim_panda = Panda("PANDAQSRV:", "sim_panda")
 
     assert sim_panda.name == "sim_panda"
     yield sim_panda
