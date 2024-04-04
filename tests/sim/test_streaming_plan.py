@@ -4,7 +4,7 @@ from typing import Dict
 from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.sim.simpatterngenerator import SimPatternDetector
+from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
 
 
 def assert_emitted(docs: Dict[str, list], **numbers: int):

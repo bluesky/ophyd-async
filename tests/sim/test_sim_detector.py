@@ -2,7 +2,7 @@ import pytest
 
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.epics.motion import motor
-from ophyd_async.sim.simpatterngenerator import SimPatternDetector
+from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
 
 
 @pytest.fixture

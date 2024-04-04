@@ -4,10 +4,10 @@ from typing import Sequence
 from ophyd_async.core import DirectoryProvider, StaticDirectoryProvider
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.signal import SignalR
-from ophyd_async.sim.patterngenerator import PatternGenerator
+from ophyd_async.sim.pattern_generator import PatternGenerator
 
-from .simpatterndetectorcontrol import SimPatternDetectorControl
-from .simpatterndetectorwriter import SimPatternDetectorWriter
+from .sim_pattern_detector_control import SimPatternDetectorControl
+from .sim_pattern_detector_writer import SimPatternDetectorWriter
 
 
 class SimPatternDetector(StandardDetector):
