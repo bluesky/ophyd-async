@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from dataclasses import dataclass
 from typing import (
     Awaitable,
     Callable,
     Dict,
+    Generic,
     Iterable,
     List,
     Optional,
@@ -77,6 +79,17 @@ class NotConnected(Exception):
 
     def __str__(self) -> str:
         return self.format_error_string(indent="")
+
+
+@dataclass(frozen=True)
+class WatcherUpdate(Generic[T]):
+    name: str
+    current: T
+    initial: T
+    target: T
+    units: str
+    precision: float
+    time_elapsed_s: float
 
 
 async def wait_for_connection(**coros: Awaitable[None]):
