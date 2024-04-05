@@ -39,8 +39,11 @@ class DummyTriggerLogic(TriggerLogic[int]):
         self.state = TriggerState.preparing
         return value
 
-    async def start(self):
+    async def kickoff(self):
         self.state = TriggerState.starting
+
+    async def complete(self):
+        self.state = TriggerState.null
 
     async def stop(self):
         self.state = TriggerState.stopping
@@ -182,7 +185,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detector_list:
             yield from bps.complete(detector, wait=False, group="complete")
-        assert flyer._trigger_logic.state == TriggerState.starting
+        assert flyer._trigger_logic.state == TriggerState.null
 
         # Manually incremenet the index as if a frame was taken
         for detector in detector_list:
