@@ -18,7 +18,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
-from ophyd_async.core.signal import observe_value
+from ophyd_async.core.signal import observe_value, set_sim_value
 from ophyd_async.panda import PandA
 from ophyd_async.triggers.static_seq_table_trigger import StaticSeqTableTriggerLogic
 from planstubs.prepare_trigger_and_dets import (
@@ -127,6 +127,15 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     detector_list: tuple[StandardDetector],
     panda,
 ):
+    """Run a dummy scan using a flyer with a prepare plan stub.
+
+    This runs a dummy plan with two detectors and a flyer that uses
+    StaticSeqTableTriggerLogic. The flyer and detectors are prepared with the
+    prepare_static_seq_table_flyer_and_detectors_with_same_trigger plan stub.
+    This stub creates trigger_info and a sequence table from given parameters
+    and prepares the fly and both detectors with the same trigger info.
+
+    """
     names = []
     docs = []
 
@@ -149,7 +158,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
             flyer,
             detector_list,
-            num=2,
+            num=1,
             width=exposure,
             deadtime=deadtime,
             shutter_time=shutter_time,
@@ -161,7 +170,9 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         yield from bps.open_run()
         yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)
 
-        yield from bps.kickoff(flyer)
+        set_sim_value(flyer.trigger_logic.seq.active, 1)
+
+        yield from bps.kickoff(flyer, wait=True)
         for detector in detector_list:
             yield from bps.kickoff(detector)
 
@@ -172,6 +183,8 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         # Manually incremenet the index as if a frame was taken
         for detector in detector_list:
             detector.writer.index += 1
+
+        set_sim_value(flyer.trigger_logic.seq.active, 0)
 
         done = False
         while not done:
