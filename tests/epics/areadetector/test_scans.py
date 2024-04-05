@@ -28,15 +28,12 @@ from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 class DummyTriggerLogic(TriggerLogic[int]):
     def __init__(self): ...
 
-    def trigger_info(self, value: int) -> TriggerInfo:
-        return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
-        )
-
     async def prepare(self, value: int):
         return value
+    
+    async def kickoff(self): ...
 
-    async def start(self): ...
+    async def complete(self): ...
 
     async def stop(self): ...
 
