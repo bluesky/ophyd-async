@@ -30,7 +30,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
     async def prepare(self, value: int):
         return value
-    
+
     async def kickoff(self): ...
 
     async def complete(self): ...
