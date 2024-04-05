@@ -28,9 +28,11 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTable]):
             self.seq.table.set(value.sequence_table),
         )
 
-    async def start(self):
+    async def kickoff(self) -> None:
         await self.seq.enable.set("ONE")
         await wait_for_value(self.seq.active, 1, timeout=1)
+
+    async def complete(self) -> None:
         await wait_for_value(self.seq.active, 0, timeout=None)
 
     async def stop(self):
