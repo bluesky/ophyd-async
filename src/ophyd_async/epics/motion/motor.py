@@ -21,7 +21,7 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.acceleration = epics_signal_rw(float, prefix + ".ACCL")
         self.motor_egu = epics_signal_r(str, prefix + ".EGU")
         self.precision = epics_signal_r(int, prefix + ".PREC")
-        self.max_resolution = epics_signal_r(float, prefix + ".MRES")
+        self.motor_resolution = epics_signal_r(float, prefix + ".MRES")
         self.motor_done_move = epics_signal_r(float, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(int, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(int, prefix + ".HLM")
