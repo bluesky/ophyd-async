@@ -20,10 +20,10 @@ from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.signal import observe_value, set_sim_value
 from ophyd_async.panda import PandA
-from ophyd_async.triggers.static_seq_table_trigger import StaticSeqTableTriggerLogic
 from ophyd_async.planstubs.prepare_trigger_and_dets import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
+from ophyd_async.triggers.static_seq_table_trigger import StaticSeqTableTriggerLogic
 
 
 class DummyWriter(DetectorWriter):
@@ -98,13 +98,13 @@ async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetect
     async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):
         return writers[1].dummy_signal.set(1)
 
-    detector_1 = StandardDetector(
+    detector_1: StandardDetector = StandardDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
         writer_timeout=3,
     )
-    detector_2 = StandardDetector(
+    detector_2: StandardDetector = StandardDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
