@@ -13,7 +13,7 @@ class SequenceTableInfo:
     prescale_as_us: float = 1  # microseconds
 
 
-class StaticSeqTableTriggerLogic(TriggerLogic[SeqTable]):
+class StaticSeqTableTriggerLogic(TriggerLogic[SequenceTableInfo]):
 
     def __init__(self, seq: SeqBlock) -> None:
         self.seq = seq
