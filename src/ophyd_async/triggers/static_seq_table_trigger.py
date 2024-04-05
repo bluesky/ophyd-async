@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 from ophyd_async.panda import SeqBlock, SeqTable
+from ophyd_async.panda.panda import TimeUnits
 
 
 @dataclass
@@ -19,7 +20,7 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTable]):
 
     async def prepare(self, value: SequenceTableInfo):
         await asyncio.gather(
-            self.seq.prescale_units.set("us"),
+            self.seq.prescale_units.set(TimeUnits.us),
             self.seq.enable.set("ZERO"),
         )
         await asyncio.gather(
@@ -30,11 +31,11 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTable]):
 
     async def kickoff(self) -> None:
         await self.seq.enable.set("ONE")
-        await wait_for_value(self.seq.active, 1, timeout=1)
+        await wait_for_value(self.seq.active, True, timeout=1)
 
     async def complete(self) -> None:
-        await wait_for_value(self.seq.active, 0, timeout=None)
+        await wait_for_value(self.seq.active, False, timeout=None)
 
     async def stop(self):
         await self.seq.enable.set("ZERO")
-        await wait_for_value(self.seq.active, 0, timeout=1)
+        await wait_for_value(self.seq.active, False, timeout=1)
