@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -123,13 +123,13 @@ async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetect
     async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):
         return writers[1].dummy_signal.set(1)
 
-    detector_1 = StandardDetector(
+    detector_1: StandardDetector[Any] = StandardDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
         writer_timeout=3,
     )
-    detector_2 = StandardDetector(
+    detector_2: StandardDetector[Any] = StandardDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
