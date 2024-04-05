@@ -17,8 +17,12 @@ class TriggerLogic(ABC, Generic[T]):
         """Move to the start of the flyscan"""
 
     @abstractmethod
-    async def start(self):
+    async def kickoff(self):
         """Start the flyscan"""
+
+    @abstractmethod
+    async def complete(self):
+        """Block until the flyscan is done"""
 
     @abstractmethod
     async def stop(self):
@@ -66,11 +70,14 @@ class HardwareTriggeredFlyable(
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        self._fly_status = AsyncStatus(self._trigger_logic.start())
+        self._fly_status = AsyncStatus(self._trigger_logic.kickoff())
+        await self._fly_status
 
-    def complete(self) -> AsyncStatus:
+    @AsyncStatus.wrap
+    async def complete(self) -> None:
         assert self._fly_status, "Kickoff not run"
-        return self._fly_status
+        await self._fly_status
+        await self._trigger_logic.complete()
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:
         return await merge_gathered_dicts(
