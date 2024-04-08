@@ -158,28 +158,34 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
             (origin := get_origin(sub_device_t)) and issubclass(origin, Signal)
         ) or (issubclass(sub_device_t, Signal))
 
-        if is_device_vector and is_signal:
-            signal_type = args[0] if (args := get_args(sub_device_t)) else None
-            sub_device_1 = sub_device_t(SimSignalBackend(signal_type, sub_name))
-            sub_device_2 = sub_device_t(SimSignalBackend(signal_type, sub_name))
-            sub_device = DeviceVector(
-                {
-                    1: sub_device_1,
-                    2: sub_device_2,
-                }
-            )
-        elif is_device_vector and not is_signal:
-            sub_device = DeviceVector(
-                {
-                    1: sub_device_t(name=f"{device.name}-{sub_name}-1"),
-                    2: sub_device_t(name=f"{device.name}-{sub_name}-2"),
-                }
-            )
+        # TODO: worth coming back to all this code once 3.9 is gone and we can use
+        # match statments
+        if is_device_vector:
+            if is_signal:
+                signal_type = args[0] if (args := get_args(sub_device_t)) else None
+                sub_device_1 = sub_device_t(SimSignalBackend(signal_type, sub_name))
+                sub_device_2 = sub_device_t(SimSignalBackend(signal_type, sub_name))
+                sub_device = DeviceVector(
+                    {
+                        1: sub_device_1,
+                        2: sub_device_2,
+                    }
+                )
+            else:
+                sub_device = DeviceVector(
+                    {
+                        1: sub_device_t(),
+                        2: sub_device_t(),
+                    }
+                )
+            for value in sub_device.values():
+                value.parent = sub_device
+
         elif is_signal:
             signal_type = args[0] if (args := get_args(sub_device_t)) else None
             sub_device = sub_device_t(SimSignalBackend(signal_type, sub_name))
         else:
-            sub_device = sub_device_t(name=f"{device.name}-{sub_name}")
+            sub_device = sub_device_t()
 
         if not is_signal:
             if is_device_vector:
@@ -189,6 +195,7 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
                 _sim_common_blocks(sub_device, stripped_type=sub_device_t)
 
         setattr(device, sub_name, sub_device)
+        sub_device.parent = device
 
 
 async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
@@ -253,12 +260,14 @@ def _set_device_attributes(entry: PVIEntry):
                 sub_device[key] = device_vector_sub_entry.device
                 if device_vector_sub_entry.pvi_pv:
                     _set_device_attributes(device_vector_sub_entry)
-
+                # Set the device vector entry to have the device vector as a parent
+                device_vector_sub_entry.device.parent = sub_device  # type: ignore
         else:
             sub_device = sub_entry.device  # type: ignore
             if sub_entry.pvi_pv:
                 _set_device_attributes(sub_entry)
 
+        sub_device.parent = entry.device
         setattr(entry.device, sub_name, sub_device)
 
 
@@ -283,3 +292,7 @@ async def fill_pvi_entries(
         )
         await _get_pvi_entries(root_entry, timeout=timeout)
         _set_device_attributes(root_entry)
+
+    # We call set name now the parent field has been set in all of the
+    # introspect-initialized devices. This will recursively set the names.
+    device.set_name(device.name)

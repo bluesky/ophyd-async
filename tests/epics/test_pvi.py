@@ -80,5 +80,17 @@ async def test_fill_pvi_entries_sim_mode(pvi_test_device_t):
     assert isinstance(test_device.device.device, Block1)
     assert test_device.device.device.signal_rw._backend.datatype is int
 
+    assert test_device.signal_rw.parent == test_device
+    assert test_device.device_vector.parent == test_device
+    assert test_device.device_vector[1].parent == test_device.device_vector
+    assert test_device.device_vector[1].device.parent == test_device.device_vector[1]
+
+    assert test_device.name == "test_device"
+    assert test_device.device_vector.name == "test_device-device_vector"
+    assert test_device.device_vector[1].name == "test_device-device_vector-1"
+    assert (
+        test_device.device_vector[1].device.name == "test_device-device_vector-1-device"
+    )
+
     # top level signals are typed
     assert test_device.signal_rw._backend.datatype is int
