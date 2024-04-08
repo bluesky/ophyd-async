@@ -107,23 +107,23 @@ class PandaHDFWriter(DetectorWriter):
         self._file: Optional[_HDFFile] = None
         self._multiplier = 1
 
+    # Triggered on PCAP arm
+    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+        """Retrieve and get descriptor of all PandA signals marked for capture"""
+
         # Convert the convert the ioc PV names to have a better underscore convention.
         # Can remove this after Pandablocks issue #101
         self.hdf = HdfSignals(
-            panda_device.data.hdfdirectory,
-            panda_device.data.hdffilename,
-            panda_device.data.numcapture,
-            panda_device.data.numcaptured,
-            panda_device.data.capture,
+            self.panda_device.data.hdfdirectory,
+            self.panda_device.data.hdffilename,
+            self.panda_device.data.numcapture,
+            self.panda_device.data.numcaptured,
+            self.panda_device.data.capture,
         )
 
         # Get capture PVs by looking at panda. Gives mapping of dotted attribute path
         # to Signal object
         self.capture_signals = get_capture_signals(self.panda_device)
-
-    # Triggered on PCAP arm
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
-        """Retrieve and get descriptor of all PandA signals marked for capture"""
 
         # Ensure flushes are immediate
         await self.panda_device.data.flushperiod.set(0)

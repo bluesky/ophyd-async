@@ -126,7 +126,6 @@ async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
 
 
 async def test_open_close_sets_capture(sim_writer: PandaHDFWriter):
-    assert not await sim_writer.hdf.capture.get_value()
     assert isinstance(await sim_writer.open(), dict)
     assert await sim_writer.hdf.capture.get_value()
     await sim_writer.close()
@@ -134,8 +133,6 @@ async def test_open_close_sets_capture(sim_writer: PandaHDFWriter):
 
 
 async def test_open_sets_file_path_and_name(sim_writer: PandaHDFWriter, tmp_path):
-    path = await sim_writer.hdf.file_path.get_value()
-    assert path == ""
     await sim_writer.open()
     path = await sim_writer.hdf.file_path.get_value()
     assert path == str(tmp_path)
@@ -149,12 +146,14 @@ async def test_open_errors_when_multiplier_not_one(sim_writer: PandaHDFWriter):
 
 
 async def test_get_indices_written(sim_writer: PandaHDFWriter):
+    await sim_writer.open()
     set_sim_value(sim_writer.hdf.num_captured, 4)
     written = await sim_writer.get_indices_written()
     assert written == 4
 
 
 async def test_wait_for_index(sim_writer: PandaHDFWriter):
+    await sim_writer.open()
     set_sim_value(sim_writer.hdf.num_captured, 3)
     await sim_writer.wait_for_index(3, timeout=1)
     set_sim_value(sim_writer.hdf.num_captured, 2)

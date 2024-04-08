@@ -20,7 +20,7 @@ class _HDFFile:
         self._bundles = [
             compose_stream_resource(
                 spec="AD_HDF5_SWMR_SLICE",
-                root="/",
+                root=full_file_name,
                 data_key=f"{ds.name}",
                 resource_path=full_file_name,
                 resource_kwargs={
