@@ -72,7 +72,7 @@ class Watcher:
 async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
     s = sim_mover.set(0.55)
     watcher = Watcher()
-    s.watch(watcher)
+    s.watch([watcher])
     done = Mock()
     s.add_callback(done)
     await watcher.wait_for_call(

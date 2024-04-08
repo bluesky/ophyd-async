@@ -30,7 +30,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_sim_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(0.55)
     watcher = Mock()
-    s.watch(watcher)
+    s.watch([watcher])
     done = Mock()
     s.add_callback(done)
     await asyncio.sleep(A_BIT)

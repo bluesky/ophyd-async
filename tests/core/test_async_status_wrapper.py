@@ -1,4 +1,5 @@
 import asyncio
+from typing import AsyncIterator
 
 import bluesky.plan_stubs as bps
 import pytest
@@ -36,7 +37,7 @@ class ASTestDeviceIteratorSet(ASTestDevice):
         super().__init__(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, val):
+    async def set(self, val) -> AsyncIterator:
         self._initial = await self.sig.get_value()
         for point in self.values:
             await asyncio.sleep(0.01)
@@ -123,7 +124,7 @@ async def test_asyncstatus_wraps_set_iterator(RE):
     def watcher(update):
         updates.append(update)
 
-    st.watch(watcher)
+    st.watch([watcher])
     await st
     assert st.done
     assert st.success
@@ -139,7 +140,7 @@ async def test_asyncstatus_wraps_failing_set_iterator_(RE):
     def watcher(update):
         updates.append(update)
 
-    st.watch(watcher)
+    st.watch([watcher])
     try:
         await st
     except Exception:

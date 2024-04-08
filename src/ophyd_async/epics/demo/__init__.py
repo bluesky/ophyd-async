@@ -15,10 +15,10 @@ import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
-    AsyncStatus,
     Device,
     DeviceVector,
     StandardReadable,
+    WatchableAsyncStatus,
     observe_value,
 )
 
@@ -124,10 +124,12 @@ class Mover(StandardReadable, Movable, Stoppable):
         call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
 
     # TODO: this fails if we call from the cli, but works if we "ipython await" it
-    def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:
+    def set(
+        self, new_position: float, timeout: Optional[float] = None
+    ) -> WatchableAsyncStatus:
         watchers: List[Callable] = []
         coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return AsyncStatus(coro, watchers)
+        return WatchableAsyncStatus(coro, watchers)
 
     async def stop(self, success=True):
         self._set_success = success

@@ -4,13 +4,23 @@ import asyncio
 import functools
 import time
 from dataclasses import replace
-from typing import AsyncIterator, Awaitable, Callable, Generic, Type, TypeVar, cast
+from typing import (
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Generic,
+    Sequence,
+    Type,
+    TypeVar,
+    cast,
+)
 
 from bluesky.protocols import Status
 
 from .utils import Callback, P, T, Watcher, WatcherUpdate
 
-AS = TypeVar("AS")
+AS = TypeVar("AS", bound="AsyncStatus")
+WAS = TypeVar("WAS", bound="WatchableAsyncStatus")
 
 
 class AsyncStatusBase(Status):
@@ -93,11 +103,20 @@ class AsyncStatus(AsyncStatusBase):
 class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
     """Convert AsyncIterator of WatcherUpdates to bluesky Status interface."""
 
-    def __init__(self, iterator: AsyncIterator[WatcherUpdate[T]]):
-        self._watchers: list[Watcher]
+    def __init__(
+        self,
+        iterator_or_awaitable: Awaitable | AsyncIterator[WatcherUpdate[T]],
+        watchers: list[Watcher] = [],
+    ):
+        self._watchers: list[Watcher] = watchers
         self._start = time.monotonic()
         self._last_update: WatcherUpdate[T] | None = None
-        super().__init__(self._notify_watchers_from(iterator))
+        awaitable = (
+            iterator_or_awaitable
+            if isinstance(iterator_or_awaitable, Awaitable)
+            else self._notify_watchers_from(iterator_or_awaitable)
+        )
+        super().__init__(awaitable)
 
     async def _notify_watchers_from(self, iterator: AsyncIterator[WatcherUpdate[T]]):
         async for self._last_update in iterator:
@@ -107,17 +126,19 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
     def _update_watcher(self, watcher: Watcher, update: WatcherUpdate[T]):
         watcher(replace(update, time_elapsed_s=time.monotonic() - self._start))
 
-    def watch(self, watcher: Watcher):
-        self._watchers.append(watcher)
-        if self._last_update:
-            self._update_watcher(watcher, self._last_update)
+    def watch(self, watchers: Sequence[Watcher]):
+        for watcher in watchers:
+            self._watchers.append(watcher)
+            if self._last_update:
+                self._update_watcher(watcher, self._last_update)
 
     @classmethod
     def wrap(
-        cls: Type[AS], f: Callable[P, AsyncIterator[WatcherUpdate[T]]]
-    ) -> Callable[P, AS]:
+        cls: Type[WAS],
+        f: Callable[P, Awaitable] | Callable[P, AsyncIterator[WatcherUpdate[T]]],
+    ) -> Callable[P, WAS]:
         @functools.wraps(f)
-        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AS:
+        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WAS:
             return cls(f(*args, **kwargs))
 
-        return cast(Callable[P, AS], wrap_f)
+        return cast(Callable[P, WAS], wrap_f)

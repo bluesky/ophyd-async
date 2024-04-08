@@ -31,7 +31,7 @@ from bluesky.protocols import (
 
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
-from .async_status import AsyncStatus
+from .async_status import AsyncStatus, WatchableAsyncStatus
 from .device import Device
 from .signal import SignalR
 from .utils import DEFAULT_TIMEOUT, merge_gathered_dicts
@@ -189,7 +189,7 @@ class StandardDetector(
         self._trigger_info: Optional[TriggerInfo] = None
         # For kickoff
         self._watchers: List[Callable] = []
-        self._fly_status: Optional[AsyncStatus] = None
+        self._fly_status: Optional[WatchableAsyncStatus] = None
         self._fly_start: float
 
         self._intial_frame: int
@@ -302,7 +302,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        self._fly_status = AsyncStatus(self._fly(), self._watchers)
+        self._fly_status = WatchableAsyncStatus(self._fly(), self._watchers)
         self._fly_start = time.monotonic()
 
     async def _fly(self) -> None:

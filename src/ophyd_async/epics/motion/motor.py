@@ -4,7 +4,7 @@ from typing import Callable, List, Optional
 
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import AsyncStatus, StandardReadable
+from ophyd_async.core import StandardReadable, WatchableAsyncStatus
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -78,10 +78,12 @@ class Motor(StandardReadable, Movable, Stoppable):
             raise RuntimeError("Will deadlock run engine if run in a plan")
         call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
 
-    def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:
+    def set(
+        self, new_position: float, timeout: Optional[float] = None
+    ) -> WatchableAsyncStatus:
         watchers: List[Callable] = []
         coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return AsyncStatus(coro, watchers)
+        return WatchableAsyncStatus(coro, watchers)
 
     async def stop(self, success=False):
         self._set_success = success

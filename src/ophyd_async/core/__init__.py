@@ -5,7 +5,7 @@ from ._providers import (
     ShapeProvider,
     StaticDirectoryProvider,
 )
-from .async_status import AsyncStatus
+from .async_status import AsyncStatus, WatchableAsyncStatus
 from .detector import (
     DetectorControl,
     DetectorTrigger,
@@ -78,6 +78,7 @@ __all__ = [
     "set_sim_value",
     "wait_for_value",
     "AsyncStatus",
+    "WatchableAsyncStatus",
     "DirectoryInfo",
     "DirectoryProvider",
     "NameProvider",
