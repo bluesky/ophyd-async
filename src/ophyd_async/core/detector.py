@@ -10,6 +10,7 @@ from typing import (
     AsyncIterator,
     Callable,
     Dict,
+    Generic,
     List,
     Optional,
     Sequence,
@@ -39,6 +40,8 @@ T = TypeVar("T")
 
 
 class DetectorTrigger(str, Enum):
+    """Type of mechanism for triggering a detector to take frames"""
+
     #: Detector generates internal trigger for given rate
     internal = "internal"
     #: Expect a series of arbitrary length trigger signals
@@ -51,6 +54,8 @@ class DetectorTrigger(str, Enum):
 
 @dataclass(frozen=True)
 class TriggerInfo:
+    """Minimal set of information required to setup triggering on a detector"""
+
     #: Number of triggers that will be sent
     num: int
     #: Sort of triggers that will be sent
@@ -62,6 +67,11 @@ class TriggerInfo:
 
 
 class DetectorControl(ABC):
+    """
+    Classes implementing this interface should hold the logic for
+    arming and disarming a detector
+    """
+
     @abstractmethod
     def get_deadtime(self, exposure: float) -> float:
         """For a given exposure, how long should the time between exposures be"""
@@ -73,17 +83,32 @@ class DetectorControl(ABC):
         trigger: DetectorTrigger = DetectorTrigger.internal,
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
-        """Arm the detector and return AsyncStatus.
+        """
+        Arm detector, do all necessary steps to prepare detector for triggers.
 
-        Awaiting the return value will wait for num frames to be written.
+        Args:
+            num: Expected number of frames
+            trigger: Type of trigger for which to prepare the detector. Defaults to
+            DetectorTrigger.internal.
+            exposure: Exposure time with which to set up the detector. Defaults to None
+            if not applicable or the detector is expected to use its previously-set
+            exposure time.
+
+        Returns:
+            AsyncStatus: Status representing the arm operation. This function returning
+            represents the start of the arm. The returned status completing means
+            the detector is now armed.
         """
 
     @abstractmethod
     async def disarm(self):
-        """Disarm the detector"""
+        """Disarm the detector, return detector to an idle state"""
 
 
 class DetectorWriter(ABC):
+    """Logic for making a detector write data to somewhere persistent
+    (e.g. an HDF5 file)"""
+
     @abstractmethod
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         """Open writer and wait for it to be ready for data.
@@ -100,7 +125,7 @@ class DetectorWriter(ABC):
     def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        """Yield each index as it is written"""
+        """Yield the index of each frame (or equivalent data point) as it is written"""
 
     @abstractmethod
     async def get_indices_written(self) -> int:
@@ -112,7 +137,7 @@ class DetectorWriter(ABC):
 
     @abstractmethod
     async def close(self) -> None:
-        """Close writer and wait for it to be finished"""
+        """Close writer, blocks until I/O is complete"""
 
 
 class StandardDetector(
@@ -125,14 +150,11 @@ class StandardDetector(
     Flyable,
     Collectable,
     WritesStreamAssets,
+    Generic[T],
 ):
-    """Detector with useful step and flyscan behaviour.
-
-    Must be supplied instances of classes that inherit from DetectorControl and
-    DetectorData, to dictate how the detector will be controlled (i.e. arming and
-    disarming) as well as how the detector data will be written (i.e. opening and
-    closing the writer, and handling data writing indices).
-
+    """
+    Useful detector base class for step and fly scanning detectors.
+    Aggregates controller and writer logic together.
     """
 
     def __init__(
@@ -144,14 +166,18 @@ class StandardDetector(
         writer_timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
         """
-        Parameters
-        ----------
-        control:
-            instance of class which inherits from :class:`DetectorControl`
-        data:
-            instance of class which inherits from :class:`DetectorData`
-        name:
-            detector name
+        Constructor
+
+        Args:
+            controller: Logic for arming and disarming the detector
+            writer: Logic for making the detector write persistent data
+            config_sigs: Signals to read when describe and read
+            configuration are called. Defaults to ().
+            name: Device name. Defaults to "".
+            writer_timeout: Timeout for frame writing to start, if the
+            timeout is reached, ophyd-async assumes the detector
+            has a problem and raises an error.
+            Defaults to DEFAULT_TIMEOUT.
         """
         self._controller = controller
         self._writer = writer
@@ -180,12 +206,12 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        """Disarm the detector, stop filewriting, and open file for writing."""
-        await self.check_config_sigs()
+        # Disarm the detector, stop filewriting, and open file for writing.
+        await self._check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._describe = await self.writer.open()
 
-    async def check_config_sigs(self):
+    async def _check_config_sigs(self):
         """Checks configuration signals are named and connected."""
         for signal in self._config_sigs:
             if signal._name == "":
@@ -202,7 +228,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        """Stop data writing."""
+        # Stop data writing.
         await self.writer.close()
 
     async def read_configuration(self) -> Dict[str, Reading]:
@@ -212,7 +238,6 @@ class StandardDetector(
         return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
     async def read(self) -> Dict[str, Reading]:
-        """Read the detector"""
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
@@ -221,7 +246,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        """Arm the detector and wait for it to finish."""
+        # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(
             num=1,
@@ -240,11 +265,12 @@ class StandardDetector(
         self,
         value: T,
     ) -> AsyncStatus:
-        """Arm detector"""
+        # Just arm detector for the time being
         return AsyncStatus(self._prepare(value))
 
     async def _prepare(self, value: T) -> None:
-        """Arm detector.
+        """
+        Arm detector.
 
         Prepare the detector with trigger information. This is determined at and passed
         in from the plan level.
@@ -253,6 +279,9 @@ class StandardDetector(
         trigger information determined in trigger.
 
         To do: Unify prepare to be use for both fly and step scans.
+
+        Args:
+            value: TriggerInfo describing how to trigger the detector
         """
         assert type(value) is TriggerInfo
         self._trigger_info = value
@@ -307,11 +336,9 @@ class StandardDetector(
     async def collect_asset_docs(
         self, index: Optional[int] = None
     ) -> AsyncIterator[StreamAsset]:
-        """Collect stream datum documents for all indices written.
-
-        The index is optional, and provided for flyscans, however this needs to be
-        retrieved for stepscans.
-        """
+        # Collect stream datum documents for all indices written.
+        # The index is optional, and provided for fly scans, however this needs to be
+        # retrieved for step scans.
         if not index:
             index = await self.writer.get_indices_written()
         async for doc in self.writer.collect_stream_docs(index):

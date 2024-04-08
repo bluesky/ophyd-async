@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 from unittest.mock import AsyncMock
 
 import bluesky.plan_stubs as bps
@@ -85,7 +85,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     controller: ADSimController,
 ):
     set_sim_value(writer.hdf.file_path_exists, True)
-    detector = StandardDetector(
+    detector: StandardDetector[Any] = StandardDetector(
         controller, writer, name="detector", writer_timeout=0.01
     )
 
@@ -99,7 +99,9 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
 
-    detector = StandardDetector(controller, writer, writer_timeout=0.01)
+    detector: StandardDetector[Optional[TriggerInfo]] = StandardDetector(
+        controller, writer, writer_timeout=0.01
+    )
     trigger_logic = DummyTriggerLogic()
 
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
