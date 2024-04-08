@@ -1,6 +1,6 @@
 import asyncio
 from enum import Enum
-from typing import FrozenSet, Sequence, Set
+from typing import Dict, FrozenSet, Optional, Sequence, Set, Type
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -11,7 +11,7 @@ from ophyd_async.core import (
 
 from ...signal.signal import epics_signal_rw
 from ..utils import ImageMode, ad_r, ad_rw
-from ..writers.nd_plugin import NDArrayBase
+from ..writers.nd_plugin import NDArrayBase, NDPluginBase
 
 
 class DetectorState(str, Enum):
@@ -41,7 +41,15 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
 
 
 class ADBase(NDArrayBase):
-    def __init__(self, prefix: str, name: str = "") -> None:
+    def __init__(
+        self,
+        prefix: str,
+        name: str = "",
+        enabled_plugins: Optional[Dict[str, Type[NDPluginBase]]] = None,
+    ) -> None:
+        self.enabled_plugins = {
+            prefix: plugin_class(prefix) for prefix, plugin_class in enabled_plugins.values()
+        } if enabled_plugins else {}
         # Define some signals
         self.acquire = ad_rw(bool, prefix + "Acquire")
         self.acquire_time = ad_rw(float, prefix + "AcquireTime")
