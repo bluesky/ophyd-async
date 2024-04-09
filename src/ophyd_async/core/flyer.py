@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, Optional, Sequence, TypeVar
+from typing import Dict, Generic, Sequence, TypeVar
 
 from bluesky.protocols import Descriptor, Flyable, Preparable, Reading, Stageable
 
