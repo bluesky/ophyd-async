@@ -2,8 +2,7 @@ import asyncio
 from dataclasses import dataclass
 
 from ophyd_async.core import TriggerLogic, wait_for_value
-from ophyd_async.panda import SeqBlock, SeqTable
-from ophyd_async.panda.panda import TimeUnits
+from ophyd_async.panda import SeqBlock, SeqTable, TimeUnits
 
 
 @dataclass
