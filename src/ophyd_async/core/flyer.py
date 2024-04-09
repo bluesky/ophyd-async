@@ -70,13 +70,10 @@ class HardwareTriggeredFlyable(
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
-        self._fly_status = AsyncStatus(self._trigger_logic.kickoff())
-        await self._fly_status
+        await self._trigger_logic.kickoff()
 
     @AsyncStatus.wrap
     async def complete(self) -> None:
-        assert self._fly_status, "Kickoff not run"
-        await self._fly_status
         await self._trigger_logic.complete()
 
     async def describe_configuration(self) -> Dict[str, Descriptor]:
