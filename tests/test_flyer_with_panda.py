@@ -199,7 +199,6 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
                 return_payload=False,
                 name="main_stream",
             )
-            yield from bps.sleep(0.01)
         yield from bps.wait(group="complete")
         yield from bps.close_run()
 
