@@ -20,7 +20,20 @@ from ophyd_async.core import (
 from ophyd_async.core.signal import observe_value
 from ophyd_async.panda.panda import PandA
 
-from .panda_hdf import _HDFDataset, _HDFFile
+from .panda_hdf_file import _HDFDataset, _HDFFile
+
+
+class Capture(str, Enum):
+    # Capture signals for the HDF Panda
+    No = "No"
+    Value = "Value"
+    Diff = "Diff"
+    Sum = "Sum"
+    Mean = "Mean"
+    Min = "Min"
+    Max = "Max"
+    MinMax = "Min Max"
+    MinMaxMean = "Min Max Mean"
 
 
 # Uses proper naming convention. Won't need this after pandablocks issue #101
@@ -31,18 +44,6 @@ class HdfSignals:
     num_capture: SignalRW  # Number of frames we want to capture
     num_captured: SignalR  # Number of frames we have captured so far
     capture: SignalRW
-
-
-class Capture(str, Enum):
-    No = "No"
-    Value = "Value"
-    Diff = "Diff"
-    Sum = "Sum"
-    Mean = "Mean"
-    Min = "Min"
-    Max = "Max"
-    MinMax = "Min Max"
-    MinMaxMean = "Min Max Mean"
 
 
 def get_capture_signals(
@@ -115,11 +116,11 @@ class PandaHDFWriter(DetectorWriter):
         # Convert the convert the ioc PV names to have a better underscore convention.
         # Can remove this after Pandablocks issue #101
         self.hdf = HdfSignals(
-            self.panda_device.data.hdfdirectory,
-            self.panda_device.data.hdffilename,
-            self.panda_device.data.numcapture,
-            self.panda_device.data.numcaptured,
-            self.panda_device.data.capture,
+            self.panda_device.data_block.hdfdirectory,
+            self.panda_device.data_block.hdffilename,
+            self.panda_device.data_block.numcapture,
+            self.panda_device.data_block.numcaptured,
+            self.panda_device.data_block.capture,
         )
 
         # Get capture PVs by looking at panda. Gives mapping of dotted attribute path
@@ -127,7 +128,7 @@ class PandaHDFWriter(DetectorWriter):
         self.capture_signals = get_capture_signals(self.panda_device)
 
         # Ensure flushes are immediate
-        await self.panda_device.data.flushperiod.set(0)
+        await self.panda_device.data_block.flushperiod.set(0)
 
         self.to_capture = await get_signals_marked_for_capture(self.capture_signals)
         self._file = None

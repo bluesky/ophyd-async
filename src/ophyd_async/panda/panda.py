@@ -3,7 +3,15 @@ from __future__ import annotations
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceVector, SignalR, SignalRW
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.panda.table import SeqTable
-from ophyd_async.panda.utils import PVIEntry
+
+
+class DataBlock(Device):
+    hdfdirectory: SignalRW[str]
+    hdffilename: SignalRW[str]
+    numcapture: SignalRW[int]
+    numcaptured: SignalR[int]
+    capture: SignalRW[bool]
+    flushperiod: SignalRW[float]
 
 
 class PulseBlock(Device):
@@ -25,12 +33,15 @@ class CommonPandABlocks(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
-    data: DataBlock
 
 
 class PandA(CommonPandABlocks):
+    data_block: DataBlock
+
     def __init__(self, prefix: str, name: str = "") -> None:
         self._prefix = prefix
+        # Remove this assert once PandA IOC supports different prefixes
+        assert prefix.endswith(":"), f"PandA prefix '{prefix}' must end in ':'"
         super().__init__(name)
 
     async def connect(
