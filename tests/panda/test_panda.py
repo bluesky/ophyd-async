@@ -100,13 +100,12 @@ async def test_panda_children_connected(sim_panda: PandA):
 
 async def test_panda_with_missing_blocks(panda_pva):
     panda = PandA("PANDAQSRVI:")
-    with pytest.raises(
-        RuntimeError,
-        match=(
-            "sub device `pcap:<class 'typing._ProtocolMeta'>` was not provided by pvi",
-        ),
-    ):
+    with pytest.raises(RuntimeError) as exc:
         await panda.connect()
+    assert (
+        str(exc.value)
+        == "sub device `pcap:<class 'typing._ProtocolMeta'>` was not provided by pvi"
+    )
 
 
 async def test_panda_with_extra_blocks_and_signals(panda_pva):
