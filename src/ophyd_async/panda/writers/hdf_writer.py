@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional, Union
 
 from bluesky.protocols import Descriptor, StreamAsset
@@ -134,7 +135,7 @@ class PandaHDFWriter(DetectorWriter):
         await asyncio.gather(
             self.hdf.file_path.set(str(info.root / info.resource_dir)),
             self.hdf.file_name.set(
-                f"{info.prefix}.{self.panda_device.name}{info.suffix}.h5"
+                f"{info.prefix}{self.panda_device.name}{info.suffix}",
             ),
         )
 
@@ -208,7 +209,9 @@ class PandaHDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    await self.hdf.file_name.get_value(), self._datasets
+                    self._directory_provider(),
+                    Path(await self.hdf.file_name.get_value()),
+                    self._datasets,
                 )
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc
