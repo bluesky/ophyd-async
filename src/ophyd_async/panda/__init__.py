@@ -1,4 +1,4 @@
-from .panda import PandA, PcapBlock, PulseBlock, PVIEntry, SeqBlock, SeqTable, TimeUnits
+from .panda import PandA, PcapBlock, PulseBlock, SeqBlock, SeqTable, TimeUnits
 from .panda_controller import PandaPcapController
 from .table import (
     SeqTable,
