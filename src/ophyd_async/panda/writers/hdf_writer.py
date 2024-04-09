@@ -26,10 +26,10 @@ from .panda_hdf import _HDFDataset, _HDFFile
 # Uses proper naming convention. Won't need this after pandablocks issue #101
 @dataclass()
 class HdfSignals:
-    file_path: SignalRW  # This is the directory rather than path. Path is read only
+    file_path: SignalRW  # Absolute path to the directory containing data file
     file_name: SignalRW
-    num_capture: SignalRW
-    num_captured: SignalR
+    num_capture: SignalRW  # Number of frames we want to capture
+    num_captured: SignalR  # Number of frames we have captured so far
     capture: SignalRW
 
 

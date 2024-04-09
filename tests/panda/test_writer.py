@@ -25,7 +25,7 @@ from ophyd_async.panda.writers.panda_hdf import _HDFFile
 @pytest.fixture
 async def sim_panda() -> PandA:
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("SIM_PANDA", name="sim_panda")
+        sim_panda = PandA("SIM_PANDA:", name="sim_panda")
         sim_panda.block1 = Device("BLOCK1")  # type: ignore[attr-defined]
         sim_panda.block2 = Device("BLOCK2")  # type: ignore[attr-defined]
         sim_panda.block1.test_capture = SignalRW(  # type: ignore[attr-defined]
