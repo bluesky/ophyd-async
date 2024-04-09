@@ -3,7 +3,7 @@
 import asyncio
 import functools
 import time
-from dataclasses import replace
+from dataclasses import asdict, replace
 from typing import (
     AsyncIterator,
     Awaitable,
@@ -53,7 +53,7 @@ class AsyncStatusBase(Status):
 
     def exception(self, timeout: float | None = 0.0) -> BaseException | None:
         if timeout != 0.0:
-            raise Exception(
+            raise ValueError(
                 "cannot honour any timeout other than 0 in an asynchronous function"
             )
         if self.task.done():
@@ -119,18 +119,20 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
         super().__init__(awaitable)
 
     async def _notify_watchers_from(self, iterator: AsyncIterator[WatcherUpdate[T]]):
-        async for self._last_update in iterator:
+        async for update in iterator:
+            self._last_update = replace(
+                update, time_elapsed=time.monotonic() - self._start
+            )
             for watcher in self._watchers:
                 self._update_watcher(watcher, self._last_update)
 
     def _update_watcher(self, watcher: Watcher, update: WatcherUpdate[T]):
-        watcher(replace(update, time_elapsed_s=time.monotonic() - self._start))
+        watcher(**asdict(update))
 
-    def watch(self, watchers: Sequence[Watcher]):
-        for watcher in watchers:
-            self._watchers.append(watcher)
-            if self._last_update:
-                self._update_watcher(watcher, self._last_update)
+    def watch(self, watcher:Watcher):
+        self._watchers.append(watcher)
+        if self._last_update:
+            self._update_watcher(watcher, self._last_update)
 
     @classmethod
     def wrap(

@@ -6,6 +6,7 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import DeviceCollector, set_sim_put_proceeds, set_sim_value
+from ophyd_async.core.utils import Watcher
 from ophyd_async.epics.motion import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
@@ -29,8 +30,8 @@ async def sim_motor():
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_sim_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(0.55)
-    watcher = Mock()
-    s.watch([watcher])
+    watcher = Mock(spec=Watcher)
+    s.watch(watcher)
     done = Mock()
     s.add_callback(done)
     await asyncio.sleep(A_BIT)

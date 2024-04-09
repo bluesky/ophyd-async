@@ -34,7 +34,7 @@ from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 from .async_status import AsyncStatus, WatchableAsyncStatus
 from .device import Device
 from .signal import SignalR
-from .utils import DEFAULT_TIMEOUT, merge_gathered_dicts
+from .utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 T = TypeVar("T")
 
@@ -300,28 +300,26 @@ class StandardDetector(
             exposure=self._trigger_info.livetime,
         )
 
-    @AsyncStatus.wrap
-    async def kickoff(self) -> None:
-        self._fly_status = WatchableAsyncStatus(self._fly(), self._watchers)
+    async def kickoff(self):
+        self._fly_status = WatchableAsyncStatus(
+            self._observe_writer_indicies(self._last_frame), self._watchers
+        )
         self._fly_start = time.monotonic()
-
-    async def _fly(self) -> None:
-        await self._observe_writer_indicies(self._last_frame)
+        return self._fly_status 
 
     async def _observe_writer_indicies(self, end_observation: int):
         async for index in self.writer.observe_indices_written(
             self._frame_writing_timeout
         ):
-            for watcher in self._watchers:
-                watcher(
-                    name=self.name,
-                    current=index,
-                    initial=self._initial_frame,
-                    target=end_observation,
-                    unit="",
-                    precision=0,
-                    time_elapsed=time.monotonic() - self._fly_start,
-                )
+            yield WatcherUpdate(
+                name=self.name,
+                current=index,
+                initial=self._initial_frame,
+                target=end_observation,
+                unit="",
+                precision=0,
+                time_elapsed=time.monotonic() - self._fly_start,
+            )
             if index >= end_observation:
                 break
 

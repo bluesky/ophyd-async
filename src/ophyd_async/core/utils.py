@@ -13,8 +13,8 @@ from typing import (
     List,
     Optional,
     ParamSpec,
+    Protocol,
     Type,
-    TypeAlias,
     TypeVar,
     Union,
 )
@@ -85,16 +85,36 @@ class NotConnected(Exception):
 
 @dataclass(frozen=True)
 class WatcherUpdate(Generic[T]):
-    name: str
+    """A dataclass such that, when expanded, it provides the kwargs for a watcher"""
+
     current: T
     initial: T
     target: T
-    units: str
-    precision: float
-    time_elapsed_s: float
+    name: str | None = None
+    unit: str | None = None
+    precision: float | None = None
+    fraction: float | None = None
+    time_elapsed: float | None = None
+    time_remaining: float | None = None
 
 
-Watcher: TypeAlias = Callable[[WatcherUpdate[T]], Any]
+C = TypeVar("C", contravariant=True)
+
+
+class Watcher(Protocol, Generic[C]):
+    @staticmethod
+    def __call__(
+        *,
+        current: C,
+        initial: C,
+        target: C,
+        name: str | None,
+        unit: str | None,
+        precision: float | None,
+        fraction: float | None,
+        time_elapsed: float | None,
+        time_remaining: float | None,
+    ) -> Any: ...
 
 
 async def wait_for_connection(**coros: Awaitable[None]):

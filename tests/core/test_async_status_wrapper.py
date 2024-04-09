@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 from typing import AsyncIterator
 
 import bluesky.plan_stubs as bps
@@ -15,15 +16,69 @@ class SetFailed(Exception):
     pass
 
 
+def watcher_test(
+    storage: list[WatcherUpdate],
+    *,
+    name: str | None,
+    current: int | None,
+    initial: int | None,
+    target: int | None,
+    unit: str | None,
+    precision: float | None,
+    fraction: float | None,
+    time_elapsed: float | None,
+    time_remaining: float | None,
+):
+    storage.append(
+        WatcherUpdate(
+            name=name,
+            current=current,
+            initial=initial,
+            target=target,
+            unit=unit,
+            precision=precision,
+            fraction=fraction,
+            time_elapsed=time_elapsed,
+            time_remaining=time_remaining,
+        )
+    )
+
+
+class TWatcher:
+    updates: list[int] = []
+
+    def __call__(
+        self,
+        *,
+        name: str | None,
+        current: int | None,
+        initial: int | None,
+        target: int | None,
+        unit: str | None,
+        precision: float | None,
+        fraction: float | None,
+        time_elapsed: float | None,
+        time_remaining: float | None,
+    ) -> None:
+        self.updates.append(current or -1)
+
+
 class ASTestDevice(StandardReadable, Movable):
     def __init__(self, name: str = "") -> None:
+        self._staged: bool = False
         self.sig = SignalR(backend=SimSignalBackend(datatype=int, source="sim:TEST"))
         super().__init__(name)
+
+    @AsyncStatus.wrap
+    async def stage(self):
+        self._staged = True
+        await asyncio.sleep(0.01)
 
 
 class ASTestDeviceSingleSet(ASTestDevice):
     @AsyncStatus.wrap
     async def set(self, val):
+        assert self._staged
         await asyncio.sleep(0.01)
         self.sig._backend._set_value(val)  # type: ignore
 
@@ -38,6 +93,7 @@ class ASTestDeviceIteratorSet(ASTestDevice):
 
     @WatchableAsyncStatus.wrap
     async def set(self, val) -> AsyncIterator:
+        assert self._staged
         self._initial = await self.sig.get_value()
         for point in self.values:
             await asyncio.sleep(0.01)
@@ -46,9 +102,11 @@ class ASTestDeviceIteratorSet(ASTestDevice):
                 current=point,
                 initial=self._initial,
                 target=val,
-                units="dimensionless",
+                unit="dimensionless",
                 precision=0.0,
-                time_elapsed_s=0,
+                time_elapsed=0,
+                time_remaining=0,
+                fraction=0,
             )
         if self.complete_set:
             self.sig._backend._set_value(val)  # type: ignore
@@ -57,9 +115,11 @@ class ASTestDeviceIteratorSet(ASTestDevice):
                 current=val,
                 initial=self._initial,
                 target=val,
-                units="dimensionless",
+                unit="dimensionless",
                 precision=0.0,
-                time_elapsed_s=point,
+                time_elapsed=0,
+                time_remaining=0,
+                fraction=0,
             )
         else:
             raise SetFailed
@@ -104,9 +164,14 @@ def test_asyncstatus_wraps_bare_func_with_args_kwargs(loop):
     loop.run_until_complete(do_test())
 
 
-async def test_asyncstatus_wraps_set(RE):
+async def test_asyncstatus_wraps_both_stage_and_set(RE):
     td = ASTestDeviceSingleSet()
     await td.connect()
+    with pytest.raises(AssertionError):
+        st = td.set(5)
+        assert isinstance(st, AsyncStatus)
+        await st
+    await td.stage()
     st = td.set(5)
     assert isinstance(st, AsyncStatus)
     await st
@@ -115,32 +180,31 @@ async def test_asyncstatus_wraps_set(RE):
     assert (await td.sig.get_value()) == 3
 
 
-async def test_asyncstatus_wraps_set_iterator(RE):
+async def test_asyncstatus_wraps_set_iterator_with_class_or_func_watcher(RE):
     td = ASTestDeviceIteratorSet()
     await td.connect()
+    await td.stage()
     st = td.set(6)
     updates = []
 
-    def watcher(update):
-        updates.append(update)
-
-    st.watch([watcher])
+    w = TWatcher()
+    st.watch(partial(watcher_test, updates))
+    st.watch(w)
     await st
     assert st.done
     assert st.success
     assert len(updates) == 6
+    assert sum(w.updates) == 21
 
 
 async def test_asyncstatus_wraps_failing_set_iterator_(RE):
     td = ASTestDeviceIteratorSet(values=[1, 2, 3], complete_set=False)
     await td.connect()
+    await td.stage()
     st = td.set(6)
     updates = []
 
-    def watcher(update):
-        updates.append(update)
-
-    st.watch([watcher])
+    st.watch(partial(watcher_test, updates))
     try:
         await st
     except Exception:

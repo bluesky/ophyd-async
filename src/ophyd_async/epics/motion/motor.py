@@ -1,10 +1,13 @@
 import asyncio
 import time
-from typing import Callable, List, Optional
+from dataclasses import replace
+from typing import Optional
 
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import StandardReadable, WatchableAsyncStatus
+from ophyd_async.core.signal import observe_value
+from ophyd_async.core.utils import WatcherUpdate
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -41,34 +44,23 @@ class Motor(StandardReadable, Movable, Stoppable):
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
-    async def _move(self, new_position: float, watchers: List[Callable] = []):
+    async def _move(self, new_position: float) -> WatcherUpdate[float]:
         self._set_success = True
-        start = time.monotonic()
         old_position, units, precision = await asyncio.gather(
             self.user_setpoint.get_value(),
             self.motor_egu.get_value(),
             self.precision.get_value(),
         )
-
-        def update_watchers(current_position: float):
-            for watcher in watchers:
-                watcher(
-                    name=self.name,
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    unit=units,
-                    precision=precision,
-                    time_elapsed=time.monotonic() - start,
-                )
-
-        self.user_readback.subscribe_value(update_watchers)
-        try:
-            await self.user_setpoint.set(new_position)
-        finally:
-            self.user_readback.clear_sub(update_watchers)
+        await self.user_setpoint.set(new_position)
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
+        return WatcherUpdate(
+            initial=old_position,
+            current=old_position,
+            target=new_position,
+            unit=units,
+            precision=precision,
+        )
 
     def move(self, new_position: float, timeout: Optional[float] = None):
         """Commandline only synchronous move of a Motor"""
@@ -78,12 +70,14 @@ class Motor(StandardReadable, Movable, Stoppable):
             raise RuntimeError("Will deadlock run engine if run in a plan")
         call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
 
-    def set(
-        self, new_position: float, timeout: Optional[float] = None
-    ) -> WatchableAsyncStatus:
-        watchers: List[Callable] = []
-        coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return WatchableAsyncStatus(coro, watchers)
+    @WatchableAsyncStatus.wrap
+    async def set(self, new_position: float, timeout: Optional[float] = None):
+        start_time = time.monotonic()
+        update: WatcherUpdate[float] = await self._move(new_position)
+        async for readback in observe_value(self.user_readback):
+            yield replace(
+                update, current=readback, time_elapsed=start_time - time.monotonic()
+            )
 
     async def stop(self, success=False):
         self._set_success = success
