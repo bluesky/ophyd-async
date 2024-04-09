@@ -86,9 +86,8 @@ class DeviceVector(Dict[int, VT], Device):
     Defines device components with indices.
 
     In the below example, foos becomes a dictionary on the parent device
-    at runtime, so parent.foos[2] returns a FooDevice.
-    Example Usage:
-        self.foos = DeviceVector({i: FooDevice("THING:" + i) for i in range(5)})
+    at runtime, so parent.foos[2] returns a FooDevice. For example usage see
+    :class:`~ophyd_async.epics.demo.DynamicSensorGroup`
     """
 
     def children(self) -> Generator[Tuple[str, Device], None, None]:

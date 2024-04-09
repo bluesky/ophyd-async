@@ -14,7 +14,13 @@ from typing import Callable, List, Optional
 import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import AsyncStatus, Device, StandardReadable, observe_value
+from ophyd_async.core import (
+    AsyncStatus,
+    Device,
+    DeviceVector,
+    StandardReadable,
+    observe_value,
+)
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -41,6 +47,19 @@ class Sensor(StandardReadable):
             config=[self.mode],
         )
         super().__init__(name=name)
+
+
+class SensorGroup(StandardReadable):
+    def __init__(self, prefix: str, name: str = "", sensor_count: int = 3) -> None:
+        self.sensors = DeviceVector(
+            {i: Sensor(f"{prefix}{i}:") for i in range(1, sensor_count + 1)}
+        )
+
+        # Makes read() produce the values of all sensors
+        self.set_readable_signals(
+            read=[sensor.value for sensor in self.sensors.values()],
+        )
+        super().__init__(name)
 
 
 class Mover(StandardReadable, Movable, Stoppable):
