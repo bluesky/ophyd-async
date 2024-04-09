@@ -20,10 +20,10 @@ from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.signal import observe_value, set_sim_value
 from ophyd_async.panda import PandA
+from ophyd_async.panda.trigger import StaticSeqTableTriggerLogic
 from ophyd_async.planstubs.prepare_trigger_and_dets import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
-from ophyd_async.triggers.static_seq_table_trigger import StaticSeqTableTriggerLogic
 
 
 class DummyWriter(DetectorWriter):

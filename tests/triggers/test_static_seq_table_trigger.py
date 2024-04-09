@@ -2,7 +2,7 @@ import pytest
 
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.panda import PandA
-from ophyd_async.triggers.static_seq_table_trigger import StaticSeqTableTriggerLogic
+from ophyd_async.panda.trigger import StaticSeqTableTriggerLogic
 
 
 @pytest.fixture

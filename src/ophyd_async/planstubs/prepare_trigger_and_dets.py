@@ -6,7 +6,7 @@ from ophyd_async.core.detector import DetectorTrigger, StandardDetector, Trigger
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
 from ophyd_async.panda.table import SeqTable, SeqTableRow, seq_table_from_rows
-from ophyd_async.triggers.static_seq_table_trigger import SequenceTableInfo
+from ophyd_async.panda.trigger import SequenceTableInfo
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
