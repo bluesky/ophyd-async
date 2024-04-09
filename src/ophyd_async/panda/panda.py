@@ -4,14 +4,6 @@ from enum import Enum
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceVector, SignalR, SignalRW
 from ophyd_async.epics.pvi import fill_pvi_entries
-
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    Device,
-    DeviceVector,
-    SignalR,
-    SignalRW,
-)
 from ophyd_async.panda.table import SeqTable
 
 
