@@ -6,18 +6,18 @@ from ophyd_async.panda import SeqBlock, SeqTable, TimeUnits
 
 
 @dataclass
-class SequenceTableInfo:
+class SeqTableInfo:
     sequence_table: SeqTable
     repeats: int
     prescale_as_us: float = 1  # microseconds
 
 
-class StaticSeqTableTriggerLogic(TriggerLogic[SequenceTableInfo]):
+class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
 
     def __init__(self, seq: SeqBlock) -> None:
         self.seq = seq
 
-    async def prepare(self, value: SequenceTableInfo):
+    async def prepare(self, value: SeqTableInfo):
         await asyncio.gather(
             self.seq.prescale_units.set(TimeUnits.us),
             self.seq.enable.set("ZERO"),

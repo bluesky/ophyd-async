@@ -6,11 +6,11 @@ from ophyd_async.core.detector import DetectorTrigger, StandardDetector, Trigger
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
 from ophyd_async.panda.table import SeqTable, SeqTableRow, seq_table_from_rows
-from ophyd_async.panda.trigger import SequenceTableInfo
+from ophyd_async.panda.trigger import SeqTableInfo
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
-    flyer: HardwareTriggeredFlyable[SeqTable],
+    flyer: HardwareTriggeredFlyable[SeqTableInfo],
     detectors: List[StandardDetector],
     num: int,
     width: float,
@@ -30,7 +30,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     trigger_time = num * (width + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
 
-    table = seq_table_from_rows(
+    table: SeqTable = seq_table_from_rows(
         # Wait for pre-delay then open shutter
         SeqTableRow(
             time1=in_micros(pre_delay),
@@ -50,7 +50,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         SeqTableRow(time2=in_micros(shutter_time)),
     )
 
-    table_info = SequenceTableInfo(table, repeats)
+    table_info = SeqTableInfo(table, repeats)
 
     for det in detectors:
         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
