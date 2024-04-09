@@ -44,8 +44,6 @@ class HardwareTriggeredFlyable(
     ):
         self._trigger_logic = trigger_logic
         self._configuration_signals = tuple(configuration_signals)
-        self._describe: Dict[str, Descriptor] = {}
-        self._fly_status: Optional[AsyncStatus] = None
         super().__init__(name=name)
 
     @property
