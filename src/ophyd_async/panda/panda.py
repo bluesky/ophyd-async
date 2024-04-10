@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from enum import Enum
+
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceVector, SignalR, SignalRW
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.panda.table import SeqTable
@@ -19,9 +21,20 @@ class PulseBlock(Device):
     width: SignalRW[float]
 
 
+class TimeUnits(str, Enum):
+    min = "min"
+    s = "s"
+    ms = "ms"
+    us = "us"
+
+
 class SeqBlock(Device):
     table: SignalRW[SeqTable]
     active: SignalRW[bool]
+    repeats: SignalRW[int]
+    prescale: SignalRW[float]
+    prescale_units: SignalRW[TimeUnits]
+    enable: SignalRW[str]
 
 
 class PcapBlock(Device):
