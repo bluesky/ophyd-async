@@ -1,4 +1,4 @@
-from .panda import PandA, PcapBlock, PulseBlock, SeqBlock
+from .panda import PandA, PcapBlock, PulseBlock, SeqBlock, SeqTable, TimeUnits
 from .panda_controller import PandaPcapController
 from .table import (
     SeqTable,
@@ -21,4 +21,5 @@ __all__ = [
     "SeqTrigger",
     "phase_sorter",
     "PandaPcapController",
+    "TimeUnits",
 ]
