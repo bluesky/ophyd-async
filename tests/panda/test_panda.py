@@ -6,10 +6,11 @@ from typing import Dict
 import numpy as np
 import pytest
 
-from ophyd_async.core import Device, DeviceCollector
+from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector
 from ophyd_async.core.utils import NotConnected
-from ophyd_async.epics.pvi import PVIEntry
+from ophyd_async.epics.pvi import PVIEntry, fill_pvi_entries
 from ophyd_async.panda import (
+    CommonPandABlocks,
     PandA,
     PcapBlock,
     PulseBlock,
@@ -50,6 +51,21 @@ async def sim_panda():
 
     assert sim_panda.name == "sim_panda"
     yield sim_panda
+
+
+class PandANoDataBlock(CommonPandABlocks):
+    def __init__(self, prefix: str, name: str = "") -> None:
+        self._prefix = prefix
+        assert prefix.endswith(":"), f"PandA prefix '{prefix}' must end in ':'"
+        super().__init__(name)
+
+    async def connect(
+        self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+    ) -> None:
+
+        await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
+
+        await super().connect(sim)
 
 
 def test_panda_names_correct(sim_panda: PandA):
@@ -109,10 +125,9 @@ async def test_panda_with_missing_blocks(panda_pva):
 
 
 async def test_panda_with_extra_blocks_and_signals(panda_pva):
-    panda = PandA("PANDAQSRV:")
-    del panda.__annotations__["data"]  # This block isn't included in the test ioc
-    await panda.connect()
 
+    panda = PandANoDataBlock("PANDAQSRV:")
+    await panda.connect()
     assert panda.extra  # type: ignore
     assert panda.extra[1]  # type: ignore
     assert panda.extra[2]  # type: ignore
@@ -120,7 +135,7 @@ async def test_panda_with_extra_blocks_and_signals(panda_pva):
 
 
 async def test_panda_gets_types_from_common_class(panda_pva):
-    panda = PandA("PANDAQSRV:")
+    panda = PandANoDataBlock("PANDAQSRV:")
     await panda.connect()
 
     # sub devices have the correct types
