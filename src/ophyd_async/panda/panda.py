@@ -6,12 +6,12 @@ from ophyd_async.panda.table import SeqTable
 
 
 class DataBlock(Device):
-    hdfdirectory: SignalRW[str]
-    hdffilename: SignalRW[str]
-    numcapture: SignalRW[int]
-    numcaptured: SignalR[int]
+    hdf_directory: SignalRW[str]
+    hdf_file_name: SignalRW[str]
+    num_capture: SignalRW[int]
+    num_captured: SignalR[int]
     capture: SignalRW[bool]
-    flushperiod: SignalRW[float]
+    flush_period: SignalRW[float]
 
 
 class PulseBlock(Device):
@@ -36,7 +36,7 @@ class CommonPandABlocks(Device):
 
 
 class PandA(CommonPandABlocks):
-    data_block: DataBlock
+    data: DataBlock
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self._prefix = prefix

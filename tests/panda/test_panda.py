@@ -58,7 +58,7 @@ def test_panda_names_correct(sim_panda: PandA):
 
 
 def test_panda_name_set():
-    panda = PandA("", "panda")
+    panda = PandA(":", "panda")
     assert panda.name == "panda"
 
 

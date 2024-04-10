@@ -21,4 +21,5 @@ __all__ = [
     "SeqTrigger",
     "phase_sorter",
     "PandaPcapController",
+    "Data",
 ]

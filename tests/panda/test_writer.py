@@ -102,7 +102,7 @@ async def test_get_signals_marked_for_capture(sim_panda):
 
 
 async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
-    assert hasattr(sim_writer.panda_device, "data_block")
+    assert hasattr(sim_writer.panda_device, "data")
     cap1 = sim_writer.panda_device.block1.test_capture  # type: ignore[attr-defined]
     cap2 = sim_writer.panda_device.block2.test_capture  # type: ignore[attr-defined]
     set_sim_value(cap1, Capture.MinMaxMean)

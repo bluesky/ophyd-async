@@ -54,6 +54,9 @@ def get_capture_signals(
         path_prefix = ""
     signals: Dict[str, SignalR[Any]] = {}
     for attr_name, attr in panda.children():
+        # Capture signals end in _capture, but num_capture is a red herring
+        if attr_name == "num_capture":
+            continue
         dot_path = f"{path_prefix}{attr_name}"
         if isinstance(attr, SignalR) and attr_name.endswith("_capture"):
             signals[dot_path] = attr
@@ -116,11 +119,11 @@ class PandaHDFWriter(DetectorWriter):
         # Convert the convert the ioc PV names to have a better underscore convention.
         # Can remove this after Pandablocks issue #101
         self.hdf = HdfSignals(
-            self.panda_device.data_block.hdfdirectory,
-            self.panda_device.data_block.hdffilename,
-            self.panda_device.data_block.numcapture,
-            self.panda_device.data_block.numcaptured,
-            self.panda_device.data_block.capture,
+            self.panda_device.data.hdf_directory,
+            self.panda_device.data.hdf_file_name,
+            self.panda_device.data.num_capture,
+            self.panda_device.data.num_captured,
+            self.panda_device.data.capture,
         )
 
         # Get capture PVs by looking at panda. Gives mapping of dotted attribute path
@@ -128,7 +131,7 @@ class PandaHDFWriter(DetectorWriter):
         self.capture_signals = get_capture_signals(self.panda_device)
 
         # Ensure flushes are immediate
-        await self.panda_device.data_block.flushperiod.set(0)
+        await self.panda_device.data.flush_period.set(0)
 
         self.to_capture = await get_signals_marked_for_capture(self.capture_signals)
         self._file = None
