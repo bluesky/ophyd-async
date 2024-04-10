@@ -1,5 +1,6 @@
 import asyncio
 from typing import Optional
+
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
@@ -27,7 +28,8 @@ class PilatusController(DetectorControl):
 
     def get_deadtime(self, exposure: float) -> float:
         # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
-        """The required minimum time difference between ExpPeriod and ExpTime (readout time) is 2.28 ms"""
+        """The required minimum time difference between ExpPeriod and ExpTime
+        (readout time) is 2.28 ms"""
         return 2.28e-3
 
     async def arm(
