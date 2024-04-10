@@ -1,3 +1,4 @@
+from .aravis import ADAravisDetector
 from .single_trigger_det import SingleTriggerDet
 from .utils import (
     FileWriteMode,
@@ -9,6 +10,7 @@ from .utils import (
 )
 
 __all__ = [
+    "ADAravisDetector",
     "SingleTriggerDet",
     "FileWriteMode",
     "ImageMode",
