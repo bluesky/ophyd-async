@@ -6,7 +6,13 @@ from ._providers import (
     StaticDirectoryProvider,
 )
 from .async_status import AsyncStatus
-from .detector import DetectorControl, DetectorTrigger, DetectorWriter, StandardDetector
+from .detector import (
+    DetectorControl,
+    DetectorTrigger,
+    DetectorWriter,
+    StandardDetector,
+    TriggerInfo,
+)
 from .device import Device, DeviceCollector, DeviceVector
 from .device_save_loader import (
     get_signal_values,
@@ -17,7 +23,7 @@ from .device_save_loader import (
     set_signal_values,
     walk_rw_signals,
 )
-from .flyer import HardwareTriggeredFlyable, TriggerInfo, TriggerLogic
+from .flyer import HardwareTriggeredFlyable, TriggerLogic
 from .signal import (
     Signal,
     SignalR,
