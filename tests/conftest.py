@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
+from ophyd_async.core import StaticDirectoryProvider
+
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
@@ -89,3 +91,8 @@ async def failing_coroutine() -> Callable[[], Any]:
         raise ValueError()
 
     return inner_coroutine
+
+
+@pytest.fixture
+def static_directory_provider(tmp_path: Path):
+    return StaticDirectoryProvider(directory_path=tmp_path)

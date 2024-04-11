@@ -10,8 +10,12 @@ from ophyd_async.core import (
     set_sim_value,
 )
 from ophyd_async.epics.areadetector.aravis import ADAravisDetector
-from ophyd_async.epics.areadetector.controllers.aravis_controller import ADAravisController
-from ophyd_async.epics.areadetector.drivers.aravis_driver import ADAravisDriver, ADAravisTriggerSource
+from ophyd_async.epics.areadetector.drivers.aravis_driver import (
+    ADAravisDriver,
+    ADAravisTriggerSource,
+)
+from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
+
 
 @pytest.fixture
 async def adaravis_driver(RE: RunEngine) -> ADAravisDriver:
@@ -22,24 +26,27 @@ async def adaravis_driver(RE: RunEngine) -> ADAravisDriver:
 
 
 @pytest.fixture
-async def adaravis_controller(
-    RE: RunEngine, adaravis_driver: ADAravisDriver
-) -> ADAravisController:
+async def hdf(RE: RunEngine) -> NDFileHDF:
     async with DeviceCollector(sim=True):
-        controller = ADAravisController(adaravis_driver, gpio_number=1)
+        hdf = NDFileHDF("HDF:")
 
-    return controller
+    return hdf
 
 
 @pytest.fixture
 async def adaravis(
-    RE: RunEngine, static_directory_provider: DirectoryProvider
+    RE: RunEngine,
+    static_directory_provider: DirectoryProvider,
+    adaravis_driver: ADAravisDriver,
+    hdf: NDFileHDF,
 ) -> ADAravisDetector:
     async with DeviceCollector(sim=True):
         adaravis = ADAravisDetector(
             "ADARAVIS:",
+            "adaravis",
             static_directory_provider,
-            name="adaravis",
+            driver=adaravis_driver,
+            hdf=hdf,
         )
 
     return adaravis
@@ -65,16 +72,15 @@ async def test_deadtime_read_from_file(
     model: str,
     pixel_format: str,
     deadtime: float,
-    adaravis_controller: ADAravisController,
+    adaravis: ADAravisDetector,
 ):
-    set_sim_value(adaravis_controller._drv.model, model)
-    set_sim_value(adaravis_controller._drv.pixel_format, pixel_format)
+    set_sim_value(adaravis.drv.model, model)
+    set_sim_value(adaravis.drv.pixel_format, pixel_format)
 
+    await adaravis.drv._fetch_deadtime()
     # deadtime invariant with exposure time
-    await adaravis_controller._fetch_deadtime()
-    assert adaravis_controller.get_deadtime(0) == deadtime
-    await adaravis_controller._fetch_deadtime()
-    assert adaravis_controller.get_deadtime(500) == deadtime
+    assert adaravis.controller.get_deadtime(0) == deadtime
+    assert adaravis.controller.get_deadtime(500) == deadtime
 
 
 async def test_trigger_source_set_to_gpio_line(adaravis: ADAravisDetector):
@@ -126,6 +132,8 @@ async def test_hints_from_hdf_writer(adaravis: ADAravisDetector):
 
 
 async def test_unsupported_trigger_excepts(adaravis: ADAravisDetector):
+    set_sim_value(adaravis.drv.model, "Manta G-125")
+    set_sim_value(adaravis.drv.pixel_format, "Mono12Packed")
     with pytest.raises(
         ValueError,
         # str(EnumClass.value) handling changed in Python 3.11

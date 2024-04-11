@@ -27,14 +27,16 @@ class ADAravisDetector(StandardDetector, HasHints):
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
         name: str,
+        directory_provider: DirectoryProvider,
+        driver: ADAravisDriver,
+        hdf: NDFileHDF,
         gpio_number: ADAravisController.GPIO_NUMBER = 1,
         **scalar_sigs: str,
     ):
         # Must be child of Detector to pick up connect()
-        self.drv = ADAravisDriver(prefix + "DET:")
-        self.hdf = NDFileHDF(prefix + "HDF5:")
+        self.drv = driver
+        self.hdf = hdf
 
         super().__init__(
             ADAravisController(self.drv, gpio_number=gpio_number),
@@ -50,7 +52,7 @@ class ADAravisDetector(StandardDetector, HasHints):
         )
 
     async def _prepare(self, value: TriggerInfo) -> None:
-        await self._controller._fetch_deadtime()
+        await self.drv._fetch_deadtime()
         await super()._prepare(value)
 
     def get_external_trigger_gpio(self):

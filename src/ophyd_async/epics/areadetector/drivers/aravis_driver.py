@@ -1,6 +1,6 @@
 from enum import Enum
 from math import nan
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.utils import (
@@ -147,10 +147,11 @@ class ADAravisDriver(ADBase):
         self.trigger_source = ad_rw(ADAravisTriggerSource, prefix + "TriggerSource")
         self.model = ad_r(str, prefix + "Model")
         self.pixel_format = ad_rw(str, prefix + "PixelFormat")
+        self.dead_time: Optional[float] = None
         super().__init__(prefix, name=name)
 
     async def _fetch_deadtime(self) -> float:
         # All known in-use version B/C have same deadtime as non-B/C
         model: str = (await self.model.get_value()).removesuffix("B").removesuffix("C")
         pixel_format: str = await self.pixel_format.get_value()
-        return _deadtimes.get(model, lambda _: nan)(pixel_format)
+        self.dead_time = _deadtimes.get(model, lambda _: nan)(pixel_format)

@@ -24,13 +24,9 @@ class ADAravisController(DetectorControl):
     def __init__(self, driver: ADAravisDriver, gpio_number: GPIO_NUMBER) -> None:
         self._drv = driver
         self.gpio_number = gpio_number
-        self.dead_time: Optional[float] = None
 
     def get_deadtime(self, exposure: float) -> float:
-        return self.dead_time or 0
-
-    async def _fetch_deadtime(self) -> None:
-        self.dead_time = await self._drv._fetch_deadtime()
+        return self._drv.dead_time or 0
 
     async def arm(
         self,
@@ -76,7 +72,7 @@ class ADAravisController(DetectorControl):
         else:
             return (
                 ADAravisTriggerMode.on,
-                ADAravisTriggerSource(f"line_{self.gpio_number}"),
+                ADAravisTriggerSource[f"line_{self.gpio_number}"],
             )
 
     async def disarm(self):
