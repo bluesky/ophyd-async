@@ -1,5 +1,7 @@
 from typing import Optional, Sequence
+
 from bluesky.protocols import Hints
+
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.signal import SignalR
@@ -40,7 +42,7 @@ class PilatusDetector(StandardDetector):
                 ADBaseShapeProvider(self.drv),
                 **scalar_sigs,
             ),
-            config_sigs=config_sigs or (self.drv.acquire_time, ),
+            config_sigs=config_sigs or (self.drv.acquire_time,),
             name=name,
         )
 
