@@ -85,6 +85,7 @@ def test_async_device_connector_run_engine_same_event_loop():
     async def set_up_device():
         async with DeviceCollector(sim=True):
             sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+            sim_motor.set
         return sim_motor
 
     loop = asyncio.new_event_loop()
@@ -95,6 +96,7 @@ def test_async_device_connector_run_engine_same_event_loop():
         RE = RunEngine(call_returns_result=True, loop=loop)
 
         def my_plan():
+            sim_motor.done_moving._backend._set_value(True)  # type: ignore
             yield from bps.mov(sim_motor, 3.14)
 
         RE(my_plan())

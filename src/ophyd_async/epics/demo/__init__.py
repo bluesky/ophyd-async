@@ -7,9 +7,10 @@ import string
 import subprocess
 import sys
 import time
+from dataclasses import replace
 from enum import Enum
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Optional
 
 import numpy as np
 from bluesky.protocols import Movable, Stoppable
@@ -21,6 +22,7 @@ from ophyd_async.core import (
     WatchableAsyncStatus,
     observe_value,
 )
+from ophyd_async.core.utils import WatcherUpdate
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -88,10 +90,9 @@ class Mover(StandardReadable, Movable, Stoppable):
         # Readback should be named the same as its parent in read()
         self.readback.set_name(name)
 
-    async def _move(self, new_position: float, watchers: List[Callable] = []):
+    async def _move(self, new_position: float):
         self._set_success = True
         # time.monotonic won't go backwards in case of NTP corrections
-        start = time.monotonic()
         old_position, units, precision = await asyncio.gather(
             self.setpoint.get_value(),
             self.units.get_value(),
@@ -99,21 +100,16 @@ class Mover(StandardReadable, Movable, Stoppable):
         )
         # Wait for the value to set, but don't wait for put completion callback
         await self.setpoint.set(new_position, wait=False)
-        async for current_position in observe_value(self.readback):
-            for watcher in watchers:
-                watcher(
-                    name=self.name,
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    unit=units,
-                    precision=precision,
-                    time_elapsed=time.monotonic() - start,
-                )
-            if np.isclose(current_position, new_position):
-                break
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
+        # return a template to set() which it can use to yield progress updates
+        return WatcherUpdate(
+            initial=old_position,
+            current=old_position,
+            target=new_position,
+            unit=units,
+            precision=precision,
+        )
 
     def move(self, new_position: float, timeout: Optional[float] = None):
         """Commandline only synchronous move of a Motor"""
@@ -123,13 +119,19 @@ class Mover(StandardReadable, Movable, Stoppable):
             raise RuntimeError("Will deadlock run engine if run in a plan")
         call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
 
-    # TODO: this fails if we call from the cli, but works if we "ipython await" it
-    def set(
-        self, new_position: float, timeout: Optional[float] = None
-    ) -> WatchableAsyncStatus:
-        watchers: List[Callable] = []
-        coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return WatchableAsyncStatus(coro, watchers)
+    @WatchableAsyncStatus.wrap
+    async def set(self, new_position: float):
+        update = await self._move(new_position)
+        start = time.monotonic()
+        async for current_position in observe_value(self.readback):
+            yield replace(
+                update,
+                name=self.name,
+                current=current_position,
+                time_elapsed=time.monotonic() - start,
+            )
+            if np.isclose(current_position, new_position):
+                return
 
     async def stop(self, success=True):
         self._set_success = success

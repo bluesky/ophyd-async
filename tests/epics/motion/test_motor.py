@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Dict
 from unittest.mock import Mock, call
 
@@ -6,6 +7,7 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import DeviceCollector, set_sim_put_proceeds, set_sim_value
+from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.utils import Watcher
 from ophyd_async.epics.motion import motor
 
@@ -19,23 +21,38 @@ async def sim_motor():
     async with DeviceCollector(sim=True):
         sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
         # Signals connected here
+    AsyncStatus.wrap
 
+    async def fake_stop(*args, **kwargs):
+        sim_motor.done_moving._backend._set_value(True)  # type: ignore
+        await asyncio.sleep(0.01)
+
+    sim_motor.stop_.trigger = fake_stop  # type: ignore
     assert sim_motor.name == "sim_motor"
     set_sim_value(sim_motor.motor_egu, "mm")
     set_sim_value(sim_motor.precision, 3)
     set_sim_value(sim_motor.velocity, 1)
+    set_sim_value(sim_motor.motor_done_move, True)
     yield sim_motor
+
+
+async def wait_for_eq(item, attribute, comparison, timeout):
+    timeout_time = time.monotonic() + timeout
+    while getattr(item, attribute) != comparison:
+        await asyncio.sleep(A_BIT)
+        if time.monotonic() > timeout_time:
+            raise TimeoutError
 
 
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_sim_put_proceeds(sim_motor.user_setpoint, False)
-    s = sim_motor.set(0.55)
+    set_sim_value(sim_motor.motor_done_move, False)
+    s = sim_motor.set(0.55, timeout_s=1)
     watcher = Mock(spec=Watcher)
     s.watch(watcher)
     done = Mock()
     s.add_callback(done)
-    await asyncio.sleep(A_BIT)
-    assert watcher.call_count == 1
+    await wait_for_eq(watcher, "call_count", 1, 1)
     assert watcher.call_args == call(
         name="sim_motor",
         current=0.0,
@@ -50,7 +67,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     assert not s.done
     await asyncio.sleep(0.1)
     set_sim_value(sim_motor.user_readback, 0.1)
-    assert watcher.call_count == 1
+    await wait_for_eq(watcher, "call_count", 1, 1)
     assert watcher.call_args == call(
         name="sim_motor",
         current=0.1,
@@ -60,13 +77,16 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
-    set_sim_put_proceeds(sim_motor.user_setpoint, True)
+    set_sim_put_proceeds(sim_motor.user_readback, True)
+    set_sim_value(sim_motor.motor_done_move, True)
+    set_sim_value(sim_motor.user_readback, 0.55)
     await asyncio.sleep(A_BIT)
-    assert s.done
+    await wait_for_eq(s, "done", True, 1)
     done.assert_called_once_with(s)
 
 
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
+    sim_motor.motor_done_move._backend._set_value(False)  # type: ignore
     set_sim_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(1.5)
     s.add_callback(Mock())

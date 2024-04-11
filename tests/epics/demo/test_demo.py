@@ -52,13 +52,36 @@ async def sim_sensor_group() -> demo.SensorGroup:
     return sim_sensor_group
 
 
-class Watcher:
+class DemoWatcher:
     def __init__(self) -> None:
         self._event = asyncio.Event()
         self._mock = Mock()
 
-    def __call__(self, *args, **kwargs):
-        self._mock(*args, **kwargs)
+    def __call__(
+        self,
+        *args,
+        current: float,
+        initial: float,
+        target: float,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: float | None = None,
+        fraction: float | None = None,
+        time_elapsed: float | None = None,
+        time_remaining: float | None = None,
+        **kwargs,
+    ):
+        self._mock(
+            *args,
+            current=current,
+            initial=initial,
+            target=target,
+            name=name,
+            unit=unit,
+            precision=precision,
+            time_elapsed=time_elapsed,
+            **kwargs,
+        )
         self._event.set()
 
     async def wait_for_call(self, *args, **kwargs):
@@ -71,8 +94,8 @@ class Watcher:
 
 async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
     s = sim_mover.set(0.55)
-    watcher = Watcher()
-    s.watch([watcher])
+    watcher = DemoWatcher()
+    s.watch(watcher)
     done = Mock()
     s.add_callback(done)
     await watcher.wait_for_call(

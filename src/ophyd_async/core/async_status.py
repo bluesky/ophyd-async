@@ -9,7 +9,7 @@ from typing import (
     Awaitable,
     Callable,
     Generic,
-    Sequence,
+    SupportsFloat,
     Type,
     TypeVar,
     cast,
@@ -105,21 +105,19 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
     def __init__(
         self,
-        iterator_or_awaitable: Awaitable | AsyncIterator[WatcherUpdate[T]],
-        watchers: list[Watcher] = [],
+        iterator: AsyncIterator[WatcherUpdate[T]],
+        timeout_s: float = 0.0,
     ):
-        self._watchers: list[Watcher] = watchers
+        self._watchers: list[Watcher] = []
         self._start = time.monotonic()
+        self._timeout = self._start + timeout_s if timeout_s else None
         self._last_update: WatcherUpdate[T] | None = None
-        awaitable = (
-            iterator_or_awaitable
-            if isinstance(iterator_or_awaitable, Awaitable)
-            else self._notify_watchers_from(iterator_or_awaitable)
-        )
-        super().__init__(awaitable)
+        super().__init__(self._notify_watchers_from(iterator))
 
     async def _notify_watchers_from(self, iterator: AsyncIterator[WatcherUpdate[T]]):
         async for update in iterator:
+            if self._timeout and time.monotonic() > self._timeout:
+                raise TimeoutError()
             self._last_update = replace(
                 update, time_elapsed=time.monotonic() - self._start
             )
@@ -127,9 +125,12 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
                 self._update_watcher(watcher, self._last_update)
 
     def _update_watcher(self, watcher: Watcher, update: WatcherUpdate[T]):
-        watcher(**asdict(update))
+        vals = asdict(
+            update, dict_factory=lambda d: {k: v for k, v in d if v is not None}
+        )
+        watcher(**vals)
 
-    def watch(self, watcher:Watcher):
+    def watch(self, watcher: Watcher):
         self._watchers.append(watcher)
         if self._last_update:
             self._update_watcher(watcher, self._last_update)
@@ -137,10 +138,21 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
     @classmethod
     def wrap(
         cls: Type[WAS],
-        f: Callable[P, Awaitable] | Callable[P, AsyncIterator[WatcherUpdate[T]]],
+        f: Callable[P, AsyncIterator[WatcherUpdate[T]]],
+        timeout_s: float = 0.0,
     ) -> Callable[P, WAS]:
+        """Wrap an AsyncIterator in a WatchableAsyncStatus. If it takes
+        'timeout_s' as an argument, this must be a float and it will be propagated
+        to the status."""
+
         @functools.wraps(f)
         def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WAS:
-            return cls(f(*args, **kwargs))
+            # We can't type this more properly because Concatenate/ParamSpec doesn't
+            # yet support keywords
+            # https://peps.python.org/pep-0612/#concatenating-keyword-parameters
+            _timeout = kwargs.get("timeout_s")
+            assert isinstance(_timeout, SupportsFloat) or _timeout is None
+            timeout = _timeout or 0.0
+            return cls(f(*args, **kwargs), timeout_s=float(timeout))
 
         return cast(Callable[P, WAS], wrap_f)

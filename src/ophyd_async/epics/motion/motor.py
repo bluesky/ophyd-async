@@ -51,7 +51,7 @@ class Motor(StandardReadable, Movable, Stoppable):
             self.motor_egu.get_value(),
             self.precision.get_value(),
         )
-        await self.user_setpoint.set(new_position)
+        await self.user_setpoint.set(new_position, wait=False)
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
         return WatcherUpdate(
@@ -71,17 +71,25 @@ class Motor(StandardReadable, Movable, Stoppable):
         call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
 
     @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float, timeout: Optional[float] = None):
-        start_time = time.monotonic()
-        update: WatcherUpdate[float] = await self._move(new_position)
-        async for readback in observe_value(self.user_readback):
+    async def set(self, new_position: float, timeout_s: float = 0.0):
+        update = await self._move(new_position)
+        start = time.monotonic()
+        async for current_position in observe_value(self.user_readback):
+            if not self._set_success:
+                raise RuntimeError("Motor was stopped")
             yield replace(
-                update, current=readback, time_elapsed=start_time - time.monotonic()
+                update,
+                name=self.name,
+                current=current_position,
+                time_elapsed=time.monotonic() - start,
             )
+            if await self.motor_done_move.get_value():
+                return
 
     async def stop(self, success=False):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        status = self.motor_stop.trigger(wait=False)
-        await status
+        await self.motor_stop.trigger(wait=False)
+        # Trigger any callbacks
+        await self.user_readback._backend.put(await self.user_readback.get_value())
