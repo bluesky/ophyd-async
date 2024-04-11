@@ -154,11 +154,22 @@ def start_ioc_subprocess() -> str:
     pv_prefix = "".join(random.choice(string.ascii_uppercase) for _ in range(12)) + ":"
     here = Path(__file__).absolute().parent
     args = [sys.executable, "-m", "epicscorelibs.ioc"]
+
+    # Create standalone sensor
     args += ["-m", f"P={pv_prefix}"]
     args += ["-d", str(here / "sensor.db")]
-    for suff in "XY":
-        args += ["-m", f"P={pv_prefix}{suff}:"]
+
+    # Create sensor group
+    for suffix in ["1", "2", "3"]:
+        args += ["-m", f"P={pv_prefix}{suffix}:"]
+        args += ["-d", str(here / "sensor.db")]
+
+    # Create X and Y motors
+    for suffix in ["X", "Y"]:
+        args += ["-m", f"P={pv_prefix}{suffix}:"]
         args += ["-d", str(here / "mover.db")]
+
+    # Start IOC
     process = subprocess.Popen(
         args,
         stdin=subprocess.PIPE,
