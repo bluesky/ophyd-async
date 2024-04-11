@@ -9,6 +9,8 @@ from typing import Any, Callable
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
+from ophyd_async.core import StaticDirectoryProvider
+
 PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
     Path(__file__).parent / "panda" / "db" / "incomplete_block_panda.db"
@@ -102,3 +104,8 @@ async def failing_coroutine() -> Callable[[], Any]:
         raise ValueError()
 
     return inner_coroutine
+
+
+@pytest.fixture
+def static_directory_provider(tmp_path: Path):
+    return StaticDirectoryProvider(directory_path=tmp_path)
