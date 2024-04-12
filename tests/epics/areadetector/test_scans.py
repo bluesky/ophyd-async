@@ -28,15 +28,12 @@ from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 class DummyTriggerLogic(TriggerLogic[int]):
     def __init__(self): ...
 
-    def trigger_info(self, value: int) -> TriggerInfo:
-        return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
-        )
-
     async def prepare(self, value: int):
         return value
 
-    async def start(self): ...
+    async def kickoff(self): ...
+
+    async def complete(self): ...
 
     async def stop(self): ...
 
@@ -105,6 +102,9 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
     trigger_logic = DummyTriggerLogic()
 
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    trigger_info = TriggerInfo(
+        num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+    )
 
     def flying_plan():
         """NOTE: the following is a workaround to ensure tests always pass.
@@ -115,7 +115,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
             # Prepare the flyer first to get the trigger info for the detectors
             yield from bps.prepare(flyer, 1, wait=True)
             # prepare detector second.
-            yield from bps.prepare(detector, flyer.trigger_info, wait=True)
+            yield from bps.prepare(detector, trigger_info, wait=True)
             yield from bps.open_run()
             yield from bps.kickoff(flyer)
             yield from bps.kickoff(detector)

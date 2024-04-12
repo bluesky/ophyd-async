@@ -43,6 +43,66 @@ record(bi, "$(IOC_NAME=PANDAQSRV):SEQ1:ACTIVE")
     })
 }
 
+record(longin, "$(IOC_NAME=PANDAQSRV):SEQ1:REPEATS")
+{
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
+            "pvi.repeats.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(ai, "$(IOC_NAME=PANDAQSRV):SEQ1:PRESCALE")
+{
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
+            "pvi.prescale.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(mbbi, "$(IOC_NAME=PANDAQSRV):SEQ1:PRESCALE:UNITS")
+{
+    field(ZRST, "min")
+    field(ZRVL, "0")
+    field(ONST, "s")
+    field(ONVL, "1")
+    field(TWST, "ms")
+    field(TWVL, "2")
+    field(THST, "us")
+    field(THVL, "3")
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
+            "pvi.prescale_units.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(stringout, "$(IOC_NAME=PANDAQSRV):SEQ1:ENABLE")
+{
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
+            "pvi.enable.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
 record(bi, "$(IOC_NAME=PANDAQSRV):PCAP:ACTIVE")
 {
     field(ZNAM,  "0")
