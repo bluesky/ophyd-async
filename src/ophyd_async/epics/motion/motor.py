@@ -18,7 +18,7 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.user_readback = epics_signal_r(float, prefix + ".RBV")
         self.velocity = epics_signal_rw(float, prefix + ".VELO")
         self.max_velocity = epics_signal_r(float, prefix + ".VMAX")
-        self.acceleration = epics_signal_rw(float, prefix + ".ACCL")
+        self.acceleration_time = epics_signal_rw(float, prefix + ".ACCL")
         self.motor_egu = epics_signal_r(str, prefix + ".EGU")
         self.precision = epics_signal_r(int, prefix + ".PREC")
         self.deadband = epics_signal_r(float, prefix + ".RDBD")
