@@ -14,7 +14,6 @@ from typing import (
     Tuple,
     TypeVar,
 )
-
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
 
@@ -31,13 +30,24 @@ class Device(HasName):
     #: The parent Device if it exists
     parent: Optional[Device] = None
 
-    def __init__(self, name: str = "") -> None:
+    def __init__(self, name: str = "", long_name:Optional[str] = None) -> None:
         self.set_name(name)
-
+        self._long_name(long_name)
     @property
     def name(self) -> str:
         """Return the name of the Device"""
         return self._name
+    @property
+    def long_name(self) -> str:
+        """long name of the device"""
+        if self._long_name is not None:
+            return self._long_name
+        else:
+            return self._name
+    @long_name.setter
+    def long_name(self,name) -> None:
+        self._long_name = name
+
 
     def children(self) -> Iterator[Tuple[str, Device]]:
         for attr_name, attr in self.__dict__.items():

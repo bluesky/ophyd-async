@@ -65,6 +65,7 @@ dev = [
     "tox-direct",
     "types-mock",
     "types-pyyaml",
+    "bluesky",
 ]
 
 [project.scripts]
