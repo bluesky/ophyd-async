@@ -2,7 +2,8 @@ import asyncio
 
 import pytest
 from bluesky import plan_stubs as bps
-from bluesky.run_engine import RunEngine, TransitionError
+from bluesky.run_engine import RunEngine
+from super_state_machine.errors import TransitionError
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, NotConnected
 from ophyd_async.epics.motion import motor
@@ -96,7 +97,7 @@ def test_async_device_connector_run_engine_same_event_loop():
         RE = RunEngine(call_returns_result=True, loop=loop)
 
         def my_plan():
-            sim_motor.done_moving._backend._set_value(True)  # type: ignore
+            sim_motor.motor_done_move._backend._set_value(True)  # type: ignore
             yield from bps.mov(sim_motor, 3.14)
 
         RE(my_plan())

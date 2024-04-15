@@ -118,8 +118,10 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
         async for update in iterator:
             if self._timeout and time.monotonic() > self._timeout:
                 raise TimeoutError()
-            self._last_update = replace(
-                update, time_elapsed=time.monotonic() - self._start
+            self._last_update = (
+                update
+                if update.time_elapsed is None
+                else replace(update, time_elapsed=time.monotonic() - self._start)
             )
             for watcher in self._watchers:
                 self._update_watcher(watcher, self._last_update)

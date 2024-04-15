@@ -24,10 +24,10 @@ async def sim_motor():
     AsyncStatus.wrap
 
     async def fake_stop(*args, **kwargs):
-        sim_motor.done_moving._backend._set_value(True)  # type: ignore
+        sim_motor.motor_done_move._backend._set_value(True)  # type: ignore
         await asyncio.sleep(0.01)
 
-    sim_motor.stop_.trigger = fake_stop  # type: ignore
+    sim_motor.motor_stop.trigger = fake_stop  # type: ignore
     assert sim_motor.name == "sim_motor"
     set_sim_value(sim_motor.motor_egu, "mm")
     set_sim_value(sim_motor.precision, 3)
