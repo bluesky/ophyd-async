@@ -14,33 +14,39 @@ class Motor(StandardReadable, Movable, Stoppable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        self.setpoint = epics_signal_rw(float, prefix + ".VAL")
-        self.readback = epics_signal_r(float, prefix + ".RBV")
+        self.user_setpoint = epics_signal_rw(float, prefix + ".VAL")
+        self.user_readback = epics_signal_r(float, prefix + ".RBV")
         self.velocity = epics_signal_rw(float, prefix + ".VELO")
-        self.units = epics_signal_r(str, prefix + ".EGU")
+        self.max_velocity = epics_signal_r(float, prefix + ".VMAX")
+        self.acceleration_time = epics_signal_rw(float, prefix + ".ACCL")
+        self.motor_egu = epics_signal_r(str, prefix + ".EGU")
         self.precision = epics_signal_r(int, prefix + ".PREC")
-        # Signals that collide with standard methods should have a trailing underscore
-        self.stop_ = epics_signal_x(prefix + ".STOP")
+        self.deadband = epics_signal_r(float, prefix + ".RDBD")
+        self.motor_done_move = epics_signal_r(float, prefix + ".DMOV")
+        self.low_limit_travel = epics_signal_rw(int, prefix + ".LLM")
+        self.high_limit_travel = epics_signal_rw(int, prefix + ".HLM")
+
+        self.motor_stop = epics_signal_x(prefix + ".STOP")
         # Whether set() should complete successfully or not
         self._set_success = True
         # Set name and signals for read() and read_configuration()
         self.set_readable_signals(
-            read=[self.readback],
-            config=[self.velocity, self.units],
+            read=[self.user_readback],
+            config=[self.velocity, self.motor_egu],
         )
         super().__init__(name=name)
 
     def set_name(self, name: str):
         super().set_name(name)
         # Readback should be named the same as its parent in read()
-        self.readback.set_name(name)
+        self.user_readback.set_name(name)
 
     async def _move(self, new_position: float, watchers: List[Callable] = []):
         self._set_success = True
         start = time.monotonic()
         old_position, units, precision = await asyncio.gather(
-            self.setpoint.get_value(),
-            self.units.get_value(),
+            self.user_setpoint.get_value(),
+            self.motor_egu.get_value(),
             self.precision.get_value(),
         )
 
@@ -56,11 +62,11 @@ class Motor(StandardReadable, Movable, Stoppable):
                     time_elapsed=time.monotonic() - start,
                 )
 
-        self.readback.subscribe_value(update_watchers)
+        self.user_readback.subscribe_value(update_watchers)
         try:
-            await self.setpoint.set(new_position)
+            await self.user_setpoint.set(new_position)
         finally:
-            self.readback.clear_sub(update_watchers)
+            self.user_readback.clear_sub(update_watchers)
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 
@@ -81,5 +87,5 @@ class Motor(StandardReadable, Movable, Stoppable):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        status = self.stop_.trigger(wait=False)
+        status = self.motor_stop.trigger(wait=False)
         await status
