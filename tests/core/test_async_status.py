@@ -63,7 +63,7 @@ async def coroutine_to_wrap(time: float):
     await asyncio.sleep(time)
 
 
-async def test_async_status_wrap():
+async def test_async_status_wrap() -> None:
     wrapped_coroutine = AsyncStatus.wrap(coroutine_to_wrap)
     status: AsyncStatus = wrapped_coroutine(0.01)
 

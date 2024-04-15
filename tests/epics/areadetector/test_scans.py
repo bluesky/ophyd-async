@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 from unittest.mock import AsyncMock
 
 import bluesky.plan_stubs as bps
@@ -28,15 +28,12 @@ from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 class DummyTriggerLogic(TriggerLogic[int]):
     def __init__(self): ...
 
-    def trigger_info(self, value: int) -> TriggerInfo:
-        return TriggerInfo(
-            num=value, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
-        )
-
     async def prepare(self, value: int):
         return value
 
-    async def start(self): ...
+    async def kickoff(self): ...
+
+    async def complete(self): ...
 
     async def stop(self): ...
 
@@ -85,7 +82,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     controller: ADSimController,
 ):
     set_sim_value(writer.hdf.file_path_exists, True)
-    detector = StandardDetector(
+    detector: StandardDetector[Any] = StandardDetector(
         controller, writer, name="detector", writer_timeout=0.01
     )
 
@@ -99,10 +96,15 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
     controller = DummyController()
     set_sim_value(writer.hdf.file_path_exists, True)
 
-    detector = StandardDetector(controller, writer, writer_timeout=0.01)
+    detector: StandardDetector[Optional[TriggerInfo]] = StandardDetector(
+        controller, writer, writer_timeout=0.01
+    )
     trigger_logic = DummyTriggerLogic()
 
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    trigger_info = TriggerInfo(
+        num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+    )
 
     def flying_plan():
         """NOTE: the following is a workaround to ensure tests always pass.
@@ -113,7 +115,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
             # Prepare the flyer first to get the trigger info for the detectors
             yield from bps.prepare(flyer, 1, wait=True)
             # prepare detector second.
-            yield from bps.prepare(detector, flyer.trigger_info, wait=True)
+            yield from bps.prepare(detector, trigger_info, wait=True)
             yield from bps.open_run()
             yield from bps.kickoff(flyer)
             yield from bps.kickoff(detector)

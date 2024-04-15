@@ -7,7 +7,6 @@ name = "ophyd-async"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
@@ -18,8 +17,8 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky @ git+https://github.com/bluesky/bluesky.git@collect-multiple-detectors", # Pin to Bluesky branch while still under work
-    "event-model",
+    "bluesky>=1.13.0a3",
+    "event-model<1.21.0",
     "p4p",
     "pyyaml",
 ]
@@ -27,7 +26,7 @@ dependencies = [
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 ca = ["aioca>=1.6"]
@@ -53,7 +52,7 @@ dev = [
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
-    "pyside6",
+    "pyside6==6.6.2",
     "pytango",
     "pytest",
     "pytest-asyncio",
