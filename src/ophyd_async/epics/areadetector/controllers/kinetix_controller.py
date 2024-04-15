@@ -9,7 +9,7 @@ from ophyd_async.epics.areadetector.drivers.ad_base import (
 )
 
 from ..drivers.kinetix_driver import KinetixDriver, KinetixTriggerMode
-from ..utils import ImageMode, stop_busy_record
+from ..utils import ImageMode
 
 KINETIX_TRIGGER_MODE_MAP = {
     DetectorTrigger.internal: KinetixTriggerMode.internal,
