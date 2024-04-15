@@ -52,7 +52,7 @@ dev = [
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
-    "pyside6=6.6.2",
+    "pyside6==6.6.2",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
