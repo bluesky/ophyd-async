@@ -2,6 +2,7 @@ import asyncio
 from typing import Dict
 from unittest.mock import ANY, Mock, call
 
+import aioca
 import pytest
 from bluesky.protocols import Reading
 
@@ -290,3 +291,9 @@ async def test_dynamic_sensor_group_read_and_describe(
             "value": 1.0,
         },
     }
+
+
+async def test_ioc_starts():
+    pv_prefix = demo.start_ioc_subprocess()
+    pv = f"{pv_prefix}Value"
+    await aioca.connect(pv)
