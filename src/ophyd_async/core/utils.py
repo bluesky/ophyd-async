@@ -148,3 +148,20 @@ async def merge_gathered_dicts(
 
 async def gather_list(coros: Iterable[Awaitable[T]]) -> List[T]:
     return await asyncio.gather(*coros)
+
+
+def in_micros(t: float) -> int:
+    """
+    Converts between a positive number of seconds and an equivalent
+    number of microseconds.
+
+    Args:
+        t (float): A time in seconds
+    Raises:
+        ValueError: if t < 0
+    Returns:
+        t (int): A time in microseconds, rounded up to the nearest whole microsecond,
+    """
+    if t < 0:
+        raise ValueError(f"Expected a positive time in seconds, got {t!r}")
+    return int(np.ceil(t * 1e6))
