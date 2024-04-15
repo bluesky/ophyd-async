@@ -29,12 +29,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"] # can add windows-latest, macos-latest
-        python: ["3.10", "3.11"]
+        python: ["3.10","3.11"] # 3.12 should be added when p4p is updated
         install: ["-e .[dev]"]
         # Make one version be non-editable to test both paths of version code
         include:
           - os: "ubuntu-latest"
-            python: "3.9"
+            python: "3.10"
             install: ".[dev]"
 
     runs-on: ${{ matrix.os }}
