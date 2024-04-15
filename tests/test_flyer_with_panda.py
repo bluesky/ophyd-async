@@ -1,6 +1,5 @@
 import time
-from enum import Enum
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -12,41 +11,19 @@ from event_model import ComposeStreamResourceBundle, compose_stream_resource
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorControl,
-    DetectorTrigger,
     DetectorWriter,
     HardwareTriggeredFlyable,
     SignalRW,
     SimSignalBackend,
-    TriggerInfo,
-    TriggerLogic,
 )
 from ophyd_async.core.detector import StandardDetector
-from ophyd_async.core.signal import observe_value
-
-
-class TriggerState(str, Enum):
-    null = "null"
-    preparing = "preparing"
-    starting = "starting"
-    stopping = "stopping"
-
-
-class DummyTriggerLogic(TriggerLogic[int]):
-    def __init__(self):
-        self.state = TriggerState.null
-
-    async def prepare(self, value: int):
-        self.state = TriggerState.preparing
-        return value
-
-    async def kickoff(self):
-        self.state = TriggerState.starting
-
-    async def complete(self):
-        self.state = TriggerState.null
-
-    async def stop(self):
-        self.state = TriggerState.stopping
+from ophyd_async.core.device import DeviceCollector
+from ophyd_async.core.signal import observe_value, set_sim_value
+from ophyd_async.panda import PandA
+from ophyd_async.panda.trigger import StaticSeqTableTriggerLogic
+from ophyd_async.planstubs import (
+    prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
+)
 
 
 class DummyWriter(DetectorWriter):
@@ -121,25 +98,44 @@ async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetect
     async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):
         return writers[1].dummy_signal.set(1)
 
-    detector_1: StandardDetector[Any] = StandardDetector(
+    detector_1: StandardDetector = StandardDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
         writer_timeout=3,
     )
-    detector_2: StandardDetector[Any] = StandardDetector(
+    detector_2: StandardDetector = StandardDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
         writer_timeout=3,
     )
-
     return (detector_1, detector_2)
 
 
-async def test_hardware_triggered_flyable(
-    RE: RunEngine, detector_list: tuple[StandardDetector]
+@pytest.fixture
+async def panda():
+    async with DeviceCollector(sim=True):
+        sim_panda = PandA("PANDAQSRV:", "sim_panda")
+
+    assert sim_panda.name == "sim_panda"
+    yield sim_panda
+
+
+async def test_hardware_triggered_flyable_with_static_seq_table_logic(
+    RE: RunEngine,
+    detector_list: tuple[StandardDetector],
+    panda,
 ):
+    """Run a dummy scan using a flyer with a prepare plan stub.
+
+    This runs a dummy plan with two detectors and a flyer that uses
+    StaticSeqTableTriggerLogic. The flyer and detectors are prepared with the
+    prepare_static_seq_table_flyer_and_detectors_with_same_trigger plan stub.
+    This stub creates trigger_info and a sequence table from given parameters
+    and prepares the fly and both detectors with the same trigger info.
+
+    """
     names = []
     docs = []
 
@@ -149,47 +145,46 @@ async def test_hardware_triggered_flyable(
 
     RE.subscribe(append_and_print)
 
-    trigger_logic = DummyTriggerLogic()
+    shutter_time = 0.004
+    exposure = 1
+    deadtime = max(det.controller.get_deadtime(1) for det in detector_list)
+
+    trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
-    trigger_info = TriggerInfo(
-        num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
-    )
 
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
-        assert flyer._trigger_logic.state == TriggerState.stopping
 
-        # move the flyer to the correct place, before fly scanning.
-        # Prepare the flyer first to get the trigger info for the detectors
-        yield from bps.prepare(flyer, 1, wait=True)
+        yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
+            flyer,
+            detector_list,
+            num=1,
+            width=exposure,
+            deadtime=deadtime,
+            shutter_time=shutter_time,
+        )
 
-        # prepare detectors second.
-        for detector in detector_list:
-            yield from bps.prepare(
-                detector,
-                trigger_info,
-                wait=True,
-            )
-
-        assert flyer._trigger_logic.state == TriggerState.preparing
         for detector in detector_list:
             detector.controller.disarm.assert_called_once  # type: ignore
 
         yield from bps.open_run()
         yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)
 
-        yield from bps.kickoff(flyer)
+        set_sim_value(flyer.trigger_logic.seq.active, 1)
+
+        yield from bps.kickoff(flyer, wait=True)
         for detector in detector_list:
             yield from bps.kickoff(detector)
 
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detector_list:
             yield from bps.complete(detector, wait=False, group="complete")
-        assert flyer._trigger_logic.state == TriggerState.null
 
         # Manually incremenet the index as if a frame was taken
         for detector in detector_list:
             detector.writer.index += 1
+
+        set_sim_value(flyer.trigger_logic.seq.active, 0)
 
         done = False
         while not done:
@@ -210,7 +205,6 @@ async def test_hardware_triggered_flyable(
         yield from bps.unstage_all(flyer, *detector_list)
         for detector in detector_list:
             assert detector.controller.disarm.called  # type: ignore
-        assert trigger_logic.state == TriggerState.stopping
 
     # fly scan
     RE(flying_plan())
@@ -224,15 +218,3 @@ async def test_hardware_triggered_flyable(
         "stream_datum",
         "stop",
     ]
-
-
-# To do: Populate configuration signals
-async def test_describe_configuration():
-    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
-    assert await flyer.describe_configuration() == {}
-
-
-# To do: Populate configuration signals
-async def test_read_configuration():
-    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
-    assert await flyer.read_configuration() == {}
