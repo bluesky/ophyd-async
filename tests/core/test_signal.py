@@ -6,8 +6,11 @@ import pytest
 
 from ophyd_async.core import (
     Signal,
+    SignalR,
     SignalRW,
     SimSignalBackend,
+    create_soft_signal_r,
+    create_soft_signal_rw,
     set_and_wait_for_value,
     set_sim_put_proceeds,
     set_sim_value,
@@ -119,3 +122,18 @@ async def test_set_and_wait_for_value():
     assert not st.done
     set_sim_put_proceeds(sim_signal, True)
     assert await time_taken_by(st) < 0.1
+
+
+async def test_create_soft_signal():
+    TEST_PREFIX = "TEST-PREFIX"
+    ro_signal = create_soft_signal_r(str, "RO-SIGNAL", TEST_PREFIX)
+    assert isinstance(ro_signal, SignalR)
+    assert isinstance(ro_signal._backend, SimSignalBackend)
+    rw_signal = create_soft_signal_rw(str, "RW-SIGNAL", TEST_PREFIX)
+    assert isinstance(rw_signal, SignalRW)
+    assert isinstance(ro_signal._backend, SimSignalBackend)
+    await ro_signal.connect()
+    await rw_signal.connect()
+    # connecting with sim=False uses existing SimSignalBackend
+    assert ro_signal._backend is ro_signal._init_backend
+    assert rw_signal._backend is rw_signal._init_backend
