@@ -109,12 +109,17 @@ class HDFWriter(DetectorWriter):
         await self.hdf.flush_now.set(True)
         if indices_written:
             if not self._file:
+                path = Path(await self.hdf.full_file_name.get_value())
                 self._file = _HDFFile(
                     self._directory_provider(),
                     # See https://github.com/bluesky/ophyd-async/issues/122
-                    Path(await self.hdf.full_file_name.get_value()),
+                    path,
                     self._datasets,
                 )
+                # stream resource says "here is a dataset",
+                # stream datum says "here are N frames in that stream resource",
+                # you get one stream resource and many stream datums per scan
+
                 for doc in self._file.stream_resources():
                     yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
