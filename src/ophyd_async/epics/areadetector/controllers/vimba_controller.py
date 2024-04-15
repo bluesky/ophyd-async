@@ -56,7 +56,7 @@ class VimbaController(DetectorControl):
         ]:
             await self.driver.acquire_time.set(exposure)
         if trigger != DetectorTrigger.internal:
-            self.driver.trigger_source = TriggerSource.line1
+            self.driver.trigger_source.set(TriggerSource.line1)
         return await start_acquiring_driver_and_ensure_status(
             self.driver, good_states=self.good_states
         )
