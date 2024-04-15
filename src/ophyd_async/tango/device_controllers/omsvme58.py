@@ -48,8 +48,8 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
             config=[self.baserate, self.slewrate, self.conversion, self.acceleration],
         )
 
-        self.stop_ = tango_signal_x(self.trl + "/stopmove", self.proxy)
-        self.state_ = tango_signal_r(DevState, self.trl + "/state", self.proxy)
+        self._stop = tango_signal_x(self.trl + "/stopmove", self.proxy)
+        self._state = tango_signal_r(DevState, self.trl + "/state", self.proxy)
 
     # --------------------------------------------------------------------
     async def _move(self, new_position: float, watchers: List[Callable] = []):
@@ -74,7 +74,7 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
         try:
             await self.position.set(new_position)
             await asyncio.sleep(0.1)
-            while await self.state_.get_value() == DevState.MOVING:
+            while await self._state.get_value() == DevState.MOVING:
                 await asyncio.sleep(0.1)
         finally:
             if self.position.is_cachable():
@@ -101,6 +101,4 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        await self.stop_.trigger()
-
-    _stop = stop
+        await self._stop.trigger()
