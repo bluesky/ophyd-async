@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from logging import LoggerAdapter, getLogger
 from typing import (
     Any,
     Coroutine,
@@ -33,6 +34,9 @@ class Device(HasName):
 
     def __init__(self, name: str = "") -> None:
         self.set_name(name)
+        self.log = LoggerAdapter(
+            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
+        )
 
     @property
     def name(self) -> str:
@@ -189,4 +193,5 @@ class DeviceCollector:
                 "https://blueskyproject.io/ophyd-async/main/"
                 "user/explanations/event-loop-choice.html for more info."
             )
+        return fut
         return fut

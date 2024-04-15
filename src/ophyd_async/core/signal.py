@@ -64,6 +64,7 @@ class Signal(Device, Generic[T]):
         super().__init__(name)
         self._timeout = timeout
         self._init_backend = self._backend = backend
+        super().__init__(name)
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
@@ -72,6 +73,7 @@ class Signal(Device, Generic[T]):
         else:
             self._backend = self._init_backend
             _sim_backends.pop(self, None)
+        self.log.debug(f"Connecting to {self.source}")
         await self._backend.connect(timeout=timeout)
 
     @property
@@ -96,10 +98,12 @@ class _SignalCache(Generic[T]):
         self._value: Optional[T] = None
 
         self.backend = backend
+        signal.log.debug(f"Making subscription on source {signal.source}")
         backend.set_callback(self._callback)
 
     def close(self):
         self.backend.set_callback(None)
+        self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
     async def get_reading(self) -> Reading:
         await self._valid.wait()
@@ -112,6 +116,10 @@ class _SignalCache(Generic[T]):
         return self._value
 
     def _callback(self, reading: Reading, value: T):
+        self._signal.log.debug(
+            f"Updated subscription: reading of source {self._signal.source} changed\
+            from {self._reading} to {reading}"
+        )
         self._reading = reading
         self._value = value
         self._valid.set()
@@ -178,7 +186,9 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
     @_add_timeout
     async def get_value(self, cached: Optional[bool] = None) -> T:
         """The current value"""
-        return await self._backend_or_cache(cached).get_value()
+        value = await self._backend_or_cache(cached).get_value()
+        self.log.debug(f"get_value() on source {self.source} returned {value}")
+        return value
 
     def subscribe_value(self, function: Callback[T]):
         """Subscribe to updates in value of a device"""
@@ -213,8 +223,15 @@ class SignalW(Signal[T], Movable):
         """Set the value and return a status saying when it's done"""
         if timeout is USE_DEFAULT_TIMEOUT:
             timeout = self._timeout
-        coro = self._backend.put(value, wait=wait, timeout=timeout)
-        return AsyncStatus(coro)
+
+        async def do_set():
+            self.log.debug(f"Putting value {value} to backend at source {self.source}")
+            await self._backend.put(value, wait=wait, timeout=timeout)
+            self.log.debug(
+                f"Successfully put value {value} to backend at source {self.source}"
+            )
+
+        return AsyncStatus(do_set())
 
 
 class SignalRW(SignalR[T], SignalW[T], Locatable):

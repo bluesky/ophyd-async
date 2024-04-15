@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from ophyd_async.core import (
@@ -123,9 +125,9 @@ async def test_error_handling_connection_timeout(caplog):
     assert str(e.value) == str(ONE_WORKING_ONE_TIMEOUT_OUTPUT)
 
     logs = caplog.get_records("call")
-    assert len(logs) == 1
-    assert "signal ca://A_NON_EXISTENT_SIGNAL timed out" == logs[0].message
-    assert logs[0].levelname == "DEBUG"
+    assert len(logs) == 3
+    assert "signal ca://A_NON_EXISTENT_SIGNAL timed out" == logs[-1].message
+    assert logs[-1].levelname == "DEBUG"
 
 
 async def test_error_handling_value_errors(caplog):
@@ -147,7 +149,11 @@ async def test_error_handling_value_errors(caplog):
     assert str(e.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
 
     logs = caplog.get_records("call")
-    logs = [log for log in logs if "ophyd_async" in log.pathname]
+    logs = [
+        log
+        for log in logs
+        if "ophyd_async" in log.pathname and "signal" not in log.pathname
+    ]
     assert len(logs) == 4
 
     for i in range(0, 2):
@@ -184,7 +190,11 @@ async def test_error_handling_device_collector(caplog):
     assert str(expected_output) == str(e.value)
 
     logs = caplog.get_records("call")
-    logs = [log for log in logs if "ophyd_async" in log.pathname]
+    logs = [
+        log
+        for log in logs
+        if "ophyd_async" in log.pathname and "signal" not in log.pathname
+    ]
     assert len(logs) == 5
     assert (
         logs[0].message
