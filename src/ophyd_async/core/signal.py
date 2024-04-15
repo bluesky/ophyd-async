@@ -52,15 +52,6 @@ class Signal(Device, Generic[T]):
         self._timeout = timeout
         self._init_backend = self._backend = backend
 
-    """
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str = ""):
-        self._name = name
-    """
-
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
             self._backend = SimSignalBackend(
