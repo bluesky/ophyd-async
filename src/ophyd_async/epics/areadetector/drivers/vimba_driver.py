@@ -19,6 +19,7 @@ class ConvertFormat(str, Enum):
     rgb8 = "RGB8"
     rgb16 = "RGB16"
 
+
 class TriggerSource(str, Enum):
     freerun = "Freerun"
     line1 = "Line1"
@@ -28,17 +29,21 @@ class TriggerSource(str, Enum):
     action0 = "Action0"
     action1 = "Action1"
 
+
 class Overlap(str, Enum):
     off = "Off"
     prev_frame = "PreviousFrame"
+
 
 class OnOff(str, Enum):
     on = "On"
     off = "Off"
 
+
 class ExposeOutMode(str, Enum):
     timed = "Timed"  # Use ExposureTime PV
     trigger_width = "TriggerWidth"  # Expose for length of high signal
+
 
 class VimbaDriver(ADBase):
     def __init__(self, prefix: str) -> None:
