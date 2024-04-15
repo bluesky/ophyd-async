@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
+from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Type, Union
 
 from bluesky.protocols import (
     Descriptor,
@@ -251,6 +251,18 @@ def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
 def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
     """Monitor the value of a signal that is in sim mode"""
     return _sim_backends[signal].set_callback(callback)
+
+
+def create_soft_signal_rw(
+    datatype: Optional[Type[T]], name: str, source_prefix: str
+) -> SignalRW[T]:
+    return SignalRW(SimSignalBackend(datatype, f"sim://{source_prefix}:{name}"))
+
+
+def create_soft_signal_r(
+    datatype: Optional[Type[T]], name: str, source_prefix: str
+) -> SignalR[T]:
+    return SignalR(SimSignalBackend(datatype, f"sim://{source_prefix}:{name}"))
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
