@@ -28,7 +28,7 @@ class DummyDeviceGroup(Device):
         self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector(
             {123: DummyBaseDevice()}
         )
-        self.set_name(name)
+        super().__init__(name=name)
 
 
 @pytest.fixture
@@ -61,6 +61,9 @@ async def test_children_of_device_have_set_names_and_get_connected(
     parent: DummyDeviceGroup,
 ):
     assert parent.name == "parent"
+    assert parent.long_name == "parent"
+    parent.long_name = "dancing device that make you jump"
+    assert parent.long_name == "dancing device that make you jump"
     assert parent.child1.name == "parent-child1"
     assert parent.child2.name == "parent-child2"
     assert parent.dict_with_children.name == "parent-dict_with_children"
@@ -77,6 +80,9 @@ async def test_device_with_device_collector():
         parent = DummyDeviceGroup("parent")
 
     assert parent.name == "parent"
+    assert parent.long_name == parent.name
+    parent.long_name = "dancing device that make you jump"
+    assert parent.long_name == "dancing device that make you jump"
     assert parent.child1.name == "parent-child1"
     assert parent.child2.name == "parent-child2"
     assert parent.dict_with_children.name == "parent-dict_with_children"
