@@ -83,6 +83,18 @@ class ASTestDeviceSingleSet(ASTestDevice):
         self.sig._backend._set_value(val)  # type: ignore
 
 
+class ASTestDeviceTimeoutSet(ASTestDevice):
+    @WatchableAsyncStatus.wrap
+    async def set(self, val, timeout_s=0.01):
+        assert self._staged
+        await asyncio.sleep(0.01)
+        self.sig._backend._set_value(val - 1)  # type: ignore
+        await asyncio.sleep(0.01)
+        yield WatcherUpdate(1, 1, 1)
+        await asyncio.sleep(0.01)
+        yield WatcherUpdate(1, 1, 1)
+
+
 class ASTestDeviceIteratorSet(ASTestDevice):
     def __init__(
         self, name: str = "", values=[1, 2, 3, 4, 5], complete_set: bool = True
@@ -197,7 +209,7 @@ async def test_asyncstatus_wraps_set_iterator_with_class_or_func_watcher(RE):
     assert sum(w.updates) == 21
 
 
-async def test_asyncstatus_wraps_failing_set_iterator_(RE):
+async def test_asyncstatus_wraps_failing_set_iterator(RE):
     td = ASTestDeviceIteratorSet(values=[1, 2, 3], complete_set=False)
     await td.connect()
     await td.stage()
@@ -213,3 +225,14 @@ async def test_asyncstatus_wraps_failing_set_iterator_(RE):
     assert not st.success
     assert isinstance(st.exception(), SetFailed)
     assert len(updates) == 3
+
+
+async def test_asyncstatus_times_out(RE):
+    td = ASTestDeviceTimeoutSet()
+    await td.connect()
+    await td.stage()
+    st = td.set(6, timeout_s=0.01)
+    while not st.done:
+        await asyncio.sleep(0.01)
+    assert not st.success
+    assert isinstance(st.exception(), TimeoutError)
