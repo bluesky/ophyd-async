@@ -48,7 +48,9 @@ class ExposeOutMode(str, Enum):
 class VimbaDriver(ADBase):
     def __init__(self, prefix: str) -> None:
         # self.pixel_format = ad_rw(PixelFormat, prefix + "PixelFormat")
-        self.convert_format = ad_rw(ConvertFormat, prefix + "ConvertPixelFormat")
+        self.convert_format = ad_rw(
+            ConvertFormat, prefix + "ConvertPixelFormat"
+        )  # Pixel format of data outputted to AD
         self.trigger_source = ad_rw(TriggerSource, prefix + "TriggerSource")
         self.trigger_mode = ad_rw(OnOff, prefix + "TriggerMode")
         self.overlap = ad_rw(Overlap, prefix + "TriggerOverlap")

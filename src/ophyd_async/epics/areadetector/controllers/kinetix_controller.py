@@ -39,7 +39,7 @@ class KinetixController(DetectorControl):
     ) -> AsyncStatus:
         await asyncio.gather(
             self.driver.trigger_mode.set(KINETIX_TRIGGER_MODE_MAP[trigger]),
-            self.driver.num_images.set(999_999 if num == 0 else num),
+            self.driver.num_images.set(num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
         if exposure is not None and trigger not in [
