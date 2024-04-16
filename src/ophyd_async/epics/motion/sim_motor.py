@@ -20,14 +20,12 @@ class SimMotor(Motor):
 
         super().__init__(prefix, name=name)
 
+        # a useful default
+        self.velocity.set(1)
+
     async def _move(self, new_position: float, watchers: List[Callable] = []):
         self._set_success = True
         start = time.monotonic()
-
-        # some useful defaults
-        set_sim_value(self.velocity, 1)
-        set_sim_value(self.motor_egu, "mm")
-        set_sim_value(self.precision, 3)
 
         current_position = await self.user_readback.get_value()
         distance = abs(new_position - current_position)
