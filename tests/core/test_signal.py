@@ -9,11 +9,11 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SimSignalBackend,
-    create_soft_signal_r,
-    create_soft_signal_rw,
     set_and_wait_for_value,
     set_sim_put_proceeds,
     set_sim_value,
+    soft_signal_r,
+    soft_signal_rw,
     wait_for_value,
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
@@ -124,16 +124,21 @@ async def test_set_and_wait_for_value():
     assert await time_taken_by(st) < 0.1
 
 
-async def test_create_soft_signal():
+@pytest.mark.parametrize(
+    "signal_method,signal_class",
+    [(soft_signal_r, SignalR), (soft_signal_rw, SignalRW)],
+)
+async def test_create_soft_signal(signal_method, signal_class):
     TEST_PREFIX = "TEST-PREFIX"
-    ro_signal = create_soft_signal_r(str, "RO-SIGNAL", TEST_PREFIX)
-    assert isinstance(ro_signal, SignalR)
-    assert isinstance(ro_signal._backend, SimSignalBackend)
-    rw_signal = create_soft_signal_rw(str, "RW-SIGNAL", TEST_PREFIX)
-    assert isinstance(rw_signal, SignalRW)
-    assert isinstance(ro_signal._backend, SimSignalBackend)
-    await ro_signal.connect()
-    await rw_signal.connect()
+    SIGNAL_NAME = "SIGNAL"
+    if signal_method == soft_signal_r:
+        signal, backend = signal_method(str, SIGNAL_NAME, TEST_PREFIX)
+    elif signal_method == soft_signal_rw:
+        signal = signal_method(str, SIGNAL_NAME, TEST_PREFIX)
+        backend = signal._backend
+    assert signal._backend.source == f"sim://{TEST_PREFIX}:{SIGNAL_NAME}"
+    assert isinstance(signal, signal_class)
+    assert isinstance(signal._backend, SimSignalBackend)
+    await signal.connect()
     # connecting with sim=False uses existing SimSignalBackend
-    assert ro_signal._backend is ro_signal._init_backend
-    assert rw_signal._backend is rw_signal._init_backend
+    assert signal._backend is backend
