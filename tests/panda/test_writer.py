@@ -25,10 +25,14 @@ from ophyd_async.panda.writers.hdf_writer import (
 from ophyd_async.panda.writers.panda_hdf_file import _HDFFile
 
 
+
 @pytest.fixture
 async def panda_t():
+    class CaptureBlock(Device):
+        test_capture: SignalR
     class Panda(CommonPandaBlocks):
-        data: DataBlock
+        block_a: CaptureBlock
+        block_b: CaptureBlock
 
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
@@ -45,30 +49,14 @@ async def panda_t():
 @pytest.fixture
 async def sim_panda(panda_t):
     async with DeviceCollector(sim=True):
-        sim_panda = panda_t("SIM_PANDA:", name="sim_panda")
-        sim_panda.block1 = Device("BLOCK1")  # type: ignore[attr-defined]
-        sim_panda.block2 = Device("BLOCK2")  # type: ignore[attr-defined]
-        sim_panda.block1.test_capture = SignalRW(  # type: ignore[attr-defined]
-            backend=SimSignalBackend(str)
-        )
-        sim_panda.block2.test_capture = SignalRW(  # type: ignore[attr-defined]
-            backend=SimSignalBackend(str)
-        )
+        sim_panda = panda_t("SIM_PANDA", name="sim_panda")
 
-    await asyncio.gather(
-        sim_panda.block1.connect(sim=True),  # type: ignore[attr-defined]
-        sim_panda.block2.connect(sim=True),  # type: ignore[attr-defined]
-        sim_panda.connect(sim=True),
+    set_sim_value(
+        sim_panda.block_a.test_capture, Capture.MinMaxMean  # type: ignore[attr-defined]
     )
 
     set_sim_value(
-        sim_panda.block1.test_capture,
-        Capture.MinMaxMean,  # type: ignore[attr-defined]
-    )
-
-    set_sim_value(
-        sim_panda.block2.test_capture,
-        Capture.No,  # type: ignore[attr-defined]
+        sim_panda.block_b.test_capture, Capture.No  # type: ignore[attr-defined]
     )
 
     return sim_panda
@@ -76,10 +64,10 @@ async def sim_panda(panda_t):
 
 @pytest.fixture
 async def sim_writer(tmp_path, sim_panda) -> PandaHDFWriter:
-    dir_prov = StaticDirectoryProvider(str(tmp_path), "", "/data.h5")
+    dir_prov = StaticDirectoryProvider(directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data.h5")
     async with DeviceCollector(sim=True):
         writer = PandaHDFWriter(
-            "TEST-PANDA", dir_prov, lambda: "test-panda", panda_device=sim_panda
+            prefix="TEST-PANDA", directory_provider=dir_prov, name_provider=lambda: "test-panda", panda_device=sim_panda
         )
 
     return writer
@@ -97,8 +85,8 @@ async def test_get_capture_signals_gets_all_signals(sim_panda):
         )
     capture_signals = get_capture_signals(sim_panda)
     expected_signals = [
-        "block1.test_capture",
-        "block2.test_capture",
+        "block_a.test_capture",
+        "block_b.test_capture",
         "test_seq.seq1_capture",
         "test_seq.seq2_capture",
     ]
@@ -108,18 +96,18 @@ async def test_get_capture_signals_gets_all_signals(sim_panda):
 
 async def test_get_signals_marked_for_capture(sim_panda):
     capture_signals = {
-        "block1.test_capture": sim_panda.block1.test_capture,
-        "block2.test_capture": sim_panda.block2.test_capture,
+        "block_a.test_capture": sim_panda.block_a.test_capture,
+        "block_b.test_capture": sim_panda.block_b.test_capture,
     }
     signals_marked_for_capture = await get_signals_marked_for_capture(capture_signals)
     assert len(signals_marked_for_capture) == 1
-    assert signals_marked_for_capture["block1.test"].capture_type == Capture.MinMaxMean
+    assert signals_marked_for_capture["block_a.test"].capture_type == Capture.MinMaxMean
 
 
 async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
     assert hasattr(sim_writer.panda_device, "data")
-    cap1 = sim_writer.panda_device.block1.test_capture  # type: ignore[attr-defined]
-    cap2 = sim_writer.panda_device.block2.test_capture  # type: ignore[attr-defined]
+    cap1 = sim_writer.panda_device.block_a.test_capture  # type: ignore[attr-defined]
+    cap2 = sim_writer.panda_device.block_b.test_capture  # type: ignore[attr-defined]
     set_sim_value(cap1, Capture.MinMaxMean)
     set_sim_value(cap2, Capture.Value)
     description = await sim_writer.open()  # to make capturing status not time out
@@ -131,10 +119,10 @@ async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
         assert "source" in entry
         assert entry.get("external") == "STREAM:"
     expected_datakeys = [
-        "test-panda-block1-test-Min",
-        "test-panda-block1-test-Max",
-        "test-panda-block1-test-Mean",
-        "test-panda-block2-test-Value",
+        "test-panda-block_a-test-Min",
+        "test-panda-block_a-test-Max",
+        "test-panda-block_a-test-Mean",
+        "test-panda-block_b-test-Value",
     ]
     for key in expected_datakeys:
         assert key in description
@@ -178,8 +166,8 @@ async def test_wait_for_index(sim_writer: PandaHDFWriter):
 
 async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     # Give the sim writer datasets
-    cap1 = sim_writer.panda_device.block1.test_capture  # type: ignore[attr-defined]
-    cap2 = sim_writer.panda_device.block2.test_capture  # type: ignore[attr-defined]
+    cap1 = sim_writer.panda_device.block_a.test_capture  # type: ignore[attr-defined]
+    cap2 = sim_writer.panda_device.block_b.test_capture  # type: ignore[attr-defined]
     set_sim_value(cap1, Capture.MinMaxMean)
     set_sim_value(cap2, Capture.Value)
     await sim_writer.open()
@@ -188,7 +176,7 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
     assert type(sim_writer._file) is _HDFFile
     assert sim_writer._file._last_emitted == 1
     resource_doc = sim_writer._file._bundles[0].stream_resource_doc
-    assert resource_doc["data_key"] == "test-panda-block1-test-Min"
+    assert resource_doc["data_key"] == "test-panda-block_a-test-Min"
     assert "sim_panda/data.h5" in resource_doc["resource_path"]
 
 
