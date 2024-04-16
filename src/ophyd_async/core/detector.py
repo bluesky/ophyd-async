@@ -19,17 +19,16 @@ from typing import (
 
 from bluesky.protocols import (
     Collectable,
-    Configurable,
     Descriptor,
     Flyable,
     Preparable,
-    Readable,
     Reading,
     Stageable,
     StreamAsset,
     Triggerable,
     WritesStreamAssets,
 )
+from ophyd_async.protocols import AsyncReadable, AsyncConfigurable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -143,8 +142,8 @@ class DetectorWriter(ABC):
 class StandardDetector(
     Device,
     Stageable,
-    Configurable,
-    Readable,
+    AsyncConfigurable,
+    AsyncReadable,
     Triggerable,
     Preparable,
     Flyable,
