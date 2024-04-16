@@ -1,8 +1,8 @@
 import asyncio
+import subprocess
 from typing import Dict
-from unittest.mock import ANY, Mock, call
+from unittest.mock import ANY, Mock, call, patch
 
-import aioca
 import pytest
 from bluesky.protocols import Reading
 
@@ -293,7 +293,13 @@ async def test_dynamic_sensor_group_read_and_describe(
     }
 
 
-async def test_ioc_starts():
-    pv_prefix = demo.start_ioc_subprocess()
-    pv = f"{pv_prefix}Value"
-    await aioca.connect(pv, timeout=10.0)
+@patch("ophyd_async.epics.demo.subprocess.Popen")
+async def test_ioc_starts(mock_popen: Mock):
+    demo.start_ioc_subprocess()
+    mock_popen.assert_called_once_with(
+        ANY,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
