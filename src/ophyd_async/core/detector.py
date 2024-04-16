@@ -240,7 +240,7 @@ class StandardDetector(
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, Descriptor]:
         return self._describe
 
     @AsyncStatus.wrap
