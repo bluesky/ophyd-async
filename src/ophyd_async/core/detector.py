@@ -28,7 +28,8 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
-from ophyd_async.protocols import AsyncReadable, AsyncConfigurable
+
+from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
 from .async_status import AsyncStatus
 from .device import Device

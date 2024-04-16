@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Dict, Protocol, runtime_checkable
-from bluesky.protocols import HasName, Reading, Descriptor
+
+from bluesky.protocols import Descriptor, HasName, Reading
 
 
 @runtime_checkable
