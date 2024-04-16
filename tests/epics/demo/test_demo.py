@@ -296,4 +296,4 @@ async def test_dynamic_sensor_group_read_and_describe(
 async def test_ioc_starts():
     pv_prefix = demo.start_ioc_subprocess()
     pv = f"{pv_prefix}Value"
-    await aioca.connect(pv)
+    await aioca.connect(pv, timeout=10.0)
