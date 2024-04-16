@@ -54,7 +54,7 @@ class VimbaController(DetectorControl):
         await asyncio.gather(
             self.driver.trigger_mode.set(TRIGGER_MODE[trigger]),
             self.driver.expose_out_mode.set(EXPOSE_OUT_MODE[trigger]),
-            self.driver.num_images.set(999_999 if num == 0 else num),
+            self.driver.num_images.set(num),
             self.driver.image_mode.set(ImageMode.multiple),
         )
         if exposure is not None and trigger not in [
