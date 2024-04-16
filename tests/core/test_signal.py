@@ -8,6 +8,8 @@ from ophyd_async.core import (
     Signal,
     SignalRW,
     SimSignalBackend,
+    assert_reading,
+    assert_value,
     set_and_wait_for_value,
     set_sim_put_proceeds,
     set_sim_value,
@@ -119,3 +121,17 @@ async def test_set_and_wait_for_value():
     assert not st.done
     set_sim_put_proceeds(sim_signal, True)
     assert await time_taken_by(st) < 0.1
+
+
+async def test_helper_funtion():
+    sim_signal = SignalRW(SimSignalBackend(int, "test"))
+    sim_signal.set_name("sim_signal")
+    await sim_signal.connect(sim=True)
+    set_sim_value(sim_signal, 168)
+    await assert_value(sim_signal, 168)
+
+    dummy_readable = {
+        "sim_signal": {"alarm_severity": 0, "timestamp": 46709394.28, "value": 168}
+    }
+    reading = await sim_signal.read()
+    await assert_reading(reading, dummy_readable)

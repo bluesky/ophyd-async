@@ -30,6 +30,8 @@ from .signal import (
     SignalRW,
     SignalW,
     SignalX,
+    assert_reading,
+    assert_value,
     observe_value,
     set_and_wait_for_value,
     set_sim_callback,
@@ -99,4 +101,6 @@ __all__ = [
     "walk_rw_signals",
     "load_device",
     "save_device",
+    "assert_reading",
+    "assert_value",
 ]

@@ -2,7 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
+from typing import (
+    Any,
+    AsyncGenerator,
+    Callable,
+    Dict,
+    Generic,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from bluesky.protocols import (
     Descriptor,
@@ -48,15 +57,9 @@ class Signal(Device, Generic[T]):
         self, backend: SignalBackend[T], timeout: Optional[float] = DEFAULT_TIMEOUT
     ) -> None:
         self._name = ""
+        self._long_name = None
         self._timeout = timeout
         self._init_backend = self._backend = backend
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str = ""):
-        self._name = name
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
@@ -251,6 +254,37 @@ def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
 def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
     """Monitor the value of a signal that is in sim mode"""
     return _sim_backends[signal].set_callback(callback)
+
+
+async def verify_readable(
+    func: Readable | Dict[str, Any],
+    expected: Dict[str, Any],
+) -> None:
+    """verify readable"""
+    expectation = expected
+    for signal in expectation:
+        for field in expectation[signal]:
+            if field == "timestamp":
+                assert isinstance(func["sim_signal"]["timestamp"], float)
+            else:
+                assert func[signal][field] == expectation[signal][field]
+
+
+async def assert_value(signal: SignalR[T], value: T) -> None:
+    """assert value"""
+    assert await signal.get_value() == value
+
+
+async def assert_reading(readable: Readable, reading: Reading) -> None:
+    """assert reading"""
+    await verify_readable(readable, reading)
+
+
+async def assert_configuration(
+    readable: Readable, configuration: Sequence[SignalR]
+) -> None:
+    """assert configuration"""
+    await verify_readable(readable, configuration)
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
