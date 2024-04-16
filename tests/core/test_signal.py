@@ -12,7 +12,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
     set_sim_put_proceeds,
     set_sim_value,
-    soft_signal_r,
+    soft_signal_r_and_backend,
     soft_signal_rw,
     wait_for_value,
 )
@@ -126,12 +126,12 @@ async def test_set_and_wait_for_value():
 
 @pytest.mark.parametrize(
     "signal_method,signal_class",
-    [(soft_signal_r, SignalR), (soft_signal_rw, SignalRW)],
+    [(soft_signal_r_and_backend, SignalR), (soft_signal_rw, SignalRW)],
 )
 async def test_create_soft_signal(signal_method, signal_class):
     TEST_PREFIX = "TEST-PREFIX"
     SIGNAL_NAME = "SIGNAL"
-    if signal_method == soft_signal_r:
+    if signal_method == soft_signal_r_and_backend:
         signal, backend = signal_method(str, SIGNAL_NAME, TEST_PREFIX)
     elif signal_method == soft_signal_rw:
         signal = signal_method(str, SIGNAL_NAME, TEST_PREFIX)

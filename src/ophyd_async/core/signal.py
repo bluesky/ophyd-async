@@ -260,7 +260,7 @@ def soft_signal_rw(
     return SignalRW(SimSignalBackend(datatype, f"sim://{source_prefix}:{name}"))
 
 
-def soft_signal_r(
+def soft_signal_r_and_backend(
     datatype: Optional[Type[T]], name: str, source_prefix: str
 ) -> Tuple[SignalR[T], SimSignalBackend]:
     """Returns a tuple of a read-only Signal and its SimSignalBackend through
