@@ -23,18 +23,15 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
         # Define some signals
         self.user_setpoint = soft_signal_rw(
-            float, "user_setpoint", prefix + ".setpoint"
+            float, "user_setpoint", prefix + ".setpoint", initial_value=0
         )
         self.user_readback, self._user_readback = soft_signal_r_and_backend(
-            float, "user_readback", prefix + ".readback"
+            float, "user_readback", prefix + ".readback", initial_value=0
         )
-        self.velocity = soft_signal_rw(float, "velocity", prefix + ".velocity")
-        self.egu = soft_signal_rw(float, "egu", prefix + ".egu")
-
-        # sensible defaults
-        # TODO this cannot be set at present - James Souter is adding an
-        # initial value to the soft signal constructors
-        # await self.velocity.set(1)
+        self.velocity = soft_signal_rw(
+            float, "velocity", prefix + ".velocity", initial_value=1.0
+        )
+        self.egu = soft_signal_rw(float, "egu", prefix + ".egu", initial_value="mm")
 
         # Set name and signals for read() and read_configuration()
         self.set_readable_signals(
