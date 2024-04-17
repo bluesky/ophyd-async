@@ -7,6 +7,7 @@ from ophyd_async.panda.table import SeqTable
 
 
 class DataBlock(Device):
+    # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
     hdf_file_name: SignalRW[str]
     num_capture: SignalRW[int]
@@ -45,6 +46,4 @@ class CommonPandaBlocks(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcap: PcapBlock
-
-    # In future we may decide not to have a datablock
     data: DataBlock

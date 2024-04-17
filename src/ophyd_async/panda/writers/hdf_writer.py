@@ -142,11 +142,11 @@ class PandaHDFWriter(DetectorWriter):
         for attribute_path, capture_signal in to_capture.items():
             split_path = attribute_path.split(".")
             signal_name = split_path[-1]
+            # Get block names from numbered blocks, eg INENC[1]
             block_name = (
-                split_path[-2]
-                if not split_path[-2].isnumeric()
-                # Get block names from numbered blocks, eg INENC[1]
-                else f"{split_path[-3]}{split_path[-2]}"
+                f"{split_path[-3]}{split_path[-2]}"
+                if split_path[-2].isnumeric()
+                else split_path[-2]
             )
 
             for suffix in str(capture_signal.capture_type).split(" "):

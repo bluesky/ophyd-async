@@ -13,8 +13,7 @@ from ophyd_async.core import (
     set_sim_value,
 )
 from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
-from ophyd_async.epics.signal.signal import SignalRW
-from ophyd_async.panda.common_panda import CommonPandaBlocks, DataBlock
+from ophyd_async.panda.common_panda import CommonPandaBlocks
 from ophyd_async.panda.writers import PandaHDFWriter
 from ophyd_async.panda.writers.hdf_writer import (
     Capture,
@@ -25,11 +24,11 @@ from ophyd_async.panda.writers.hdf_writer import (
 from ophyd_async.panda.writers.panda_hdf_file import _HDFFile
 
 
-
 @pytest.fixture
 async def panda_t():
     class CaptureBlock(Device):
         test_capture: SignalR
+
     class Panda(CommonPandaBlocks):
         block_a: CaptureBlock
         block_b: CaptureBlock
@@ -64,10 +63,15 @@ async def sim_panda(panda_t):
 
 @pytest.fixture
 async def sim_writer(tmp_path, sim_panda) -> PandaHDFWriter:
-    dir_prov = StaticDirectoryProvider(directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data.h5")
+    dir_prov = StaticDirectoryProvider(
+        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data.h5"
+    )
     async with DeviceCollector(sim=True):
         writer = PandaHDFWriter(
-            prefix="TEST-PANDA", directory_provider=dir_prov, name_provider=lambda: "test-panda", panda_device=sim_panda
+            prefix="TEST-PANDA",
+            directory_provider=dir_prov,
+            name_provider=lambda: "test-panda",
+            panda_device=sim_panda,
         )
 
     return writer
