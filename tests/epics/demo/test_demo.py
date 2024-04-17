@@ -1,6 +1,7 @@
 import asyncio
+import subprocess
 from typing import Dict
-from unittest.mock import ANY, Mock, call
+from unittest.mock import ANY, Mock, call, patch
 
 import pytest
 from bluesky.protocols import Reading
@@ -19,7 +20,7 @@ A_WHILE = 0.001
 
 
 @pytest.fixture
-async def sim_mover():
+async def sim_mover() -> demo.Mover:
     async with DeviceCollector(sim=True):
         sim_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
         # Signals connected here
@@ -28,17 +29,27 @@ async def sim_mover():
     set_sim_value(sim_mover.units, "mm")
     set_sim_value(sim_mover.precision, 3)
     set_sim_value(sim_mover.velocity, 1)
-    yield sim_mover
+    return sim_mover
 
 
 @pytest.fixture
-async def sim_sensor():
+async def sim_sensor() -> demo.Sensor:
     async with DeviceCollector(sim=True):
         sim_sensor = demo.Sensor("SIM:SENSOR:")
         # Signals connected here
 
     assert sim_sensor.name == "sim_sensor"
-    yield sim_sensor
+    return sim_sensor
+
+
+@pytest.fixture
+async def sim_sensor_group() -> demo.SensorGroup:
+    async with DeviceCollector(sim=True):
+        sim_sensor_group = demo.SensorGroup("SIM:SENSOR:")
+        # Signals connected here
+
+    assert sim_sensor_group.name == "sim_sensor_group"
+    return sim_sensor_group
 
 
 class Watcher:
@@ -224,3 +235,71 @@ def test_mover_in_re(sim_mover: demo.Mover, RE) -> None:
 
     with pytest.raises(RuntimeError, match="Will deadlock run engine if run in a plan"):
         RE(my_plan())
+
+
+async def test_dynamic_sensor_group_disconnected():
+    with pytest.raises(NotConnected):
+        async with DeviceCollector(timeout=0.1):
+            sim_sensor_group_dynamic = demo.SensorGroup("SIM:SENSOR:")
+
+    assert sim_sensor_group_dynamic.name == "sim_sensor_group_dynamic"
+
+
+async def test_dynamic_sensor_group_read_and_describe(
+    sim_sensor_group: demo.SensorGroup,
+):
+    set_sim_value(sim_sensor_group.sensors[1].value, 0.0)
+    set_sim_value(sim_sensor_group.sensors[2].value, 0.5)
+    set_sim_value(sim_sensor_group.sensors[3].value, 1.0)
+
+    await sim_sensor_group.stage()
+    description = await sim_sensor_group.describe()
+    reading = await sim_sensor_group.read()
+    await sim_sensor_group.unstage()
+
+    assert description == {
+        "sim_sensor_group-sensors-1-value": {
+            "dtype": "number",
+            "shape": [],
+            "source": "sim://SIM:SENSOR:1:Value",
+        },
+        "sim_sensor_group-sensors-2-value": {
+            "dtype": "number",
+            "shape": [],
+            "source": "sim://SIM:SENSOR:2:Value",
+        },
+        "sim_sensor_group-sensors-3-value": {
+            "dtype": "number",
+            "shape": [],
+            "source": "sim://SIM:SENSOR:3:Value",
+        },
+    }
+    assert reading == {
+        "sim_sensor_group-sensors-1-value": {
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": 0.0,
+        },
+        "sim_sensor_group-sensors-2-value": {
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": 0.5,
+        },
+        "sim_sensor_group-sensors-3-value": {
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": 1.0,
+        },
+    }
+
+
+@patch("ophyd_async.epics.demo.subprocess.Popen")
+async def test_ioc_starts(mock_popen: Mock):
+    demo.start_ioc_subprocess()
+    mock_popen.assert_called_once_with(
+        ANY,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
