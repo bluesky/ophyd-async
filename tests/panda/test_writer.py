@@ -51,11 +51,13 @@ async def sim_panda(panda_t):
         sim_panda = panda_t("SIM_PANDA", name="sim_panda")
 
     set_sim_value(
-        sim_panda.block_a.test_capture, Capture.MinMaxMean  # type: ignore[attr-defined]
+        sim_panda.block_a.test_capture,
+        Capture.MinMaxMean,  # type: ignore[attr-defined]
     )
 
     set_sim_value(
-        sim_panda.block_b.test_capture, Capture.No  # type: ignore[attr-defined]
+        sim_panda.block_b.test_capture,
+        Capture.No,  # type: ignore[attr-defined]
     )
 
     return sim_panda

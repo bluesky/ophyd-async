@@ -1,4 +1,4 @@
-from ._common_panda import (
+from ._common_blocks import (
     CommonPandaBlocks,
     DataBlock,
     PcapBlock,

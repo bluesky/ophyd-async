@@ -10,7 +10,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 
-from ._common_panda import CommonPandaBlocks
+from ._common_blocks import CommonPandaBlocks
 from ._panda_controller import PandaPcapController
 from .writers._hdf_writer import PandaHDFWriter
 

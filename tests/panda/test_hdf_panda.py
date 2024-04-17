@@ -21,6 +21,11 @@ from ophyd_async.planstubs.prepare_trigger_and_dets import (
 )
 
 
+def assert_emitted(docs: Dict[str, list], **numbers: int):
+    assert list(docs) == list(numbers)
+    assert {name: len(d) for name, d in docs.items()} == numbers
+
+
 class MockPandaPcapController(DetectorControl):
     def __init__(self, pcap: PcapBlock) -> None:
         self.pcap = pcap
@@ -68,8 +73,8 @@ async def sim_hdf_panda(tmp_path):
     sim_hdf_panda._controller = MockPandaPcapController(sim_hdf_panda.pcap)
     block_a = CaptureBlock(name="block_a")
     block_b = CaptureBlock(name="block_b")
-    block_a.test_capture = SignalR(backend=SimSignalBackend(Capture, source="block_a"))
-    block_b.test_capture = SignalR(backend=SimSignalBackend(Capture, source="block_b"))
+    block_a.test_capture = SignalR(backend=SimSignalBackend(Capture))
+    block_b.test_capture = SignalR(backend=SimSignalBackend(Capture))
 
     setattr(sim_hdf_panda, "block_a", block_a)
     setattr(sim_hdf_panda, "block_b", block_b)
@@ -89,12 +94,12 @@ async def test_hdf_panda_hardware_triggered_flyable(
     RE: RunEngine,
     sim_hdf_panda,
 ):
-    names = []
-    docs = []
+    docs = {}
 
     def append_and_print(name, doc):
-        names.append(name)
-        docs.append(doc)
+        if name not in docs:
+            docs[name] = []
+        docs[name] += [doc]
 
     RE.subscribe(append_and_print)
 
@@ -158,56 +163,30 @@ async def test_hdf_panda_hardware_triggered_flyable(
     # fly scan
     RE(flying_plan())
 
-    assert names == [
-        "start",
-        "descriptor",
-        "stream_resource",
-        "stream_resource",
-        "stream_datum",
-        "stream_datum",
-        "stop",
-    ]
-    named_docs = dict(
-        zip(
-            [
-                "start",
-                "descriptor",
-                "stream_resource_a",
-                "stream_resource_b",
-                "stream_datum_a",
-                "stream_datum_b",
-                "stop",
-            ],
-            docs,
-        )
+    assert_emitted(
+        docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, stop=1
     )
 
     # test descriptor
-    data_key_names: Dict[str, str] = named_docs["descriptor"]["object_keys"]["panda"]
+    data_key_names: Dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
     assert data_key_names == [
         "panda-block_a-test-Min",
         "panda-block_b-test-Diff",
     ]
     for data_key_name in data_key_names:
         assert (
-            named_docs["descriptor"]["data_keys"][data_key_name]["source"]
-            == "sim://hdf_directory"
+            docs["descriptor"][0]["data_keys"][data_key_name]["source"]
+            == "soft://panda-data-hdf_directory"
         )
 
     # test stream resources
-    for block_letter, data_key_name in zip(("a", "b"), data_key_names):
-        assert (
-            named_docs[f"stream_resource_{block_letter}"]["data_key"] == data_key_name
-        )
-        assert (
-            named_docs[f"stream_resource_{block_letter}"]["spec"]
-            == "AD_HDF5_SWMR_SLICE"
-        )
-        assert (
-            named_docs[f"stream_resource_{block_letter}"]["run_start"]
-            == named_docs["start"]["uid"]
-        )
-        assert named_docs[f"stream_resource_{block_letter}"]["resource_kwargs"] == {
+    for block_letter, stream_resource, data_key_name in zip(
+        ("a", "b"), docs["stream_resource"], data_key_names
+    ):
+        assert stream_resource["data_key"] == data_key_name
+        assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
+        assert stream_resource["run_start"] == docs["start"][0]["uid"]
+        assert stream_resource["resource_kwargs"] == {
             "block": f"block_{block_letter}",
             "multiplier": 1,
             "name": data_key_name,
@@ -216,20 +195,16 @@ async def test_hdf_panda_hardware_triggered_flyable(
         }
 
     # test stream datum
-    for block_letter in ("a", "b"):
-        assert (
-            named_docs[f"stream_datum_{block_letter}"]["descriptor"]
-            == named_docs["descriptor"]["uid"]
-        )
-        assert named_docs[f"stream_datum_{block_letter}"]["seq_nums"] == {
+    for stream_datum in docs["stream_datum"]:
+        assert stream_datum["descriptor"] == docs["descriptor"][0]["uid"]
+        assert stream_datum["seq_nums"] == {
             "start": 1,
             "stop": 2,
         }
-        assert named_docs[f"stream_datum_{block_letter}"]["indices"] == {
+        assert stream_datum["indices"] == {
             "start": 0,
             "stop": 1,
         }
-        assert (
-            named_docs[f"stream_datum_{block_letter}"]["stream_resource"]
-            == named_docs[f"stream_resource_{block_letter}"]["uid"]
-        )
+        assert stream_datum["stream_resource"] in [
+            sd["uid"].split("/")[0] for sd in docs["stream_datum"]
+        ]

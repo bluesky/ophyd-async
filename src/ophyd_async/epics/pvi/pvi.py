@@ -57,14 +57,14 @@ def _split_subscript(tp: T) -> Union[Tuple[Any, Tuple[Any]], Tuple[T, None]]:
     return tp, None
 
 
-def _strip_union(field: Union[Union[T], T]) -> T:
+def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
     if get_origin(field) is Union:
         args = get_args(field)
         is_optional = type(None) in args
-        for field in args:
-            if field is not type(None):
-                break
-    return field, is_optional
+        for arg in args:
+            if arg is not type(None):
+                return arg, is_optional
+    return field, False
 
 
 def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]]:
@@ -131,7 +131,7 @@ def _parse_type(
 ):
     if common_device_type:
         # pre-defined type
-        device_cls = _strip_union(common_device_type)
+        device_cls, _ = _strip_union(common_device_type)
         is_device_vector, device_cls = _strip_device_vector(device_cls)
         device_cls, device_args = _split_subscript(device_cls)
         assert issubclass(device_cls, Device)
@@ -165,7 +165,7 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
     )
 
     for device_name, device_cls in sub_devices:
-        device_cls = _strip_union(device_cls)
+        device_cls, _ = _strip_union(device_cls)
         is_device_vector, device_cls = _strip_device_vector(device_cls)
         device_cls, device_args = _split_subscript(device_cls)
         assert issubclass(device_cls, Device)
@@ -190,8 +190,7 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
             if is_signal:
                 sub_device = device_cls(SimSignalBackend(signal_dtype))
             else:
-                sub_device = device_cls()
-
+                sub_device = getattr(device, device_name, device_cls())
                 _sim_common_blocks(sub_device, stripped_type=device_cls)
 
         setattr(device, device_name, sub_device)
@@ -226,10 +225,7 @@ async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
         if is_signal:
             device = _pvi_mapping[frozenset(pva_entries.keys())](signal_dtype, *pvs)
         else:
-            if hasattr(entry.device, sub_name):
-                device = getattr(entry.device, sub_name)
-            else:
-                device = device_type()
+            device = getattr(entry.device, sub_name, device_type())
 
         sub_entry = PVIEntry(
             device=device, common_device_type=device_type, sub_entries={}
