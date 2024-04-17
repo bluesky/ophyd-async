@@ -32,8 +32,9 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         self.egu = soft_signal_rw(float, "egu", prefix + ".egu")
 
         # sensible defaults
-        self.velocity.set(1)
-        self.egu.set("mm")
+        # TODO this cannot be set at present - James Souter is adding an
+        # initial value to the soft signal constructors
+        # await self.velocity.set(1)
 
         # Set name and signals for read() and read_configuration()
         self.set_readable_signals(
@@ -53,16 +54,6 @@ class SimMotor(StandardReadable, Movable, Stoppable):
             self._move_task.cancel()
             self._move_task = None
 
-    def move(self, new_position: float, timeout: Optional[float] = None):
-        """
-        Commandline only synchronous move of a Motor
-        """
-        from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
-
-        if in_bluesky_event_loop():
-            raise RuntimeError("Will deadlock run engine if run in a plan")
-        call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
-
     def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:  # noqa: F821
         """
         Asynchronously move the motor to a new position.
@@ -75,12 +66,10 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         """
         Start the motor moving to a new position.
 
-        If the motor is already moving, it will stop and start moving to the
-        new position.
+        If the motor is already moving, it will stop first.
         If this is an instant motor the move will be instantaneous.
         """
         self.stop()
-        self._set_success = True
         start = time.monotonic()
 
         current_position = await self.user_readback.get_value()
@@ -96,7 +85,9 @@ class SimMotor(StandardReadable, Movable, Stoppable):
             while True:
                 time_elapsed = round(time.monotonic() - start, 2)
                 if time_elapsed >= travel_time:
-                    current_position = new_position
+                    # successfully reached our target position
+                    await self._user_readback.put(new_position)
+                    self._set_success = True
                     break
                 else:
                     current_position = (
@@ -122,3 +113,10 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
         # set up watchers to be called when the motor position changes
         self.user_readback.subscribe_value(update_watchers)
+
+        try:
+            await self._move_task
+        finally:
+            self.user_readback.clear_sub(update_watchers)
+        if not self._set_success:
+            raise RuntimeError("Motor was stopped")
