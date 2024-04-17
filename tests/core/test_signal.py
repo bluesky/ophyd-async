@@ -1,6 +1,7 @@
 import asyncio
 import re
 import time
+from typing import Mapping
 from unittest.mock import ANY
 
 import pytest
@@ -179,30 +180,28 @@ async def test_assert_configuration(sim_readable: DummyReadable):
     set_sim_value(sim_readable.value, 123)
     set_sim_value(sim_readable.mode, "super mode")
     set_sim_value(sim_readable.mode2, "slow mode")
-    dummy_config_reading = {
-        "sim_readable-mode": Reading(
+    dummy_config_reading: Mapping[str, Reading] = {
+        "sim_readable-mode": (
             {
                 "alarm_severity": 0,
                 "timestamp": ANY,
                 "value": "super mode",
             }
         ),
-        "sim_readable-mode2": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": "slow mode",
-            }
-        ),
+        "sim_readable-mode2": {
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": "slow mode",
+        },
     }
     await assert_configuration(sim_readable, dummy_config_reading)
     # test for none awaitable part of verify
     from ophyd.sim import DetWithConf
 
     something = DetWithConf(name="det")
-    dummy_config_reading1 = {
-        "det_c": Reading({"value": 3, "timestamp": ANY}),
-        "det_d": Reading({"value": 4, "timestamp": ANY}),
+    dummy_config_reading1: Mapping[str, Reading] = {
+        "det_c": {"value": 3, "timestamp": ANY},
+        "det_d": {"value": 4, "timestamp": ANY},
     }
 
     await assert_configuration(something, dummy_config_reading1)

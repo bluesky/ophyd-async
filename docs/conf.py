@@ -118,7 +118,7 @@ pygments_style = "sphinx"
 # docs in the python documentation.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "bluesky": ("https://blueskyproject.io/bluesky/", None),
+    "bluesky": ("https://blueskyproject.io/bluesky/main", None),
     "numpy": ("https://numpy.org/devdocs/", None),
     "databroker": ("https://blueskyproject.io/databroker/", None),
     "event-model": ("https://blueskyproject.io/event-model/main", None),
