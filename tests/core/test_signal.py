@@ -4,6 +4,7 @@ import time
 from unittest.mock import ANY
 
 import pytest
+from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DeviceCollector,
@@ -144,13 +145,13 @@ async def test_assert_value(sim_signal: SignalRW):
 async def test_assert_reaading(sim_signal: SignalRW):
     set_sim_value(sim_signal, 888)
     dummy_reading = {
-        "sim_signal": {"alarm_severity": 0, "timestamp": ANY, "value": 888}
+        "sim_signal": Reading({"alarm_severity": 0, "timestamp": ANY, "value": 888})
     }
     await assert_reading(sim_signal, dummy_reading)
 
 
 class DummyReadable(StandardReadable):
-    """A demo sensor that produces a scalar value based on X and Y Movers"""
+    """A demo Readable to produce read and config signal"""
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
@@ -179,16 +180,20 @@ async def test_assert_configuration(sim_readable: DummyReadable):
     set_sim_value(sim_readable.mode, "super mode")
     set_sim_value(sim_readable.mode2, "slow mode")
     dummy_config_reading = {
-        "sim_readable-mode": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": "super mode",
-        },
-        "sim_readable-mode2": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": "slow mode",
-        },
+        "sim_readable-mode": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": "super mode",
+            }
+        ),
+        "sim_readable-mode2": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": "slow mode",
+            }
+        ),
     }
     await assert_configuration(sim_readable, dummy_config_reading)
     # test for none awaitable part of verify
@@ -196,8 +201,8 @@ async def test_assert_configuration(sim_readable: DummyReadable):
 
     something = DetWithConf(name="det")
     dummy_config_reading1 = {
-        "det_c": {"value": 3, "timestamp": ANY},
-        "det_d": {"value": 4, "timestamp": ANY},
+        "det_c": Reading({"value": 3, "timestamp": ANY}),
+        "det_d": Reading({"value": 4, "timestamp": ANY}),
     }
 
     await assert_configuration(something, dummy_config_reading1)
