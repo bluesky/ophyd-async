@@ -19,6 +19,7 @@ jobs:
         with:
           requirements_file: requirements-dev-3.x.txt
           install_options: -e .[dev]
+          artifact_name: link_check
 
       - name: Check links
         run: tox -e docs build -- -b linkcheck

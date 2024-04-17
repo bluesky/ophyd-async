@@ -9,6 +9,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-artifacts:
+        patterns:
+          - actions/*-artifact
 
   - package-ecosystem: "pip"
     directory: "/"

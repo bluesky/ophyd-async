@@ -1,9 +1,9 @@
 Run in a container
 ==================
 
-Pre-built containers with ophyd-epics-devices and its dependencies already
+Pre-built containers with ophyd-async and its dependencies already
 installed are available on `Github Container Registry
-<https://ghcr.io/bluesky/ophyd-epics-devices>`_.
+<https://ghcr.io/bluesky/ophyd-async>`_.
 
 Starting the container
 ----------------------

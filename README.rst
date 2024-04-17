@@ -1,5 +1,5 @@
-Ophyd Async
-===========
+ophyd_async
+=============================================================================
 
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
@@ -9,6 +9,7 @@ Asynchronous device abstraction framework, building on `Ophyd`_.
 PyPI           ``pip install ophyd-async``
 Source code    https://github.com/bluesky/ophyd-async
 Documentation  https://blueskyproject.io/ophyd-async
+Releases       https://github.com/bluesky/ophyd-async/releases
 ============== ==============================================================
 
 Python library for asynchronously interfacing with hardware, intended to 
@@ -43,7 +44,7 @@ See the tutorials for usage examples.
     :target: https://github.com/bluesky/ophyd-async/actions/workflows/docs.yml
     :alt: Docs CI
 
-.. |coverage| image:: https://codecov.io/gh/bluesky/ophyd-async/branch/master/graph/badge.svg
+.. |coverage| image:: https://codecov.io/gh/bluesky/ophyd-async/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/bluesky/ophyd-async
     :alt: Test Coverage
 

@@ -8,6 +8,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+.venv
 build/
 develop-eggs/
 dist/
@@ -66,7 +67,7 @@ venv*
 # further build artifacts
 lockfiles/
 
-# Origional File
+# Original File
 *.pyc
 *.swp
 *.bak
@@ -85,3 +86,7 @@ docs/savefig
 
 # generated version number
 ophyd_async/_version.py
+
+
+# ruff cache
+.ruff_cache/
