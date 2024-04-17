@@ -3,7 +3,8 @@ import time
 from typing import Callable, List, Optional
 
 from bluesky.protocols import Movable, Stoppable
-from ophyd_async.core import StandardReadable, set_sim_value
+
+from ophyd_async.core import StandardReadable
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.signal import soft_signal_r_and_backend, soft_signal_rw
 
