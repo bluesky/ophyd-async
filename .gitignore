@@ -80,7 +80,7 @@ lockfiles/
 .ipynb_checkpoints
 
 # generated docs
-docs/*/generated
+docs/generated
 docs/savefig
 
 # generated version number
