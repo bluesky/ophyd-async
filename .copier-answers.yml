@@ -12,6 +12,6 @@ docs_type: sphinx
 git_platform: github.com
 github_org: bluesky
 package_name: ophyd_async
-pypi: false
+pypi: true
 repo_name: ophyd-async
 type_checker: pyright

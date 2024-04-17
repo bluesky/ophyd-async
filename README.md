@@ -1,6 +1,7 @@
 [![CI](https://github.com/bluesky/ophyd-async/actions/workflows/ci.yml/badge.svg)](https://github.com/bluesky/ophyd-async/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/bluesky/ophyd-async/branch/main/graph/badge.svg)](https://codecov.io/gh/bluesky/ophyd-async)
 
+[![PyPI](https://img.shields.io/pypi/v/ophyd-async.svg)](https://pypi.org/project/ophyd-async)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 # ophyd_async
@@ -10,8 +11,10 @@ Asynchronous Bluesky hardware abstraction code, compatible with control systems 
 This is where you should write a short paragraph that describes what your module does,
 how it does it, and why people should use it.
 
+<<<<<<< before updating
 |    Source     |     <https://github.com/bluesky/ophyd-async>      |
 | :-----------: | :-----------------------------------------------: |
+|     PyPI      |             `pip install ophyd-async`             |
 | Documentation |      <https://bluesky.github.io/ophyd-async>      |
 |   Releases    | <https://github.com/bluesky/ophyd-async/releases> |
 
