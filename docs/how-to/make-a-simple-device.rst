@@ -11,18 +11,18 @@ Make a Simple Device
 To make a simple device, you need to subclass from the
 `StandardReadable` class, create some `Signal` instances, and optionally implement
 other suitable Bluesky `Protocols <hardware_interface>` like
-:class:`~bluesky.protocols.Movable`.
+:external+bluesky:py:class:`bluesky.protocols.Movable`.
 
 The rest of this guide will show examples from ``src/ophyd_async/epics/demo/__init__.py``
 
 Readable
 --------
 
-For a simple :class:`~bluesky.protocols.Readable` object like a `Sensor`, you need to
+For a simple :external+bluesky:py:class:`bluesky.protocols.Readable` object like a `Sensor`, you need to
 define some signals, then tell the superclass which signals should contribute to
 ``read()`` and ``read_configuration()``:
 
-.. literalinclude:: ../../../src/ophyd_async/epics/demo/__init__.py
+.. literalinclude:: ../../src/ophyd_async/epics/demo/__init__.py
    :pyobject: Sensor
 
 First some Signals are constructed and stored on the Device. Each one is passed
@@ -53,10 +53,10 @@ Movable
 For a more complicated device like a `Mover`, you can still use `StandardReadable`
 and implement some addition protocols:
 
-.. literalinclude:: ../../../src/ophyd_async/epics/demo/__init__.py
+.. literalinclude:: ../../src/ophyd_async/epics/demo/__init__.py
    :pyobject: Mover
 
-The ``set()`` method implements :class:`~bluesky.protocols.Movable`. This
+The ``set()`` method implements :external+bluesky:py:class:`bluesky.protocols.Movable`. This
 creates a `coroutine` ``do_set()`` which gets the old position, units and
 precision in parallel, sets the setpoint, then observes the readback value,
 informing watchers of the progress. When it gets to the requested value it
@@ -64,3 +64,27 @@ completes. This co-routine is wrapped in a timeout handler, and passed to an
 `AsyncStatus` which will start executing it as soon as the Run Engine adds a
 callback to it. The ``stop()`` method then pokes a PV if the move needs to be
 interrupted. 
+
+Assembly
+--------
+
+Compound assemblies can be used to group Devices into larger logical Devices:
+
+.. literalinclude:: ../../src/ophyd_async/epics/demo/__init__.py
+   :pyobject: SampleStage
+
+This applies prefixes on construction:
+
+- SampleStage is passed a prefix like ``DEVICE:``
+- SampleStage.x will append its prefix ``X:`` to get ``DEVICE:X:``
+- SampleStage.x.velocity will append its suffix ``Velocity`` to get
+  ``DEVICE:X:Velocity``
+
+If SampleStage is further nested in another Device another layer of prefix
+nesting would occur
+
+.. note::
+
+   SampleStage does not pass any signals into its superclass init. This means
+   that its ``read()`` method will return an empty dictionary. This means you
+   can ``rd sample_stage.x``, but not ``rd sample_stage``.

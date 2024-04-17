@@ -82,10 +82,11 @@ You can now run ipython with this startup file::
 
 .. ipython:: python
     :suppress:
+    :okexcept:
 
     import sys
     from pathlib import Path
-    sys.path.append(str(Path(".").absolute()/"docs/user/examples"))
+    sys.path.append(str(Path(".").absolute()/"docs/examples"))
     from epics_demo import *
     # Turn off progressbar and table
     RE.waiting_hook = None
@@ -103,6 +104,7 @@ can be used in plans. We can move the ``samp.x`` mover to 100mm using
 `bluesky.plan_stubs.mv`:
 
 .. ipython::
+    :okexcept:
 
     In [1]: RE(mov(samp.x, 100))
 
@@ -111,6 +113,7 @@ If this is too verbose to write, we registered a shorthand with
 ``RE(my_plan(args))``. The command above can also be run as:
 
 .. ipython::
+    :okexcept:
 
     In [1]: <mov(samp.x, 100)
 
@@ -119,12 +122,14 @@ We can get the primary reading of ``samp.x``, in this case its readback value,
 using `bluesky.plan_stubs.rd`:
 
 .. ipython::
+    :okexcept:
 
     In [1]: <rd(samp.x)
 
 We can do a relative move of ``samp.x`` by 10mm, using `bluesky.plan_stubs.mvr`:
 
 .. ipython::
+    :okexcept:
 
     In [1]: <movr(samp.x, -10)
 
@@ -133,6 +138,7 @@ hardware on itself. In the case of a `Mover`, we can set and get its
 ``velocity``:
 
 .. ipython::
+    :okexcept:
 
     In [1]: <rd(samp.x.velocity)
 
@@ -143,6 +149,7 @@ We can also use the `bluesky.run_engine.RunEngine` to run scans. For instance we
 can do a `bluesky.plans.grid_scan` of ``x`` and ``y`` and plot ``det``:
 
 .. ipython::
+    :okexcept:
 
     @savefig grid_scan1.png width=4in
     In [1]: <grid_scan([det], samp.x, 1, 2, 5, samp.y, 1, 2, 5)
@@ -150,14 +157,16 @@ can do a `bluesky.plans.grid_scan` of ``x`` and ``y`` and plot ``det``:
 There is also an "energy mode" that can be changed to modify the ``det`` output.
 
 .. ipython::
+    :okexcept:
 
     In [1]: <rd(det.mode)
 
-Although this is an :class:`~enum.Enum` and programmatic code should import and
-use instances of :class:`~ophyd_async.epics.demo.EnergyMode`, we can set it using a
+Although this is an :external+python:py:class:`enum.Enum` and programmatic code should import and
+use instances of `EnergyMode`, we can set it using a
 string value on the commandline:
 
 .. ipython::
+    :okexcept:
 
     In [1]: <mov(det.mode, "High Energy")
 
@@ -165,10 +174,11 @@ The same scan will now give a slightly different output. If we include the v1
 device we can see it gives the same result:
 
 .. ipython::
+    :okexcept:
 
     @savefig grid_scan2.png width=4in
     In [1]: <grid_scan([det, det_old], samp.x, 1, 2, 5, samp.y, 1, 2, 5)
 
 .. seealso::
 
-    How-to `../how-to/make-a-simple-device` to make your own Ophyd Async devices.
+    How-to :doc:`../how-to/make-a-simple-device` to make your own Ophyd Async devices.

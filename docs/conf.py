@@ -4,6 +4,7 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
 import sys
 from pathlib import Path
 from subprocess import check_output
@@ -13,7 +14,7 @@ import requests
 import ophyd_async
 
 # -- General configuration ------------------------------------------------
-
+sys.path.insert(0, os.path.abspath("../../src"))
 # General information about the project.
 project = "ophyd-async"
 copyright = "2014, Brookhaven National Lab"
@@ -68,6 +69,7 @@ napoleon_numpy_docstring = True
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
+    # builtins
     ("py:class", "NoneType"),
     ("py:class", "'str'"),
     ("py:class", "'float'"),
@@ -75,6 +77,7 @@ nitpick_ignore = [
     ("py:class", "'bool'"),
     ("py:class", "'object'"),
     ("py:class", "'id'"),
+    # typing
     ("py:class", "typing_extensions.Literal"),
 ]
 

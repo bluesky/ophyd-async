@@ -47,4 +47,4 @@ Consequences
 ------------
 
 This will require changing the repository structure of Ophyd Async; see 
-the decision on repository structure `./0004-repository-structure` for details.
+the decision on repository structure :doc:`0004-repository-structure` for details.
