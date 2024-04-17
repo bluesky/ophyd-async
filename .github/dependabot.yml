@@ -10,11 +10,15 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      github-artifacts:
+      actions:
         patterns:
-          - actions/*-artifact
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "*"
