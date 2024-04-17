@@ -14,9 +14,6 @@ async def test_move_sim_in_plan():
         m1 = SimMotor("M1", "sim_motor1")
         m2 = SimMotor("M2", "sim_motor2")
 
-    await m1.velocity.set(2)
-    await m2.velocity.set(2)
-
     my_plan = spiral_square([], m1, m2, 0, 0, 4, 4, 10, 10)
 
     RE(my_plan)
@@ -44,10 +41,7 @@ async def test_stop():
     async with DeviceCollector():
         m1 = SimMotor("M1", "sim_motor1", instant=False)
 
-    await m1.connect()
-    await m1.velocity.set(2)
-
-    # this move should take 5 seconds but we will stop it after 0.2
+    # this move should take 10 seconds but we will stop it after 0.2
     move_status = m1.set(10)
     await asyncio.sleep(0.2)
     m1.stop()
@@ -55,5 +49,7 @@ async def test_stop():
     new_pos = await m1.user_readback.get_value()
 
     assert move_status.done
+    # move should not be successful as we stopped it
+    assert not move_status.success
     assert new_pos < 10
-    assert new_pos > 0.1
+    assert new_pos >= 0.1
