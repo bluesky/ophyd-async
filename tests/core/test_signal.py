@@ -1,6 +1,7 @@
 import asyncio
 import re
 import time
+from unittest.mock import ANY
 
 import pytest
 
@@ -143,7 +144,7 @@ async def test_assert_value(sim_signal: SignalRW):
 async def test_assert_reaading(sim_signal: SignalRW):
     set_sim_value(sim_signal, 888)
     dummy_reading = {
-        "sim_signal": {"alarm_severity": 0, "timestamp": 46709394.28, "value": 888}
+        "sim_signal": {"alarm_severity": 0, "timestamp": ANY, "value": 888}
     }
     await assert_reading(sim_signal, dummy_reading)
 
@@ -180,12 +181,12 @@ async def test_assert_configuration(sim_readable: DummyReadable):
     dummy_config_reading = {
         "sim_readable-mode": {
             "alarm_severity": 0,
-            "timestamp": 123.2,
+            "timestamp": ANY,
             "value": "super mode",
         },
         "sim_readable-mode2": {
             "alarm_severity": 0,
-            "timestamp": 123.2,
+            "timestamp": ANY,
             "value": "slow mode",
         },
     }
@@ -195,8 +196,8 @@ async def test_assert_configuration(sim_readable: DummyReadable):
 
     something = DetWithConf(name="det")
     dummy_config_reading1 = {
-        "det_c": {"value": 3, "timestamp": 171},
-        "det_d": {"value": 4, "timestamp": 1753},
+        "det_c": {"value": 3, "timestamp": ANY},
+        "det_d": {"value": 4, "timestamp": ANY},
     }
 
     await assert_configuration(something, dummy_config_reading1)
