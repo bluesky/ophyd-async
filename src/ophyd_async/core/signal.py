@@ -278,15 +278,15 @@ async def assert_value(signal: SignalR[T], value: T) -> None:
     ----------
     signal:
         Call get_valueand and compare it with expected value.
-    value: 
-        the expected value from the signal. 
+    value:
+        the expected value from the signal.
 
     Notes
     -----
     Example usage::
         await assert_reading(signal, value)
-    
-    
+
+
     """
     assert await signal.get_value() == value
 
