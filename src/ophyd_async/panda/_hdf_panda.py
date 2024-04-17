@@ -10,9 +10,10 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
 
-from .common_panda import CommonPandaBlocks
-from .panda_controller import PandaPcapController
-from .writers.hdf_writer import PandaHDFWriter
+
+from ._common_panda import CommonPandaBlocks
+from ._panda_controller import PandaPcapController
+from .writers._hdf_writer import PandaHDFWriter
 
 
 class HDFPanda(CommonPandaBlocks, StandardDetector):
@@ -24,9 +25,8 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         name: str = "",
     ):
         self._prefix = prefix
-        self.set_name(name)
 
-        pre_initialize_blocks(self, included_optional_fields=("data",))
+        pre_initialize_blocks(self)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             prefix=prefix,

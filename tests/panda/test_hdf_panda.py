@@ -14,8 +14,8 @@ from ophyd_async.core.signal import SignalR, wait_for_value
 from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.panda import HDFPanda, PcapBlock
-from ophyd_async.panda.trigger import StaticSeqTableTriggerLogic
-from ophyd_async.panda.writers.hdf_writer import Capture
+from ophyd_async.panda._trigger import StaticSeqTableTriggerLogic
+from ophyd_async.panda.writers._hdf_writer import Capture
 from ophyd_async.planstubs.prepare_trigger_and_dets import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )

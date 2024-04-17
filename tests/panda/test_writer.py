@@ -13,15 +13,15 @@ from ophyd_async.core import (
     set_sim_value,
 )
 from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
-from ophyd_async.panda.common_panda import CommonPandaBlocks
+from ophyd_async.panda._common_panda import CommonPandaBlocks
 from ophyd_async.panda.writers import PandaHDFWriter
-from ophyd_async.panda.writers.hdf_writer import (
+from ophyd_async.panda.writers._hdf_writer import (
     Capture,
     CaptureSignalWrapper,
     get_capture_signals,
     get_signals_marked_for_capture,
 )
-from ophyd_async.panda.writers.panda_hdf_file import _HDFFile
+from ophyd_async.panda.writers._panda_hdf_file import _HDFFile
 
 
 @pytest.fixture
@@ -194,7 +194,7 @@ async def test_numeric_blocks_correctly_formated(sim_writer: PandaHDFWriter):
         }
 
     with patch(
-        "ophyd_async.panda.writers.hdf_writer.get_signals_marked_for_capture",
+        "ophyd_async.panda.writers._hdf_writer.get_signals_marked_for_capture",
         get_numeric_signal,
     ):
         assert "test-panda-block-1-Capture.Value" in await sim_writer.open()

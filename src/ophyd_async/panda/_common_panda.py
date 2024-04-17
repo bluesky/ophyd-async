@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 
 from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW
-from ophyd_async.panda.table import SeqTable
+from ophyd_async.panda._table import SeqTable
 
 
 class DataBlock(Device):

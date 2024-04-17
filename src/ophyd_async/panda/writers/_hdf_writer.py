@@ -19,7 +19,7 @@ from ophyd_async.core import (
 from ophyd_async.core.signal import observe_value
 from ophyd_async.panda import CommonPandaBlocks
 
-from .panda_hdf_file import _HDFDataset, _HDFFile
+from ._panda_hdf_file import _HDFDataset, _HDFFile
 
 
 class Capture(str, Enum):
