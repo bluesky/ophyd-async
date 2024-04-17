@@ -41,7 +41,7 @@ class SimConverter(Generic[T]):
             type(value) in primitive_dtypes
         ), f"invalid converter for value of type {type(value)}"
         dtype = primitive_dtypes[type(value)]
-        return dict(source=source, dtype=dtype, shape=[])
+        return {"source": source, "dtype": dtype, "shape": []}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -52,7 +52,7 @@ class SimConverter(Generic[T]):
 
 class SimArrayConverter(SimConverter):
     def descriptor(self, source: str, value) -> Descriptor:
-        return dict(source=source, dtype="array", shape=[len(value)])
+        return {"source": source, "dtype": "array", "shape": [len(value)]}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -76,9 +76,7 @@ class SimEnumConverter(SimConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(
-            source=source, dtype="string", shape=[], choices=choices
-        )  # type: ignore
+        return {"source": source, "dtype": "string", "shape": [], "choices": choices}  # type: ignore
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:

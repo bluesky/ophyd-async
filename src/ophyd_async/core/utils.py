@@ -132,7 +132,7 @@ def get_unique(values: Dict[str, T], types: str) -> T:
 
 
 async def merge_gathered_dicts(
-    coros: Iterable[Awaitable[Dict[str, T]]]
+    coros: Iterable[Awaitable[Dict[str, T]]],
 ) -> Dict[str, T]:
     """Merge dictionaries produced by a sequence of coroutines.
 

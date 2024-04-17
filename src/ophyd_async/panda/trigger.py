@@ -13,7 +13,6 @@ class SeqTableInfo:
 
 
 class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
-
     def __init__(self, seq: SeqBlock) -> None:
         self.seq = seq
 

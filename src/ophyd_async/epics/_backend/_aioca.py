@@ -52,14 +52,14 @@ class CaConverter:
         return value
 
     def reading(self, value: AugmentedValue):
-        return dict(
-            value=self.value(value),
-            timestamp=value.timestamp,
-            alarm_severity=-1 if value.severity > 2 else value.severity,
-        )
+        return {
+            "value": self.value(value),
+            "timestamp": value.timestamp,
+            "alarm_severity": -1 if value.severity > 2 else value.severity,
+        }
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
-        return dict(source=source, dtype=dbr_to_dtype[value.datatype], shape=[])
+        return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
 
 
 class CaLongStrConverter(CaConverter):
@@ -74,7 +74,7 @@ class CaLongStrConverter(CaConverter):
 
 class CaArrayConverter(CaConverter):
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
-        return dict(source=source, dtype="array", shape=[len(value)])
+        return {"source": source, "dtype": "array", "shape": [len(value)]}
 
 
 @dataclass
@@ -92,7 +92,7 @@ class CaEnumConverter(CaConverter):
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(source=source, dtype="string", shape=[], choices=choices)
+        return {"source": source, "dtype": "string", "shape": [], "choices": choices}
 
 
 class DisconnectedCaConverter(CaConverter):

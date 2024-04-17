@@ -62,7 +62,6 @@ class PandANoDataBlock(CommonPandABlocks):
     async def connect(
         self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
     ) -> None:
-
         await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
 
         await super().connect(sim)
@@ -125,7 +124,6 @@ async def test_panda_with_missing_blocks(panda_pva):
 
 
 async def test_panda_with_extra_blocks_and_signals(panda_pva):
-
     panda = PandANoDataBlock("PANDAQSRV:")
     await panda.connect()
     assert panda.extra  # type: ignore

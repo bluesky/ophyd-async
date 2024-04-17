@@ -1,5 +1,5 @@
-import os
 import asyncio
+import os
 import subprocess
 import sys
 import time
@@ -29,8 +29,8 @@ if os.getenv("PYTEST_RAISE", "0") == "1":
     @pytest.hookimpl(tryfirst=True)
     def pytest_internalerror(excinfo):
         raise excinfo.value
-    
-    
+
+
 @pytest.fixture(scope="function")
 def RE(request):
     loop = asyncio.new_event_loop()

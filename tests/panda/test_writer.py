@@ -43,11 +43,13 @@ async def sim_panda() -> PandA:
     )
 
     set_sim_value(
-        sim_panda.block1.test_capture, Capture.MinMaxMean  # type: ignore[attr-defined]
+        sim_panda.block1.test_capture,
+        Capture.MinMaxMean,  # type: ignore[attr-defined]
     )
 
     set_sim_value(
-        sim_panda.block2.test_capture, Capture.No  # type: ignore[attr-defined]
+        sim_panda.block2.test_capture,
+        Capture.No,  # type: ignore[attr-defined]
     )
 
     return sim_panda
@@ -90,7 +92,6 @@ async def test_get_capture_signals_gets_all_signals(sim_panda):
 
 
 async def test_get_signals_marked_for_capture(sim_panda):
-
     capture_signals = {
         "block1.test_capture": sim_panda.block1.test_capture,
         "block2.test_capture": sim_panda.block2.test_capture,
@@ -177,7 +178,6 @@ async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
 
 
 async def test_numeric_blocks_correctly_formated(sim_writer: PandaHDFWriter):
-
     async def get_numeric_signal(_):
         return {
             "device.block.1": CaptureSignalWrapper(

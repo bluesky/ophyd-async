@@ -19,7 +19,6 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     repeats: int = 1,
     period: float = 0.0,
 ):
-
     trigger_info = TriggerInfo(
         num=num * repeats,
         trigger=DetectorTrigger.constant_gate,
