@@ -131,14 +131,16 @@ async def test_set_and_wait_for_value():
 async def test_create_soft_signal(signal_method, signal_class):
     TEST_PREFIX = "TEST-PREFIX"
     SIGNAL_NAME = "SIGNAL"
+    INITIAL_VALUE = "INITIAL"
     if signal_method == soft_signal_r_and_backend:
-        signal, backend = signal_method(str, SIGNAL_NAME, TEST_PREFIX)
+        signal, backend = signal_method(str, SIGNAL_NAME, TEST_PREFIX, INITIAL_VALUE)
     elif signal_method == soft_signal_rw:
-        signal = signal_method(str, SIGNAL_NAME, TEST_PREFIX)
+        signal = signal_method(str, SIGNAL_NAME, TEST_PREFIX, INITIAL_VALUE)
         backend = signal._backend
     assert signal._backend.source == f"sim://{TEST_PREFIX}:{SIGNAL_NAME}"
     assert isinstance(signal, signal_class)
     assert isinstance(signal._backend, SimSignalBackend)
     await signal.connect()
+    assert (await signal.get_value()) == INITIAL_VALUE
     # connecting with sim=False uses existing SimSignalBackend
     assert signal._backend is backend

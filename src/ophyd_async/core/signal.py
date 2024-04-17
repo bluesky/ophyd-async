@@ -254,20 +254,28 @@ def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> No
 
 
 def soft_signal_rw(
-    datatype: Optional[Type[T]], name: str, source_prefix: str
+    datatype: Optional[Type[T]],
+    name: str,
+    source_prefix: str,
+    initial_value: Optional[T] = None,
 ) -> SignalRW[T]:
     """Creates a read-writable Signal with a SimSignalBackend"""
-    return SignalRW(SimSignalBackend(datatype, f"sim://{source_prefix}:{name}"))
+    return SignalRW(
+        SimSignalBackend(datatype, f"sim://{source_prefix}:{name}", initial_value)
+    )
 
 
 def soft_signal_r_and_backend(
-    datatype: Optional[Type[T]], name: str, source_prefix: str
+    datatype: Optional[Type[T]],
+    name: str,
+    source_prefix: str,
+    initial_value: Optional[T] = None,
 ) -> Tuple[SignalR[T], SimSignalBackend]:
     """Returns a tuple of a read-only Signal and its SimSignalBackend through
     which the signal can be internally modified within the device. Use
     soft_signal_rw if you want a device that is externally modifiable
     """
-    backend = SimSignalBackend(datatype, f"sim://{source_prefix}:{name}")
+    backend = SimSignalBackend(datatype, f"sim://{source_prefix}:{name}", initial_value)
     signal = SignalR(backend)
     return (signal, backend)
 
