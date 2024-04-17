@@ -31,6 +31,7 @@ from .signal import (
     SignalW,
     SignalX,
     assert_configuration,
+    assert_emitted,
     assert_reading,
     assert_value,
     observe_value,
@@ -105,4 +106,5 @@ __all__ = [
     "assert_reading",
     "assert_value",
     "assert_configuration",
+    "assert_emitted",
 ]
