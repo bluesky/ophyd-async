@@ -9,7 +9,7 @@ import pytest
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, DeviceVector
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics.pvi import PVIEntry, fill_pvi_entries
-from ophyd_async.epics.pvi.pvi import pre_initialize_blocks
+from ophyd_async.epics.pvi.pvi import create_children_from_annotations
 from ophyd_async.panda import PcapBlock, PulseBlock, SeqBlock, SeqTable, SeqTrigger
 
 
@@ -47,7 +47,7 @@ async def panda_t():
     class Panda(CommonPandaBlocksNoData):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            pre_initialize_blocks(self)
+            create_children_from_annotations(self)
             super().__init__(name)
 
         async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):

@@ -10,7 +10,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
+from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 
 
 class Block1(Device):
@@ -97,14 +97,14 @@ async def test_fill_pvi_entries_sim_mode(pvi_test_device_t):
 
 
 @pytest.fixture
-def pvi_test_device_pre_initialize_blocks_t():
+def pvi_test_device_create_children_from_annotations_t():
     """A fixture since pytest discourages init in test case classes"""
 
     class TestDevice(Block3, Device):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
             super().__init__(name)
-            pre_initialize_blocks(self)
+            create_children_from_annotations(self)
 
         async def connect(
             self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
@@ -116,14 +116,16 @@ def pvi_test_device_pre_initialize_blocks_t():
     yield TestDevice
 
 
-async def test_device_pre_initialize_blocks(pvi_test_device_pre_initialize_blocks_t):
-    device = pvi_test_device_pre_initialize_blocks_t("PREFIX:")
+async def test_device_create_children_from_annotations(
+    pvi_test_device_create_children_from_annotations_t,
+):
+    device = pvi_test_device_create_children_from_annotations_t("PREFIX:")
 
     block_2_device = device.device
     block_1_device = device.device.device
     top_block_1_device = device.signal_device
 
-    # The pre_initialize_blocks has only made blocks,
+    # The create_children_from_annotations has only made blocks,
     # not signals or device vectors
     assert isinstance(block_2_device, Block2)
     assert isinstance(block_1_device, Block1)

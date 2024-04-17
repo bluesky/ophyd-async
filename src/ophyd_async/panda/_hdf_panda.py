@@ -8,8 +8,7 @@ from ophyd_async.core import (
     SignalR,
     StandardDetector,
 )
-from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
-
+from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 
 from ._common_panda import CommonPandaBlocks
 from ._panda_controller import PandaPcapController
@@ -26,7 +25,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
     ):
         self._prefix = prefix
 
-        pre_initialize_blocks(self)
+        create_children_from_annotations(self)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             prefix=prefix,

@@ -95,14 +95,10 @@ def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
             continue
         assert entry.sub_entries
         device_t, is_optional = _strip_union(sub_device)
-        if sub_name not in entry.sub_entries:
-            if is_optional:
-                continue
-            else:
-                raise RuntimeError(
-                    f"sub device `{sub_name}:{type(sub_device)}` "
-                    "was not provided by pvi"
-                )
+        if sub_name not in entry.sub_entries and not is_optional:
+            raise RuntimeError(
+                f"sub device `{sub_name}:{type(sub_device)}` " "was not provided by pvi"
+            )
         if isinstance(entry.sub_entries[sub_name], dict):
             for sub_sub_entry in entry.sub_entries[sub_name].values():  # type: ignore
                 _verify_common_blocks(sub_sub_entry, sub_device)  # type: ignore
@@ -303,19 +299,15 @@ async def fill_pvi_entries(
     device.set_name(device.name)
 
 
-def pre_initialize_blocks(
-    device: Device, included_optional_fields: Optional[Tuple[str, ...]] = None
+def create_children_from_annotations(
+    device: Device, included_optional_fields: Tuple[str, ...] = ()
 ):
     """For intializing blocks at __init__ of ``device``."""
     for name, device_type in get_type_hints(type(device)).items():
         if name in ("_name", "parent"):
             continue
         device_type, is_optional = _strip_union(device_type)
-        if (
-            is_optional
-            and included_optional_fields
-            and name not in included_optional_fields
-        ):
+        if is_optional and name not in included_optional_fields:
             continue
         is_device_vector, device_type = _strip_device_vector(device_type)
         if (
@@ -327,4 +319,4 @@ def pre_initialize_blocks(
 
         sub_device = device_type()
         setattr(device, name, sub_device)
-        pre_initialize_blocks(sub_device)
+        create_children_from_annotations(sub_device)

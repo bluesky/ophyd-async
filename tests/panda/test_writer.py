@@ -12,12 +12,12 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_sim_value,
 )
-from ophyd_async.epics.pvi import fill_pvi_entries, pre_initialize_blocks
-from ophyd_async.panda._common_panda import CommonPandaBlocks
-from ophyd_async.panda.writers import PandaHDFWriter
+from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda.writers._hdf_writer import (
     Capture,
     CaptureSignalWrapper,
+    PandaHDFWriter,
     get_capture_signals,
     get_signals_marked_for_capture,
 )
@@ -35,7 +35,7 @@ async def panda_t():
 
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            pre_initialize_blocks(self)
+            create_children_from_annotations(self)
             super().__init__(name)
 
         async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
