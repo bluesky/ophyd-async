@@ -94,7 +94,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
         async def update_position():
             while True:
-                time_elapsed = time.monotonic() - start
+                time_elapsed = round(time.monotonic() - start, 2)
                 if time_elapsed >= travel_time:
                     current_position = new_position
                     break
@@ -103,8 +103,8 @@ class SimMotor(StandardReadable, Movable, Stoppable):
                         old_position + distance * time_elapsed / travel_time
                     )
 
-            set_sim_value(self.user_readback, current_position)
-            await asyncio.sleep(0.1)
+                await self._user_readback.put(current_position)
+                await asyncio.sleep(0.1)
 
         def update_watchers(current_position: float):
             for watcher in watchers:
@@ -117,6 +117,8 @@ class SimMotor(StandardReadable, Movable, Stoppable):
                     time_elapsed=time.monotonic() - start,
                 )
 
+        # set up a task that updates the motor position at 10hz
         self._move_task = asyncio.create_task(update_position())
 
+        # set up watchers to be called when the motor position changes
         self.user_readback.subscribe_value(update_watchers)
