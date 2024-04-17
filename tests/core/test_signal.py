@@ -5,9 +5,12 @@ import time
 import pytest
 
 from ophyd_async.core import (
+    DeviceCollector,
     Signal,
     SignalRW,
     SimSignalBackend,
+    StandardReadable,
+    assert_configuration,
     assert_reading,
     assert_value,
     set_and_wait_for_value,
@@ -16,6 +19,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
 class MySignal(Signal):
@@ -123,20 +127,76 @@ async def test_set_and_wait_for_value():
     assert await time_taken_by(st) < 0.1
 
 
-async def test_helper_funtion():
+@pytest.fixture
+async def sim_signal():
     sim_signal = SignalRW(SimSignalBackend(int, "test"))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
+    yield sim_signal
+
+
+async def test_assert_value(sim_signal: SignalRW):
     set_sim_value(sim_signal, 168)
     await assert_value(sim_signal, 168)
+
+
+async def test_assert_reaading(sim_signal: SignalRW):
+    set_sim_value(sim_signal, 888)
     dummy_reading = {
-        "sim_signal": {"alarm_severity": 0, "timestamp": 46709394.28, "value": 168}
+        "sim_signal": {"alarm_severity": 0, "timestamp": 46709394.28, "value": 888}
     }
     await assert_reading(sim_signal, dummy_reading)
-    """    from ophyd_async.core.sim_signal_backend import SimConverter
-        simCon =SimConverter()
-        dummy_reading = simCon.reading(
-                value=168,
-                timestamp=46709394.28,
-                severity=0)
-                """
+
+
+class DummyReadable(StandardReadable):
+    """A demo sensor that produces a scalar value based on X and Y Movers"""
+
+    def __init__(self, prefix: str, name="") -> None:
+        # Define some signals
+        self.value = epics_signal_r(float, prefix + "Value")
+        self.mode = epics_signal_rw(str, prefix + "Mode")
+        self.mode2 = epics_signal_rw(str, prefix + "Mode2")
+        # Set name and signals for read() and read_configuration()
+        self.set_readable_signals(
+            read=[self.value],
+            config=[self.mode, self.mode2],
+        )
+        super().__init__(name=name)
+
+
+@pytest.fixture
+async def sim_readable():
+    async with DeviceCollector(sim=True):
+        sim_readable = DummyReadable("SIM:READABLE:")
+        # Signals connected here
+    assert sim_readable.name == "sim_readable"
+    yield sim_readable
+
+
+async def test_assert_configuration(sim_readable: DummyReadable):
+    set_sim_value(sim_readable.value, 123)
+    set_sim_value(sim_readable.mode, "super mode")
+    set_sim_value(sim_readable.mode2, "slow mode")
+    dummy_config_reading = {
+        "sim_readable-mode": {
+            "alarm_severity": 0,
+            "timestamp": 123.2,
+            "value": "super mode",
+        },
+        "sim_readable-mode2": {
+            "alarm_severity": 0,
+            "timestamp": 123.2,
+            "value": "slow mode",
+        },
+    }
+    await assert_configuration(sim_readable, dummy_config_reading)
+    # test for none awaitable part of verify
+    from ophyd.sim import DetWithConf
+
+    something = DetWithConf(name="det")
+    dummy_config_reading1 = {
+        "det_c": {"value": 3, "timestamp": 171},
+        "det_d": {"value": 4, "timestamp": 1753},
+    }
+
+    await assert_configuration(something, dummy_config_reading1)

@@ -259,7 +259,7 @@ def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> No
 
 async def verify(
     func: Callable[[], dict[str, Any] | Awaitable[dict[str, Any]]],
-    expectation: Any,  # Dict[str, Any],
+    expectation: Dict[str, Any],
 ) -> None:
     """verify readable"""
     if asyncio.iscoroutinefunction(func):
@@ -270,7 +270,7 @@ async def verify(
     for signal in expectation:
         for field in expectation[signal]:
             if field == "timestamp":
-                assert isinstance(result["sim_signal"]["timestamp"], float)
+                assert isinstance(result[signal]["timestamp"], float)
             else:
                 assert result[signal][field] == expectation[signal][field]
 
@@ -280,19 +280,23 @@ async def assert_value(signal: SignalR[T], value: T) -> None:
     assert await signal.get_value() == value
 
 
-async def assert_reading(readable: Readable, reading: Reading) -> None:
+async def assert_reading(
+    readable: Readable, reading: Dict[str, Reading] | dict[str, dict[str, Any]]
+) -> None:
     """assert reading"""
     await verify(readable.read, reading)
 
 
 async def assert_configuration(
-    configurable: Configurable, configuration: Reading
+    configurable: Configurable,
+    configuration: Dict[str, Reading] | dict[str, dict[str, Any]],
 ) -> None:
     """assert configuration"""
     await verify(configurable.read_configuration, configuration)
 
 
 def assert_emitted(docs: Dict[str, list], **numbers: int):
+    """assert emitted"""
     assert list(docs) == list(numbers)
     assert {name: len(d) for name, d in docs.items()} == numbers
 
