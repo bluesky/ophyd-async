@@ -5,15 +5,16 @@ import functools
 from typing import (
     Any,
     AsyncGenerator,
+    Awaitable,
     Callable,
     Dict,
     Generic,
     Optional,
-    Sequence,
     Union,
 )
 
 from bluesky.protocols import (
+    Configurable,
     Descriptor,
     Locatable,
     Location,
@@ -256,18 +257,22 @@ def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> No
     return _sim_backends[signal].set_callback(callback)
 
 
-async def verify_readable(
-    func: Readable | Dict[str, Any],
-    expected: Dict[str, Any],
+async def verify(
+    func: Callable[[], dict[str, Any] | Awaitable[dict[str, Any]]],
+    expectation: Any,  # Dict[str, Any],
 ) -> None:
     """verify readable"""
-    expectation = expected
+    if asyncio.iscoroutinefunction(func):
+        result = await func()
+    else:
+        result = func()
+
     for signal in expectation:
         for field in expectation[signal]:
             if field == "timestamp":
-                assert isinstance(func["sim_signal"]["timestamp"], float)
+                assert isinstance(result["sim_signal"]["timestamp"], float)
             else:
-                assert func[signal][field] == expectation[signal][field]
+                assert result[signal][field] == expectation[signal][field]
 
 
 async def assert_value(signal: SignalR[T], value: T) -> None:
@@ -277,14 +282,19 @@ async def assert_value(signal: SignalR[T], value: T) -> None:
 
 async def assert_reading(readable: Readable, reading: Reading) -> None:
     """assert reading"""
-    await verify_readable(readable, reading)
+    await verify(readable.read, reading)
 
 
 async def assert_configuration(
-    readable: Readable, configuration: Sequence[SignalR]
+    configurable: Configurable, configuration: Reading
 ) -> None:
     """assert configuration"""
-    await verify_readable(readable, configuration)
+    await verify(configurable.read_configuration, configuration)
+
+
+def assert_emitted(docs: Dict[str, list], **numbers: int):
+    assert list(docs) == list(numbers)
+    assert {name: len(d) for name, d in docs.items()} == numbers
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:

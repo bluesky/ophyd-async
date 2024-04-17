@@ -129,9 +129,14 @@ async def test_helper_funtion():
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, 168)
     await assert_value(sim_signal, 168)
-
-    dummy_readable = {
+    dummy_reading = {
         "sim_signal": {"alarm_severity": 0, "timestamp": 46709394.28, "value": 168}
     }
-    reading = await sim_signal.read()
-    await assert_reading(reading, dummy_readable)
+    await assert_reading(sim_signal, dummy_reading)
+    """    from ophyd_async.core.sim_signal_backend import SimConverter
+        simCon =SimConverter()
+        dummy_reading = simCon.reading(
+                value=168,
+                timestamp=46709394.28,
+                severity=0)
+                """
