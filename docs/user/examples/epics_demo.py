@@ -33,4 +33,5 @@ det_old = OldSensor(pv_prefix, name="det_old")
 # Create ophyd-async devices
 with DeviceCollector():
     det = demo.Sensor(pv_prefix)
+    det_group = demo.SensorGroup(pv_prefix)
     samp = demo.SampleStage(pv_prefix)

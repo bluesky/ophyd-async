@@ -64,27 +64,3 @@ completes. This co-routine is wrapped in a timeout handler, and passed to an
 `AsyncStatus` which will start executing it as soon as the Run Engine adds a
 callback to it. The ``stop()`` method then pokes a PV if the move needs to be
 interrupted. 
-
-Assembly
---------
-
-Compound assemblies can be used to group Devices into larger logical Devices:
-
-.. literalinclude:: ../../../src/ophyd_async/epics/demo/__init__.py
-   :pyobject: SampleStage
-
-This applies prefixes on construction:
-
-- SampleStage is passed a prefix like ``DEVICE:``
-- SampleStage.x will append its prefix ``X:`` to get ``DEVICE:X:``
-- SampleStage.x.velocity will append its suffix ``Velocity`` to get
-  ``DEVICE:X:Velocity``
-
-If SampleStage is further nested in another Device another layer of prefix
-nesting would occur
-
-.. note::
-
-   SampleStage does not pass any signals into its superclass init. This means
-   that its ``read()`` method will return an empty dictionary. This means you
-   can ``rd sample_stage.x``, but not ``rd sample_stage``.
