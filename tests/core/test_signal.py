@@ -56,6 +56,13 @@ async def test_set_sim_put_proceeds():
     assert sim_signal._backend.put_proceeds.is_set() is True
 
 
+async def test_signal_connect_fails_with_different_backend_on_connection():
+    sim_signal = Signal(SimSignalBackend(str, "test"))
+
+    with pytest.raises(ValueError):
+        await sim_signal.connect(sim=True, backend=SimSignalBackend(int, "test"))
+
+
 async def time_taken_by(coro) -> float:
     start = time.monotonic()
     await coro

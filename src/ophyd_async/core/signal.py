@@ -66,18 +66,18 @@ class Signal(Device, Generic[T]):
         timeout=DEFAULT_TIMEOUT,
         backend: Optional[SignalBackend[T]] = None,
     ):
+        if backend:
+            if self._init_backend and backend != self._init_backend:
+                raise ValueError(
+                    "Backend at connection different from initialised one."
+                )
+            self._init_backend = backend
         if sim:
             self._backend = SimSignalBackend(
                 datatype=self._init_backend.datatype, source=self._init_backend.source
             )
             _sim_backends[self] = self._backend
         else:
-            if backend:
-                if self._init_backend and backend != self._init_backend:
-                    raise ValueError(
-                        "Backend at connection different from initialised one."
-                    )
-                self._init_backend = backend
             self._backend = self._init_backend
             _sim_backends.pop(self, None)
         await self._backend.connect(timeout=timeout)
