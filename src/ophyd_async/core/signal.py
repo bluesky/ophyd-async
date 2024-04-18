@@ -45,7 +45,9 @@ class Signal(Device, Generic[T]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
 
     def __init__(
-        self, backend: Optional[SignalBackend[T]] = None, timeout: Optional[float] = DEFAULT_TIMEOUT
+        self,
+        backend: Optional[SignalBackend[T]] = None,
+        timeout: Optional[float] = DEFAULT_TIMEOUT,
     ) -> None:
         self._name = ""
         self._timeout = timeout
@@ -58,7 +60,12 @@ class Signal(Device, Generic[T]):
     def set_name(self, name: str = ""):
         self._name = name
 
-    async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT, backend: Optional[SignalBackend[T]] = None):
+    async def connect(
+        self,
+        sim=False,
+        timeout=DEFAULT_TIMEOUT,
+        backend: Optional[SignalBackend[T]] = None,
+    ):
         if sim:
             self._backend = SimSignalBackend(
                 datatype=self._init_backend.datatype, source=self._init_backend.source
