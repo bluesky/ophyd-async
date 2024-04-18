@@ -121,7 +121,7 @@ def test_async_device_connector_run_engine_same_event_loop():
 
 @pytest.mark.skip(
     reason=(
-        "SimSignalBackend currently allows a different event-"
+        "SoftSignalBackend currently allows a different event-"
         "loop to set the value, unlike real signals."
     )
 )

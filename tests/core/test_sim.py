@@ -8,7 +8,7 @@ import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
-from ophyd_async.core import Signal, SignalBackend, SimSignalBackend, T
+from ophyd_async.core import Signal, SignalBackend, SoftSignalBackend, T
 
 
 class MyEnum(str, Enum):
@@ -93,7 +93,7 @@ async def test_backend_get_put_monitor(
     put_value: T,
     descriptor: Callable[[Any], dict],
 ):
-    backend = SimSignalBackend(datatype, "")
+    backend = SoftSignalBackend(datatype, "")
 
     await backend.connect()
     q = MonitorQueue(backend)
@@ -115,13 +115,13 @@ async def test_backend_get_put_monitor(
 
 
 async def test_sim_backend_if_disconnected():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
+    sim_backend = SoftSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
     with pytest.raises(NotImplementedError):
         await sim_backend.get_value()
 
 
 async def test_sim_backend_with_numpy_typing():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
+    sim_backend = SoftSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
     await sim_backend.connect()
 
     array = await sim_backend.get_value()
@@ -133,7 +133,7 @@ async def test_sim_backend_descriptor_fails_for_invalid_class():
         def __init__(self) -> None:
             pass
 
-    sim_signal = Signal(SimSignalBackend(myClass, "test"))
+    sim_signal = Signal(SoftSignalBackend(myClass, "test"))
     await sim_signal.connect(sim=True)
 
     with pytest.raises(AssertionError):

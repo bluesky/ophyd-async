@@ -38,7 +38,7 @@ from .signal import (
     wait_for_value,
 )
 from .signal_backend import SignalBackend
-from .sim_signal_backend import SimSignalBackend
+from .soft_signal_backend import SoftSignalBackend
 from .standard_readable import StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
@@ -54,7 +54,7 @@ from .utils import (
 
 __all__ = [
     "SignalBackend",
-    "SimSignalBackend",
+    "SoftSignalBackend",
     "DetectorControl",
     "DetectorTrigger",
     "DetectorWriter",

@@ -16,7 +16,7 @@ from typing import (
     get_type_hints,
 )
 
-from ophyd_async.core import Device, DeviceVector, SimSignalBackend
+from ophyd_async.core import Device, DeviceVector, SoftSignalBackend
 from ophyd_async.core.signal import Signal
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics._backend._p4p import PvaSignalBackend
@@ -172,8 +172,8 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
 
         if is_device_vector:
             if is_signal:
-                sub_device_1 = device_cls(SimSignalBackend(signal_dtype, device_name))
-                sub_device_2 = device_cls(SimSignalBackend(signal_dtype, device_name))
+                sub_device_1 = device_cls(SoftSignalBackend(signal_dtype, device_name))
+                sub_device_2 = device_cls(SoftSignalBackend(signal_dtype, device_name))
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
             else:
                 sub_device = DeviceVector({1: device_cls(), 2: device_cls()})
@@ -185,7 +185,7 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
                 value.parent = sub_device
         else:
             if is_signal:
-                sub_device = device_cls(SimSignalBackend(signal_dtype, device_name))
+                sub_device = device_cls(SoftSignalBackend(signal_dtype, device_name))
             else:
                 sub_device = device_cls()
 

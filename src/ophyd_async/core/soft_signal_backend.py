@@ -22,7 +22,7 @@ primitive_dtypes: Dict[type, Dtype] = {
 }
 
 
-class SimConverter(Generic[T]):
+class SoftConverter(Generic[T]):
     def value(self, value: T) -> T:
         return value
 
@@ -50,7 +50,7 @@ class SimConverter(Generic[T]):
         return datatype()
 
 
-class SimArrayConverter(SimConverter):
+class SoftArrayConverter(SoftConverter):
     def descriptor(self, source: str, value) -> Descriptor:
         return {"source": source, "dtype": "array", "shape": [len(value)]}
 
@@ -65,7 +65,7 @@ class SimArrayConverter(SimConverter):
 
 
 @dataclass
-class SimEnumConverter(SimConverter):
+class SoftEnumConverter(SoftConverter):
     enum_class: Type[Enum]
 
     def write_value(self, value: Union[Enum, str]) -> Enum:
@@ -85,7 +85,7 @@ class SimEnumConverter(SimConverter):
         return cast(T, list(datatype.__members__.values())[0])  # type: ignore
 
 
-class DisconnectedSimConverter(SimConverter):
+class DisconnectedSoftConverter(SoftConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
 
@@ -96,14 +96,14 @@ def make_converter(datatype):
     is_enum = issubclass(datatype, Enum) if inspect.isclass(datatype) else False
 
     if is_array or is_sequence:
-        return SimArrayConverter()
+        return SoftArrayConverter()
     if is_enum:
-        return SimEnumConverter(datatype)
+        return SoftEnumConverter(datatype)
 
-    return SimConverter()
+    return SoftConverter()
 
 
-class SimSignalBackend(SignalBackend[T]):
+class SoftSignalBackend(SignalBackend[T]):
     """An simulated backend to a Signal, created with ``Signal.connect(sim=True)``"""
 
     _value: T
@@ -116,7 +116,7 @@ class SimSignalBackend(SignalBackend[T]):
         self.source = f"sim://{pv}"
         self.datatype = datatype
         self.pv = source
-        self.converter: SimConverter = DisconnectedSimConverter()
+        self.converter: SoftConverter = DisconnectedSoftConverter()
         self.put_proceeds = asyncio.Event()
         self.put_proceeds.set()
         self.callback: Optional[ReadingValueCallback[T]] = None

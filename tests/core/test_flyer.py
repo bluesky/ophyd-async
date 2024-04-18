@@ -16,7 +16,7 @@ from ophyd_async.core import (
     DetectorWriter,
     HardwareTriggeredFlyable,
     SignalRW,
-    SimSignalBackend,
+    SoftSignalBackend,
     TriggerInfo,
     TriggerLogic,
 )
@@ -51,7 +51,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int, source="test"))
+        self.dummy_signal = SignalRW(backend=SoftSignalBackend(int, source="test"))
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None

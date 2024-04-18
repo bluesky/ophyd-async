@@ -24,7 +24,7 @@ from event_model import (
 
 from ophyd_async.core import DirectoryInfo, DirectoryProvider
 from ophyd_async.core.signal import SignalR, observe_value
-from ophyd_async.core.sim_signal_backend import SimSignalBackend
+from ophyd_async.core.soft_signal_backend import SoftSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
@@ -158,7 +158,7 @@ class PatternGenerator:
         self.written_images_counter: int = 0
 
         # it automatically initializes to 0
-        self.signal_backend = SimSignalBackend(int, "sim://sim_images_counter")
+        self.signal_backend = SoftSignalBackend(int, "sim://sim_images_counter")
         self.sim_signal = SignalR(self.signal_backend)
         blob = np.array(
             generate_gaussian_blob(width=detector_width, height=detector_height)

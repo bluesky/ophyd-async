@@ -7,7 +7,7 @@ import pytest
 from ophyd_async.core import (
     Signal,
     SignalRW,
-    SimSignalBackend,
+    SoftSignalBackend,
     set_and_wait_for_value,
     set_sim_put_proceeds,
     set_sim_value,
@@ -26,7 +26,7 @@ class MySignal(Signal):
 
 
 def test_signals_equality_raises():
-    sim_backend = SimSignalBackend(str, "test")
+    sim_backend = SoftSignalBackend(str, "test")
 
     s1 = MySignal(sim_backend)
     s2 = MySignal(sim_backend)
@@ -45,7 +45,7 @@ def test_signals_equality_raises():
 
 
 async def test_set_sim_put_proceeds():
-    sim_signal = Signal(SimSignalBackend(str, "test"))
+    sim_signal = Signal(SoftSignalBackend(str, "test"))
     await sim_signal.connect(sim=True)
 
     assert sim_signal._backend.put_proceeds.is_set() is True
@@ -63,7 +63,7 @@ async def time_taken_by(coro) -> float:
 
 
 async def test_wait_for_value_with_value():
-    sim_signal = SignalRW(SimSignalBackend(str, "test"))
+    sim_signal = SignalRW(SoftSignalBackend(str, "test"))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, "blah")
@@ -84,7 +84,7 @@ async def test_wait_for_value_with_value():
 
 
 async def test_wait_for_value_with_funcion():
-    sim_signal = SignalRW(SimSignalBackend(float, "test"))
+    sim_signal = SignalRW(SoftSignalBackend(float, "test"))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, 45.8)
@@ -110,7 +110,7 @@ async def test_wait_for_value_with_funcion():
 
 
 async def test_set_and_wait_for_value():
-    sim_signal = SignalRW(SimSignalBackend(int, "test"))
+    sim_signal = SignalRW(SoftSignalBackend(int, "test"))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, 0)

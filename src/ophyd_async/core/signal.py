@@ -18,10 +18,10 @@ from bluesky.protocols import (
 from .async_status import AsyncStatus
 from .device import Device
 from .signal_backend import SignalBackend
-from .sim_signal_backend import SimSignalBackend
+from .soft_signal_backend import SoftSignalBackend
 from .utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
 
-_sim_backends: Dict[Signal, SimSignalBackend] = {}
+_sim_backends: Dict[Signal, SoftSignalBackend] = {}
 
 
 def _add_timeout(func):
@@ -60,7 +60,7 @@ class Signal(Device, Generic[T]):
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
-            self._backend = SimSignalBackend(
+            self._backend = SoftSignalBackend(
                 datatype=self._init_backend.datatype, source=self._init_backend.source
             )
             _sim_backends[self] = self._backend

@@ -7,7 +7,7 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     SignalR,
-    SimSignalBackend,
+    SoftSignalBackend,
     StaticDirectoryProvider,
     set_sim_value,
 )
@@ -30,10 +30,10 @@ async def sim_panda() -> PandA:
         sim_panda.block1 = Device("BLOCK1")  # type: ignore[attr-defined]
         sim_panda.block2 = Device("BLOCK2")  # type: ignore[attr-defined]
         sim_panda.block1.test_capture = SignalRW(  # type: ignore[attr-defined]
-            backend=SimSignalBackend(str, source="BLOCK1_capture")
+            backend=SoftSignalBackend(str, source="BLOCK1_capture")
         )
         sim_panda.block2.test_capture = SignalRW(  # type: ignore[attr-defined]
-            backend=SimSignalBackend(str, source="BLOCK2_capture")
+            backend=SoftSignalBackend(str, source="BLOCK2_capture")
         )
 
     await asyncio.gather(
@@ -70,10 +70,10 @@ async def test_get_capture_signals_gets_all_signals(sim_panda):
     async with DeviceCollector(sim=True):
         sim_panda.test_seq = Device("seq")
         sim_panda.test_seq.seq1_capture = SignalR(
-            backend=SimSignalBackend(str, source="seq1_capture")
+            backend=SoftSignalBackend(str, source="seq1_capture")
         )
         sim_panda.test_seq.seq2_capture = SignalR(
-            backend=SimSignalBackend(str, source="seq2_capture")
+            backend=SoftSignalBackend(str, source="seq2_capture")
         )
         await asyncio.gather(
             sim_panda.test_seq.connect(),
@@ -181,7 +181,7 @@ async def test_numeric_blocks_correctly_formated(sim_writer: PandaHDFWriter):
     async def get_numeric_signal(_):
         return {
             "device.block.1": CaptureSignalWrapper(
-                SignalR(backend=SimSignalBackend(str, source="test_signal")),
+                SignalR(backend=SoftSignalBackend(str, source="test_signal")),
                 Capture.Value,
             )
         }

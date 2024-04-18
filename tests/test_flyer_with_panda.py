@@ -14,7 +14,7 @@ from ophyd_async.core import (
     DetectorWriter,
     HardwareTriggeredFlyable,
     SignalRW,
-    SimSignalBackend,
+    SoftSignalBackend,
 )
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
@@ -28,7 +28,7 @@ from ophyd_async.planstubs import (
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int, source="test"))
+        self.dummy_signal = SignalRW(backend=SoftSignalBackend(int, source="test"))
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None

@@ -7,13 +7,13 @@ from ophyd_async.core import (
     DirectoryInfo,
     NotConnected,
     SignalRW,
-    SimSignalBackend,
+    SoftSignalBackend,
     StaticDirectoryProvider,
 )
 from ophyd_async.epics.signal import epics_signal_rw
 
 
-class ValueErrorBackend(SimSignalBackend):
+class ValueErrorBackend(SoftSignalBackend):
     def __init__(self, exc_text=""):
         self.exc_text = exc_text
         super().__init__(int, "VALUE_ERROR_SIGNAL")
@@ -24,7 +24,7 @@ class ValueErrorBackend(SimSignalBackend):
 
 class WorkingDummyChildDevice(Device):
     def __init__(self, name: str = "working_dummy_child_device") -> None:
-        self.working_signal = SignalRW(backend=SimSignalBackend(int, "WORKING_SIGNAL"))
+        self.working_signal = SignalRW(backend=SoftSignalBackend(int, "WORKING_SIGNAL"))
         super().__init__(name=name)
 
 
