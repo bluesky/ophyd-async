@@ -97,10 +97,10 @@ class DummyWriter(DetectorWriter):
                 yield "stream_resource", self._file.stream_resource_doc
 
             if indices_written >= self._last_emitted:
-                indices = dict(
-                    start=self._last_emitted,
-                    stop=indices_written,
-                )
+                indices = {
+                    "start": self._last_emitted,
+                    "stop": indices_written,
+                }
                 self._last_emitted = indices_written
                 self._last_flush = time.monotonic()
                 yield "stream_datum", self._file.compose_stream_datum(indices)

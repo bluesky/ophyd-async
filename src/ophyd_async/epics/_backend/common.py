@@ -15,6 +15,4 @@ def get_supported_enum_class(
         choices = tuple(v.value for v in datatype)
         if set(choices).difference(pv_choices):
             raise TypeError(f"{pv} has choices {pv_choices}: not all in {choices}")
-    return Enum(
-        "GeneratedChoices", {x or "_": x for x in pv_choices}, type=str
-    )  # type: ignore
+    return Enum("GeneratedChoices", {x or "_": x for x in pv_choices}, type=str)  # type: ignore

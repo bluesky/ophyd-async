@@ -49,15 +49,15 @@ class PvaConverter:
     def reading(self, value):
         ts = value["timeStamp"]
         sv = value["alarm"]["severity"]
-        return dict(
-            value=self.value(value),
-            timestamp=ts["secondsPastEpoch"] + ts["nanoseconds"] * 1e-9,
-            alarm_severity=-1 if sv > 2 else sv,
-        )
+        return {
+            "value": self.value(value),
+            "timestamp": ts["secondsPastEpoch"] + ts["nanoseconds"] * 1e-9,
+            "alarm_severity": -1 if sv > 2 else sv,
+        }
 
     def descriptor(self, source: str, value) -> Descriptor:
         dtype = specifier_to_dtype[value.type().aspy("value")]
-        return dict(source=source, dtype=dtype, shape=[])
+        return {"source": source, "dtype": dtype, "shape": []}
 
     def metadata_fields(self) -> List[str]:
         """
@@ -74,7 +74,7 @@ class PvaConverter:
 
 class PvaArrayConverter(PvaConverter):
     def descriptor(self, source: str, value) -> Descriptor:
-        return dict(source=source, dtype="array", shape=[len(value["value"])])
+        return {"source": source, "dtype": "array", "shape": [len(value["value"])]}
 
 
 class PvaNDArrayConverter(PvaConverter):
@@ -98,7 +98,7 @@ class PvaNDArrayConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         dims = self._get_dimensions(value)
-        return dict(source=source, dtype="array", shape=dims)
+        return {"source": source, "dtype": "array", "shape": dims}
 
     def write_value(self, value):
         # No clear use-case for writing directly to an NDArray, and some
@@ -122,7 +122,7 @@ class PvaEnumConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(source=source, dtype="string", shape=[], choices=choices)
+        return {"source": source, "dtype": "string", "shape": [], "choices": choices}
 
 
 class PvaEnumBoolConverter(PvaConverter):
@@ -130,7 +130,7 @@ class PvaEnumBoolConverter(PvaConverter):
         return value["value"]["index"]
 
     def descriptor(self, source: str, value) -> Descriptor:
-        return dict(source=source, dtype="integer", shape=[])
+        return {"source": source, "dtype": "integer", "shape": []}
 
 
 class PvaTableConverter(PvaConverter):
@@ -139,7 +139,7 @@ class PvaTableConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         # This is wrong, but defer until we know how to actually describe a table
-        return dict(source=source, dtype="object", shape=[])  # type: ignore
+        return {"source": source, "dtype": "object", "shape": []}  # type: ignore
 
 
 class PvaDictConverter(PvaConverter):
@@ -147,7 +147,7 @@ class PvaDictConverter(PvaConverter):
         ts = time.time()
         value = value.todict()
         # Alarm severity is vacuously 0 for a table
-        return dict(value=value, timestamp=ts, alarm_severity=0)
+        return {"value": value, "timestamp": ts, "alarm_severity": 0}
 
     def value(self, value: Value):
         return value.todict()
@@ -279,7 +279,7 @@ class PvaSignalBackend(SignalBackend[T]):
             write_value = self.initial_values[self.write_pv]
         else:
             write_value = self.converter.write_value(value)
-        coro = self.ctxt.put(self.write_pv, dict(value=write_value), wait=wait)
+        coro = self.ctxt.put(self.write_pv, {"value": write_value}, wait=wait)
         try:
             await asyncio.wait_for(coro, timeout)
         except asyncio.TimeoutError as exc:

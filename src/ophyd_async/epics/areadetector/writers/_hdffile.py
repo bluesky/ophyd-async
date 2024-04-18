@@ -44,10 +44,10 @@ class _HDFFile:
     def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
         # Indices are relative to resource
         if indices_written > self._last_emitted:
-            indices = dict(
-                start=self._last_emitted,
-                stop=indices_written,
-            )
+            indices = {
+                "start": self._last_emitted,
+                "stop": indices_written,
+            }
             self._last_emitted = indices_written
             for bundle in self._bundles:
                 yield bundle.compose_stream_datum(indices)
