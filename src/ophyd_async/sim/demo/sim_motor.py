@@ -23,16 +23,12 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         self._move_task: Optional[asyncio.Task] = None
 
         # Define some signals
-        self.user_setpoint = soft_signal_rw(
-            float, "user_setpoint", prefix + ".setpoint", initial_value=0
-        )
+        self.user_setpoint = soft_signal_rw(float, prefix + "user_setpoint", 0)
         self.user_readback, self._user_readback = soft_signal_r_and_backend(
-            float, "user_readback", prefix + ".readback", initial_value=0
+            float, prefix + "user_readback", 0
         )
-        self.velocity = soft_signal_rw(
-            float, "velocity", prefix + ".velocity", initial_value=1.0
-        )
-        self.egu = soft_signal_rw(float, "egu", prefix + ".egu", initial_value="mm")
+        self.velocity = soft_signal_rw(float, prefix + "velocity", 1.0)
+        self.egu = soft_signal_rw(float, prefix + "egu", "mm")
 
         # Set name and signals for read() and read_configuration()
         self.set_readable_signals(
