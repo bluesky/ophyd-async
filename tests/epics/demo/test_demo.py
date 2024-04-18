@@ -9,6 +9,8 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
+    assert_reading,
+    assert_value,
     set_sim_callback,
     set_sim_value,
 )
@@ -84,7 +86,8 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
-    assert 0.55 == await sim_mover.setpoint.get_value()
+
+    await assert_value(sim_mover.setpoint, 0.55)
     assert not s.done
     done.assert_not_called()
     await asyncio.sleep(0.1)
@@ -110,24 +113,30 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
 
 async def test_sensor_reading_shows_value(sim_sensor: demo.Sensor):
     # Check default value
+    await assert_value(sim_sensor.value, pytest.approx(0.0))
     assert (await sim_sensor.value.get_value()) == pytest.approx(0.0)
-    assert (await sim_sensor.read()) == {
-        "sim_sensor-value": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": 0.0,
-        }
-    }
-
+    await assert_reading(
+        sim_sensor,
+        {
+            "sim_sensor-value": {
+                "value": 0.0,
+                "alarm_severity": 0,
+                "timestamp": ANY,
+            }
+        },
+    )
     # Check different value
     set_sim_value(sim_sensor.value, 5.0)
-    assert (await sim_sensor.read()) == {
-        "sim_sensor-value": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": 5.0,
-        }
-    }
+    await assert_reading(
+        sim_sensor,
+        {
+            "sim_sensor-value": {
+                "value": 5.0,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
 
 
 async def test_mover_stopped(sim_mover: demo.Mover):
@@ -254,9 +263,28 @@ async def test_dynamic_sensor_group_read_and_describe(
 
     await sim_sensor_group.stage()
     description = await sim_sensor_group.describe()
-    reading = await sim_sensor_group.read()
-    await sim_sensor_group.unstage()
 
+    await sim_sensor_group.unstage()
+    await assert_reading(
+        sim_sensor_group,
+        {
+            "sim_sensor_group-sensors-1-value": {
+                "value": 0.0,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "sim_sensor_group-sensors-2-value": {
+                "value": 0.5,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "sim_sensor_group-sensors-3-value": {
+                "value": 1.0,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+        },
+    )
     assert description == {
         "sim_sensor_group-sensors-1-value": {
             "dtype": "number",
@@ -272,23 +300,6 @@ async def test_dynamic_sensor_group_read_and_describe(
             "dtype": "number",
             "shape": [],
             "source": "sim://SIM:SENSOR:3:Value",
-        },
-    }
-    assert reading == {
-        "sim_sensor_group-sensors-1-value": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": 0.0,
-        },
-        "sim_sensor_group-sensors-2-value": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": 0.5,
-        },
-        "sim_sensor_group-sensors-3-value": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": 1.0,
         },
     }
 

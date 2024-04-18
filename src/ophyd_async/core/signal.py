@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import functools
 from typing import (
+    Any,
     AsyncGenerator,
     Awaitable,
     Callable,
@@ -293,7 +294,7 @@ async def _verify_readings(
         assert result[signal] == expectation[signal]
 
 
-async def assert_value(signal: SignalR[T], value: T) -> None:
+async def assert_value(signal: SignalR[T], value: Any) -> None:
     """Assert a signal's value and compare it an expected signal.
 
     Parameters
@@ -312,7 +313,7 @@ async def assert_value(signal: SignalR[T], value: T) -> None:
     assert await signal.get_value() == value
 
 
-async def assert_reading(readable: Readable, reading: Dict[str, Reading]) -> None:
+async def assert_reading(readable: Readable, reading: Mapping[str, Reading]) -> None:
     """Assert readings from readable.
 
     Parameters
