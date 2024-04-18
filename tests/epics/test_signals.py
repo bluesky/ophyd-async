@@ -322,7 +322,10 @@ class EnumNoString(Enum):
         (
             BadEnum,
             "enum",
-            "has choices ('Aaa', 'Bbb', 'Ccc'): not all in ('Aaa', 'B', 'Ccc')",
+            (
+                "has choices ('Aaa', 'Bbb', 'Ccc'), which do not match "
+                "<enum 'BadEnum'>, which has ('Aaa', 'B', 'Ccc')"
+            ),
         ),
         (int, "str", "has type str not int"),
         (str, "float", "has type float not str"),
