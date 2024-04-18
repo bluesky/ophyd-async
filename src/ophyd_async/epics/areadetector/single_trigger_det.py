@@ -3,7 +3,13 @@ from typing import Sequence
 
 from bluesky.protocols import Triggerable
 
-from ophyd_async.core import AsyncStatus, SignalR, StandardReadable
+from ophyd_async.core import (
+    AsyncStatus,
+    ConfigSignal,
+    HintedSignal,
+    SignalR,
+    StandardReadable,
+)
 
 from .drivers.ad_base import ADBase
 from .utils import ImageMode
@@ -20,12 +26,13 @@ class SingleTriggerDet(StandardReadable, Triggerable):
     ) -> None:
         self.drv = drv
         self.__dict__.update(plugins)
-        self.set_readable_signals(
-            # Can't subscribe to read signals as race between monitor coming back and
-            # caput callback on acquire
-            read_uncached=[self.drv.array_counter] + list(read_uncached),
-            config=[self.drv.acquire_time],
+
+        self.add_readables(
+            HintedSignal.uncached, self.drv.array_counter, *read_uncached
         )
+
+        self.add_readables(ConfigSignal, self.drv.acquire_time)
+
         super().__init__(name=name)
 
     @AsyncStatus.wrap

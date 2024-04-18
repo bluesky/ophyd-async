@@ -16,8 +16,10 @@ from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
     AsyncStatus,
+    ConfigSignal,
     Device,
     DeviceVector,
+    HintedSignal,
     StandardReadable,
     observe_value,
 )
@@ -39,13 +41,11 @@ class Sensor(StandardReadable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        self.value = epics_signal_r(float, prefix + "Value")
-        self.mode = epics_signal_rw(EnergyMode, prefix + "Mode")
-        # Set name and signals for read() and read_configuration()
-        self.set_readable_signals(
-            read=[self.value],
-            config=[self.mode],
-        )
+        with self.add_children_as_readables(HintedSignal):
+            self.value = epics_signal_r(float, prefix + "Value")
+        with self.add_children_as_readables(ConfigSignal):
+            self.mode = epics_signal_rw(EnergyMode, prefix + "Mode")
+
         super().__init__(name=name)
 
 
@@ -56,8 +56,9 @@ class SensorGroup(StandardReadable):
         )
 
         # Makes read() produce the values of all sensors
-        self.set_readable_signals(
-            read=[sensor.value for sensor in self.sensors.values()],
+        self.add_readables(
+            [sensor.value for sensor in self.sensors.values()],
+            HintedSignal,
         )
         super().__init__(name)
 
@@ -68,19 +69,18 @@ class Mover(StandardReadable, Movable, Stoppable):
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
         self.setpoint = epics_signal_rw(float, prefix + "Setpoint")
-        self.readback = epics_signal_r(float, prefix + "Readback")
-        self.velocity = epics_signal_rw(float, prefix + "Velocity")
-        self.units = epics_signal_r(str, prefix + "Readback.EGU")
         self.precision = epics_signal_r(int, prefix + "Readback.PREC")
         # Signals that collide with standard methods should have a trailing underscore
         self.stop_ = epics_signal_x(prefix + "Stop.PROC")
         # Whether set() should complete successfully or not
         self._set_success = True
-        # Set name and signals for read() and read_configuration()
-        self.set_readable_signals(
-            read=[self.readback],
-            config=[self.velocity, self.units],
-        )
+
+        with self.add_children_as_readables(HintedSignal):
+            self.readback = epics_signal_r(float, prefix + "Readback")
+        with self.add_children_as_readables(ConfigSignal):
+            self.velocity = epics_signal_rw(float, prefix + "Velocity")
+            self.units = epics_signal_r(str, prefix + "Readback.EGU")
+
         super().__init__(name=name)
 
     def set_name(self, name: str):

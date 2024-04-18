@@ -4,7 +4,7 @@ from typing import Callable, List, Optional
 
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import AsyncStatus, StandardReadable
+from ophyd_async.core import AsyncStatus, ConfigSignal, HintedSignal, StandardReadable
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -15,25 +15,24 @@ class Motor(StandardReadable, Movable, Stoppable):
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
         self.user_setpoint = epics_signal_rw(float, prefix + ".VAL")
-        self.user_readback = epics_signal_r(float, prefix + ".RBV")
-        self.velocity = epics_signal_rw(float, prefix + ".VELO")
         self.max_velocity = epics_signal_r(float, prefix + ".VMAX")
         self.acceleration_time = epics_signal_rw(float, prefix + ".ACCL")
-        self.motor_egu = epics_signal_r(str, prefix + ".EGU")
         self.precision = epics_signal_r(int, prefix + ".PREC")
         self.deadband = epics_signal_r(float, prefix + ".RDBD")
         self.motor_done_move = epics_signal_r(float, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(int, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(int, prefix + ".HLM")
 
+        with self.add_children_as_readables(ConfigSignal):
+            self.motor_egu = epics_signal_r(str, prefix + ".EGU")
+            self.velocity = epics_signal_rw(float, prefix + ".VELO")
+
+        with self.add_children_as_readables(HintedSignal):
+            self.user_readback = epics_signal_r(float, prefix + ".RBV")
+
         self.motor_stop = epics_signal_x(prefix + ".STOP")
         # Whether set() should complete successfully or not
         self._set_success = True
-        # Set name and signals for read() and read_configuration()
-        self.set_readable_signals(
-            read=[self.user_readback],
-            config=[self.velocity, self.motor_egu],
-        )
         super().__init__(name=name)
 
     def set_name(self, name: str):

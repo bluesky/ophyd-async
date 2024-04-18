@@ -7,6 +7,7 @@ from bluesky.protocols import Movable, Stoppable
 from ophyd_async.core import StandardReadable
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.signal import soft_signal_r_and_backend, soft_signal_rw
+from ophyd_async.core.standard_readable import ConfigSignal, HintedSignal
 
 
 class SimMotor(StandardReadable, Movable, Stoppable):
@@ -24,15 +25,14 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
         # Define some signals
         self.user_setpoint = soft_signal_rw(float, 0)
-        self.user_readback, self._user_readback = soft_signal_r_and_backend(float, 0)
-        self.velocity = soft_signal_rw(float, 1.0)
-        self.egu = soft_signal_rw(float, "mm")
 
-        # Set name and signals for read() and read_configuration()
-        self.set_readable_signals(
-            read=[self.user_readback],
-            config=[self.velocity, self.egu],
-        )
+        self.user_readback, self._user_readback = soft_signal_r_and_backend(float, 0)
+        self.add_readables([self.user_readback], HintedSignal)
+
+        with self.add_children_as_readables(ConfigSignal):
+            self.velocity = soft_signal_rw(float, 1.0)
+            self.egu = soft_signal_rw(float, "mm")
+
         super().__init__(name=name)
 
         # Whether set() should complete successfully or not
