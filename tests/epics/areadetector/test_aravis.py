@@ -77,10 +77,31 @@ async def test_deadtime_read_from_file(
     set_sim_value(adaravis.drv.model, model)
     set_sim_value(adaravis.drv.pixel_format, pixel_format)
 
-    await adaravis.drv._fetch_deadtime()
+    await adaravis.drv.fetch_deadtime()
     # deadtime invariant with exposure time
     assert adaravis.controller.get_deadtime(0) == deadtime
     assert adaravis.controller.get_deadtime(500) == deadtime
+
+
+@pytest.mark.parametrize(
+    "model,pixel_format",
+    [("UnknownCamera", None), ("Mako G-040", "UnknownFormat")],
+)
+async def test_unknown_deadtime_read_from_file(
+    model: str,
+    pixel_format: str,
+    adaravis: ADAravisDetector,
+):
+    set_sim_value(adaravis.drv.model, model)
+    set_sim_value(adaravis.drv.pixel_format, pixel_format)
+    expected_error = (
+        f"Aravis model {model} deadtimes not known"
+        if pixel_format is None
+        else f"Aravis model {model} deadtime not known for pixel_format {pixel_format}"
+    )
+
+    with pytest.raises(ValueError, match=expected_error):
+        await adaravis.drv.fetch_deadtime()
 
 
 async def test_trigger_source_set_to_gpio_line(adaravis: ADAravisDetector):

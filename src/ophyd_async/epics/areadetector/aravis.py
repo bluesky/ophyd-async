@@ -1,6 +1,7 @@
 from typing import get_args
 
 from bluesky.protocols import HasHints, Hints
+
 from ophyd_async.core import (
     DirectoryProvider,
     StandardDetector,
@@ -52,7 +53,7 @@ class ADAravisDetector(StandardDetector, HasHints):
         )
 
     async def _prepare(self, value: TriggerInfo) -> None:
-        await self.drv._fetch_deadtime()
+        await self.drv.fetch_deadtime()
         await super()._prepare(value)
 
     def get_external_trigger_gpio(self):

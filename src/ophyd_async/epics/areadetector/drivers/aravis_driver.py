@@ -33,12 +33,14 @@ class ADAravisTriggerSource(str, Enum):
     line_4 = "Line4"
 
 
-def _reverse_lookup(model_deadtimes: Dict[float, Tuple[str, ...]]) -> Callable[[str], float]:
+def _reverse_lookup(
+    model_deadtimes: Dict[float, Tuple[str, ...]],
+) -> Callable[[str], float]:
     def inner(pixel_format: str) -> float:
         for deadtime, pixel_formats in model_deadtimes.items():
             if pixel_format in pixel_formats:
                 return deadtime
-        return nan
+        None
 
     return inner
 
@@ -150,8 +152,15 @@ class ADAravisDriver(ADBase):
         self.dead_time: Optional[float] = None
         super().__init__(prefix, name=name)
 
-    async def _fetch_deadtime(self) -> float:
+    async def fetch_deadtime(self) -> float:
         # All known in-use version B/C have same deadtime as non-B/C
         model: str = (await self.model.get_value()).removesuffix("B").removesuffix("C")
         pixel_format: str = await self.pixel_format.get_value()
-        self.dead_time = _deadtimes.get(model, lambda _: nan)(pixel_format)
+        if model not in _deadtimes:
+            raise ValueError(f"Aravis model {model} deadtimes not known")
+        deadtime = _deadtimes[model](pixel_format)
+        if deadtime is None:
+            raise ValueError(
+                f"Aravis model {model} deadtime not known for pixel_format {pixel_format}"
+            )
+        self.dead_time = deadtime

@@ -1,7 +1,6 @@
 from .panda import PandA, PcapBlock, PulseBlock, SeqBlock, SeqTable, TimeUnits
 from .panda_controller import PandaPcapController
 from .table import (
-    SeqTable,
     SeqTableRow,
     SeqTrigger,
     seq_table_from_arrays,
