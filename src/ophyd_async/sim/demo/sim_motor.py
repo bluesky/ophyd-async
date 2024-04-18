@@ -44,13 +44,15 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         # Whether set() should complete successfully or not
         self._set_success = True
 
-    def stop(self):
+    def stop(self, success=False):
         """
         Stop the motor if it is moving
         """
         if self._move_task:
             self._move_task.cancel()
             self._move_task = None
+
+        self._set_success = success
 
     def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:  # noqa: F821
         """
