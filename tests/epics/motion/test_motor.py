@@ -47,7 +47,7 @@ async def wait_for_eq(item, attribute, comparison, timeout):
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_sim_put_proceeds(sim_motor.user_setpoint, False)
     set_sim_value(sim_motor.motor_done_move, False)
-    s = sim_motor.set(0.55, timeout_s=1)
+    s = sim_motor.set(0.55, timeout=1)
     watcher = Mock(spec=Watcher)
     s.watch(watcher)
     done = Mock()

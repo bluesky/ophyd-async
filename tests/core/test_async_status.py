@@ -50,13 +50,17 @@ async def test_async_status_has_no_exception_if_coroutine_successful(normal_coro
 
 
 async def test_async_status_success_if_cancelled(normal_coroutine):
-    status = AsyncStatus(normal_coroutine())
+    coro = normal_coroutine()
+    status = AsyncStatus(coro)
     assert status.exception() is None
     status.task.cancel()
     with pytest.raises(asyncio.CancelledError):
         await status
     assert status.success is False
     assert isinstance(status.exception(), asyncio.CancelledError)
+    # asyncio will RuntimeWarning us about this never being awaited if we don't.
+    # RunEngine handled this as a special case
+    await coro
 
 
 async def coroutine_to_wrap(time: float):
@@ -122,7 +126,7 @@ class FailingMovable(Movable, Device):
 
 
 async def test_status_propogates_traceback_under_RE(RE) -> None:
-    expected_call_stack = ["_set", "_fail"]
+    expected_call_stack = ["wait_for", "_set", "_fail"]
     d = FailingMovable()
     with pytest.raises(FailedStatus) as ctx:
         RE(bps.mv(d, 3))

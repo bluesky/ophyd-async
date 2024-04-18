@@ -66,7 +66,7 @@ class TWatcher:
 class ASTestDevice(StandardReadable, Movable):
     def __init__(self, name: str = "") -> None:
         self._staged: bool = False
-        self.sig = SignalR(backend=SimSignalBackend(datatype=int, source="sim:TEST"))
+        self.sig = SignalR(backend=SimSignalBackend(datatype=int))
         super().__init__(name)
 
     @AsyncStatus.wrap
@@ -85,7 +85,7 @@ class ASTestDeviceSingleSet(ASTestDevice):
 
 class ASTestDeviceTimeoutSet(ASTestDevice):
     @WatchableAsyncStatus.wrap
-    async def set(self, val, timeout_s=0.01):
+    async def set(self, val, timeout=0.01):
         assert self._staged
         await asyncio.sleep(0.01)
         self.sig._backend._set_value(val - 1)  # type: ignore
@@ -231,8 +231,8 @@ async def test_asyncstatus_times_out(RE):
     td = ASTestDeviceTimeoutSet()
     await td.connect()
     await td.stage()
-    st = td.set(6, timeout_s=0.01)
+    st = td.set(6, timeout=0.01)
     while not st.done:
         await asyncio.sleep(0.01)
     assert not st.success
-    assert isinstance(st.exception(), TimeoutError)
+    assert isinstance(st.exception(), asyncio.TimeoutError)

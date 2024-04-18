@@ -71,7 +71,7 @@ class Motor(StandardReadable, Movable, Stoppable):
         call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
 
     @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float, timeout_s: float = 0.0):
+    async def set(self, new_position: float, timeout: float = 0.0):
         update = await self._move(new_position)
         start = time.monotonic()
         async for current_position in observe_value(self.user_readback):

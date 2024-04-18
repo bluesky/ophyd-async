@@ -300,10 +300,10 @@ class StandardDetector(
             exposure=self._trigger_info.livetime,
         )
 
-    def kickoff(self, timeout_s=0.0):
+    def kickoff(self, timeout: Optional[float] = None):
         self._fly_start = time.monotonic()
         self._fly_status = WatchableAsyncStatus(
-            self._observe_writer_indicies(self._last_frame), timeout_s
+            self._observe_writer_indicies(self._last_frame), timeout
         )
         return self._fly_status
 
