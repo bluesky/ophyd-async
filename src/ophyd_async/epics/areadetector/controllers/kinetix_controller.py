@@ -9,7 +9,7 @@ from ophyd_async.epics.areadetector.drivers.ad_base import (
 )
 
 from ..drivers.kinetix_driver import KinetixDriver, KinetixTriggerMode
-from ..utils import ImageMode
+from ..utils import ImageMode, stop_busy_record
 
 KINETIX_TRIGGER_MODE_MAP = {
     DetectorTrigger.internal: KinetixTriggerMode.internal,
@@ -25,7 +25,7 @@ class KinetixController(DetectorControl):
         driver: KinetixDriver,
         good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES),
     ) -> None:
-        self.driver = driver
+        self._drv = driver
         self.good_states = good_states
 
     def get_deadtime(self, exposure: float) -> float:
@@ -38,18 +38,18 @@ class KinetixController(DetectorControl):
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         await asyncio.gather(
-            self.driver.trigger_mode.set(KINETIX_TRIGGER_MODE_MAP[trigger]),
-            self.driver.num_images.set(num),
-            self.driver.image_mode.set(ImageMode.multiple),
+            self._drv.trigger_mode.set(KINETIX_TRIGGER_MODE_MAP[trigger]),
+            self._drv.num_images.set(num),
+            self._drv.image_mode.set(ImageMode.multiple),
         )
         if exposure is not None and trigger not in [
             DetectorTrigger.variable_gate,
             DetectorTrigger.constant_gate,
         ]:
-            await self.driver.acquire_time.set(exposure)
+            await self._drv.acquire_time.set(exposure)
         return await start_acquiring_driver_and_ensure_status(
-            self.driver, good_states=self.good_states
+            self._drv, good_states=self.good_states
         )
 
     async def disarm(self):
-        await self.driver.acquire.set(0)
+        await stop_busy_record(self._drv.acquire, False, timeout=1)
