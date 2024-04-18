@@ -296,9 +296,7 @@ async def _verify_readings(
         result = await func()
     else:
         result = func()
-
-    for signal in expectation:
-        assert result[signal] == expectation[signal]
+    assert result == expectation
 
 
 async def assert_value(signal: SignalR[T], value: Any) -> None:
