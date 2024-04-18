@@ -54,7 +54,7 @@ def get_full_file_description(
 ):
     full_file_description: Dict[str, Descriptor] = {}
     for d in datasets:
-        source = f"sim://{d.name}"
+        source = f"soft://{d.name}"
         shape = outer_shape + tuple(d.shape)
         dtype = "number" if d.shape == [1] else "array"
         descriptor = Descriptor(
@@ -158,7 +158,7 @@ class PatternGenerator:
         self.written_images_counter: int = 0
 
         # it automatically initializes to 0
-        self.signal_backend = SimSignalBackend(int, "sim://sim_images_counter")
+        self.signal_backend = SimSignalBackend(int)
         self.sim_signal = SignalR(self.signal_backend)
         blob = np.array(
             generate_gaussian_blob(width=detector_width, height=detector_height)

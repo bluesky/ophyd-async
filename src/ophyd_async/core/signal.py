@@ -61,7 +61,7 @@ class Signal(Device, Generic[T]):
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
             self._backend = SimSignalBackend(
-                datatype=self._init_backend.datatype, source=self._init_backend.source
+                datatype=self._init_backend.datatype
             )
             _sim_backends[self] = self._backend
         else:
@@ -72,7 +72,7 @@ class Signal(Device, Generic[T]):
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
-        return self._backend.source
+        return self._backend.source(self.name)
 
     __lt__ = __le__ = __eq__ = __ge__ = __gt__ = __ne__ = _fail
 
@@ -168,7 +168,7 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
     @_add_timeout
     async def describe(self) -> Dict[str, Descriptor]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._backend.get_descriptor()}
+        return {self.name: await self._backend.get_descriptor(self.source)}
 
     @_add_timeout
     async def get_value(self, cached: Optional[bool] = None) -> T:
@@ -256,27 +256,28 @@ def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> No
 def soft_signal_rw(
     datatype: Optional[Type[T]],
     name: str,
-    source_prefix: str,
     initial_value: Optional[T] = None,
 ) -> SignalRW[T]:
     """Creates a read-writable Signal with a SimSignalBackend"""
-    return SignalRW(
-        SimSignalBackend(datatype, f"sim://{source_prefix}:{name}", initial_value)
+    signal = SignalRW(
+        SimSignalBackend(datatype, initial_value)
     )
+    signal.set_name(name)
+    return signal
 
 
 def soft_signal_r_and_backend(
     datatype: Optional[Type[T]],
     name: str,
-    source_prefix: str,
     initial_value: Optional[T] = None,
 ) -> Tuple[SignalR[T], SimSignalBackend]:
     """Returns a tuple of a read-only Signal and its SimSignalBackend through
     which the signal can be internally modified within the device. Use
     soft_signal_rw if you want a device that is externally modifiable
     """
-    backend = SimSignalBackend(datatype, f"sim://{source_prefix}:{name}", initial_value)
+    backend = SimSignalBackend(datatype, initial_value)
     signal = SignalR(backend)
+    signal.set_name(name)
     return (signal, backend)
 
 

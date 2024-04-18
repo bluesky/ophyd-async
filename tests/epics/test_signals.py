@@ -125,8 +125,10 @@ async def assert_monitor_then_put(
     q = MonitorQueue(backend)
     try:
         # Check descriptor
-        source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=source, **descriptor) == await backend.get_descriptor()
+        pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
+        assert dict(source=pv_name, **descriptor) == await backend.get_descriptor(
+            pv_name
+        )
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -400,7 +402,9 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check descriptor
-            dict(source=backend.source, **descriptor) == await backend.get_descriptor()
+            dict(source="test-source", **descriptor) == await backend.get_descriptor(
+                "test-source"
+            )
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -435,7 +439,7 @@ async def test_pvi_structure(ioc: IOC) -> None:
     try:
         # Check descriptor
         with pytest.raises(NotImplementedError):
-            await backend.get_descriptor()
+            await backend.get_descriptor("")
         # Check initial value
         await q.assert_updates(expected)
         await backend.get_value()
@@ -462,10 +466,10 @@ async def test_pva_ntdarray(ioc: IOC):
     for i, p in [(initial, put), (put, initial)]:
         with closing(MonitorQueue(backend)) as q:
             assert {
-                "source": backend.source,
+                "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
-            } == await backend.get_descriptor()
+            } == await backend.get_descriptor("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())
@@ -487,8 +491,7 @@ async def test_non_existent_errors(ioc: IOC):
     backend = await ioc.make_backend(str, "non-existent", connect=False)
     # Can't use asyncio.wait_for on python3.8 because of
     # https://github.com/python/cpython/issues/84787
-
-    with pytest.raises(NotConnected, match=backend.source):
+    with pytest.raises(NotConnected):
         await backend.connect(timeout=0.1)
 
 

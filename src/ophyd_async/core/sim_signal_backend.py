@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import re
 import time
 from collections import abc
 from dataclasses import dataclass
@@ -114,18 +113,17 @@ class SimSignalBackend(SignalBackend[T]):
     def __init__(
         self,
         datatype: Optional[Type[T]],
-        source: str,
         initial_value: Optional[T] = None,
     ) -> None:
-        pv = re.split(r"://", source)[-1]
-        self.source = f"sim://{pv}"
         self.datatype = datatype
-        self.pv = source
         self.converter: SimConverter = DisconnectedSimConverter()
         self._initial_value = initial_value
         self.put_proceeds = asyncio.Event()
         self.put_proceeds.set()
         self.callback: Optional[ReadingValueCallback[T]] = None
+
+    def source(self, name: str) -> str:
+        return f"soft://{name}"
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
         self.converter = make_converter(self.datatype)
@@ -160,8 +158,8 @@ class SimSignalBackend(SignalBackend[T]):
         if self.callback:
             self.callback(reading, self._value)
 
-    async def get_descriptor(self) -> Descriptor:
-        return self.converter.descriptor(self.source, self._value)
+    async def get_descriptor(self, source: str) -> Descriptor:
+        return self.converter.descriptor(source, self._value)
 
     async def get_reading(self) -> Reading:
         return self.converter.reading(self._value, self._timestamp, self._severity)

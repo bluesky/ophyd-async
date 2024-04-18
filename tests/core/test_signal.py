@@ -29,7 +29,7 @@ class MySignal(Signal):
 
 
 def test_signals_equality_raises():
-    sim_backend = SimSignalBackend(str, "test")
+    sim_backend = SimSignalBackend(str)
 
     s1 = MySignal(sim_backend)
     s2 = MySignal(sim_backend)
@@ -48,7 +48,7 @@ def test_signals_equality_raises():
 
 
 async def test_set_sim_put_proceeds():
-    sim_signal = Signal(SimSignalBackend(str, "test"))
+    sim_signal = Signal(SimSignalBackend(str))
     await sim_signal.connect(sim=True)
 
     assert sim_signal._backend.put_proceeds.is_set() is True
@@ -66,7 +66,7 @@ async def time_taken_by(coro) -> float:
 
 
 async def test_wait_for_value_with_value():
-    sim_signal = SignalRW(SimSignalBackend(str, "test"))
+    sim_signal = SignalRW(SimSignalBackend(str))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, "blah")
@@ -87,7 +87,7 @@ async def test_wait_for_value_with_value():
 
 
 async def test_wait_for_value_with_funcion():
-    sim_signal = SignalRW(SimSignalBackend(float, "test"))
+    sim_signal = SignalRW(SimSignalBackend(float))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, 45.8)
@@ -113,7 +113,7 @@ async def test_wait_for_value_with_funcion():
 
 
 async def test_set_and_wait_for_value():
-    sim_signal = SignalRW(SimSignalBackend(int, "test"))
+    sim_signal = SignalRW(SimSignalBackend(int))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, 0)
@@ -129,15 +129,14 @@ async def test_set_and_wait_for_value():
     [(soft_signal_r_and_backend, SignalR), (soft_signal_rw, SignalRW)],
 )
 async def test_create_soft_signal(signal_method, signal_class):
-    TEST_PREFIX = "TEST-PREFIX"
-    SIGNAL_NAME = "SIGNAL"
+    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
     INITIAL_VALUE = "INITIAL"
     if signal_method == soft_signal_r_and_backend:
-        signal, backend = signal_method(str, SIGNAL_NAME, TEST_PREFIX, INITIAL_VALUE)
+        signal, backend = signal_method(str, SIGNAL_NAME, INITIAL_VALUE)
     elif signal_method == soft_signal_rw:
-        signal = signal_method(str, SIGNAL_NAME, TEST_PREFIX, INITIAL_VALUE)
+        signal = signal_method(str, SIGNAL_NAME, INITIAL_VALUE)
         backend = signal._backend
-    assert signal._backend.source == f"sim://{TEST_PREFIX}:{SIGNAL_NAME}"
+    assert signal.source == f"soft://{SIGNAL_NAME}"
     assert isinstance(signal, signal_class)
     assert isinstance(signal._backend, SimSignalBackend)
     await signal.connect()
