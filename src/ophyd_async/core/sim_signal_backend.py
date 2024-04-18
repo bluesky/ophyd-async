@@ -107,23 +107,33 @@ class SimSignalBackend(SignalBackend[T]):
     """An simulated backend to a Signal, created with ``Signal.connect(sim=True)``"""
 
     _value: T
-    _initial_value: T
+    _initial_value: Optional[T]
     _timestamp: float
     _severity: int
 
-    def __init__(self, datatype: Optional[Type[T]], source: str) -> None:
+    def __init__(
+        self,
+        datatype: Optional[Type[T]],
+        source: str,
+        initial_value: Optional[T] = None,
+    ) -> None:
         pv = re.split(r"://", source)[-1]
         self.source = f"sim://{pv}"
         self.datatype = datatype
         self.pv = source
         self.converter: SimConverter = DisconnectedSimConverter()
+        self._initial_value = initial_value
         self.put_proceeds = asyncio.Event()
         self.put_proceeds.set()
         self.callback: Optional[ReadingValueCallback[T]] = None
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
         self.converter = make_converter(self.datatype)
-        self._initial_value = self.converter.make_initial_value(self.datatype)
+        if self._initial_value is None:
+            self._initial_value = self.converter.make_initial_value(self.datatype)
+        else:
+            # convert potentially unconverted initial value passed to init method
+            self._initial_value = self.converter.write_value(self._initial_value)
         self._severity = 0
 
         await self.put(None)

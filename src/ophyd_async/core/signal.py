@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
+from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Tuple, Type, Union
 
 from bluesky.protocols import (
     Descriptor,
@@ -251,6 +251,33 @@ def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
 def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
     """Monitor the value of a signal that is in sim mode"""
     return _sim_backends[signal].set_callback(callback)
+
+
+def soft_signal_rw(
+    datatype: Optional[Type[T]],
+    name: str,
+    source_prefix: str,
+    initial_value: Optional[T] = None,
+) -> SignalRW[T]:
+    """Creates a read-writable Signal with a SimSignalBackend"""
+    return SignalRW(
+        SimSignalBackend(datatype, f"sim://{source_prefix}:{name}", initial_value)
+    )
+
+
+def soft_signal_r_and_backend(
+    datatype: Optional[Type[T]],
+    name: str,
+    source_prefix: str,
+    initial_value: Optional[T] = None,
+) -> Tuple[SignalR[T], SimSignalBackend]:
+    """Returns a tuple of a read-only Signal and its SimSignalBackend through
+    which the signal can be internally modified within the device. Use
+    soft_signal_rw if you want a device that is externally modifiable
+    """
+    backend = SimSignalBackend(datatype, f"sim://{source_prefix}:{name}", initial_value)
+    signal = SignalR(backend)
+    return (signal, backend)
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
