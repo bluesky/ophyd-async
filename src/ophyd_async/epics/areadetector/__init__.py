@@ -1,3 +1,4 @@
+from .pilatus import PilatusDetector
 from .single_trigger_det import SingleTriggerDet
 from .utils import (
     FileWriteMode,
@@ -16,4 +17,5 @@ __all__ = [
     "ad_rw",
     "NDAttributeDataType",
     "NDAttributesXML",
+    "PilatusDetector",
 ]

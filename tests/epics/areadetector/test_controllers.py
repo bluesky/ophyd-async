@@ -8,9 +8,7 @@ from ophyd_async.epics.areadetector.controllers import (
     PilatusController,
 )
 from ophyd_async.epics.areadetector.drivers import ADBase, PilatusDriver
-from ophyd_async.epics.areadetector.drivers.pilatus_driver import (
-    TriggerMode as PilatusTrigger,
-)
+from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusTriggerMode
 from ophyd_async.epics.areadetector.utils import ImageMode
 
 
@@ -53,10 +51,10 @@ async def test_pilatus_controller(RE, pilatus: PilatusController):
     with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
         await pilatus.arm(num=1, trigger=DetectorTrigger.constant_gate)
 
-    driver = pilatus.driver
+    driver = pilatus._drv
     assert await driver.num_images.get_value() == 1
     assert await driver.image_mode.get_value() == ImageMode.multiple
-    assert await driver.trigger_mode.get_value() == PilatusTrigger.ext_enable
+    assert await driver.trigger_mode.get_value() == PilatusTriggerMode.ext_enable
     assert await driver.acquire.get_value() is True
 
     with patch(

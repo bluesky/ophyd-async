@@ -4,7 +4,7 @@ from ..utils import ad_rw
 from .ad_base import ADBase
 
 
-class TriggerMode(str, Enum):
+class PilatusTriggerMode(str, Enum):
     internal = "Internal"
     ext_enable = "Ext. Enable"
     ext_trigger = "Ext. Trigger"
@@ -13,6 +13,6 @@ class TriggerMode(str, Enum):
 
 
 class PilatusDriver(ADBase):
-    def __init__(self, prefix: str) -> None:
-        self.trigger_mode = ad_rw(TriggerMode, prefix + "TriggerMode")
-        super().__init__(prefix)
+    def __init__(self, prefix: str, name: str = "") -> None:
+        self.trigger_mode = ad_rw(PilatusTriggerMode, prefix + "TriggerMode")
+        super().__init__(prefix, name)
