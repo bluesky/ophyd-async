@@ -35,6 +35,8 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
             self.trl + "/startandwaitfortimer", device_proxy=self.proxy
         )
 
+        self.set_name(self.name)
+
     # --------------------------------------------------------------------
     async def _trigger(self, watchers: List[Callable] = []):
         self._set_success = True

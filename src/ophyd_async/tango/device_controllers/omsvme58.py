@@ -51,6 +51,8 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
         self._stop = tango_signal_x(self.trl + "/stopmove", self.proxy)
         self._state = tango_signal_r(DevState, self.trl + "/state", self.proxy)
 
+        self.set_name(self.name)
+
     # --------------------------------------------------------------------
     async def _move(self, new_position: float, watchers: List[Callable] = []):
         self._set_success = True

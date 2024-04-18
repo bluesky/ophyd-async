@@ -30,6 +30,8 @@ class SIS3820Counter(TangoReadableDevice):  # Triggerable
 
         self.reset = tango_signal_x(self.trl + "/reset", device_proxy=self.proxy)
 
+        self.set_name(self.name)
+
     # --------------------------------------------------------------------
     # Theoretically counter has to be reset before triggering, but I do not how to do it
     # def trigger(self) -> AsyncStatus:
