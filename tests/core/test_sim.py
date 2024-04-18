@@ -18,23 +18,23 @@ class MyEnum(str, Enum):
 
 
 def integer_d(value):
-    return dict(dtype="integer", shape=[])
+    return {"dtype": "integer", "shape": []}
 
 
 def number_d(value):
-    return dict(dtype="number", shape=[])
+    return {"dtype": "number", "shape": []}
 
 
 def string_d(value):
-    return dict(dtype="string", shape=[])
+    return {"dtype": "string", "shape": []}
 
 
 def enum_d(value):
-    return dict(dtype="string", shape=[], choices=["Aaa", "Bbb", "Ccc"])
+    return {"dtype": "string", "shape": [], "choices": ["Aaa", "Bbb", "Ccc"]}
 
 
 def waveform_d(value):
-    return dict(dtype="array", shape=[len(value)])
+    return {"dtype": "array", "shape": [len(value)]}
 
 
 class MonitorQueue:

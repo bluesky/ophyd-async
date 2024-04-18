@@ -1,6 +1,3 @@
-from importlib.metadata import version  # noqa
-
-__version__ = version("ophyd-async")
-del version
+from ._version import __version__
 
 __all__ = ["__version__"]

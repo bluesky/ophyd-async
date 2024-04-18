@@ -37,7 +37,6 @@ async def test_save_panda(mock_save_to_yaml, sim_panda, RE: RunEngine):
                 "data.hdf_file_name": "",
                 "data.num_capture": 0,
                 "pcap.arm": False,
-                "pcap.arm": False,
                 "pulse.1.delay": 0.0,
                 "pulse.1.width": 0.0,
                 "pulse.2.delay": 0.0,

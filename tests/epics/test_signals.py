@@ -157,23 +157,23 @@ class MyEnum(str, Enum):
 
 
 def integer_d(value):
-    return dict(dtype="integer", shape=[])
+    return {"dtype": "integer", "shape": []}
 
 
 def number_d(value):
-    return dict(dtype="number", shape=[])
+    return {"dtype": "number", "shape": []}
 
 
 def string_d(value):
-    return dict(dtype="string", shape=[])
+    return {"dtype": "string", "shape": []}
 
 
 def enum_d(value):
-    return dict(dtype="string", shape=[], choices=["Aaa", "Bbb", "Ccc"])
+    return {"dtype": "string", "shape": [], "choices": ["Aaa", "Bbb", "Ccc"]}
 
 
 def waveform_d(value):
-    return dict(dtype="array", shape=[len(value)])
+    return {"dtype": "array", "shape": [len(value)]}
 
 
 ls1 = "a string that is just longer than forty characters"
@@ -389,7 +389,7 @@ async def test_pva_table(ioc: IOC) -> None:
         enum=[MyEnum.c, MyEnum.b],
     )
     # TODO: what should this be for a variable length table?
-    descriptor = dict(dtype="object", shape=[])
+    descriptor = {"dtype": "object", "shape": []}
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")

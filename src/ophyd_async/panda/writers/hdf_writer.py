@@ -63,9 +63,8 @@ class CaptureSignalWrapper:
 # This should return a dictionary which contains a dict, containing the Capture
 # signal object, and the value of that signal
 async def get_signals_marked_for_capture(
-    capture_signals: Dict[str, SignalR]
+    capture_signals: Dict[str, SignalR],
 ) -> Dict[str, CaptureSignalWrapper]:
-
     # Read signals to see if they should be captured
     do_read = [signal.get_value() for signal in capture_signals.values()]
 
@@ -79,7 +78,6 @@ async def get_signals_marked_for_capture(
     for signal_path, signal_object, signal_value in zip(
         capture_signals.keys(), capture_signals.values(), signal_values
     ):
-
         signal_path = signal_path.replace("_capture", "")
         if (signal_value.value in iter(Capture)) and (signal_value.value != Capture.No):
             signals_to_capture[signal_path] = CaptureSignalWrapper(

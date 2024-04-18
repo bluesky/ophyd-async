@@ -101,7 +101,8 @@ def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
                 _verify_common_blocks(sub_sub_entry, sub_device)  # type: ignore
         else:
             _verify_common_blocks(
-                entry.sub_entries[sub_name], sub_device  # type: ignore
+                entry.sub_entries[sub_name],
+                sub_device,  # type: ignore
             )
 
 
@@ -234,9 +235,7 @@ async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
             sub_number_split = 1 if sub_number_split is None else sub_number_split
             if sub_name_split not in entry.sub_entries:
                 entry.sub_entries[sub_name_split] = {}
-            entry.sub_entries[sub_name_split][
-                sub_number_split
-            ] = sub_entry  # type: ignore
+            entry.sub_entries[sub_name_split][sub_number_split] = sub_entry  # type: ignore
         else:
             entry.sub_entries[sub_name] = sub_entry
 

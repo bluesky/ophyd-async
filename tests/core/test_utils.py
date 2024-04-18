@@ -139,9 +139,11 @@ async def test_error_handling_value_errors(caplog):
 
     # This should fail since the error is a ValueError
     with pytest.raises(NotConnected) as e:
-        await dummy_device_two_working_one_timeout_two_value_error.connect(
-            timeout=0.01
-        ),
+        (
+            await dummy_device_two_working_one_timeout_two_value_error.connect(
+                timeout=0.01
+            ),
+        )
     assert str(e.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
 
     logs = caplog.get_records("call")
@@ -213,7 +215,6 @@ def test_not_connected_error_output():
 
 
 async def test_combining_top_level_signal_and_child_device():
-
     dummy_device1 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
     with pytest.raises(NotConnected) as e:
         await dummy_device1.connect(timeout=0.01)
