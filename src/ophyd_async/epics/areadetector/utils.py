@@ -2,16 +2,19 @@ from enum import Enum
 from typing import Optional, Type
 from xml.etree import cElementTree as ET
 
-from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, T, wait_for_value
+from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, wait_for_value
+from ophyd_async.core.utils import R, W
 
 from ..signal.signal import epics_signal_r, epics_signal_rw
 
 
-def ad_rw(datatype: Type[T], prefix: str) -> SignalRW[T]:
+def ad_rw(
+    datatype: Type[W], prefix: str, read_datatype: Optional[Type[R]] = None
+) -> SignalRW[R, W]:
     return epics_signal_rw(datatype, prefix + "_RBV", prefix)
 
 
-def ad_r(datatype: Type[T], prefix: str) -> SignalR[T]:
+def ad_r(datatype: Type[R], prefix: str) -> SignalR[R]:
     return epics_signal_r(datatype, prefix + "_RBV")
 
 
@@ -105,8 +108,8 @@ class NDAttributesXML:
 
 
 async def stop_busy_record(
-    signal: SignalRW[T],
-    value: T,
+    signal: SignalRW[R, W],
+    value: W,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: Optional[float] = None,
 ) -> None:

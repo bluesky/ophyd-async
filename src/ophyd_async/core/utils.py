@@ -17,6 +17,8 @@ from typing import (
 import numpy as np
 from bluesky.protocols import Reading
 
+R = TypeVar("R")
+W = TypeVar("W")
 T = TypeVar("T")
 Callback = Callable[[T], None]
 

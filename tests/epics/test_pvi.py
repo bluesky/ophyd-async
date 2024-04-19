@@ -15,16 +15,16 @@ from ophyd_async.epics.pvi import fill_pvi_entries
 
 class Block1(Device):
     device_vector_signal_x: DeviceVector[SignalX]
-    device_vector_signal_rw: DeviceVector[SignalRW[float]]
+    device_vector_signal_rw: DeviceVector[SignalRW[float, float]]
     signal_x: SignalX
-    signal_rw: SignalRW[int]
+    signal_rw: SignalRW[int, int]
 
 
 class Block2(Device):
     device_vector: DeviceVector[Block1]
     device: Block1
     signal_x: SignalX
-    signal_rw: SignalRW[int]
+    signal_rw: SignalRW[int, int]
 
 
 class Block3(Device):
@@ -32,7 +32,7 @@ class Block3(Device):
     device: Block2
     signal_device: Block1
     signal_x: SignalX
-    signal_rw: SignalRW[int]
+    signal_rw: SignalRW[int, int]
 
 
 @pytest.fixture

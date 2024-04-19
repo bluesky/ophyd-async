@@ -8,17 +8,17 @@ from ophyd_async.panda.table import SeqTable
 
 
 class DataBlock(Device):
-    hdf_directory: SignalRW[str]
-    hdf_file_name: SignalRW[str]
-    num_capture: SignalRW[int]
+    hdf_directory: SignalRW[str, str]
+    hdf_file_name: SignalRW[str, str]
+    num_capture: SignalRW[int, int]
     num_captured: SignalR[int]
-    capture: SignalRW[bool]
-    flush_period: SignalRW[float]
+    capture: SignalRW[bool, bool]
+    flush_period: SignalRW[float, float]
 
 
 class PulseBlock(Device):
-    delay: SignalRW[float]
-    width: SignalRW[float]
+    delay: SignalRW[float, float]
+    width: SignalRW[float, float]
 
 
 class TimeUnits(str, Enum):
@@ -29,17 +29,17 @@ class TimeUnits(str, Enum):
 
 
 class SeqBlock(Device):
-    table: SignalRW[SeqTable]
-    active: SignalRW[bool]
-    repeats: SignalRW[int]
-    prescale: SignalRW[float]
-    prescale_units: SignalRW[TimeUnits]
-    enable: SignalRW[str]
+    table: SignalRW[SeqTable, SeqTable]
+    active: SignalRW[bool, bool]
+    repeats: SignalRW[int, int]
+    prescale: SignalRW[float, float]
+    prescale_units: SignalRW[TimeUnits, TimeUnits]
+    enable: SignalRW[str, str]
 
 
 class PcapBlock(Device):
     active: SignalR[bool]
-    arm: SignalRW[bool]
+    arm: SignalRW[bool, bool]
 
 
 class CommonPandABlocks(Device):

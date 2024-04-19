@@ -43,7 +43,7 @@ class OphydDumper(yaml.Dumper):
 
 
 def get_signal_values(
-    signals: Dict[str, SignalRW[Any]], ignore: Optional[List[str]] = None
+    signals: Dict[str, SignalRW[Any, Any]], ignore: Optional[List[str]] = None
 ) -> Generator[Msg, Sequence[Location[Any]], Dict[str, Any]]:
     """Get signal values in bulk.
 
@@ -91,7 +91,7 @@ def get_signal_values(
 
 def walk_rw_signals(
     device: Device, path_prefix: Optional[str] = ""
-) -> Dict[str, SignalRW[Any]]:
+) -> Dict[str, SignalRW[Any, Any]]:
     """Retrieve all SignalRWs from a device.
 
     Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
@@ -121,7 +121,7 @@ def walk_rw_signals(
     if not path_prefix:
         path_prefix = ""
 
-    signals: Dict[str, SignalRW[Any]] = {}
+    signals: Dict[str, SignalRW[Any, Any]] = {}
     for attr_name, attr in device.children():
         dot_path = f"{path_prefix}{attr_name}"
         if type(attr) is SignalRW:
@@ -179,7 +179,7 @@ def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
 
 
 def set_signal_values(
-    signals: Dict[str, SignalRW[Any]], values: Sequence[Dict[str, Any]]
+    signals: Dict[str, SignalRW[Any, Any]], values: Sequence[Dict[str, Any]]
 ) -> Generator[Msg, None, None]:
     """Maps signals from a yaml file into device signals.
 
@@ -188,7 +188,7 @@ def set_signal_values(
 
     Parameters
     ----------
-    signals : Dict[str, SignalRW[Any]]
+    signals : Dict[str, SignalRW[Any, Any]]
         Dictionary of named signals to be updated if value found in values argument.
         Can be the output of :func:`walk_rw_signals()` for a device.
 

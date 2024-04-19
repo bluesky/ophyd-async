@@ -3,14 +3,16 @@ from typing import Generic, Optional, Type
 
 from bluesky.protocols import Descriptor, Reading
 
-from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
+from .utils import DEFAULT_TIMEOUT, R, ReadingValueCallback, W
 
 
-class SignalBackend(Generic[T]):
+class SignalBackend(Generic[R, W]):
     """A read/write/monitor backend for a Signals"""
 
-    #: Datatype of the signal value
-    datatype: Optional[Type[T]] = None
+    #: Datatype of the read signal value
+    read_datatype: Optional[Type[R]] = None
+    #: Datatype of the write signal value
+    write_datatype: Optional[Type[W]] = None
 
     #: Like ca://PV_PREFIX:SIGNAL
     @abstractmethod
@@ -23,7 +25,7 @@ class SignalBackend(Generic[T]):
         """Connect to underlying hardware"""
 
     @abstractmethod
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: Optional[W], wait=True, timeout=None):
         """Put a value to the PV, if wait then wait for completion for up to timeout"""
 
     @abstractmethod
@@ -35,13 +37,13 @@ class SignalBackend(Generic[T]):
         """The current value, timestamp and severity"""
 
     @abstractmethod
-    async def get_value(self) -> T:
+    async def get_value(self) -> R:
         """The current value"""
 
     @abstractmethod
-    async def get_setpoint(self) -> T:
+    async def get_setpoint(self) -> R:
         """The point that a signal was requested to move to."""
 
     @abstractmethod
-    def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
+    def set_callback(self, callback: Optional[ReadingValueCallback[R]]) -> None:
         """Observe changes to the current value, timestamp and severity"""

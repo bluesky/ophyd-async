@@ -28,8 +28,8 @@ import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import Reading
 
-from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
-from ophyd_async.core.utils import NotConnected
+from ophyd_async.core import SignalBackend, get_dtype, load_from_yaml, save_to_yaml
+from ophyd_async.core.utils import NotConnected, R, W
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
 from ophyd_async.epics.signal.signal import (
     _make_backend,
@@ -50,13 +50,17 @@ class IOC:
     protocol: Literal["ca", "pva"]
 
     async def make_backend(
-        self, typ: Optional[Type], suff: str, connect=True
+        self,
+        typ: Optional[Type[W]],
+        suff: str,
+        connect=True,
+        read_datatype: Optional[Type[R]] = None,
     ) -> SignalBackend:
         # Calculate the pv
         pv = f"{PV_PREFIX}:{self.protocol}:{suff}"
         # Make and connect the backend
         cls = EpicsTransport[self.protocol].value
-        backend = cls(typ, pv, pv)
+        backend = cls(typ, pv, pv, read_datatype)
         if connect:
             await asyncio.wait_for(backend.connect(), 10)
         return backend
@@ -123,11 +127,12 @@ async def assert_monitor_then_put(
     ioc: IOC,
     suffix: str,
     descriptor: dict,
-    initial_value: T,
-    put_value: T,
-    datatype: Optional[Type[T]] = None,
+    initial_value: R,
+    put_value: W,
+    datatype: Optional[Type[W]] = None,
+    read_datatype: Optional[Type[R]] = None,
 ):
-    backend = await ioc.make_backend(datatype, suffix)
+    backend = await ioc.make_backend(datatype, suffix, read_datatype=read_datatype)
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
     try:
@@ -148,8 +153,8 @@ async def assert_monitor_then_put(
 async def put_error(
     ioc: IOC,
     suffix: str,
-    put_value: T,
-    datatype: Optional[Type[T]] = None,
+    put_value: W,
+    datatype: Optional[Type[W]] = None,
 ):
     backend = await ioc.make_backend(datatype, suffix)
     # The below will work without error
@@ -162,6 +167,16 @@ async def put_error(
 class MyEnum(str, Enum):
     a = "Aaa"
     b = "Bbb"
+    c = "Ccc"
+
+
+class ShortEnum(str, Enum):
+    """An Enum that does not support all of the values of the underlying PV.
+    As the initial value of the IOC is "Bbb", checks we support reading that value as a
+    str.
+    """
+
+    a = "Aaa"
     c = "Ccc"
 
 
@@ -222,12 +237,13 @@ ca_dtype_mapping = {
 )
 async def test_backend_get_put_monitor(
     ioc: IOC,
-    datatype: Type[T],
+    datatype: Type[W],
     suffix: str,
-    initial_value: T,
-    put_value: T,
+    initial_value: R,
+    put_value: W,
     descriptor: Callable[[Any], dict],
     tmp_path,
+    read_datatype: Optional[Type[R]] = None,
 ):
     # ca can't support all the types
     dtype = get_dtype(datatype)
@@ -242,17 +258,47 @@ async def test_backend_get_put_monitor(
     # With the given datatype, check we have the correct initial value and putting
     # works
     await assert_monitor_then_put(
-        ioc, suffix, descriptor(initial_value), initial_value, put_value, datatype
+        ioc,
+        suffix,
+        descriptor(initial_value),
+        initial_value,
+        put_value,
+        datatype,
+        read_datatype=read_datatype,
     )
     # With datatype guessed from CA/PVA, check we can set it back to the initial value
     await assert_monitor_then_put(
-        ioc, suffix, descriptor(put_value), put_value, initial_value, datatype=None
+        ioc,
+        suffix,
+        descriptor(put_value),
+        put_value,
+        initial_value,
+        datatype=None,
+        read_datatype=read_datatype,
     )
 
     yaml_path = tmp_path / "test.yaml"
     save_to_yaml([{"test": put_value}], yaml_path)
     loaded = load_from_yaml(yaml_path)
     assert np.all(loaded[0]["test"] == put_value)
+
+
+async def test_backend_get_put_differed_types_monitor(ioc: IOC, tmp_path: Path):
+    """When configuring a signal that supports a wider range of enumerated values, must
+    explicitly pass "str" as viable return type, and must return that value as a str,
+    such that it is pickle-able.
+
+    Args:
+        ioc (IOC): _description_
+        tmp_path (Path): _description_
+    """
+    with pytest.raises(TypeError):
+        await test_backend_get_put_monitor(
+            ioc, ShortEnum, "enum", "Bbb", ShortEnum.c, enum_d, tmp_path
+        )
+    await test_backend_get_put_monitor(
+        ioc, ShortEnum, "enum", "Bbb", ShortEnum.c, enum_d, tmp_path, str
+    )
 
 
 @pytest.mark.parametrize("suffix", ["bool", "bool_unnamed"])

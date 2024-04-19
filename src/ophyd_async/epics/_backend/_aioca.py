@@ -21,12 +21,11 @@ from epicscorelibs.ca import dbr
 from ophyd_async.core import (
     ReadingValueCallback,
     SignalBackend,
-    T,
     get_dtype,
     get_unique,
     wait_for_connection,
 )
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected, R, W
 
 from .common import get_supported_enum_class
 
@@ -101,7 +100,9 @@ class DisconnectedCaConverter(CaConverter):
 
 
 def make_converter(
-    datatype: Optional[Type], values: Dict[str, AugmentedValue]
+    datatype: Optional[Type[W]],
+    values: Dict[str, AugmentedValue],
+    read_datatype: Optional[Type[R]] = None,
 ) -> CaConverter:
     pv = list(values)[0]
     pv_dbr = get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
@@ -138,7 +139,7 @@ def make_converter(
         pv_choices = get_unique(
             {k: tuple(v.enums) for k, v in values.items()}, "choices"
         )
-        enum_class = get_supported_enum_class(pv, datatype, pv_choices)
+        enum_class = get_supported_enum_class(pv, datatype, pv_choices, read_datatype)
         return CaEnumConverter(dbr.DBR_STRING, None, enum_class)
     else:
         value = list(values.values())[0]
@@ -163,9 +164,16 @@ def _use_pyepics_context_if_imported():
         _tried_pyepics = True
 
 
-class CaSignalBackend(SignalBackend[T]):
-    def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
+class CaSignalBackend(SignalBackend[R, W]):
+    def __init__(
+        self,
+        datatype: Optional[Type[W]],
+        read_pv: str,
+        write_pv: str,
+        read_datatype: Optional[Type[R]] = None,
+    ):
         self.datatype = datatype
+        self.read_datatype = read_datatype
         self.read_pv = read_pv
         self.write_pv = write_pv
         self.initial_values: Dict[str, AugmentedValue] = {}
@@ -195,9 +203,11 @@ class CaSignalBackend(SignalBackend[T]):
         else:
             # The same, so only need to connect one
             await self._store_initial_value(self.read_pv, timeout=timeout)
-        self.converter = make_converter(self.datatype, self.initial_values)
+        self.converter = make_converter(
+            self.datatype, self.initial_values, self.read_datatype
+        )
 
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: Optional[W], wait=True, timeout=None):
         if value is None:
             write_value = self.initial_values[self.write_pv]
         else:
@@ -226,11 +236,11 @@ class CaSignalBackend(SignalBackend[T]):
         value = await self._caget(FORMAT_TIME)
         return self.converter.reading(value)
 
-    async def get_value(self) -> T:
+    async def get_value(self) -> R:
         value = await self._caget(FORMAT_RAW)
         return self.converter.value(value)
 
-    async def get_setpoint(self) -> T:
+    async def get_setpoint(self) -> R:
         value = await caget(
             self.write_pv,
             datatype=self.converter.read_dbr,
@@ -239,7 +249,7 @@ class CaSignalBackend(SignalBackend[T]):
         )
         return self.converter.value(value)
 
-    def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
+    def set_callback(self, callback: Optional[ReadingValueCallback[R]]) -> None:
         if callback:
             assert (
                 not self.subscription

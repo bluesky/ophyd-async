@@ -10,9 +10,9 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SignalX,
-    T,
     get_unique,
 )
+from ophyd_async.core.utils import R, W
 
 from ._epics_transport import EpicsTransport
 
@@ -32,17 +32,26 @@ def _transport_pv(pv: str) -> Tuple[EpicsTransport, str]:
 
 
 def _make_backend(
-    datatype: Optional[Type[T]], read_pv: str, write_pv: str
-) -> SignalBackend[T]:
+    datatype: Optional[Type[W]],
+    read_pv: str,
+    write_pv: str,
+    read_datatype: Optional[Type[R]] = None,
+) -> SignalBackend[R, W]:
     r_transport, r_pv = _transport_pv(read_pv)
     w_transport, w_pv = _transport_pv(write_pv)
     transport = get_unique({read_pv: r_transport, write_pv: w_transport}, "transports")
-    return transport.value(datatype, r_pv, w_pv)
+    return transport.value(
+        datatype, r_pv, w_pv, read_datatype=read_datatype or datatype
+    )
 
 
 def epics_signal_rw(
-    datatype: Type[T], read_pv: str, write_pv: Optional[str] = None, name: str = ""
-) -> SignalRW[T]:
+    datatype: Type[W],
+    read_pv: str,
+    write_pv: Optional[str] = None,
+    name: str = "",
+    read_datatype: Optional[Type[R]] = None,
+) -> SignalRW[R, W]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs
 
     Parameters
@@ -54,13 +63,19 @@ def epics_signal_rw(
     write_pv:
         If given, use this PV to write to, otherwise use read_pv
     """
-    backend = _make_backend(datatype, read_pv, write_pv or read_pv)
+    backend = _make_backend(
+        datatype, read_pv, write_pv or read_pv, read_datatype=read_datatype
+    )
     return SignalRW(backend, name=name)
 
 
 def epics_signal_rw_rbv(
-    datatype: Type[T], write_pv: str, read_suffix: str = "_RBV", name: str = ""
-) -> SignalRW[T]:
+    datatype: Type[W],
+    write_pv: str,
+    read_suffix: str = "_RBV",
+    name: str = "",
+    read_datatype: Optional[Type[R]] = None,
+) -> SignalRW[R, W]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv
 
     Parameters
@@ -72,10 +87,16 @@ def epics_signal_rw_rbv(
     read_suffix:
         Append this suffix to the write pv to create the readback pv
     """
-    return epics_signal_rw(datatype, f"{write_pv}{read_suffix}", write_pv, name)
+    return epics_signal_rw(
+        datatype,
+        f"{write_pv}{read_suffix}",
+        write_pv,
+        name,
+        read_datatype=read_datatype,
+    )
 
 
-def epics_signal_r(datatype: Type[T], read_pv: str, name: str = "") -> SignalR[T]:
+def epics_signal_r(datatype: Type[R], read_pv: str, name: str = "") -> SignalR[R]:
     """Create a `SignalR` backed by 1 EPICS PV
 
     Parameters
@@ -89,7 +110,7 @@ def epics_signal_r(datatype: Type[T], read_pv: str, name: str = "") -> SignalR[T
     return SignalR(backend, name=name)
 
 
-def epics_signal_w(datatype: Type[T], write_pv: str, name: str = "") -> SignalW[T]:
+def epics_signal_w(datatype: Type[W], write_pv: str, name: str = "") -> SignalW[W]:
     """Create a `SignalW` backed by 1 EPICS PVs
 
     Parameters

@@ -13,12 +13,11 @@ from p4p.client.asyncio import Context, Subscription
 from ophyd_async.core import (
     ReadingValueCallback,
     SignalBackend,
-    T,
     get_dtype,
     get_unique,
     wait_for_connection,
 )
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected, R, W
 
 from .common import get_supported_enum_class
 
@@ -173,7 +172,11 @@ class DisconnectedPvaConverter(PvaConverter):
         raise NotImplementedError("No PV has been set as connect() has not been called")
 
 
-def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConverter:
+def make_converter(
+    datatype: Optional[Type[W]],
+    values: Dict[str, Any],
+    read_datatype: Optional[Type[R]] = None,
+) -> PvaConverter:
     pv = list(values)[0]
     typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
     typ = get_unique(
@@ -214,7 +217,9 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        return PvaEnumConverter(get_supported_enum_class(pv, datatype, pv_choices))
+        return PvaEnumConverter(
+            get_supported_enum_class(pv, datatype, pv_choices, read_datatype)
+        )
     elif "NTScalar" in typeid:
         if datatype and not issubclass(typ, datatype):
             raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
@@ -227,11 +232,18 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         raise TypeError(f"{pv}: Unsupported typeid {typeid}")
 
 
-class PvaSignalBackend(SignalBackend[T]):
+class PvaSignalBackend(SignalBackend[R, W]):
     _ctxt: Optional[Context] = None
 
-    def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
+    def __init__(
+        self,
+        datatype: Optional[Type[W]],
+        read_pv: str,
+        write_pv: str,
+        read_datatype: Optional[Type[R]] = None,
+    ):
         self.datatype = datatype
+        self.read_datatype = read_datatype
         self.read_pv = read_pv
         self.write_pv = write_pv
         self.initial_values: Dict[str, Any] = {}
@@ -275,9 +287,11 @@ class PvaSignalBackend(SignalBackend[T]):
         else:
             # The same, so only need to connect one
             await self._store_initial_value(self.read_pv, timeout=timeout)
-        self.converter = make_converter(self.datatype, self.initial_values)
+        self.converter = make_converter(
+            self.datatype, self.initial_values, self.read_datatype
+        )
 
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: Optional[W], wait=True, timeout=None):
         if value is None:
             write_value = self.initial_values[self.write_pv]
         else:
@@ -311,16 +325,16 @@ class PvaSignalBackend(SignalBackend[T]):
         value = await self.ctxt.get(self.read_pv, request=request)
         return self.converter.reading(value)
 
-    async def get_value(self) -> T:
+    async def get_value(self) -> R:
         request: str = self._pva_request_string(self.converter.value_fields())
         value = await self.ctxt.get(self.read_pv, request=request)
         return self.converter.value(value)
 
-    async def get_setpoint(self) -> T:
+    async def get_setpoint(self) -> R:
         value = await self.ctxt.get(self.write_pv, "field(value)")
         return self.converter.value(value)
 
-    def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
+    def set_callback(self, callback: Optional[ReadingValueCallback[R]]) -> None:
         if callback:
             assert (
                 not self.subscription
