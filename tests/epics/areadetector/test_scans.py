@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import pytest
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     AsyncStatus,

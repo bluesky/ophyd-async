@@ -1,9 +1,9 @@
 # Import bluesky and ophyd
 import matplotlib.pyplot as plt
-from bluesky import RunEngine
 from bluesky.callbacks.best_effort import BestEffortCallback
 from bluesky.plan_stubs import mov, movr, rd  # noqa
 from bluesky.plans import grid_scan  # noqa
+from bluesky.run_engine import RunEngine
 from bluesky.utils import ProgressBarManager, register_transform
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
 
