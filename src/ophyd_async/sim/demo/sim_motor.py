@@ -78,6 +78,8 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         async def update_position():
             while True:
                 time_elapsed = round(time.monotonic() - start, 2)
+
+                # update position based on time elapsed
                 if time_elapsed >= travel_time:
                     # successfully reached our target position
                     await self._user_readback.put(new_position)
@@ -89,28 +91,26 @@ class SimMotor(StandardReadable, Movable, Stoppable):
                     )
 
                 await self._user_readback.put(current_position)
-                await asyncio.sleep(0.1)
 
-        def update_watchers(current_position: float):
-            for watcher in watchers:
-                watcher(
-                    name=self.name,
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    unit=units,
-                    time_elapsed=time.monotonic() - start,
-                )
+                # notify watchers of the new position
+                for watcher in watchers:
+                    watcher(
+                        name=self.name,
+                        current=current_position,
+                        initial=old_position,
+                        target=new_position,
+                        unit=units,
+                        time_elapsed=time.monotonic() - start,
+                    )
+
+                # 10hz update loop
+                await asyncio.sleep(0.1)
 
         # set up a task that updates the motor position at 10hz
         self._move_task = asyncio.create_task(update_position())
 
-        # set up watchers to be called when the motor position changes
-        self.user_readback.subscribe_value(update_watchers)
-
         try:
             await self._move_task
         finally:
-            self.user_readback.clear_sub(update_watchers)
-        if not self._set_success:
-            raise RuntimeError("Motor was stopped")
+            if not self._set_success:
+                raise RuntimeError("Motor was stopped")
