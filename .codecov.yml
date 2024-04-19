@@ -13,4 +13,4 @@ coverage:
 github_checks:
   annotations: false
 exclude_lines:
-  - except ImportError
+  - except ImportError:
