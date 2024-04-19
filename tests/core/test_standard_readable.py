@@ -26,7 +26,7 @@ def test_standard_readable_hints():
     hint3 = MagicMock()
     hint3.hints = {"fields": ["jkl"], "gridding": "rectilinear_nonsequential"}
 
-    sr._has_hints = (hint1, hint2, hint3)
+    sr.add_readables([hint1, hint2, hint3])
 
     assert sr.hints == {
         "fields": ["abc", "def", "ghi", "jkl"],
