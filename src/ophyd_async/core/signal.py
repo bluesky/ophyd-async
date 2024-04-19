@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
+from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Tuple, Type, Union
 
 from bluesky.protocols import (
     Descriptor,
@@ -60,9 +60,7 @@ class Signal(Device, Generic[T]):
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
-            self._backend = SimSignalBackend(
-                datatype=self._init_backend.datatype, source=self._init_backend.source
-            )
+            self._backend = SimSignalBackend(datatype=self._init_backend.datatype)
             _sim_backends[self] = self._backend
         else:
             self._backend = self._init_backend
@@ -72,7 +70,7 @@ class Signal(Device, Generic[T]):
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
-        return self._backend.source
+        return self._backend.source(self.name)
 
     __lt__ = __le__ = __eq__ = __ge__ = __gt__ = __ne__ = _fail
 
@@ -168,7 +166,7 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
     @_add_timeout
     async def describe(self) -> Dict[str, Descriptor]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._backend.get_descriptor()}
+        return {self.name: await self._backend.get_descriptor(self.source)}
 
     @_add_timeout
     async def get_value(self, cached: Optional[bool] = None) -> T:
@@ -251,6 +249,34 @@ def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
 def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
     """Monitor the value of a signal that is in sim mode"""
     return _sim_backends[signal].set_callback(callback)
+
+
+def soft_signal_rw(
+    datatype: Optional[Type[T]] = None,
+    initial_value: Optional[T] = None,
+    name: Optional[str] = None,
+) -> SignalRW[T]:
+    """Creates a read-writable Signal with a SimSignalBackend"""
+    signal = SignalRW(SimSignalBackend(datatype, initial_value))
+    if name is not None:
+        signal.set_name(name)
+    return signal
+
+
+def soft_signal_r_and_backend(
+    datatype: Optional[Type[T]] = None,
+    initial_value: Optional[T] = None,
+    name: Optional[str] = None,
+) -> Tuple[SignalR[T], SimSignalBackend]:
+    """Returns a tuple of a read-only Signal and its SimSignalBackend through
+    which the signal can be internally modified within the device. Use
+    soft_signal_rw if you want a device that is externally modifiable
+    """
+    backend = SimSignalBackend(datatype, initial_value)
+    signal = SignalR(backend)
+    if name is not None:
+        signal.set_name(name)
+    return (signal, backend)
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:

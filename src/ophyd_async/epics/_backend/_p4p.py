@@ -236,8 +236,11 @@ class PvaSignalBackend(SignalBackend[T]):
         self.write_pv = write_pv
         self.initial_values: Dict[str, Any] = {}
         self.converter: PvaConverter = DisconnectedPvaConverter()
-        self.source = f"pva://{self.read_pv}"
         self.subscription: Optional[Subscription] = None
+
+    @property
+    def source(self, name: str):
+        return f"pva://{self.read_pv}"
 
     @property
     def ctxt(self) -> Context:
@@ -290,9 +293,9 @@ class PvaSignalBackend(SignalBackend[T]):
             )
             raise NotConnected(f"pva://{self.write_pv}") from exc
 
-    async def get_descriptor(self) -> Descriptor:
+    async def get_descriptor(self, source: str) -> Descriptor:
         value = await self.ctxt.get(self.read_pv)
-        return self.converter.descriptor(self.source, value)
+        return self.converter.descriptor(source, value)
 
     def _pva_request_string(self, fields: List[str]) -> str:
         """

@@ -170,8 +170,10 @@ class CaSignalBackend(SignalBackend[T]):
         self.write_pv = write_pv
         self.initial_values: Dict[str, AugmentedValue] = {}
         self.converter: CaConverter = DisconnectedCaConverter(None, None)
-        self.source = f"ca://{self.read_pv}"
         self.subscription: Optional[Subscription] = None
+
+    def source(self, name: str):
+        return f"ca://{self.read_pv}"
 
     async def _store_initial_value(self, pv, timeout: float = DEFAULT_TIMEOUT):
         try:
@@ -216,9 +218,9 @@ class CaSignalBackend(SignalBackend[T]):
             timeout=None,
         )
 
-    async def get_descriptor(self) -> Descriptor:
+    async def get_descriptor(self, source: str) -> Descriptor:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.descriptor(self.source, value)
+        return self.converter.descriptor(source, value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)

@@ -28,7 +28,7 @@ from ophyd_async.planstubs import (
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int, source="test"))
+        self.dummy_signal = SignalRW(backend=SimSignalBackend(int))
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
@@ -38,7 +38,7 @@ class DummyWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         return {
             self._name: Descriptor(
-                source="sim://some-source",
+                source="soft://some-source",
                 shape=self._shape,
                 dtype="number",
                 external="STREAM:",
