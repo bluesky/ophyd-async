@@ -5,14 +5,14 @@ import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import StaticDirectoryProvider, set_sim_value
+from ophyd_async.core import StaticDirectoryProvider, set_mock_value
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.signal import SignalR, assert_emitted, wait_for_value
-from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import HDFPanda, PcapBlock
 from ophyd_async.panda._trigger import StaticSeqTableTriggerLogic
 from ophyd_async.panda.writers._hdf_writer import Capture
@@ -52,42 +52,46 @@ class MockPandaPcapController(DetectorControl):
         await self.pcap.arm.set(False, wait=True, timeout=timeout)
         await wait_for_value(self.pcap.active, False, timeout=timeout)
         await asyncio.sleep(0.2)
-        set_sim_value(self.pcap.active, True)
+        set_mock_value(self.pcap.active, True)
         return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
 
 
 @pytest.fixture
-async def sim_hdf_panda(tmp_path):
+async def mock_hdf_panda(tmp_path):
     class CaptureBlock(Device):
         test_capture: SignalR
 
     directory_provider = StaticDirectoryProvider(str(tmp_path), filename_prefix="test")
-    sim_hdf_panda = HDFPanda(
+    mock_hdf_panda = HDFPanda(
         "HDFPANDA:", directory_provider=directory_provider, name="panda"
     )
-    sim_hdf_panda._controller = MockPandaPcapController(sim_hdf_panda.pcap)
+    mock_hdf_panda._controller = MockPandaPcapController(mock_hdf_panda.pcap)
     block_a = CaptureBlock(name="block_a")
     block_b = CaptureBlock(name="block_b")
-    block_a.test_capture = SignalR(backend=SimSignalBackend(Capture))
-    block_b.test_capture = SignalR(backend=SimSignalBackend(Capture))
+    block_a.test_capture = epics_signal_r(
+        Capture, "pva://test_capture_a", name="test_capture_a"
+    )
+    block_b.test_capture = epics_signal_r(
+        Capture, "pva://test_capture_b", name="test_capture_b"
+    )
 
-    setattr(sim_hdf_panda, "block_a", block_a)
-    setattr(sim_hdf_panda, "block_b", block_b)
-    await sim_hdf_panda.connect(sim=True)
-    set_sim_value(block_a.test_capture, Capture.Min)
-    set_sim_value(block_b.test_capture, Capture.Diff)
+    setattr(mock_hdf_panda, "block_a", block_a)
+    setattr(mock_hdf_panda, "block_b", block_b)
+    await mock_hdf_panda.connect(mock=True)
+    set_mock_value(block_a.test_capture, Capture.Min)
+    set_mock_value(block_b.test_capture, Capture.Diff)
 
-    yield sim_hdf_panda
+    yield mock_hdf_panda
 
 
-async def test_hdf_panda_passes_blocks_to_controller(sim_hdf_panda: HDFPanda):
-    assert hasattr(sim_hdf_panda.controller, "pcap")
-    assert sim_hdf_panda.controller.pcap is sim_hdf_panda.pcap
+async def test_hdf_panda_passes_blocks_to_controller(mock_hdf_panda: HDFPanda):
+    assert hasattr(mock_hdf_panda.controller, "pcap")
+    assert mock_hdf_panda.controller.pcap is mock_hdf_panda.pcap
 
 
 async def test_hdf_panda_hardware_triggered_flyable(
     RE: RunEngine,
-    sim_hdf_panda,
+    mock_hdf_panda,
 ):
     docs = {}
 
@@ -101,40 +105,40 @@ async def test_hdf_panda_hardware_triggered_flyable(
     shutter_time = 0.004
     exposure = 1
 
-    trigger_logic = StaticSeqTableTriggerLogic(sim_hdf_panda.seq[1])
+    trigger_logic = StaticSeqTableTriggerLogic(mock_hdf_panda.seq[1])
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
 
     def flying_plan():
-        yield from bps.stage_all(sim_hdf_panda, flyer)
+        yield from bps.stage_all(mock_hdf_panda, flyer)
 
         yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
             flyer,
-            [sim_hdf_panda],
+            [mock_hdf_panda],
             num=1,
             width=exposure,
-            deadtime=sim_hdf_panda.controller.get_deadtime(1),
+            deadtime=mock_hdf_panda.controller.get_deadtime(1),
             shutter_time=shutter_time,
         )
-        # sim_hdf_panda.controller.disarm.assert_called_once  # type: ignore
+        # mock_hdf_panda.controller.disarm.assert_called_once  # type: ignore
 
         yield from bps.open_run()
-        yield from bps.declare_stream(sim_hdf_panda, name="main_stream", collect=True)
+        yield from bps.declare_stream(mock_hdf_panda, name="main_stream", collect=True)
 
-        set_sim_value(flyer.trigger_logic.seq.active, 1)
+        set_mock_value(flyer.trigger_logic.seq.active, 1)
 
         yield from bps.kickoff(flyer, wait=True)
-        yield from bps.kickoff(sim_hdf_panda)
+        yield from bps.kickoff(mock_hdf_panda)
 
         yield from bps.complete(flyer, wait=False, group="complete")
-        yield from bps.complete(sim_hdf_panda, wait=False, group="complete")
+        yield from bps.complete(mock_hdf_panda, wait=False, group="complete")
 
         # Manually incremenet the index as if a frame was taken
-        set_sim_value(
-            sim_hdf_panda.data.num_captured,
-            sim_hdf_panda.data.num_captured._backend._value + 1,
+        set_mock_value(
+            mock_hdf_panda.data.num_captured,
+            mock_hdf_panda.data.num_captured._backend._value + 1,
         )
 
-        set_sim_value(flyer.trigger_logic.seq.active, 0)
+        set_mock_value(flyer.trigger_logic.seq.active, 0)
 
         done = False
         while not done:
@@ -145,15 +149,15 @@ async def test_hdf_panda_hardware_triggered_flyable(
             else:
                 done = True
             yield from bps.collect(
-                sim_hdf_panda,
+                mock_hdf_panda,
                 return_payload=False,
                 name="main_stream",
             )
         yield from bps.wait(group="complete")
         yield from bps.close_run()
 
-        yield from bps.unstage_all(flyer, sim_hdf_panda)
-        # assert sim_hdf_panda.controller.disarm.called  # type: ignore
+        yield from bps.unstage_all(flyer, mock_hdf_panda)
+        # assert mock_hdf_panda.controller.disarm.called  # type: ignore
 
     # fly scan
     RE(flying_plan())
@@ -171,7 +175,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     for data_key_name in data_key_names:
         assert (
             docs["descriptor"][0]["data_keys"][data_key_name]["source"]
-            == "soft://panda-data-hdf_directory"
+            == "mock+soft://panda-data-hdf_directory"
         )
 
     # test stream resources

@@ -5,7 +5,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     DeviceCollector,
     DirectoryProvider,
-    set_sim_value,
+    set_mock_value,
 )
 from ophyd_async.epics.areadetector.kinetix import KinetixDetector
 
@@ -15,7 +15,7 @@ async def adkinetix(
     RE: RunEngine,
     static_directory_provider: DirectoryProvider,
 ) -> KinetixDetector:
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         adkinetix = KinetixDetector("KINETIX:", static_directory_provider)
 
     return adkinetix
@@ -29,12 +29,12 @@ async def test_get_deadtime(
 
 
 async def test_trigger_modes(adkinetix: KinetixDetector):
-    set_sim_value(adkinetix.drv.trigger_mode, "Internal")
+    set_mock_value(adkinetix.drv.trigger_mode, "Internal")
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await adkinetix.controller.arm(num=1, trigger=trig_mode)
         # Prevent timeouts
-        set_sim_value(adkinetix.drv.acquire, True)
+        set_mock_value(adkinetix.drv.acquire, True)
 
     # Default TriggerSource
     assert (await adkinetix.drv.trigger_mode.get_value()) == "Internal"
@@ -62,14 +62,14 @@ async def test_can_read(adkinetix: KinetixDetector):
 
 
 async def test_decribe_describes_writer_dataset(adkinetix: KinetixDetector):
-    set_sim_value(adkinetix._writer.hdf.file_path_exists, True)
-    set_sim_value(adkinetix._writer.hdf.capture, True)
+    set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
+    set_mock_value(adkinetix._writer.hdf.capture, True)
 
     assert await adkinetix.describe() == {}
     await adkinetix.stage()
     assert await adkinetix.describe() == {
         "adkinetix": {
-            "source": "soft://adkinetix-hdf-full_file_name",
+            "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
             "external": "STREAM:",
@@ -82,9 +82,9 @@ async def test_can_collect(
 ):
     directory_info = static_directory_provider()
     full_file_name = directory_info.root / directory_info.resource_dir / "foo.h5"
-    set_sim_value(adkinetix.hdf.full_file_name, str(full_file_name))
-    set_sim_value(adkinetix._writer.hdf.file_path_exists, True)
-    set_sim_value(adkinetix._writer.hdf.capture, True)
+    set_mock_value(adkinetix.hdf.full_file_name, str(full_file_name))
+    set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
+    set_mock_value(adkinetix._writer.hdf.capture, True)
     await adkinetix.stage()
     docs = [(name, doc) async for name, doc in adkinetix.collect_asset_docs(1)]
     assert len(docs) == 2
@@ -111,13 +111,13 @@ async def test_can_collect(
 
 
 async def test_can_decribe_collect(adkinetix: KinetixDetector):
-    set_sim_value(adkinetix._writer.hdf.file_path_exists, True)
-    set_sim_value(adkinetix._writer.hdf.capture, True)
+    set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
+    set_mock_value(adkinetix._writer.hdf.capture, True)
     assert (await adkinetix.describe_collect()) == {}
     await adkinetix.stage()
     assert (await adkinetix.describe_collect()) == {
         "adkinetix": {
-            "source": "soft://adkinetix-hdf-full_file_name",
+            "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
             "external": "STREAM:",

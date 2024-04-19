@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import asyncio
 import inspect
 import time
 from collections import abc
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Generic, Optional, Type, Union, cast, get_origin
+from typing import Dict, Generic, Optional, Type, Union, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -22,7 +21,7 @@ primitive_dtypes: Dict[type, Dtype] = {
 }
 
 
-class SimConverter(Generic[T]):
+class SoftConverter(Generic[T]):
     def value(self, value: T) -> T:
         return value
 
@@ -55,7 +54,7 @@ class SimConverter(Generic[T]):
         return datatype()
 
 
-class SimArrayConverter(SimConverter):
+class SoftArrayConverter(SoftConverter):
     def get_datakey(self, source: str, value) -> DataKey:
         return {"source": source, "dtype": "array", "shape": [len(value)]}
 
@@ -70,7 +69,7 @@ class SimArrayConverter(SimConverter):
 
 
 @dataclass
-class SimEnumConverter(SimConverter):
+class SoftEnumConverter(SoftConverter):
     enum_class: Type[Enum]
 
     def write_value(self, value: Union[Enum, str]) -> Enum:
@@ -90,26 +89,21 @@ class SimEnumConverter(SimConverter):
         return cast(T, list(datatype.__members__.values())[0])  # type: ignore
 
 
-class DisconnectedSimConverter(SimConverter):
-    def __getattribute__(self, __name: str) -> Any:
-        raise NotImplementedError("No PV has been set as connect() has not been called")
-
-
 def make_converter(datatype):
     is_array = get_dtype(datatype) is not None
     is_sequence = get_origin(datatype) == abc.Sequence
     is_enum = issubclass(datatype, Enum) if inspect.isclass(datatype) else False
 
     if is_array or is_sequence:
-        return SimArrayConverter()
+        return SoftArrayConverter()
     if is_enum:
-        return SimEnumConverter(datatype)
+        return SoftEnumConverter(datatype)
 
-    return SimConverter()
+    return SoftConverter()
 
 
-class SimSignalBackend(SignalBackend[T]):
-    """An simulated backend to a Signal, created with ``Signal.connect(sim=True)``"""
+class SoftSignalBackend(SignalBackend[T]):
+    """An backend to a soft Signal, for test signals see ``MockSignalBackend``."""
 
     _value: T
     _initial_value: Optional[T]
@@ -122,17 +116,14 @@ class SimSignalBackend(SignalBackend[T]):
         initial_value: Optional[T] = None,
     ) -> None:
         self.datatype = datatype
-        self.converter: SimConverter = DisconnectedSimConverter()
-        self._initial_value = initial_value
-        self.put_proceeds = asyncio.Event()
-        self.put_proceeds.set()
+        self.converter: SoftConverter = make_converter(datatype)
+        self._value = self._initial_value = initial_value
         self.callback: Optional[ReadingValueCallback[T]] = None
 
     def source(self, name: str) -> str:
         return f"soft://{name}"
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
-        self.converter = make_converter(self.datatype)
         if self._initial_value is None:
             self._initial_value = self.converter.make_initial_value(self.datatype)
         else:
@@ -148,13 +139,11 @@ class SimSignalBackend(SignalBackend[T]):
             if value is not None
             else self._initial_value
         )
-        self._set_value(write_value)
 
-        if wait:
-            await asyncio.wait_for(self.put_proceeds.wait(), timeout)
+        self.set_value(write_value)
 
-    def _set_value(self, value: T):
-        """Method to bypass asynchronous logic, designed to only be used in tests."""
+    def set_value(self, value: T):
+        """Method to bypass asynchronous logic."""
         self._value = value
         self._timestamp = time.monotonic()
         reading: Reading = self.converter.reading(
@@ -174,7 +163,7 @@ class SimSignalBackend(SignalBackend[T]):
         return self.converter.value(self._value)
 
     async def get_setpoint(self) -> T:
-        """For a simulated backend, the setpoint and readback values are the same."""
+        """For a soft signal, the setpoint and readback values are the same."""
         return await self.get_value()
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:

@@ -24,15 +24,14 @@ from bluesky.protocols import (
     Subscribable,
 )
 
+from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
 from .async_status import AsyncStatus
 from .device import Device
 from .signal_backend import SignalBackend
-from .sim_signal_backend import SimSignalBackend
-from .utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
-
-_sim_backends: Dict[Signal, SimSignalBackend] = {}
+from .soft_signal_backend import SoftSignalBackend
+from .utils import DEFAULT_TIMEOUT, Callback, T
 
 
 def _add_timeout(func):
@@ -65,13 +64,20 @@ class Signal(Device, Generic[T]):
         self._init_backend = self._backend = backend
         super().__init__(name)
 
-    async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
-        if sim:
-            self._backend = SimSignalBackend(datatype=self._init_backend.datatype)
-            _sim_backends[self] = self._backend
-        else:
-            self._backend = self._init_backend
-            _sim_backends.pop(self, None)
+    async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
+        if mock and not isinstance(self._backend, MockSignalBackend):
+            # Using a soft backend, look to the initial value
+            initial_value = (
+                await self._backend.get_value()
+                if isinstance(self._backend, SoftSignalBackend)
+                else None
+            )
+
+            self._backend = MockSignalBackend(
+                datatype=self._init_backend.datatype,
+                initial_value=initial_value,
+                init_backend=self._init_backend,
+            )
         self.log.debug(f"Connecting to {self.source}")
         await self._backend.connect(timeout=timeout)
 
@@ -87,12 +93,18 @@ class Signal(Device, Generic[T]):
         return hash(id(self))
 
 
+# creating a reference to  the background tasks so that
+# they can be properly garbage collected
+_background_async_signal_cache_events = set()
+
+
 class _SignalCache(Generic[T]):
     def __init__(self, backend: SignalBackend[T], signal: Signal):
         self._signal = signal
         self._staged = False
         self._listeners: Dict[Callback, bool] = {}
         self._valid = asyncio.Event()
+        _background_async_signal_cache_events.add(self._valid)
         self._reading: Optional[Reading] = None
         self._value: Optional[T] = None
 
@@ -103,6 +115,7 @@ class _SignalCache(Generic[T]):
     def close(self):
         self.backend.set_callback(None)
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
+        _background_async_signal_cache_events.discard(self._valid)
 
     async def get_reading(self) -> Reading:
         await self._valid.wait()
@@ -255,47 +268,32 @@ class SignalX(Signal):
         return AsyncStatus(coro)
 
 
-def set_sim_value(signal: Signal[T], value: T):
-    """Set the value of a signal that is in sim mode."""
-    _sim_backends[signal]._set_value(value)
-
-
-def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
-    """Allow or block a put with wait=True from proceeding"""
-    event = _sim_backends[signal].put_proceeds
-    if proceeds:
-        event.set()
-    else:
-        event.clear()
-
-
-def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
-    """Monitor the value of a signal that is in sim mode"""
-    return _sim_backends[signal].set_callback(callback)
-
-
 def soft_signal_rw(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
 ) -> SignalRW[T]:
-    """Creates a read-writable Signal with a SimSignalBackend"""
-    signal = SignalRW(SimSignalBackend(datatype, initial_value), name=name)
+    """Creates a read-writable Signal with a SoftSignalBackend"""
+    signal = SignalRW(SoftSignalBackend(datatype, initial_value), name=name)
     return signal
 
 
-def soft_signal_r_and_backend(
+def soft_signal_r_and_setter(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
-) -> Tuple[SignalR[T], SimSignalBackend]:
-    """Returns a tuple of a read-only Signal and its SimSignalBackend through
+) -> Tuple[SignalR[T], Callable[[T]]]:
+    """Returns a tuple of a read-only Signal and a callable through
     which the signal can be internally modified within the device. Use
     soft_signal_rw if you want a device that is externally modifiable
     """
-    backend = SimSignalBackend(datatype, initial_value)
+    backend = SoftSignalBackend(datatype, initial_value)
     signal = SignalR(backend, name=name)
-    return (signal, backend)
+
+    def backend_put(value: T) -> None:
+        signal._backend.set_value(value)
+
+    return (signal, backend_put)
 
 
 async def assert_value(signal: SignalR[T], value: Any) -> None:
@@ -383,6 +381,11 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
     assert {name: len(d) for name, d in docs.items()} == numbers
 
 
+# creating a reference to  the background tasks so that
+# they can be properly garbage collected
+_background_observe_value_queues = set()
+
+
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
@@ -400,6 +403,7 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
             do_something_with(value)
     """
     q: asyncio.Queue[T] = asyncio.Queue()
+    _background_observe_value_queues.add(q)
     if timeout is None:
         get_value = q.get
     else:
@@ -413,6 +417,7 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
             yield await get_value()
     finally:
         signal.clear_sub(q.put_nowait)
+        _background_observe_value_queues.discard(q)
 
 
 class _ValueChecker(Generic[T]):

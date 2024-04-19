@@ -8,6 +8,10 @@ from bluesky.protocols import Status
 
 from .utils import Callback, T
 
+# creating a reference to  the background tasks so that
+# they can be properly garbage collected
+_background_async_status_tasks = set()
+
 
 class AsyncStatus(Status):
     """Convert asyncio awaitable to bluesky Status interface"""
@@ -21,7 +25,12 @@ class AsyncStatus(Status):
             self.task = awaitable
         else:
             self.task = asyncio.create_task(awaitable)  # type: ignore
+
         self.task.add_done_callback(self._run_callbacks)
+
+        _background_async_status_tasks.add(self.task)
+        self.task.add_done_callback(_background_async_status_tasks.discard)
+
         self._callbacks = cast(List[Callback[Status]], [])
         self._watchers = watchers
 

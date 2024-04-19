@@ -42,7 +42,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         )
 
     async def connect(
-        self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+        self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
     ) -> None:
-        await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
-        await super().connect(sim=sim, timeout=timeout)
+        await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, mock=mock)
+        await super().connect(mock=mock, timeout=timeout)

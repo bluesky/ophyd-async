@@ -57,7 +57,7 @@ and run the following:
 - If ``connect=True`` (the default), then call `Device.connect` in parallel for
   all top level Devices, waiting for up to ``timeout`` seconds. For example,
   here we call ``asyncio.wait([det.connect(), samp.connect()])``
-- If ``sim=True`` is passed, then don't connect to PVs, but set Devices into
+- If ``mock=True`` is passed, then don't connect to PVs, but set Devices into
   simulation mode
 
 The Devices we create in this example are a "sample stage" with a couple of
