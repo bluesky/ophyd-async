@@ -136,7 +136,7 @@ async def test_error_handling_value_errors(caplog):
     caplog.set_level(10)
 
     dummy_device_two_working_one_timeout_two_value_error = (
-        DummyDeviceTwoWorkingTwoTimeOutTwoValueError()
+        DummyDeviceTwoWorkingTwoTimeOutTwoValueError("dsf")
     )
 
     # This should fail since the error is a ValueError

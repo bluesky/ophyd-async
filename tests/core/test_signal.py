@@ -48,6 +48,10 @@ class MockSignalRW(SignalRW):
         super().__init__(backend, timeout, name)
         self._backend = AsyncMock()
 
+    @property
+    def source(self) -> str:
+        return "source"
+
     async def connect(self):
         pass
 
@@ -250,7 +254,7 @@ async def test_signal_connect_logs(caplog):
     config_ophyd_async_logging(level="DEBUG")
     sim_signal = Signal(SimSignalBackend(str, "test"), timeout=1, name="test_signal")
     await sim_signal.connect(sim=True)
-    assert caplog.text.endswith("Connecting to sim://test\n")
+    assert caplog.text.endswith("Connecting to soft://test_signal\n")
 
 
 async def test_signal_get_and_set_logging(caplog, mock_signal_rw):
