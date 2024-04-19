@@ -149,3 +149,41 @@ async def test_async_status_exception_timeout():
     st = AsyncStatus(asyncio.sleep(0.1))
     with pytest.raises(Exception):
         st.exception(timeout=1.0)
+
+
+@pytest.fixture
+def loop():
+    return asyncio.get_event_loop()
+
+
+def test_asyncstatus_wraps_bare_func(loop):
+    async def do_test():
+        @AsyncStatus.wrap
+        async def coro_status():
+            await asyncio.sleep(0.01)
+
+        st = coro_status()
+        assert isinstance(st, AsyncStatus)
+        await asyncio.wait_for(st.task, None)
+        assert st.done
+
+    loop.run_until_complete(do_test())
+
+
+def test_asyncstatus_wraps_bare_func_with_args_kwargs(loop):
+    async def do_test():
+        test_result = 5
+
+        @AsyncStatus.wrap
+        async def coro_status(x: int, y: int, *, z=False):
+            await asyncio.sleep(0.01)
+            nonlocal test_result
+            test_result = x * y if z else 0
+
+        st = coro_status(3, 4, z=True)
+        assert isinstance(st, AsyncStatus)
+        await asyncio.wait_for(st.task, None)
+        assert st.done
+        assert test_result == 12
+
+    loop.run_until_complete(do_test())
