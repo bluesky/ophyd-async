@@ -14,6 +14,13 @@ class Motor(StandardReadable, Movable, Stoppable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
+        with self.add_children_as_readables(ConfigSignal):
+            self.motor_egu = epics_signal_r(str, prefix + ".EGU")
+            self.velocity = epics_signal_rw(float, prefix + ".VELO")
+
+        with self.add_children_as_readables(HintedSignal):
+            self.user_readback = epics_signal_r(float, prefix + ".RBV")
+
         self.user_setpoint = epics_signal_rw(float, prefix + ".VAL")
         self.max_velocity = epics_signal_r(float, prefix + ".VMAX")
         self.acceleration_time = epics_signal_rw(float, prefix + ".ACCL")
@@ -22,13 +29,6 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.motor_done_move = epics_signal_r(float, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(int, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(int, prefix + ".HLM")
-
-        with self.add_children_as_readables(ConfigSignal):
-            self.motor_egu = epics_signal_r(str, prefix + ".EGU")
-            self.velocity = epics_signal_rw(float, prefix + ".VELO")
-
-        with self.add_children_as_readables(HintedSignal):
-            self.user_readback = epics_signal_r(float, prefix + ".RBV")
 
         self.motor_stop = epics_signal_x(prefix + ".STOP")
         # Whether set() should complete successfully or not

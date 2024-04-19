@@ -68,18 +68,19 @@ class Mover(StandardReadable, Movable, Stoppable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
+        with self.add_children_as_readables(HintedSignal):
+            self.readback = epics_signal_r(float, prefix + "Readback")
+
+        with self.add_children_as_readables(ConfigSignal):
+            self.velocity = epics_signal_rw(float, prefix + "Velocity")
+            self.units = epics_signal_r(str, prefix + "Readback.EGU")
+
         self.setpoint = epics_signal_rw(float, prefix + "Setpoint")
         self.precision = epics_signal_r(int, prefix + "Readback.PREC")
         # Signals that collide with standard methods should have a trailing underscore
         self.stop_ = epics_signal_x(prefix + "Stop.PROC")
         # Whether set() should complete successfully or not
         self._set_success = True
-
-        with self.add_children_as_readables(HintedSignal):
-            self.readback = epics_signal_r(float, prefix + "Readback")
-        with self.add_children_as_readables(ConfigSignal):
-            self.velocity = epics_signal_rw(float, prefix + "Velocity")
-            self.units = epics_signal_r(str, prefix + "Readback.EGU")
 
         super().__init__(name=name)
 
