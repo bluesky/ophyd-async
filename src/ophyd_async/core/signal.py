@@ -45,9 +45,12 @@ class Signal(Device, Generic[T]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
 
     def __init__(
-        self, backend: SignalBackend[T], timeout: Optional[float] = DEFAULT_TIMEOUT
+        self,
+        backend: SignalBackend[T],
+        timeout: Optional[float] = DEFAULT_TIMEOUT,
+        name: str = "",
     ) -> None:
-        self._name = ""
+        self._name = name
         self._timeout = timeout
         self._init_backend = self._backend = backend
 
@@ -55,7 +58,7 @@ class Signal(Device, Generic[T]):
     def name(self) -> str:
         return self._name
 
-    def set_name(self, name: str = ""):
+    def set_name(self, name: str):
         self._name = name
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
@@ -254,28 +257,24 @@ def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> No
 def soft_signal_rw(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
-    name: Optional[str] = None,
+    name: str = "",
 ) -> SignalRW[T]:
     """Creates a read-writable Signal with a SimSignalBackend"""
-    signal = SignalRW(SimSignalBackend(datatype, initial_value))
-    if name is not None:
-        signal.set_name(name)
+    signal = SignalRW(SimSignalBackend(datatype, initial_value), name=name)
     return signal
 
 
 def soft_signal_r_and_backend(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
-    name: Optional[str] = None,
+    name: str = "",
 ) -> Tuple[SignalR[T], SimSignalBackend]:
     """Returns a tuple of a read-only Signal and its SimSignalBackend through
     which the signal can be internally modified within the device. Use
     soft_signal_rw if you want a device that is externally modifiable
     """
     backend = SimSignalBackend(datatype, initial_value)
-    signal = SignalR(backend)
-    if name is not None:
-        signal.set_name(name)
+    signal = SignalR(backend, name=name)
     return (signal, backend)
 
 
