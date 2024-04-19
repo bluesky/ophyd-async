@@ -123,7 +123,7 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
         async for update in iterator:
             self._last_update = (
                 update
-                if update.time_elapsed is None
+                if update.time_elapsed is not None
                 else replace(update, time_elapsed=time.monotonic() - self._start)
             )
             for watcher in self._watchers:

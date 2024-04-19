@@ -54,7 +54,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         """
         watchers: List[Callable] = []
         coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return AsyncStatus(coro, watchers)
+        return AsyncStatus(coro)
 
     async def _move(self, new_position: float, watchers: List[Callable] = []):
         """
