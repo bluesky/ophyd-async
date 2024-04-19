@@ -1,6 +1,8 @@
 from typing import Dict, Sequence, Tuple
 
-from bluesky.protocols import Configurable, Descriptor, Readable, Reading, Stageable
+from bluesky.protocols import Descriptor, Reading, Stageable
+
+from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -8,7 +10,7 @@ from .signal import SignalR
 from .utils import merge_gathered_dicts
 
 
-class StandardReadable(Device, Readable, Configurable, Stageable):
+class StandardReadable(Device, AsyncReadable, AsyncConfigurable, Stageable):
     """Device that owns its children and provides useful default behavior.
 
     - When its name is set it renames child Devices
