@@ -100,10 +100,9 @@ async def test_backend_get_put_monitor(
     try:
         # Check descriptor
         source = "soft://test"
-        assert (
-            dict(source=source, **descriptor(initial_value))
-            == await backend.get_descriptor(source)
-        )
+        assert dict(
+            source=source, **descriptor(initial_value)
+        ) == await backend.get_descriptor(source)
         # Check initial value
         await q.assert_updates(
             pytest.approx(initial_value) if initial_value != "" else initial_value

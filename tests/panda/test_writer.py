@@ -69,12 +69,8 @@ async def sim_writer(tmp_path, sim_panda) -> PandaHDFWriter:
 async def test_get_capture_signals_gets_all_signals(sim_panda):
     async with DeviceCollector(sim=True):
         sim_panda.test_seq = Device("seq")
-        sim_panda.test_seq.seq1_capture = SignalR(
-            backend=SimSignalBackend(str)
-        )
-        sim_panda.test_seq.seq2_capture = SignalR(
-            backend=SimSignalBackend(str)
-        )
+        sim_panda.test_seq.seq1_capture = SignalR(backend=SimSignalBackend(str))
+        sim_panda.test_seq.seq2_capture = SignalR(backend=SimSignalBackend(str))
         await asyncio.gather(
             sim_panda.test_seq.connect(),
             sim_panda.test_seq.seq1_capture.connect(),

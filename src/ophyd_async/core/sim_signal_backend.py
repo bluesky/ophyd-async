@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Generic, Optional, Type, Union, cast, get_origin
 
+import numpy as np
 from bluesky.protocols import Descriptor, Dtype, Reading
 
 from .signal_backend import SignalBackend
@@ -36,11 +37,16 @@ class SimConverter(Generic[T]):
         )
 
     def descriptor(self, source: str, value) -> Descriptor:
+        dtype = type(value)
+        if np.issubdtype(dtype, np.integer):
+            dtype = int
+        elif np.issubdtype(dtype, np.floating):
+            dtype = float
         assert (
-            type(value) in primitive_dtypes
+            dtype in primitive_dtypes
         ), f"invalid converter for value of type {type(value)}"
-        dtype = primitive_dtypes[type(value)]
-        return {"source": source, "dtype": dtype, "shape": []}
+        dtype_name = primitive_dtypes[dtype]
+        return {"source": source, "dtype": dtype_name, "shape": []}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:

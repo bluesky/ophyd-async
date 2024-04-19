@@ -2,6 +2,7 @@ import asyncio
 import re
 import time
 
+import numpy
 import pytest
 
 from ophyd_async.core import (
@@ -132,9 +133,9 @@ async def test_create_soft_signal(signal_method, signal_class):
     SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
     INITIAL_VALUE = "INITIAL"
     if signal_method == soft_signal_r_and_backend:
-        signal, backend = signal_method(str, SIGNAL_NAME, INITIAL_VALUE)
+        signal, backend = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
     elif signal_method == soft_signal_rw:
-        signal = signal_method(str, SIGNAL_NAME, INITIAL_VALUE)
+        signal = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
         backend = signal._backend
     assert signal.source == f"soft://{SIGNAL_NAME}"
     assert isinstance(signal, signal_class)
@@ -143,3 +144,12 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert (await signal.get_value()) == INITIAL_VALUE
     # connecting with sim=False uses existing SimSignalBackend
     assert signal._backend is backend
+
+
+async def test_soft_signal_numpy():
+    float_signal = soft_signal_rw(numpy.float64, numpy.float64(1), "float_signal")
+    int_signal = soft_signal_rw(numpy.int32, numpy.int32(1), "int_signal")
+    await float_signal.connect()
+    await int_signal.connect()
+    assert (await float_signal.describe())["float_signal"]["dtype"] == "number"
+    assert (await int_signal.describe())["int_signal"]["dtype"] == "integer"
