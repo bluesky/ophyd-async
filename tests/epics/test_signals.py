@@ -31,7 +31,14 @@ from bluesky.protocols import Reading
 from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
-from ophyd_async.epics.signal.signal import _make_backend
+from ophyd_async.epics.signal.signal import (
+    _make_backend,
+    epics_signal_r,
+    epics_signal_rw,
+    epics_signal_rw_rbv,
+    epics_signal_w,
+    epics_signal_x,
+)
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
@@ -500,3 +507,30 @@ def test_make_backend_fails_for_different_transports():
         _make_backend(str, read_pv, write_pv)
         assert err.args[0] == f"Differing transports: {read_pv} has EpicsTransport.ca,"
         +" {write_pv} has EpicsTransport.pva"
+
+
+def test_signal_helpers():
+    read_write = epics_signal_rw(int, "ReadWrite")
+    assert read_write._backend.read_pv == "ReadWrite"
+    assert read_write._backend.write_pv == "ReadWrite"
+
+    read_write_rbv_manual = epics_signal_rw(int, "ReadWrite_RBV", "ReadWrite")
+    assert read_write_rbv_manual._backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv_manual._backend.write_pv == "ReadWrite"
+
+    read_write_rbv = epics_signal_rw_rbv(int, "ReadWrite")
+    assert read_write_rbv._backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv._backend.write_pv == "ReadWrite"
+
+    read_write_rbv_suffix = epics_signal_rw_rbv(int, "ReadWrite", read_suffix=":RBV")
+    assert read_write_rbv_suffix._backend.read_pv == "ReadWrite:RBV"
+    assert read_write_rbv_suffix._backend.write_pv == "ReadWrite"
+
+    read = epics_signal_r(int, "Read")
+    assert read._backend.read_pv == "Read"
+
+    write = epics_signal_w(int, "Write")
+    assert write._backend.write_pv == "Write"
+
+    execute = epics_signal_x("Execute")
+    assert execute._backend.write_pv == "Execute"
