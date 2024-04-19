@@ -41,11 +41,7 @@ from .signal import (
 )
 from .signal_backend import SignalBackend
 from .sim_signal_backend import SimSignalBackend
-from .standard_readable import (
-    ConfigSignal,
-    HintedSignal,
-    StandardReadable,
-)
+from .standard_readable import ConfigSignal, HintedSignal, StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
     Callback,

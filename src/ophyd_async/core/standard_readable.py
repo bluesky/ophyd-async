@@ -1,7 +1,17 @@
 from contextlib import contextmanager
-from typing import Dict, Generator, List, Optional, Sequence, Type, Union
+from typing import (
+    Callable,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Sequence,
+    Type,
+    Union,
+    Tuple,
+)
 
-from bluesky.protocols import Descriptor, HasHints, Hints, Reading, Stageable
+from bluesky.protocols import Descriptor, HasHints, Hints, Reading
 
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
@@ -9,6 +19,11 @@ from .async_status import AsyncStatus
 from .device import Device
 from .signal import SignalR
 from .utils import merge_gathered_dicts
+
+ReadableChild = Union[AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints]
+ReadableChildWrapper = Union[
+    Callable[[ReadableChild], ReadableChild], Type["ConfigSignal"], Type["HintedSignal"]
+]
 
 
 class StandardReadable(
@@ -21,11 +36,12 @@ class StandardReadable(
     - These signals will be subscribed for read() between stage() and unstage()
     """
 
-    _readables: List[AsyncReadable] = []
-    _configurables: List[AsyncConfigurable] = []
-    _stageables: List[AsyncStageable] = []
-
-    _hints: Hints = {}
+    # These must be immutable types to avoid accidental sharing between
+    # different instances of the class
+    _readables: Tuple[AsyncReadable] = ()
+    _configurables: Tuple[AsyncConfigurable] = ()
+    _stageables: Tuple[AsyncStageable] = ()
+    _has_hints: Tuple[HasHints] = ()
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -55,12 +71,41 @@ class StandardReadable(
 
     @property
     def hints(self) -> Hints:
-        return self._hints
+
+        hints = {}
+
+        for new_hint in self._has_hints:
+            # Merge the existing and new hints, based on the type of the value.
+            # This avoids default dict merge behaviour that overrides the values;
+            # we want to combine them when they are Sequences, and ensure they are
+            # identical when string values.
+            for key, value in new_hint.hints.items():
+                if isinstance(value, str):
+                    if key in hints:
+                        assert (
+                            hints[key] == value  # type: ignore[literal-required]
+                        ), f"Hints key {key} value may not be overridden"
+                    else:
+                        hints[key] = value  # type: ignore[literal-required]
+                elif isinstance(value, Sequence):
+                    if key in hints:
+                        hints[key] = (  # type: ignore[literal-required]
+                            hints[key] + value  # type: ignore[literal-required]
+                        )
+                    else:
+                        hints[key] = value  # type: ignore[literal-required]
+                else:
+                    raise TypeError(
+                        f"{new_hint.name}: Unknown type for value '{value}' "
+                        f" for key '{key}'"
+                    )
+
+        return hints
 
     @contextmanager
     def add_children_as_readables(
         self,
-        wrapper: Optional[Type[Union["ConfigSignal", "HintedSignal"]]] = None,
+        wrapper: Optional[ReadableChildWrapper] = None,
     ) -> Generator[None, None, None]:
         dict_copy = self.__dict__.copy()
 
@@ -70,67 +115,44 @@ class StandardReadable(
         new_attributes = dict_copy.items() ^ self.__dict__.items()
         new_signals: List[SignalR] = [x[1] for x in new_attributes]
 
-        self._wrap_signals(wrapper, new_signals)
+        self._wrap_readable_children(new_signals, wrapper)
 
     def add_readables(
         self,
-        wrapper: Type[Union["ConfigSignal", "HintedSignal"]],
-        *signals: SignalR,
+        signals: Sequence[SignalR],
+        wrapper: Optional[ReadableChildWrapper] = None,
     ) -> None:
 
-        self._wrap_signals(wrapper, signals)
+        self._wrap_readable_children(signals, wrapper)
 
-    def _wrap_signals(
+    def _wrap_readable_children(
         self,
-        wrapper: Optional[Type[Union["ConfigSignal", "HintedSignal"]]],
-        signals: Sequence[SignalR],
+        readables: Sequence[ReadableChild],
+        wrapper: Optional[ReadableChildWrapper] = None,
     ):
 
-        for signal in signals:
-            obj: Union[SignalR, "ConfigSignal", "HintedSignal"] = signal
+        for readable in readables:
+            obj: ReadableChild = readable
             if wrapper:
-                obj = wrapper(signal)
+                obj = wrapper(readable)
 
             if isinstance(obj, AsyncReadable):
-                self._readables.append(obj)
+                self._readables += (obj,)
 
             if isinstance(obj, AsyncConfigurable):
-                self._configurables.append(obj)
+                self._configurables += (obj,)
 
             if isinstance(obj, AsyncStageable):
-                self._stageables.append(obj)
+                self._stageables += (obj,)
 
             if isinstance(obj, HasHints):
-                new_hint = obj.hints
-
-                # Merge the existing and new hints, based on the type of the value.
-                # This avoids default dict merge behaviour that overrided the values;
-                # we want to combine them when they are Sequences, and ensure they are
-                # identical when string values.
-                for key, value in new_hint.items():
-                    if isinstance(value, Sequence):
-                        if key in self._hints:
-                            self._hints[key] = (  # type: ignore[literal-required]
-                                self._hints[key]  # type: ignore[literal-required]
-                                + value
-                            )
-                        else:
-                            self._hints[key] = value  # type: ignore[literal-required]
-                    elif isinstance(value, str):
-                        if key in self._hints:
-                            assert (
-                                self._hints[key]  # type: ignore[literal-required]
-                                == value
-                            ), "Hints value may not be overridden"
-                        else:
-                            self._hints[key] = value  # type: ignore[literal-required]
-                    else:
-                        raise AssertionError("Unknown type in Hints dictionary")
+                self._has_hints += (obj,)
 
 
 class ConfigSignal(AsyncConfigurable):
 
-    def __init__(self, signal: SignalR) -> None:
+    def __init__(self, signal: ReadableChild) -> None:
+        assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
         self.signal = signal
 
     async def read_configuration(self) -> Dict[str, Reading]:
@@ -142,7 +164,8 @@ class ConfigSignal(AsyncConfigurable):
 
 class HintedSignal(HasHints, AsyncReadable):
 
-    def __init__(self, signal: SignalR, cached: Optional[bool] = None) -> None:
+    def __init__(self, signal: ReadableChild, cached: Optional[bool] = None) -> None:
+        assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
         self.signal = signal
         self.cached = cached
         if cached:
@@ -164,5 +187,6 @@ class HintedSignal(HasHints, AsyncReadable):
         return {"fields": [self.signal.name]}
 
     @classmethod
-    def uncached(cls, signal: SignalR):
+    def uncached(cls, signal: ReadableChild):
+        assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
         return cls(signal, cached=False)
