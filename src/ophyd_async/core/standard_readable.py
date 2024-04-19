@@ -6,9 +6,9 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Tuple,
     Type,
     Union,
-    Tuple,
 )
 
 from bluesky.protocols import Descriptor, HasHints, Hints, Reading
@@ -38,10 +38,10 @@ class StandardReadable(
 
     # These must be immutable types to avoid accidental sharing between
     # different instances of the class
-    _readables: Tuple[AsyncReadable] = ()
-    _configurables: Tuple[AsyncConfigurable] = ()
-    _stageables: Tuple[AsyncStageable] = ()
-    _has_hints: Tuple[HasHints] = ()
+    _readables: Tuple[AsyncReadable, ...] = ()
+    _configurables: Tuple[AsyncConfigurable, ...] = ()
+    _stageables: Tuple[AsyncStageable, ...] = ()
+    _has_hints: Tuple[HasHints, ...] = ()
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -71,8 +71,7 @@ class StandardReadable(
 
     @property
     def hints(self) -> Hints:
-
-        hints = {}
+        hints: Hints = {}
 
         for new_hint in self._has_hints:
             # Merge the existing and new hints, based on the type of the value.
@@ -150,7 +149,6 @@ class StandardReadable(
 
 
 class ConfigSignal(AsyncConfigurable):
-
     def __init__(self, signal: ReadableChild) -> None:
         assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
         self.signal = signal
@@ -163,12 +161,11 @@ class ConfigSignal(AsyncConfigurable):
 
 
 class HintedSignal(HasHints, AsyncReadable):
-
-    def __init__(self, signal: ReadableChild, cached: Optional[bool] = None) -> None:
+    def __init__(self, signal: ReadableChild, allow_cache: bool = True) -> None:
         assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
         self.signal = signal
-        self.cached = cached
-        if cached:
+        self.cached = None if allow_cache else allow_cache
+        if allow_cache:
             self.stage = signal.stage
             self.unstage = signal.unstage
 
@@ -187,6 +184,6 @@ class HintedSignal(HasHints, AsyncReadable):
         return {"fields": [self.signal.name]}
 
     @classmethod
-    def uncached(cls, signal: ReadableChild):
+    def uncached(cls, signal: ReadableChild) -> "HintedSignal":
         assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
-        return cls(signal, cached=False)
+        return cls(signal, allow_cache=False)
