@@ -58,6 +58,25 @@ def epics_signal_rw(
     return SignalRW(backend)
 
 
+def epics_signal_rw_rbv(
+    datatype: Type[T],
+    write_pv: str,
+    read_suffix: str = "_RBV",
+) -> SignalRW[T]:
+    """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv
+
+    Parameters
+    ----------
+    datatype:
+        Check that the PV is of this type
+    write_pv:
+        The PV to write to
+    read_suffix:
+        Append this suffix to the write pv to create the readback pv
+    """
+    return epics_signal_rw(datatype, f"{write_pv}{read_suffix}", write_pv)
+
+
 def epics_signal_r(datatype: Type[T], read_pv: str) -> SignalR[T]:
     """Create a `SignalR` backed by 1 EPICS PV
 
