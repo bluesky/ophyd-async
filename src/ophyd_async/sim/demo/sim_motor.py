@@ -10,7 +10,7 @@ from ophyd_async.core.signal import soft_signal_r_and_backend, soft_signal_rw
 
 
 class SimMotor(StandardReadable, Movable, Stoppable):
-    def __init__(self, prefix: str, name="", instant=True) -> None:
+    def __init__(self, name="", instant=True) -> None:
         """
         Simulated motor device
 
@@ -23,12 +23,10 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         self._move_task: Optional[asyncio.Task] = None
 
         # Define some signals
-        self.user_setpoint = soft_signal_rw(float, prefix + "user_setpoint", 0)
-        self.user_readback, self._user_readback = soft_signal_r_and_backend(
-            float, prefix + "user_readback", 0
-        )
-        self.velocity = soft_signal_rw(float, prefix + "velocity", 1.0)
-        self.egu = soft_signal_rw(float, prefix + "egu", "mm")
+        self.user_setpoint = soft_signal_rw(float, 0)
+        self.user_readback, self._user_readback = soft_signal_r_and_backend(float, 0)
+        self.velocity = soft_signal_rw(float, 1.0)
+        self.egu = soft_signal_rw(float, "mm")
 
         # Set name and signals for read() and read_configuration()
         self.set_readable_signals(

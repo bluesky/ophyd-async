@@ -25,7 +25,7 @@ async def test_move_sim_in_plan():
 
 async def test_slow_move():
     async with DeviceCollector():
-        m1 = SimMotor("M1", "sim_motor1", instant=False)
+        m1 = SimMotor("M1", instant=False)
 
     await m1.velocity.set(20)
 
@@ -40,7 +40,7 @@ async def test_slow_move():
 
 async def test_stop():
     async with DeviceCollector():
-        m1 = SimMotor("M1", "sim_motor1", instant=False)
+        m1 = SimMotor("M1", instant=False)
 
     # this move should take 10 seconds but we will stop it after 0.2
     move_status = m1.set(10)
