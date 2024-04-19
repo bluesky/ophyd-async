@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -50,6 +50,7 @@ dev = [
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
     "pyside6==6.6.2",
+    "pyright",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
@@ -80,12 +81,13 @@ name = "Tom Cobb"
 [tool.setuptools_scm]
 write_to = "src/ophyd_async/_version.py"
 
+[tool.pyright]
+reportMissingImports = false # Ignore missing stubs in imported modules
+
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
 addopts = """
-    --tb=native -vv --strict-markers --doctest-modules
-    --doctest-glob="*.rst" --doctest-glob="*.md" --ignore=docs/examples
-    --cov=src/ophyd_async --cov-report term --cov-report xml:cov.xml
+    --tb=native -vv --doctest-modules --doctest-glob="*.rst"
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"
@@ -121,16 +123,15 @@ passenv = *
 allowlist_externals =
     pytest
     pre-commit
-    mypy
+    pyright
     sphinx-build
     sphinx-autobuild
 commands =
+    pre-commit: pre-commit run --all-files --show-diff-on-failure {posargs}
+    type-checking: pyright src tests {posargs}
     tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
-    type-checking: ruff check src tests {posargs}
-    pre-commit: pre-commit run --all-files {posargs}
     docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
 """
-
 
 [tool.ruff]
 src = ["src", "tests"]

@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ophyd-async
+  title: ophyd-async
+  description: Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango
+spec:
+  type: documentation
+  lifecycle: experimental
+  owner: 
