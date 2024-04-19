@@ -3,7 +3,6 @@ from typing import (
     Callable,
     Dict,
     Generator,
-    List,
     Optional,
     Sequence,
     Tuple,
@@ -112,26 +111,18 @@ class StandardReadable(
 
         # Set symmetric difference operator gives all newly added items
         new_attributes = dict_copy.items() ^ self.__dict__.items()
-        new_signals: List[SignalR] = [x[1] for x in new_attributes]
+        new_values = [x[1] for x in new_attributes]
 
-        self._wrap_readable_children(new_signals, wrapper)
+        new_devices = filter(lambda x: isinstance(x, Device), new_values)
+        self.add_readables(new_devices, wrapper)
 
     def add_readables(
         self,
-        signals: Sequence[SignalR],
+        devices: Sequence[Device],
         wrapper: Optional[ReadableChildWrapper] = None,
     ) -> None:
-
-        self._wrap_readable_children(signals, wrapper)
-
-    def _wrap_readable_children(
-        self,
-        readables: Sequence[ReadableChild],
-        wrapper: Optional[ReadableChildWrapper] = None,
-    ):
-
-        for readable in readables:
-            obj: ReadableChild = readable
+        for readable in devices:
+            obj = readable
             if wrapper:
                 obj = wrapper(readable)
 

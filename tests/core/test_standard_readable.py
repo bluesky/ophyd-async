@@ -6,7 +6,9 @@ import pytest
 from bluesky.protocols import HasHints
 
 from ophyd_async.core import ConfigSignal, HintedSignal, StandardReadable
+from ophyd_async.core.device import Device
 from ophyd_async.core.signal import SignalR
+from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
 
@@ -67,7 +69,7 @@ def test_standard_readable_hints_invalid_types(invalid_type):
 def test_standard_readable_add_children_context_manager():
     sr = StandardReadable()
     mock = MagicMock()
-    sr._wrap_readable_children = mock
+    sr.add_readables = mock
     with sr.add_children_as_readables():
         sr.a = MagicMock(spec=SignalR)
         sr.b = MagicMock(spec=SignalR)
@@ -76,7 +78,25 @@ def test_standard_readable_add_children_context_manager():
     # Can't use assert_called_once_with() as the order of items returned from
     # internal dict comprehension is not guaranteed
     mock.assert_called_once()
-    assert set(mock.call_args.args[0]) == {[sr.a, sr.b, sr.c]}
+    assert set(mock.call_args.args[0]) == {sr.a, sr.b, sr.c}
+
+
+def test_standard_readable_add_children_cm_filters_non_devices():
+    sr = StandardReadable()
+    mock = MagicMock()
+    sr.add_readables = mock
+
+    with sr.add_children_as_readables():
+        sr.a = MagicMock(spec=SignalR)
+        sr.b = MagicMock(spec=Device)
+        sr.c = 1.0
+        sr.d = "abc"
+        sr.e = MagicMock(spec=SimSignalBackend)
+
+    # Can't use assert_called_once_with() as the order of items returned from
+    # internal dict comprehension is not guaranteed
+    mock.assert_called_once()
+    assert set(mock.call_args.args[0]) == {sr.a, sr.b}
 
 
 @pytest.mark.parametrize(
@@ -89,7 +109,7 @@ def test_standard_readable_add_children_context_manager():
         (HasHints, "_has_hints"),
     ],
 )
-def test_standard_readable_wrap_readable_children_adds_readable_to_expected_attr(
+def test_standard_readable_add_readables_adds_to_expected_attrs(
     readable, expected_attr
 ):
     sr = StandardReadable()
@@ -97,7 +117,7 @@ def test_standard_readable_wrap_readable_children_adds_readable_to_expected_attr
     r1 = MagicMock(spec=readable)
     readables = [r1]
 
-    sr._wrap_readable_children(readables)
+    sr.add_readables(readables)
 
     assert getattr(sr, expected_attr) == (r1,)
 
@@ -110,7 +130,7 @@ def test_standard_readable_wrap_readable_children_adds_readable_to_expected_attr
         (ConfigSignal, ["_configurables"]),
     ],
 )
-def test_standard_readable_wrap_readable_children_adds_wrapped_readable_expected_attr(
+def test_standard_readable_add_readables_adds_wrapped_to_expected_attr(
     wrapper, expected_attrs: List[str]
 ):
     sr = StandardReadable()
@@ -118,7 +138,7 @@ def test_standard_readable_wrap_readable_children_adds_wrapped_readable_expected
     r1 = MagicMock(spec=SignalR)
     readables = [r1]
 
-    sr._wrap_readable_children(readables, wrapper=wrapper)
+    sr.add_readables(readables, wrapper=wrapper)
 
     for expected_attr in expected_attrs:
         saved = getattr(sr, expected_attr)

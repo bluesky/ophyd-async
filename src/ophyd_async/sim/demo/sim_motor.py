@@ -26,8 +26,10 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         # Define some signals
         self.user_setpoint = soft_signal_rw(float, 0)
 
-        self.user_readback, self._user_readback = soft_signal_r_and_backend(float, 0)
-        self.add_readables([self.user_readback], HintedSignal)
+        with self.add_children_as_readables(HintedSignal):
+            self.user_readback, self._user_readback = soft_signal_r_and_backend(
+                float, 0
+            )
 
         with self.add_children_as_readables(ConfigSignal):
             self.velocity = soft_signal_rw(float, 1.0)
