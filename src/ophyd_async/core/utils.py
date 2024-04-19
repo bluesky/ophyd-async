@@ -15,7 +15,6 @@ from typing import (
     ParamSpec,
     Protocol,
     Type,
-    TypeAlias,
     TypeVar,
     Union,
 )
@@ -102,7 +101,7 @@ class WatcherUpdate(Generic[T]):
 C = TypeVar("C", contravariant=True)
 
 
-class _ClsWatcher(Protocol, Generic[C]):
+class Watcher(Protocol, Generic[C]):
     @staticmethod
     def __call__(
         *,
@@ -116,25 +115,6 @@ class _ClsWatcher(Protocol, Generic[C]):
         time_elapsed: float | None,
         time_remaining: float | None,
     ) -> Any: ...
-
-
-class _InsWatcher(Protocol, Generic[C]):
-    def __call__(
-        self,
-        *,
-        current: C,
-        initial: C,
-        target: C,
-        name: str | None,
-        unit: str | None,
-        precision: float | None,
-        fraction: float | None,
-        time_elapsed: float | None,
-        time_remaining: float | None,
-    ) -> Any: ...
-
-
-Watcher: TypeAlias = _ClsWatcher | _InsWatcher
 
 
 async def wait_for_connection(**coros: Awaitable[None]):

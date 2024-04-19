@@ -12,6 +12,7 @@ from ophyd_async.core import (
     set_sim_callback,
     set_sim_value,
 )
+from ophyd_async.core.signal import set_sim_put_proceeds
 from ophyd_async.epics import demo
 
 # Long enough for multiple asyncio event loop cycles to run so
@@ -93,6 +94,7 @@ class DemoWatcher:
 
 
 async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
+    set_sim_put_proceeds(sim_mover.setpoint, False)
     s = sim_mover.set(0.55)
     watcher = DemoWatcher()
     s.watch(watcher)
@@ -122,6 +124,7 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
     set_sim_value(sim_mover.readback, 0.5499999)
+    set_sim_put_proceeds(sim_mover.setpoint, True)
     await asyncio.sleep(A_WHILE)
     assert s.done
     assert s.success

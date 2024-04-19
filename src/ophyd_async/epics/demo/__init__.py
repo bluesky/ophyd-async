@@ -12,7 +12,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
@@ -99,16 +98,19 @@ class Mover(StandardReadable, Movable, Stoppable):
             self.precision.get_value(),
         )
         # Wait for the value to set, but don't wait for put completion callback
-        await self.setpoint.set(new_position, wait=False)
+        move_status = self.setpoint.set(new_position, wait=True)
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
         # return a template to set() which it can use to yield progress updates
-        return WatcherUpdate(
-            initial=old_position,
-            current=old_position,
-            target=new_position,
-            unit=units,
-            precision=precision,
+        return (
+            WatcherUpdate(
+                initial=old_position,
+                current=old_position,
+                target=new_position,
+                unit=units,
+                precision=precision,
+            ),
+            move_status,
         )
 
     def move(self, new_position: float, timeout: Optional[float] = None):
@@ -121,17 +123,17 @@ class Mover(StandardReadable, Movable, Stoppable):
 
     @WatchableAsyncStatus.wrap
     async def set(self, new_position: float):
-        update = await self._move(new_position)
+        update, move_status = await self._move(new_position)
         start = time.monotonic()
-        async for current_position in observe_value(self.readback):
+        async for current_position in observe_value(
+            self.readback, done_status=move_status
+        ):
             yield replace(
                 update,
                 name=self.name,
                 current=current_position,
                 time_elapsed=time.monotonic() - start,
             )
-            if np.isclose(current_position, new_position):
-                return
 
     async def stop(self, success=True):
         self._set_success = success

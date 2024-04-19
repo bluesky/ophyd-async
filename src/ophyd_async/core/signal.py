@@ -2,7 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Tuple, Type, Union
+from typing import (
+    AsyncGenerator,
+    Callable,
+    Dict,
+    Generic,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 from bluesky.protocols import (
     Descriptor,
@@ -11,6 +20,7 @@ from bluesky.protocols import (
     Movable,
     Reading,
     Stageable,
+    Status,
     Subscribable,
 )
 
@@ -272,7 +282,9 @@ def soft_signal_r_and_backend(
     return (signal, backend)
 
 
-async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
+async def observe_value(
+    signal: SignalR[T], timeout=None, done_status: Status | None = None
+) -> AsyncGenerator[T, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
     Parameters
@@ -288,7 +300,8 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
         async for value in observe_value(sig):
             do_something_with(value)
     """
-    q: asyncio.Queue[T] = asyncio.Queue()
+
+    q: asyncio.Queue[T | None] = asyncio.Queue()
     if timeout is None:
         get_value = q.get
     else:
@@ -296,10 +309,17 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
         async def get_value():
             return await asyncio.wait_for(q.get(), timeout)
 
+    if done_status is not None:
+        done_status.add_callback(lambda _: q.put_nowait(None))
+
     signal.subscribe_value(q.put_nowait)
     try:
         while True:
-            yield await get_value()
+            item = await get_value()
+            if item is not None:
+                yield item
+            else:
+                break
     finally:
         signal.clear_sub(q.put_nowait)
 
