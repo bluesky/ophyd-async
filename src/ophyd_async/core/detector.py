@@ -19,17 +19,17 @@ from typing import (
 
 from bluesky.protocols import (
     Collectable,
-    Configurable,
     Descriptor,
     Flyable,
     Preparable,
-    Readable,
     Reading,
     Stageable,
     StreamAsset,
     Triggerable,
     WritesStreamAssets,
 )
+
+from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -143,8 +143,8 @@ class DetectorWriter(ABC):
 class StandardDetector(
     Device,
     Stageable,
-    Configurable,
-    Readable,
+    AsyncConfigurable,
+    AsyncReadable,
     Triggerable,
     Preparable,
     Flyable,
@@ -241,7 +241,7 @@ class StandardDetector(
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, Descriptor]:
         return self._describe
 
     @AsyncStatus.wrap

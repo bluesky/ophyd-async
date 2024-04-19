@@ -9,11 +9,12 @@ from bluesky.protocols import (
     Locatable,
     Location,
     Movable,
-    Readable,
     Reading,
     Stageable,
     Subscribable,
 )
+
+from ophyd_async.protocols import AsyncReadable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -127,7 +128,7 @@ class _SignalCache(Generic[T]):
         return self._staged or bool(self._listeners)
 
 
-class SignalR(Signal[T], Readable, Stageable, Subscribable):
+class SignalR(Signal[T], AsyncReadable, Stageable, Subscribable):
     """Signal that can be read from and monitored"""
 
     _cache: Optional[_SignalCache] = None
