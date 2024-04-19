@@ -145,7 +145,7 @@ async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     assert isinstance(panda.pulse[1], PulseBlock)
 
     # others are just Devices
-    assert isinstance(panda.extra, Device)
+    assert isinstance(panda.extra, Device)  # type: ignore[attr-defined]
 
     # predefined signals get set up with the correct datatype
     assert panda.pcap.active._backend.datatype is bool
@@ -154,7 +154,7 @@ async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     assert panda.seq[1].table._backend.datatype is SeqTable
 
     # others are given the None datatype
-    assert panda.pcap.newsignal._backend.datatype is None
+    assert panda.pcap.newsignal._backend.datatype is None  # type: ignore[attr-defined]
 
 
 async def test_panda_block_missing_signals(panda_pva, panda_t):

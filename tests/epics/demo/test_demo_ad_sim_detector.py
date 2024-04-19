@@ -6,7 +6,7 @@ from typing import List, cast
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 from bluesky.utils import new_uid
 
 from ophyd_async.core import (
@@ -153,15 +153,15 @@ async def test_two_detectors_step(
         info_a.root / info_a.resource_dir
     )
     file_name_a = await writer_a.hdf.file_name.get_value()
-    assert file_name_a.startswith(info_a.prefix)
-    assert file_name_a.endswith(info_a.suffix)
+    assert file_name_a.startswith(str(info_a.prefix))
+    assert file_name_a.endswith(str(info_a.suffix))
 
     assert await writer_b.hdf.file_path.get_value() == str(
         info_b.root / info_b.resource_dir
     )
     file_name_b = await writer_b.hdf.file_name.get_value()
-    assert file_name_b.startswith(info_b.prefix)
-    assert file_name_b.endswith(info_b.suffix)
+    assert file_name_b.startswith(str(info_b.prefix))
+    assert file_name_b.endswith(str(info_b.suffix))
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8

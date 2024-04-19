@@ -183,7 +183,7 @@ async def test_mover_disconncted():
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
             m = demo.Mover("ca://PRE:", name="mover")
-    assert m.name == "mover"
+        assert m.name == "mover"
 
 
 async def test_sensor_disconnected(caplog):
@@ -191,12 +191,12 @@ async def test_sensor_disconnected(caplog):
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
             s = demo.Sensor("ca://PRE:", name="sensor")
+        assert s.name == "sensor"
     logs = caplog.get_records("call")
     assert len(logs) == 2
 
     assert logs[0].message == ("signal ca://PRE:Value timed out")
     assert logs[1].message == ("signal ca://PRE:Mode timed out")
-    assert s.name == "sensor"
 
 
 async def test_read_sensor(sim_sensor: demo.Sensor):
@@ -261,7 +261,7 @@ async def test_dynamic_sensor_group_disconnected():
         async with DeviceCollector(timeout=0.1):
             sim_sensor_group_dynamic = demo.SensorGroup("SIM:SENSOR:")
 
-    assert sim_sensor_group_dynamic.name == "sim_sensor_group_dynamic"
+        assert sim_sensor_group_dynamic.name == "sim_sensor_group_dynamic"
 
 
 async def test_dynamic_sensor_group_read_and_describe(
