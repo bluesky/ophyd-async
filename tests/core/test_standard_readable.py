@@ -192,3 +192,30 @@ def test_standard_readable_add_readables_adds_wrapped_to_expected_attr(
             # Convert a classmethod into its Class type. Relies on type hinting!
             wrapper = get_type_hints(wrapper)["return"]
         assert isinstance(saved[0], wrapper)
+
+
+def test_standard_readable_set_readable_signals__raises_deprecated():
+    sr = StandardReadable()
+
+    with pytest.deprecated_call():
+        sr.set_readable_signals(())
+
+
+@pytest.mark.filterwarnings("ignore:Migrate to ")
+def test_standard_readable_set_readable_signals():
+    sr = StandardReadable()
+
+    readable = MagicMock(spec=SignalR)
+    configurable = MagicMock(spec=SignalR)
+    readable_uncached = MagicMock(spec=SignalR)
+
+    sr.set_readable_signals(
+        read=(readable,), config=(configurable,), read_uncached=(readable_uncached,)
+    )
+
+    assert len(sr._readables) == 2
+    assert all(isinstance(x, HintedSignal) for x in sr._readables)
+    assert len(sr._configurables) == 1
+    assert all(isinstance(x, ConfigSignal) for x in sr._configurables)
+    assert len(sr._stageables) == 1
+    assert all(isinstance(x, HintedSignal) for x in sr._stageables)

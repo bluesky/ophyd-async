@@ -1,3 +1,4 @@
+import warnings
 from contextlib import contextmanager
 from typing import (
     Callable,
@@ -41,6 +42,32 @@ class StandardReadable(
     _configurables: Tuple[AsyncConfigurable, ...] = ()
     _stageables: Tuple[AsyncStageable, ...] = ()
     _has_hints: Tuple[HasHints, ...] = ()
+
+    def set_readable_signals(
+        self,
+        read: Sequence[SignalR] = (),
+        config: Sequence[SignalR] = (),
+        read_uncached: Sequence[SignalR] = (),
+    ):
+        """
+        Parameters
+        ----------
+        read:
+            Signals to make up :meth:`~StandardReadable.read`
+        conf:
+            Signals to make up :meth:`~StandardReadable.read_configuration`
+        read_uncached:
+            Signals to make up :meth:`~StandardReadable.read` that won't be cached
+        """
+        warnings.warn(
+            DeprecationWarning(
+                "Migrate to `add_children_as_readables` context manager or "
+                "`add_readables` method"
+            )
+        )
+        self.add_readables(read, wrapper=HintedSignal)
+        self.add_readables(config, wrapper=ConfigSignal)
+        self.add_readables(read_uncached, wrapper=HintedSignal.uncached)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
