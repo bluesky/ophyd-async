@@ -176,5 +176,4 @@ class HintedSignal(HasHints, AsyncReadable):
 
     @classmethod
     def uncached(cls, signal: ReadableChild) -> "HintedSignal":
-        assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
         return cls(signal, allow_cache=False)
