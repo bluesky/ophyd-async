@@ -135,6 +135,27 @@ class StandardReadable(
         self,
         wrapper: Optional[ReadableChildWrapper] = None,
     ) -> Generator[None, None, None]:
+        """Context manager to wrap adding Devices
+
+        Add Devices to this class instance inside the Context Manager to automatically
+        add them to the correct fields, based on the Device's interfaces.
+
+        The provided wrapper class will be applied to all Devices and can be used to
+        specify their behaviour.
+
+        Parameters
+        ----------
+        wrapper:
+            Wrapper class to apply to all Devices created inside the context manager.
+
+        See Also
+        --------
+        :func:`~StandardReadable.add_readables`
+        :class:`ConfigSignal`
+        :class:`HintedSignal`
+        :meth:`HintedSignal.uncached`
+        """
+
         dict_copy = self.__dict__.copy()
 
         yield
@@ -159,6 +180,29 @@ class StandardReadable(
         devices: Sequence[Device],
         wrapper: Optional[ReadableChildWrapper] = None,
     ) -> None:
+        """Add the given devices to the lists of known Devices
+
+        Add the provided Devices to the relevant fields, based on the Signal's
+        interfaces.
+
+        The provided wrapper class will be applied to all Devices and can be used to
+        specify their behaviour.
+
+        Parameters
+        ----------
+        devices:
+            The devices to be added
+        wrapper:
+            Wrapper class to apply to all Devices created inside the context manager.
+
+        See Also
+        --------
+        :func:`~StandardReadable.add_children_as_readables`
+        :class:`ConfigSignal`
+        :class:`HintedSignal`
+        :meth:`HintedSignal.uncached`
+        """
+
         for readable in devices:
             obj = readable
             if wrapper:
