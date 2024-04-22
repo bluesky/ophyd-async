@@ -6,7 +6,7 @@ import pytest
 from bluesky.protocols import HasHints
 
 from ophyd_async.core import ConfigSignal, HintedSignal, StandardReadable
-from ophyd_async.core.device import Device
+from ophyd_async.core.device import Device, DeviceVector
 from ophyd_async.core.signal import SignalR
 from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
@@ -79,6 +79,33 @@ def test_standard_readable_add_children_context_manager():
     # internal dict comprehension is not guaranteed
     mock.assert_called_once()
     assert set(mock.call_args.args[0]) == {sr.a, sr.b, sr.c}
+
+
+def test_standard_readable_add_children_cm_device_vector():
+    sr = StandardReadable()
+    mock = MagicMock()
+    sr.add_readables = mock
+
+    # Create a mock for the DeviceVector.children() call
+    mock_d1 = MagicMock(spec=SignalR)
+    mock_d2 = MagicMock(spec=SignalR)
+    mock_d3 = MagicMock(spec=SignalR)
+    vector_mock = MagicMock(spec=DeviceVector)
+    vector_mock.children = MagicMock()
+    vector_mock.children.return_value = iter(
+        [
+            ("a", mock_d1),
+            ("b", mock_d2),
+            ("c", mock_d3),
+        ]
+    )
+    with sr.add_children_as_readables():
+        sr.a = vector_mock
+
+    # Can't use assert_called_once_with() as the order of items returned from
+    # internal dict comprehension is not guaranteed
+    mock.assert_called_once()
+    assert set(mock.call_args.args[0]) == {mock_d1, mock_d2, mock_d3}
 
 
 def test_standard_readable_add_children_cm_filters_non_devices():

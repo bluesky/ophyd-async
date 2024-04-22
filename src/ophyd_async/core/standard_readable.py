@@ -15,7 +15,7 @@ from bluesky.protocols import Descriptor, HasHints, Hints, Reading
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
 from .async_status import AsyncStatus
-from .device import Device
+from .device import Device, DeviceVector
 from .signal import SignalR
 from .utils import merge_gathered_dicts
 
@@ -109,11 +109,19 @@ class StandardReadable(
 
         yield
 
-        # Set symmetric difference operator gives all newly added items
-        new_attributes = dict_copy.items() ^ self.__dict__.items()
-        new_values = [x[1] for x in new_attributes]
+        # Set symmetric difference operator gives all newly added keys
+        new_keys = dict_copy.keys() ^ self.__dict__.keys()
+        new_values = [self.__dict__[key] for key in new_keys]
 
-        new_devices = filter(lambda x: isinstance(x, Device), new_values)
+        flattened_values = []
+        for value in new_values:
+            if isinstance(value, DeviceVector):
+                children = value.children()
+                flattened_values.extend([x[1] for x in children])
+            else:
+                flattened_values.append(value)
+
+        new_devices = list(filter(lambda x: isinstance(x, Device), flattened_values))
         self.add_readables(new_devices, wrapper)
 
     def add_readables(

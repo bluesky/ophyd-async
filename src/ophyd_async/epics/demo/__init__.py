@@ -51,15 +51,11 @@ class Sensor(StandardReadable):
 
 class SensorGroup(StandardReadable):
     def __init__(self, prefix: str, name: str = "", sensor_count: int = 3) -> None:
-        self.sensors = DeviceVector(
-            {i: Sensor(f"{prefix}{i}:") for i in range(1, sensor_count + 1)}
-        )
+        with self.add_children_as_readables():
+            self.sensors = DeviceVector(
+                {i: Sensor(f"{prefix}{i}:") for i in range(1, sensor_count + 1)}
+            )
 
-        # Makes read() produce the values of all sensors
-        self.add_readables(
-            [sensor.value for sensor in self.sensors.values()],
-            HintedSignal,
-        )
         super().__init__(name)
 
 
