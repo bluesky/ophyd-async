@@ -35,7 +35,7 @@ def test_standard_readable_hints():
     }
 
 
-def test_standard_readable_hints_raises_when_attempting_override():
+def test_standard_readable_hints_raises_when_overriding_string_literal():
     sr = StandardReadable()
 
     hint1 = MagicMock()
@@ -43,6 +43,24 @@ def test_standard_readable_hints_raises_when_attempting_override():
 
     hint2 = MagicMock()
     hint2.hints = {"gridding": "a different string"}
+
+    sr._has_hints = (
+        hint1,
+        hint2,
+    )
+
+    with pytest.raises(AssertionError):
+        sr.hints
+
+
+def test_standard_readable_hints_raises_when_overriding_sequence():
+    sr = StandardReadable()
+
+    hint1 = MagicMock()
+    hint1.hints = {"fields": ["field1", "field2"]}
+
+    hint2 = MagicMock()
+    hint2.hints = {"fields": ["field2"]}
 
     sr._has_hints = (
         hint1,

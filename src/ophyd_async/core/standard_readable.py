@@ -71,7 +71,6 @@ class StandardReadable(
     @property
     def hints(self) -> Hints:
         hints: Hints = {}
-
         for new_hint in self._has_hints:
             # Merge the existing and new hints, based on the type of the value.
             # This avoids default dict merge behaviour that overrides the values;
@@ -87,6 +86,10 @@ class StandardReadable(
                         hints[key] = value  # type: ignore[literal-required]
                 elif isinstance(value, Sequence):
                     if key in hints:
+                        for new_val in value:
+                            assert (
+                                new_val not in hints[key]  # type: ignore[literal-required]
+                            ), f"Hint {key} {new_val} overrides existing hint"
                         hints[key] = (  # type: ignore[literal-required]
                             hints[key] + value  # type: ignore[literal-required]
                         )
