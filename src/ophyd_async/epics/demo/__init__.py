@@ -14,12 +14,18 @@ from typing import Callable, List, Optional
 import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import AsyncStatus, Device, StandardReadable, observe_value
+from ophyd_async.core import (
+    AsyncStatus,
+    Device,
+    DeviceVector,
+    StandardReadable,
+    observe_value,
+)
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
 
-class EnergyMode(Enum):
+class EnergyMode(str, Enum):
     """Energy mode for `Sensor`"""
 
     #: Low energy mode
@@ -41,6 +47,19 @@ class Sensor(StandardReadable):
             config=[self.mode],
         )
         super().__init__(name=name)
+
+
+class SensorGroup(StandardReadable):
+    def __init__(self, prefix: str, name: str = "", sensor_count: int = 3) -> None:
+        self.sensors = DeviceVector(
+            {i: Sensor(f"{prefix}{i}:") for i in range(1, sensor_count + 1)}
+        )
+
+        # Makes read() produce the values of all sensors
+        self.set_readable_signals(
+            read=[sensor.value for sensor in self.sensors.values()],
+        )
+        super().__init__(name)
 
 
 class Mover(StandardReadable, Movable, Stoppable):
@@ -112,7 +131,8 @@ class Mover(StandardReadable, Movable, Stoppable):
 
     async def stop(self, success=True):
         self._set_success = success
-        await self.stop_.execute()
+        status = self.stop_.trigger()
+        await status
 
 
 class SampleStage(Device):
@@ -134,11 +154,22 @@ def start_ioc_subprocess() -> str:
     pv_prefix = "".join(random.choice(string.ascii_uppercase) for _ in range(12)) + ":"
     here = Path(__file__).absolute().parent
     args = [sys.executable, "-m", "epicscorelibs.ioc"]
+
+    # Create standalone sensor
     args += ["-m", f"P={pv_prefix}"]
     args += ["-d", str(here / "sensor.db")]
-    for suff in "XY":
-        args += ["-m", f"P={pv_prefix}{suff}:"]
+
+    # Create sensor group
+    for suffix in ["1", "2", "3"]:
+        args += ["-m", f"P={pv_prefix}{suffix}:"]
+        args += ["-d", str(here / "sensor.db")]
+
+    # Create X and Y motors
+    for suffix in ["X", "Y"]:
+        args += ["-m", f"P={pv_prefix}{suffix}:"]
         args += ["-d", str(here / "mover.db")]
+
+    # Start IOC
     process = subprocess.Popen(
         args,
         stdin=subprocess.PIPE,

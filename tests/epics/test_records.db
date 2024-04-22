@@ -5,6 +5,11 @@ record(bo, "$(P)bool") {
   field(PINI, "YES")
 }
 
+record(bo, "$(P)bool_unnamed") {
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
 record(longout, "$(P)int") {
   field(HOPR, "100")
   field(HIHI, "98")
@@ -278,6 +283,30 @@ record(waveform, "$(P)ntndarray:data")
                 +trigger:"*",
             },
             "": {+type:"meta", +channel:"SEVR"}
+        }
+    })
+}
+
+record(ao, "$(P)width")
+{
+    info(Q:group, {
+        "$(P)pvi": {
+            "pvi.width.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(ao, "$(P)height")
+{
+    info(Q:group, {
+        "$(P)pvi": {
+            "pvi.height.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
         }
     })
 }

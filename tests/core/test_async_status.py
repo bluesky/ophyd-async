@@ -63,7 +63,7 @@ async def coroutine_to_wrap(time: float):
     await asyncio.sleep(time)
 
 
-async def test_async_status_wrap():
+async def test_async_status_wrap() -> None:
     wrapped_coroutine = AsyncStatus.wrap(coroutine_to_wrap)
     status: AsyncStatus = wrapped_coroutine(0.01)
 
@@ -83,21 +83,30 @@ async def test_async_status_str_for_normal_coroutine(normal_coroutine):
     normal_task = asyncio.Task(normal_coroutine())
     status = AsyncStatus(normal_task)
 
-    assert str(status) == "<AsyncStatus pending>"
+    for comment_chunk in ["<AsyncStatus,", "normal_coroutine", "pending>"]:
+        assert comment_chunk in str(status)
     await status
 
-    assert str(status) == "<AsyncStatus done>"
+    for comment_chunk in ["<AsyncStatus,", "normal_coroutine", "done>"]:
+        assert comment_chunk in str(status)
 
 
 async def test_async_status_str_for_failing_coroutine(failing_coroutine):
     failing_task = asyncio.Task(failing_coroutine())
     status = AsyncStatus(failing_task)
 
-    assert str(status) == "<AsyncStatus pending>"
+    for comment_chunk in ["<AsyncStatus,", "failing_coroutine", "pending>"]:
+        assert comment_chunk in str(status)
     with pytest.raises(ValueError):
         await status
 
-    assert str(status) == "<AsyncStatus errored>"
+    for comment_chunk in [
+        "<AsyncStatus,",
+        "failing_coroutine",
+        "errored:",
+        "ValueError",
+    ]:
+        assert comment_chunk in str(status)
 
 
 class FailingMovable(Movable, Device):

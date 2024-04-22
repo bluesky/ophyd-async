@@ -1,4 +1,5 @@
 import asyncio
+import os
 import subprocess
 import sys
 import time
@@ -8,7 +9,9 @@ from typing import Any, Callable
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
-RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
+from ophyd_async.core import StaticDirectoryProvider
+
+PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
     Path(__file__).parent / "panda" / "db" / "incomplete_block_panda.db"
 )
@@ -16,6 +19,18 @@ INCOMPLETE_RECORD = str(Path(__file__).parent / "panda" / "db" / "incomplete_pan
 EXTRA_BLOCKS_RECORD = str(
     Path(__file__).parent / "panda" / "db" / "extra_blocks_panda.db"
 )
+
+# Prevent pytest from catching exceptions when debugging in vscode so that break on
+# exception works correctly (see: https://github.com/pytest-dev/pytest/issues/7409)
+if os.getenv("PYTEST_RAISE", "0") == "1":
+
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_exception_interact(call):
+        raise call.excinfo.value
+
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_internalerror(excinfo):
+        raise excinfo.value
 
 
 @pytest.fixture(scope="function")
@@ -39,7 +54,7 @@ def RE(request):
 
 
 @pytest.fixture(scope="module", params=["pva"])
-def pva():
+def panda_pva():
     processes = [
         subprocess.Popen(
             [
@@ -49,7 +64,7 @@ def pva():
                 "-m",
                 macros,
                 "-d",
-                RECORD,
+                PANDA_RECORD,
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
@@ -68,7 +83,10 @@ def pva():
         assert not p.poll(), p.stdout.read()
 
     yield processes
-    [p.terminate() for p in processes]
+
+    for p in processes:
+        p.terminate()
+        p.communicate()
 
 
 @pytest.fixture
@@ -86,3 +104,8 @@ async def failing_coroutine() -> Callable[[], Any]:
         raise ValueError()
 
     return inner_coroutine
+
+
+@pytest.fixture
+def static_directory_provider(tmp_path: Path):
+    return StaticDirectoryProvider(directory_path=tmp_path)

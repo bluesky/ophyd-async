@@ -14,9 +14,7 @@ import requests
 import ophyd_async
 
 # -- General configuration ------------------------------------------------
-# Source code dir relative to this file
 sys.path.insert(0, os.path.abspath("../../src"))
-
 # General information about the project.
 project = "ophyd-async"
 copyright = "2014, Brookhaven National Lab"
@@ -71,6 +69,7 @@ napoleon_numpy_docstring = True
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
+    # builtins
     ("py:class", "NoneType"),
     ("py:class", "'str'"),
     ("py:class", "'float'"),
@@ -78,6 +77,7 @@ nitpick_ignore = [
     ("py:class", "'bool'"),
     ("py:class", "'object'"),
     ("py:class", "'id'"),
+    # typing
     ("py:class", "typing_extensions.Literal"),
 ]
 
@@ -118,21 +118,20 @@ pygments_style = "sphinx"
 # docs in the python documentation.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "bluesky": ("https://blueskyproject.io/bluesky/", None),
+    "bluesky": ("https://blueskyproject.io/bluesky/main", None),
     "numpy": ("https://numpy.org/devdocs/", None),
     "databroker": ("https://blueskyproject.io/databroker/", None),
     "event-model": ("https://blueskyproject.io/event-model/main", None),
 }
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
-inheritance_graph_attrs = dict(rankdir="TB")
+inheritance_graph_attrs = {"rankdir": "TB"}
 
 # Common links that should be available on every page
 rst_epilog = """
 .. _NSLS: https://www.bnl.gov/nsls2
 .. _black: https://github.com/psf/black
-.. _flake8: https://flake8.pycqa.org/en/latest/
-.. _isort: https://github.com/PyCQA/isort
+.. _ruff: https://beta.ruff.rs/docs/
 .. _mypy: http://mypy-lang.org/
 .. _pre-commit: https://pre-commit.com/
 """
@@ -151,12 +150,11 @@ copybutton_prompt_is_regexp = True
 # a list of builtin themes.
 #
 html_theme = "pydata_sphinx_theme"
-github_repo = project
+github_repo = "ophyd-async"
 github_user = "bluesky"
-switcher_json = f"https://{github_user}.github.io/{github_repo}/switcher.json"
-# Don't check switcher if it doesn't exist, but warn in a non-failing way
-check_switcher = requests.get(switcher_json).ok
-if not check_switcher:
+switcher_json = "https://blueskyproject.io/ophyd-async/switcher.json"
+switcher_exists = requests.get(switcher_json).ok
+if not switcher_exists:
     print(
         "*** Can't read version switcher, is GitHub pages enabled? \n"
         "    Once Docs CI job has successfully run once, set the "
@@ -166,46 +164,68 @@ if not check_switcher:
     )
 
 # Theme options for pydata_sphinx_theme
-html_theme_options = dict(
-    use_edit_page_button=True,
-    github_url=f"https://github.com/{github_user}/{github_repo}",
-    icon_links=[
-        dict(
-            name="PyPI",
-            url=f"https://pypi.org/project/{project}",
-            icon="fas fa-cube",
-        ),
-        dict(
-            name="Gitter",
-            url="https://gitter.im/NSLS-II/DAMA",
-            icon="fas fa-person-circle-question",
-        ),
+# We don't check switcher because there are 3 possible states for a repo:
+# 1. New project, docs are not published so there is no switcher
+# 2. Existing project with latest skeleton, switcher exists and works
+# 3. Existing project with old skeleton that makes broken switcher,
+#    switcher exists but is broken
+# Point 3 makes checking switcher difficult, because the updated skeleton
+# will fix the switcher at the end of the docs workflow, but never gets a chance
+# to complete as the docs build warns and fails.
+html_theme_options = {
+    "logo": {
+        "text": project,
+    },
+    "use_edit_page_button": True,
+    "github_url": f"https://github.com/{github_user}/{github_repo}",
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": f"https://pypi.org/project/{project}",
+            "icon": "fas fa-cube",
+        },
+        {
+            "name": "Gitter",
+            "url": "https://gitter.im/NSLS-II/DAMA",
+            "icon": "fas fa-person-circle-question",
+        },
     ],
-    external_links=[
-        dict(
-            name="Bluesky Project",
-            url="https://blueskyproject.io",
-        )
+    "switcher": {
+        "json_url": switcher_json,
+        "version_match": version,
+    },
+    "check_switcher": False,
+    "navbar_end": ["theme-switcher", "icon-links", "version-switcher"],
+    "external_links": [
+        {
+            "name": "Bluesky Project",
+            "url": "https://blueskyproject.io",
+        },
+        {
+            "name": "Release Notes",
+            "url": f"https://github.com/{github_user}/{github_repo}/releases",
+        },
     ],
-)
-
+    "navigation_with_keys": False,
+}
 
 # A dictionary of values to pass into the template engine’s context for all pages
-html_context = dict(
-    github_user=github_user,
-    github_repo=project,
-    github_version="master",
-    doc_path="docs",
-)
-
-html_logo = "images/bluesky_ophyd_logo.svg"
-html_favicon = "images/ophyd_favicon.svg"
+html_context = {
+    "github_user": github_user,
+    "github_repo": project,
+    "github_version": version,
+    "doc_path": "docs",
+}
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = False
+
+# Logo
+html_logo = "images/bluesky_ophyd_logo.svg"
+html_favicon = "images/ophyd_favicon.svg"
 
 # If False and a module has the __all__ attribute set, autosummary documents
 # every member listed in __all__ and no others. Default is True

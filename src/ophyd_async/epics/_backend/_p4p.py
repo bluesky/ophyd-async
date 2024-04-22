@@ -1,6 +1,7 @@
 import asyncio
 import atexit
-from asyncio import CancelledError
+import logging
+import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
@@ -10,7 +11,6 @@ from p4p import Value
 from p4p.client.asyncio import Context, Subscription
 
 from ophyd_async.core import (
-    NotConnected,
     ReadingValueCallback,
     SignalBackend,
     T,
@@ -18,6 +18,9 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
+
+from .common import get_supported_enum_class
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -46,15 +49,15 @@ class PvaConverter:
     def reading(self, value):
         ts = value["timeStamp"]
         sv = value["alarm"]["severity"]
-        return dict(
-            value=self.value(value),
-            timestamp=ts["secondsPastEpoch"] + ts["nanoseconds"] * 1e-9,
-            alarm_severity=-1 if sv > 2 else sv,
-        )
+        return {
+            "value": self.value(value),
+            "timestamp": ts["secondsPastEpoch"] + ts["nanoseconds"] * 1e-9,
+            "alarm_severity": -1 if sv > 2 else sv,
+        }
 
     def descriptor(self, source: str, value) -> Descriptor:
         dtype = specifier_to_dtype[value.type().aspy("value")]
-        return dict(source=source, dtype=dtype, shape=[])
+        return {"source": source, "dtype": dtype, "shape": []}
 
     def metadata_fields(self) -> List[str]:
         """
@@ -71,7 +74,7 @@ class PvaConverter:
 
 class PvaArrayConverter(PvaConverter):
     def descriptor(self, source: str, value) -> Descriptor:
-        return dict(source=source, dtype="array", shape=[len(value["value"])])
+        return {"source": source, "dtype": "array", "shape": [len(value["value"])]}
 
 
 class PvaNDArrayConverter(PvaConverter):
@@ -95,7 +98,7 @@ class PvaNDArrayConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         dims = self._get_dimensions(value)
-        return dict(source=source, dtype="array", shape=dims)
+        return {"source": source, "dtype": "array", "shape": dims}
 
     def write_value(self, value):
         # No clear use-case for writing directly to an NDArray, and some
@@ -119,9 +122,7 @@ class PvaEnumConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(
-            source=source, dtype="string", shape=[], choices=choices
-        )  # type: ignore
+        return {"source": source, "dtype": "string", "shape": [], "choices": choices}
 
 
 class PvaEnumBoolConverter(PvaConverter):
@@ -129,7 +130,7 @@ class PvaEnumBoolConverter(PvaConverter):
         return value["value"]["index"]
 
     def descriptor(self, source: str, value) -> Descriptor:
-        return dict(source=source, dtype="integer", shape=[])
+        return {"source": source, "dtype": "integer", "shape": []}
 
 
 class PvaTableConverter(PvaConverter):
@@ -138,7 +139,33 @@ class PvaTableConverter(PvaConverter):
 
     def descriptor(self, source: str, value) -> Descriptor:
         # This is wrong, but defer until we know how to actually describe a table
-        return dict(source=source, dtype="object", shape=[])  # type: ignore
+        return {"source": source, "dtype": "object", "shape": []}  # type: ignore
+
+
+class PvaDictConverter(PvaConverter):
+    def reading(self, value):
+        ts = time.time()
+        value = value.todict()
+        # Alarm severity is vacuously 0 for a table
+        return {"value": value, "timestamp": ts, "alarm_severity": 0}
+
+    def value(self, value: Value):
+        return value.todict()
+
+    def descriptor(self, source: str, value) -> Descriptor:
+        raise NotImplementedError("Describing Dict signals not currently supported")
+
+    def metadata_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for metadata.
+        """
+        return []
+
+    def value_fields(self) -> List[str]:
+        """
+        Fields to request from PVA for the value.
+        """
+        return []
 
 
 class DisconnectedPvaConverter(PvaConverter):
@@ -149,7 +176,9 @@ class DisconnectedPvaConverter(PvaConverter):
 def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConverter:
     pv = list(values)[0]
     typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
-    typ = get_unique({k: type(v["value"]) for k, v in values.items()}, "value types")
+    typ = get_unique(
+        {k: type(v.get("value")) for k, v in values.items()}, "value types"
+    )
     if "NTScalarArray" in typeid and typ == list:
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:
@@ -185,24 +214,15 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        if datatype:
-            if not issubclass(datatype, Enum):
-                raise TypeError(f"{pv} has type Enum not {datatype.__name__}")
-            choices = tuple(v.value for v in datatype)
-            if set(choices) != set(pv_choices):
-                raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
-            enum_class = datatype
-        else:
-            enum_class = Enum(  # type: ignore
-                "GeneratedChoices", {x: x for x in pv_choices}, type=str
-            )
-        return PvaEnumConverter(enum_class)
+        return PvaEnumConverter(get_supported_enum_class(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
         if datatype and not issubclass(typ, datatype):
             raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
         return PvaTableConverter()
+    elif "structure" in typeid:
+        return PvaDictConverter()
     else:
         raise TypeError(f"{pv}: Unsupported typeid {typeid}")
 
@@ -216,8 +236,11 @@ class PvaSignalBackend(SignalBackend[T]):
         self.write_pv = write_pv
         self.initial_values: Dict[str, Any] = {}
         self.converter: PvaConverter = DisconnectedPvaConverter()
-        self.source = f"pva://{self.read_pv}"
         self.subscription: Optional[Subscription] = None
+
+    @property
+    def source(self, name: str):
+        return f"pva://{self.read_pv}"
 
     @property
     def ctxt(self) -> Context:
@@ -233,22 +256,25 @@ class PvaSignalBackend(SignalBackend[T]):
 
         return PvaSignalBackend._ctxt
 
-    async def _store_initial_value(self, pv):
+    async def _store_initial_value(self, pv, timeout: float = DEFAULT_TIMEOUT):
         try:
-            self.initial_values[pv] = await self.ctxt.get(pv)
-        except CancelledError:
-            raise NotConnected(self.source)
+            self.initial_values[pv] = await asyncio.wait_for(
+                self.ctxt.get(pv), timeout=timeout
+            )
+        except asyncio.TimeoutError as exc:
+            logging.debug(f"signal pva://{pv} timed out", exc_info=True)
+            raise NotConnected(f"pva://{pv}") from exc
 
-    async def connect(self):
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         if self.read_pv != self.write_pv:
             # Different, need to connect both
             await wait_for_connection(
-                read_pv=self._store_initial_value(self.read_pv),
-                write_pv=self._store_initial_value(self.write_pv),
+                read_pv=self._store_initial_value(self.read_pv, timeout=timeout),
+                write_pv=self._store_initial_value(self.write_pv, timeout=timeout),
             )
         else:
             # The same, so only need to connect one
-            await self._store_initial_value(self.read_pv)
+            await self._store_initial_value(self.read_pv, timeout=timeout)
         self.converter = make_converter(self.datatype, self.initial_values)
 
     async def put(self, value: Optional[T], wait=True, timeout=None):
@@ -256,12 +282,20 @@ class PvaSignalBackend(SignalBackend[T]):
             write_value = self.initial_values[self.write_pv]
         else:
             write_value = self.converter.write_value(value)
-        coro = self.ctxt.put(self.write_pv, dict(value=write_value), wait=wait)
-        await asyncio.wait_for(coro, timeout)
+        coro = self.ctxt.put(self.write_pv, {"value": write_value}, wait=wait)
+        try:
+            await asyncio.wait_for(coro, timeout)
+        except asyncio.TimeoutError as exc:
+            logging.debug(
+                f"signal pva://{self.write_pv} timed out \
+                          put value: {write_value}",
+                exc_info=True,
+            )
+            raise NotConnected(f"pva://{self.write_pv}") from exc
 
-    async def get_descriptor(self) -> Descriptor:
+    async def get_descriptor(self, source: str) -> Descriptor:
         value = await self.ctxt.get(self.read_pv)
-        return self.converter.descriptor(self.source, value)
+        return self.converter.descriptor(source, value)
 
     def _pva_request_string(self, fields: List[str]) -> str:
         """
@@ -280,6 +314,10 @@ class PvaSignalBackend(SignalBackend[T]):
     async def get_value(self) -> T:
         request: str = self._pva_request_string(self.converter.value_fields())
         value = await self.ctxt.get(self.read_pv, request=request)
+        return self.converter.value(value)
+
+    async def get_setpoint(self) -> T:
+        value = await self.ctxt.get(self.write_pv, "field(value)")
         return self.converter.value(value)
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:

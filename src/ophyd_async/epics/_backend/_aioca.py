@@ -1,5 +1,5 @@
+import logging
 import sys
-from asyncio import CancelledError
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional, Sequence, Type, Union
@@ -8,6 +8,7 @@ from aioca import (
     FORMAT_CTRL,
     FORMAT_RAW,
     FORMAT_TIME,
+    CANothing,
     Subscription,
     caget,
     camonitor,
@@ -18,7 +19,6 @@ from bluesky.protocols import Descriptor, Dtype, Reading
 from epicscorelibs.ca import dbr
 
 from ophyd_async.core import (
-    NotConnected,
     ReadingValueCallback,
     SignalBackend,
     T,
@@ -26,6 +26,9 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
+
+from .common import get_supported_enum_class
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -49,19 +52,29 @@ class CaConverter:
         return value
 
     def reading(self, value: AugmentedValue):
-        return dict(
-            value=self.value(value),
-            timestamp=value.timestamp,
-            alarm_severity=-1 if value.severity > 2 else value.severity,
-        )
+        return {
+            "value": self.value(value),
+            "timestamp": value.timestamp,
+            "alarm_severity": -1 if value.severity > 2 else value.severity,
+        }
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
-        return dict(source=source, dtype=dbr_to_dtype[value.datatype], shape=[])
+        return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
+
+
+class CaLongStrConverter(CaConverter):
+    def __init__(self):
+        return super().__init__(dbr.DBR_CHAR_STR, dbr.DBR_CHAR_STR)
+
+    def write_value(self, value: str):
+        # Add a null in here as this is what the commandline caput does
+        # TODO: this should be in the server so check if it can be pushed to asyn
+        return value + "\0"
 
 
 class CaArrayConverter(CaConverter):
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
-        return dict(source=source, dtype="array", shape=[len(value)])
+        return {"source": source, "dtype": "array", "shape": [len(value)]}
 
 
 @dataclass
@@ -79,9 +92,7 @@ class CaEnumConverter(CaConverter):
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(
-            source=source, dtype="string", shape=[], choices=choices
-        )  # type: ignore
+        return {"source": source, "dtype": "string", "shape": [], "choices": choices}
 
 
 class DisconnectedCaConverter(CaConverter):
@@ -97,7 +108,7 @@ def make_converter(
     is_array = bool([v for v in values.values() if v.element_count > 1])
     if is_array and datatype is str and pv_dbr == dbr.DBR_CHAR:
         # Override waveform of chars to be treated as string
-        return CaConverter(dbr.DBR_CHAR_STR, dbr.DBR_CHAR_STR)
+        return CaLongStrConverter()
     elif is_array and pv_dbr == dbr.DBR_STRING:
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:
@@ -127,17 +138,7 @@ def make_converter(
         pv_choices = get_unique(
             {k: tuple(v.enums) for k, v in values.items()}, "choices"
         )
-        if datatype:
-            if not issubclass(datatype, Enum):
-                raise TypeError(f"{pv} has type Enum not {datatype.__name__}")
-            choices = tuple(v.value for v in datatype)
-            if set(choices) != set(pv_choices):
-                raise TypeError(f"{pv} has choices {pv_choices} not {choices}")
-            enum_class = datatype
-        else:
-            enum_class = Enum(  # type: ignore
-                "GeneratedChoices", {x: x for x in pv_choices}, type=str
-            )
+        enum_class = get_supported_enum_class(pv, datatype, pv_choices)
         return CaEnumConverter(dbr.DBR_STRING, None, enum_class)
     else:
         value = list(values.values())[0]
@@ -169,26 +170,31 @@ class CaSignalBackend(SignalBackend[T]):
         self.write_pv = write_pv
         self.initial_values: Dict[str, AugmentedValue] = {}
         self.converter: CaConverter = DisconnectedCaConverter(None, None)
-        self.source = f"ca://{self.read_pv}"
         self.subscription: Optional[Subscription] = None
 
-    async def _store_initial_value(self, pv):
-        try:
-            self.initial_values[pv] = await caget(pv, format=FORMAT_CTRL, timeout=None)
-        except CancelledError:
-            raise NotConnected(self.source)
+    def source(self, name: str):
+        return f"ca://{self.read_pv}"
 
-    async def connect(self):
+    async def _store_initial_value(self, pv, timeout: float = DEFAULT_TIMEOUT):
+        try:
+            self.initial_values[pv] = await caget(
+                pv, format=FORMAT_CTRL, timeout=timeout
+            )
+        except CANothing as exc:
+            logging.debug(f"signal ca://{pv} timed out")
+            raise NotConnected(f"ca://{pv}") from exc
+
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         _use_pyepics_context_if_imported()
         if self.read_pv != self.write_pv:
             # Different, need to connect both
             await wait_for_connection(
-                read_pv=self._store_initial_value(self.read_pv),
-                write_pv=self._store_initial_value(self.write_pv),
+                read_pv=self._store_initial_value(self.read_pv, timeout=timeout),
+                write_pv=self._store_initial_value(self.write_pv, timeout=timeout),
             )
         else:
             # The same, so only need to connect one
-            await self._store_initial_value(self.read_pv)
+            await self._store_initial_value(self.read_pv, timeout=timeout)
         self.converter = make_converter(self.datatype, self.initial_values)
 
     async def put(self, value: Optional[T], wait=True, timeout=None):
@@ -212,9 +218,9 @@ class CaSignalBackend(SignalBackend[T]):
             timeout=None,
         )
 
-    async def get_descriptor(self) -> Descriptor:
+    async def get_descriptor(self, source: str) -> Descriptor:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.descriptor(self.source, value)
+        return self.converter.descriptor(source, value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)
@@ -222,6 +228,15 @@ class CaSignalBackend(SignalBackend[T]):
 
     async def get_value(self) -> T:
         value = await self._caget(FORMAT_RAW)
+        return self.converter.value(value)
+
+    async def get_setpoint(self) -> T:
+        value = await caget(
+            self.write_pv,
+            datatype=self.converter.read_dbr,
+            format=FORMAT_RAW,
+            timeout=None,
+        )
         return self.converter.value(value)
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:

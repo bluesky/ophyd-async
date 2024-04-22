@@ -9,17 +9,36 @@ from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, Sequence, Tuple, Type, TypedDict
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypedDict,
+)
+from unittest.mock import ANY
 
 import numpy as np
 import numpy.typing as npt
 import pytest
-from aioca import purge_channel_caches
+from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import Reading
 
-from ophyd_async.core import NotConnected, SignalBackend, T, get_dtype
+from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
+from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
-from ophyd_async.epics.signal.signal import _make_backend
+from ophyd_async.epics.signal.signal import (
+    _make_backend,
+    epics_signal_r,
+    epics_signal_rw,
+    epics_signal_rw_rbv,
+    epics_signal_w,
+    epics_signal_x,
+)
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
@@ -89,9 +108,12 @@ class MonitorQueue:
             "timestamp": pytest.approx(time.time(), rel=0.1),
             "alarm_severity": 0,
         }
-        reading, value = await self.updates.get()
-        assert value == expected_value == await self.backend.get_value()
-        assert reading == expected_reading == await self.backend.get_reading()
+        backend_reading = await asyncio.wait_for(self.backend.get_reading(), timeout=5)
+        reading, value = await asyncio.wait_for(self.updates.get(), timeout=5)
+        backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
+
+        assert value == expected_value == backend_value
+        assert reading == expected_reading == backend_reading
 
     def close(self):
         self.backend.set_callback(None)
@@ -110,8 +132,10 @@ async def assert_monitor_then_put(
     q = MonitorQueue(backend)
     try:
         # Check descriptor
-        source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=source, **descriptor) == await backend.get_descriptor()
+        pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
+        assert dict(source=pv_name, **descriptor) == await backend.get_descriptor(
+            pv_name
+        )
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -121,6 +145,20 @@ async def assert_monitor_then_put(
         q.close()
 
 
+async def put_error(
+    ioc: IOC,
+    suffix: str,
+    put_value: T,
+    datatype: Optional[Type[T]] = None,
+):
+    backend = await ioc.make_backend(datatype, suffix)
+    # The below will work without error
+    await backend.put(put_value)
+    # Change the name of write_pv to mock disconnection
+    backend.__setattr__("write_pv", "Disconnect")
+    await backend.put(put_value, timeout=3)
+
+
 class MyEnum(str, Enum):
     a = "Aaa"
     b = "Bbb"
@@ -128,23 +166,23 @@ class MyEnum(str, Enum):
 
 
 def integer_d(value):
-    return dict(dtype="integer", shape=[])
+    return {"dtype": "integer", "shape": []}
 
 
 def number_d(value):
-    return dict(dtype="number", shape=[])
+    return {"dtype": "number", "shape": []}
 
 
 def string_d(value):
-    return dict(dtype="string", shape=[])
+    return {"dtype": "string", "shape": []}
 
 
 def enum_d(value):
-    return dict(dtype="string", shape=[], choices=["Aaa", "Bbb", "Ccc"])
+    return {"dtype": "string", "shape": [], "choices": ["Aaa", "Bbb", "Ccc"]}
 
 
 def waveform_d(value):
-    return dict(dtype="array", shape=[len(value)])
+    return {"dtype": "array", "shape": [len(value)]}
 
 
 ls1 = "a string that is just longer than forty characters"
@@ -189,6 +227,7 @@ async def test_backend_get_put_monitor(
     initial_value: T,
     put_value: T,
     descriptor: Callable[[Any], dict],
+    tmp_path,
 ):
     # ca can't support all the types
     dtype = get_dtype(datatype)
@@ -210,11 +249,17 @@ async def test_backend_get_put_monitor(
         ioc, suffix, descriptor(put_value), put_value, initial_value, datatype=None
     )
 
+    yaml_path = tmp_path / "test.yaml"
+    save_to_yaml([{"test": put_value}], yaml_path)
+    loaded = load_from_yaml(yaml_path)
+    assert np.all(loaded[0]["test"] == put_value)
 
-async def test_bool_conversion_of_enum(ioc: IOC) -> None:
+
+@pytest.mark.parametrize("suffix", ["bool", "bool_unnamed"])
+async def test_bool_conversion_of_enum(ioc: IOC, suffix: str) -> None:
     await assert_monitor_then_put(
         ioc,
-        suffix="bool",
+        suffix=suffix,
         descriptor=integer_d(True),
         initial_value=True,
         put_value=False,
@@ -222,16 +267,75 @@ async def test_bool_conversion_of_enum(ioc: IOC) -> None:
     )
 
 
-class BadEnum(Enum):
+async def test_error_raised_on_disconnected_PV(ioc: IOC) -> None:
+    if ioc.protocol == "pva":
+        err = NotConnected
+        expected = "pva://Disconnect"
+    elif ioc.protocol == "ca":
+        err = CANothing
+        expected = "Disconnect: User specified timeout on IO operation expired"
+    with pytest.raises(err, match=expected):
+        await put_error(
+            ioc,
+            suffix="bool",
+            put_value=False,
+            datatype=bool,
+        )
+
+
+class BadEnum(str, Enum):
     a = "Aaa"
     b = "B"
     c = "Ccc"
 
 
+def test_enum_equality():
+    """Check that we are allowed to replace the passed datatype enum from a signal with
+    a version generated from the signal with at least all of the same values, but
+    possibly more.
+    """
+
+    class GeneratedChoices(str, Enum):
+        a = "Aaa"
+        b = "B"
+        c = "Ccc"
+
+    class ExtendedGeneratedChoices(str, Enum):
+        a = "Aaa"
+        b = "B"
+        c = "Ccc"
+        d = "Ddd"
+
+    for enum_class in (GeneratedChoices, ExtendedGeneratedChoices):
+        assert BadEnum.a == enum_class.a
+        assert BadEnum.a.value == enum_class.a
+        assert BadEnum.a.value == enum_class.a.value
+        assert BadEnum(enum_class.a) is BadEnum.a
+        assert BadEnum(enum_class.a.value) is BadEnum.a
+        assert not BadEnum == enum_class
+
+    # We will always PUT BadEnum by String, and GET GeneratedChoices by index,
+    # so shouldn't ever run across this from conversion code, but may occur if
+    # casting returned values or passing as enum rather than value.
+    with pytest.raises(ValueError):
+        BadEnum(ExtendedGeneratedChoices.d)
+
+
+class EnumNoString(Enum):
+    a = "Aaa"
+
+
 @pytest.mark.parametrize(
     "typ, suff, error",
     [
-        (BadEnum, "enum", "has choices ('Aaa', 'Bbb', 'Ccc') not ('Aaa', 'B', 'Ccc')"),
+        (
+            BadEnum,
+            "enum",
+            (
+                "has choices ('Aaa', 'Bbb', 'Ccc'), which do not match "
+                "<enum 'BadEnum'>, which has ('Aaa', 'B', 'Ccc')"
+            ),
+        ),
         (int, "str", "has type str not int"),
         (str, "float", "has type float not str"),
         (str, "stra", "has type [str] not str"),
@@ -252,6 +356,18 @@ async def test_backend_put_enum_string(ioc: IOC) -> None:
     # Don't do this in production code, but allow on CLI
     await backend.put("Ccc")  # type: ignore
     assert MyEnum.c == await backend.get_value()
+
+
+async def test_backend_enum_which_doesnt_inherit_string(ioc: IOC) -> None:
+    with pytest.raises(TypeError):
+        backend = await ioc.make_backend(EnumNoString, "enum2")
+        await backend.put("Aaa")
+
+
+async def test_backend_get_setpoint(ioc: IOC) -> None:
+    backend = await ioc.make_backend(MyEnum, "enum2")
+    await backend.put("Ccc")
+    assert await backend.get_setpoint() == MyEnum.c
 
 
 def approx_table(table):
@@ -285,7 +401,7 @@ async def test_pva_table(ioc: IOC) -> None:
         enum=[MyEnum.c, MyEnum.b],
     )
     # TODO: what should this be for a variable length table?
-    descriptor = dict(dtype="object", shape=[])
+    descriptor = {"dtype": "object", "shape": []}
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")
@@ -293,7 +409,9 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check descriptor
-            dict(source=backend.source, **descriptor) == await backend.get_descriptor()
+            dict(source="test-source", **descriptor) == await backend.get_descriptor(
+                "test-source"
+            )
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -301,6 +419,40 @@ async def test_pva_table(ioc: IOC) -> None:
             await q.assert_updates(approx_table(p))
         finally:
             q.close()
+
+
+async def test_pvi_structure(ioc: IOC) -> None:
+    if ioc.protocol == "ca":
+        # CA can't do structure
+        return
+    # Make and connect the backend
+    backend = await ioc.make_backend(Dict[str, Any], "pvi")
+
+    # Make a monitor queue that will monitor for updates
+    q = MonitorQueue(backend)
+
+    expected = {
+        "pvi": {
+            "width": {
+                "rw": f"{PV_PREFIX}:{ioc.protocol}:width",
+            },
+            "height": {
+                "rw": f"{PV_PREFIX}:{ioc.protocol}:height",
+            },
+        },
+        "record": ANY,
+    }
+
+    try:
+        # Check descriptor
+        with pytest.raises(NotImplementedError):
+            await backend.get_descriptor("")
+        # Check initial value
+        await q.assert_updates(expected)
+        await backend.get_value()
+
+    finally:
+        q.close()
 
 
 async def test_pva_ntdarray(ioc: IOC):
@@ -321,10 +473,10 @@ async def test_pva_ntdarray(ioc: IOC):
     for i, p in [(initial, put), (put, initial)]:
         with closing(MonitorQueue(backend)) as q:
             assert {
-                "source": backend.source,
+                "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
-            } == await backend.get_descriptor()
+            } == await backend.get_descriptor("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())
@@ -342,19 +494,12 @@ async def test_writing_to_ndarray_raises_typeerror(ioc: IOC):
         await backend.put(np.zeros((6,), dtype=np.int64))
 
 
-async def test_non_existant_errors(ioc: IOC):
-    backend = await ioc.make_backend(str, "non-existant", connect=False)
+async def test_non_existent_errors(ioc: IOC):
+    backend = await ioc.make_backend(str, "non-existent", connect=False)
     # Can't use asyncio.wait_for on python3.8 because of
     # https://github.com/python/cpython/issues/84787
-    done, pending = await asyncio.wait(
-        [asyncio.create_task(backend.connect())], timeout=0.1
-    )
-    assert len(done) == 0
-    assert len(pending) == 1
-    t = pending.pop()
-    t.cancel()
-    with pytest.raises(NotConnected, match=backend.source):
-        await t
+    with pytest.raises(NotConnected):
+        await backend.connect(timeout=0.1)
 
 
 def test_make_backend_fails_for_different_transports():
@@ -365,3 +510,30 @@ def test_make_backend_fails_for_different_transports():
         _make_backend(str, read_pv, write_pv)
         assert err.args[0] == f"Differing transports: {read_pv} has EpicsTransport.ca,"
         +" {write_pv} has EpicsTransport.pva"
+
+
+def test_signal_helpers():
+    read_write = epics_signal_rw(int, "ReadWrite")
+    assert read_write._backend.read_pv == "ReadWrite"
+    assert read_write._backend.write_pv == "ReadWrite"
+
+    read_write_rbv_manual = epics_signal_rw(int, "ReadWrite_RBV", "ReadWrite")
+    assert read_write_rbv_manual._backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv_manual._backend.write_pv == "ReadWrite"
+
+    read_write_rbv = epics_signal_rw_rbv(int, "ReadWrite")
+    assert read_write_rbv._backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv._backend.write_pv == "ReadWrite"
+
+    read_write_rbv_suffix = epics_signal_rw_rbv(int, "ReadWrite", read_suffix=":RBV")
+    assert read_write_rbv_suffix._backend.read_pv == "ReadWrite:RBV"
+    assert read_write_rbv_suffix._backend.write_pv == "ReadWrite"
+
+    read = epics_signal_r(int, "Read")
+    assert read._backend.read_pv == "Read"
+
+    write = epics_signal_w(int, "Write")
+    assert write._backend.write_pv == "Write"
+
+    execute = epics_signal_x("Execute")
+    assert execute._backend.write_pv == "Execute"
