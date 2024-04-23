@@ -228,13 +228,3 @@ async def test_assert_configuration(sim_readable: DummyReadable):
         },
     }
     await assert_configuration(sim_readable, dummy_config_reading)
-    # test for none awaitable part of verify
-    from ophyd.sim import DetWithConf
-
-    something = DetWithConf(name="det")
-    dummy_config_reading1 = {
-        "det_c": {"value": 3, "timestamp": ANY},
-        "det_d": {"value": 4, "timestamp": ANY},
-    }
-
-    await assert_configuration(something, dummy_config_reading1)

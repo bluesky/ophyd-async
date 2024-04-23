@@ -306,16 +306,10 @@ async def _verify_readings(
         await _verify_readings(readable.read, reading)
     Or::
         await _verify_readings(configurable.read_configuration, configuration)
-    Future::
-        func will only be Waitable in the future and the if loop can be removed:
-
-        result = func()
 
     """
-    if asyncio.iscoroutinefunction(func):
-        result = await func()
-    else:
-        result = func()
+    result = await func()
+
     assert result == expectation
 
 
