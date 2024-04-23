@@ -39,6 +39,8 @@ from .signal import (
     set_sim_callback,
     set_sim_put_proceeds,
     set_sim_value,
+    soft_signal_r_and_backend,
+    soft_signal_rw,
     wait_for_value,
 )
 from .signal_backend import SignalBackend
@@ -71,6 +73,8 @@ __all__ = [
     "SignalW",
     "SignalRW",
     "SignalX",
+    "soft_signal_r_and_backend",
+    "soft_signal_rw",
     "observe_value",
     "set_and_wait_for_value",
     "set_sim_callback",

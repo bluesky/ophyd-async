@@ -4,12 +4,14 @@ import time
 from typing import Mapping
 from unittest.mock import ANY
 
+import numpy
 import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DeviceCollector,
     Signal,
+    SignalR,
     SignalRW,
     SimSignalBackend,
     StandardReadable,
@@ -19,6 +21,8 @@ from ophyd_async.core import (
     set_and_wait_for_value,
     set_sim_put_proceeds,
     set_sim_value,
+    soft_signal_r_and_backend,
+    soft_signal_rw,
     wait_for_value,
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
@@ -35,7 +39,7 @@ class MySignal(Signal):
 
 
 def test_signals_equality_raises():
-    sim_backend = SimSignalBackend(str, "test")
+    sim_backend = SimSignalBackend(str)
 
     s1 = MySignal(sim_backend)
     s2 = MySignal(sim_backend)
@@ -54,7 +58,7 @@ def test_signals_equality_raises():
 
 
 async def test_set_sim_put_proceeds():
-    sim_signal = Signal(SimSignalBackend(str, "test"))
+    sim_signal = Signal(SimSignalBackend(str))
     await sim_signal.connect(sim=True)
 
     assert sim_signal._backend.put_proceeds.is_set() is True
@@ -72,7 +76,7 @@ async def time_taken_by(coro) -> float:
 
 
 async def test_wait_for_value_with_value():
-    sim_signal = SignalRW(SimSignalBackend(str, "test"))
+    sim_signal = SignalRW(SimSignalBackend(str))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, "blah")
@@ -93,7 +97,7 @@ async def test_wait_for_value_with_value():
 
 
 async def test_wait_for_value_with_funcion():
-    sim_signal = SignalRW(SimSignalBackend(float, "test"))
+    sim_signal = SignalRW(SimSignalBackend(float))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, 45.8)
@@ -119,7 +123,7 @@ async def test_wait_for_value_with_funcion():
 
 
 async def test_set_and_wait_for_value():
-    sim_signal = SignalRW(SimSignalBackend(int, "test"))
+    sim_signal = SignalRW(SimSignalBackend(int))
     sim_signal.set_name("sim_signal")
     await sim_signal.connect(sim=True)
     set_sim_value(sim_signal, 0)
@@ -128,6 +132,36 @@ async def test_set_and_wait_for_value():
     assert not st.done
     set_sim_put_proceeds(sim_signal, True)
     assert await time_taken_by(st) < 0.1
+
+
+@pytest.mark.parametrize(
+    "signal_method,signal_class",
+    [(soft_signal_r_and_backend, SignalR), (soft_signal_rw, SignalRW)],
+)
+async def test_create_soft_signal(signal_method, signal_class):
+    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
+    INITIAL_VALUE = "INITIAL"
+    if signal_method == soft_signal_r_and_backend:
+        signal, backend = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+    elif signal_method == soft_signal_rw:
+        signal = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+        backend = signal._backend
+    assert signal.source == f"soft://{SIGNAL_NAME}"
+    assert isinstance(signal, signal_class)
+    assert isinstance(signal._backend, SimSignalBackend)
+    await signal.connect()
+    assert (await signal.get_value()) == INITIAL_VALUE
+    # connecting with sim=False uses existing SimSignalBackend
+    assert signal._backend is backend
+
+
+async def test_soft_signal_numpy():
+    float_signal = soft_signal_rw(numpy.float64, numpy.float64(1), "float_signal")
+    int_signal = soft_signal_rw(numpy.int32, numpy.int32(1), "int_signal")
+    await float_signal.connect()
+    await int_signal.connect()
+    assert (await float_signal.describe())["float_signal"]["dtype"] == "number"
+    assert (await int_signal.describe())["int_signal"]["dtype"] == "integer"
 
 
 @pytest.fixture

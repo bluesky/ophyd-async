@@ -1,3 +1,5 @@
+from .aravis import AravisDetector
+from .pilatus import PilatusDetector
 from .single_trigger_det import SingleTriggerDet
 from .utils import (
     FileWriteMode,
@@ -9,6 +11,7 @@ from .utils import (
 )
 
 __all__ = [
+    "AravisDetector",
     "SingleTriggerDet",
     "FileWriteMode",
     "ImageMode",
@@ -16,4 +19,5 @@ __all__ = [
     "ad_rw",
     "NDAttributeDataType",
     "NDAttributesXML",
+    "PilatusDetector",
 ]

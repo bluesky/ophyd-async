@@ -151,9 +151,6 @@ async def test_mover_stopped(sim_mover: demo.Mover):
 async def test_read_mover(sim_mover: demo.Mover):
     await sim_mover.stage()
     assert (await sim_mover.read())["sim_mover"]["value"] == 0.0
-    assert (await sim_mover.describe())["sim_mover"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X:Readback"
     assert (await sim_mover.read_configuration())["sim_mover-velocity"]["value"] == 1
     assert (await sim_mover.describe_configuration())["sim_mover-units"]["shape"] == []
     set_sim_value(sim_mover.readback, 0.5)
@@ -167,9 +164,6 @@ async def test_read_mover(sim_mover: demo.Mover):
 
 async def test_set_velocity(sim_mover: demo.Mover) -> None:
     v = sim_mover.velocity
-    assert (await v.describe())["sim_mover-velocity"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X:Velocity"
     q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["sim_mover-velocity"]["value"] == 1.0
@@ -204,9 +198,6 @@ async def test_sensor_disconnected(caplog):
 async def test_read_sensor(sim_sensor: demo.Sensor):
     sim_sensor.stage()
     assert (await sim_sensor.read())["sim_sensor-value"]["value"] == 0
-    assert (await sim_sensor.describe())["sim_sensor-value"][
-        "source"
-    ] == "sim://SIM:SENSOR:Value"
     assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
         "value"
     ] == demo.EnergyMode.low
@@ -289,17 +280,17 @@ async def test_dynamic_sensor_group_read_and_describe(
         "sim_sensor_group-sensors-1-value": {
             "dtype": "number",
             "shape": [],
-            "source": "sim://SIM:SENSOR:1:Value",
+            "source": "soft://sim_sensor_group-sensors-1-value",
         },
         "sim_sensor_group-sensors-2-value": {
             "dtype": "number",
             "shape": [],
-            "source": "sim://SIM:SENSOR:2:Value",
+            "source": "soft://sim_sensor_group-sensors-2-value",
         },
         "sim_sensor_group-sensors-3-value": {
             "dtype": "number",
             "shape": [],
-            "source": "sim://SIM:SENSOR:3:Value",
+            "source": "soft://sim_sensor_group-sensors-3-value",
         },
     }
 

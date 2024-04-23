@@ -1,3 +1,3 @@
-from .hdf_writer import PandaHDFWriter
+from ._hdf_writer import PandaHDFWriter
 
 __all__ = ["PandaHDFWriter"]

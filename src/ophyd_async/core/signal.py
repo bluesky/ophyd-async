@@ -11,6 +11,8 @@ from typing import (
     Generic,
     Mapping,
     Optional,
+    Tuple,
+    Type,
     Union,
 )
 
@@ -20,12 +22,13 @@ from bluesky.protocols import (
     Locatable,
     Location,
     Movable,
-    Readable,
     Reading,
     Stageable,
     Subscribable,
 )
 from event_model.documents import DocumentType
+
+from ophyd_async.protocols import AsyncReadable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -57,24 +60,18 @@ class Signal(Device, Generic[T]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
 
     def __init__(
-        self, backend: SignalBackend[T], timeout: Optional[float] = DEFAULT_TIMEOUT
+        self,
+        backend: SignalBackend[T],
+        timeout: Optional[float] = DEFAULT_TIMEOUT,
+        name: str = "",
     ) -> None:
-        self._name = ""
+        super().__init__(name)
         self._timeout = timeout
         self._init_backend = self._backend = backend
 
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str = ""):
-        self._name = name
-
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         if sim:
-            self._backend = SimSignalBackend(
-                datatype=self._init_backend.datatype, source=self._init_backend.source
-            )
+            self._backend = SimSignalBackend(datatype=self._init_backend.datatype)
             _sim_backends[self] = self._backend
         else:
             self._backend = self._init_backend
@@ -84,7 +81,7 @@ class Signal(Device, Generic[T]):
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
-        return self._backend.source
+        return self._backend.source(self.name)
 
     __lt__ = __le__ = __eq__ = __ge__ = __gt__ = __ne__ = _fail
 
@@ -145,7 +142,7 @@ class _SignalCache(Generic[T]):
         return self._staged or bool(self._listeners)
 
 
-class SignalR(Signal[T], Readable, Stageable, Subscribable):
+class SignalR(Signal[T], AsyncReadable, Stageable, Subscribable):
     """Signal that can be read from and monitored"""
 
     _cache: Optional[_SignalCache] = None
@@ -180,7 +177,7 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
     @_add_timeout
     async def describe(self) -> Dict[str, Descriptor]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._backend.get_descriptor()}
+        return {self.name: await self._backend.get_descriptor(self.source)}
 
     @_add_timeout
     async def get_value(self, cached: Optional[bool] = None) -> T:
@@ -263,6 +260,30 @@ def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
 def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
     """Monitor the value of a signal that is in sim mode"""
     return _sim_backends[signal].set_callback(callback)
+
+
+def soft_signal_rw(
+    datatype: Optional[Type[T]] = None,
+    initial_value: Optional[T] = None,
+    name: str = "",
+) -> SignalRW[T]:
+    """Creates a read-writable Signal with a SimSignalBackend"""
+    signal = SignalRW(SimSignalBackend(datatype, initial_value), name=name)
+    return signal
+
+
+def soft_signal_r_and_backend(
+    datatype: Optional[Type[T]] = None,
+    initial_value: Optional[T] = None,
+    name: str = "",
+) -> Tuple[SignalR[T], SimSignalBackend]:
+    """Returns a tuple of a read-only Signal and its SimSignalBackend through
+    which the signal can be internally modified within the device. Use
+    soft_signal_rw if you want a device that is externally modifiable
+    """
+    backend = SimSignalBackend(datatype, initial_value)
+    signal = SignalR(backend, name=name)
+    return (signal, backend)
 
 
 async def _verify_readings(

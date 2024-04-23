@@ -5,15 +5,29 @@ from bluesky import RunEngine
 
 from ophyd_async.core import save_device
 from ophyd_async.core.device import DeviceCollector
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.epics.signal import epics_signal_rw
-from ophyd_async.panda import PandA
-from ophyd_async.panda.utils import phase_sorter
+from ophyd_async.panda import CommonPandaBlocks, TimeUnits
+from ophyd_async.panda._common_blocks import DataBlock
+from ophyd_async.panda._utils import phase_sorter
 
 
 @pytest.fixture
 async def sim_panda():
+    class Panda(CommonPandaBlocks):
+        data: DataBlock
+
+        def __init__(self, prefix: str, name: str = ""):
+            self._prefix = prefix
+            super().__init__(name)
+
+        async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
+            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
+            await super().connect(sim, timeout)
+
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDA:")
+        sim_panda = Panda("PANDA")
         sim_panda.phase_1_signal_units = epics_signal_rw(int, "")
     assert sim_panda.name == "sim_panda"
     yield sim_panda
@@ -27,8 +41,8 @@ async def test_save_panda(mock_save_to_yaml, sim_panda, RE: RunEngine):
         [
             {
                 "phase_1_signal_units": 0,
-                "seq.1.prescale_units": "min",
-                "seq.2.prescale_units": "min",
+                "seq.1.prescale_units": TimeUnits("min"),
+                "seq.2.prescale_units": TimeUnits("min"),
             },
             {
                 "data.capture": False,
@@ -36,7 +50,6 @@ async def test_save_panda(mock_save_to_yaml, sim_panda, RE: RunEngine):
                 "data.hdf_directory": "",
                 "data.hdf_file_name": "",
                 "data.num_capture": 0,
-                "pcap.arm": False,
                 "pcap.arm": False,
                 "pulse.1.delay": 0.0,
                 "pulse.1.width": 0.0,

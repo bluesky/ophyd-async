@@ -39,8 +39,10 @@ class StaticDirectoryProvider(DirectoryProvider):
         directory_path: Union[str, Path],
         filename_prefix: str = "",
         filename_suffix: str = "",
-        resource_dir: Path = Path("."),
+        resource_dir: Optional[Path] = None,
     ) -> None:
+        if resource_dir is None:
+            resource_dir = Path(".")
         if isinstance(directory_path, str):
             directory_path = Path(directory_path)
         self._directory_info = DirectoryInfo(
