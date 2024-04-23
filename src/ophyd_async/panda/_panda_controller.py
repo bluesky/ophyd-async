@@ -7,15 +7,11 @@ from ophyd_async.core import (
     DetectorTrigger,
     wait_for_value,
 )
-
-from .panda import PcapBlock
+from ophyd_async.panda import PcapBlock
 
 
 class PandaPcapController(DetectorControl):
-    def __init__(
-        self,
-        pcap: PcapBlock,
-    ) -> None:
+    def __init__(self, pcap: PcapBlock) -> None:
         self.pcap = pcap
 
     def get_deadtime(self, exposure: float) -> float:
@@ -35,7 +31,7 @@ class PandaPcapController(DetectorControl):
         await wait_for_value(self.pcap.active, True, timeout=1)
         return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
 
-    async def disarm(self):
+    async def disarm(self) -> AsyncStatus:
         await asyncio.gather(self.pcap.arm.set(False))
         await wait_for_value(self.pcap.active, False, timeout=1)
         return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
