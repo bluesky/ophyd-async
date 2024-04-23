@@ -53,4 +53,4 @@ Testing device in a plan with RunEngine
    :pyobject: test_sensor_in_plan
 
 
-This test verifies that the sim_sensor behaves as expected within a plan. The plan we use here is a count plan, which takes a specified number of readings (num) from the sensor. Since we set num to two in this test, the sensor should emit two "event" documents along with "start", "stop" and "descriptor" documents. Finally ``assert_emitted`` is an helper function for checking emission. 
+This test verifies that the sim_sensor behaves as expected within a plan. The plan we use here is a count plan, which takes a specified number of readings (num) from the sensor. Since we set num to two in this test, the sensor should emit two "event" documents along with "start", "stop" and "descriptor" documents. Finally ``assert_emitted`` is a helper function for checking emission. 
