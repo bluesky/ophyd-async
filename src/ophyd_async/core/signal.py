@@ -17,7 +17,6 @@ from typing import (
 )
 
 from bluesky.protocols import (
-    Configurable,
     Descriptor,
     Locatable,
     Location,
@@ -28,7 +27,7 @@ from bluesky.protocols import (
 )
 from event_model.documents import DocumentType
 
-from ophyd_async.protocols import AsyncReadable
+from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -339,7 +338,9 @@ async def assert_value(signal: SignalR[T], value: Any) -> None:
     assert await signal.get_value() == value
 
 
-async def assert_reading(readable: Readable, reading: Mapping[str, Reading]) -> None:
+async def assert_reading(
+    readable: AsyncReadable, reading: Mapping[str, Reading]
+) -> None:
     """Assert readings from readable.
 
     Parameters
@@ -360,7 +361,7 @@ async def assert_reading(readable: Readable, reading: Mapping[str, Reading]) -> 
 
 
 async def assert_configuration(
-    configurable: Configurable,
+    configurable: AsyncConfigurable,
     configuration: Mapping[str, Reading],
 ) -> None:
     """Assert readings from Configurable.

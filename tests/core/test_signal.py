@@ -1,7 +1,6 @@
 import asyncio
 import re
 import time
-from typing import Mapping
 from unittest.mock import ANY
 
 import numpy
@@ -214,7 +213,7 @@ async def test_assert_configuration(sim_readable: DummyReadable):
     set_sim_value(sim_readable.value, 123)
     set_sim_value(sim_readable.mode, "super mode")
     set_sim_value(sim_readable.mode2, "slow mode")
-    dummy_config_reading: Mapping[str, Reading] = {
+    dummy_config_reading = {
         "sim_readable-mode": (
             {
                 "alarm_severity": 0,
@@ -233,7 +232,7 @@ async def test_assert_configuration(sim_readable: DummyReadable):
     from ophyd.sim import DetWithConf
 
     something = DetWithConf(name="det")
-    dummy_config_reading1: Mapping[str, Reading] = {
+    dummy_config_reading1 = {
         "det_c": {"value": 3, "timestamp": ANY},
         "det_d": {"value": 4, "timestamp": ANY},
     }

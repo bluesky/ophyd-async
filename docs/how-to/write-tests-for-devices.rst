@@ -35,6 +35,8 @@ Sim Utility Functions
 
 Sim signals behave as simply as possible, holding a sensible default value when initialized and retaining any value (in memory) to which they are set. This model breaks down in the case of read-only signals, which cannot be set because there is an expectation of some external device setting them in the real world. There is a utility function, ``set_sim_value``, to mock-set values for sim signals, including read-only ones.
 
+In addition this example also utilizes helper functions like ``assert_reading`` and ``assert_value`` to ensure the validity of device readings and values. For more information see: :doc:`API.core<../generated/ophyd_async.core>`
+
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_sensor_reading_shows_value
 
