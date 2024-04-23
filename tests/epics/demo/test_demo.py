@@ -1,14 +1,18 @@
 import asyncio
 import subprocess
+from collections import defaultdict
 from typing import Dict
 from unittest.mock import ANY, Mock, call, patch
 
 import pytest
+from bluesky import plans as bp
 from bluesky.protocols import Reading
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
+    assert_emitted,
     assert_reading,
     assert_value,
     set_sim_callback,
@@ -209,6 +213,21 @@ async def test_read_sensor(sim_sensor: demo.Sensor):
         "value"
     ] == demo.EnergyMode.high
     await sim_sensor.unstage()
+
+
+async def test_sensor_in_plan(RE: RunEngine, sim_sensor: demo.Sensor):
+    """Tests sim sensor behavior within a RunEngine plan.
+
+    This test verifies that the sensor emits the expected documents
+     when used in plan(count).
+    """
+    docs = defaultdict(list)
+
+    def capture_emitted(name, doc):
+        docs[name].append(doc)
+
+    RE(bp.count([sim_sensor], num=2), capture_emitted)
+    assert_emitted(docs, start=1, descriptor=1, event=2, stop=1)
 
 
 async def test_assembly_renaming() -> None:
