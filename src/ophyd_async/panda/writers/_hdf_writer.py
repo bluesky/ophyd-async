@@ -17,9 +17,9 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value
-from ophyd_async.panda.panda import PandA
+from ophyd_async.panda import CommonPandaBlocks
 
-from .panda_hdf_file import _HDFDataset, _HDFFile
+from ._panda_hdf_file import _HDFDataset, _HDFFile
 
 
 class Capture(str, Enum):
@@ -96,7 +96,7 @@ class PandaHDFWriter(DetectorWriter):
         prefix: str,
         directory_provider: DirectoryProvider,
         name_provider: NameProvider,
-        panda_device: PandA,
+        panda_device: CommonPandaBlocks,
     ) -> None:
         self.panda_device = panda_device
         self._prefix = prefix
@@ -142,11 +142,11 @@ class PandaHDFWriter(DetectorWriter):
         for attribute_path, capture_signal in to_capture.items():
             split_path = attribute_path.split(".")
             signal_name = split_path[-1]
+            # Get block names from numbered blocks, eg INENC[1]
             block_name = (
-                split_path[-2]
-                if not split_path[-2].isnumeric()
-                # Get block names from numbered blocks, eg INENC[1]
-                else f"{split_path[-3]}{split_path[-2]}"
+                f"{split_path[-3]}{split_path[-2]}"
+                if split_path[-2].isnumeric()
+                else split_path[-2]
             )
 
             for suffix in str(capture_signal.capture_type).split(" "):
