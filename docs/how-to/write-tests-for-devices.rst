@@ -48,7 +48,7 @@ There is another utility function, ``set_sim_callback``, for hooking in logic wh
 
 
 Testing a Device in a Plan with the RunEngine
----------------------------------------
+---------------------------------------------
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_sensor_in_plan
 
