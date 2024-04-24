@@ -47,10 +47,10 @@ There is another utility function, ``set_sim_callback``, for hooking in logic wh
    :pyobject: test_mover_stopped
 
 
-Testing device in a plan with RunEngine
+Testing a Device in a Plan with the RunEngine
 ---------------------------------------
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_sensor_in_plan
 
 
-This test verifies that the sim_sensor behaves as expected within a plan. The plan we use here is a count, which takes a specified number of readings from the sim_sensor. Since we set the repeat to two in this test, the sensor should emit two "event" documents along with "start", "stop" and "descriptor" documents. Finally, we use the helper function ``assert_emitted`` to confirm that the emitted documents match our expectations.
+This test verifies that the sim_sensor behaves as expected within a plan. The plan we use here is a ``count``, which takes a specified number of readings from the ``sim_sensor``. Since we set the ``repeat`` to two in this test, the sensor should emit two "event" documents along with "start", "stop" and "descriptor" documents. Finally, we use the helper function ``assert_emitted`` to confirm that the emitted documents match our expectations.
