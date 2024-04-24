@@ -5,7 +5,6 @@ import functools
 from typing import (
     Any,
     AsyncGenerator,
-    Awaitable,
     Callable,
     Dict,
     Generic,
@@ -285,34 +284,6 @@ def soft_signal_r_and_backend(
     return (signal, backend)
 
 
-async def _verify_readings(
-    func: Callable[[], Mapping[str, Reading] | Awaitable[Mapping[str, Reading]]],
-    expectation: Mapping[str, Reading],
-) -> None:
-    """Take a read/read_configuration function that return a dictionary and
-        compare it with the expected result (expectation)
-
-    Parameters
-    ----------
-    func:
-        read/read_configuration function.
-
-    expectation:
-        The expected value from the readable/Configurable.
-
-    Notes
-    -----
-    Example usage::
-        await _verify_readings(readable.read, reading)
-    Or::
-        await _verify_readings(configurable.read_configuration, configuration)
-
-    """
-    result = await func()
-
-    assert result == expectation
-
-
 async def assert_value(signal: SignalR[T], value: Any) -> None:
     """Assert a signal's value and compare it an expected signal.
 
@@ -351,7 +322,7 @@ async def assert_reading(
         await assert_reading(readable, reading)
 
     """
-    await _verify_readings(readable.read, reading)
+    assert await readable.read() == reading
 
 
 async def assert_configuration(
@@ -374,7 +345,7 @@ async def assert_configuration(
         await assert_configuration(configurable configuration)
 
     """
-    await _verify_readings(configurable.read_configuration, configuration)
+    assert await configurable.read_configuration() == configuration
 
 
 def assert_emitted(docs: Mapping[str, list[DocumentType]], **numbers: int):
