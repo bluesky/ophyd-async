@@ -51,7 +51,7 @@ class VimbaController(DetectorControl):
     ) -> AsyncStatus:
         await asyncio.gather(
             self._drv.trigger_mode.set(TRIGGER_MODE[trigger]),
-            self._drv.expose_out_mode.set(EXPOSE_OUT_MODE[trigger]),
+            self._drv.expose_mode.set(EXPOSE_OUT_MODE[trigger]),
             self._drv.num_images.set(num),
             self._drv.image_mode.set(ImageMode.multiple),
         )
@@ -61,7 +61,9 @@ class VimbaController(DetectorControl):
         ]:
             await self._drv.acquire_time.set(exposure)
         if trigger != DetectorTrigger.internal:
-            self._drv.trigger_source.set(VimbaTriggerSource.line1)
+            self._drv.trig_source.set(VimbaTriggerSource.line1)
+        else:
+            self._drv.trig_source.set(VimbaTriggerSource.freerun)
         return await start_acquiring_driver_and_ensure_status(
             self._drv, good_states=self.good_states
         )
