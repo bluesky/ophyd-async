@@ -6,3 +6,5 @@
 20e1b14b541a0331109158c77bc319248be28989
 # Use isort to sort imports
 881a35b43584103ca572b6f4e472dd8b6fd6ea87
+# Replace flake8 and mypy with ruff and pyrite
+e2f8317e7584e4de788c2b39e5b5edaa98c1bc9e
