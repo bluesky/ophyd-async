@@ -4,8 +4,8 @@ from .ad_base import (
     DetectorState,
     start_acquiring_driver_and_ensure_status,
 )
-from .pilatus_driver import PilatusDriver
 from .aravis_driver import AravisDriver
+from .pilatus_driver import PilatusDriver
 
 __all__ = [
     "ADBase",
