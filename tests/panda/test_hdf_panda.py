@@ -10,7 +10,7 @@ from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
-from ophyd_async.core.signal import SignalR, wait_for_value
+from ophyd_async.core.signal import SignalR, assert_emitted, wait_for_value
 from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.panda import HDFPanda, PcapBlock
@@ -19,11 +19,6 @@ from ophyd_async.panda.writers._hdf_writer import Capture
 from ophyd_async.planstubs.prepare_trigger_and_dets import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
-
-
-def assert_emitted(docs: Dict[str, list], **numbers: int):
-    assert list(docs) == list(numbers)
-    assert {name: len(d) for name, d in docs.items()} == numbers
 
 
 class MockPandaPcapController(DetectorControl):
