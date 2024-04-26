@@ -1,10 +1,8 @@
 import asyncio
-from typing import Optional, Set
+from typing import Optional
 
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
-    DEFAULT_GOOD_STATES,
-    DetectorState,
     start_acquiring_driver_and_ensure_status,
 )
 
@@ -35,10 +33,8 @@ class VimbaController(DetectorControl):
     def __init__(
         self,
         driver: VimbaDriver,
-        good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES),
     ) -> None:
         self._drv = driver
-        self.good_states = good_states
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.001
@@ -64,9 +60,7 @@ class VimbaController(DetectorControl):
             self._drv.trig_source.set(VimbaTriggerSource.line1)
         else:
             self._drv.trig_source.set(VimbaTriggerSource.freerun)
-        return await start_acquiring_driver_and_ensure_status(
-            self._drv, good_states=self.good_states
-        )
+        return await start_acquiring_driver_and_ensure_status(self._drv)
 
     async def disarm(self):
         await stop_busy_record(self._drv.acquire, False, timeout=1)

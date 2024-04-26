@@ -46,7 +46,7 @@ class VimbaExposeOutMode(str, Enum):
 
 
 class VimbaDriver(ADBase):
-    def __init__(self, prefix: str) -> None:
+    def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = ad_rw(PixelFormat, prefix + "PixelFormat")
         self.convert_format = ad_rw(
             VimbaConvertFormat, prefix + "ConvertPixelFormat"
@@ -55,4 +55,4 @@ class VimbaDriver(ADBase):
         self.trigger_mode = ad_rw(VimbaOnOff, prefix + "TriggerMode")
         self.overlap = ad_rw(VimbaOverlap, prefix + "TriggerOverlap")
         self.expose_mode = ad_rw(VimbaExposeOutMode, prefix + "ExposureMode")
-        super().__init__(prefix)
+        super().__init__(prefix, name)

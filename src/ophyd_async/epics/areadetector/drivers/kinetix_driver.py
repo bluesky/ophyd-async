@@ -17,8 +17,8 @@ class KinetixReadoutMode(str, Enum):
 
 
 class KinetixDriver(ADBase):
-    def __init__(self, prefix: str) -> None:
-        super().__init__(prefix)
+    def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = ad_rw(PixelFormat, prefix + "PixelFormat")
         self.trigger_mode = ad_rw(KinetixTriggerMode, prefix + "TriggerMode")
         self.mode = ad_rw(KinetixReadoutMode, prefix + "ReadoutPortIdx")
+        super().__init__(prefix, name)
