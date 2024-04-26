@@ -3,6 +3,8 @@ from typing import Dict, Protocol, runtime_checkable
 
 from bluesky.protocols import Descriptor, HasName, Reading
 
+from ophyd_async.core.async_status import AsyncStatus
+
 
 @runtime_checkable
 class AsyncReadable(HasName, Protocol):
@@ -70,4 +72,25 @@ class AsyncPausable(Protocol):
     @abstractmethod
     async def resume(self) -> None:
         """Perform device-specific work when the RunEngine resumes after a pause."""
+        ...
+
+
+@runtime_checkable
+class AsyncStageable(Protocol):
+    @abstractmethod
+    def stage(self) -> AsyncStatus:
+        """An optional hook for "setting up" the device for acquisition.
+
+        It should return a ``Status`` that is marked done when the device is
+        done staging.
+        """
+        ...
+
+    @abstractmethod
+    def unstage(self) -> AsyncStatus:
+        """A hook for "cleaning up" the device after acquisition.
+
+        It should return a ``Status`` that is marked done when the device is finished
+        unstaging.
+        """
         ...
