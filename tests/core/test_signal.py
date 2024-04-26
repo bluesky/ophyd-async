@@ -8,7 +8,9 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    ConfigSignal,
     DeviceCollector,
+    HintedSignal,
     Signal,
     SignalR,
     SignalRW,
@@ -189,14 +191,12 @@ class DummyReadable(StandardReadable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        self.value = epics_signal_r(float, prefix + "Value")
-        self.mode = epics_signal_rw(str, prefix + "Mode")
-        self.mode2 = epics_signal_rw(str, prefix + "Mode2")
+        with self.add_children_as_readables(HintedSignal):
+            self.value = epics_signal_r(float, prefix + "Value")
+        with self.add_children_as_readables(ConfigSignal):
+            self.mode = epics_signal_rw(str, prefix + "Mode")
+            self.mode2 = epics_signal_rw(str, prefix + "Mode2")
         # Set name and signals for read() and read_configuration()
-        self.set_readable_signals(
-            read=[self.value],
-            config=[self.mode, self.mode2],
-        )
         super().__init__(name=name)
 
 
