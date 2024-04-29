@@ -81,9 +81,24 @@ class UUIDFilenameProvider(FilenameProvider):
         self._uuid_call_func = uuid_call_func
         self.prefix = prefix
         self.suffix = suffix
+        self._uuid_namespace = None
+        self._uuid_name = None
 
-    def __call__(self, device_name=None) -> str:
-        return f"{self.prefix}{self._uuid_call_func()}{self.suffix}"
+    def specify_uuid_namespace(self, namespace, name):
+        self._uuid_namespace = namespace
+        self._uuid_name = name
+
+    def __call__(self, device_name: str = None) -> str:
+        if self._uuid_call_func in [uuid.uuid3, uuid.uuid5]:
+            if self._uuid_namespace is None or self._uuid_name is None:
+                raise ValueError(
+                    f"To use {self._uuid_call_func} to generate UUID filenames,"
+                    " UUID namespace and name must be set!"
+                )
+            uuid_str = self._uuid_call_func(self._uuid_namespace, self._uuid_name)
+        else:
+            uuid_str = self._uuid_call_func()
+        return f"{self.prefix}{uuid_str}{self.suffix}"
 
 
 class AutoIncrementFilenameProvider(FilenameProvider):

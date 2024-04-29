@@ -1,4 +1,5 @@
 from ._providers import (
+    AutoIncrementFilenameProvider,
     DeviceNameFilenameProvider,
     DirectoryInfo,
     DirectoryProvider,
@@ -75,6 +76,7 @@ from .utils import (
 
 __all__ = [
     "AsyncStatus",
+    "AutoIncrementFilenameProvider",
     "CalculatableTimeout",
     "CalculateTimeout",
     "Callback",
@@ -117,6 +119,7 @@ __all__ = [
     "UUIDFilenameProvider",
     "WatchableAsyncStatus",
     "YMDDirectoryProvider",
+    # Lower-cased imports
     "assert_configuration",
     "assert_emitted",
     "assert_reading",

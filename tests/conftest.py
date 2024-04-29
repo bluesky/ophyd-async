@@ -133,7 +133,16 @@ def static_filename_provider():
 
 
 @pytest.fixture
+def static_directory_provider_factory(tmp_path: Path):
+    def create_static_dir_provider_given_fp(fp: FilenameProvider):
+        return StaticDirectoryProvider(fp, tmp_path)
+
+    return create_static_dir_provider_given_fp
+
+
+@pytest.fixture
 def static_directory_provider(
-    static_filename_provider: FilenameProvider, tmp_path: Path
+    static_directory_provider_factory: callable,
+    static_filename_provider: FilenameProvider,
 ):
-    return StaticDirectoryProvider(static_filename_provider, tmp_path)
+    return static_directory_provider_factory(static_filename_provider)
