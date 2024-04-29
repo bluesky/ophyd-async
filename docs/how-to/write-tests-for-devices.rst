@@ -35,6 +35,8 @@ Sim Utility Functions
 
 Sim signals behave as simply as possible, holding a sensible default value when initialized and retaining any value (in memory) to which they are set. This model breaks down in the case of read-only signals, which cannot be set because there is an expectation of some external device setting them in the real world. There is a utility function, ``set_sim_value``, to mock-set values for sim signals, including read-only ones.
 
+In addition this example also utilizes helper functions like ``assert_reading`` and ``assert_value`` to ensure the validity of device readings and values. For more information see: :doc:`API.core<../generated/ophyd_async.core>`
+
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_sensor_reading_shows_value
 
@@ -43,3 +45,12 @@ There is another utility function, ``set_sim_callback``, for hooking in logic wh
 
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_mover_stopped
+
+
+Testing a Device in a Plan with the RunEngine
+---------------------------------------------
+.. literalinclude:: ../../tests/epics/demo/test_demo.py
+   :pyobject: test_sensor_in_plan
+
+
+This test verifies that the sim_sensor behaves as expected within a plan. The plan we use here is a ``count``, which takes a specified number of readings from the ``sim_sensor``. Since we set the ``repeat`` to two in this test, the sensor should emit two "event" documents along with "start", "stop" and "descriptor" documents. Finally, we use the helper function ``assert_emitted`` to confirm that the emitted documents match our expectations.
