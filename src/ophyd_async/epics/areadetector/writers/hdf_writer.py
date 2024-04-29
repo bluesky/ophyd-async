@@ -42,16 +42,16 @@ class HDFWriter(DetectorWriter):
 
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None
-        info = self._directory_provider()
-        file_path = str(info.root / info.resource_dir)
+        info = self._directory_provider(device_name=self.hdf.name)
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self.hdf.file_path.set(file_path),
-            self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
+            self.hdf.file_path.set(str(info.root / info.resource_dir)),
+            self.hdf.file_name.set(info.filename),
             self.hdf.file_template.set("%s/%s.h5"),
+            self.hdf.create_dir_depth.set(info.create_dir_depth),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
             # Never use custom xml layout file but use the one defined
             # in the source code file NDFileHDF5LayoutXML.cpp

@@ -39,16 +39,17 @@ class PandaHDFWriter(DetectorWriter):
         await self.panda_device.data.flush_period.set(0)
 
         self._file = None
-        info = self._directory_provider()
+        info = self._directory_provider(device_name=self.panda_device.name)
         # Set the initial values
         await asyncio.gather(
             self.panda_device.data.hdf_directory.set(
                 str(info.root / info.resource_dir)
             ),
             self.panda_device.data.hdf_file_name.set(
-                f"{info.prefix}{self.panda_device.name}{info.suffix}.h5",
+                info.filename,
             ),
             self.panda_device.data.num_capture.set(0),
+            # TODO: Set create_dir_depth once available
         )
 
         # Wait for it to start, stashing the status that tells us when it finishes
