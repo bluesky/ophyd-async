@@ -26,7 +26,7 @@ class DirectoryInfo:
 
     root: Path
     resource_dir: Path
-    filename: Optional[str] = ""
+    filename: str
     create_dir_depth: Optional[int] = -3
 
 
