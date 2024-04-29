@@ -160,8 +160,8 @@ class PatternGenerator:
         return describe
 
     def _get_new_path(self, directory: DirectoryProvider) -> Path:
-        info = directory()
-        filename = f"{info.prefix}pattern{info.suffix}.h5"
+        info = directory(device_name="pattern")
+        filename = info.filename
         new_path: Path = info.root / info.resource_dir / filename
         return new_path
 

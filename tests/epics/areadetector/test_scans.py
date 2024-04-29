@@ -16,6 +16,7 @@ from ophyd_async.core import (
     HardwareTriggeredFlyable,
     StandardDetector,
     StaticDirectoryProvider,
+    StaticFilenameProvider,
     TriggerInfo,
     TriggerLogic,
     set_mock_value,
@@ -64,13 +65,15 @@ def controller(RE) -> ADSimController:
 
 
 @pytest.fixture
-def writer(RE, tmp_path: Path) -> HDFWriter:
+def writer(
+    RE, static_filename_provider: StaticFilenameProvider, tmp_path: Path
+) -> HDFWriter:
     with DeviceCollector(mock=True):
         hdf = NDFileHDF("HDF")
 
     return HDFWriter(
         hdf,
-        directory_provider=StaticDirectoryProvider(tmp_path),
+        directory_provider=StaticDirectoryProvider(static_filename_provider, tmp_path),
         name_provider=lambda: "test",
         shape_provider=AsyncMock(),
     )

@@ -1,7 +1,12 @@
 from pathlib import Path
 from typing import Sequence
 
-from ophyd_async.core import DirectoryProvider, StaticDirectoryProvider
+from ophyd_async.core import (
+    DeviceNameFilenameProvider,
+    DirectoryProvider,
+    FilenameProvider,
+    StaticDirectoryProvider,
+)
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.protocols import AsyncReadable
 from ophyd_async.sim.pattern_generator import PatternGenerator
@@ -17,7 +22,8 @@ class SimPatternDetector(StandardDetector):
         config_sigs: Sequence[AsyncReadable] = [],
         name: str = "",
     ) -> None:
-        self.directory_provider: DirectoryProvider = StaticDirectoryProvider(path)
+        fp: FilenameProvider = DeviceNameFilenameProvider()
+        self.directory_provider: DirectoryProvider = StaticDirectoryProvider(fp, path)
         self.pattern_generator = PatternGenerator()
         writer = SimPatternDetectorWriter(
             pattern_generator=self.pattern_generator,

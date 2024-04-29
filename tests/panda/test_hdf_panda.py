@@ -6,7 +6,13 @@ import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import StaticDirectoryProvider, set_mock_value
+from ophyd_async.core import (
+    DeviceNameFilenameProvider,
+    StaticDirectoryProvider,
+    set_mock_value,
+)
+from ophyd_async.core.async_status import AsyncStatus
+from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.mock_signal_utils import callback_on_mock_put
@@ -23,11 +29,16 @@ async def mock_hdf_panda(tmp_path):
     class CaptureBlock(Device):
         test_capture: SignalR
 
-    directory_provider = StaticDirectoryProvider(str(tmp_path), filename_prefix="test")
-    mock_hdf_panda = HDFPanda(
-        "HDFPANDA:", directory_provider=directory_provider, name="panda"
-    )
+    fp = DeviceNameFilenameProvider(prefix="test")
+    dp = StaticDirectoryProvider(fp, tmp_path)
+
+    mock_hdf_panda = HDFPanda("HDFPANDA:", directory_provider=dp, name="panda")
     await mock_hdf_panda.connect(mock=True)
+    mock_hdf_panda._controller = MockPandaPcapController(mock_hdf_panda.pcap)
+    block_a = CaptureBlock(name="block_a")
+    block_b = CaptureBlock(name="block_b")
+    block_a.test_capture = SignalR(backend=SimSignalBackend(Capture))
+    block_b.test_capture = SignalR(backend=SimSignalBackend(Capture))
 
     def link_function(value, **kwargs):
         set_mock_value(mock_hdf_panda.pcap.active, value)

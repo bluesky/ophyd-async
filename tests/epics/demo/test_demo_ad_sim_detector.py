@@ -28,7 +28,8 @@ from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
 
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
-    dp = StaticDirectoryProvider(tmp_path, f"test-{new_uid()}")
+    fp = StaticFilenameProvider(f"test-{new_uid()}")
+    dp = StaticDirectoryProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
         drv = ADBase(f"{prefix}DRV:", name="drv")
@@ -174,22 +175,20 @@ async def test_two_detectors_step(
         "event",
         "stop",
     ]
-    info_a = writer_a._directory_provider()
-    info_b = writer_b._directory_provider()
+    info_a = writer_a._directory_provider(device_name=writer_a.hdf.name)
+    info_b = writer_b._directory_provider(device_name=writer_b.hdf.name)
 
     assert await writer_a.hdf.file_path.get_value() == str(
         info_a.root / info_a.resource_dir
     )
     file_name_a = await writer_a.hdf.file_name.get_value()
-    assert file_name_a.startswith(info_a.prefix)
-    assert file_name_a.endswith(info_a.suffix)
+    assert file_name_a == info_a.filename
 
     assert await writer_b.hdf.file_path.get_value() == str(
         info_b.root / info_b.resource_dir
     )
     file_name_b = await writer_b.hdf.file_name.get_value()
-    assert file_name_b.startswith(info_b.prefix)
-    assert file_name_b.endswith(info_b.suffix)
+    assert file_name_b == info_b.filename
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8
@@ -286,8 +285,10 @@ async def test_trigger_logic():
     ...
 
 
-async def test_detector_with_unnamed_or_disconnected_config_sigs(RE, tmp_path: Path):
-    dp = StaticDirectoryProvider(tmp_path)
+async def test_detector_with_unnamed_or_disconnected_config_sigs(
+    RE, static_filename_provider: StaticFilenameProvider, tmp_path: Path
+):
+    dp = StaticDirectoryProvider(static_filename_provider, tmp_path)
     drv = ADBase("FOO:DRV:")
 
     some_other_driver = ADBase("TEST")

@@ -20,13 +20,13 @@ class DummyShapeProvider(ShapeProvider):
 
 
 @pytest.fixture
-async def hdf_writer(RE) -> HDFWriter:
+async def hdf_writer(RE, static_filename_provider) -> HDFWriter:
     async with DeviceCollector(mock=True):
         hdf = NDFileHDF("HDF:")
 
     return HDFWriter(
         hdf,
-        StaticDirectoryProvider("some_path", "some_prefix"),
+        StaticDirectoryProvider(static_filename_provider, "some_path"),
         name_provider=lambda: "test",
         shape_provider=DummyShapeProvider(),
     )

@@ -8,6 +8,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
+    DeviceNameFilenameProvider,
     SignalR,
     StaticDirectoryProvider,
     set_mock_value,
@@ -95,12 +96,13 @@ async def mock_panda(panda_t):
 
 @pytest.fixture
 async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
-    dir_prov = StaticDirectoryProvider(
-        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data"
-    )
+    fp = DeviceNameFilenameProvider(suffix="/data.h5")
+    dp = StaticDirectoryProvider(fp, tmp_path)
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
-            directory_provider=dir_prov,
+            prefix="TEST-PANDA",
+            directory_provider=dp,
+            name_provider=lambda: "test-panda",
             panda_device=mock_panda,
         )
 
