@@ -33,7 +33,7 @@ else:
 
 extensions = [
     # for diagrams
-    'sphinxcontrib.mermaid',
+    "sphinxcontrib.mermaid",
     # Use this for generating API docs
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
