@@ -1,15 +1,10 @@
 from collections import defaultdict
-from typing import Dict
 
 from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
 
+from ophyd_async.core.signal import assert_emitted
 from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
-
-
-def assert_emitted(docs: Dict[str, list], **numbers: int):
-    assert list(docs) == list(numbers)
-    assert {name: len(d) for name, d in docs.items()} == numbers
 
 
 # NOTE the async operations with h5py are non-trival

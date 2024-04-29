@@ -1,15 +1,24 @@
 import asyncio
 import re
 import time
+from unittest.mock import ANY
 
 import numpy
 import pytest
+from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    ConfigSignal,
+    DeviceCollector,
+    HintedSignal,
     Signal,
     SignalR,
     SignalRW,
     SimSignalBackend,
+    StandardReadable,
+    assert_configuration,
+    assert_reading,
+    assert_value,
     set_and_wait_for_value,
     set_sim_put_proceeds,
     set_sim_value,
@@ -18,6 +27,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
 class MySignal(Signal):
@@ -153,3 +163,68 @@ async def test_soft_signal_numpy():
     await int_signal.connect()
     assert (await float_signal.describe())["float_signal"]["dtype"] == "number"
     assert (await int_signal.describe())["int_signal"]["dtype"] == "integer"
+
+
+@pytest.fixture
+async def sim_signal():
+    sim_signal = SignalRW(SimSignalBackend(int, "test"))
+    sim_signal.set_name("sim_signal")
+    await sim_signal.connect(sim=True)
+    yield sim_signal
+
+
+async def test_assert_value(sim_signal: SignalRW):
+    set_sim_value(sim_signal, 168)
+    await assert_value(sim_signal, 168)
+
+
+async def test_assert_reaading(sim_signal: SignalRW):
+    set_sim_value(sim_signal, 888)
+    dummy_reading = {
+        "sim_signal": Reading({"alarm_severity": 0, "timestamp": ANY, "value": 888})
+    }
+    await assert_reading(sim_signal, dummy_reading)
+
+
+class DummyReadable(StandardReadable):
+    """A demo Readable to produce read and config signal"""
+
+    def __init__(self, prefix: str, name="") -> None:
+        # Define some signals
+        with self.add_children_as_readables(HintedSignal):
+            self.value = epics_signal_r(float, prefix + "Value")
+        with self.add_children_as_readables(ConfigSignal):
+            self.mode = epics_signal_rw(str, prefix + "Mode")
+            self.mode2 = epics_signal_rw(str, prefix + "Mode2")
+        # Set name and signals for read() and read_configuration()
+        super().__init__(name=name)
+
+
+@pytest.fixture
+async def sim_readable():
+    async with DeviceCollector(sim=True):
+        sim_readable = DummyReadable("SIM:READABLE:")
+        # Signals connected here
+    assert sim_readable.name == "sim_readable"
+    yield sim_readable
+
+
+async def test_assert_configuration(sim_readable: DummyReadable):
+    set_sim_value(sim_readable.value, 123)
+    set_sim_value(sim_readable.mode, "super mode")
+    set_sim_value(sim_readable.mode2, "slow mode")
+    dummy_config_reading = {
+        "sim_readable-mode": (
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": "super mode",
+            }
+        ),
+        "sim_readable-mode2": {
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": "slow mode",
+        },
+    }
+    await assert_configuration(sim_readable, dummy_config_reading)
