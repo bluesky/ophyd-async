@@ -14,7 +14,15 @@ from typing import Callable, List, Optional
 import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import AsyncStatus, Device, StandardReadable, observe_value
+from ophyd_async.core import (
+    AsyncStatus,
+    ConfigSignal,
+    Device,
+    DeviceVector,
+    HintedSignal,
+    StandardReadable,
+    observe_value,
+)
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -33,14 +41,22 @@ class Sensor(StandardReadable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        self.value = epics_signal_r(float, prefix + "Value")
-        self.mode = epics_signal_rw(EnergyMode, prefix + "Mode")
-        # Set name and signals for read() and read_configuration()
-        self.set_readable_signals(
-            read=[self.value],
-            config=[self.mode],
-        )
+        with self.add_children_as_readables(HintedSignal):
+            self.value = epics_signal_r(float, prefix + "Value")
+        with self.add_children_as_readables(ConfigSignal):
+            self.mode = epics_signal_rw(EnergyMode, prefix + "Mode")
+
         super().__init__(name=name)
+
+
+class SensorGroup(StandardReadable):
+    def __init__(self, prefix: str, name: str = "", sensor_count: int = 3) -> None:
+        with self.add_children_as_readables():
+            self.sensors = DeviceVector(
+                {i: Sensor(f"{prefix}{i}:") for i in range(1, sensor_count + 1)}
+            )
+
+        super().__init__(name)
 
 
 class Mover(StandardReadable, Movable, Stoppable):
@@ -48,20 +64,20 @@ class Mover(StandardReadable, Movable, Stoppable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
+        with self.add_children_as_readables(HintedSignal):
+            self.readback = epics_signal_r(float, prefix + "Readback")
+
+        with self.add_children_as_readables(ConfigSignal):
+            self.velocity = epics_signal_rw(float, prefix + "Velocity")
+            self.units = epics_signal_r(str, prefix + "Readback.EGU")
+
         self.setpoint = epics_signal_rw(float, prefix + "Setpoint")
-        self.readback = epics_signal_r(float, prefix + "Readback")
-        self.velocity = epics_signal_rw(float, prefix + "Velocity")
-        self.units = epics_signal_r(str, prefix + "Readback.EGU")
         self.precision = epics_signal_r(int, prefix + "Readback.PREC")
         # Signals that collide with standard methods should have a trailing underscore
         self.stop_ = epics_signal_x(prefix + "Stop.PROC")
         # Whether set() should complete successfully or not
         self._set_success = True
-        # Set name and signals for read() and read_configuration()
-        self.set_readable_signals(
-            read=[self.readback],
-            config=[self.velocity, self.units],
-        )
+
         super().__init__(name=name)
 
     def set_name(self, name: str):
@@ -135,11 +151,22 @@ def start_ioc_subprocess() -> str:
     pv_prefix = "".join(random.choice(string.ascii_uppercase) for _ in range(12)) + ":"
     here = Path(__file__).absolute().parent
     args = [sys.executable, "-m", "epicscorelibs.ioc"]
+
+    # Create standalone sensor
     args += ["-m", f"P={pv_prefix}"]
     args += ["-d", str(here / "sensor.db")]
-    for suff in "XY":
-        args += ["-m", f"P={pv_prefix}{suff}:"]
+
+    # Create sensor group
+    for suffix in ["1", "2", "3"]:
+        args += ["-m", f"P={pv_prefix}{suffix}:"]
+        args += ["-d", str(here / "sensor.db")]
+
+    # Create X and Y motors
+    for suffix in ["X", "Y"]:
+        args += ["-m", f"P={pv_prefix}{suffix}:"]
         args += ["-d", str(here / "mover.db")]
+
+    # Start IOC
     process = subprocess.Popen(
         args,
         stdin=subprocess.PIPE,

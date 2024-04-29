@@ -52,14 +52,14 @@ class CaConverter:
         return value
 
     def reading(self, value: AugmentedValue):
-        return dict(
-            value=self.value(value),
-            timestamp=value.timestamp,
-            alarm_severity=-1 if value.severity > 2 else value.severity,
-        )
+        return {
+            "value": self.value(value),
+            "timestamp": value.timestamp,
+            "alarm_severity": -1 if value.severity > 2 else value.severity,
+        }
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
-        return dict(source=source, dtype=dbr_to_dtype[value.datatype], shape=[])
+        return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
 
 
 class CaLongStrConverter(CaConverter):
@@ -74,7 +74,7 @@ class CaLongStrConverter(CaConverter):
 
 class CaArrayConverter(CaConverter):
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
-        return dict(source=source, dtype="array", shape=[len(value)])
+        return {"source": source, "dtype": "array", "shape": [len(value)]}
 
 
 @dataclass
@@ -92,7 +92,7 @@ class CaEnumConverter(CaConverter):
 
     def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
         choices = [e.value for e in self.enum_class]
-        return dict(source=source, dtype="string", shape=[], choices=choices)
+        return {"source": source, "dtype": "string", "shape": [], "choices": choices}
 
 
 class DisconnectedCaConverter(CaConverter):
@@ -170,8 +170,10 @@ class CaSignalBackend(SignalBackend[T]):
         self.write_pv = write_pv
         self.initial_values: Dict[str, AugmentedValue] = {}
         self.converter: CaConverter = DisconnectedCaConverter(None, None)
-        self.source = f"ca://{self.read_pv}"
         self.subscription: Optional[Subscription] = None
+
+    def source(self, name: str):
+        return f"ca://{self.read_pv}"
 
     async def _store_initial_value(self, pv, timeout: float = DEFAULT_TIMEOUT):
         try:
@@ -216,9 +218,9 @@ class CaSignalBackend(SignalBackend[T]):
             timeout=None,
         )
 
-    async def get_descriptor(self) -> Descriptor:
+    async def get_descriptor(self, source: str) -> Descriptor:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.descriptor(self.source, value)
+        return self.converter.descriptor(source, value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)

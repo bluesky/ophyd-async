@@ -44,9 +44,5 @@ async def test_single_trigger_det(single_trigger_det: SingleTriggerDet, RE: RunE
     assert names == ["start", "descriptor", "event", "stop"]
     _, descriptor, event, _ = docs
     assert descriptor["configuration"]["det"]["data"]["det-drv-acquire_time"] == 0.5
-    assert (
-        descriptor["data_keys"]["det-stats-unique_id"]["source"]
-        == "sim://PREFIX:STATSUniqueId_RBV"
-    )
     assert event["data"]["det-drv-array_counter"] == 1
     assert event["data"]["det-stats-unique_id"] == 3

@@ -1,13 +1,20 @@
 import asyncio
+import subprocess
+from collections import defaultdict
 from typing import Dict
-from unittest.mock import ANY, Mock, call
+from unittest.mock import ANY, Mock, call, patch
 
 import pytest
+from bluesky import plans as bp
 from bluesky.protocols import Reading
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DeviceCollector,
     NotConnected,
+    assert_emitted,
+    assert_reading,
+    assert_value,
     set_sim_callback,
     set_sim_value,
 )
@@ -19,7 +26,7 @@ A_WHILE = 0.001
 
 
 @pytest.fixture
-async def sim_mover():
+async def sim_mover() -> demo.Mover:
     async with DeviceCollector(sim=True):
         sim_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
         # Signals connected here
@@ -28,17 +35,27 @@ async def sim_mover():
     set_sim_value(sim_mover.units, "mm")
     set_sim_value(sim_mover.precision, 3)
     set_sim_value(sim_mover.velocity, 1)
-    yield sim_mover
+    return sim_mover
 
 
 @pytest.fixture
-async def sim_sensor():
+async def sim_sensor() -> demo.Sensor:
     async with DeviceCollector(sim=True):
         sim_sensor = demo.Sensor("SIM:SENSOR:")
         # Signals connected here
 
     assert sim_sensor.name == "sim_sensor"
-    yield sim_sensor
+    return sim_sensor
+
+
+@pytest.fixture
+async def sim_sensor_group() -> demo.SensorGroup:
+    async with DeviceCollector(sim=True):
+        sim_sensor_group = demo.SensorGroup("SIM:SENSOR:")
+        # Signals connected here
+
+    assert sim_sensor_group.name == "sim_sensor_group"
+    return sim_sensor_group
 
 
 class Watcher:
@@ -73,7 +90,8 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
-    assert 0.55 == await sim_mover.setpoint.get_value()
+
+    await assert_value(sim_mover.setpoint, 0.55)
     assert not s.done
     done.assert_not_called()
     await asyncio.sleep(0.1)
@@ -99,24 +117,30 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
 
 async def test_sensor_reading_shows_value(sim_sensor: demo.Sensor):
     # Check default value
+    await assert_value(sim_sensor.value, pytest.approx(0.0))
     assert (await sim_sensor.value.get_value()) == pytest.approx(0.0)
-    assert (await sim_sensor.read()) == {
-        "sim_sensor-value": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": 0.0,
-        }
-    }
-
+    await assert_reading(
+        sim_sensor,
+        {
+            "sim_sensor-value": {
+                "value": 0.0,
+                "alarm_severity": 0,
+                "timestamp": ANY,
+            }
+        },
+    )
     # Check different value
     set_sim_value(sim_sensor.value, 5.0)
-    assert (await sim_sensor.read()) == {
-        "sim_sensor-value": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": 5.0,
-        }
-    }
+    await assert_reading(
+        sim_sensor,
+        {
+            "sim_sensor-value": {
+                "value": 5.0,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
 
 
 async def test_mover_stopped(sim_mover: demo.Mover):
@@ -131,9 +155,6 @@ async def test_mover_stopped(sim_mover: demo.Mover):
 async def test_read_mover(sim_mover: demo.Mover):
     await sim_mover.stage()
     assert (await sim_mover.read())["sim_mover"]["value"] == 0.0
-    assert (await sim_mover.describe())["sim_mover"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X:Readback"
     assert (await sim_mover.read_configuration())["sim_mover-velocity"]["value"] == 1
     assert (await sim_mover.describe_configuration())["sim_mover-units"]["shape"] == []
     set_sim_value(sim_mover.readback, 0.5)
@@ -147,9 +168,6 @@ async def test_read_mover(sim_mover: demo.Mover):
 
 async def test_set_velocity(sim_mover: demo.Mover) -> None:
     v = sim_mover.velocity
-    assert (await v.describe())["sim_mover-velocity"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X:Velocity"
     q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["sim_mover-velocity"]["value"] == 1.0
@@ -184,9 +202,6 @@ async def test_sensor_disconnected(caplog):
 async def test_read_sensor(sim_sensor: demo.Sensor):
     sim_sensor.stage()
     assert (await sim_sensor.read())["sim_sensor-value"]["value"] == 0
-    assert (await sim_sensor.describe())["sim_sensor-value"][
-        "source"
-    ] == "sim://SIM:SENSOR:Value"
     assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
         "value"
     ] == demo.EnergyMode.low
@@ -198,6 +213,21 @@ async def test_read_sensor(sim_sensor: demo.Sensor):
         "value"
     ] == demo.EnergyMode.high
     await sim_sensor.unstage()
+
+
+async def test_sensor_in_plan(RE: RunEngine, sim_sensor: demo.Sensor):
+    """Tests sim sensor behavior within a RunEngine plan.
+
+    This test verifies that the sensor emits the expected documents
+     when used in plan(count).
+    """
+    docs = defaultdict(list)
+
+    def capture_emitted(name, doc):
+        docs[name].append(doc)
+
+    RE(bp.count([sim_sensor], num=2), capture_emitted)
+    assert_emitted(docs, start=1, descriptor=1, event=2, stop=1)
 
 
 async def test_assembly_renaming() -> None:
@@ -224,3 +254,73 @@ def test_mover_in_re(sim_mover: demo.Mover, RE) -> None:
 
     with pytest.raises(RuntimeError, match="Will deadlock run engine if run in a plan"):
         RE(my_plan())
+
+
+async def test_dynamic_sensor_group_disconnected():
+    with pytest.raises(NotConnected):
+        async with DeviceCollector(timeout=0.1):
+            sim_sensor_group_dynamic = demo.SensorGroup("SIM:SENSOR:")
+
+    assert sim_sensor_group_dynamic.name == "sim_sensor_group_dynamic"
+
+
+async def test_dynamic_sensor_group_read_and_describe(
+    sim_sensor_group: demo.SensorGroup,
+):
+    set_sim_value(sim_sensor_group.sensors[1].value, 0.0)
+    set_sim_value(sim_sensor_group.sensors[2].value, 0.5)
+    set_sim_value(sim_sensor_group.sensors[3].value, 1.0)
+
+    await sim_sensor_group.stage()
+    description = await sim_sensor_group.describe()
+
+    await sim_sensor_group.unstage()
+    await assert_reading(
+        sim_sensor_group,
+        {
+            "sim_sensor_group-sensors-1-value": {
+                "value": 0.0,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "sim_sensor_group-sensors-2-value": {
+                "value": 0.5,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "sim_sensor_group-sensors-3-value": {
+                "value": 1.0,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+        },
+    )
+    assert description == {
+        "sim_sensor_group-sensors-1-value": {
+            "dtype": "number",
+            "shape": [],
+            "source": "soft://sim_sensor_group-sensors-1-value",
+        },
+        "sim_sensor_group-sensors-2-value": {
+            "dtype": "number",
+            "shape": [],
+            "source": "soft://sim_sensor_group-sensors-2-value",
+        },
+        "sim_sensor_group-sensors-3-value": {
+            "dtype": "number",
+            "shape": [],
+            "source": "soft://sim_sensor_group-sensors-3-value",
+        },
+    }
+
+
+@patch("ophyd_async.epics.demo.subprocess.Popen")
+async def test_ioc_starts(mock_popen: Mock):
+    demo.start_ioc_subprocess()
+    mock_popen.assert_called_once_with(
+        ANY,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )

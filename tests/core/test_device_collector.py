@@ -100,8 +100,8 @@ def test_async_device_connector_run_engine_same_event_loop():
         RE(my_plan())
 
         assert (
-            checking_loop.run_until_complete(sim_motor.setpoint.read())[
-                "sim_motor-setpoint"
+            checking_loop.run_until_complete(sim_motor.user_setpoint.read())[
+                "sim_motor-user_setpoint"
             ]["value"]
             == 3.14
         )
@@ -146,8 +146,8 @@ def test_async_device_connector_run_engine_different_event_loop():
 
     # The set should fail since the run engine is on a different event loop
     assert (
-        device_connector_loop.run_until_complete(sim_motor.setpoint.read())[
-            "sim_motor-setpoint"
+        device_connector_loop.run_until_complete(sim_motor.user_setpoint.read())[
+            "sim_motor-user_setpoint"
         ]["value"]
         != 3.14
     )

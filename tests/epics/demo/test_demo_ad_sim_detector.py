@@ -212,15 +212,14 @@ async def test_detector_writes_to_file(
 async def test_read_and_describe_detector(single_detector: StandardDetector):
     describe = await single_detector.describe_configuration()
     read = await single_detector.read_configuration()
-
     assert describe == {
         "test-drv-acquire_time": {
-            "source": "sim://TEST:DRV:AcquireTime_RBV",
+            "source": "soft://test-drv-acquire_time",
             "dtype": "number",
             "shape": [],
         },
         "test-drv-acquire": {
-            "source": "sim://TEST:DRV:Acquire_RBV",
+            "source": "soft://test-drv-acquire",
             "dtype": "boolean",
             "shape": [],
         },

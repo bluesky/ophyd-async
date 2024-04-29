@@ -1,0 +1,33 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.TriggerLogic
+==============================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: TriggerLogic
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TriggerLogic.prepare
+      ~TriggerLogic.start
+      ~TriggerLogic.stop
+      ~TriggerLogic.trigger_info
+   
+   
+
+   
+   
+   

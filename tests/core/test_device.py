@@ -51,9 +51,7 @@ def test_device_children(parent: DummyDeviceGroup):
 def test_device_vector_children():
     parent = DummyDeviceGroup("root")
 
-    device_vector_children = [
-        (name, child) for name, child in parent.dict_with_children.children()
-    ]
+    device_vector_children = list(parent.dict_with_children.children())
     assert device_vector_children == [("123", parent.dict_with_children[123])]
 
 

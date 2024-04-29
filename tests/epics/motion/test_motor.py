@@ -20,14 +20,14 @@ async def sim_motor():
         # Signals connected here
 
     assert sim_motor.name == "sim_motor"
-    set_sim_value(sim_motor.units, "mm")
+    set_sim_value(sim_motor.motor_egu, "mm")
     set_sim_value(sim_motor.precision, 3)
     set_sim_value(sim_motor.velocity, 1)
     yield sim_motor
 
 
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
-    set_sim_put_proceeds(sim_motor.setpoint, False)
+    set_sim_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(0.55)
     watcher = Mock()
     s.watch(watcher)
@@ -45,10 +45,10 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
     watcher.reset_mock()
-    assert 0.55 == await sim_motor.setpoint.get_value()
+    assert 0.55 == await sim_motor.user_setpoint.get_value()
     assert not s.done
     await asyncio.sleep(0.1)
-    set_sim_value(sim_motor.readback, 0.1)
+    set_sim_value(sim_motor.user_readback, 0.1)
     assert watcher.call_count == 1
     assert watcher.call_args == call(
         name="sim_motor",
@@ -59,20 +59,20 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
-    set_sim_put_proceeds(sim_motor.setpoint, True)
+    set_sim_put_proceeds(sim_motor.user_setpoint, True)
     await asyncio.sleep(A_BIT)
     assert s.done
     done.assert_called_once_with(s)
 
 
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
-    set_sim_put_proceeds(sim_motor.setpoint, False)
+    set_sim_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(1.5)
     s.add_callback(Mock())
     await asyncio.sleep(0.2)
     assert not s.done
     await sim_motor.stop()
-    set_sim_put_proceeds(sim_motor.setpoint, True)
+    set_sim_put_proceeds(sim_motor.user_setpoint, True)
     await asyncio.sleep(A_BIT)
     assert s.done
     assert s.success is False
@@ -81,25 +81,21 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
 async def test_read_motor(sim_motor: motor.Motor):
     sim_motor.stage()
     assert (await sim_motor.read())["sim_motor"]["value"] == 0.0
-    assert (await sim_motor.describe())["sim_motor"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X.RBV"
     assert (await sim_motor.read_configuration())["sim_motor-velocity"]["value"] == 1
-    assert (await sim_motor.describe_configuration())["sim_motor-units"]["shape"] == []
-    set_sim_value(sim_motor.readback, 0.5)
+    assert (await sim_motor.describe_configuration())["sim_motor-motor_egu"][
+        "shape"
+    ] == []
+    set_sim_value(sim_motor.user_readback, 0.5)
     assert (await sim_motor.read())["sim_motor"]["value"] == 0.5
     sim_motor.unstage()
     # Check we can still read and describe when not staged
-    set_sim_value(sim_motor.readback, 0.1)
+    set_sim_value(sim_motor.user_readback, 0.1)
     assert (await sim_motor.read())["sim_motor"]["value"] == 0.1
     assert await sim_motor.describe()
 
 
 async def test_set_velocity(sim_motor: motor.Motor) -> None:
     v = sim_motor.velocity
-    assert (await v.describe())["sim_motor-velocity"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X.VELO"
     q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["sim_motor-velocity"]["value"] == 1.0

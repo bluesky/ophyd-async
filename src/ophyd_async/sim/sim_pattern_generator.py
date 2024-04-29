@@ -3,7 +3,7 @@ from typing import Sequence
 
 from ophyd_async.core import DirectoryProvider, StaticDirectoryProvider
 from ophyd_async.core.detector import StandardDetector
-from ophyd_async.core.signal import SignalR
+from ophyd_async.protocols import AsyncReadable
 from ophyd_async.sim.pattern_generator import PatternGenerator
 
 from .sim_pattern_detector_control import SimPatternDetectorControl
@@ -14,7 +14,7 @@ class SimPatternDetector(StandardDetector):
     def __init__(
         self,
         path: Path,
-        config_sigs: Sequence[SignalR] = [],
+        config_sigs: Sequence[AsyncReadable] = [],
         name: str = "sim_pattern_detector",
         writer_timeout: float = 1,
     ) -> None:

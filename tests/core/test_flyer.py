@@ -51,7 +51,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int, source="test"))
+        self.dummy_signal = SignalRW(backend=SimSignalBackend(int))
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
@@ -61,7 +61,7 @@ class DummyWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
         return {
             self._name: Descriptor(
-                source="sim://some-source",
+                source="soft://some-source",
                 shape=self._shape,
                 dtype="number",
                 external="STREAM:",
@@ -97,10 +97,10 @@ class DummyWriter(DetectorWriter):
                 yield "stream_resource", self._file.stream_resource_doc
 
             if indices_written >= self._last_emitted:
-                indices = dict(
-                    start=self._last_emitted,
-                    stop=indices_written,
-                )
+                indices = {
+                    "start": self._last_emitted,
+                    "stop": indices_written,
+                }
                 self._last_emitted = indices_written
                 self._last_flush = time.monotonic()
                 yield "stream_datum", self._file.compose_stream_datum(indices)

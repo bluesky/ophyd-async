@@ -19,11 +19,9 @@ from typing import (
 
 from bluesky.protocols import (
     Collectable,
-    Configurable,
     Descriptor,
     Flyable,
     Preparable,
-    Readable,
     Reading,
     Stageable,
     StreamAsset,
@@ -31,9 +29,10 @@ from bluesky.protocols import (
     WritesStreamAssets,
 )
 
+from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
+
 from .async_status import AsyncStatus
 from .device import Device
-from .signal import SignalR
 from .utils import DEFAULT_TIMEOUT, merge_gathered_dicts
 
 T = TypeVar("T")
@@ -143,8 +142,8 @@ class DetectorWriter(ABC):
 class StandardDetector(
     Device,
     Stageable,
-    Configurable,
-    Readable,
+    AsyncConfigurable,
+    AsyncReadable,
     Triggerable,
     Preparable,
     Flyable,
@@ -161,7 +160,7 @@ class StandardDetector(
         self,
         controller: DetectorControl,
         writer: DetectorWriter,
-        config_sigs: Sequence[SignalR] = (),
+        config_sigs: Sequence[AsyncReadable] = (),
         name: str = "",
         writer_timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
@@ -214,7 +213,7 @@ class StandardDetector(
     async def _check_config_sigs(self):
         """Checks configuration signals are named and connected."""
         for signal in self._config_sigs:
-            if signal._name == "":
+            if signal.name == "":
                 raise Exception(
                     "config signal must be named before it is passed to the detector"
                 )
@@ -241,7 +240,7 @@ class StandardDetector(
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, Descriptor]:
         return self._describe
 
     @AsyncStatus.wrap

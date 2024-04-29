@@ -12,7 +12,6 @@ classifiers = [
 ]
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
-    "typing-extensions;python_version<'3.8'",
     "networkx>=2.0",
     "numpy",
     "packaging",
@@ -22,10 +21,9 @@ dependencies = [
     "p4p",
     "pyyaml",
 ]
-
 dynamic = ["version"]
 license.file = "LICENSE"
-readme = "README.rst"
+readme = "README.md"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
@@ -43,7 +41,6 @@ dev = [
     "ipython",
     "ipywidgets",
     "matplotlib",
-    "mypy",
     "myst-parser",
     "numpydoc",
     "ophyd",
@@ -60,6 +57,7 @@ dev = [
     "pytest-faulthandler",
     "pytest-rerunfailures",
     "pytest-timeout",
+    "ruff",
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-design",
@@ -82,34 +80,15 @@ name = "Tom Cobb"
 [tool.setuptools_scm]
 write_to = "src/ophyd_async/_version.py"
 
-[tool.mypy]
-ignore_missing_imports = true          # Ignore missing stubs in imported modules
-plugins = ["numpy.typing.mypy_plugin"]
-
-[tool.isort]
-float_to_top = true
-profile = "black"
-
-[tool.flake8]
-extend-ignore = [
-    "E203", # See https://github.com/PyCQA/pycodestyle/issues/373
-    "F811", # support typing.overload decorator
-    "F722", # allow Annotated[typ, some_func("some string")]
-    "W504",
-    "W503",
-]
-max-line-length = 88 # Respect black's line length (default 88),
-exclude = [".tox", "venv"]
-
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
 addopts = """
-    --tb=native -vv --strict-markers --doctest-modules --doctest-glob="*.rst"
-    --ignore=docs/user/examples --ignore=docs/examples
+    --tb=native -vv --strict-markers --doctest-modules
+    --doctest-glob="*.rst" --doctest-glob="*.md" --ignore=docs/examples
     --cov=src/ophyd_async --cov-report term --cov-report xml:cov.xml
-"""
+    """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
-filterwarnings = ["error", "ignore::DeprecationWarning:pkg_resources"]
+filterwarnings = "error"
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
 log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
@@ -135,19 +114,31 @@ legacy_tox_ini = """
 [tox]
 skipsdist=True
 
-[testenv:{pre-commit,mypy,pytest,docs}]
+[testenv:{pre-commit,type-checking,tests,docs}]
 # Don't create a virtualenv for the command, requires tox-direct plugin
 direct = True
 passenv = *
-allowlist_externals = 
-    pytest 
+allowlist_externals =
+    pytest
     pre-commit
     mypy
     sphinx-build
     sphinx-autobuild
 commands =
-    pytest: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
-    mypy: mypy src tests {posargs}
+    tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
+    type-checking: ruff check src tests {posargs}
     pre-commit: pre-commit run --all-files {posargs}
     docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
 """
+
+
+[tool.ruff]
+src = ["src", "tests"]
+line-length = 88
+lint.select = [
+    "C4",   # flake8-comprehensions - https://beta.ruff.rs/docs/rules/#flake8-comprehensions-c4
+    "E",    # pycodestyle errors - https://beta.ruff.rs/docs/rules/#error-e
+    "F",    # pyflakes rules - https://beta.ruff.rs/docs/rules/#pyflakes-f
+    "W",    # pycodestyle warnings - https://beta.ruff.rs/docs/rules/#warning-w
+    "I001", # isort
+]
