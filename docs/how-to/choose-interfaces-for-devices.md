@@ -4,12 +4,12 @@ This document contains a decision flowchart designed to guide developers through
 
 ```{mermaid}
 
-flowchart TD
-start([Start]) --> isFileWriting{Is it a File Writing Detector?}
-isFileWriting -- Yes --> useStandardDetector[Use StandardDetector]
-isFileWriting -- No --> producesPVValue{Does it produce a value from a PV you want to read in a scan?}
-producesPVValue -- Yes --> isMovable{Is it something that you move in a scan?}
-isMovable -- Yes --> useReadableMovable[Use StandardReadable + AsyncMovable + Override set method]
-isMovable -- No --> useReadable[Use StandardReadable]
-producesPVValue -- No --> useDevice[Use Device]
+  flowchart TD
+    start([Start]) --> isFileWriting{Is it a File Writing Detector?}
+    isFileWriting -- Yes --> useStandardDetector[Use StandardDetector]
+    isFileWriting -- No --> producesPVValue{Does it produce a value from a PV you want to read in a scan?}
+    producesPVValue -- Yes --> isMovable{Is it something that you move in a scan?}
+    isMovable -- Yes --> useReadableMovable[Use StandardReadable + AsyncMovable + Override set method]
+    isMovable -- No --> useReadable[Use StandardReadable]
+    producesPVValue -- No --> useDevice[Use Device]
 ```
