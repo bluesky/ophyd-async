@@ -9,10 +9,10 @@ def test_from_arrays_inconsistent_lengths():
     time2 = np.zeros(length)
     time1 = np.zeros(length + 1)
     with pytest.raises(ValueError, match="time1: has length 5 not 4"):
-        seq_table_from_arrays(time2=time2, time1=time1)
+        seq_table_from_arrays(time2=time2.astype(int), time1=time1.astype(int))
     time1 = np.zeros(length - 1)
     with pytest.raises(ValueError, match="time1: has length 3 not 4"):
-        seq_table_from_arrays(time2=time2, time1=time1)
+        seq_table_from_arrays(time2=time2.astype(int), time1=time1.astype(int))
 
 
 def test_from_arrays_no_time():
@@ -22,10 +22,10 @@ def test_from_arrays_no_time():
         seq_table_from_arrays()  # type: ignore
     time2 = np.zeros(0)
     with pytest.raises(AssertionError, match="Length 0 not in range"):
-        seq_table_from_arrays(time2=time2)
+        seq_table_from_arrays(time2=time2.astype(int))
 
 
 def test_from_arrays_too_long():
     time2 = np.zeros(4097)
     with pytest.raises(AssertionError, match="Length 4097 not in range"):
-        seq_table_from_arrays(time2=time2)
+        seq_table_from_arrays(time2=time2.astype(int))

@@ -1,6 +1,6 @@
 import bluesky.plans as bp
 import pytest
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import DeviceCollector, set_sim_value
 from ophyd_async.epics.areadetector import ImageMode, SingleTriggerDet

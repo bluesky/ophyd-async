@@ -12,8 +12,8 @@ async def test_move_sim_in_plan():
     RE = RunEngine()
 
     async with DeviceCollector():
-        m1 = SimMotor("M1", "sim_motor1")
-        m2 = SimMotor("M2", "sim_motor2")
+        m1 = SimMotor("M1")
+        m2 = SimMotor("M2")
 
     my_plan = spiral_square([], m1, m2, 0, 0, 4, 4, 10, 10)
 
