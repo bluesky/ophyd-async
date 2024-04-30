@@ -1,10 +1,8 @@
-"""Default Tango Devices"""
-
 from __future__ import annotations
 
 from abc import abstractmethod
 
-from ophyd_async.core import AsyncStatus, StandardReadable
+from ophyd_async.core import DEFAULT_TIMEOUT, AsyncStatus, StandardReadable
 from tango.asyncio import DeviceProxy
 
 __all__ = ("TangoReadableDevice",)
@@ -26,15 +24,21 @@ class TangoReadableDevice(StandardReadable):
         self.proxy: DeviceProxy = None
         StandardReadable.__init__(self, name=name)
 
+    # # --------------------------------------------------------------------
+    # def __await__(self):
+    #     async def closure():
+    #         self.proxy = await DeviceProxy(self.trl)
+    #         self.register_signals()
+    #
+    #         return self
+    #
+    #     return closure().__await__()
+
     # --------------------------------------------------------------------
-    def __await__(self):
-        async def closure():
-            self.proxy = await DeviceProxy(self.trl)
-            self.register_signals()
-
-            return self
-
-        return closure().__await__()
+    async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
+        self.proxy = await DeviceProxy(self.trl)
+        self.register_signals()
+        await super().connect(sim=sim, timeout=timeout)
 
     # --------------------------------------------------------------------
     @abstractmethod
