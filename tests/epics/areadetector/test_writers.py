@@ -40,7 +40,7 @@ async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
 
     assert descriptor == {
         "test": {
-            "source": "sim://HDF:FullFileName_RBV",
+            "source": "soft://hdf-full_file_name",
             "shape": (10, 10),
             "dtype": "array",
             "external": "STREAM:",

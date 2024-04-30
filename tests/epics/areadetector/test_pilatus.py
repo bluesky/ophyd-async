@@ -54,7 +54,6 @@ async def pilatus(
 ) -> PilatusDetector:
     async with DeviceCollector(sim=True):
         pilatus = PilatusDetector(
-            "PILATUS:",
             "pilatus",
             static_directory_provider,
             driver=pilatus_driver,

@@ -30,16 +30,22 @@ from .signal import (
     SignalRW,
     SignalW,
     SignalX,
+    assert_configuration,
+    assert_emitted,
+    assert_reading,
+    assert_value,
     observe_value,
     set_and_wait_for_value,
     set_sim_callback,
     set_sim_put_proceeds,
     set_sim_value,
+    soft_signal_r_and_backend,
+    soft_signal_rw,
     wait_for_value,
 )
 from .signal_backend import SignalBackend
 from .sim_signal_backend import SimSignalBackend
-from .standard_readable import StandardReadable
+from .standard_readable import ConfigSignal, HintedSignal, StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
     Callback,
@@ -67,6 +73,8 @@ __all__ = [
     "SignalW",
     "SignalRW",
     "SignalX",
+    "soft_signal_r_and_backend",
+    "soft_signal_rw",
     "observe_value",
     "set_and_wait_for_value",
     "set_sim_callback",
@@ -80,6 +88,8 @@ __all__ = [
     "ShapeProvider",
     "StaticDirectoryProvider",
     "StandardReadable",
+    "ConfigSignal",
+    "HintedSignal",
     "TriggerInfo",
     "TriggerLogic",
     "HardwareTriggeredFlyable",
@@ -99,4 +109,8 @@ __all__ = [
     "walk_rw_signals",
     "load_device",
     "save_device",
+    "assert_reading",
+    "assert_value",
+    "assert_configuration",
+    "assert_emitted",
 ]

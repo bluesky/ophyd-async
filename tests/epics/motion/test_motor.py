@@ -81,9 +81,6 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
 async def test_read_motor(sim_motor: motor.Motor):
     sim_motor.stage()
     assert (await sim_motor.read())["sim_motor"]["value"] == 0.0
-    assert (await sim_motor.describe())["sim_motor"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X.RBV"
     assert (await sim_motor.read_configuration())["sim_motor-velocity"]["value"] == 1
     assert (await sim_motor.describe_configuration())["sim_motor-motor_egu"][
         "shape"
@@ -99,9 +96,6 @@ async def test_read_motor(sim_motor: motor.Motor):
 
 async def test_set_velocity(sim_motor: motor.Motor) -> None:
     v = sim_motor.velocity
-    assert (await v.describe())["sim_motor-velocity"][
-        "source"
-    ] == "sim://BLxxI-MO-TABLE-01:X.VELO"
     q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["sim_motor-velocity"]["value"] == 1.0

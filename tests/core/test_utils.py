@@ -24,7 +24,7 @@ class ValueErrorBackend(SimSignalBackend):
 
 class WorkingDummyChildDevice(Device):
     def __init__(self, name: str = "working_dummy_child_device") -> None:
-        self.working_signal = SignalRW(backend=SimSignalBackend(int, "WORKING_SIGNAL"))
+        self.working_signal = SignalRW(backend=SimSignalBackend(int))
         super().__init__(name=name)
 
 

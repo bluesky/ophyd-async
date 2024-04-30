@@ -13,7 +13,10 @@ class SignalBackend(Generic[T]):
     datatype: Optional[Type[T]] = None
 
     #: Like ca://PV_PREFIX:SIGNAL
-    source: str = ""
+    @abstractmethod
+    def source(name: str) -> str:
+        """Return source of signal. Signals may pass a name to the backend, which can be
+        used or discarded."""
 
     @abstractmethod
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
@@ -24,7 +27,7 @@ class SignalBackend(Generic[T]):
         """Put a value to the PV, if wait then wait for completion for up to timeout"""
 
     @abstractmethod
-    async def get_descriptor(self) -> Descriptor:
+    async def get_descriptor(self, source: str) -> Descriptor:
         """Metadata like source, dtype, shape, precision, units"""
 
     @abstractmethod
