@@ -52,6 +52,9 @@ class HDFWriter(DetectorWriter):
             self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
             self.hdf.file_template.set("%s/%s.h5"),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
+            # Never use custom xml layout file but use the one defined
+            # in the source code file NDFileHDF5LayoutXML.cpp
+            self.hdf.xml_file_name.set(""),
         )
 
         assert (
