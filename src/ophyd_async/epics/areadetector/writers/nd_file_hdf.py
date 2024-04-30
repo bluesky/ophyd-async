@@ -36,4 +36,5 @@ class NDFileHDF(NDPluginBase):
         self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
         self.array_size0 = ad_r(int, prefix + "ArraySize0")
         self.array_size1 = ad_r(int, prefix + "ArraySize1")
+        self.xml_file_name = ad_rw(str, prefix + "XMLFileName")
         super().__init__(prefix, name)
