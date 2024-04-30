@@ -59,6 +59,9 @@ extensions = [
     "numpydoc",
 ]
 
+# So we can use the ::: syntax
+myst_enable_extensions = ["colon_fence"]
+
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
