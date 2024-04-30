@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from bluesky import RunEngine
 from bluesky.plans import scan
-from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.tango.device_controllers import (
@@ -12,6 +11,7 @@ from ophyd_async.tango.device_controllers import (
     OmsVME58Motor,
     SIS3820Counter,
 )
+from tango.asyncio_executor import set_global_executor
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -38,7 +38,6 @@ async def devices_set():
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_step_scan_motor_vs_counter_with_dgg2(devices_set):
-
     omsvme58_motor, dgg2timer, sis3820 = devices_set
 
     readouts = Mock()
@@ -51,7 +50,7 @@ async def test_step_scan_motor_vs_counter_with_dgg2(devices_set):
     )
 
     assert readouts.call_count == 14
-    assert set([args[0][0] for args in readouts.call_args_list]) == {
+    assert {arg[0][0] for arg in readouts.call_args_list} == {
         "descriptor",
         "event",
         "start",

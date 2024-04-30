@@ -8,6 +8,17 @@ from typing import Dict, Optional, Type, Union
 
 import numpy as np
 from bluesky.protocols import Descriptor, Reading
+
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    NotConnected,
+    ReadingValueCallback,
+    SignalBackend,
+    T,
+    get_dtype,
+    get_unique,
+    wait_for_connection,
+)
 from tango import (
     AttrDataFormat,
     AttributeInfoEx,
@@ -23,17 +34,6 @@ from tango.asyncio_executor import (
     set_global_executor,
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
-
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    NotConnected,
-    ReadingValueCallback,
-    SignalBackend,
-    T,
-    get_dtype,
-    get_unique,
-    wait_for_connection,
-)
 
 __all__ = ("TangoTransport", "TangoSignalBackend")
 
@@ -94,7 +94,6 @@ def get_python_type(tango_type) -> tuple[bool, T, str]:
 
 # --------------------------------------------------------------------
 class TangoProxy:
-
     support_events = False
 
     def __init__(self, device_proxy: DeviceProxy, name: str):
@@ -150,7 +149,6 @@ class TangoProxy:
 
 # --------------------------------------------------------------------
 class AttributeProxy(TangoProxy):
-
     support_events = False
     _event_callback = None
     _eid = None
@@ -205,11 +203,11 @@ class AttributeProxy(TangoProxy):
     @ensure_proper_executor
     async def get_reading(self) -> Reading:
         attr = await self._proxy.read_attribute(self._name)
-        return dict(
-            value=attr.value,
-            timestamp=attr.time.totime(),
-            alarm_severity=attr.quality,
-        )
+        return {
+            "value": attr.value,
+            "timestamp": attr.time.totime(),
+            "alarm_severity": attr.quality,
+        }
 
     # --------------------------------------------------------------------
     def has_subscription(self) -> bool:
@@ -238,20 +236,19 @@ class AttributeProxy(TangoProxy):
     def _event_processor(self, event):
         if not event.err:
             value = event.attr_value.value
-            reading = dict(
-                value=value,
-                timestamp=event.get_date().totime(),
-                alarm_severity=event.attr_value.quality,
-            )
+            reading = {
+                "value": value,
+                "timestamp": event.get_date().totime(),
+                "alarm_severity": event.attr_value.quality,
+            }
 
             self._event_callback(reading, value)
 
 
 # --------------------------------------------------------------------
 class CommandProxy(TangoProxy):
-
     support_events = False
-    _last_reading = dict(value=None, timestamp=0, alarm_severity=0)
+    _last_reading = {"value": None, "timestamp": 0, "alarm_severity": 0}
 
     # --------------------------------------------------------------------
     async def get(self) -> T:
@@ -276,7 +273,11 @@ class CommandProxy(TangoProxy):
                     except Exception:
                         await asyncio.sleep(A_BIT)
 
-        self._last_reading = dict(value=val, timestamp=time.time(), alarm_severity=0)
+        self._last_reading = {
+            "value": val,
+            "timestamp": time.time(),
+            "alarm_severity": 0,
+        }
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
@@ -357,9 +358,9 @@ def get_trl_descriptor(
                 raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
 
         if tr_format == AttrDataFormat.SPECTRUM:
-            return dict(source=tango_resource, dtype="array", shape=[max_x])
+            return {"source": tango_resource, "dtype": "array", "shape": [max_x]}
         elif tr_format == AttrDataFormat.IMAGE:
-            return dict(source=tango_resource, dtype="array", shape=[max_y, max_x])
+            return {"source": tango_resource, "dtype": "array", "shape": [max_y, max_x]}
 
     else:
         if tr_dtype in (Enum, CmdArgType.DevState):
@@ -377,16 +378,19 @@ def get_trl_descriptor(
                         raise TypeError(
                             f"{tango_resource} has choices {trl_choices} not {choices}"
                         )
-            return dict(
-                source=tango_resource, dtype="string", shape=[], choices=trl_choices
-            )
+            return {
+                "source": tango_resource,
+                "dtype": "string",
+                "shape": [],
+                "choices": trl_choices,
+            }
         else:
             if datatype and not issubclass(tr_dtype, datatype):
                 raise TypeError(
                     f"{tango_resource} has type {tr_dtype.__name__} "
                     f"not {datatype.__name__}"
                 )
-            return dict(source=tango_resource, dtype=tr_dtype_desc, shape=[])
+            return {"source": tango_resource, "dtype": tr_dtype_desc, "shape": []}
 
 
 # --------------------------------------------------------------------
@@ -417,7 +421,6 @@ async def get_tango_trl(
 
 # --------------------------------------------------------------------
 class TangoTransport(TangoSignalBackend[T]):
-
     def __init__(
         self,
         datatype: Optional[Type[T]],
@@ -433,8 +436,13 @@ class TangoTransport(TangoSignalBackend[T]):
             write_trl: device_proxy,
         }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
-        self.source = f"{self.read_trl}"
+        # self.source = f"{self.read_trl}"
         self.descriptor: Descriptor = {}  # type: ignore
+
+    # --------------------------------------------------------------------
+    @property
+    def source(self) -> str:
+        return f"{self.read_trl}"
 
     # --------------------------------------------------------------------
     async def _connect_and_store_config(self, trl):
@@ -504,3 +512,5 @@ class TangoTransport(TangoSignalBackend[T]):
 
         else:
             self.proxies[self.read_trl].unsubscribe_callback()
+
+    # --------------------------------------------------------------------

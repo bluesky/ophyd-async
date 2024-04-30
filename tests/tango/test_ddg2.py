@@ -3,10 +3,10 @@ from unittest.mock import Mock
 import pytest
 from bluesky import Msg, RunEngine
 from bluesky.plans import count
-from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.tango.device_controllers import DGG2Timer
+from tango.asyncio_executor import set_global_executor
 
 
 # --------------------------------------------------------------------
@@ -27,14 +27,12 @@ async def dgg2():
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(dgg2):
-
     assert dgg2.name == "dgg2"
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_readout_with_bluesky(dgg2):
-
     TEST_TIME = 0.1
 
     await dgg2.set_time(TEST_TIME)

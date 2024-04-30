@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Callable, Optional
 
 from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.core.signal import add_timeout
@@ -24,16 +24,32 @@ class CachableOrNot:
 
 
 # --------------------------------------------------------------------
-class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoint): ...  # noqa: E701
+class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoint):
+    # --------------------------------------------------------------------
+    @property
+    def source(self) -> Callable[[], str]:
+        return self._backend.source
 
 
 # --------------------------------------------------------------------
-class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoint): ...  # noqa: E701
+class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoint):
+    # --------------------------------------------------------------------
+    @property
+    def source(self) -> Callable[[], str]:
+        return self._backend.source
 
 
 # --------------------------------------------------------------------
-class TangoSignalR(SignalR[T], CachableOrNot): ...  # noqa: E701
+class TangoSignalR(SignalR[T], CachableOrNot):
+    # --------------------------------------------------------------------
+    @property
+    def source(self) -> Callable[[], str]:
+        return self._backend.source
 
 
 # --------------------------------------------------------------------
-class TangoSignalX(SignalX, CachableOrNot): ...  # noqa: E701
+class TangoSignalX(SignalX, CachableOrNot):
+    # --------------------------------------------------------------------
+    @property
+    def source(self) -> Callable[[], str]:
+        return self._backend.source

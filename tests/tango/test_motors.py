@@ -6,11 +6,11 @@ import pytest
 from bluesky import RunEngine
 from bluesky.plan_stubs import mv
 from bluesky.plans import count, scan
-from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.tango.device_controllers import OmsVME58Motor
 from ophyd_async.tango.sardana import SardanaMotor
+from tango.asyncio_executor import set_global_executor
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -50,14 +50,12 @@ async def dummy_motor(motor_to_test):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(dummy_motor):
-
     assert dummy_motor.name == "dummy_motor"
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_readout_with_bluesky(dummy_motor):
-
     # now let's do some bluesky stuff
     RE = RunEngine()
     RE(count([dummy_motor], 1))
@@ -106,7 +104,6 @@ async def test_move_with_bluesky(dummy_motor):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_scan_motor_vs_motor_position(dummy_motor):
-
     readouts = Mock()
 
     # now let's do some bluesky stuff
@@ -114,7 +111,7 @@ async def test_scan_motor_vs_motor_position(dummy_motor):
     RE(scan([dummy_motor.position], dummy_motor, 0, 1, num=11), readouts)
 
     assert readouts.call_count == 14
-    assert set([args[0][0] for args in readouts.call_args_list]) == {
+    assert {args[0][0] for args in readouts.call_args_list} == {
         "descriptor",
         "event",
         "start",

@@ -3,10 +3,10 @@ from unittest.mock import Mock
 import pytest
 from bluesky import RunEngine
 from bluesky.plans import count
-from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.tango.device_controllers import SIS3820Counter
+from tango.asyncio_executor import set_global_executor
 
 
 # --------------------------------------------------------------------
@@ -27,14 +27,12 @@ async def sis3820():
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(sis3820):
-
     assert sis3820.name == "sis3820"
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_readout_with_bluesky(sis3820):
-
     readouts = Mock()
     # now let's do some bluesky stuff
 

@@ -9,14 +9,14 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
+
+from ophyd_async.core import SignalBackend, T
+from ophyd_async.tango._backend import TangoSignalBackend, TangoTransport
 from tango import AttrDataFormat, AttrWriteType, DeviceProxy, DevState
 from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
-
-from ophyd_async.core import SignalBackend, T
-from ophyd_async.tango._backend import TangoSignalBackend, TangoTransport
 
 # --------------------------------------------------------------------
 """
@@ -197,23 +197,24 @@ def reset_tango_asyncio():
 # --------------------------------------------------------------------
 def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [bool, int]:
-        return dict(dtype="integer", shape=[])
+        return {"dtype": "integer", "shape": []}
     if python_type in [float]:
-        return dict(dtype="number", shape=[])
+        return {"dtype": "number", "shape": []}
     if python_type in [str]:
-        return dict(dtype="string", shape=[])
+        return {"dtype": "string", "shape": []}
     if issubclass(python_type, DevState):
-        return dict(dtype="string", shape=[], choices=list(DevState.names.keys()))
+        return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}
     if issubclass(python_type, Enum):
-        return dict(
-            dtype="string",
-            shape=[],
-            choices=[] if is_cmd else [member.name for member in value.__class__],
-        )
+        return {
+            "dtype": "string",
+            "shape": [],
+            "choices": [] if is_cmd else [member.name for member in value.__class__],
+        }
 
-    return dict(
-        dtype="array", shape=[np.Inf] if is_cmd else list(np.array(value).shape)
-    )
+    return {
+        "dtype": "array",
+        "shape": [np.Inf] if is_cmd else list(np.array(value).shape),
+    }
 
 
 # --------------------------------------------------------------------

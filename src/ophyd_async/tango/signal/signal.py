@@ -4,10 +4,6 @@ from __future__ import annotations
 
 from typing import Optional, Type, Union
 
-from tango import AttrWriteType, CmdArgType
-from tango import DeviceProxy as SyncDeviceProxy
-from tango.asyncio import DeviceProxy
-
 from ophyd_async.core import T
 from ophyd_async.tango._backend import (
     TangoSignalBackend,
@@ -17,6 +13,9 @@ from ophyd_async.tango._backend import (
     TangoSignalX,
     TangoTransport,
 )
+from tango import AttrWriteType, CmdArgType
+from tango import DeviceProxy as SyncDeviceProxy
+from tango.asyncio import DeviceProxy
 
 __all__ = (
     "tango_signal_rw",

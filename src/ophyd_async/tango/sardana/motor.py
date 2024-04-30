@@ -5,7 +5,6 @@ import time
 from typing import Callable, List, Optional
 
 from bluesky.protocols import Locatable, Location, Stoppable
-from tango import DevState
 
 from ophyd_async.core import AsyncStatus
 from ophyd_async.tango import (
@@ -14,11 +13,11 @@ from ophyd_async.tango import (
     tango_signal_rw,
     tango_signal_x,
 )
+from tango import DevState
 
 
 # --------------------------------------------------------------------
 class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
-
     # --------------------------------------------------------------------
     def __init__(self, trl: str, name="") -> None:
         TangoReadableDevice.__init__(self, trl, name)
@@ -26,7 +25,6 @@ class SardanaMotor(TangoReadableDevice, Locatable, Stoppable):
 
     # --------------------------------------------------------------------
     def register_signals(self):
-
         self.position = tango_signal_rw(
             float, self.trl + "/Position", device_proxy=self.proxy
         )

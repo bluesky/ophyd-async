@@ -6,6 +6,10 @@ import numpy as np
 import pytest
 from bluesky import RunEngine
 from bluesky.plans import count
+
+from ophyd_async.core import DeviceCollector, T
+from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
+from ophyd_async.tango._backend._tango_transport import get_python_type
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -18,10 +22,6 @@ from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
-
-from ophyd_async.core import DeviceCollector, T
-from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
-from ophyd_async.tango._backend._tango_transport import get_python_type
 
 
 class TestEnum(IntEnum):
@@ -151,23 +151,24 @@ def describe_class(fqtrl):
 # --------------------------------------------------------------------
 def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [bool, int]:
-        return dict(dtype="integer", shape=[])
+        return {"dtype": "integer", "shape": []}
     if python_type in [float]:
-        return dict(dtype="number", shape=[])
+        return {"dtype": "number", "shape": []}
     if python_type in [str]:
-        return dict(dtype="string", shape=[])
+        return {"dtype": "string", "shape": []}
     if issubclass(python_type, DevState):
-        return dict(dtype="string", shape=[], choices=list(DevState.names.keys()))
+        return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}
     if issubclass(python_type, Enum):
-        return dict(
-            dtype="string",
-            shape=[],
-            choices=[] if is_cmd else [member.name for member in value.__class__],
-        )
+        return {
+            "dtype": "string",
+            "shape": [],
+            "choices": [] if is_cmd else [member.name for member in python_type],
+        }
 
-    return dict(
-        dtype="array", shape=[np.Inf] if is_cmd else list(np.array(value).shape)
-    )
+    return {
+        "dtype": "array",
+        "shape": [np.Inf] if is_cmd else list(np.array(value).shape),
+    }
 
 
 # --------------------------------------------------------------------
@@ -187,7 +188,7 @@ def reset_tango_asyncio():
 
 # --------------------------------------------------------------------
 def compare_values(expected, received):
-    assert set(list(expected.keys())) == set(list(received.keys()))
+    assert set(expected.keys()) == set(received.keys())
     for k, v in expected.items():
         for _k, _v in v.items():
             assert_close(_v, received[k][_k])

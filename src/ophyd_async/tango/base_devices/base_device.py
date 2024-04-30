@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from tango.asyncio import DeviceProxy
-
 from ophyd_async.core import AsyncStatus, StandardReadable
+from tango.asyncio import DeviceProxy
 
 __all__ = ("TangoReadableDevice",)
 
