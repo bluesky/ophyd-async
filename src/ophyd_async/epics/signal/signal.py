@@ -79,7 +79,7 @@ def epics_signal_r(datatype: Type[T], read_pv: str, name: str = "") -> SignalR[T
     """Create a `SignalR` backed by 1 EPICS PV
 
     Parameters
-    ---------
+    ----------
     datatype
         Check that the PV is of this type
     read_pv:
