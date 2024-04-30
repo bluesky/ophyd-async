@@ -189,11 +189,6 @@ html_theme_options = {
             "url": f"https://pypi.org/project/{project}",
             "icon": "fas fa-cube",
         },
-        {
-            "name": "Gitter",
-            "url": "https://gitter.im/NSLS-II/DAMA",
-            "icon": "fas fa-person-circle-question",
-        },
     ],
     "switcher": {
         "json_url": switcher_json,
