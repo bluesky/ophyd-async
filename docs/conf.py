@@ -206,10 +206,6 @@ html_theme_options = {
             "name": "Bluesky Project",
             "url": "https://blueskyproject.io",
         },
-        {
-            "name": "Release Notes",
-            "url": f"https://github.com/{github_user}/{github_repo}/releases",
-        },
     ],
     "navigation_with_keys": False,
 }
