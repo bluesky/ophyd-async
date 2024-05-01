@@ -61,7 +61,6 @@ class Signal(Device, Generic[T]):
         timeout: Optional[float] = DEFAULT_TIMEOUT,
         name: str = "",
     ) -> None:
-        super().__init__(name)
         self._timeout = timeout
         self._init_backend = self._backend = backend
         super().__init__(name)

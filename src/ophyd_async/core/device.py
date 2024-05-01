@@ -194,4 +194,3 @@ class DeviceCollector:
                 "user/explanations/event-loop-choice.html for more info."
             )
         return fut
-        return fut

@@ -1,8 +1,7 @@
 import asyncio
 import re
 import time
-from unittest.mock import ANY
-from unittest.mock import AsyncMock
+from unittest.mock import ANY, AsyncMock
 
 import numpy
 import pytest
@@ -250,6 +249,8 @@ async def test_assert_configuration(sim_readable: DummyReadable):
         },
     }
     await assert_configuration(sim_readable, dummy_config_reading)
+
+
 async def test_signal_connect_logs(caplog):
     config_ophyd_async_logging(level="DEBUG")
     sim_signal = Signal(SimSignalBackend(str, "test"), timeout=1, name="test_signal")

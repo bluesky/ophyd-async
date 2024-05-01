@@ -20,6 +20,7 @@ dependencies = [
     "event-model<1.21.0",
     "p4p",
     "pyyaml",
+    "colorlog"
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
