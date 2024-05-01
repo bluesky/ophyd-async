@@ -44,9 +44,12 @@ async def test_stop():
 
     # this move should take 10 seconds but we will stop it after 0.2
     move_status = m1.set(10)
+    while not m1._move_status:
+        # wait to actually get the move started
+        await asyncio.sleep(0)
     await asyncio.sleep(0.2)
     m1.stop()
-
+    await asyncio.sleep(0)
     new_pos = await m1.user_readback.get_value()
 
     assert move_status.done

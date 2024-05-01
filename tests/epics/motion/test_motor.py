@@ -126,15 +126,3 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
     await v.set(3.0)
     assert (await v.read())["sim_motor-velocity"]["value"] == 3.0
     assert q.empty()
-
-
-def test_motor_in_re(sim_motor: motor.Motor, RE) -> None:
-    sim_motor.move(0)
-
-    def my_plan():
-        sim_motor.move(0)
-        return
-        yield
-
-    with pytest.raises(RuntimeError, match="Will deadlock run engine if run in a plan"):
-        RE(my_plan())

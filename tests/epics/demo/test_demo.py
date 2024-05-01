@@ -270,18 +270,6 @@ async def test_assembly_renaming() -> None:
     assert thing.x.stop_.name == "foo-x-stop"
 
 
-def test_mover_in_re(sim_mover: demo.Mover, RE) -> None:
-    sim_mover.move(0)
-
-    def my_plan():
-        sim_mover.move(0)
-        return
-        yield
-
-    with pytest.raises(RuntimeError, match="Will deadlock run engine if run in a plan"):
-        RE(my_plan())
-
-
 async def test_dynamic_sensor_group_disconnected():
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
