@@ -59,6 +59,9 @@ extensions = [
     "numpydoc",
 ]
 
+# So we can use the ::: syntax
+myst_enable_extensions = ["colon_fence"]
+
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
@@ -186,11 +189,6 @@ html_theme_options = {
             "url": f"https://pypi.org/project/{project}",
             "icon": "fas fa-cube",
         },
-        {
-            "name": "Gitter",
-            "url": "https://gitter.im/NSLS-II/DAMA",
-            "icon": "fas fa-person-circle-question",
-        },
     ],
     "switcher": {
         "json_url": switcher_json,
@@ -202,10 +200,6 @@ html_theme_options = {
         {
             "name": "Bluesky Project",
             "url": "https://blueskyproject.io",
-        },
-        {
-            "name": "Release Notes",
-            "url": f"https://github.com/{github_user}/{github_repo}/releases",
         },
     ],
     "navigation_with_keys": False,
