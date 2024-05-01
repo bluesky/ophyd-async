@@ -21,7 +21,7 @@ def test_validate_level():
 
 
 def test_default_config_ophyd_async_logging():
-    log.config_ophyd_async_logging()
+    log.config_ophyd_async_logging(color=False)
     assert isinstance(log.current_handler, logging.StreamHandler)
     assert log.logger.getEffectiveLevel() <= logging.WARNING
 

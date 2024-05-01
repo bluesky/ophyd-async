@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import re
 import time
 from unittest.mock import ANY, AsyncMock
@@ -27,7 +28,6 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_value,
 )
-from ophyd_async.core.log import config_ophyd_async_logging
 from ophyd_async.core.signal import _SignalCache
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
@@ -252,14 +252,14 @@ async def test_assert_configuration(sim_readable: DummyReadable):
 
 
 async def test_signal_connect_logs(caplog):
-    config_ophyd_async_logging(level="DEBUG")
+    caplog.set_level(logging.DEBUG)
     sim_signal = Signal(SimSignalBackend(str, "test"), timeout=1, name="test_signal")
     await sim_signal.connect(sim=True)
     assert caplog.text.endswith("Connecting to soft://test_signal\n")
 
 
 async def test_signal_get_and_set_logging(caplog, mock_signal_rw):
-    config_ophyd_async_logging(level="DEBUG")
+    caplog.set_level(logging.DEBUG)
     mock_signal_rw = MockSignalRW(SignalBackend, timeout=1, name="mock_signal")
     await mock_signal_rw.set(value=0)
     assert "Putting value 0 to backend at source" in caplog.text
@@ -269,7 +269,7 @@ async def test_signal_get_and_set_logging(caplog, mock_signal_rw):
 
 
 def test_subscription_logs(caplog):
-    config_ophyd_async_logging(level="DEBUG")
+    caplog.set_level(logging.DEBUG)
     cache = _SignalCache(
         SignalBackend(),
         signal=MockSignalRW(SignalBackend, timeout=1, name="mock_signal"),

@@ -19,11 +19,12 @@ DEFAULT_FORMAT = (
 
 DEFAULT_DATE_FORMAT = "%y%m%d %H:%M:%S"
 
-DEFAULT_COLOURS = {
-    logging.DEBUG: 4,  # Blue
-    logging.INFO: 2,  # Green
-    logging.WARNING: 3,  # Yellow
-    logging.ERROR: 1,  # Red
+DEFAULT_LOG_COLORS = {
+    "DEBUG": "cyan",
+    "INFO": "green",
+    "WARNING": "yellow",
+    "ERROR": "red",
+    "CRITICAL": "red,bg_white",
 }
 
 
@@ -107,7 +108,7 @@ def config_ophyd_async_logging(
     else:
         handler = colorlog.StreamHandler(file)
         formatter = ColoredFormatterWithDeviceName(
-            fmt=fmt, datefmt=datefmt, log_colors=color
+            fmt=fmt, datefmt=datefmt, log_colors=DEFAULT_LOG_COLORS, no_color=color
         )
 
     levelno = _validate_level(level)
