@@ -40,6 +40,31 @@ def test_config_ophyd_async_logging_with_file_handler(
     assert log.logger.getEffectiveLevel() <= logging.WARNING
 
 
+@patch("ophyd_async.core.log.current_handler")
+def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler):
+    # Protect global variable in other pytests
+    class FakeLogger:
+        def __init__(self):
+            self.handlers = []
+            self.removeHandler = MagicMock()
+            self.setLevel = MagicMock()
+
+        def addHandler(self, handler):
+            self.handlers.append(handler)
+
+        def getEffectiveLevel(self):
+            return 100000
+
+    fake_logger = FakeLogger()
+    with (
+        patch("ophyd_async.core.log.logger", fake_logger),
+    ):
+        log.config_ophyd_async_logging()
+        fake_logger.removeHandler.assert_not_called()
+        log.config_ophyd_async_logging()
+        fake_logger.removeHandler.assert_called()
+
+
 # Full format looks like:
 #'[test_device][W 240501 13:28:08.937 test_log:35] here is a warning\n'
 def test_logger_adapter_ophyd_async_device():
