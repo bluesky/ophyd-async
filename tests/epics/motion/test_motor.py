@@ -82,6 +82,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_sim_value(sim_motor.user_readback, 0.55)
     await asyncio.sleep(A_BIT)
     await wait_for_eq(s, "done", True, 1)
+    await asyncio.sleep(0)
     done.assert_called_once_with(s)
 
 

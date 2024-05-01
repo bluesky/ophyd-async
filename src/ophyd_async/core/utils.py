@@ -12,6 +12,7 @@ from typing import (
     List,
     Optional,
     ParamSpec,
+    SupportsFloat,
     Type,
     TypeVar,
     Union,
@@ -184,3 +185,15 @@ def in_micros(t: float) -> int:
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")
     return int(np.ceil(t * 1e6))
+
+
+async def run_with_or_without_timeout(
+    awaitable: Awaitable, timeout: SupportsFloat | None = None
+):
+    if isinstance(timeout, SupportsFloat):
+        timeout = float(timeout)
+    if timeout:
+        async with asyncio.timeout(timeout):
+            await awaitable
+    else:
+        await awaitable

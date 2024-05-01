@@ -18,7 +18,7 @@ from typing import (
 from bluesky.protocols import Status
 
 from ..protocols import Watcher
-from .utils import Callback, P, T, WatcherUpdate
+from .utils import Callback, P, T, WatcherUpdate, run_with_or_without_timeout
 
 AS = TypeVar("AS", bound="AsyncStatus")
 WAS = TypeVar("WAS", bound="WatchableAsyncStatus")
@@ -28,13 +28,11 @@ class AsyncStatusBase(Status):
     """Convert asyncio awaitable to bluesky Status interface"""
 
     def __init__(self, awaitable: Awaitable, timeout: SupportsFloat | None = None):
-        if isinstance(timeout, SupportsFloat):
-            timeout = float(timeout)
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
             self.task = asyncio.create_task(
-                asyncio.wait_for(awaitable, timeout=timeout)
+                run_with_or_without_timeout(awaitable, timeout=timeout)
             )
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks = cast(list[Callback[Status]], [])
