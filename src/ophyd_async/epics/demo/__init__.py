@@ -6,12 +6,11 @@ import random
 import string
 import subprocess
 import sys
-import time
 from dataclasses import replace
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
+import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
@@ -110,27 +109,17 @@ class Mover(StandardReadable, Movable, Stoppable):
             move_status,
         )
 
-    def move(self, new_position: float, timeout: Optional[float] = None):
-        """Commandline only synchronous move of a Motor"""
-        from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
-
-        if in_bluesky_event_loop():
-            raise RuntimeError("Will deadlock run engine if run in a plan")
-        call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
-
-    @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float):
-        update, move_status = await self._move(new_position)
-        start = time.monotonic()
-        async for current_position in observe_value(
-            self.readback, done_status=move_status
-        ):
+    @WatchableAsyncStatus.wrap  # uses the timeout argument from the function it wraps
+    async def set(self, new_position: float, timeout: float | None = None):
+        update, _ = await self._move(new_position)
+        async for current_position in observe_value(self.readback):
             yield replace(
                 update,
                 name=self.name,
                 current=current_position,
-                time_elapsed=time.monotonic() - start,
             )
+            if np.isclose(current_position, new_position):
+                break
 
     async def stop(self, success=True):
         self._set_success = success
