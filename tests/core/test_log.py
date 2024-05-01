@@ -1,6 +1,7 @@
 import io
 import logging
 import logging.handlers
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -20,9 +21,22 @@ def test_validate_level():
         log._validate_level("MYSTERY")
 
 
-def test_default_config_ophyd_async_logging():
-    log.config_ophyd_async_logging(color=False)
+@patch("ophyd_async.core.log.current_handler")
+@patch("ophyd_async.core.log.logging.Logger.addHandler")
+def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handler):
+    log.config_ophyd_async_logging()
     assert isinstance(log.current_handler, logging.StreamHandler)
+    assert log.logger.getEffectiveLevel() <= logging.WARNING
+
+
+@patch("ophyd_async.core.log.current_handler")
+@patch("ophyd_async.core.log.logging.FileHandler")
+@patch("ophyd_async.core.log.logging.Logger.addHandler")
+def test_config_ophyd_async_logging_with_file_handler(
+    mock_add_handler, mock_file_handler, mock_current_handler
+):
+    log.config_ophyd_async_logging(file="file")
+    assert isinstance(log.current_handler, MagicMock)
     assert log.logger.getEffectiveLevel() <= logging.WARNING
 
 
