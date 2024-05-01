@@ -26,9 +26,9 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.acceleration_time = epics_signal_rw(float, prefix + ".ACCL")
         self.precision = epics_signal_r(int, prefix + ".PREC")
         self.deadband = epics_signal_r(float, prefix + ".RDBD")
-        self.motor_done_move = epics_signal_r(float, prefix + ".DMOV")
-        self.low_limit_travel = epics_signal_rw(int, prefix + ".LLM")
-        self.high_limit_travel = epics_signal_rw(int, prefix + ".HLM")
+        self.motor_done_move = epics_signal_r(int, prefix + ".DMOV")
+        self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
+        self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
 
         self.motor_stop = epics_signal_x(prefix + ".STOP")
         # Whether set() should complete successfully or not
