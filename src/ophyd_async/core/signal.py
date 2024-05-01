@@ -378,6 +378,8 @@ async def observe_value(
     signal:
         Call subscribe_value on this at the start, and clear_sub on it at the
         end
+    done_status:
+        If this status is complete, stop observing and make the iterator return.
 
     Notes
     -----
@@ -387,7 +389,9 @@ async def observe_value(
             do_something_with(value)
     """
 
-    q: asyncio.Queue[T | None] = asyncio.Queue()
+    class StatusIsDone: ...
+
+    q: asyncio.Queue[T | StatusIsDone] = asyncio.Queue()
     if timeout is None:
         get_value = q.get
     else:
@@ -396,13 +400,13 @@ async def observe_value(
             return await asyncio.wait_for(q.get(), timeout)
 
     if done_status is not None:
-        done_status.add_callback(lambda _: q.put_nowait(None))
+        done_status.add_callback(lambda _: q.put_nowait(StatusIsDone()))
 
     signal.subscribe_value(q.put_nowait)
     try:
         while True:
             item = await get_value()
-            if item is not None:
+            if not isinstance(item, StatusIsDone):
                 yield item
             else:
                 break

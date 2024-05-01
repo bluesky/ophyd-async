@@ -17,7 +17,8 @@ from typing import (
 
 from bluesky.protocols import Status
 
-from .utils import Callback, P, T, Watcher, WatcherUpdate
+from ..protocols import Watcher
+from .utils import Callback, P, T, WatcherUpdate
 
 AS = TypeVar("AS", bound="AsyncStatus")
 WAS = TypeVar("WAS", bound="WatchableAsyncStatus")

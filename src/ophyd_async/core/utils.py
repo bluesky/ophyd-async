@@ -4,7 +4,6 @@ import asyncio
 import logging
 from dataclasses import dataclass
 from typing import (
-    Any,
     Awaitable,
     Callable,
     Dict,
@@ -13,7 +12,6 @@ from typing import (
     List,
     Optional,
     ParamSpec,
-    Protocol,
     Type,
     TypeVar,
     Union,
@@ -96,25 +94,6 @@ class WatcherUpdate(Generic[T]):
     fraction: float | None = None
     time_elapsed: float | None = None
     time_remaining: float | None = None
-
-
-C = TypeVar("C", contravariant=True)
-
-
-class Watcher(Protocol, Generic[C]):
-    @staticmethod
-    def __call__(
-        *,
-        current: C,
-        initial: C,
-        target: C,
-        name: str | None,
-        unit: str | None,
-        precision: float | None,
-        fraction: float | None,
-        time_elapsed: float | None,
-        time_remaining: float | None,
-    ) -> Any: ...
 
 
 async def wait_for_connection(**coros: Awaitable[None]):

@@ -8,8 +8,8 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import DeviceCollector, set_sim_put_proceeds, set_sim_value
 from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.utils import Watcher
 from ophyd_async.epics.motion import motor
+from ophyd_async.protocols import Watcher
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
