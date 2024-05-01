@@ -22,7 +22,6 @@ class PilatusDetector(StandardDetector):
 
     def __init__(
         self,
-        prefix: str,
         name: str,
         directory_provider: DirectoryProvider,
         driver: PilatusDriver,

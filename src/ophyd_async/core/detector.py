@@ -33,7 +33,6 @@ from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
 from .async_status import AsyncStatus, WatchableAsyncStatus
 from .device import Device
-from .signal import SignalR
 from .utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 T = TypeVar("T")
@@ -161,7 +160,7 @@ class StandardDetector(
         self,
         controller: DetectorControl,
         writer: DetectorWriter,
-        config_sigs: Sequence[SignalR] = (),
+        config_sigs: Sequence[AsyncReadable] = (),
         name: str = "",
         writer_timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
@@ -214,7 +213,7 @@ class StandardDetector(
     async def _check_config_sigs(self):
         """Checks configuration signals are named and connected."""
         for signal in self._config_sigs:
-            if signal._name == "":
+            if signal.name == "":
                 raise Exception(
                     "config signal must be named before it is passed to the detector"
                 )

@@ -31,7 +31,7 @@ async def test_writes_pattern_to_file(
     sim_pattern_detector: SimPatternDetector, sim_motor: motor.Motor, tmp_path
 ):
     sim_pattern_detector = SimPatternDetector(
-        config_sigs=[*sim_motor._read_signals], path=tmp_path
+        config_sigs=[*sim_motor._readables], path=tmp_path
     )
 
     images_number = 2
