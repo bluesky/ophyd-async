@@ -2,9 +2,7 @@ from enum import Enum
 
 from ophyd_async.core import Device
 from ophyd_async.epics.signal import epics_signal_rw
-from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
-
-from ..utils import ad_r
+from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw_rbv
 
 
 class Callback(str, Enum):
@@ -14,7 +12,7 @@ class Callback(str, Enum):
 
 class NDArrayBase(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.unique_id = ad_r(int, prefix + "UniqueId")
+        self.unique_id = epics_signal_r(int, prefix + "UniqueId")
         self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile")
         super().__init__(name)
 

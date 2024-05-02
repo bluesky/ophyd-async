@@ -9,8 +9,8 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 
-from ...signal.signal import epics_signal_rw, epics_signal_rw_rbv
-from ..utils import ImageMode, ad_r
+from ...signal.signal import epics_signal_r, epics_signal_rw, epics_signal_rw_rbv
+from ..utils import ImageMode
 from ..writers.nd_plugin import NDArrayBase
 
 
@@ -48,9 +48,9 @@ class ADBase(NDArrayBase):
         self.num_images = epics_signal_rw_rbv(int, prefix + "NumImages")
         self.image_mode = epics_signal_rw_rbv(ImageMode, prefix + "ImageMode")
         self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
-        self.array_size_x = ad_r(int, prefix + "ArraySizeX")
-        self.array_size_y = ad_r(int, prefix + "ArraySizeY")
-        self.detector_state = ad_r(DetectorState, prefix + "DetectorState")
+        self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX")
+        self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY")
+        self.detector_state = epics_signal_r(DetectorState, prefix + "DetectorState")
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
         super().__init__(prefix, name=name)

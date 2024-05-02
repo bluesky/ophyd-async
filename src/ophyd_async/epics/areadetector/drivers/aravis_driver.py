@@ -2,8 +2,7 @@ from enum import Enum
 from typing import Callable, Dict, Literal, Optional, Tuple
 
 from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.areadetector.utils import ad_r
-from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
+from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw_rbv
 
 
 class AravisTriggerMode(str, Enum):
@@ -143,7 +142,7 @@ class AravisDriver(ADBase):
             AravisTriggerMode, prefix + "TriggerMode"
         )
         self.trigger_source = epics_signal_rw_rbv(str, prefix + "TriggerSource")
-        self.model = ad_r(str, prefix + "Model")
+        self.model = epics_signal_r(str, prefix + "Model")
         self.pixel_format = epics_signal_rw_rbv(str, prefix + "PixelFormat")
         self.dead_time: Optional[float] = None
         super().__init__(prefix, name=name)
