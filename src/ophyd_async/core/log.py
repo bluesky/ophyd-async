@@ -1,6 +1,3 @@
-# The LogFormatter is adapted light from tornado, which is licensed unders
-# Apache 2.0. See other_licenses/ in the repository directory.
-
 import logging
 import sys
 
