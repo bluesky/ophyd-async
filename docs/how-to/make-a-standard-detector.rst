@@ -27,8 +27,8 @@ Enumeration fields should be named to prevent namespace collision, i.e. for a Si
    :language: python
    :pyobject: FooDriver
 
-Define a :py:class:`FooController` with handling for converting the standard pattern of `arm` and `disarm` to required state of :py:class:`FooDriver` e.g. setting a compatible "FooTriggerSource" for a given `DetectorTrigger`, or raising an exception if incompatible with the `DetectorTrigger`.
-The `get_deadtime` method is used when constructing sequence tables for hardware controlled scanning. Details on how to calculate the deadtime may be only available from technical manuals or otherwise complex. **In the case that it requires fetching values from signals, it is recommended to cache the value during the StandardDetector `prepare` method.**
+Define a :py:class:`FooController` with handling for converting the standard pattern of :py:method:`ophyd_async.core.DetectorControl.arm` and :py:method:`ophyd_async.core.DetectorControl.disarm` to required state of :py:class:`FooDriver` e.g. setting a compatible "FooTriggerSource" for a given `DetectorTrigger`, or raising an exception if incompatible with the `DetectorTrigger`.
+The :py:method:`ophyd_async.core.DetectorControl.get_deadtime` method is used when constructing sequence tables for hardware controlled scanning. Details on how to calculate the deadtime may be only available from technical manuals or otherwise complex. **In the case that it requires fetching values from signals, it is recommended to cache the value during the StandardDetector `prepare` method.**
 
 .. literalinclude:: ../examples/foo_detector.py
    :pyobject: FooController
@@ -38,7 +38,7 @@ Assembly
 
 Define a :py:class:`FooDetector` implementation to tie the Driver, Controller and data persistence layer together. The example :py:class:`FooDetector` writes h5 files using the standard NDPlugin. It additionally supports the :py:class:`HasHints` protocol which is optional but recommended.
 Its initialiser assumes the NSLS-II AreaDetector plugin EPICS address suffixes as defaults but allows overriding: **this pattern is recommended for consistency**.
-If the :py:class:`FooDriver` exposes :py:class:`Signal` that should be read as configuration, they should be added to the `config_sigs`.
+If the :py:class:`FooDriver` exposes :py:class:`Signal` that should be read as configuration, they should be added to the "config_sigs" passed to the super.
 
 .. literalinclude:: ../examples/foo_detector.py
    :pyobject: FooDetector
