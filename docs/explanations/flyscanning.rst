@@ -8,7 +8,7 @@ Flyscanning (also known as hardware triggered scanning, asynchronous acquisition
 Detector Synchronization
 ------------------------
 
-.. image:: ../../images/simple-hardware-scan.png
+.. image:: ../images/simple-hardware-scan.png
     :alt: hardware-triggered setup
     :width: 300
 
@@ -19,7 +19,7 @@ A triggering system can send pulses to two or more detectors to make them expose
 Motor Trajectory Scanning
 -------------------------
  
-.. image:: ../../images/hardware-triggered-scan.png
+.. image:: ../images/hardware-triggered-scan.png
     :alt: trajectory scanning setup
 
 The triggering system can be configured to trigger the detectors at the same time as the motion controller commands the motors to go to certain points, or even exactly when they reach those points, using the readback values. This can be achieved on the scale of microseconds/nanoseconds, in comparison to traditional soft scans controlled via a network, which normally synchronize on the scale of seconds.
@@ -31,7 +31,7 @@ Outer Scanning
 
 Outer scans are flyscans nested inside soft scans. 
 
-.. image:: ../../images/outer-scan.png
+.. image:: ../images/outer-scan.png
     :alt: hardware-triggered setup
 
 In the example above a 2D grid scan in ``x`` and ``y`` is repeated in a third dimension: ``z``. Given that ``z`` only needs to move for every 1 in every 25 points, it could be synchronized via software rather than hardware without significantly affecting scan time (and saving the effort/expense of wiring it into a triggering system). It then becomes the responsibility of the software to move ``z``, hand control to the external hardware, wait for one grid's worth of points, take control back, and repeat. 
