@@ -36,8 +36,12 @@ class TangoReadableDevice(StandardReadable):
 
     # --------------------------------------------------------------------
     async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
-        self.proxy = await DeviceProxy(self.trl)
-        self.register_signals()
+        async def closure():
+            self.proxy = await DeviceProxy(self.trl)
+            self.register_signals()
+            return self
+
+        await closure()
         await super().connect(sim=sim, timeout=timeout)
 
     # --------------------------------------------------------------------
@@ -50,13 +54,13 @@ class TangoReadableDevice(StandardReadable):
     # --------------------------------------------------------------------
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        for sig in self._read_signals + self._configuration_signals:
+        for sig in self._readables + self._configurables:
             if hasattr(sig, "is_cachable") and sig.is_cachable():
                 await sig.stage().task
 
     # --------------------------------------------------------------------
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        for sig in self._read_signals + self._configuration_signals:
+        for sig in self._readables + self._configurables:
             if hasattr(sig, "is_cachable") and sig.is_cachable():
                 await sig.unstage().task
