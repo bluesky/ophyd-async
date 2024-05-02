@@ -216,7 +216,13 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         )
         return PvaEnumConverter(get_supported_enum_class(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
-        if datatype and not issubclass(typ, datatype):
+        if (
+            datatype
+            and not issubclass(typ, datatype)
+            and not (
+                typ is float and datatype is int
+            )  # Allow float -> int since prec can be 0
+        ):
             raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
