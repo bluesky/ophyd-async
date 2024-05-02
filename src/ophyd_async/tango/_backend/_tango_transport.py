@@ -473,7 +473,7 @@ class TangoTransport(TangoSignalBackend[T]):
         await self.proxies[self.write_trl].put(write_value, wait, timeout)
 
     # --------------------------------------------------------------------
-    async def get_descriptor(self) -> Descriptor:
+    async def get_descriptor(self, source: str) -> Descriptor:
         return self.descriptor
 
     # --------------------------------------------------------------------
