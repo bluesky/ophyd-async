@@ -11,39 +11,16 @@ from ophyd_async.core import (
     set_sim_value,
 )
 from ophyd_async.epics.areadetector.aravis import AravisDetector
-from ophyd_async.epics.areadetector.drivers.aravis_driver import AravisDriver
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
-
-
-@pytest.fixture
-async def adaravis_driver(RE: RunEngine) -> AravisDriver:
-    async with DeviceCollector(sim=True):
-        driver = AravisDriver("DRV:")
-
-    return driver
-
-
-@pytest.fixture
-async def hdf(RE: RunEngine) -> NDFileHDF:
-    async with DeviceCollector(sim=True):
-        hdf = NDFileHDF("HDF:")
-
-    return hdf
 
 
 @pytest.fixture
 async def adaravis(
     RE: RunEngine,
     static_directory_provider: DirectoryProvider,
-    adaravis_driver: AravisDriver,
-    hdf: NDFileHDF,
 ) -> AravisDetector:
     async with DeviceCollector(sim=True):
         adaravis = AravisDetector(
-            "adaravis",
-            static_directory_provider,
-            driver=adaravis_driver,
-            hdf=hdf,
+            "ADARAVIS:", static_directory_provider, name="adaravis"
         )
 
     return adaravis

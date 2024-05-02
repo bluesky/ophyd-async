@@ -39,7 +39,7 @@ class FooController(DetectorControl):
         await asyncio.gather(
             self._drv.num_images.set(num),
             self._drv.image_mode.set(ImageMode.multiple),
-            self._drv.trigger_mode.set(f"FOO{trigger}")
+            self._drv.trigger_mode.set(f"FOO{trigger}"),
         )
         if exposure is not None:
             await self._drv.acquire_time.set(exposure)
@@ -50,7 +50,6 @@ class FooController(DetectorControl):
 
 
 class FooDetector(StandardDetector, HasHints):
-
     _controller: FooController
     _writer: HDFWriter
 
