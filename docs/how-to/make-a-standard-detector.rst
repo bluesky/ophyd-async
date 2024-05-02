@@ -27,8 +27,8 @@ Enumeration fields should be named to prevent namespace collision, i.e. for a Si
    :language: python
    :pyobject: FooDriver
 
-Define a :py:class:`FooController` with handling for converting the standard pattern of :py:method:`ophyd_async.core.DetectorControl.arm` and :py:method:`ophyd_async.core.DetectorControl.disarm` to required state of :py:class:`FooDriver` e.g. setting a compatible "FooTriggerSource" for a given `DetectorTrigger`, or raising an exception if incompatible with the `DetectorTrigger`.
-The :py:method:`ophyd_async.core.DetectorControl.get_deadtime` method is used when constructing sequence tables for hardware controlled scanning. Details on how to calculate the deadtime may be only available from technical manuals or otherwise complex. **In the case that it requires fetching values from signals, it is recommended to cache the value during the StandardDetector `prepare` method.**
+Define a :py:class:`FooController` with handling for converting the standard pattern of :py:meth:`ophyd_async.core.DetectorControl.arm` and :py:meth:`ophyd_async.core.DetectorControl.disarm` to required state of :py:class:`FooDriver` e.g. setting a compatible "FooTriggerSource" for a given `DetectorTrigger`, or raising an exception if incompatible with the `DetectorTrigger`.
+The :py:meth:`ophyd_async.core.DetectorControl.get_deadtime` method is used when constructing sequence tables for hardware controlled scanning. Details on how to calculate the deadtime may be only available from technical manuals or otherwise complex. **In the case that it requires fetching values from signals, it is recommended to cache the value during the StandardDetector `prepare` method.**
 
 .. literalinclude:: ../examples/foo_detector.py
    :pyobject: FooController
