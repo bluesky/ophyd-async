@@ -1,7 +1,8 @@
 import asyncio
+import logging
 import re
 import time
-from unittest.mock import ANY
+from unittest.mock import ANY, AsyncMock
 
 import numpy
 import pytest
@@ -12,6 +13,7 @@ from ophyd_async.core import (
     DeviceCollector,
     HintedSignal,
     Signal,
+    SignalBackend,
     SignalR,
     SignalRW,
     SimSignalBackend,
@@ -26,6 +28,7 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_value,
 )
+from ophyd_async.core.signal import _SignalCache
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
@@ -37,6 +40,24 @@ class MySignal(Signal):
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
         pass
+
+
+class MockSignalRW(SignalRW):
+    def __init__(self, backend, timeout, name):
+        super().__init__(backend, timeout, name)
+        self._backend = AsyncMock()
+
+    @property
+    def source(self) -> str:
+        return "source"
+
+    async def connect(self):
+        pass
+
+
+@pytest.fixture
+def mock_signal_rw():
+    return
 
 
 def test_signals_equality_raises():
@@ -228,3 +249,31 @@ async def test_assert_configuration(sim_readable: DummyReadable):
         },
     }
     await assert_configuration(sim_readable, dummy_config_reading)
+
+
+async def test_signal_connect_logs(caplog):
+    caplog.set_level(logging.DEBUG)
+    sim_signal = Signal(SimSignalBackend(str, "test"), timeout=1, name="test_signal")
+    await sim_signal.connect(sim=True)
+    assert caplog.text.endswith("Connecting to soft://test_signal\n")
+
+
+async def test_signal_get_and_set_logging(caplog, mock_signal_rw):
+    caplog.set_level(logging.DEBUG)
+    mock_signal_rw = MockSignalRW(SignalBackend, timeout=1, name="mock_signal")
+    await mock_signal_rw.set(value=0)
+    assert "Putting value 0 to backend at source" in caplog.text
+    assert "Successfully put value 0 to backend at source" in caplog.text
+    await mock_signal_rw.get_value()
+    assert "get_value() on source" in caplog.text
+
+
+def test_subscription_logs(caplog):
+    caplog.set_level(logging.DEBUG)
+    cache = _SignalCache(
+        SignalBackend(),
+        signal=MockSignalRW(SignalBackend, timeout=1, name="mock_signal"),
+    )
+    assert "Making subscription" in caplog.text
+    cache.close()
+    assert "Closing subscription on source" in caplog.text
