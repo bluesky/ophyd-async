@@ -23,16 +23,16 @@ class AravisDetector(StandardDetector, HasHints):
 
     def __init__(
         self,
-        name: str,
+        prefix: str,
         directory_provider: DirectoryProvider,
-        driver: AravisDriver,
-        hdf: NDFileHDF,
+        drv_suffix="cam1:",
+        hdf_suffix="HDF1:",
+        name="",
         gpio_number: AravisController.GPIO_NUMBER = 1,
         **scalar_sigs: str,
     ):
-        # Must be child of Detector to pick up connect()
-        self.drv = driver
-        self.hdf = hdf
+        self.drv = AravisDriver(prefix + drv_suffix)
+        self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
             AravisController(self.drv, gpio_number=gpio_number),
@@ -43,7 +43,7 @@ class AravisDetector(StandardDetector, HasHints):
                 ADBaseShapeProvider(self.drv),
                 **scalar_sigs,
             ),
-            config_sigs=(self.drv.acquire_time, self.drv.acquire),
+            config_sigs=(self.drv.acquire_time,),
             name=name,
         )
 
