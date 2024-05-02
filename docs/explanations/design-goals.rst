@@ -17,7 +17,12 @@ Ophyd-async should provide built-in support logic for controlling `the same set 
 Clean Device Definition
 -----------------------
 
-It should be easy to define devices with signals that talk to multiple backends and to cleanly organize device logic via composition. 
+It should be easy to define devices with signals that talk to multiple backends and to cleanly organize device logic via composition.
+
+We need to be able to:
+
+- Separate the Device interface from the multiple pieces of logic that might use that Device in a particular way
+- Define that Signals of a particular type exist without creating them so backends like Tango or EPICS + PVI can fill them in
 
 
 Parity with Malcolm
@@ -33,7 +38,10 @@ It should enable `motor trajectory scanning <motortraj_>` and `multiple triggeri
 Improved Trajectory Calculation
 -------------------------------
 
-Ophyd-async will provide and improve upon the algorithms that malcolm uses to calculate trajectories for supported hardware.
+Ophyd-async will provide and improve upon the algorithms that malcolm_ uses to calculate trajectories for supported hardware.
+
+The EPICS pmac_ module supports trajectory scanning, specifying a growing array of positions, velocities and time for axes to move through to perform a scan. 
+Ophyd-async will provide mechanisms for specifying these scans via a scanspec_, calculating run-ups and turnarounds based on motor parameters, keeping the trajectory scan arrays filled based on the ScanSpec, and allowing this scan to be paused and resumed.
 
 
 Outstanding Design Decisions
@@ -46,3 +54,4 @@ To view and contribute to discussions on outstanding decisions, please see the d
 .. _malcolm: https://github.com/dls-controls/pymalcolm
 .. _scanspec: https://github.com/dls-controls/scanspec
 .. _design: https://github.com/bluesky/ophyd-async/issues?q=is%3Aissue+is%3Aopen+label%3Adesign
+.. _pmac: https://github.com/dls-controls/pmac
