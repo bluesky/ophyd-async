@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional
 
-from bluesky.protocols import Descriptor, StreamAsset
+from bluesky.protocols import DataKey, StreamAsset
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -107,7 +107,7 @@ class PandaHDFWriter(DetectorWriter):
         self._multiplier = 1
 
     # Triggered on PCAP arm
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture"""
 
         # Get capture PVs by looking at panda. Gives mapping of dotted attribute path
@@ -162,7 +162,7 @@ class PandaHDFWriter(DetectorWriter):
                 )
 
         describe = {
-            ds.name: Descriptor(
+            ds.name: DataKey(
                 source=self.panda_device.data.hdf_directory.source,
                 shape=ds.shape,
                 dtype="array" if ds.shape != [1] else "number",
