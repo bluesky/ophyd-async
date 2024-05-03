@@ -24,7 +24,6 @@ class PilatusDetector(StandardDetector):
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
-        **scalar_sigs: str,
     ):
         self.drv = PilatusDriver(prefix + drv_suffix)
         self.hdf = NDFileHDF(prefix + hdf_suffix)
@@ -36,7 +35,6 @@ class PilatusDetector(StandardDetector):
                 directory_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
-                **scalar_sigs,
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,

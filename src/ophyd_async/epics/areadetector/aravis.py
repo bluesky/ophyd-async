@@ -29,7 +29,6 @@ class AravisDetector(StandardDetector, HasHints):
         hdf_suffix="HDF1:",
         name="",
         gpio_number: AravisController.GPIO_NUMBER = 1,
-        **scalar_sigs: str,
     ):
         self.drv = AravisDriver(prefix + drv_suffix)
         self.hdf = NDFileHDF(prefix + hdf_suffix)
@@ -41,7 +40,6 @@ class AravisDetector(StandardDetector, HasHints):
                 directory_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
-                **scalar_sigs,
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,
