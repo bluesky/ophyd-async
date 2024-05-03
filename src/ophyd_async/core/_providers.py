@@ -31,7 +31,6 @@ class PathInfo:
 
 
 class FilenameProvider(Protocol):
-
     @abstractmethod
     def __call__(self) -> str:
         """Get a filename to use for output data"""
@@ -51,7 +50,6 @@ class StaticFilenameProvider(FilenameProvider):
 
     def __call__(self) -> str:
         return self._static_filename
-
 
 
 class UUIDFilenameProvider(FilenameProvider):
@@ -153,20 +151,22 @@ class YMDPathProvider(PathProvider):
     def __call__(self, device_name=None) -> PathInfo:
         current_date = datetime.date()
         if device_name is None:
-            resource_dir = os.path.join(
-                current_date.year, current_date.month, current_date.day
-            ),
+            resource_dir = (
+                os.path.join(current_date.year, current_date.month, current_date.day),
+            )
         else:
-            resource_dir = os.path.join(
-                device_name, current_date.year, current_date.month, current_date.day
-            ),
+            resource_dir = (
+                os.path.join(
+                    device_name, current_date.year, current_date.month, current_date.day
+                ),
+            )
 
         filename = f"{self._prefix}{self._filename_provider()}{self._suffix}"
         return PathInfo(
             root=self._directory_path,
             resource_dir=resource_dir,
             filename=filename,
-            create_dir_depth=self._create_dir_depth
+            create_dir_depth=self._create_dir_depth,
         )
 
 
