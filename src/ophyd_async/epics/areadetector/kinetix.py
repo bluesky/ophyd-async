@@ -20,15 +20,14 @@ class KinetixDetector(StandardDetector, HasHints):
 
     def __init__(
         self,
-        name: str,
+        prefix: str,
         directory_provider: DirectoryProvider,
-        driver: KinetixDriver,
-        hdf: NDFileHDF,
-        **scalar_sigs: str,
+        drv_suffix="cam1:",
+        hdf_suffix="HDF1:",
+        name="",
     ):
-        # Must be child of Detector to pick up connect()
-        self.drv = driver
-        self.hdf = hdf
+        self.drv = KinetixDriver(prefix + drv_suffix)
+        self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
             KinetixController(self.drv),
@@ -37,9 +36,8 @@ class KinetixDetector(StandardDetector, HasHints):
                 directory_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
-                **scalar_sigs,
             ),
-            config_sigs=(self.drv.acquire_time, self.drv.acquire),
+            config_sigs=(self.drv.acquire_time,),
             name=name,
         )
 
