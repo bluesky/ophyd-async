@@ -38,7 +38,6 @@ dev = [
     "matplotlib",
     "myst-parser",
     "numpydoc",
-    "ophyd",
     "pickleshare",
     "pipdeptree",
     "pre-commit",
