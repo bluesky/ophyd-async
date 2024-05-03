@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.areadetector.pilatus &#8212; ophyd-async 0.3a3.dev16+g995c126 documentation</title>
+    <title>ophyd_async.epics.areadetector.pilatus &#8212; ophyd-async 0.3a3.dev17+g4ee3f29 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=84ecfce3"></script>
+    <script src="../../../../_static/documentation_options.js?v=d00c561a"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -480,13 +480,10 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.areadetector.pilatus</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
-
-<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Hints</span>
+<span></span><span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Hints</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DirectoryProvider</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.core.detector</span> <span class="kn">import</span> <span class="n">StandardDetector</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.core.signal</span> <span class="kn">import</span> <span class="n">SignalR</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.areadetector.controllers.pilatus_controller</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">PilatusController</span><span class="p">,</span>
 <span class="p">)</span>
@@ -506,15 +503,14 @@ document.write(`
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">directory_provider</span><span class="p">:</span> <span class="n">DirectoryProvider</span><span class="p">,</span>
-        <span class="n">driver</span><span class="p">:</span> <span class="n">PilatusDriver</span><span class="p">,</span>
-        <span class="n">hdf</span><span class="p">:</span> <span class="n">NDFileHDF</span><span class="p">,</span>
-        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">scalar_sigs</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">drv_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
+        <span class="n">hdf_suffix</span><span class="o">=</span><span class="s2">&quot;HDF1:&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">drv</span> <span class="o">=</span> <span class="n">driver</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">hdf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drv</span> <span class="o">=</span> <span class="n">PilatusDriver</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">drv_suffix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">NDFileHDF</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">hdf_suffix</span><span class="p">)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">PilatusController</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
@@ -523,9 +519,8 @@ document.write(`
                 <span class="n">directory_provider</span><span class="p">,</span>
                 <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">ADBaseShapeProvider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
-                <span class="o">**</span><span class="n">scalar_sigs</span><span class="p">,</span>
             <span class="p">),</span>
-            <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="p">,),</span>
+            <span class="n">config_sigs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="p">,),</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span>
 
