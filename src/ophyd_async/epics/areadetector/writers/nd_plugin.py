@@ -16,10 +16,11 @@ class NDArrayBase(Device):
         self.unique_id = ad_r(int, prefix + "UniqueId")
         self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile")
         self.acquire = ad_rw(bool, prefix + "Acquire")
-        self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
         self.array_size_x = ad_r(int, prefix + "ArraySizeX")
         self.array_size_y = ad_r(int, prefix + "ArraySizeY")
         self.array_counter = ad_rw(int, prefix + "ArrayCounter")
+        # There is no _RBV for this one
+        self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
         super().__init__(name)
 
 
