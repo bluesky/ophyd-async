@@ -7,41 +7,16 @@ from ophyd_async.core import (
     DirectoryProvider,
     set_sim_value,
 )
-from ophyd_async.epics.areadetector.drivers.vimba_driver import VimbaDriver
 from ophyd_async.epics.areadetector.vimba import VimbaDetector
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
-
-
-@pytest.fixture
-async def advimba_driver(RE: RunEngine) -> VimbaDriver:
-    async with DeviceCollector(sim=True):
-        driver = VimbaDriver("DRV:")
-
-    return driver
-
-
-@pytest.fixture
-async def hdf(RE: RunEngine) -> NDFileHDF:
-    async with DeviceCollector(sim=True):
-        hdf = NDFileHDF("HDF:")
-
-    return hdf
 
 
 @pytest.fixture
 async def advimba(
     RE: RunEngine,
     static_directory_provider: DirectoryProvider,
-    advimba_driver: VimbaDriver,
-    hdf: NDFileHDF,
 ) -> VimbaDetector:
     async with DeviceCollector(sim=True):
-        advimba = VimbaDetector(
-            "advimba",
-            static_directory_provider,
-            driver=advimba_driver,
-            hdf=hdf,
-        )
+        advimba = VimbaDetector("VIMBA:", static_directory_provider)
 
     return advimba
 

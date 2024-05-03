@@ -133,9 +133,7 @@ async def assert_monitor_then_put(
     try:
         # Check descriptor
         pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=pv_name, **descriptor) == await backend.get_descriptor(
-            pv_name
-        )
+        assert dict(source=pv_name, **descriptor) == await backend.get_datakey(pv_name)
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -409,7 +407,7 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check descriptor
-            dict(source="test-source", **descriptor) == await backend.get_descriptor(
+            dict(source="test-source", **descriptor) == await backend.get_datakey(
                 "test-source"
             )
             # Check initial value
@@ -446,7 +444,7 @@ async def test_pvi_structure(ioc: IOC) -> None:
     try:
         # Check descriptor
         with pytest.raises(NotImplementedError):
-            await backend.get_descriptor("")
+            await backend.get_datakey("")
         # Check initial value
         await q.assert_updates(expected)
         await backend.get_value()
@@ -476,7 +474,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
-            } == await backend.get_descriptor("test-source")
+            } == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())

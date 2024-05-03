@@ -15,7 +15,7 @@ from aioca import (
     caput,
 )
 from aioca.types import AugmentedValue, Dbr, Format
-from bluesky.protocols import Descriptor, Dtype, Reading
+from bluesky.protocols import DataKey, Dtype, Reading
 from epicscorelibs.ca import dbr
 
 from ophyd_async.core import (
@@ -58,7 +58,7 @@ class CaConverter:
             "alarm_severity": -1 if value.severity > 2 else value.severity,
         }
 
-    def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
+    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
 
 
@@ -73,7 +73,7 @@ class CaLongStrConverter(CaConverter):
 
 
 class CaArrayConverter(CaConverter):
-    def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
+    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         return {"source": source, "dtype": "array", "shape": [len(value)]}
 
 
@@ -90,7 +90,7 @@ class CaEnumConverter(CaConverter):
     def value(self, value: AugmentedValue):
         return self.enum_class(value)
 
-    def descriptor(self, source: str, value: AugmentedValue) -> Descriptor:
+    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         choices = [e.value for e in self.enum_class]
         return {"source": source, "dtype": "string", "shape": [], "choices": choices}
 
@@ -218,9 +218,9 @@ class CaSignalBackend(SignalBackend[T]):
             timeout=None,
         )
 
-    async def get_descriptor(self, source: str) -> Descriptor:
+    async def get_datakey(self, source: str) -> DataKey:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.descriptor(source, value)
+        return self.converter.get_datakey(source, value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)
