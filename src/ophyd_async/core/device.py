@@ -45,9 +45,7 @@ class Device(HasName):
     @lru_cache(1)
     def log(self):
         return LoggerAdapter(
-            LoggerAdapter(
-                getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
-            )
+            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
     def children(self) -> Iterator[Tuple[str, Device]]:
