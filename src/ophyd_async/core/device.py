@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from functools import lru_cache
 from logging import LoggerAdapter, getLogger
 from typing import (
     Any,
@@ -34,14 +35,20 @@ class Device(HasName):
 
     def __init__(self, name: str = "") -> None:
         self.set_name(name)
-        self.log = LoggerAdapter(
-            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
-        )
 
     @property
     def name(self) -> str:
         """Return the name of the Device"""
         return self._name
+
+    @property
+    @lru_cache(1)
+    def log(self):
+        return LoggerAdapter(
+            LoggerAdapter(
+                getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
+            )
+        )
 
     def children(self) -> Iterator[Tuple[str, Device]]:
         for attr_name, attr in self.__dict__.items():

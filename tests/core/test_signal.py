@@ -55,11 +55,6 @@ class MockSignalRW(SignalRW):
         pass
 
 
-@pytest.fixture
-def mock_signal_rw():
-    return
-
-
 def test_signals_equality_raises():
     sim_backend = SimSignalBackend(str)
 
@@ -258,7 +253,7 @@ async def test_signal_connect_logs(caplog):
     assert caplog.text.endswith("Connecting to soft://test_signal\n")
 
 
-async def test_signal_get_and_set_logging(caplog, mock_signal_rw):
+async def test_signal_get_and_set_logging(caplog):
     caplog.set_level(logging.DEBUG)
     mock_signal_rw = MockSignalRW(SignalBackend, timeout=1, name="mock_signal")
     await mock_signal_rw.set(value=0)
