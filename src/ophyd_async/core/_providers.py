@@ -2,7 +2,7 @@ import os
 import uuid
 from abc import abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date
 from pathlib import Path
 from typing import Optional, Protocol, Sequence, Union
 
@@ -149,16 +149,17 @@ class YMDPathProvider(PathProvider):
         self._suffix = filename_suffix
 
     def __call__(self, device_name=None) -> PathInfo:
-        current_date = datetime.date()
+        current_date = date.today()
         if device_name is None:
-            resource_dir = (
-                os.path.join(current_date.year, current_date.month, current_date.day),
+            resource_dir = os.path.join(
+                str(current_date.year), str(current_date.month), str(current_date.day)
             )
         else:
-            resource_dir = (
-                os.path.join(
-                    device_name, current_date.year, current_date.month, current_date.day
-                ),
+            resource_dir = os.path.join(
+                device_name,
+                str(current_date.year),
+                str(current_date.month),
+                str(current_date.day),
             )
 
         filename = f"{self._prefix}{self._filename_provider()}{self._suffix}"

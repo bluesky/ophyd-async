@@ -1,10 +1,13 @@
+import os
 import uuid
+from datetime import date
 
 import pytest
 
 from ophyd_async.core import (
     AutoIncrementFilenameProvider,
     UUIDFilenameProvider,
+    YMDPathProvider,
 )
 
 
@@ -44,3 +47,17 @@ def test_uuid_filename_provider_no_namespace(
 
     with pytest.raises(ValueError):
         dp()
+
+
+def test_ymd_path_provider(static_filename_provider, tmp_path):
+    ymd_path_provider = YMDPathProvider(static_filename_provider, tmp_path)
+    current_date = date.today()
+    date_path = os.path.join(
+        str(current_date.year), str(current_date.month), str(current_date.day)
+    )
+
+    info_a = ymd_path_provider()
+    assert info_a.resource_dir == date_path
+
+    info_b = ymd_path_provider(device_name="test_device")
+    assert info_b.resource_dir == os.path.join("test_device", date_path)
