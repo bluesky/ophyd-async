@@ -19,9 +19,7 @@ async def adaravis(
     static_directory_provider: DirectoryProvider,
 ) -> AravisDetector:
     async with DeviceCollector(sim=True):
-        adaravis = AravisDetector(
-            "ADARAVIS:", static_directory_provider, name="adaravis"
-        )
+        adaravis = AravisDetector("ADARAVIS:", static_directory_provider)
 
     return adaravis
 

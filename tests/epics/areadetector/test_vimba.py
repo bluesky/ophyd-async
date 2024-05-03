@@ -16,7 +16,7 @@ async def advimba(
     static_directory_provider: DirectoryProvider,
 ) -> VimbaDetector:
     async with DeviceCollector(sim=True):
-        advimba = VimbaDetector("VIMBA:", static_directory_provider, name="advimba")
+        advimba = VimbaDetector("VIMBA:", static_directory_provider)
 
     return advimba
 

@@ -18,9 +18,9 @@ async def pilatus(
     static_directory_provider: DirectoryProvider,
 ) -> PilatusDetector:
     async with DeviceCollector(sim=True):
-        pilatus = PilatusDetector("PILATUS:", static_directory_provider, name="pilatus")
+        adpilatus = PilatusDetector("PILATUS:", static_directory_provider)
 
-    return pilatus
+    return adpilatus
 
 
 async def test_deadtime_invariant(
@@ -60,7 +60,7 @@ async def test_trigger_mode_set(
 
 
 async def test_hints_from_hdf_writer(pilatus: PilatusDetector):
-    assert pilatus.hints == {"fields": ["pilatus"]}
+    assert pilatus.hints == {"fields": ["adpilatus"]}
 
 
 async def test_unsupported_trigger_excepts(pilatus: PilatusDetector):

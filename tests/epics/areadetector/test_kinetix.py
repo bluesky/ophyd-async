@@ -16,9 +16,7 @@ async def adkinetix(
     static_directory_provider: DirectoryProvider,
 ) -> KinetixDetector:
     async with DeviceCollector(sim=True):
-        adkinetix = KinetixDetector(
-            "KINETIX:", static_directory_provider, name="adkinetix"
-        )
+        adkinetix = KinetixDetector("KINETIX:", static_directory_provider)
 
     return adkinetix
 
