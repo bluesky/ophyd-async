@@ -5,7 +5,6 @@ from typing import (
     AsyncGenerator,
     AsyncIterator,
     Dict,
-    Iterator,
     List,
     Optional,
     Sequence,
@@ -14,18 +13,14 @@ from typing import (
 import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
-from event_model import (
-    ComposeStreamResource,
-    ComposeStreamResourceBundle,
-    StreamDatum,
-    StreamRange,
-    StreamResource,
-)
+from bluesky.protocols import Descriptor, StreamAsset
 
 from ophyd_async.core import DirectoryInfo, DirectoryProvider
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
+from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.signal import SignalR, observe_value
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
 
 # raw data path
 DATA_PATH = "/entry/data/data"
@@ -81,67 +76,6 @@ def generate_interesting_pattern(x: float, y: float) -> float:
     return z
 
 
-class HdfStreamProvider:
-    def __init__(
-        self,
-        directory_info: DirectoryInfo,
-        full_file_name: Path,
-        datasets: List[DatasetConfig],
-    ) -> None:
-        self._last_emitted = 0
-        self._bundles: List[ComposeStreamResourceBundle] = self._compose_bundles(
-            directory_info, full_file_name, datasets
-        )
-
-    def _compose_bundles(
-        self,
-        directory_info: DirectoryInfo,
-        full_file_name: Path,
-        datasets: List[DatasetConfig],
-    ) -> List[StreamAsset]:
-        path = str(full_file_name.relative_to(directory_info.root))
-        root = str(directory_info.root)
-        bundler_composer = ComposeStreamResource()
-
-        bundles: List[ComposeStreamResourceBundle] = []
-
-        bundles = [
-            bundler_composer(
-                spec=SLICE_NAME,
-                root=root,
-                resource_path=path,
-                data_key=d.name.replace("/", "_"),
-                resource_kwargs={
-                    "path": d.path,
-                    "multiplier": d.multiplier,
-                    "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-                },
-            )
-            for d in datasets
-        ]
-        return bundles
-
-    def stream_resources(self) -> Iterator[StreamResource]:
-        for bundle in self._bundles:
-            yield bundle.stream_resource_doc
-
-    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
-        # Indices are relative to resource
-        if indices_written > self._last_emitted:
-            updated_stream_range = StreamRange(
-                start=self._last_emitted,
-                stop=indices_written,
-            )
-            self._last_emitted = indices_written
-            for bundle in self._bundles:
-                yield bundle.compose_stream_datum(indices=updated_stream_range)
-        return None
-
-    def close(self) -> None:
-        for bundle in self._bundles:
-            bundle.close()
-
-
 class PatternGenerator:
     def __init__(
         self,
@@ -165,7 +99,7 @@ class PatternGenerator:
             * MAX_UINT8_VALUE
         )
         self.STARTING_BLOB = blob
-        self._hdf_stream_provider: Optional[HdfStreamProvider] = None
+        self._hdf_stream_provider: Optional[_HDFFile] = None
         self._handle_for_h5_file: Optional[h5py.File] = None
         self.target_path: Optional[Path] = None
 
@@ -294,7 +228,7 @@ class PatternGenerator:
                 assert self.target_path, "open file has not been called"
                 datasets = self._get_datasets()
                 self._datasets = datasets
-                self._hdf_stream_provider = HdfStreamProvider(
+                self._hdf_stream_provider = _HDFFile(
                     self._directory_provider(),
                     self.target_path,
                     self._datasets,

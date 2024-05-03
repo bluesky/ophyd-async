@@ -16,8 +16,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.signal import observe_value
 
-from ._hdfdataset import _HDFDataset
-from ._hdffile import _HDFFile
+from .general_hdffile import _HDFDataset, _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF
 
 

@@ -17,9 +17,9 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
+from ophyd_async.panda.panda import PandA
 from ophyd_async.panda import CommonPandaBlocks
-
-from ._panda_hdf_file import _HDFDataset, _HDFFile
 
 
 class Capture(str, Enum):
@@ -152,11 +152,11 @@ class PandaHDFWriter(DetectorWriter):
             for suffix in capture_signal.capture_type.split(" "):
                 self._datasets.append(
                     _HDFDataset(
-                        name,
-                        block_name,
-                        f"{name}-{block_name}-{signal_name}-{suffix}",
-                        f"{block_name}-{signal_name}".upper() + f"-{suffix}",
-                        [1],
+                        device_name=name,
+                        block=block_name,
+                        name=f"{name}-{block_name}-{signal_name}-{suffix}",
+                        path=f"{block_name}-{signal_name}".upper() + f"-{suffix}",
+                        shape=[1],
                         multiplier=1,
                     )
                 )
