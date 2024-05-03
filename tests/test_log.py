@@ -5,8 +5,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ophyd_async.core import Device, log
-from ophyd_async.core.log import DEFAULT_DATE_FORMAT, DEFAULT_FORMAT
+from ophyd_async import log
+from ophyd_async.core import Device
+from ophyd_async.log import DEFAULT_DATE_FORMAT, DEFAULT_FORMAT
 
 
 def test_validate_level():
@@ -21,17 +22,17 @@ def test_validate_level():
         log._validate_level("MYSTERY")
 
 
-@patch("ophyd_async.core.log.current_handler")
-@patch("ophyd_async.core.log.logging.Logger.addHandler")
+@patch("ophyd_async.log.current_handler")
+@patch("ophyd_async.log.logging.Logger.addHandler")
 def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handler):
     log.config_ophyd_async_logging()
     assert isinstance(log.current_handler, logging.StreamHandler)
     assert log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async.core.log.current_handler")
-@patch("ophyd_async.core.log.logging.FileHandler")
-@patch("ophyd_async.core.log.logging.Logger.addHandler")
+@patch("ophyd_async.log.current_handler")
+@patch("ophyd_async.log.logging.FileHandler")
+@patch("ophyd_async.log.logging.Logger.addHandler")
 def test_config_ophyd_async_logging_with_file_handler(
     mock_add_handler, mock_file_handler, mock_current_handler
 ):
@@ -40,7 +41,7 @@ def test_config_ophyd_async_logging_with_file_handler(
     assert log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async.core.log.current_handler")
+@patch("ophyd_async.log.current_handler")
 def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler):
     # Protect global variable in other pytests
     class FakeLogger:
@@ -57,7 +58,7 @@ def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler)
 
     fake_logger = FakeLogger()
     with (
-        patch("ophyd_async.core.log.logger", fake_logger),
+        patch("ophyd_async.log.logger", fake_logger),
     ):
         log.config_ophyd_async_logging()
         fake_logger.removeHandler.assert_not_called()
