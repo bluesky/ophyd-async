@@ -8,7 +8,7 @@ from typing import Optional, Protocol, Sequence, Union
 
 
 @dataclass
-class DirectoryInfo:
+class PathInfo:
     """
     Information about where and how to write a file.
 
@@ -31,19 +31,17 @@ class DirectoryInfo:
 
 
 class FilenameProvider(Protocol):
-    prefix: Optional[str] = ""
-    suffix: Optional[str] = ""
 
     @abstractmethod
-    def __call__(self, device_name=None) -> str:
+    def __call__(self) -> str:
         """Get a filename to use for output data"""
 
 
-class DirectoryProvider(Protocol):
+class PathProvider(Protocol):
     _filename_provider: FilenameProvider
 
     @abstractmethod
-    def __call__(self, device_name=None) -> DirectoryInfo:
+    def __call__(self, device_name=None) -> PathInfo:
         """Get the current directory to write files into"""
 
 
@@ -51,36 +49,14 @@ class StaticFilenameProvider(FilenameProvider):
     def __init__(self, filename: str):
         self._static_filename = filename
 
-    def __call__(self, device_name: str = None) -> str:
+    def __call__(self) -> str:
         return self._static_filename
 
 
-class DynamicFilenameProvider(FilenameProvider):
-    def __init__(self, base_filename="", prefix="", suffix=""):
-        self.base_filename = base_filename
-        self.prefix = prefix
-        self.suffix = suffix
-
-    def __call__(self, device_name=None) -> str:
-        return f"{self.prefix}{self.base_filename}{self.suffix}"
-
-
-class DeviceNameFilenameProvider(FilenameProvider):
-    def __init__(self, prefix: str = "", suffix: str = ""):
-        self.prefix = prefix
-        self.suffix = suffix
-
-    def __call__(self, device_name=None) -> str:
-        return f"{self.prefix}{device_name}{self.suffix}"
-
 
 class UUIDFilenameProvider(FilenameProvider):
-    def __init__(
-        self, uuid_call_func: callable = uuid.uuid4, prefix: str = "", suffix: str = ""
-    ):
+    def __init__(self, uuid_call_func: callable = uuid.uuid4):
         self._uuid_call_func = uuid_call_func
-        self.prefix = prefix
-        self.suffix = suffix
         self._uuid_namespace = None
         self._uuid_name = None
 
@@ -88,7 +64,7 @@ class UUIDFilenameProvider(FilenameProvider):
         self._uuid_namespace = namespace
         self._uuid_name = name
 
-    def __call__(self, device_name: str = None) -> str:
+    def __call__(self) -> str:
         if self._uuid_call_func in [uuid.uuid3, uuid.uuid5]:
             if self._uuid_namespace is None or self._uuid_name is None:
                 raise ValueError(
@@ -98,27 +74,25 @@ class UUIDFilenameProvider(FilenameProvider):
             uuid_str = self._uuid_call_func(self._uuid_namespace, self._uuid_name)
         else:
             uuid_str = self._uuid_call_func()
-        return f"{self.prefix}{uuid_str}{self.suffix}"
+        return f"{uuid_str}"
 
 
 class AutoIncrementFilenameProvider(FilenameProvider):
     def __init__(
         self,
         base_filename: str = "",
-        prefix: str = "",
         max_digits: int = 5,
         starting_value: int = 0,
         increment: int = 1,
         inc_delimeter: str = "_",
     ):
         self._base_filename = base_filename
-        self.prefix = prefix
         self._max_digits = max_digits
         self._current_value = starting_value
         self._increment = increment
         self._inc_delimeter = inc_delimeter
 
-    def __call__(self, device_name: str = None):
+    def __call__(self):
         if len(str(self._current_value)) > self._max_digits:
             raise ValueError(
                 f"Auto incrementing filename counter \
@@ -126,61 +100,73 @@ class AutoIncrementFilenameProvider(FilenameProvider):
             )
 
         padded_counter = str(self._current_value).rjust(self._max_digits, "0")
-        if device_name is not None:
-            filename = (
-                f"{self.prefix}{device_name}{self._inc_delimeter}{padded_counter}"
-            )
-        else:
-            filename = (
-                f"{self.prefix}{self._base_filename}"
-                f"{self._inc_delimeter}{padded_counter}"
-            )
+
+        filename = f"{self._base_filename}{self._inc_delimeter}{padded_counter}"
 
         self._current_value += self._increment
         return filename
 
 
-class StaticDirectoryProvider(DirectoryProvider):
+class StaticPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
         directory_path: Union[str, Path],
         resource_dir: Path = Path("."),
+        filename_prefix: str = "",
+        filename_suffix: str = "",
         create_dir_depth: int = -3,
     ) -> None:
         self._filename_provider = filename_provider
         self._directory_path = directory_path
         self._resource_dir = resource_dir
         self._create_dir_depth = create_dir_depth
+        self._prefix = filename_prefix
+        self._suffix = filename_suffix
 
-    def __call__(self, device_name=None) -> DirectoryInfo:
-        return DirectoryInfo(
+    def __call__(self, device_name=None) -> PathInfo:
+        filename = f"{self._prefix}{self._filename_provider()}{self._suffix}"
+
+        return PathInfo(
             root=self._directory_path,
             resource_dir=self._resource_dir,
-            filename=self._filename_provider(device_name=device_name),
+            filename=filename,
             create_dir_depth=self._create_dir_depth,
         )
 
 
-class YMDDirectoryProvider(DirectoryProvider):
+class YMDPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
         directory_path: Union[str, Path],
         create_dir_depth: int = 0,
+        filename_prefix: str = "",
+        filename_suffix: str = "",
     ) -> None:
         self._filename_provider = filename_provider
         self._directory_path = directory_path
         self._create_dir_depth = create_dir_depth
+        self._prefix = filename_prefix
+        self._suffix = filename_suffix
 
-    def __call__(self, device_name=None) -> DirectoryInfo:
+    def __call__(self, device_name=None) -> PathInfo:
         current_date = datetime.date()
-        return DirectoryInfo(
-            root=self._directory_path,
-            resource_dir=os.path.join(
+        if device_name is None:
+            resource_dir = os.path.join(
                 current_date.year, current_date.month, current_date.day
             ),
-            filename=self._filename_provider(device_name=device_name),
+        else:
+            resource_dir = os.path.join(
+                device_name, current_date.year, current_date.month, current_date.day
+            ),
+
+        filename = f"{self._prefix}{self._filename_provider()}{self._suffix}"
+        return PathInfo(
+            root=self._directory_path,
+            resource_dir=resource_dir,
+            filename=filename,
+            create_dir_depth=self._create_dir_depth
         )
 
 
