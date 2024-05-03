@@ -60,8 +60,8 @@ class FooDetector(StandardDetector, HasHints):
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
-        **scalar_sigs: str,
     ):
+        # Must be children to pick up connect
         self.drv = FooDriver(prefix + drv_suffix)
         self.hdf = NDFileHDF(prefix + hdf_suffix)
 
@@ -72,7 +72,6 @@ class FooDetector(StandardDetector, HasHints):
                 directory_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
-                **scalar_sigs,
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,

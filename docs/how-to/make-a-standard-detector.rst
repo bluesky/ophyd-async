@@ -45,8 +45,8 @@ If the :py:class:`FooDriver` exposes :py:class:`Signal` that should be read as c
 Writing a non-AreaDetector StandardDetector
 -------------------------------------------
 
-A non-AreaDetector `StandardDetector` should implement the `DetectorControl` and `DetectorWriter` protocol directly.
-Here we construct a `DetectorControl` that co-ordinates signals on a PandA PositionCapture block which (analogously to the AreaDetector "Driver") is a child device of the `StandardDetector` implementation, while the `DetectorControl` is not.
+A non-AreaDetector `StandardDetector` should implement `DetectorControl` and `DetectorWriter` directly.
+Here we construct a `DetectorControl` that co-ordinates signals on a PandA PositionCapture block which is a child device of the `StandardDetector` implementation, (the `DetectorControl` is not).
 
 .. literalinclude:: ../../src/ophyd_async/panda/_panda_controller.py
    :pyobject: PandaPcapController
