@@ -35,7 +35,6 @@ dev = [
     "h5py",
     "inflection",
     "ipython",
-    "ipywidgets",
     "matplotlib",
     "myst-parser",
     "numpydoc",
