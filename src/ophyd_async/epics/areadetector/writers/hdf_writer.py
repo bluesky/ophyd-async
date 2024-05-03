@@ -8,8 +8,8 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DetectorWriter,
-    DirectoryProvider,
     NameProvider,
+    PathProvider,
     ShapeProvider,
     set_and_wait_for_value,
     wait_for_value,
@@ -25,13 +25,13 @@ class HDFWriter(DetectorWriter):
     def __init__(
         self,
         hdf: NDFileHDF,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         name_provider: NameProvider,
         shape_provider: ShapeProvider,
         **scalar_datasets_paths: str,
     ) -> None:
         self.hdf = hdf
-        self._directory_provider = directory_provider
+        self._path_provider = path_provider
         self._name_provider = name_provider
         self._shape_provider = shape_provider
         self._scalar_datasets_paths = scalar_datasets_paths
@@ -42,7 +42,7 @@ class HDFWriter(DetectorWriter):
 
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None
-        info = self._directory_provider(device_name=self.hdf.name)
+        info = self._path_provider(device_name=self.hdf.name)
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
@@ -131,7 +131,7 @@ class HDFWriter(DetectorWriter):
             if not self._file:
                 path = Path(await self.hdf.full_file_name.get_value())
                 self._file = _HDFFile(
-                    self._directory_provider(),
+                    self._path_provider(),
                     # See https://github.com/bluesky/ophyd-async/issues/122
                     path,
                     self._datasets,

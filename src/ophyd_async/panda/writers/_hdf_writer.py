@@ -8,7 +8,10 @@ from p4p.client.thread import Context
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorWriter,
-    DirectoryProvider,
+    Device,
+    NameProvider,
+    PathProvider,
+    SignalR,
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value
@@ -22,11 +25,15 @@ class PandaHDFWriter(DetectorWriter):
 
     def __init__(
         self,
-        directory_provider: DirectoryProvider,
+        prefix: str,
+        path_provider: PathProvider,
+        name_provider: NameProvider,
         panda_device: CommonPandaBlocks,
     ) -> None:
         self.panda_device = panda_device
-        self._directory_provider = directory_provider
+        self._prefix = prefix
+        self._path_provider = path_provider
+        self._name_provider = name_provider
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
         self._multiplier = 1
@@ -39,7 +46,7 @@ class PandaHDFWriter(DetectorWriter):
         await self.panda_device.data.flush_period.set(0)
 
         self._file = None
-        info = self._directory_provider(device_name=self.panda_device.name)
+        info = self._path_provider(device_name=self.panda_device.name)
         # Set the initial values
         await asyncio.gather(
             self.panda_device.data.hdf_directory.set(
@@ -123,7 +130,7 @@ class PandaHDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = _HDFFile(
-                    self._directory_provider(),
+                    self._path_provider(),
                     Path(await self.panda_device.data.hdf_file_name.get_value()),
                     self._datasets,
                 )

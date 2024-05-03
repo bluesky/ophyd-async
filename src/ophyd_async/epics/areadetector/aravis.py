@@ -2,7 +2,7 @@ from typing import get_args
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import DirectoryProvider, StandardDetector
+from ophyd_async.core import PathProvider, StandardDetector, TriggerInfo
 from ophyd_async.epics.areadetector.controllers.aravis_controller import (
     AravisController,
 )
@@ -24,7 +24,7 @@ class AravisDetector(StandardDetector, HasHints):
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
@@ -37,7 +37,7 @@ class AravisDetector(StandardDetector, HasHints):
             AravisController(self.drv, gpio_number=gpio_number),
             HDFWriter(
                 self.hdf,
-                directory_provider,
+                path_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
             ),

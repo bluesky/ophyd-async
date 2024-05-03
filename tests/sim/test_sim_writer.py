@@ -8,11 +8,11 @@ from ophyd_async.sim.sim_pattern_detector_writer import SimPatternDetectorWriter
 
 
 @pytest.fixture
-async def writer(static_directory_provider) -> SimPatternDetectorWriter:
+async def writer(static_path_provider) -> SimPatternDetectorWriter:
     async with DeviceCollector(mock=True):
         driver = PatternGenerator()
 
-    return SimPatternDetectorWriter(driver, static_directory_provider, lambda: "NAME")
+    return SimPatternDetectorWriter(driver, static_path_provider, lambda: "NAME")
 
 
 async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWriter):

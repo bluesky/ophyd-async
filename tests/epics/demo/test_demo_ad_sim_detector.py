@@ -15,7 +15,8 @@ from ophyd_async.core import (
     AsyncStatus,
     DeviceCollector,
     StandardDetector,
-    StaticDirectoryProvider,
+    StaticFilenameProvider,
+    StaticPathProvider,
     callback_on_mock_put,
     set_mock_value,
 )
@@ -29,7 +30,7 @@ from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
     fp = StaticFilenameProvider(f"test-{new_uid()}")
-    dp = StaticDirectoryProvider(fp, tmp_path)
+    dp = StaticPathProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
         drv = ADBase(f"{prefix}DRV:", name="drv")
@@ -175,8 +176,8 @@ async def test_two_detectors_step(
         "event",
         "stop",
     ]
-    info_a = writer_a._directory_provider(device_name=writer_a.hdf.name)
-    info_b = writer_b._directory_provider(device_name=writer_b.hdf.name)
+    info_a = writer_a._path_provider(device_name=writer_a.hdf.name)
+    info_b = writer_b._path_provider(device_name=writer_b.hdf.name)
 
     assert await writer_a.hdf.file_path.get_value() == str(
         info_a.root / info_a.resource_dir
@@ -288,7 +289,7 @@ async def test_trigger_logic():
 async def test_detector_with_unnamed_or_disconnected_config_sigs(
     RE, static_filename_provider: StaticFilenameProvider, tmp_path: Path
 ):
-    dp = StaticDirectoryProvider(static_filename_provider, tmp_path)
+    dp = StaticPathProvider(static_filename_provider, tmp_path)
     drv = ADBase("FOO:DRV:")
 
     some_other_driver = ADBase("TEST")

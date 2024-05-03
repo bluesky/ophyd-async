@@ -11,8 +11,8 @@ from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import (
     FilenameProvider,
-    StaticDirectoryProvider,
     StaticFilenameProvider,
+    StaticPathProvider,
 )
 
 PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
@@ -133,16 +133,16 @@ def static_filename_provider():
 
 
 @pytest.fixture
-def static_directory_provider_factory(tmp_path: Path):
+def static_path_provider_factory(tmp_path: Path):
     def create_static_dir_provider_given_fp(fp: FilenameProvider):
-        return StaticDirectoryProvider(fp, tmp_path)
+        return StaticPathProvider(fp, tmp_path)
 
     return create_static_dir_provider_given_fp
 
 
 @pytest.fixture
-def static_directory_provider(
-    static_directory_provider_factory: callable,
+def static_path_provider(
+    static_path_provider_factory: callable,
     static_filename_provider: FilenameProvider,
 ):
-    return static_directory_provider_factory(static_filename_provider)
+    return static_path_provider_factory(static_filename_provider)

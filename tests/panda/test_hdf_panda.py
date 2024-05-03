@@ -7,8 +7,8 @@ from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
-    DeviceNameFilenameProvider,
-    StaticDirectoryProvider,
+    StaticFilenameProvider,
+    StaticPathProvider,
     set_mock_value,
 )
 from ophyd_async.core.async_status import AsyncStatus
@@ -29,10 +29,10 @@ async def mock_hdf_panda(tmp_path):
     class CaptureBlock(Device):
         test_capture: SignalR
 
-    fp = DeviceNameFilenameProvider(prefix="test")
-    dp = StaticDirectoryProvider(fp, tmp_path)
+    fp = StaticFilenameProvider("panda")
+    dp = StaticPathProvider(fp, tmp_path, filename_prefix="test-")
 
-    mock_hdf_panda = HDFPanda("HDFPANDA:", directory_provider=dp, name="panda")
+    mock_hdf_panda = HDFPanda("HDFPANDA:", path_provider=dp, name="panda")
     await mock_hdf_panda.connect(mock=True)
     mock_hdf_panda._controller = MockPandaPcapController(mock_hdf_panda.pcap)
     block_a = CaptureBlock(name="block_a")

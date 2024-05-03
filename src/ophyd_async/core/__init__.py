@@ -1,12 +1,12 @@
 from ._providers import (
     AutoIncrementFilenameProvider,
-    PathInfo,
-    PathProvider,
     FilenameProvider,
     NameProvider,
+    PathInfo,
+    PathProvider,
     ShapeProvider,
-    StaticPathProvider,
     StaticFilenameProvider,
+    StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
 )

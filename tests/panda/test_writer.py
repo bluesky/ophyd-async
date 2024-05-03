@@ -8,13 +8,11 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
-    DeviceNameFilenameProvider,
     SignalR,
-    StaticDirectoryProvider,
+    SimSignalBackend,
+    StaticFilenameProvider,
+    StaticPathProvider,
     set_mock_value,
-)
-from ophyd_async.epics.areadetector.writers.general_hdffile import (
-    _HDFFile,
 )
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.panda import CommonPandaBlocks
@@ -95,13 +93,13 @@ async def mock_panda(panda_t):
 
 
 @pytest.fixture
-async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
-    fp = DeviceNameFilenameProvider(suffix="/data.h5")
-    dp = StaticDirectoryProvider(fp, tmp_path)
+async def sim_writer(tmp_path, mock_panda) -> PandaHDFWriter:
+    fp = StaticFilenameProvider(mock_panda.name)
+    dp = StaticPathProvider(fp, tmp_path, filename_suffix="/data.h5")
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
             prefix="TEST-PANDA",
-            directory_provider=dp,
+            path_provider=dp,
             name_provider=lambda: "test-panda",
             panda_device=mock_panda,
         )

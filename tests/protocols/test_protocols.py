@@ -5,8 +5,8 @@ from bluesky.utils import new_uid
 from ophyd_async import protocols as bs_protocols
 from ophyd_async.core import (
     DeviceCollector,
-    StaticDirectoryProvider,
     StaticFilenameProvider,
+    StaticPathProvider,
 )
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.epics.areadetector.drivers import ADBase
@@ -17,7 +17,7 @@ from ophyd_async.sim.demo import SimMotor
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
     fp = StaticFilenameProvider(f"test-{new_uid()}")
-    dp = StaticDirectoryProvider(fp, tmp_path)
+    dp = StaticPathProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
         drv = ADBase(f"{prefix}DRV:")
