@@ -23,7 +23,7 @@ ophyd\_async.core.SignalBackend
       :nosignatures:
    
       ~SignalBackend.connect
-      ~SignalBackend.get_descriptor
+      ~SignalBackend.get_datakey
       ~SignalBackend.get_reading
       ~SignalBackend.get_setpoint
       ~SignalBackend.get_value

@@ -23,7 +23,7 @@ ophyd\_async.core.SimSignalBackend
       :nosignatures:
    
       ~SimSignalBackend.connect
-      ~SimSignalBackend.get_descriptor
+      ~SimSignalBackend.get_datakey
       ~SimSignalBackend.get_reading
       ~SimSignalBackend.get_setpoint
       ~SimSignalBackend.get_value
