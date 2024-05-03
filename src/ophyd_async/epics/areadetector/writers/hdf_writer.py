@@ -2,7 +2,7 @@ import asyncio
 from pathlib import Path
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 
-from bluesky.protocols import Descriptor, Hints, StreamAsset
+from bluesky.protocols import DataKey, Hints, StreamAsset
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -40,7 +40,7 @@ class HDFWriter(DetectorWriter):
         self._file: Optional[_HDFFile] = None
         self._multiplier = 1
 
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None
         info = self._directory_provider()
         await asyncio.gather(
@@ -84,7 +84,7 @@ class HDFWriter(DetectorWriter):
                 )
             )
         describe = {
-            ds.name: Descriptor(
+            ds.name: DataKey(
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",

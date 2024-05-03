@@ -102,7 +102,7 @@ async def test_backend_get_put_monitor(
         source = "soft://test"
         assert dict(
             source=source, **descriptor(initial_value)
-        ) == await backend.get_descriptor(source)
+        ) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(
             pytest.approx(initial_value) if initial_value != "" else initial_value
@@ -137,4 +137,4 @@ async def test_sim_backend_descriptor_fails_for_invalid_class():
     await sim_signal.connect(sim=True)
 
     with pytest.raises(AssertionError):
-        await sim_signal._backend.get_descriptor("")
+        await sim_signal._backend.get_datakey("")

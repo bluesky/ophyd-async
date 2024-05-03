@@ -1,6 +1,6 @@
 from typing import AsyncGenerator, AsyncIterator, Dict
 
-from bluesky.protocols import Descriptor
+from bluesky.protocols import DataKey
 
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.detector import DetectorWriter
@@ -16,7 +16,7 @@ class SimPatternDetectorWriter(DetectorWriter):
         self.pattern_generator = pattern_generator
         self.directory_provider = directoryProvider
 
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         return await self.pattern_generator.open_file(
             self.directory_provider, multiplier
         )

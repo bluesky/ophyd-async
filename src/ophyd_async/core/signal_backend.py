@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Generic, Optional, Type
 
-from bluesky.protocols import Descriptor, Reading
+from bluesky.protocols import DataKey, Reading
 
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
@@ -27,7 +27,7 @@ class SignalBackend(Generic[T]):
         """Put a value to the PV, if wait then wait for completion for up to timeout"""
 
     @abstractmethod
-    async def get_descriptor(self, source: str) -> Descriptor:
+    async def get_datakey(self, source: str) -> DataKey:
         """Metadata like source, dtype, shape, precision, units"""
 
     @abstractmethod

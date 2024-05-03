@@ -11,7 +11,7 @@ from typing import (
     Union,
 )
 
-from bluesky.protocols import Descriptor, HasHints, Hints, Reading
+from bluesky.protocols import DataKey, HasHints, Hints, Reading
 
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
@@ -79,7 +79,7 @@ class StandardReadable(
         for sig in self._stageables:
             await sig.unstage().task
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(
             [sig.describe_configuration() for sig in self._configurables]
         )
@@ -89,7 +89,7 @@ class StandardReadable(
             [sig.read_configuration() for sig in self._configurables]
         )
 
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts([sig.describe() for sig in self._readables])
 
     async def read(self) -> Dict[str, Reading]:
@@ -229,7 +229,7 @@ class ConfigSignal(AsyncConfigurable):
     async def read_configuration(self) -> Dict[str, Reading]:
         return await self.signal.read()
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await self.signal.describe()
 
 
@@ -245,7 +245,7 @@ class HintedSignal(HasHints, AsyncReadable):
     async def read(self) -> Dict[str, Reading]:
         return await self.signal.read(cached=self.cached)
 
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         return await self.signal.describe()
 
     @property
