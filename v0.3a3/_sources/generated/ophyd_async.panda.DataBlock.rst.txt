@@ -1,0 +1,46 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.panda.DataBlock
+============================
+
+.. currentmodule:: ophyd_async.panda
+
+.. autoclass:: DataBlock
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~DataBlock.children
+      ~DataBlock.connect
+      ~DataBlock.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DataBlock.name
+      ~DataBlock.parent
+      ~DataBlock.hdf_directory
+      ~DataBlock.hdf_file_name
+      ~DataBlock.num_capture
+      ~DataBlock.num_captured
+      ~DataBlock.capture
+      ~DataBlock.flush_period
+   
+   
