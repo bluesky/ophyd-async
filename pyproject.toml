@@ -56,8 +56,6 @@ dev = [
     "sphinx-copybutton",
     "sphinx-design",
     "tox-direct",
-    "types-mock",
-    "types-pyyaml",
     "colorlog"
 ]
 
