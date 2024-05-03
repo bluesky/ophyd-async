@@ -6,19 +6,20 @@
 Make a StandardDetector
 =======================
 
-`StandardDetector` is an abstract class to assist in creating devices to control EPICS AreaDetector implementations.
+`StandardDetector` is an abstract class to assist in creating Device classes for hardware that write their own data e.g. an AreaDetector implementation, or a PandA writing motor encoder positions to file.
 The `StandardDetector` is a simple compound device, with 2 standard components: 
 
 - `DetectorWriter` to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of :py:class:`HDFWriter`)
 - `DetectorControl` with logic for arming and disarming the detector. This will be unique to the StandardDetector implementation.
 
-These standard components are not devices, and therefore not subdevices of the `StandardDetector`, typically they are enabled by the use of two other components which are:
+Writing an AreaDetector StandardDetector
+----------------------------------------
 
-- An implementation of :py:class:`NDPluginBase`, an entity object mapping to an AreaDetector NDPluginFile instance (for :py:class:`HDFWriter` an instance of :py:class:`NDFileHDF`)
-- :py:class:`ADBase`, or an class which extends it, an entity object mapping to an AreaDetector "NDArray" for the "driver" of the detector implementation
+For an AreaDetector implementation of the StandardDetector, two entity objects which are subdevices of the `StandardDetector` are used to map to AreaDetector plugins:
 
-Writing a StandardDetector implementation
------------------------------------------
+- An NDPluginFile instance (for :py:class:`HDFWriter` an instance of :py:class:`NDFileHDF`)
+- An :py:class:`ADBase` instance mapping to NDArray for the "driver" of the detector implementation
+
 
 Define a :py:class:`FooDriver` if the NDArray requires fields in addition to those on :py:class:`ADBase` to be exposed. It should extend :py:class:`ADBase`.
 Enumeration fields should be named to prevent namespace collision, i.e. for a Signal named "TriggerSource" use the enum "FooTriggerSource"
@@ -33,12 +34,29 @@ The :py:meth:`ophyd_async.core.DetectorControl.get_deadtime` method is used when
 .. literalinclude:: ../examples/foo_detector.py
    :pyobject: FooController
 
-Assembly
---------
-
-Define a :py:class:`FooDetector` implementation to tie the Driver, Controller and data persistence layer together. The example :py:class:`FooDetector` writes h5 files using the standard NDPlugin. It additionally supports the :py:class:`HasHints` protocol which is optional but recommended.
+:py:class:`FooDetector` ties the Driver, Controller and data persistence layer together. The example :py:class:`FooDetector` writes h5 files using the standard NDPlugin. It additionally supports the :py:class:`HasHints` protocol which is optional but recommended.
 Its initialiser assumes the NSLS-II AreaDetector plugin EPICS address suffixes as defaults but allows overriding: **this pattern is recommended for consistency**.
 If the :py:class:`FooDriver` exposes :py:class:`Signal` that should be read as configuration, they should be added to the "config_sigs" passed to the super.
 
 .. literalinclude:: ../examples/foo_detector.py
    :pyobject: FooDetector
+
+
+Writing a non-AreaDetector StandardDetector
+-------------------------------------------
+
+A non-AreaDetector `StandardDetector` should implement the `DetectorControl` and `DetectorWriter` protocol directly.
+Here we construct a `DetectorControl` that co-ordinates signals on a PandA PositionCapture block which (analogously to the AreaDetector "Driver") is a child device of the `StandardDetector` implementation, while the `DetectorControl` is not.
+
+.. literalinclude:: ../../src/ophyd_async/panda/_panda_controller.py
+   :pyobject: PandaPcapController
+
+The PandA may capture a number of signals to be written into its persisted data, and the :py:class:`PandaHDFWriter` co-ordinates those, configures the filewriter and describes the data for the RunEngine.
+
+.. literalinclude:: ../../src/ophyd_async/panda/writers/_hdf_writer.py
+   :pyobject: PandaHDFWriter
+
+The PandA StandardDetector implementation again ties the component parts together.
+
+.. literalinclude:: ../../src/ophyd_async/panda/_hdf_panda.py
+   :pyobject: HDFPanda
