@@ -7,41 +7,16 @@ from ophyd_async.core import (
     DirectoryProvider,
     set_sim_value,
 )
-from ophyd_async.epics.areadetector.drivers.kinetix_driver import KinetixDriver
 from ophyd_async.epics.areadetector.kinetix import KinetixDetector
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
-
-
-@pytest.fixture
-async def adkinetix_driver(RE: RunEngine) -> KinetixDriver:
-    async with DeviceCollector(sim=True):
-        driver = KinetixDriver("DRV:")
-
-    return driver
-
-
-@pytest.fixture
-async def hdf(RE: RunEngine) -> NDFileHDF:
-    async with DeviceCollector(sim=True):
-        hdf = NDFileHDF("HDF:")
-
-    return hdf
 
 
 @pytest.fixture
 async def adkinetix(
     RE: RunEngine,
     static_directory_provider: DirectoryProvider,
-    adkinetix_driver: KinetixDriver,
-    hdf: NDFileHDF,
 ) -> KinetixDetector:
     async with DeviceCollector(sim=True):
-        adkinetix = KinetixDetector(
-            "adkinetix",
-            static_directory_provider,
-            driver=adkinetix_driver,
-            hdf=hdf,
-        )
+        adkinetix = KinetixDetector("KINETIX:", static_directory_provider)
 
     return adkinetix
 
