@@ -13,7 +13,7 @@ from typing import (
 
 import h5py
 import numpy as np
-from bluesky.protocols import Descriptor, StreamAsset
+from bluesky.protocols import DataKey, StreamAsset
 from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
@@ -52,12 +52,12 @@ class DatasetConfig:
 def get_full_file_description(
     datasets: List[DatasetConfig], outer_shape: tuple[int, ...]
 ):
-    full_file_description: Dict[str, Descriptor] = {}
+    full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
         source = f"soft://{d.name}"
         shape = outer_shape + tuple(d.shape)
         dtype = "number" if d.shape == [1] else "array"
-        descriptor = Descriptor(
+        descriptor = DataKey(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
         )
         key = d.name.replace("/", "_")
@@ -219,7 +219,7 @@ class PatternGenerator:
 
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
-    ) -> Dict[str, Descriptor]:
+    ) -> Dict[str, DataKey]:
         await self.sim_signal.connect()
 
         self.target_path = self._get_new_path(directory)

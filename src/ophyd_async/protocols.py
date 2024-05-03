@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Dict, Protocol, runtime_checkable
 
-from bluesky.protocols import Descriptor, HasName, Reading
+from bluesky.protocols import DataKey, HasName, Reading
 
 from ophyd_async.core.async_status import AsyncStatus
 
@@ -25,7 +25,7 @@ class AsyncReadable(HasName, Protocol):
         ...
 
     @abstractmethod
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         """Return an OrderedDict with exactly the same keys as the ``read``
         method, here mapped to per-scan metadata about each field.
 
@@ -55,7 +55,7 @@ class AsyncConfigurable(Protocol):
         ...
 
     @abstractmethod
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         """Same API as ``describe``, but corresponding to the keys in
         ``read_configuration``.
         """
