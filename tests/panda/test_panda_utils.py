@@ -27,7 +27,7 @@ async def sim_panda():
             await super().connect(sim, timeout)
 
     async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDA:")
+        sim_panda = Panda("PANDA:")
         sim_panda.phase_1_signal_units = epics_signal_rw(int, "")  # type: ignore[attr-defined]
     assert sim_panda.name == "sim_panda"
     yield sim_panda
