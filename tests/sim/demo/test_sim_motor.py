@@ -57,3 +57,32 @@ async def test_stop():
     assert not move_status.success
     assert new_pos < 10
     assert new_pos >= 0.1
+
+
+async def test_timeout():
+    """
+    Verify that timeout happens as expected for SimMotor moves.
+
+    This test also verifies that the two tasks involved in the move are
+    completed as expected.
+    """
+    async with DeviceCollector():
+        m1 = SimMotor("M1", instant=False)
+
+    # do a 10 sec move that will timeout before arriving
+    move_status = m1.set(10, timeout=0.1)
+    await asyncio.sleep(0.2)
+
+    # verify status of inner task set up to run _move.update_position()
+    assert isinstance(m1._move_task, asyncio.Task)
+    assert m1._move_task.done
+    assert m1._move_task.cancelled
+
+    # verify status of outer task set up to run _move()
+    assert move_status.task.done
+    assert move_status.task.cancelled
+
+    new_pos = await m1.user_readback.get_value()
+    assert new_pos < 10
+    assert move_status.done
+    assert not move_status.success

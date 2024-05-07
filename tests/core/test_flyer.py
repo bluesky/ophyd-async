@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky.protocols import Descriptor, StreamAsset
+from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
@@ -58,9 +58,9 @@ class DummyWriter(DetectorWriter):
         self._last_emitted = 0
         self.index = 0
 
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         return {
-            self._name: Descriptor(
+            self._name: DataKey(
                 source="soft://some-source",
                 shape=self._shape,
                 dtype="number",

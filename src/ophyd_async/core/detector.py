@@ -19,7 +19,7 @@ from typing import (
 
 from bluesky.protocols import (
     Collectable,
-    Descriptor,
+    DataKey,
     Flyable,
     Preparable,
     Reading,
@@ -109,7 +109,7 @@ class DetectorWriter(ABC):
     (e.g. an HDF5 file)"""
 
     @abstractmethod
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
         Args:
@@ -180,7 +180,7 @@ class StandardDetector(
         """
         self._controller = controller
         self._writer = writer
-        self._describe: Dict[str, Descriptor] = {}
+        self._describe: Dict[str, DataKey] = {}
         self._config_sigs = list(config_sigs)
         self._frame_writing_timeout = writer_timeout
         # For prepare
@@ -233,14 +233,14 @@ class StandardDetector(
     async def read_configuration(self) -> Dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
     async def read(self) -> Dict[str, Reading]:
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         return self._describe
 
     @AsyncStatus.wrap
@@ -327,7 +327,7 @@ class StandardDetector(
         assert self._fly_status, "Kickoff not run"
         return await self._fly_status
 
-    async def describe_collect(self) -> Dict[str, Descriptor]:
+    async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe
 
     async def collect_asset_docs(

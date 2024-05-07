@@ -16,7 +16,7 @@ from typing import (
 )
 
 from bluesky.protocols import (
-    Descriptor,
+    DataKey,
     Locatable,
     Location,
     Movable,
@@ -172,9 +172,9 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
         return {self.name: await self._backend_or_cache(cached).get_reading()}
 
     @_add_timeout
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._backend.get_descriptor(self.source)}
+        return {self.name: await self._backend.get_datakey(self.source)}
 
     @_add_timeout
     async def get_value(self, cached: Optional[bool] = None) -> T:
