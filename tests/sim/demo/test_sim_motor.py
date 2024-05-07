@@ -4,6 +4,7 @@ import time
 from bluesky.plans import spiral_square
 from bluesky.run_engine import RunEngine
 
+from ophyd_async.core.async_status import AsyncStatusBase
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.sim.demo.sim_motor import SimMotor
 
@@ -73,16 +74,16 @@ async def test_timeout():
     move_status = m1.set(10, timeout=0.1)
     await asyncio.sleep(0.2)
 
-    # verify status of inner task set up to run _move.update_position()
-    assert isinstance(m1._move_task, asyncio.Task)
-    assert m1._move_task.done
-    assert m1._move_task.cancelled
-
-    # verify status of outer task set up to run _move()
-    assert move_status.task.done
+    # check inner status
+    assert m1._move_status is not None
+    assert m1._move_status.done
+    assert not move_status.success
     assert move_status.task.cancelled
 
-    new_pos = await m1.user_readback.get_value()
-    assert new_pos < 10
+    # check outer status
+    assert isinstance(move_status, AsyncStatusBase)
     assert move_status.done
     assert not move_status.success
+    assert move_status.task.cancelled
+    new_pos = await m1.user_readback.get_value()
+    assert new_pos < 10
