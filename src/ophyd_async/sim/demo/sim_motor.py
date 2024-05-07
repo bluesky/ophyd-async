@@ -100,27 +100,26 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         )
 
         async def update_position():
-            async with asyncio.timeout(timeout):
-                while True:
-                    time_elapsed = round(time.monotonic() - start, 2)
+            while True:
+                time_elapsed = round(time.monotonic() - start, 2)
 
-                    # update position based on time elapsed
-                    if time_elapsed >= travel_time:
-                        # successfully reached our target position
-                        await self._user_readback.put(new_position)
-                        break
-                    else:
-                        current_position = (
-                            old_position + distance * time_elapsed / travel_time
-                        )
+                # update position based on time elapsed
+                if time_elapsed >= travel_time:
+                    # successfully reached our target position
+                    await self._user_readback.put(new_position)
+                    break
+                else:
+                    current_position = (
+                        old_position + distance * time_elapsed / travel_time
+                    )
 
-                    await self._user_readback.put(current_position)
+                await self._user_readback.put(current_position)
 
-                    # 10hz update loop
-                    await asyncio.sleep(0.1)
+                # 10hz update loop
+                await asyncio.sleep(0.1)
 
         # set up a task that updates the motor position at ~10hz
-        self._move_status = AsyncStatus(asyncio.create_task(update_position()))
+        self._move_status = AsyncStatus(asyncio.wait_for(update_position(), timeout))
 
         return (
             WatcherUpdate(
