@@ -139,7 +139,7 @@ class AravisDriver(ADBase):
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self.trigger_mode = epics_signal_rw_rbv(
-            AravisTriggerMode, prefix + "TriggerMode"
+            AravisTriggerMode, prefix + "TriggerMode_RBV"
         )
         self.trigger_source = epics_signal_rw_rbv(str, prefix + "TriggerSource_RBV")
         self.model = epics_signal_r(str, prefix + "Model_RBV")

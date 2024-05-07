@@ -23,5 +23,7 @@ class KinetixDriver(ADBase):
         self.trigger_mode = epics_signal_rw_rbv(
             KinetixTriggerMode, prefix + "TriggerMode_RBV"
         )
-        self.mode = epics_signal_rw_rbv(KinetixReadoutMode, prefix + "ReadoutPortIdx_RBV")
+        self.mode = epics_signal_rw_rbv(
+            KinetixReadoutMode, prefix + "ReadoutPortIdx_RBV"
+        )
         super().__init__(prefix, name)

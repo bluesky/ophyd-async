@@ -50,7 +50,9 @@ class ADBase(NDArrayBase):
         self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter_RBV")
         self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
         self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
-        self.detector_state = epics_signal_r(DetectorState, prefix + "DetectorState_RBV")
+        self.detector_state = epics_signal_r(
+            DetectorState, prefix + "DetectorState_RBV"
+        )
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
         super().__init__(prefix, name=name)
