@@ -35,7 +35,7 @@ class NDFileHDF(NDPluginBase):
         self.swmr_mode = epics_signal_rw_rbv(bool, prefix + "SWMRMode_RBV")
         self.lazy_open = epics_signal_rw_rbv(bool, prefix + "LazyOpen_RBV")
         self.capture = epics_signal_rw_rbv(bool, prefix + "Capture_RBV")
-        self.flush_now = epics_signal_rw(bool, prefix + "FlushNow_RBV")
+        self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0_RBV")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1_RBV")
         self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName_RBV")
