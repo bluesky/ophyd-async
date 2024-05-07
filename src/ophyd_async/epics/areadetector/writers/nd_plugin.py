@@ -12,16 +12,16 @@ class Callback(str, Enum):
 
 class NDArrayBase(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.unique_id = epics_signal_r(int, prefix + "UniqueId")
-        self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile")
+        self.unique_id = epics_signal_r(int, prefix + "UniqueId_RBV")
+        self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile_RBV")
         super().__init__(name)
 
 
 class NDPluginBase(NDArrayBase):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
-        self.enable_callback = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks")
-        self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress")
+        self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort_RBV")
+        self.enable_callback = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks_RBV")
+        self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress_RBV")
         super().__init__(prefix, name)
 
 

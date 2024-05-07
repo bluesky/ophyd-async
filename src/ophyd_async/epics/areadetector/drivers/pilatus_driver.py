@@ -16,6 +16,6 @@ class PilatusTriggerMode(str, Enum):
 class PilatusDriver(ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.trigger_mode = epics_signal_rw_rbv(
-            PilatusTriggerMode, prefix + "TriggerMode"
+            PilatusTriggerMode, prefix + "TriggerMode_RBV"
         )
         super().__init__(prefix, name)

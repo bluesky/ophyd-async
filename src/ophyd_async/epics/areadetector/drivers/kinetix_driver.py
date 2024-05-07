@@ -21,7 +21,7 @@ class KinetixDriver(ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
         self.trigger_mode = epics_signal_rw_rbv(
-            KinetixTriggerMode, prefix + "TriggerMode"
+            KinetixTriggerMode, prefix + "TriggerMode_RBV"
         )
-        self.mode = epics_signal_rw_rbv(KinetixReadoutMode, prefix + "ReadoutPortIdx")
+        self.mode = epics_signal_rw_rbv(KinetixReadoutMode, prefix + "ReadoutPortIdx_RBV")
         super().__init__(prefix, name)

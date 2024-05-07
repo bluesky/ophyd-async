@@ -43,14 +43,14 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
 class ADBase(NDArrayBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         # Define some signals
-        self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire")
-        self.acquire_time = epics_signal_rw_rbv(float, prefix + "AcquireTime")
-        self.num_images = epics_signal_rw_rbv(int, prefix + "NumImages")
-        self.image_mode = epics_signal_rw_rbv(ImageMode, prefix + "ImageMode")
-        self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
-        self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX")
-        self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY")
-        self.detector_state = epics_signal_r(DetectorState, prefix + "DetectorState")
+        self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire_RBV")
+        self.acquire_time = epics_signal_rw_rbv(float, prefix + "AcquireTime_RBV")
+        self.num_images = epics_signal_rw_rbv(int, prefix + "NumImages_RBV")
+        self.image_mode = epics_signal_rw_rbv(ImageMode, prefix + "ImageMode_RBV")
+        self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter_RBV")
+        self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
+        self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
+        self.detector_state = epics_signal_r(DetectorState, prefix + "DetectorState_RBV")
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
         super().__init__(prefix, name=name)
