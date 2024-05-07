@@ -1,26 +1,27 @@
-from dataclasses import dataclass
 from pathlib import Path
 from typing import (
-    Any,
     AsyncGenerator,
     AsyncIterator,
     Dict,
     List,
     Optional,
-    Sequence,
 )
 
 import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
+<<<<<<< HEAD
 from bluesky.protocols import Descriptor, StreamAsset
 
 from ophyd_async.core import DirectoryInfo, DirectoryProvider
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
+=======
+
+>>>>>>> 86d7f978d (few more changes to merge _HDFFile classes)
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.signal import SignalR, observe_value
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
-from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
 # raw data path
 DATA_PATH = "/entry/data/data"
@@ -33,19 +34,8 @@ MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 
-@dataclass
-class DatasetConfig:
-    name: str
-    shape: Sequence[int]
-    maxshape: tuple[Any, ...] = (None,)
-    path: Optional[str] = None
-    multiplier: Optional[int] = 1
-    dtype: Optional[Any] = None
-    fillvalue: Optional[int] = None
-
-
 def get_full_file_description(
-    datasets: List[DatasetConfig], outer_shape: tuple[int, ...]
+    datasets: List[_HDFDataset], outer_shape: tuple[int, ...]
 ):
     full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
@@ -189,8 +179,8 @@ class PatternGenerator:
         new_path: Path = info.root / info.resource_dir / filename
         return new_path
 
-    def _get_datasets(self) -> List[DatasetConfig]:
-        raw_dataset = DatasetConfig(
+    def _get_datasets(self) -> List[_HDFDataset]:
+        raw_dataset = _HDFDataset(
             # name=data_name,
             name=DATA_PATH,
             dtype=np.uint8,
@@ -198,7 +188,7 @@ class PatternGenerator:
             maxshape=(None, self.height, self.width),
         )
 
-        sum_dataset = DatasetConfig(
+        sum_dataset = _HDFDataset(
             name=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
@@ -206,7 +196,7 @@ class PatternGenerator:
             fillvalue=-1,
         )
 
-        datasets: List[DatasetConfig] = [raw_dataset, sum_dataset]
+        datasets: List[_HDFDataset] = [raw_dataset, sum_dataset]
         return datasets
 
     async def collect_stream_docs(

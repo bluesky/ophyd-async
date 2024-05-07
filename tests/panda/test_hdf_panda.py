@@ -149,6 +149,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
             "multiplier": 1,
             "name": data_key_name,
             "path": f"BLOCK_{block_letter.upper()}-TEST-{data_key_name.split('-')[-1]}",
+            "shape": [1],
             "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
         }
 

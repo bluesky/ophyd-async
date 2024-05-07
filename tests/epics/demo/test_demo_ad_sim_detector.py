@@ -199,9 +199,9 @@ async def test_two_detectors_step(
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
     assert sra["root"] == str(info_a.root)
-    assert sra["resource_path"] == str(info_a.resource_dir / file_name_a)
+    assert sra["resource_path"] == str(info_a.root / file_name_a)
     assert srb["root"] == str(info_b.root)
-    assert srb["resource_path"] == str(info_b.resource_dir / file_name_b)
+    assert srb["resource_path"] == str(info_b.root / file_name_b)
     assert event["data"] == {}
 
 

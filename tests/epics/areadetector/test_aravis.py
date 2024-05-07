@@ -100,10 +100,17 @@ async def test_can_collect(
     adaravis: AravisDetector, static_directory_provider: DirectoryProvider
 ):
     directory_info = static_directory_provider()
+<<<<<<< HEAD
     full_file_name = directory_info.root / directory_info.resource_dir / "foo.h5"
     set_mock_value(adaravis.hdf.full_file_name, str(full_file_name))
     set_mock_value(adaravis._writer.hdf.file_path_exists, True)
     set_mock_value(adaravis._writer.hdf.capture, True)
+=======
+    full_file_name = "foo.h5"
+    set_sim_value(adaravis.hdf.full_file_name, str(full_file_name))
+    set_sim_value(adaravis._writer.hdf.file_path_exists, True)
+    set_sim_value(adaravis._writer.hdf.capture, True)
+>>>>>>> 86d7f978d (few more changes to merge _HDFFile classes)
     await adaravis.stage()
     docs = [(name, doc) async for name, doc in adaravis.collect_asset_docs(1)]
     assert len(docs) == 2
@@ -113,11 +120,12 @@ async def test_can_collect(
     assert stream_resource["data_key"] == "adaravis"
     assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
     assert stream_resource["root"] == str(directory_info.root)
-    assert stream_resource["resource_path"] == str(
-        directory_info.resource_dir / "foo.h5"
-    )
+    assert stream_resource["resource_path"] == str(directory_info.root / "foo.h5")
     assert stream_resource["path_semantics"] == "posix"
     assert stream_resource["resource_kwargs"] == {
+        "name": "adaravis",
+        "block": None,
+        "shape": (0, 0),
         "path": "/entry/data/data",
         "multiplier": 1,
         "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",

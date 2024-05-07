@@ -71,7 +71,12 @@ class HDFWriter(DetectorWriter):
         outer_shape = (multiplier,) if multiplier > 1 else ()
         # Add the main data
         self._datasets = [
-            _HDFDataset(name, "/entry/data/data", detector_shape, multiplier)
+            _HDFDataset(
+                name=name,
+                path="/entry/data/data",
+                shape=detector_shape,
+                multiplier=multiplier,
+            )
         ]
         # And all the scalar datasets
         for ds_name, ds_path in self._scalar_datasets_paths.items():
@@ -83,6 +88,7 @@ class HDFWriter(DetectorWriter):
                     multiplier,
                 )
             )
+
         describe = {
             ds.name: DataKey(
                 source=self.hdf.full_file_name.source,

@@ -18,7 +18,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.signal import observe_value
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
-from ophyd_async.panda.panda import PandA
 from ophyd_async.panda import CommonPandaBlocks
 
 
