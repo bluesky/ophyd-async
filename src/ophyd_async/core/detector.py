@@ -109,7 +109,7 @@ class DetectorWriter(ABC):
     (e.g. an HDF5 file)"""
 
     @abstractmethod
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:  # type: ignore
         """Open writer and wait for it to be ready for data.
 
         Args:
@@ -122,7 +122,7 @@ class DetectorWriter(ABC):
 
     @abstractmethod
     def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
+        self, timeout: float | str = DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         """Yield the index of each frame (or equivalent data point) as it is written"""
 
@@ -131,7 +131,7 @@ class DetectorWriter(ABC):
         """Get the number of indices written"""
 
     @abstractmethod
-    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
+    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:  # type: ignore
         """Create Stream docs up to given number written"""
 
     @abstractmethod
@@ -203,7 +203,7 @@ class StandardDetector(
     def writer(self) -> DetectorWriter:
         return self._writer
 
-    @AsyncStatus.wrap
+    @AsyncStatus.wrap  # type: ignore
     async def stage(self) -> None:
         # Disarm the detector, stop filewriting, and open file for writing.
         await self._check_config_sigs()
@@ -212,20 +212,21 @@ class StandardDetector(
 
     async def _check_config_sigs(self):
         """Checks configuration signals are named and connected."""
+        signal: AsyncReadable
         for signal in self._config_sigs:
             if signal.name == "":
                 raise Exception(
                     "config signal must be named before it is passed to the detector"
                 )
             try:
-                await signal.get_value()
+                await signal.get_value()  # type: ignore
             except NotImplementedError:
                 raise Exception(
-                    f"config signal {signal._name} must be connected before it is "
+                    f"config signal {signal._name} must be connected before it is "  # type: ignore
                     + "passed to the detector"
                 )
 
-    @AsyncStatus.wrap
+    @AsyncStatus.wrap  # type: ignore
     async def unstage(self) -> None:
         # Stop data writing.
         await self.writer.close()

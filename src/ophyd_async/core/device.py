@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from types import FrameType
 from typing import (
     Any,
     Coroutine,
@@ -15,13 +16,13 @@ from typing import (
     TypeVar,
 )
 
-from bluesky.protocols import HasName
-from bluesky.run_engine import call_in_bluesky_event_loop
+from bluesky.protocols import HasName  # type: ignore
+from bluesky.run_engine import call_in_bluesky_event_loop  # type: ignore
 
 from .utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
-class Device(HasName):
+class Device(HasName):  # type: ignore
     """Common base class for all Ophyd Async Devices.
 
     By default, names and connects all Device children.
@@ -127,9 +128,9 @@ class DeviceCollector:
 
     def __init__(
         self,
-        set_name=True,
-        connect=True,
-        sim=False,
+        set_name: bool = True,
+        connect: bool = True,
+        sim: bool = False,
         timeout: float = 10.0,
     ):
         self._set_name = set_name
@@ -146,9 +147,10 @@ class DeviceCollector:
         except ValueError:
             _, _, tb = sys.exc_info()
             assert tb, "Can't get traceback, this shouldn't happen"
-            caller_frame = tb.tb_frame
+            caller_frame: FrameType = tb.tb_frame
             while caller_frame.f_locals.get("self", None) is self:
-                caller_frame = caller_frame.f_back
+                if caller_frame.f_back is not None:
+                    caller_frame = caller_frame.f_back
             return caller_frame.f_locals
 
     def __enter__(self) -> "DeviceCollector":
@@ -161,7 +163,7 @@ class DeviceCollector:
 
     async def _on_exit(self) -> None:
         # Name and kick off connect for devices
-        connect_coroutines: Dict[str, Coroutine] = {}
+        connect_coroutines: Dict[str, Coroutine[Any, Any, Any]] = {}
         for name, obj in self._objects_on_exit.items():
             if name not in self._names_on_enter and isinstance(obj, Device):
                 if self._set_name and not obj.name:
@@ -175,18 +177,18 @@ class DeviceCollector:
         if connect_coroutines:
             await wait_for_connection(**connect_coroutines)
 
-    async def __aexit__(self, type, value, traceback):
+    async def __aexit__(self):
         self._objects_on_exit = self._caller_locals()
         await self._on_exit()
 
-    def __exit__(self, type_, value, traceback):
+    def __exit__(self) -> Any:
         self._objects_on_exit = self._caller_locals()
         try:
-            fut = call_in_bluesky_event_loop(self._on_exit())
+            fut = call_in_bluesky_event_loop(self._on_exit())  # type: ignore
         except RuntimeError:
             raise NotConnected(
                 "Could not connect devices. Is the bluesky event loop running? See "
                 "https://blueskyproject.io/ophyd-async/main/"
                 "user/explanations/event-loop-choice.html for more info."
             )
-        return fut
+        return fut  # type: ignore
