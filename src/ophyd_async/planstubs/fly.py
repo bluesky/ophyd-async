@@ -30,6 +30,8 @@ def fly(
     """
     deadtime = max(det.controller.get_deadtime(1) for det in detector_list)
 
+    # sort repeats and period
+
     # Set up scan and prepare trigger
     yield from bps.stage_all(*detector_list, flyer)
     yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
@@ -39,13 +41,15 @@ def fly(
         width=exposure,
         deadtime=deadtime,
         shutter_time=shutter_time,
+        repeats=repeats,
+        period=period,
     )
     yield from bps.open_run()
     yield from bps.declare_stream(*detector_list, name=stream_name, collect=True)
 
     # fly and collect
-    yield from bps.kickoff(flyer, *detector_list)
-    yield from bps.complete(flyer, *detector_list, group="complete")
+    yield from bps.kickoff_all(flyer, *detector_list)
+    yield from bps.complete_all(flyer, *detector_list, group="complete")
 
     done = False
     while not done:
