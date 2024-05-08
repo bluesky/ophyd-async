@@ -202,6 +202,7 @@ ca_dtype_mapping = {
         (float, "float", 3.141, 43.5, number_d),
         (str, "str", "hello", "goodbye", string_d),
         (MyEnum, "enum", MyEnum.b, MyEnum.c, enum_d),
+        (str, "enum", "Bbb", "Ccc", enum_d),
         (npt.NDArray[np.int8], "int8a", [-128, 127], [-8, 3, 44], waveform_d),
         (npt.NDArray[np.uint8], "uint8a", [0, 255], [218], waveform_d),
         (npt.NDArray[np.int16], "int16a", [-32768, 32767], [-855], waveform_d),
@@ -338,7 +339,7 @@ class EnumNoString(Enum):
         (str, "float", "has type float not str"),
         (str, "stra", "has type [str] not str"),
         (int, "uint8a", "has type [uint8] not int"),
-        (float, "enum", "has type Enum not float"),
+        (float, "enum", "is type Enum but doesn't inherit from String"),
         (npt.NDArray[np.int32], "float64a", "has type [float64] not [int32]"),
     ],
 )

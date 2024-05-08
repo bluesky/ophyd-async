@@ -4,7 +4,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from bluesky.protocols import DataKey, Dtype, Reading
 from p4p import Value
@@ -20,7 +20,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import get_supported_enum_class
+from .common import get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -109,7 +109,7 @@ class PvaNDArrayConverter(PvaConverter):
 
 @dataclass
 class PvaEnumConverter(PvaConverter):
-    enum_class: Type[Enum]
+    choices: Tuple[Any, ...]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -118,11 +118,15 @@ class PvaEnumConverter(PvaConverter):
             return value
 
     def value(self, value):
-        return list(self.enum_class)[value["value"]["index"]]
+        return self.choices[value["value"]["index"]]
 
     def get_datakey(self, source: str, value) -> DataKey:
-        choices = [e.value for e in self.enum_class]
-        return {"source": source, "dtype": "string", "shape": [], "choices": choices}
+        return {
+            "source": source,
+            "dtype": "string",
+            "shape": [],
+            "choices": list(self.choices),
+        }
 
 
 class PvaEnumBoolConverter(PvaConverter):
@@ -214,7 +218,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        return PvaEnumConverter(get_supported_enum_class(pv, datatype, pv_choices))
+        return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
         if (
             datatype
