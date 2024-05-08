@@ -36,11 +36,11 @@ There are some renames that will be required, e.g. `HardwareTriggeredFlyable` ->
 
 Epics modules consist of 2 sorts of classes:
 - `IO` classes, which are `Device` subclasses containing `Signals` that map as closely as possible to the EPICS template hierarchy. Their name matches the EPICS template with the suffix `IO`.
-- `Control` and `Writer` classes that plug into `StandardDetector` and `StandardFlyer` telling them which logic to use during various bluesky verbs
+- `Control` and `Writer` classes that plug into `StandardDetector` and `StandardFlyer` telling them which logic to use during various bluesky verbs.
 
 There should be an additional level of packages that correspond to the epics support module, and contain classes that map to the EPICS database and logic classes e.g.:
 
-- `epics.signal``: containing `epics_signal_rw`, `EpicsTransport`, `CaSignalBackend`, etc.
+- `epics.signal`: containing `epics_signal_rw`, `EpicsTransport`, `CaSignalBackend`, etc.
 - `epics.adcore`: containing `ADDriverIO`, `NDFileHdfIO`, `ADHdfWriter` etc. 
 - `epics.adpilatus`: containing `ADPilatusIO`, `PilatusControl` etc.
 
@@ -74,8 +74,8 @@ There will be some planstubs for shared setup that may reach across modules like
 ### sim
 
 There will be 2 subpackages:
-- `sim.demo` for demo devices like `PatternDetector` used in tutorials
-- `sim.testing` for devices that will support tests in `ophyd-async` and `bluesky`
+- `sim.demo` for demo devices like `PatternDetector` used in tutorials.
+- `sim.testing` for devices that will support tests in `ophyd-async` and `bluesky`.
 
 ## Consequences
 
