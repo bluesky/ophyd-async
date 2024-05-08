@@ -49,6 +49,7 @@ ophyd\_async.epics.areadetector.VimbaDetector
    
       ~VimbaDetector.controller
       ~VimbaDetector.hints
+      ~VimbaDetector.log
       ~VimbaDetector.name
       ~VimbaDetector.parent
       ~VimbaDetector.writer

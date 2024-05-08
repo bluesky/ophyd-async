@@ -45,6 +45,7 @@ ophyd\_async.core.DeviceVector
 
    .. autosummary::
    
+      ~DeviceVector.log
       ~DeviceVector.name
       ~DeviceVector.parent
    

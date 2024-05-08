@@ -48,6 +48,7 @@ ophyd\_async.panda.HDFPanda
    .. autosummary::
    
       ~HDFPanda.controller
+      ~HDFPanda.log
       ~HDFPanda.name
       ~HDFPanda.parent
       ~HDFPanda.writer

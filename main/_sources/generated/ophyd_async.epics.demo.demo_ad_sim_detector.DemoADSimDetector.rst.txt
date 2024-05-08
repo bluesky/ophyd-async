@@ -48,6 +48,7 @@ ophyd\_async.epics.demo.demo\_ad\_sim\_detector.DemoADSimDetector
    .. autosummary::
    
       ~DemoADSimDetector.controller
+      ~DemoADSimDetector.log
       ~DemoADSimDetector.name
       ~DemoADSimDetector.parent
       ~DemoADSimDetector.writer

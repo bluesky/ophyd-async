@@ -44,6 +44,7 @@ ophyd\_async.epics.demo.Sensor
    .. autosummary::
    
       ~Sensor.hints
+      ~Sensor.log
       ~Sensor.name
       ~Sensor.parent
    

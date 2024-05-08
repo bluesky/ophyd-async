@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.SignalW &#8212; ophyd-async 0.3a4.dev1+gf6f9cc0 documentation</title>
+    <title>ophyd_async.core.SignalW &#8212; ophyd-async 0.3a4.dev2+g426b420 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=f95459a5"></script>
+    <script src="../_static/documentation_options.js?v=bddba33c"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -630,7 +630,7 @@ may change API on minor release numbers before then</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.SignalW">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">SignalW</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend" title="ophyd_async.core.signal_backend.SignalBackend"><span class="pre">SignalBackend</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/signal.html#SignalW"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalW" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.Signal.html#ophyd_async.core.Signal" title="ophyd_async.core.signal.Signal"><code class="xref py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code>], <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a4.dev78+gadd624e1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Movable</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.Signal.html#ophyd_async.core.Signal" title="ophyd_async.core.signal.Signal"><code class="xref py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code>], <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a4.dev175+gbc8222be)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Movable</span></code></a></p>
 <p>Signal that can be set</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
@@ -652,13 +652,16 @@ may change API on minor release numbers before then</p>
 <p class="rubric">Attributes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalW.name" title="ophyd_async.core.SignalW.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalW.log" title="ophyd_async.core.SignalW.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalW.name" title="ophyd_async.core.SignalW.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
 <td><p>Return the name of the Device</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalW.parent" title="ophyd_async.core.SignalW.parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parent</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalW.parent" title="ophyd_async.core.SignalW.parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parent</span></code></a></p></td>
 <td><p>The parent Device if it exists</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalW.source" title="ophyd_async.core.SignalW.source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalW.source" title="ophyd_async.core.SignalW.source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source</span></code></a></p></td>
 <td><p>//PV_PREFIX:SIGNAL, or &quot;&quot; if not set</p></td>
 </tr>
 </tbody>
@@ -677,6 +680,11 @@ may change API on minor release numbers before then</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.SignalW.connect">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.SignalW.connect" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ophyd_async.core.SignalW.log">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#ophyd_async.core.SignalW.log" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -767,6 +775,7 @@ may change API on minor release numbers before then</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalW.set"><code class="docutils literal notranslate"><span class="pre">SignalW.set()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalW.children"><code class="docutils literal notranslate"><span class="pre">SignalW.children()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalW.connect"><code class="docutils literal notranslate"><span class="pre">SignalW.connect()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalW.log"><code class="docutils literal notranslate"><span class="pre">SignalW.log</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalW.name"><code class="docutils literal notranslate"><span class="pre">SignalW.name</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalW.parent"><code class="docutils literal notranslate"><span class="pre">SignalW.parent</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalW.set_name"><code class="docutils literal notranslate"><span class="pre">SignalW.set_name()</span></code></a></li>

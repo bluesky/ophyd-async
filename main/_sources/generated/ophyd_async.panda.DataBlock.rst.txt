@@ -34,6 +34,7 @@ ophyd\_async.panda.DataBlock
 
    .. autosummary::
    
+      ~DataBlock.log
       ~DataBlock.name
       ~DataBlock.parent
       ~DataBlock.hdf_directory

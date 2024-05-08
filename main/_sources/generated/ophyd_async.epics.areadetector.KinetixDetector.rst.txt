@@ -49,6 +49,7 @@ ophyd\_async.epics.areadetector.KinetixDetector
    
       ~KinetixDetector.controller
       ~KinetixDetector.hints
+      ~KinetixDetector.log
       ~KinetixDetector.name
       ~KinetixDetector.parent
       ~KinetixDetector.writer

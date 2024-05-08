@@ -42,6 +42,7 @@ ophyd\_async.core.SignalR
 
    .. autosummary::
    
+      ~SignalR.log
       ~SignalR.name
       ~SignalR.parent
       ~SignalR.source

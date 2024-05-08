@@ -34,6 +34,7 @@ ophyd\_async.panda.PulseBlock
 
    .. autosummary::
    
+      ~PulseBlock.log
       ~PulseBlock.name
       ~PulseBlock.parent
       ~PulseBlock.delay

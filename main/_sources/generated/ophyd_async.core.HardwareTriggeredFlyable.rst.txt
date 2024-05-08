@@ -41,6 +41,7 @@ ophyd\_async.core.HardwareTriggeredFlyable
 
    .. autosummary::
    
+      ~HardwareTriggeredFlyable.log
       ~HardwareTriggeredFlyable.name
       ~HardwareTriggeredFlyable.parent
       ~HardwareTriggeredFlyable.trigger_logic

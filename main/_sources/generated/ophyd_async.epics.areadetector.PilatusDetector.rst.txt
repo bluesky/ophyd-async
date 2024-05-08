@@ -49,6 +49,7 @@ ophyd\_async.epics.areadetector.PilatusDetector
    
       ~PilatusDetector.controller
       ~PilatusDetector.hints
+      ~PilatusDetector.log
       ~PilatusDetector.name
       ~PilatusDetector.parent
       ~PilatusDetector.writer

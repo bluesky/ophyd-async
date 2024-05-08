@@ -45,6 +45,7 @@ ophyd\_async.epics.areadetector.SingleTriggerDet
    .. autosummary::
    
       ~SingleTriggerDet.hints
+      ~SingleTriggerDet.log
       ~SingleTriggerDet.name
       ~SingleTriggerDet.parent
    

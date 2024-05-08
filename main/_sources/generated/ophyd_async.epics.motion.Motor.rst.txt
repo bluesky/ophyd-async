@@ -47,6 +47,7 @@ ophyd\_async.epics.motion.Motor
    .. autosummary::
    
       ~Motor.hints
+      ~Motor.log
       ~Motor.name
       ~Motor.parent
    

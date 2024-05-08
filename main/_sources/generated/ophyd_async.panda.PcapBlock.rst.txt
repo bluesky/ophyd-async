@@ -34,6 +34,7 @@ ophyd\_async.panda.PcapBlock
 
    .. autosummary::
    
+      ~PcapBlock.log
       ~PcapBlock.name
       ~PcapBlock.parent
       ~PcapBlock.active

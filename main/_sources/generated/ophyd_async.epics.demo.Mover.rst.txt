@@ -47,6 +47,7 @@ ophyd\_async.epics.demo.Mover
    .. autosummary::
    
       ~Mover.hints
+      ~Mover.log
       ~Mover.name
       ~Mover.parent
    

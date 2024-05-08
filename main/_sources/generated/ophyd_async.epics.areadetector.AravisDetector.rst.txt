@@ -51,6 +51,7 @@ ophyd\_async.epics.areadetector.AravisDetector
    
       ~AravisDetector.controller
       ~AravisDetector.hints
+      ~AravisDetector.log
       ~AravisDetector.name
       ~AravisDetector.parent
       ~AravisDetector.writer

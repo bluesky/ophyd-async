@@ -34,6 +34,7 @@ ophyd\_async.epics.demo.SampleStage
 
    .. autosummary::
    
+      ~SampleStage.log
       ~SampleStage.name
       ~SampleStage.parent
    

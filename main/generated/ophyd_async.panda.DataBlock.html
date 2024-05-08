@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.panda.DataBlock &#8212; ophyd-async 0.3a4.dev1+gf6f9cc0 documentation</title>
+    <title>ophyd_async.panda.DataBlock &#8212; ophyd-async 0.3a4.dev2+g426b420 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=f95459a5"></script>
+    <script src="../_static/documentation_options.js?v=bddba33c"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -648,28 +648,31 @@ may change API on minor release numbers before then</p>
 <p class="rubric">Attributes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.name" title="ophyd_async.panda.DataBlock.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.log" title="ophyd_async.panda.DataBlock.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.name" title="ophyd_async.panda.DataBlock.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
 <td><p>Return the name of the Device</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.parent" title="ophyd_async.panda.DataBlock.parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parent</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.parent" title="ophyd_async.panda.DataBlock.parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parent</span></code></a></p></td>
 <td><p>The parent Device if it exists</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.hdf_directory" title="ophyd_async.panda.DataBlock.hdf_directory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hdf_directory</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.hdf_directory" title="ophyd_async.panda.DataBlock.hdf_directory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hdf_directory</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.hdf_file_name" title="ophyd_async.panda.DataBlock.hdf_file_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hdf_file_name</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.hdf_file_name" title="ophyd_async.panda.DataBlock.hdf_file_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hdf_file_name</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.num_capture" title="ophyd_async.panda.DataBlock.num_capture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_capture</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.num_capture" title="ophyd_async.panda.DataBlock.num_capture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_capture</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.num_captured" title="ophyd_async.panda.DataBlock.num_captured"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_captured</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.num_captured" title="ophyd_async.panda.DataBlock.num_captured"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_captured</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.capture" title="ophyd_async.panda.DataBlock.capture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">capture</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.capture" title="ophyd_async.panda.DataBlock.capture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">capture</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.flush_period" title="ophyd_async.panda.DataBlock.flush_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flush_period</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.panda.DataBlock.flush_period" title="ophyd_async.panda.DataBlock.flush_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flush_period</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -723,6 +726,11 @@ may change API on minor release numbers before then</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ophyd_async.panda.DataBlock.log">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#ophyd_async.panda.DataBlock.log" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ophyd_async.panda.DataBlock.name">
@@ -806,6 +814,7 @@ may change API on minor release numbers before then</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.DataBlock.flush_period"><code class="docutils literal notranslate"><span class="pre">DataBlock.flush_period</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.DataBlock.children"><code class="docutils literal notranslate"><span class="pre">DataBlock.children()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.DataBlock.connect"><code class="docutils literal notranslate"><span class="pre">DataBlock.connect()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.DataBlock.log"><code class="docutils literal notranslate"><span class="pre">DataBlock.log</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.DataBlock.name"><code class="docutils literal notranslate"><span class="pre">DataBlock.name</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.DataBlock.parent"><code class="docutils literal notranslate"><span class="pre">DataBlock.parent</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.DataBlock.set_name"><code class="docutils literal notranslate"><span class="pre">DataBlock.set_name()</span></code></a></li>

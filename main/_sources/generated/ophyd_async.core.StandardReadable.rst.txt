@@ -44,6 +44,7 @@ ophyd\_async.core.StandardReadable
    .. autosummary::
    
       ~StandardReadable.hints
+      ~StandardReadable.log
       ~StandardReadable.name
       ~StandardReadable.parent
    

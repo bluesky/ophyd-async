@@ -44,6 +44,7 @@ ophyd\_async.core.SignalRW
 
    .. autosummary::
    
+      ~SignalRW.log
       ~SignalRW.name
       ~SignalRW.parent
       ~SignalRW.source

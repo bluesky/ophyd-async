@@ -44,6 +44,7 @@ ophyd\_async.epics.demo.SensorGroup
    .. autosummary::
    
       ~SensorGroup.hints
+      ~SensorGroup.log
       ~SensorGroup.name
       ~SensorGroup.parent
    
