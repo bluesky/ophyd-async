@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Generic, Optional, Type
 
-from bluesky.protocols import Descriptor, Reading
+from bluesky.protocols import DataKey, Reading
 
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
@@ -13,7 +13,10 @@ class SignalBackend(Generic[T]):
     datatype: Optional[Type[T]] = None
 
     #: Like ca://PV_PREFIX:SIGNAL
-    source: str = ""
+    @abstractmethod
+    def source(name: str) -> str:
+        """Return source of signal. Signals may pass a name to the backend, which can be
+        used or discarded."""
 
     @abstractmethod
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
@@ -24,7 +27,7 @@ class SignalBackend(Generic[T]):
         """Put a value to the PV, if wait then wait for completion for up to timeout"""
 
     @abstractmethod
-    async def get_descriptor(self) -> Descriptor:
+    async def get_datakey(self, source: str) -> DataKey:
         """Metadata like source, dtype, shape, precision, units"""
 
     @abstractmethod

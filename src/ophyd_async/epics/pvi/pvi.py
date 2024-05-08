@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from inspect import isclass
 from typing import (
     Any,
     Callable,
@@ -56,13 +57,14 @@ def _split_subscript(tp: T) -> Union[Tuple[Any, Tuple[Any]], Tuple[T, None]]:
     return tp, None
 
 
-def _strip_union(field: Union[Union[T], T]) -> T:
+def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
     if get_origin(field) is Union:
         args = get_args(field)
+        is_optional = type(None) in args
         for arg in args:
             if arg is not type(None):
-                return arg
-    return field
+                return arg, is_optional
+    return field, False
 
 
 def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]]:
@@ -92,9 +94,10 @@ def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
         if sub_name in ("_name", "parent"):
             continue
         assert entry.sub_entries
-        if sub_name not in entry.sub_entries and get_origin(sub_device) is not Optional:
+        device_t, is_optional = _strip_union(sub_device)
+        if sub_name not in entry.sub_entries and not is_optional:
             raise RuntimeError(
-                f"sub device `{sub_name}:{type(sub_device)}` was not provided by pvi"
+                f"sub device `{sub_name}:{type(sub_device)}` " "was not provided by pvi"
             )
         if isinstance(entry.sub_entries[sub_name], dict):
             for sub_sub_entry in entry.sub_entries[sub_name].values():  # type: ignore
@@ -128,7 +131,7 @@ def _parse_type(
 ):
     if common_device_type:
         # pre-defined type
-        device_cls = _strip_union(common_device_type)
+        device_cls, _ = _strip_union(common_device_type)
         is_device_vector, device_cls = _strip_device_vector(device_cls)
         device_cls, device_args = _split_subscript(device_cls)
         assert issubclass(device_cls, Device)
@@ -162,7 +165,7 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
     )
 
     for device_name, device_cls in sub_devices:
-        device_cls = _strip_union(device_cls)
+        device_cls, _ = _strip_union(device_cls)
         is_device_vector, device_cls = _strip_device_vector(device_cls)
         device_cls, device_args = _split_subscript(device_cls)
         assert issubclass(device_cls, Device)
@@ -172,8 +175,8 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
 
         if is_device_vector:
             if is_signal:
-                sub_device_1 = device_cls(SimSignalBackend(signal_dtype, device_name))
-                sub_device_2 = device_cls(SimSignalBackend(signal_dtype, device_name))
+                sub_device_1 = device_cls(SimSignalBackend(signal_dtype))
+                sub_device_2 = device_cls(SimSignalBackend(signal_dtype))
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
             else:
                 sub_device = DeviceVector({1: device_cls(), 2: device_cls()})
@@ -185,10 +188,9 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
                 value.parent = sub_device
         else:
             if is_signal:
-                sub_device = device_cls(SimSignalBackend(signal_dtype, device_name))
+                sub_device = device_cls(SimSignalBackend(signal_dtype))
             else:
-                sub_device = device_cls()
-
+                sub_device = getattr(device, device_name, device_cls())
                 _sim_common_blocks(sub_device, stripped_type=device_cls)
 
         setattr(device, device_name, sub_device)
@@ -223,7 +225,7 @@ async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
         if is_signal:
             device = _pvi_mapping[frozenset(pva_entries.keys())](signal_dtype, *pvs)
         else:
-            device = device_type()
+            device = getattr(entry.device, sub_name, device_type())
 
         sub_entry = PVIEntry(
             device=device, common_device_type=device_type, sub_entries={}
@@ -291,3 +293,26 @@ async def fill_pvi_entries(
     # We call set name now the parent field has been set in all of the
     # introspect-initialized devices. This will recursively set the names.
     device.set_name(device.name)
+
+
+def create_children_from_annotations(
+    device: Device, included_optional_fields: Tuple[str, ...] = ()
+):
+    """For intializing blocks at __init__ of ``device``."""
+    for name, device_type in get_type_hints(type(device)).items():
+        if name in ("_name", "parent"):
+            continue
+        device_type, is_optional = _strip_union(device_type)
+        if is_optional and name not in included_optional_fields:
+            continue
+        is_device_vector, device_type = _strip_device_vector(device_type)
+        if (
+            is_device_vector
+            or ((origin := get_origin(device_type)) and issubclass(origin, Signal))
+            or (isclass(device_type) and issubclass(device_type, Signal))
+        ):
+            continue
+
+        sub_device = device_type()
+        setattr(device, name, sub_device)
+        create_children_from_annotations(sub_device)

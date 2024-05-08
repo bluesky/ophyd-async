@@ -5,8 +5,8 @@ import bluesky.plan_stubs as bps
 from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
-from ophyd_async.panda.table import SeqTable, SeqTableRow, seq_table_from_rows
-from ophyd_async.panda.trigger import SeqTableInfo
+from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
+from ophyd_async.panda._trigger import SeqTableInfo
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(

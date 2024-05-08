@@ -13,7 +13,7 @@ from typing import (
 
 import h5py
 import numpy as np
-from bluesky.protocols import Descriptor, StreamAsset
+from bluesky.protocols import DataKey, StreamAsset
 from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
@@ -52,12 +52,12 @@ class DatasetConfig:
 def get_full_file_description(
     datasets: List[DatasetConfig], outer_shape: tuple[int, ...]
 ):
-    full_file_description: Dict[str, Descriptor] = {}
+    full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
-        source = f"sim://{d.name}"
+        source = f"soft://{d.name}"
         shape = outer_shape + tuple(d.shape)
         dtype = "number" if d.shape == [1] else "array"
-        descriptor = Descriptor(
+        descriptor = DataKey(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
         )
         key = d.name.replace("/", "_")
@@ -158,7 +158,7 @@ class PatternGenerator:
         self.written_images_counter: int = 0
 
         # it automatically initializes to 0
-        self.signal_backend = SimSignalBackend(int, "sim://sim_images_counter")
+        self.signal_backend = SimSignalBackend(int)
         self.sim_signal = SignalR(self.signal_backend)
         blob = np.array(
             generate_gaussian_blob(width=detector_width, height=detector_height)
@@ -219,7 +219,7 @@ class PatternGenerator:
 
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
-    ) -> Dict[str, Descriptor]:
+    ) -> Dict[str, DataKey]:
         await self.sim_signal.connect()
 
         self.target_path = self._get_new_path(directory)

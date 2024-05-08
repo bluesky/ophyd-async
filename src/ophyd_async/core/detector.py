@@ -19,11 +19,9 @@ from typing import (
 
 from bluesky.protocols import (
     Collectable,
-    Configurable,
-    Descriptor,
+    DataKey,
     Flyable,
     Preparable,
-    Readable,
     Reading,
     Stageable,
     StreamAsset,
@@ -31,9 +29,10 @@ from bluesky.protocols import (
     WritesStreamAssets,
 )
 
+from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
+
 from .async_status import AsyncStatus
 from .device import Device
-from .signal import SignalR
 from .utils import DEFAULT_TIMEOUT, merge_gathered_dicts
 
 T = TypeVar("T")
@@ -110,7 +109,7 @@ class DetectorWriter(ABC):
     (e.g. an HDF5 file)"""
 
     @abstractmethod
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
         Args:
@@ -143,8 +142,8 @@ class DetectorWriter(ABC):
 class StandardDetector(
     Device,
     Stageable,
-    Configurable,
-    Readable,
+    AsyncConfigurable,
+    AsyncReadable,
     Triggerable,
     Preparable,
     Flyable,
@@ -161,7 +160,7 @@ class StandardDetector(
         self,
         controller: DetectorControl,
         writer: DetectorWriter,
-        config_sigs: Sequence[SignalR] = (),
+        config_sigs: Sequence[AsyncReadable] = (),
         name: str = "",
         writer_timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
@@ -181,7 +180,7 @@ class StandardDetector(
         """
         self._controller = controller
         self._writer = writer
-        self._describe: Dict[str, Descriptor] = {}
+        self._describe: Dict[str, DataKey] = {}
         self._config_sigs = list(config_sigs)
         self._frame_writing_timeout = writer_timeout
         # For prepare
@@ -214,7 +213,7 @@ class StandardDetector(
     async def _check_config_sigs(self):
         """Checks configuration signals are named and connected."""
         for signal in self._config_sigs:
-            if signal._name == "":
+            if signal.name == "":
                 raise Exception(
                     "config signal must be named before it is passed to the detector"
                 )
@@ -234,14 +233,14 @@ class StandardDetector(
     async def read_configuration(self) -> Dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
     async def read(self) -> Dict[str, Reading]:
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         return self._describe
 
     @AsyncStatus.wrap
@@ -330,7 +329,7 @@ class StandardDetector(
         assert self._fly_status, "Kickoff not run"
         return await self._fly_status
 
-    async def describe_collect(self) -> Dict[str, Descriptor]:
+    async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe
 
     async def collect_asset_docs(

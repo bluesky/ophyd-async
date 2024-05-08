@@ -2,18 +2,29 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import AsyncGenerator, Callable, Dict, Generic, Optional, Union
+from typing import (
+    Any,
+    AsyncGenerator,
+    Callable,
+    Dict,
+    Generic,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 from bluesky.protocols import (
-    Descriptor,
+    DataKey,
     Locatable,
     Location,
     Movable,
-    Readable,
     Reading,
-    Stageable,
     Subscribable,
 )
+
+from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -48,17 +59,11 @@ class Signal(Device, Generic[T]):
         self,
         backend: Optional[SignalBackend[T]] = None,
         timeout: Optional[float] = DEFAULT_TIMEOUT,
+        name: str = "",
     ) -> None:
-        self._name = ""
         self._timeout = timeout
         self._init_backend = self._backend = backend
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str = ""):
-        self._name = name
+        super().__init__(name)
 
     async def connect(
         self,
@@ -73,19 +78,18 @@ class Signal(Device, Generic[T]):
                 )
             self._init_backend = backend
         if sim:
-            self._backend = SimSignalBackend(
-                datatype=self._init_backend.datatype, source=self._init_backend.source
-            )
+            self._backend = SimSignalBackend(datatype=self._init_backend.datatype)
             _sim_backends[self] = self._backend
         else:
             self._backend = self._init_backend
             _sim_backends.pop(self, None)
+        self.log.debug(f"Connecting to {self.source}")
         await self._backend.connect(timeout=timeout)
 
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
-        return self._backend.source
+        return self._backend.source(self.name)
 
     __lt__ = __le__ = __eq__ = __ge__ = __gt__ = __ne__ = _fail
 
@@ -104,10 +108,12 @@ class _SignalCache(Generic[T]):
         self._value: Optional[T] = None
 
         self.backend = backend
+        signal.log.debug(f"Making subscription on source {signal.source}")
         backend.set_callback(self._callback)
 
     def close(self):
         self.backend.set_callback(None)
+        self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
     async def get_reading(self) -> Reading:
         await self._valid.wait()
@@ -120,6 +126,10 @@ class _SignalCache(Generic[T]):
         return self._value
 
     def _callback(self, reading: Reading, value: T):
+        self._signal.log.debug(
+            f"Updated subscription: reading of source {self._signal.source} changed"
+            f"from {self._reading} to {reading}"
+        )
         self._reading = reading
         self._value = value
         self._valid.set()
@@ -146,7 +156,7 @@ class _SignalCache(Generic[T]):
         return self._staged or bool(self._listeners)
 
 
-class SignalR(Signal[T], Readable, Stageable, Subscribable):
+class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
     """Signal that can be read from and monitored"""
 
     _cache: Optional[_SignalCache] = None
@@ -179,14 +189,16 @@ class SignalR(Signal[T], Readable, Stageable, Subscribable):
         return {self.name: await self._backend_or_cache(cached).get_reading()}
 
     @_add_timeout
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._backend.get_descriptor()}
+        return {self.name: await self._backend.get_datakey(self.source)}
 
     @_add_timeout
     async def get_value(self, cached: Optional[bool] = None) -> T:
         """The current value"""
-        return await self._backend_or_cache(cached).get_value()
+        value = await self._backend_or_cache(cached).get_value()
+        self.log.debug(f"get_value() on source {self.source} returned {value}")
+        return value
 
     def subscribe_value(self, function: Callback[T]):
         """Subscribe to updates in value of a device"""
@@ -221,8 +233,15 @@ class SignalW(Signal[T], Movable):
         """Set the value and return a status saying when it's done"""
         if timeout is USE_DEFAULT_TIMEOUT:
             timeout = self._timeout
-        coro = self._backend.put(value, wait=wait, timeout=timeout)
-        return AsyncStatus(coro)
+
+        async def do_set():
+            self.log.debug(f"Putting value {value} to backend at source {self.source}")
+            await self._backend.put(value, wait=wait, timeout=timeout)
+            self.log.debug(
+                f"Successfully put value {value} to backend at source {self.source}"
+            )
+
+        return AsyncStatus(do_set())
 
 
 class SignalRW(SignalR[T], SignalW[T], Locatable):
@@ -264,6 +283,115 @@ def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
 def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
     """Monitor the value of a signal that is in sim mode"""
     return _sim_backends[signal].set_callback(callback)
+
+
+def soft_signal_rw(
+    datatype: Optional[Type[T]] = None,
+    initial_value: Optional[T] = None,
+    name: str = "",
+) -> SignalRW[T]:
+    """Creates a read-writable Signal with a SimSignalBackend"""
+    signal = SignalRW(SimSignalBackend(datatype, initial_value), name=name)
+    return signal
+
+
+def soft_signal_r_and_backend(
+    datatype: Optional[Type[T]] = None,
+    initial_value: Optional[T] = None,
+    name: str = "",
+) -> Tuple[SignalR[T], SimSignalBackend]:
+    """Returns a tuple of a read-only Signal and its SimSignalBackend through
+    which the signal can be internally modified within the device. Use
+    soft_signal_rw if you want a device that is externally modifiable
+    """
+    backend = SimSignalBackend(datatype, initial_value)
+    signal = SignalR(backend, name=name)
+    return (signal, backend)
+
+
+async def assert_value(signal: SignalR[T], value: Any) -> None:
+    """Assert a signal's value and compare it an expected signal.
+
+    Parameters
+    ----------
+    signal:
+        signal with get_value.
+    value:
+        The expected value from the signal.
+
+    Notes
+    -----
+    Example usage::
+        await assert_value(signal, value)
+
+    """
+    assert await signal.get_value() == value
+
+
+async def assert_reading(
+    readable: AsyncReadable, reading: Mapping[str, Reading]
+) -> None:
+    """Assert readings from readable.
+
+    Parameters
+    ----------
+    readable:
+        Callable with readable.read function that generate readings.
+
+    reading:
+        The expected readings from the readable.
+
+    Notes
+    -----
+    Example usage::
+        await assert_reading(readable, reading)
+
+    """
+    assert await readable.read() == reading
+
+
+async def assert_configuration(
+    configurable: AsyncConfigurable,
+    configuration: Mapping[str, Reading],
+) -> None:
+    """Assert readings from Configurable.
+
+    Parameters
+    ----------
+    configurable:
+        Configurable with Configurable.read function that generate readings.
+
+    configuration:
+        The expected readings from configurable.
+
+    Notes
+    -----
+    Example usage::
+        await assert_configuration(configurable configuration)
+
+    """
+    assert await configurable.read_configuration() == configuration
+
+
+def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
+    """Assert emitted document generated by running a Bluesky plan
+
+    Parameters
+    ----------
+    Doc:
+        A dictionary
+
+    numbers:
+        expected emission in kwarg from
+
+    Notes
+    -----
+    Example usage::
+        assert_emitted(docs, start=1, descriptor=1,
+        resource=1, datum=1, event=1, stop=1)
+    """
+    assert list(docs) == list(numbers)
+    assert {name: len(d) for name, d in docs.items()} == numbers
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:

@@ -32,6 +32,8 @@ else:
     version = release
 
 extensions = [
+    # for diagrams
+    "sphinxcontrib.mermaid",
     # Use this for generating API docs
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
@@ -56,6 +58,9 @@ extensions = [
     "myst_parser",
     "numpydoc",
 ]
+
+# So we can use the ::: syntax
+myst_enable_extensions = ["colon_fence"]
 
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
@@ -152,7 +157,7 @@ copybutton_prompt_is_regexp = True
 html_theme = "pydata_sphinx_theme"
 github_repo = "ophyd-async"
 github_user = "bluesky"
-switcher_json = f"https://{github_user}.github.io/{github_repo}/switcher.json"
+switcher_json = "https://blueskyproject.io/ophyd-async/switcher.json"
 switcher_exists = requests.get(switcher_json).ok
 if not switcher_exists:
     print(
@@ -184,11 +189,6 @@ html_theme_options = {
             "url": f"https://pypi.org/project/{project}",
             "icon": "fas fa-cube",
         },
-        {
-            "name": "Gitter",
-            "url": "https://gitter.im/NSLS-II/DAMA",
-            "icon": "fas fa-person-circle-question",
-        },
     ],
     "switcher": {
         "json_url": switcher_json,
@@ -200,10 +200,6 @@ html_theme_options = {
         {
             "name": "Bluesky Project",
             "url": "https://blueskyproject.io",
-        },
-        {
-            "name": "Release Notes",
-            "url": f"https://github.com/{github_user}/{github_repo}/releases",
         },
     ],
     "navigation_with_keys": False,

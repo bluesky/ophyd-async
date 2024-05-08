@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Generic, Sequence, TypeVar
 
-from bluesky.protocols import Descriptor, Flyable, Preparable, Reading, Stageable
+from bluesky.protocols import DataKey, Flyable, Preparable, Reading, Stageable
 
 from .async_status import AsyncStatus
 from .device import Device
@@ -74,7 +74,7 @@ class HardwareTriggeredFlyable(
     async def complete(self) -> None:
         await self._trigger_logic.complete()
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(
             [sig.describe() for sig in self._configuration_signals]
         )

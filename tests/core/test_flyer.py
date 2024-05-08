@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky.protocols import Descriptor, StreamAsset
+from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
@@ -51,17 +51,17 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int, source="test"))
+        self.dummy_signal = SignalRW(backend=SimSignalBackend(int))
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
         self._last_emitted = 0
         self.index = 0
 
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         return {
-            self._name: Descriptor(
-                source="sim://some-source",
+            self._name: DataKey(
+                source="soft://some-source",
                 shape=self._shape,
                 dtype="number",
                 external="STREAM:",

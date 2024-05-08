@@ -8,65 +8,25 @@ from ophyd_async.core import (
     TriggerInfo,
     set_sim_value,
 )
-from ophyd_async.epics.areadetector.controllers.pilatus_controller import (
-    PilatusController,
-)
-from ophyd_async.epics.areadetector.drivers.pilatus_driver import (
-    PilatusDriver,
-    PilatusTriggerMode,
-)
+from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusTriggerMode
 from ophyd_async.epics.areadetector.pilatus import PilatusDetector
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
-
-
-@pytest.fixture
-async def pilatus_driver(RE: RunEngine) -> PilatusDriver:
-    async with DeviceCollector(sim=True):
-        driver = PilatusDriver("DRV:")
-
-    return driver
-
-
-@pytest.fixture
-async def pilatus_controller(
-    RE: RunEngine, pilatus_driver: PilatusDriver
-) -> PilatusController:
-    async with DeviceCollector(sim=True):
-        controller = PilatusController(pilatus_driver)
-
-    return controller
-
-
-@pytest.fixture
-async def hdf(RE: RunEngine) -> NDFileHDF:
-    async with DeviceCollector(sim=True):
-        hdf = NDFileHDF("HDF:")
-
-    return hdf
 
 
 @pytest.fixture
 async def pilatus(
     RE: RunEngine,
     static_directory_provider: DirectoryProvider,
-    pilatus_driver: PilatusDriver,
-    hdf: NDFileHDF,
 ) -> PilatusDetector:
     async with DeviceCollector(sim=True):
-        pilatus = PilatusDetector(
-            "PILATUS:",
-            "pilatus",
-            static_directory_provider,
-            driver=pilatus_driver,
-            hdf=hdf,
-        )
+        adpilatus = PilatusDetector("PILATUS:", static_directory_provider)
 
-    return pilatus
+    return adpilatus
 
 
 async def test_deadtime_invariant(
-    pilatus_controller: PilatusController,
+    pilatus: PilatusDetector,
 ):
+    pilatus_controller = pilatus.controller
     # deadtime invariant with exposure time
     assert pilatus_controller.get_deadtime(0) == 2.28e-3
     assert pilatus_controller.get_deadtime(500) == 2.28e-3
@@ -100,7 +60,7 @@ async def test_trigger_mode_set(
 
 
 async def test_hints_from_hdf_writer(pilatus: PilatusDetector):
-    assert pilatus.hints == {"fields": ["pilatus"]}
+    assert pilatus.hints == {"fields": ["adpilatus"]}
 
 
 async def test_unsupported_trigger_excepts(pilatus: PilatusDetector):

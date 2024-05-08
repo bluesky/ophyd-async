@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import re
 import time
 from collections import abc
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Generic, Optional, Type, Union, cast, get_origin
 
-from bluesky.protocols import Descriptor, Dtype, Reading
+import numpy as np
+from bluesky.protocols import DataKey, Dtype, Reading
 
 from .signal_backend import SignalBackend
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
@@ -36,12 +36,17 @@ class SimConverter(Generic[T]):
             alarm_severity=-1 if severity > 2 else severity,
         )
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def get_datakey(self, source: str, value) -> DataKey:
+        dtype = type(value)
+        if np.issubdtype(dtype, np.integer):
+            dtype = int
+        elif np.issubdtype(dtype, np.floating):
+            dtype = float
         assert (
-            type(value) in primitive_dtypes
+            dtype in primitive_dtypes
         ), f"invalid converter for value of type {type(value)}"
-        dtype = primitive_dtypes[type(value)]
-        return {"source": source, "dtype": dtype, "shape": []}
+        dtype_name = primitive_dtypes[dtype]
+        return {"source": source, "dtype": dtype_name, "shape": []}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -51,7 +56,7 @@ class SimConverter(Generic[T]):
 
 
 class SimArrayConverter(SimConverter):
-    def descriptor(self, source: str, value) -> Descriptor:
+    def get_datakey(self, source: str, value) -> DataKey:
         return {"source": source, "dtype": "array", "shape": [len(value)]}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
@@ -74,7 +79,7 @@ class SimEnumConverter(SimConverter):
         else:
             return self.enum_class(value)
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def get_datakey(self, source: str, value) -> DataKey:
         choices = [e.value for e in self.enum_class]
         return {"source": source, "dtype": "string", "shape": [], "choices": choices}  # type: ignore
 
@@ -107,23 +112,32 @@ class SimSignalBackend(SignalBackend[T]):
     """An simulated backend to a Signal, created with ``Signal.connect(sim=True)``"""
 
     _value: T
-    _initial_value: T
+    _initial_value: Optional[T]
     _timestamp: float
     _severity: int
 
-    def __init__(self, datatype: Optional[Type[T]], source: str) -> None:
-        pv = re.split(r"://", source)[-1]
-        self.source = f"sim://{pv}"
+    def __init__(
+        self,
+        datatype: Optional[Type[T]],
+        initial_value: Optional[T] = None,
+    ) -> None:
         self.datatype = datatype
-        self.pv = source
         self.converter: SimConverter = DisconnectedSimConverter()
+        self._initial_value = initial_value
         self.put_proceeds = asyncio.Event()
         self.put_proceeds.set()
         self.callback: Optional[ReadingValueCallback[T]] = None
 
+    def source(self, name: str) -> str:
+        return f"soft://{name}"
+
     async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
         self.converter = make_converter(self.datatype)
-        self._initial_value = self.converter.make_initial_value(self.datatype)
+        if self._initial_value is None:
+            self._initial_value = self.converter.make_initial_value(self.datatype)
+        else:
+            # convert potentially unconverted initial value passed to init method
+            self._initial_value = self.converter.write_value(self._initial_value)
         self._severity = 0
 
         await self.put(None)
@@ -150,8 +164,8 @@ class SimSignalBackend(SignalBackend[T]):
         if self.callback:
             self.callback(reading, self._value)
 
-    async def get_descriptor(self) -> Descriptor:
-        return self.converter.descriptor(self.source, self._value)
+    async def get_datakey(self, source: str) -> DataKey:
+        return self.converter.get_datakey(source, self._value)
 
     async def get_reading(self) -> Reading:
         return self.converter.reading(self._value, self._timestamp, self._severity)

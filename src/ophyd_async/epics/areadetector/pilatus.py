@@ -1,10 +1,7 @@
-from typing import Optional, Sequence
-
 from bluesky.protocols import Hints
 
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.detector import StandardDetector
-from ophyd_async.core.signal import SignalR
 from ophyd_async.epics.areadetector.controllers.pilatus_controller import (
     PilatusController,
 )
@@ -23,15 +20,13 @@ class PilatusDetector(StandardDetector):
     def __init__(
         self,
         prefix: str,
-        name: str,
         directory_provider: DirectoryProvider,
-        driver: PilatusDriver,
-        hdf: NDFileHDF,
-        config_sigs: Optional[Sequence[SignalR]] = None,
-        **scalar_sigs: str,
+        drv_suffix="cam1:",
+        hdf_suffix="HDF1:",
+        name="",
     ):
-        self.drv = driver
-        self.hdf = hdf
+        self.drv = PilatusDriver(prefix + drv_suffix)
+        self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
             PilatusController(self.drv),
@@ -40,9 +35,8 @@ class PilatusDetector(StandardDetector):
                 directory_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
-                **scalar_sigs,
             ),
-            config_sigs=config_sigs or (self.drv.acquire_time,),
+            config_sigs=(self.drv.acquire_time,),
             name=name,
         )
 

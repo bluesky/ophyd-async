@@ -93,16 +93,16 @@ async def test_backend_get_put_monitor(
     put_value: T,
     descriptor: Callable[[Any], dict],
 ):
-    backend = SimSignalBackend(datatype, "")
+    backend = SimSignalBackend(datatype)
 
     await backend.connect()
     q = MonitorQueue(backend)
     try:
         # Check descriptor
-        assert (
-            dict(source="sim://", **descriptor(initial_value))
-            == await backend.get_descriptor()
-        )
+        source = "soft://test"
+        assert dict(
+            source=source, **descriptor(initial_value)
+        ) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(
             pytest.approx(initial_value) if initial_value != "" else initial_value
@@ -115,13 +115,13 @@ async def test_backend_get_put_monitor(
 
 
 async def test_sim_backend_if_disconnected():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
+    sim_backend = SimSignalBackend(npt.NDArray[np.float64])
     with pytest.raises(NotImplementedError):
         await sim_backend.get_value()
 
 
 async def test_sim_backend_with_numpy_typing():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64], "SOME-IOC:PV")
+    sim_backend = SimSignalBackend(npt.NDArray[np.float64])
     await sim_backend.connect()
 
     array = await sim_backend.get_value()
@@ -133,8 +133,8 @@ async def test_sim_backend_descriptor_fails_for_invalid_class():
         def __init__(self) -> None:
             pass
 
-    sim_signal = Signal(SimSignalBackend(myClass, "test"))
+    sim_signal = Signal(SimSignalBackend(myClass))
     await sim_signal.connect(sim=True)
 
     with pytest.raises(AssertionError):
-        await sim_signal._backend.get_descriptor()
+        await sim_signal._backend.get_datakey("")
