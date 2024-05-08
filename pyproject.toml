@@ -64,6 +64,7 @@ dev = [
     "tox-direct",
     "types-mock",
     "types-pyyaml",
+    "colorlog"
 ]
 
 [project.scripts]
