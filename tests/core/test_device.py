@@ -110,3 +110,10 @@ async def test_wait_for_connection_propagates_error(
     with pytest.raises(NotConnected) as e:
         await wait_for_connection(**failing_coros)
         assert traceback.extract_tb(e.__traceback__)[-1].name == "failing_coroutine"
+
+
+async def test_device_log_has_correct_name():
+    device = DummyBaseDevice()
+    assert device.log.extra["ophyd_async_device_name"] == ""
+    device.set_name("device")
+    assert device.log.extra["ophyd_async_device_name"] == "device"

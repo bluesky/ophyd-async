@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import sys
+from functools import cached_property
+from logging import LoggerAdapter, getLogger
 from typing import (
     Any,
     Coroutine,
@@ -39,6 +41,12 @@ class Device(HasName):
         """Return the name of the Device"""
         return self._name
 
+    @cached_property
+    def log(self):
+        return LoggerAdapter(
+            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
+        )
+
     def children(self) -> Iterator[Tuple[str, Device]]:
         for attr_name, attr in self.__dict__.items():
             if attr_name != "parent" and isinstance(attr, Device):
@@ -52,6 +60,11 @@ class Device(HasName):
         name:
             New name to set
         """
+
+        # Ensure self.log is recreated after a name change
+        if hasattr(self, "log"):
+            del self.log
+
         self._name = name
         for attr_name, child in self.children():
             child_name = f"{name}-{attr_name.rstrip('_')}" if name else ""
