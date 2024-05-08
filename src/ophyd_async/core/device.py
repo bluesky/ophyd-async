@@ -60,6 +60,8 @@ class Device(HasName):
         name:
             New name to set
         """
+
+        # Ensure self.log is recreated after a name change
         if hasattr(self, "log"):
             del self.log
 
