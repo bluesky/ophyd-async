@@ -536,3 +536,13 @@ def test_signal_helpers():
 
     execute = epics_signal_x("Execute")
     assert execute._backend.write_pv == "Execute"
+
+
+async def test_str_enum_returns_enum(ioc: IOC):
+    await ioc.make_backend(MyEnum, "enum")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
+
+    sig = epics_signal_rw(MyEnum, pv_name)
+    await sig.connect()
+    assert (await sig.get_value()) is MyEnum.b
+    assert (await sig.get_value()) == "Bbb"

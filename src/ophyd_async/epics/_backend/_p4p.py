@@ -4,7 +4,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 from bluesky.protocols import DataKey, Dtype, Reading
 from p4p import Value
@@ -109,7 +109,8 @@ class PvaNDArrayConverter(PvaConverter):
 
 @dataclass
 class PvaEnumConverter(PvaConverter):
-    choices: Tuple[str, ...]
+    def __init__(self, choices: dict[str, str]):
+        self.choices = tuple(choices.values())
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -218,7 +219,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        return PvaEnumConverter(tuple(get_supported_values(pv, datatype, pv_choices)))
+        return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
         if (
             datatype
