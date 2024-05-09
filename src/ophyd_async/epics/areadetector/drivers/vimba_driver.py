@@ -1,6 +1,7 @@
 from enum import Enum
 
-from ..utils import ad_rw
+from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
+
 from .ad_base import ADBase
 
 
@@ -47,12 +48,16 @@ class VimbaExposeOutMode(str, Enum):
 
 class VimbaDriver(ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
-        # self.pixel_format = ad_rw(PixelFormat, prefix + "PixelFormat")
-        self.convert_format = ad_rw(
+        # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
+        self.convert_format = epics_signal_rw_rbv(
             VimbaConvertFormat, prefix + "ConvertPixelFormat"
         )  # Pixel format of data outputted to AD
-        self.trig_source = ad_rw(VimbaTriggerSource, prefix + "TriggerSource")
-        self.trigger_mode = ad_rw(VimbaOnOff, prefix + "TriggerMode")
-        self.overlap = ad_rw(VimbaOverlap, prefix + "TriggerOverlap")
-        self.expose_mode = ad_rw(VimbaExposeOutMode, prefix + "ExposureMode")
+        self.trig_source = epics_signal_rw_rbv(
+            VimbaTriggerSource, prefix + "TriggerSource"
+        )
+        self.trigger_mode = epics_signal_rw_rbv(VimbaOnOff, prefix + "TriggerMode")
+        self.overlap = epics_signal_rw_rbv(VimbaOverlap, prefix + "TriggerOverlap")
+        self.expose_mode = epics_signal_rw_rbv(
+            VimbaExposeOutMode, prefix + "ExposureMode"
+        )
         super().__init__(prefix, name)
