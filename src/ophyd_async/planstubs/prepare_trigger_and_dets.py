@@ -20,7 +20,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     period: float = 0.0,
 ):
     trigger_info = TriggerInfo(
-        number_of_frames=number_of_frames * repeats,
+        num=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
         livetime=exposure,
