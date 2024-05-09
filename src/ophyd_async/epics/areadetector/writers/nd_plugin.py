@@ -19,11 +19,9 @@ class NDArrayBase(Device):
 
 class NDPluginBase(NDArrayBase):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort_RBV")
-        self.enable_callback = epics_signal_rw_rbv(
-            Callback, prefix + "EnableCallbacks_RBV"
-        )
-        self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress_RBV")
+        self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
+        self.enable_callback = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks")
+        self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress")
         super().__init__(prefix, name)
 
 
