@@ -544,5 +544,18 @@ async def test_str_enum_returns_enum(ioc: IOC):
 
     sig = epics_signal_rw(MyEnum, pv_name)
     await sig.connect()
-    assert (await sig.get_value()) is MyEnum.b
-    assert (await sig.get_value()) == "Bbb"
+    val = await sig.get_value()
+    assert val is MyEnum.b
+    assert val == "Bbb"
+
+
+async def test_str_returns_enum(ioc: IOC):
+    await ioc.make_backend(str, "enum")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
+
+    sig = epics_signal_rw(str, pv_name)
+    await sig.connect()
+    val = await sig.get_value()
+    assert val == MyEnum.b
+    assert val == "Bbb"
+    assert val is not MyEnum.b
