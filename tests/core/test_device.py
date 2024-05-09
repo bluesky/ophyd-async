@@ -11,10 +11,14 @@ from ophyd_async.core import (
     NotConnected,
     wait_for_connection,
 )
+from ophyd_async.epics.motion import motor
+from ophyd_async.planstubs.ensure_connected import (
+    ensure_connected,
+)
 
 
 class DummyBaseDevice(Device):
-    def __init__(self) -> None:
+    def __init__(self):
         self.connected = False
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
@@ -117,3 +121,52 @@ async def test_device_log_has_correct_name():
     assert device.log.extra["ophyd_async_device_name"] == ""
     device.set_name("device")
     assert device.log.extra["ophyd_async_device_name"] == "device"
+
+
+async def test_device_lazily_connects(RE):
+    async with DeviceCollector(sim=True, connect=False):
+        sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+
+    assert not sim_motor._previous_connect_success
+
+    # When ready to connect
+    RE(ensure_connected(sim_motor, sim=True))
+
+    assert sim_motor._previous_connect_success
+
+
+class MotorBundle(Device):
+    def __init__(self, name: str) -> None:
+        self.X = motor.Motor("BLxxI-MO-TABLE-01:X")
+        self.Y = motor.Motor("BLxxI-MO-TABLE-01:Y")
+        self.V: DeviceVector[motor.Motor] = DeviceVector(
+            {
+                0: motor.Motor("BLxxI-MO-TABLE-21:X"),
+                1: motor.Motor("BLxxI-MO-TABLE-21:Y"),
+                2: motor.Motor("BLxxI-MO-TABLE-21:Z"),
+            }
+        )
+
+
+async def test_device_with_children_lazily_connects(RE):
+    parentMotor = MotorBundle("parentMotor")
+
+    for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
+        parentMotor.V.values()
+    ):
+        assert not device._previous_connect_success
+    RE(ensure_connected(parentMotor, sim=True))
+
+    for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
+        parentMotor.V.values()
+    ):
+        assert device._previous_connect_success
+
+
+async def test_device_with_device_collector_lazily_connects():
+    sim_motor = motor.Motor("SOME_SIGNAL_WHICH_DOESN'T_EXIST:X")
+    with pytest.raises(NotConnected):
+        await sim_motor.connect(sim=False, timeout=0.01)
+    assert not sim_motor._previous_connect_success
+    await sim_motor.connect(sim=True, timeout=0.01)
+    assert sim_motor._previous_connect_success

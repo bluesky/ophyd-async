@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import sys
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
@@ -32,6 +33,10 @@ class Device(HasName):
     _name: str = ""
     #: The parent Device if it exists
     parent: Optional[Device] = None
+
+    # Previous connect was successful, False on initialization
+    # since there was no previous connect
+    _previous_connect_success: bool = False
 
     def __init__(self, name: str = "") -> None:
         self.set_name(name)
@@ -71,7 +76,12 @@ class Device(HasName):
             child.set_name(child_name)
             child.parent = self
 
-    async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
+    async def connect(
+        self,
+        sim: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect=False,
+    ):
         """Connect self and all child Devices.
 
         Contains a timeout that gets propagated to child.connect methods.
@@ -83,12 +93,18 @@ class Device(HasName):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
-        coros = {
-            name: child_device.connect(sim, timeout=timeout)
-            for name, child_device in self.children()
-        }
-        if coros:
-            await wait_for_connection(**coros)
+
+        if force_reconnect or not self._previous_connect_success:
+            # Kick off a connection
+            coros = {
+                name: child_device.connect(sim, timeout=timeout)
+                for name, child_device in self.children()
+            }
+            connect_task = asyncio.create_task(wait_for_connection(**coros))
+
+            # Wait for it to complete
+            await connect_task
+            self._previous_connect_success = not connect_task.exception()
 
 
 VT = TypeVar("VT", bound=Device)
