@@ -88,7 +88,7 @@ class DummyWriter(DetectorWriter):
 
 
 @pytest.fixture
-async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
+async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
     await writers[0].dummy_signal.connect(mock=True)
     await writers[1].dummy_signal.connect(mock=True)
@@ -136,7 +136,7 @@ async def panda():
 
 async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     RE: RunEngine,
-    detector_list: tuple[StandardDetector],
+    detectors: tuple[StandardDetector],
     panda,
 ):
     """Run a dummy scan using a flyer with a prepare plan stub.
@@ -150,6 +150,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     """
     names = []
     docs = []
+    detector_list= list(detectors)
 
     def append_and_print(name, doc):
         names.append(name)
