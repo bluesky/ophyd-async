@@ -12,7 +12,7 @@ from ophyd_async.panda._trigger import SeqTableInfo
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
     detectors: List[StandardDetector],
-    num: int,
+    number_of_frames: int,
     width: float,
     deadtime: float,
     shutter_time: float,
@@ -20,13 +20,13 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     period: float = 0.0,
 ):
     trigger_info = TriggerInfo(
-        num=num * repeats,
+        number_of_frames=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
         livetime=width,
     )
 
-    trigger_time = num * (width + deadtime)
+    trigger_time = number_of_frames * (width + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
 
     table: SeqTable = seq_table_from_rows(
@@ -38,7 +38,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         ),
         # Keeping shutter open, do N triggers
         SeqTableRow(
-            repeats=num,
+            repeats=number_of_frames,
             time1=in_micros(width),
             outa1=True,
             outb1=True,
