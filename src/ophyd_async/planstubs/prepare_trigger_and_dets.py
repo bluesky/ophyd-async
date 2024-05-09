@@ -13,7 +13,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
     detectors: List[StandardDetector],
     number_of_frames: int,
-    width: float,
+    exposure: float,
     deadtime: float,
     shutter_time: float,
     repeats: int = 1,
@@ -23,10 +23,10 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         number_of_frames=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
-        livetime=width,
+        livetime=exposure,
     )
 
-    trigger_time = number_of_frames * (width + deadtime)
+    trigger_time = number_of_frames * (exposure + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
 
     table: SeqTable = seq_table_from_rows(
@@ -39,7 +39,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         # Keeping shutter open, do N triggers
         SeqTableRow(
             repeats=number_of_frames,
-            time1=in_micros(width),
+            time1=in_micros(exposure),
             outa1=True,
             outb1=True,
             time2=in_micros(deadtime),
