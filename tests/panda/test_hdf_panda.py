@@ -80,8 +80,8 @@ async def test_hdf_panda_hardware_triggered_flyable(
         yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
             flyer,
             [mock_hdf_panda],
-            num=1,
-            width=exposure,
+            number_of_frames=1,
+            exposure=exposure,
             deadtime=mock_hdf_panda.controller.get_deadtime(1),
             shutter_time=shutter_time,
         )

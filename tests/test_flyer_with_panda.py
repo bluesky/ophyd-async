@@ -170,8 +170,8 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
             flyer,
             detector_list,
-            num=1,
-            width=exposure,
+            number_of_frames=1,
+            exposure=exposure,
             deadtime=deadtime,
             shutter_time=shutter_time,
         )
