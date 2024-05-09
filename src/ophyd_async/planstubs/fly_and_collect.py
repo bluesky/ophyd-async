@@ -10,7 +10,7 @@ from ophyd_async.planstubs import (
 )
 
 
-def fly(
+def fly_and_collect(
     stream_name: str,
     detectors: List[StandardDetector],
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
