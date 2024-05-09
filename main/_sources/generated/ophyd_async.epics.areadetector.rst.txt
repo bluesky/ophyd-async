@@ -14,15 +14,6 @@ ophyd\_async.epics.areadetector
 
    
    
-   .. rubric:: Functions
-
-   .. autosummary::
-      :toctree:
-      :nosignatures:
-   
-      ad_r
-      ad_rw
-   
    
 
    
