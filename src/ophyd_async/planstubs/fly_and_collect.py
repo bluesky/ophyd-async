@@ -29,7 +29,7 @@ def fly_and_collect(
     - Collect while completing
 
     This needs to be used in a plan that instantates detectors and a flyer,
-    stages/unstages the devices and opens and closes the run.
+    stages/unstages the devices, and opens and closes the run.
 
     """
     # Set up scan and prepare trigger
