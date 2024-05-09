@@ -7,8 +7,6 @@ from .utils import (
     ImageMode,
     NDAttributeDataType,
     NDAttributesXML,
-    ad_r,
-    ad_rw,
 )
 from .vimba import VimbaDetector
 
@@ -19,8 +17,6 @@ __all__ = [
     "SingleTriggerDet",
     "FileWriteMode",
     "ImageMode",
-    "ad_r",
-    "ad_rw",
     "NDAttributeDataType",
     "NDAttributesXML",
     "PilatusDetector",

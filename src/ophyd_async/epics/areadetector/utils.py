@@ -1,18 +1,8 @@
 from enum import Enum
-from typing import Optional, Type
+from typing import Optional
 from xml.etree import cElementTree as ET
 
-from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, T, wait_for_value
-
-from ..signal.signal import epics_signal_r, epics_signal_rw
-
-
-def ad_rw(datatype: Type[T], prefix: str) -> SignalRW[T]:
-    return epics_signal_rw(datatype, prefix + "_RBV", prefix)
-
-
-def ad_r(datatype: Type[T], prefix: str) -> SignalR[T]:
-    return epics_signal_r(datatype, prefix + "_RBV")
+from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value
 
 
 class FileWriteMode(str, Enum):
