@@ -1,24 +1,25 @@
 from enum import Enum
-from typing import Any, Optional, Tuple, Type
+from typing import Dict, Optional, Tuple, Type
 
 
 def get_supported_values(
     pv: str,
-    datatype: Optional[Type[Enum]],
-    pv_choices: Tuple[Any, ...],
-) -> Tuple[Any, ...]:
+    datatype: Optional[Type[str]],
+    pv_choices: Tuple[str, ...],
+) -> Dict[str, str]:
     if not datatype:
-        return tuple(x or "_" for x in pv_choices)
+        return {x: x or "_" for x in pv_choices}
 
     if not issubclass(datatype, str):
         raise TypeError(f"{pv} is type Enum but doesn't inherit from String")
     if issubclass(datatype, Enum):
         choices = tuple(v.value for v in datatype)
-        if set(choices) != set(pv_choices):
+        if choices != pv_choices:
             raise TypeError(
                 (
                     f"{pv} has choices {pv_choices}, "
                     f"which do not match {datatype}, which has {choices}"
                 )
             )
-    return pv_choices
+        return {x: datatype(x) for x in pv_choices}
+    return {x: x for x in pv_choices}

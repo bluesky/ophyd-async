@@ -2,7 +2,7 @@ import logging
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, Optional, Sequence, Type, Union
 
 from aioca import (
     FORMAT_CTRL,
@@ -79,7 +79,7 @@ class CaArrayConverter(CaConverter):
 
 @dataclass
 class CaEnumConverter(CaConverter):
-    choices: Tuple[Any, ...]
+    choices: dict[str, str]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -88,7 +88,7 @@ class CaEnumConverter(CaConverter):
             return value
 
     def value(self, value: AugmentedValue):
-        return value
+        return self.choices[value]
 
     def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         return {
@@ -142,8 +142,8 @@ def make_converter(
         pv_choices = get_unique(
             {k: tuple(v.enums) for k, v in values.items()}, "choices"
         )
-        enum_class = get_supported_values(pv, datatype, pv_choices)
-        return CaEnumConverter(dbr.DBR_STRING, None, enum_class)
+        supported_values = get_supported_values(pv, datatype, pv_choices)
+        return CaEnumConverter(dbr.DBR_STRING, None, supported_values)
     else:
         value = list(values.values())[0]
         # Done the dbr check, so enough to check one of the values

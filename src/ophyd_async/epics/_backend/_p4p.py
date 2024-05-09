@@ -109,7 +109,7 @@ class PvaNDArrayConverter(PvaConverter):
 
 @dataclass
 class PvaEnumConverter(PvaConverter):
-    choices: Tuple[Any, ...]
+    choices: Tuple[str, ...]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -218,7 +218,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
+        return PvaEnumConverter(tuple(get_supported_values(pv, datatype, pv_choices)))
     elif "NTScalar" in typeid:
         if (
             datatype
