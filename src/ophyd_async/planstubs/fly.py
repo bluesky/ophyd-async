@@ -1,7 +1,10 @@
+from typing import List
+
 import bluesky.plan_stubs as bps
 
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
+from ophyd_async.panda._trigger import SeqTableInfo
 from ophyd_async.planstubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
@@ -9,8 +12,8 @@ from ophyd_async.planstubs import (
 
 def fly(
     stream_name: str,
-    detector_list: tuple[StandardDetector],
-    flyer: HardwareTriggeredFlyable,
+    detectors: List[StandardDetector],
+    flyer: HardwareTriggeredFlyable[SeqTableInfo],
     number_of_frames: int,
     exposure: int,
     shutter_time: float,
@@ -30,10 +33,10 @@ def fly(
 
     """
     # Set up scan and prepare trigger
-    deadtime = max(det.controller.get_deadtime(1) for det in detector_list)
+    deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
     yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         flyer,
-        detector_list,
+        detectors,
         number_of_frames,
         width=exposure,
         deadtime=deadtime,
@@ -41,13 +44,13 @@ def fly(
         repeats=repeats,
         period=period,
     )
-    yield from bps.declare_stream(*detector_list, name=stream_name, collect=True)
-    yield from bps.kickoff_all(flyer, *detector_list)
+    yield from bps.declare_stream(*detectors, name=stream_name, collect=True)
+    yield from bps.kickoff_all(flyer, *detectors)
 
     # collect_while_completing
-    yield from bps.complete_all(flyer, *detector_list, group="complete")
+    yield from bps.complete_all(flyer, *detectors, group="complete")
 
     done = False
     while not done:
         done = yield from bps.wait(group="complete", timeout=0.5)
-        yield from bps.collect(*detector_list, name=stream_name)
+        yield from bps.collect(*detectors, name=stream_name)
