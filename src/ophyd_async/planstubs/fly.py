@@ -36,8 +36,8 @@ def fly_and_collect(
     yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         flyer,
         detectors,
-        number_of_frames,
-        width=exposure,
+        number_of_frames=number_of_frames,
+        exposure=exposure,
         deadtime=deadtime,
         shutter_time=shutter_time,
         repeats=repeats,
