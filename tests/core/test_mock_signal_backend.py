@@ -27,7 +27,7 @@ from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw
 
 @pytest.mark.parametrize("connect_mock_mode", [True, False])
 async def test_mock_signal_backend(connect_mock_mode):
-    mock_signal = SignalRW(MockSignalBackend(str))
+    mock_signal = SignalRW(MockSignalBackend(datatype=str))
     # If mock is false it will be handled like a normal signal, otherwise it will
     # initalize a new backend from the one in the line above
     await mock_signal.connect(mock=connect_mock_mode)
@@ -40,7 +40,6 @@ async def test_mock_signal_backend(connect_mock_mode):
 
     mock_signal._backend.mock["get_value"].assert_called_once
     assert mock_signal._backend.mock.put.call_args_list == [
-        call(None, wait=True, timeout=None),
         call("test", wait=True, timeout=None),
     ]
 

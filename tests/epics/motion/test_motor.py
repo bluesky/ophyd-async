@@ -14,16 +14,14 @@ from ophyd_async.epics.motion import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
-A_BIT = 0.001
+A_BIT = 0.01
 
 
 @pytest.fixture
 async def sim_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
-        # Signals connected here
+        sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X", name="sim_motor")
 
-    assert sim_motor.name == "sim_motor"
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
     set_mock_value(sim_motor.velocity, 1)

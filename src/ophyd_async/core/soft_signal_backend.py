@@ -116,22 +116,23 @@ class SoftSignalBackend(SignalBackend[T]):
         initial_value: Optional[T] = None,
     ) -> None:
         self.datatype = datatype
+        self._initial_value = initial_value
         self.converter: SoftConverter = make_converter(datatype)
-        self._value = self._initial_value = initial_value
+        if self._initial_value is None:
+            self._initial_value = self.converter.make_initial_value(self.datatype)
+        else:
+            self._initial_value = self.converter.write_value(self._initial_value)
+
         self.callback: Optional[ReadingValueCallback[T]] = None
+        self._severity = 0
+        self.set_value(self._initial_value)
 
     def source(self, name: str) -> str:
         return f"soft://{name}"
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
-        if self._initial_value is None:
-            self._initial_value = self.converter.make_initial_value(self.datatype)
-        else:
-            # convert potentially unconverted initial value passed to init method
-            self._initial_value = self.converter.write_value(self._initial_value)
-        self._severity = 0
-
-        await self.put(None)
+        """Connection isn't required for soft signals."""
+        pass
 
     async def put(self, value: Optional[T], wait=True, timeout=None):
         write_value = (

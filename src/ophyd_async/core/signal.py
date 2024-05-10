@@ -61,22 +61,14 @@ class Signal(Device, Generic[T]):
         name: str = "",
     ) -> None:
         self._timeout = timeout
-        self._init_backend = self._backend = backend
+        self._initial_backend = self._backend = backend
         super().__init__(name)
 
     async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
         if mock and not isinstance(self._backend, MockSignalBackend):
             # Using a soft backend, look to the initial value
-            initial_value = (
-                await self._backend.get_value()
-                if isinstance(self._backend, SoftSignalBackend)
-                else None
-            )
-
             self._backend = MockSignalBackend(
-                datatype=self._init_backend.datatype,
-                initial_value=initial_value,
-                init_backend=self._init_backend,
+                initial_backend=self._initial_backend,
             )
         self.log.debug(f"Connecting to {self.source}")
         await self._backend.connect(timeout=timeout)
@@ -290,10 +282,7 @@ def soft_signal_r_and_setter(
     backend = SoftSignalBackend(datatype, initial_value)
     signal = SignalR(backend, name=name)
 
-    def backend_put(value: T) -> None:
-        signal._backend.set_value(value)
-
-    return (signal, backend_put)
+    return (signal, backend.set_value)
 
 
 async def assert_value(signal: SignalR[T], value: Any) -> None:

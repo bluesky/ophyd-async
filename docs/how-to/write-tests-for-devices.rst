@@ -41,7 +41,9 @@ In addition this example also utilizes helper functions like ``assert_reading`` 
    :pyobject: test_sensor_reading_shows_value
 
 
-There is another utility function, ``callback_on_mock_put``, for hooking in logic when a mock value changes (e.g. because someone puts to it). This can be called directly, or used as a context, with the callbacks ending after exit.
+There are several other test utility functions:
+
+Use ``callback_on_mock_put``, for hooking in logic when a mock value changes (e.g. because someone puts to it). This can be called directly, or used as a context, with the callbacks ending after exit.
 
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_mover_stopped

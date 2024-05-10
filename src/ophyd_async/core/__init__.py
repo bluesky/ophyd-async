@@ -72,7 +72,6 @@ __all__ = [
     "callback_on_mock_put",
     "mock_puts_blocked",
     "set_mock_values",
-    "set_signals_after",
     "reset_mock_put_calls",
     "SignalBackend",
     "SoftSignalBackend",
