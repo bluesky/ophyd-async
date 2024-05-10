@@ -24,7 +24,6 @@ from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda._trigger import StaticSeqTableTriggerLogic
 from ophyd_async.planstubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
-    fly_and_collect,
 )
 
 
@@ -151,7 +150,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     """
     names = []
     docs = []
-    detector_list= list(detectors)
+    detector_list = list(detectors)
 
     def append_and_print(name, doc):
         names.append(name)
@@ -159,7 +158,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
 
     RE.subscribe(append_and_print)
 
-    number_of_frames=1
+    number_of_frames = 1
     exposure = 1
     deadtime = max(det.controller.get_deadtime(1) for det in detector_list)
     shutter_time = 0.004
