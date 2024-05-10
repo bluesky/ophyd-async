@@ -6,7 +6,7 @@ from ophyd_async.core.utils import DEFAULT_TIMEOUT, wait_for_connection
 
 def ensure_connected(
     *devices: Device,
-    sim: bool = False,
+    mock: bool = False,
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):
@@ -14,7 +14,7 @@ def ensure_connected(
         [
             lambda: wait_for_connection(
                 **{
-                    device.name: device.connect(sim, timeout, force_reconnect)
+                    device.name: device.connect(mock, timeout, force_reconnect)
                     for device in devices
                 }
             )

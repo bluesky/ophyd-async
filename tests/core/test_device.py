@@ -125,15 +125,15 @@ async def test_device_log_has_correct_name():
 
 
 async def test_device_lazily_connects(RE):
-    async with DeviceCollector(sim=True, connect=False):
-        sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+    async with DeviceCollector(mock=True, connect=False):
+        mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
 
-    assert not sim_motor._previous_connect_success
+    assert not mock_motor._previous_connect_success
 
     # When ready to connect
-    RE(ensure_connected(sim_motor, sim=True))
+    RE(ensure_connected(mock_motor, mock=True))
 
-    assert sim_motor._previous_connect_success
+    assert mock_motor._previous_connect_success
 
 
 class MotorBundle(Device):
@@ -156,7 +156,7 @@ async def test_device_with_children_lazily_connects(RE):
         parentMotor.V.values()
     ):
         assert not device._previous_connect_success
-    RE(ensure_connected(parentMotor, sim=True))
+    RE(ensure_connected(parentMotor, mock=True))
 
     for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
         parentMotor.V.values()
@@ -165,36 +165,36 @@ async def test_device_with_children_lazily_connects(RE):
 
 
 async def test_device_with_device_collector_lazily_connects():
-    sim_motor = motor.Motor("NONE_EXISTENT")
+    mock_motor = motor.Motor("NONE_EXISTENT")
     with pytest.raises(NotConnected):
-        await sim_motor.connect(sim=False, timeout=0.01)
-    assert not sim_motor._previous_connect_success
-    await sim_motor.connect(sim=True, timeout=0.01)
-    assert sim_motor._previous_connect_success
+        await mock_motor.connect(mock=False, timeout=0.01)
+    assert not mock_motor._previous_connect_success
+    await mock_motor.connect(mock=True, timeout=0.01)
+    assert mock_motor._previous_connect_success
 
 
 async def test_no_reconnect_signals_if_not_forced():
     parent = DummyDeviceGroup("parent")
 
-    async def inner_connect(sim, timeout):
+    async def inner_connect(mock, timeout):
         parent.child1.connected = True
 
     parent.child1.connect = Mock(side_effect=inner_connect)
-    await parent.connect(sim=True, timeout=0.01)
+    await parent.connect(mock=True, timeout=0.01)
     assert parent.child1.connected
     assert parent.child1.connect.call_count == 1
-    await parent.connect(sim=True, timeout=0.01)
+    await parent.connect(mock=True, timeout=0.01)
     assert parent.child1.connected
     assert parent.child1.connect.call_count == 1
 
     for count in range(2, 10):
-        await parent.connect(sim=True, timeout=0.01, force_reconnect=True)
+        await parent.connect(mock=True, timeout=0.01, force_reconnect=True)
         assert parent.child1.connected
         assert parent.child1.connect.call_count == count
 
 
 async def test_parent_not_connected():
     parent = DummyDeviceGroup("parent")
-    await parent.child1.connect(sim=True, timeout=0.01)
+    await parent.child1.connect(mock=True, timeout=0.01)
     assert not parent._previous_connect_success
     assert not parent.child2._previous_connect_success
