@@ -1,7 +1,5 @@
 """Base device"""
 
-from __future__ import annotations
-
 import sys
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
@@ -31,7 +29,7 @@ class Device(HasName):
 
     _name: str = ""
     #: The parent Device if it exists
-    parent: Optional[Device] = None
+    parent: Optional["Device"] = None
 
     def __init__(self, name: str = "") -> None:
         self.set_name(name)
@@ -47,7 +45,7 @@ class Device(HasName):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
-    def children(self) -> Iterator[Tuple[str, Device]]:
+    def children(self) -> Iterator[Tuple[str, "Device"]]:
         for attr_name, attr in self.__dict__.items():
             if attr_name != "parent" and isinstance(attr, Device):
                 yield attr_name, attr
