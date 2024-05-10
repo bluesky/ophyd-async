@@ -26,7 +26,7 @@ async def panda():
     yield mock_panda
 
 
-def test_trigger_logic_has_given_methods(panda):
+async def test_trigger_logic_has_given_methods(panda):
     trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
     assert hasattr(trigger_logic, "prepare")
     assert hasattr(trigger_logic, "kickoff")

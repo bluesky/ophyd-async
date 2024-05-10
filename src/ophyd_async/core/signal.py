@@ -85,18 +85,12 @@ class Signal(Device, Generic[T]):
         return hash(id(self))
 
 
-# creating a reference to  the background tasks so that
-# they can be properly garbage collected
-_background_async_signal_cache_events = set()
-
-
 class _SignalCache(Generic[T]):
     def __init__(self, backend: SignalBackend[T], signal: Signal):
         self._signal = signal
         self._staged = False
         self._listeners: Dict[Callback, bool] = {}
         self._valid = asyncio.Event()
-        _background_async_signal_cache_events.add(self._valid)
         self._reading: Optional[Reading] = None
         self._value: Optional[T] = None
 
@@ -107,7 +101,6 @@ class _SignalCache(Generic[T]):
     def close(self):
         self.backend.set_callback(None)
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
-        _background_async_signal_cache_events.discard(self._valid)
 
     async def get_reading(self) -> Reading:
         await self._valid.wait()
@@ -370,11 +363,6 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
     assert {name: len(d) for name, d in docs.items()} == numbers
 
 
-# creating a reference to  the background tasks so that
-# they can be properly garbage collected
-_background_observe_value_queues = set()
-
-
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
@@ -392,7 +380,6 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
             do_something_with(value)
     """
     q: asyncio.Queue[T] = asyncio.Queue()
-    _background_observe_value_queues.add(q)
     if timeout is None:
         get_value = q.get
     else:
@@ -406,7 +393,6 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
             yield await get_value()
     finally:
         signal.clear_sub(q.put_nowait)
-        _background_observe_value_queues.discard(q)
 
 
 class _ValueChecker(Generic[T]):

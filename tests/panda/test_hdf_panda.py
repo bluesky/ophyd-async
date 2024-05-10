@@ -1,59 +1,21 @@
-import asyncio
-from typing import Dict, Optional
+from typing import Dict
 
 import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import StaticDirectoryProvider, set_mock_value
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
-from ophyd_async.core.signal import SignalR, assert_emitted, wait_for_value
-from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.core.mock_signal_utils import callback_on_mock_put
+from ophyd_async.core.signal import SignalR, assert_emitted
 from ophyd_async.epics.signal.signal import epics_signal_r
-from ophyd_async.panda import HDFPanda, PcapBlock
+from ophyd_async.panda import HDFPanda
 from ophyd_async.panda._trigger import StaticSeqTableTriggerLogic
 from ophyd_async.panda.writers._hdf_writer import Capture
 from ophyd_async.planstubs.prepare_trigger_and_dets import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
-
-
-class MockPandaPcapController(DetectorControl):
-    def __init__(self, pcap: PcapBlock) -> None:
-        self.pcap = pcap
-
-    def get_deadtime(self, exposure: float) -> float:
-        return 0.000000008
-
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.constant_gate,
-        exposure: Optional[float] = None,
-        timeout=DEFAULT_TIMEOUT,
-    ) -> AsyncStatus:
-        assert trigger in (
-            DetectorTrigger.constant_gate,
-            trigger == DetectorTrigger.variable_gate,
-        ), (
-            f"Receieved trigger {trigger}. Only constant_gate and "
-            "variable_gate triggering is supported on the PandA"
-        )
-        await self.pcap.arm.set(True, wait=True, timeout=timeout)
-        await wait_for_value(self.pcap.active, True, timeout=timeout)
-        await asyncio.sleep(0.2)
-        await self.pcap.arm.set(False, wait=False, timeout=timeout)
-        return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
-
-    async def disarm(self, timeout=DEFAULT_TIMEOUT) -> AsyncStatus:
-        await self.pcap.arm.set(False, wait=True, timeout=timeout)
-        await wait_for_value(self.pcap.active, False, timeout=timeout)
-        await asyncio.sleep(0.2)
-        set_mock_value(self.pcap.active, True)
-        return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
 
 
 @pytest.fixture
@@ -65,7 +27,6 @@ async def mock_hdf_panda(tmp_path):
     mock_hdf_panda = HDFPanda(
         "HDFPANDA:", directory_provider=directory_provider, name="panda"
     )
-    mock_hdf_panda._controller = MockPandaPcapController(mock_hdf_panda.pcap)
     block_a = CaptureBlock(name="block_a")
     block_b = CaptureBlock(name="block_b")
     block_a.test_capture = epics_signal_r(
@@ -78,6 +39,11 @@ async def mock_hdf_panda(tmp_path):
     setattr(mock_hdf_panda, "block_a", block_a)
     setattr(mock_hdf_panda, "block_b", block_b)
     await mock_hdf_panda.connect(mock=True)
+
+    def link_function(value, **kwargs):
+        set_mock_value(mock_hdf_panda.pcap.active, value)
+
+    callback_on_mock_put(mock_hdf_panda.pcap.arm, link_function)
     set_mock_value(block_a.test_capture, Capture.Min)
     set_mock_value(block_b.test_capture, Capture.Diff)
 
@@ -153,6 +119,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer, mock_hdf_panda)
+        yield from bps.wait_for([lambda: mock_hdf_panda.controller.disarm()])
         # assert mock_hdf_panda.controller.disarm.called  # type: ignore
 
     # fly scan
