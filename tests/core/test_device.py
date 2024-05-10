@@ -1,5 +1,6 @@
 import asyncio
 import traceback
+from unittest.mock import Mock
 
 import pytest
 
@@ -164,9 +165,36 @@ async def test_device_with_children_lazily_connects(RE):
 
 
 async def test_device_with_device_collector_lazily_connects():
-    sim_motor = motor.Motor("SOME_SIGNAL_WHICH_DOESN'T_EXIST:X")
+    sim_motor = motor.Motor("NONE_EXISTENT")
     with pytest.raises(NotConnected):
         await sim_motor.connect(sim=False, timeout=0.01)
     assert not sim_motor._previous_connect_success
     await sim_motor.connect(sim=True, timeout=0.01)
     assert sim_motor._previous_connect_success
+
+
+async def test_no_reconnect_signals_if_not_forced():
+    parent = DummyDeviceGroup("parent")
+
+    async def inner_connect(sim, timeout):
+        parent.child1.connected = True
+
+    parent.child1.connect = Mock(side_effect=inner_connect)
+    await parent.connect(sim=True, timeout=0.01)
+    assert parent.child1.connected
+    assert parent.child1.connect.call_count == 1
+    await parent.connect(sim=True, timeout=0.01)
+    assert parent.child1.connected
+    assert parent.child1.connect.call_count == 1
+
+    for count in range(2, 10):
+        await parent.connect(sim=True, timeout=0.01, force_reconnect=True)
+        assert parent.child1.connected
+        assert parent.child1.connect.call_count == count
+
+
+async def test_parent_not_connected():
+    parent = DummyDeviceGroup("parent")
+    await parent.child1.connect(sim=True, timeout=0.01)
+    assert not parent._previous_connect_success
+    assert not parent.child2._previous_connect_success
