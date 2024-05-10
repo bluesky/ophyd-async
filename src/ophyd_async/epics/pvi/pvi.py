@@ -179,7 +179,12 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
                 sub_device_2 = device_cls(SimSignalBackend(signal_dtype))
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
             else:
-                sub_device = DeviceVector({1: device_cls(), 2: device_cls()})
+                sub_device = DeviceVector(
+                    {
+                        1: getattr(device, device_name, device_cls()),
+                        2: getattr(device, device_name, device_cls()),
+                    }
+                )
 
                 for sub_device_in_vector in sub_device.values():
                     _sim_common_blocks(sub_device_in_vector, stripped_type=device_cls)
