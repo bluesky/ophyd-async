@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.device &#8212; ophyd-async 0.3a4.dev6+g5fd7928 documentation</title>
+    <title>ophyd_async.core.device &#8212; ophyd-async 0.3a4.dev7+g1e84233 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=c55a4951"></script>
+    <script src="../../../_static/documentation_options.js?v=62add037"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -563,20 +563,20 @@ document.write(`
 
 <div class="viewcode-block" id="Device.connect">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.Device.html#ophyd_async.core.Device.connect">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Connect self and all child Devices.</span>
 
 <span class="sd">        Contains a timeout that gets propagated to child.connect methods.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        sim:</span>
-<span class="sd">            If True then connect in simulation mode.</span>
+<span class="sd">        mock:</span>
+<span class="sd">            If True then use ``MockSignalBackend`` for all Signals</span>
 <span class="sd">        timeout:</span>
 <span class="sd">            Time to wait before failing with a TimeoutError.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">coros</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">name</span><span class="p">:</span> <span class="n">child_device</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="n">name</span><span class="p">:</span> <span class="n">child_device</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">mock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child_device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
         <span class="p">}</span>
         <span class="k">if</span> <span class="n">coros</span><span class="p">:</span>
@@ -620,9 +620,9 @@ document.write(`
 <span class="sd">        If True, call ``device.set_name(variable_name)`` on all collected</span>
 <span class="sd">        Devices</span>
 <span class="sd">    connect:</span>
-<span class="sd">        If True, call ``device.connect(sim)`` in parallel on all</span>
+<span class="sd">        If True, call ``device.connect(mock)`` in parallel on all</span>
 <span class="sd">        collected Devices</span>
-<span class="sd">    sim:</span>
+<span class="sd">    mock:</span>
 <span class="sd">        If True, connect Signals in simulation mode</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        How long to wait for connect before logging an exception</span>
@@ -644,12 +644,12 @@ document.write(`
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">set_name</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">connect</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">sim</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">mock</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_name</span> <span class="o">=</span> <span class="n">set_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span> <span class="o">=</span> <span class="n">connect</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sim</span> <span class="o">=</span> <span class="n">sim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span> <span class="o">=</span> <span class="n">mock</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_names_on_enter</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_objects_on_exit</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -683,7 +683,7 @@ document.write(`
                     <span class="n">obj</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">:</span>
                     <span class="n">connect_coroutines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_sim</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
                     <span class="p">)</span>
 
         <span class="c1"># Connect to all the devices</span>

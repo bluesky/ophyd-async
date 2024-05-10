@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using existing Devices &#8212; ophyd-async 0.3a4.dev6+g5fd7928 documentation</title>
+    <title>Using existing Devices &#8212; ophyd-async 0.3a4.dev7+g1e84233 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=c55a4951"></script>
+    <script src="../_static/documentation_options.js?v=62add037"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -588,7 +588,7 @@ name of the variable within the context. For example, here we call
 <li><p>If <code class="docutils literal notranslate"><span class="pre">connect=True</span></code> (the default), then call <a class="reference internal" href="../generated/ophyd_async.core.Device.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> in parallel for
 all top level Devices, waiting for up to <code class="docutils literal notranslate"><span class="pre">timeout</span></code> seconds. For example,
 here we call <code class="docutils literal notranslate"><span class="pre">asyncio.wait([det.connect(),</span> <span class="pre">samp.connect()])</span></code></p></li>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">sim=True</span></code> is passed, then don’t connect to PVs, but set Devices into
+<li><p>If <code class="docutils literal notranslate"><span class="pre">mock=True</span></code> is passed, then don’t connect to PVs, but set Devices into
 simulation mode</p></li>
 </ul>
 <p>The Devices we create in this example are a “sample stage” with a couple of
@@ -620,14 +620,14 @@ commands).</p>
 can be used in plans. We can move the <code class="docutils literal notranslate"><span class="pre">samp.x</span></code> mover to 100mm using
 <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="(in bluesky v1.13.0a4.dev175+gbc8222be)"><code class="xref any docutils literal notranslate"><span class="pre">bluesky.plan_stubs.mv</span></code></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">mov</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object wait_for at 0x7f0ac01d2460&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object wait_for at 0x7fcad8f86130&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>If this is too verbose to write, we registered a shorthand with
 <code class="docutils literal notranslate"><span class="pre">bluesky.utils.register_transform</span></code>: <code class="docutils literal notranslate"><span class="pre">&lt;my_plan(args)</span></code> is translated to
 <code class="docutils literal notranslate"><span class="pre">RE(my_plan(args))</span></code>. The command above can also be run as:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="o">&lt;</span><span class="n">mov</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object wait_for at 0x7f0ae3a1cd00&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object wait_for at 0x7fcad8ff89d0&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>We can get the primary reading of <code class="docutils literal notranslate"><span class="pre">samp.x</span></code>, in this case its readback value,
@@ -638,7 +638,7 @@ using <a class="reference external" href="https://blueskyproject.io/bluesky/main
 </div>
 <p>We can do a relative move of <code class="docutils literal notranslate"><span class="pre">samp.x</span></code> by 10mm, using <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mvr.html#bluesky.plan_stubs.mvr" title="(in bluesky v1.13.0a4.dev175+gbc8222be)"><code class="xref any docutils literal notranslate"><span class="pre">bluesky.plan_stubs.mvr</span></code></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="o">&lt;</span><span class="n">movr</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
-<span class="gh">Out[4]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object wait_for at 0x7f0ae3a1dbe0&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[4]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object wait_for at 0x7fcad8ff9ad0&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>Individual Devices will also expose some of the parameters of the underlying
@@ -656,12 +656,12 @@ can do a <a class="reference external" href="https://blueskyproject.io/bluesky/m
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 1     Time: 2024-05-10 12:34:55</span>
-<span class="go">Persistent Unique Scan ID: &#39;6af8315d-4855-4073-bd12-1b1133d3f06f&#39;</span>
+<span class="go">Transient Scan ID: 1     Time: 2024-05-10 14:01:07</span>
+<span class="go">Persistent Unique Scan ID: &#39;85fefa4f-4f52-4338-b0ca-94adb16ed3ef&#39;</span>
 
 
 
-<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;6af8315d-4855-4073-bd12-1b1133d3f06f&#39;,), plan_result=&#39;6af8315d-4855-4073-bd12-1b1133d3f06f&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;85fefa4f-4f52-4338-b0ca-94adb16ed3ef&#39;,), plan_result=&#39;85fefa4f-4f52-4338-b0ca-94adb16ed3ef&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/grid_scan1.png"><img alt="../_images/grid_scan1.png" src="../_images/grid_scan1.png" style="width: 4in;" />
@@ -675,7 +675,7 @@ can do a <a class="reference external" href="https://blueskyproject.io/bluesky/m
 use instances of <a class="reference internal" href="../generated/ophyd_async.epics.demo.EnergyMode.html#ophyd_async.epics.demo.EnergyMode" title="ophyd_async.epics.demo.EnergyMode"><code class="xref any py py-class docutils literal notranslate"><span class="pre">EnergyMode</span></code></a>, we can set it using a
 string value on the commandline:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="o">&lt;</span><span class="n">mov</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="s2">&quot;High Energy&quot;</span><span class="p">)</span>
-<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object SignalW.set.&lt;locals&gt;.do_set at 0x7f0ab88d3b40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object SignalW.set.&lt;locals&gt;.do_set at 0x7fcae3e74c40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>The same scan will now give a slightly different output. If we include the v1
@@ -683,12 +683,12 @@ device we can see it gives the same result:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">,</span> <span class="n">det_old</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 2     Time: 2024-05-10 12:34:59</span>
-<span class="go">Persistent Unique Scan ID: &#39;a911d846-5198-46c6-a076-3d28d9910d9c&#39;</span>
+<span class="go">Transient Scan ID: 2     Time: 2024-05-10 14:01:11</span>
+<span class="go">Persistent Unique Scan ID: &#39;6353aaf7-42dd-4bf7-a9de-4ca9b872e5c8&#39;</span>
 
 
 
-<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;a911d846-5198-46c6-a076-3d28d9910d9c&#39;,), plan_result=&#39;a911d846-5198-46c6-a076-3d28d9910d9c&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;6353aaf7-42dd-4bf7-a9de-4ca9b872e5c8&#39;,), plan_result=&#39;6353aaf7-42dd-4bf7-a9de-4ca9b872e5c8&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/grid_scan2.png"><img alt="../_images/grid_scan2.png" src="../_images/grid_scan2.png" style="width: 4in;" />

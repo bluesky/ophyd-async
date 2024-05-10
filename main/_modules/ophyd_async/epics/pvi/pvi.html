@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a4.dev6+g5fd7928 documentation</title>
+    <title>ophyd_async.epics.pvi.pvi &#8212; ophyd-async 0.3a4.dev7+g1e84233 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=c55a4951"></script>
+    <script src="../../../../_static/documentation_options.js?v=62add037"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -499,7 +499,7 @@ document.write(`
     <span class="n">get_type_hints</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SimSignalBackend</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SoftSignalBackend</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.core.signal</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.core.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics._backend._p4p</span> <span class="kn">import</span> <span class="n">PvaSignalBackend</span>
@@ -641,7 +641,7 @@ document.write(`
     <span class="k">return</span> <span class="n">is_device_vector</span><span class="p">,</span> <span class="n">is_signal</span><span class="p">,</span> <span class="n">signal_dtype</span><span class="p">,</span> <span class="n">device_cls</span>
 
 
-<span class="k">def</span> <span class="nf">_sim_common_blocks</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">stripped_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_mock_common_blocks</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">stripped_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="n">device_t</span> <span class="o">=</span> <span class="n">stripped_type</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">sub_devices</span> <span class="o">=</span> <span class="p">(</span>
         <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_type</span><span class="p">)</span>
@@ -660,23 +660,23 @@ document.write(`
 
         <span class="k">if</span> <span class="n">is_device_vector</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">is_signal</span><span class="p">:</span>
-                <span class="n">sub_device_1</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SimSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
-                <span class="n">sub_device_2</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SimSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
+                <span class="n">sub_device_1</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
+                <span class="n">sub_device_2</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
                 <span class="n">sub_device</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="n">sub_device_1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="n">sub_device_2</span><span class="p">})</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sub_device</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="n">device_cls</span><span class="p">(),</span> <span class="mi">2</span><span class="p">:</span> <span class="n">device_cls</span><span class="p">()})</span>
 
                 <span class="k">for</span> <span class="n">sub_device_in_vector</span> <span class="ow">in</span> <span class="n">sub_device</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="n">_sim_common_blocks</span><span class="p">(</span><span class="n">sub_device_in_vector</span><span class="p">,</span> <span class="n">stripped_type</span><span class="o">=</span><span class="n">device_cls</span><span class="p">)</span>
+                    <span class="n">_mock_common_blocks</span><span class="p">(</span><span class="n">sub_device_in_vector</span><span class="p">,</span> <span class="n">stripped_type</span><span class="o">=</span><span class="n">device_cls</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sub_device</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">value</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">sub_device</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">is_signal</span><span class="p">:</span>
-                <span class="n">sub_device</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SimSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
+                <span class="n">sub_device</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sub_device</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">device_name</span><span class="p">,</span> <span class="n">device_cls</span><span class="p">())</span>
-                <span class="n">_sim_common_blocks</span><span class="p">(</span><span class="n">sub_device</span><span class="p">,</span> <span class="n">stripped_type</span><span class="o">=</span><span class="n">device_cls</span><span class="p">)</span>
+                <span class="n">_mock_common_blocks</span><span class="p">(</span><span class="n">sub_device</span><span class="p">,</span> <span class="n">stripped_type</span><span class="o">=</span><span class="n">device_cls</span><span class="p">)</span>
 
         <span class="nb">setattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">device_name</span><span class="p">,</span> <span class="n">sub_device</span><span class="p">)</span>
         <span class="n">sub_device</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">device</span>
@@ -756,16 +756,16 @@ document.write(`
 <div class="viewcode-block" id="fill_pvi_entries">
 <a class="viewcode-back" href="../../../../generated/ophyd_async.epics.pvi.fill_pvi_entries.html#ophyd_async.epics.pvi.fill_pvi_entries">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">fill_pvi_entries</span><span class="p">(</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">root_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">sim</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">root_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">mock</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fills a ``device`` with signals from a the ``root_pvi:PVI`` table.</span>
 
 <span class="sd">    If the device names match with parent devices of ``device`` then types are used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">sim</span><span class="p">:</span>
-        <span class="c1"># set up sim signals for the common annotations</span>
-        <span class="n">_sim_common_blocks</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mock</span><span class="p">:</span>
+        <span class="c1"># set up mock signals for the common annotations</span>
+        <span class="n">_mock_common_blocks</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># check the pvi table for devices and fill the device with them</span>
         <span class="n">root_entry</span> <span class="o">=</span> <span class="n">PVIEntry</span><span class="p">(</span>

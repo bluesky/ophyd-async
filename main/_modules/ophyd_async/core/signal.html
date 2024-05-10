@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.signal &#8212; ophyd-async 0.3a4.dev6+g5fd7928 documentation</title>
+    <title>ophyd_async.core.signal &#8212; ophyd-async 0.3a4.dev7+g1e84233 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=c55a4951"></script>
+    <script src="../../../_static/documentation_options.js?v=62add037"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -506,15 +506,14 @@ document.write(`
     <span class="n">Subscribable</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="kn">from</span> <span class="nn">ophyd_async.core.mock_signal_backend</span> <span class="kn">import</span> <span class="n">MockSignalBackend</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.protocols</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span>
 
 <span class="kn">from</span> <span class="nn">.async_status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
 <span class="kn">from</span> <span class="nn">.device</span> <span class="kn">import</span> <span class="n">Device</span>
 <span class="kn">from</span> <span class="nn">.signal_backend</span> <span class="kn">import</span> <span class="n">SignalBackend</span>
-<span class="kn">from</span> <span class="nn">.sim_signal_backend</span> <span class="kn">import</span> <span class="n">SimSignalBackend</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">ReadingValueCallback</span><span class="p">,</span> <span class="n">T</span>
-
-<span class="n">_sim_backends</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Signal</span><span class="p">,</span> <span class="n">SimSignalBackend</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="kn">from</span> <span class="nn">.soft_signal_backend</span> <span class="kn">import</span> <span class="n">SoftSignalBackend</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">T</span>
 
 
 <span class="k">def</span> <span class="nf">_add_timeout</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -546,18 +545,17 @@ document.write(`
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">backend</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Signal.connect">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.Signal.html#ophyd_async.core.Signal.connect">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">sim</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">SimSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="o">.</span><span class="n">datatype</span><span class="p">)</span>
-            <span class="n">_sim_backends</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span>
-            <span class="n">_sim_backends</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mock</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">,</span> <span class="n">MockSignalBackend</span><span class="p">):</span>
+            <span class="c1"># Using a soft backend, look to the initial value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">MockSignalBackend</span><span class="p">(</span>
+                <span class="n">initial_backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_backend</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
 
@@ -788,34 +786,6 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="set_sim_value">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.set_sim_value.html#ophyd_async.core.set_sim_value">[docs]</a>
-<span class="k">def</span> <span class="nf">set_sim_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the value of a signal that is in sim mode.&quot;&quot;&quot;</span>
-    <span class="n">_sim_backends</span><span class="p">[</span><span class="n">signal</span><span class="p">]</span><span class="o">.</span><span class="n">_set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="set_sim_put_proceeds">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.set_sim_put_proceeds.html#ophyd_async.core.set_sim_put_proceeds">[docs]</a>
-<span class="k">def</span> <span class="nf">set_sim_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">proceeds</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Allow or block a put with wait=True from proceeding&quot;&quot;&quot;</span>
-    <span class="n">event</span> <span class="o">=</span> <span class="n">_sim_backends</span><span class="p">[</span><span class="n">signal</span><span class="p">]</span><span class="o">.</span><span class="n">put_proceeds</span>
-    <span class="k">if</span> <span class="n">proceeds</span><span class="p">:</span>
-        <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">event</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
-
-
-
-<div class="viewcode-block" id="set_sim_callback">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.set_sim_callback.html#ophyd_async.core.set_sim_callback">[docs]</a>
-<span class="k">def</span> <span class="nf">set_sim_callback</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">callback</span><span class="p">:</span> <span class="n">ReadingValueCallback</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Monitor the value of a signal that is in sim mode&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_sim_backends</span><span class="p">[</span><span class="n">signal</span><span class="p">]</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span></div>
-
-
-
 <div class="viewcode-block" id="soft_signal_rw">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.soft_signal_rw.html#ophyd_async.core.soft_signal_rw">[docs]</a>
 <span class="k">def</span> <span class="nf">soft_signal_rw</span><span class="p">(</span>
@@ -823,26 +793,27 @@ document.write(`
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a read-writable Signal with a SimSignalBackend&quot;&quot;&quot;</span>
-    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalRW</span><span class="p">(</span><span class="n">SimSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a read-writable Signal with a SoftSignalBackend&quot;&quot;&quot;</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalRW</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">signal</span></div>
 
 
 
-<div class="viewcode-block" id="soft_signal_r_and_backend">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.soft_signal_r_and_backend.html#ophyd_async.core.soft_signal_r_and_backend">[docs]</a>
-<span class="k">def</span> <span class="nf">soft_signal_r_and_backend</span><span class="p">(</span>
+<div class="viewcode-block" id="soft_signal_r_and_setter">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.soft_signal_r_and_setter.html#ophyd_async.core.soft_signal_r_and_setter">[docs]</a>
+<span class="k">def</span> <span class="nf">soft_signal_r_and_setter</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">SimSignalBackend</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a tuple of a read-only Signal and its SimSignalBackend through</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a tuple of a read-only Signal and a callable through</span>
 <span class="sd">    which the signal can be internally modified within the device. Use</span>
 <span class="sd">    soft_signal_rw if you want a device that is externally modifiable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">SimSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)</span>
     <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">backend</span><span class="p">)</span></div>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">)</span></div>
 
 
 

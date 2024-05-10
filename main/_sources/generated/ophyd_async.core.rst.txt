@@ -20,13 +20,17 @@ ophyd\_async.core
       :toctree:
       :nosignatures:
    
-      soft_signal_r_and_backend
+      assert_mock_put_called_with
+      callback_on_mock_put
+      mock_puts_blocked
+      set_mock_values
+      reset_mock_put_calls
+      soft_signal_r_and_setter
       soft_signal_rw
       observe_value
       set_and_wait_for_value
-      set_sim_callback
-      set_sim_put_proceeds
-      set_sim_value
+      set_mock_put_proceeds
+      set_mock_value
       wait_for_value
       get_dtype
       get_unique
@@ -56,8 +60,9 @@ ophyd\_async.core
       :nosignatures:
    
       SignalBackend
-      SimSignalBackend
+      SoftSignalBackend
       DetectorControl
+      MockSignalBackend
       DetectorTrigger
       DetectorWriter
       StandardDetector
