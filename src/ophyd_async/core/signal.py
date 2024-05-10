@@ -24,15 +24,14 @@ from bluesky.protocols import (
     Subscribable,
 )
 
+from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
 from .async_status import AsyncStatus
 from .device import Device
 from .signal_backend import SignalBackend
-from .sim_signal_backend import SimSignalBackend
-from .utils import DEFAULT_TIMEOUT, Callback, ReadingValueCallback, T
-
-_sim_backends: Dict[Signal, SimSignalBackend] = {}
+from .soft_signal_backend import SoftSignalBackend
+from .utils import DEFAULT_TIMEOUT, Callback, T
 
 
 def _add_timeout(func):
@@ -62,16 +61,15 @@ class Signal(Device, Generic[T]):
         name: str = "",
     ) -> None:
         self._timeout = timeout
-        self._init_backend = self._backend = backend
+        self._initial_backend = self._backend = backend
         super().__init__(name)
 
-    async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
-        if sim:
-            self._backend = SimSignalBackend(datatype=self._init_backend.datatype)
-            _sim_backends[self] = self._backend
-        else:
-            self._backend = self._init_backend
-            _sim_backends.pop(self, None)
+    async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
+        if mock and not isinstance(self._backend, MockSignalBackend):
+            # Using a soft backend, look to the initial value
+            self._backend = MockSignalBackend(
+                initial_backend=self._initial_backend,
+            )
         self.log.debug(f"Connecting to {self.source}")
         await self._backend.connect(timeout=timeout)
 
@@ -255,47 +253,29 @@ class SignalX(Signal):
         return AsyncStatus(coro)
 
 
-def set_sim_value(signal: Signal[T], value: T):
-    """Set the value of a signal that is in sim mode."""
-    _sim_backends[signal]._set_value(value)
-
-
-def set_sim_put_proceeds(signal: Signal[T], proceeds: bool):
-    """Allow or block a put with wait=True from proceeding"""
-    event = _sim_backends[signal].put_proceeds
-    if proceeds:
-        event.set()
-    else:
-        event.clear()
-
-
-def set_sim_callback(signal: Signal[T], callback: ReadingValueCallback[T]) -> None:
-    """Monitor the value of a signal that is in sim mode"""
-    return _sim_backends[signal].set_callback(callback)
-
-
 def soft_signal_rw(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
 ) -> SignalRW[T]:
-    """Creates a read-writable Signal with a SimSignalBackend"""
-    signal = SignalRW(SimSignalBackend(datatype, initial_value), name=name)
+    """Creates a read-writable Signal with a SoftSignalBackend"""
+    signal = SignalRW(SoftSignalBackend(datatype, initial_value), name=name)
     return signal
 
 
-def soft_signal_r_and_backend(
+def soft_signal_r_and_setter(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
-) -> Tuple[SignalR[T], SimSignalBackend]:
-    """Returns a tuple of a read-only Signal and its SimSignalBackend through
+) -> Tuple[SignalR[T], Callable[[T]]]:
+    """Returns a tuple of a read-only Signal and a callable through
     which the signal can be internally modified within the device. Use
     soft_signal_rw if you want a device that is externally modifiable
     """
-    backend = SimSignalBackend(datatype, initial_value)
+    backend = SoftSignalBackend(datatype, initial_value)
     signal = SignalR(backend, name=name)
-    return (signal, backend)
+
+    return (signal, backend.set_value)
 
 
 async def assert_value(signal: SignalR[T], value: Any) -> None:

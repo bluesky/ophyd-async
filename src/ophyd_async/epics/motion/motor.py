@@ -40,7 +40,11 @@ class Motor(StandardReadable, Movable, Stoppable):
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
-    async def _move(self, new_position: float, watchers: List[Callable] = []):
+    async def _move(
+        self, new_position: float, watchers: Optional[List[Callable]] = None
+    ):
+        if watchers is None:
+            watchers = []
         self._set_success = True
         start = time.monotonic()
         old_position, units, precision = await asyncio.gather(

@@ -22,7 +22,6 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimPatternDet
 
     RE(bp.count([sim_pattern_detector], num=1))
 
-    print(names)
     # NOTE - double resource because double stream
     assert names == [
         "start",

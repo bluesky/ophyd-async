@@ -88,8 +88,8 @@ class Device(HasName):
 
         Parameters
         ----------
-        sim:
-            If True then connect in simulation mode.
+        mock:
+            If True then use ``MockSignalBackend`` for all Signals
         timeout:
             Time to wait before failing with a TimeoutError.
         """
@@ -134,9 +134,9 @@ class DeviceCollector:
         If True, call ``device.set_name(variable_name)`` on all collected
         Devices
     connect:
-        If True, call ``device.connect(sim)`` in parallel on all
+        If True, call ``device.connect(mock)`` in parallel on all
         collected Devices
-    sim:
+    mock:
         If True, connect Signals in simulation mode
     timeout:
         How long to wait for connect before logging an exception
@@ -158,12 +158,12 @@ class DeviceCollector:
         self,
         set_name=True,
         connect=True,
-        sim=False,
+        mock=False,
         timeout: float = 10.0,
     ):
         self._set_name = set_name
         self._connect = connect
-        self._sim = sim
+        self._mock = mock
         self._timeout = timeout
         self._names_on_enter: Set[str] = set()
         self._objects_on_exit: Dict[str, Any] = {}
@@ -197,7 +197,7 @@ class DeviceCollector:
                     obj.set_name(name)
                 if self._connect:
                     connect_coroutines[name] = obj.connect(
-                        self._sim, timeout=self._timeout
+                        self._mock, timeout=self._timeout
                     )
 
         # Connect to all the devices
