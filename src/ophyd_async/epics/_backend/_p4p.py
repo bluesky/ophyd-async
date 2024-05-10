@@ -249,7 +249,6 @@ class PvaSignalBackend(SignalBackend[T]):
         self.converter: PvaConverter = DisconnectedPvaConverter()
         self.subscription: Optional[Subscription] = None
 
-    @property
     def source(self, name: str):
         return f"pva://{self.read_pv}"
 
