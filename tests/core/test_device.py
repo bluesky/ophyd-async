@@ -19,7 +19,7 @@ from ophyd_async.planstubs.ensure_connected import (
 
 
 class DummyBaseDevice(Device):
-    def __init__(self):
+    def __init__(self) -> None:
         self.connected = False
 
     async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
