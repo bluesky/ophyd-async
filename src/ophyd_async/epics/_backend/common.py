@@ -14,7 +14,7 @@ def get_supported_values(
         raise TypeError(f"{pv} is type Enum but doesn't inherit from String")
     if issubclass(datatype, Enum):
         choices = tuple(v.value for v in datatype)
-        if choices != pv_choices:
+        if set(choices) != set(pv_choices):
             raise TypeError(
                 (
                     f"{pv} has choices {pv_choices}, "
