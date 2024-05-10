@@ -13,13 +13,13 @@ from ophyd_async.core import (
     DetectorControl,
     DetectorWriter,
     HardwareTriggeredFlyable,
-    SignalRW,
-    SimSignalBackend,
+    observe_value,
+    set_mock_value,
 )
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
-from ophyd_async.core.signal import observe_value, set_sim_value
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
+from ophyd_async.epics.signal.signal import epics_signal_rw
 from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda._trigger import StaticSeqTableTriggerLogic
 from ophyd_async.planstubs import (
@@ -29,7 +29,7 @@ from ophyd_async.planstubs import (
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int))
+        self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
@@ -90,8 +90,8 @@ class DummyWriter(DetectorWriter):
 @pytest.fixture
 async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
-    await writers[0].dummy_signal.connect(sim=True)
-    await writers[1].dummy_signal.connect(sim=True)
+    await writers[0].dummy_signal.connect(mock=True)
+    await writers[1].dummy_signal.connect(mock=True)
 
     async def dummy_arm_1(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)
@@ -121,15 +121,17 @@ async def panda():
             self._prefix = prefix
             super().__init__(name)
 
-        async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
-            await super().connect(sim, timeout)
+        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
+            await super().connect(mock, timeout)
 
-    async with DeviceCollector(sim=True):
-        sim_panda = Panda("PANDAQSRV:", "sim_panda")
+    async with DeviceCollector(mock=True):
+        mock_panda = Panda("PANDAQSRV:", "mock_panda")
 
-    assert sim_panda.name == "sim_panda"
-    yield sim_panda
+    assert mock_panda.name == "mock_panda"
+    yield mock_panda
 
 
 async def test_hardware_triggered_flyable_with_static_seq_table_logic(
@@ -180,7 +182,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         yield from bps.open_run()
         yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)
 
-        set_sim_value(flyer.trigger_logic.seq.active, 1)
+        set_mock_value(flyer.trigger_logic.seq.active, 1)
 
         yield from bps.kickoff(flyer, wait=True)
         for detector in detector_list:
@@ -194,7 +196,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         for detector in detector_list:
             detector.writer.index += 1
 
-        set_sim_value(flyer.trigger_logic.seq.active, 0)
+        set_mock_value(flyer.trigger_logic.seq.active, 0)
 
         done = False
         while not done:

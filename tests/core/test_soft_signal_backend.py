@@ -8,7 +8,8 @@ import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
-from ophyd_async.core import Signal, SignalBackend, SimSignalBackend, T
+from ophyd_async.core import Signal, SignalBackend, T
+from ophyd_async.core.soft_signal_backend import SoftSignalBackend
 
 
 class MyEnum(str, Enum):
@@ -87,13 +88,13 @@ class MonitorQueue:
         # (str, "longstr2.VAL$", ls1, ls2, string_d),
     ],
 )
-async def test_backend_get_put_monitor(
+async def test_soft_signal_backend_get_put_monitor(
     datatype: Type[T],
     initial_value: T,
     put_value: T,
     descriptor: Callable[[Any], dict],
 ):
-    backend = SimSignalBackend(datatype)
+    backend = SoftSignalBackend(datatype)
 
     await backend.connect()
     q = MonitorQueue(backend)
@@ -114,27 +115,21 @@ async def test_backend_get_put_monitor(
         q.close()
 
 
-async def test_sim_backend_if_disconnected():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64])
-    with pytest.raises(NotImplementedError):
-        await sim_backend.get_value()
+async def test_soft_signal_backend_with_numpy_typing():
+    soft_backend = SoftSignalBackend(npt.NDArray[np.float64])
+    await soft_backend.connect()
 
-
-async def test_sim_backend_with_numpy_typing():
-    sim_backend = SimSignalBackend(npt.NDArray[np.float64])
-    await sim_backend.connect()
-
-    array = await sim_backend.get_value()
+    array = await soft_backend.get_value()
     assert array.shape == (0,)
 
 
-async def test_sim_backend_descriptor_fails_for_invalid_class():
+async def test_soft_signal_descriptor_fails_for_invalid_class():
     class myClass:
         def __init__(self) -> None:
             pass
 
-    sim_signal = Signal(SimSignalBackend(myClass))
-    await sim_signal.connect(sim=True)
+    soft_signal = Signal(SoftSignalBackend(myClass))
+    await soft_signal.connect()
 
     with pytest.raises(AssertionError):
-        await sim_signal._backend.get_datakey("")
+        await soft_signal._backend.get_datakey("")

@@ -21,7 +21,9 @@ class AsyncStatus(Status):
             self.task = awaitable
         else:
             self.task = asyncio.create_task(awaitable)  # type: ignore
+
         self.task.add_done_callback(self._run_callbacks)
+
         self._callbacks = cast(List[Callback[Status]], [])
         self._watchers = watchers
 
