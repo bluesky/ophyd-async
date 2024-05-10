@@ -545,6 +545,7 @@ async def test_str_enum_returns_enum(ioc: IOC):
     sig = epics_signal_rw(MyEnum, pv_name)
     await sig.connect()
     val = await sig.get_value()
+    assert repr(val) == "<MyEnum.b: 'Bbb'>"
     assert val is MyEnum.b
     assert val == "Bbb"
 
