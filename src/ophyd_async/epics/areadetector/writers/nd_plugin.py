@@ -14,7 +14,7 @@ class NDArrayBase(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.unique_id = epics_signal_r(int, prefix + "UniqueId_RBV")
         self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile")
-        super().__init__(name)
+        super().__init__(name=name)
 
 
 class NDPluginBase(NDArrayBase):

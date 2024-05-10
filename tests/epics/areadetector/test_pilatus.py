@@ -6,7 +6,7 @@ from ophyd_async.core import (
     DeviceCollector,
     DirectoryProvider,
     TriggerInfo,
-    set_sim_value,
+    set_mock_value,
 )
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusTriggerMode
 from ophyd_async.epics.areadetector.pilatus import PilatusDetector
@@ -17,7 +17,7 @@ async def pilatus(
     RE: RunEngine,
     static_directory_provider: DirectoryProvider,
 ) -> PilatusDetector:
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         adpilatus = PilatusDetector("PILATUS:", static_directory_provider)
 
     return adpilatus
@@ -48,7 +48,7 @@ async def test_trigger_mode_set(
     async def trigger_and_complete():
         await pilatus.controller.arm(num=1, trigger=detector_trigger)
         # Prevent timeouts
-        set_sim_value(pilatus.controller._drv.acquire, True)
+        set_mock_value(pilatus.controller._drv.acquire, True)
 
     # Default TriggerMode
     assert (await pilatus.drv.trigger_mode.get_value()) == PilatusTriggerMode.internal

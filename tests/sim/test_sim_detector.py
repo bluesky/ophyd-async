@@ -7,7 +7,7 @@ from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
 
 @pytest.fixture
 async def sim_motor():
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         sim_motor = motor.Motor("test")
     return sim_motor
 
