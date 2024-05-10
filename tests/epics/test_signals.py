@@ -83,7 +83,16 @@ def ioc(request):
         stderr=subprocess.STDOUT,
         universal_newlines=True,
     )
+
+    start_time = time.monotonic()
+    while "iocRun: All initialization complete" not in (
+        process.stdout.readline().strip()
+    ):
+        if time.monotonic() - start_time > 10:
+            raise TimeoutError("IOC did not start in time")
+
     yield IOC(process, protocol)
+
     # close backend caches before the event loop
     purge_channel_caches()
     try:
