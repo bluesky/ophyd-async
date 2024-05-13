@@ -1,0 +1,6 @@
+ophyd\_async.core.assert\_configuration
+=======================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: assert_configuration
