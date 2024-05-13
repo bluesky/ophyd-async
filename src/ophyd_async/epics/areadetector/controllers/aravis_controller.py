@@ -23,7 +23,7 @@ class AravisController(DetectorControl):
         self.gpio_number = gpio_number
 
     def get_deadtime(self, exposure: float) -> float:
-        return self._drv.dead_time or 0
+        return 1961e-6
 
     async def arm(
         self,

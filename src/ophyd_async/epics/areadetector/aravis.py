@@ -46,7 +46,6 @@ class AravisDetector(StandardDetector, HasHints):
         )
 
     async def _prepare(self, value: TriggerInfo) -> None:
-        await self.drv.fetch_deadtime()
         await super()._prepare(value)
 
     def get_external_trigger_gpio(self):
