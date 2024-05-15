@@ -14,6 +14,11 @@ from ophyd_async.epics.areadetector.drivers.aravis_driver import (
 )
 from ophyd_async.epics.areadetector.utils import ImageMode, stop_busy_record
 
+# The deadtime of an ADaravis controller varies depending on the exact model of camera.
+# Ideally we would maximize performance by dynamically retrieving the deadtime at
+# runtime. See <ISSUE>
+_HIGHEST_POSSIBLE_DEADTIME = 1961e-6
+
 
 class AravisController(DetectorControl):
     GPIO_NUMBER = Literal[1, 2, 3, 4]
@@ -23,7 +28,7 @@ class AravisController(DetectorControl):
         self.gpio_number = gpio_number
 
     def get_deadtime(self, exposure: float) -> float:
-        return 1961e-6
+        return _HIGHEST_POSSIBLE_DEADTIME
 
     async def arm(
         self,
