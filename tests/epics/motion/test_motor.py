@@ -49,7 +49,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     watcher.reset_mock()
     assert 0.55 == await sim_motor.user_setpoint.get_value()
     assert not s.done
-    await asyncio.sleep(A_BIT)
+    await asyncio.sleep(0.1)
     set_mock_value(sim_motor.user_readback, 0.1)
     assert watcher.call_count == 1
     assert watcher.call_args == call(
@@ -75,7 +75,7 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     assert not s.done
     await sim_motor.stop()
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(A_BIT)
     assert s.done
     assert s.success is False
 
