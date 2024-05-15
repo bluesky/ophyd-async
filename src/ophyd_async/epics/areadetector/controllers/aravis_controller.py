@@ -16,7 +16,7 @@ from ophyd_async.epics.areadetector.utils import ImageMode, stop_busy_record
 
 # The deadtime of an ADaravis controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
-# runtime. See <ISSUE>
+# runtime. See https://github.com/bluesky/ophyd-async/issues/308
 _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
 
 
