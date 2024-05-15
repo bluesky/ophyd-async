@@ -17,7 +17,7 @@ class DummyBaseDevice(Device):
     def __init__(self) -> None:
         self.connected = False
 
-    async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
+    async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
         self.connected = True
 
 
@@ -71,7 +71,7 @@ async def test_children_of_device_have_set_names_and_get_connected(
 
 
 async def test_device_with_device_collector():
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         parent = DummyDeviceGroup("parent")
 
     assert parent.name == "parent"
@@ -88,7 +88,7 @@ async def test_wait_for_connection():
         def __init__(self, name) -> None:
             self.set_name(name)
 
-        async def connect(self, sim=False, timeout=DEFAULT_TIMEOUT):
+        async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
             await asyncio.sleep(0.01)
             self.connected = True
 
@@ -110,3 +110,10 @@ async def test_wait_for_connection_propagates_error(
     with pytest.raises(NotConnected) as e:
         await wait_for_connection(**failing_coros)
         assert traceback.extract_tb(e.__traceback__)[-1].name == "failing_coroutine"
+
+
+async def test_device_log_has_correct_name():
+    device = DummyBaseDevice()
+    assert device.log.extra["ophyd_async_device_name"] == ""
+    device.set_name("device")
+    assert device.log.extra["ophyd_async_device_name"] == "device"

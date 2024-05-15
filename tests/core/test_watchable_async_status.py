@@ -7,7 +7,7 @@ import pytest
 from bluesky.protocols import Movable
 
 from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
-from ophyd_async.core.signal import soft_signal_r_and_backend
+from ophyd_async.core.signal import soft_signal_r_and_setter
 from ophyd_async.core.standard_readable import StandardReadable
 from ophyd_async.core.utils import WatcherUpdate
 
@@ -66,7 +66,7 @@ class TWatcher:
 class ASTestDevice(StandardReadable, Movable):
     def __init__(self, name: str = "") -> None:
         self._staged: bool = False
-        self.sig, self._sig_backend = soft_signal_r_and_backend(datatype=int)
+        self.sig, self._sig_setter = soft_signal_r_and_setter(datatype=int)
         super().__init__(name)
 
     @AsyncStatus.wrap
@@ -80,7 +80,7 @@ class ASTestDeviceSingleSet(ASTestDevice):
     async def set(self, val):
         assert self._staged
         await asyncio.sleep(0.01)
-        self._sig_backend._set_value(val)  # type: ignore
+        self._sig_setter(val)  # type: ignore
 
 
 class ASTestDeviceTimeoutSet(ASTestDevice):
@@ -88,7 +88,7 @@ class ASTestDeviceTimeoutSet(ASTestDevice):
     async def set(self, val, timeout=0.01):
         assert self._staged
         await asyncio.sleep(0.01)
-        self._sig_backend._set_value(val - 1)  # type: ignore
+        self._sig_setter(val - 1)  # type: ignore
         await asyncio.sleep(0.01)
         yield WatcherUpdate(1, 1, 1)
         await asyncio.sleep(0.01)
@@ -121,7 +121,7 @@ class ASTestDeviceIteratorSet(ASTestDevice):
                 fraction=0,
             )
         if self.complete_set:
-            self._sig_backend._set_value(val)  # type: ignore
+            self._sig_setter(val)  # type: ignore
             yield WatcherUpdate(
                 name=self.name,
                 current=val,

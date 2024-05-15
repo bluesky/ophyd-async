@@ -83,7 +83,16 @@ def ioc(request):
         stderr=subprocess.STDOUT,
         universal_newlines=True,
     )
+
+    start_time = time.monotonic()
+    while "iocRun: All initialization complete" not in (
+        process.stdout.readline().strip()
+    ):
+        if time.monotonic() - start_time > 10:
+            raise TimeoutError("IOC did not start in time")
+
     yield IOC(process, protocol)
+
     # close backend caches before the event loop
     purge_channel_caches()
     try:
@@ -202,6 +211,7 @@ ca_dtype_mapping = {
         (float, "float", 3.141, 43.5, number_d),
         (str, "str", "hello", "goodbye", string_d),
         (MyEnum, "enum", MyEnum.b, MyEnum.c, enum_d),
+        (str, "enum", "Bbb", "Ccc", enum_d),
         (npt.NDArray[np.int8], "int8a", [-128, 127], [-8, 3, 44], waveform_d),
         (npt.NDArray[np.uint8], "uint8a", [0, 255], [218], waveform_d),
         (npt.NDArray[np.int16], "int16a", [-32768, 32767], [-855], waveform_d),
@@ -338,7 +348,7 @@ class EnumNoString(Enum):
         (str, "float", "has type float not str"),
         (str, "stra", "has type [str] not str"),
         (int, "uint8a", "has type [uint8] not int"),
-        (float, "enum", "has type Enum not float"),
+        (float, "enum", "is type Enum but doesn't inherit from String"),
         (npt.NDArray[np.int32], "float64a", "has type [float64] not [int32]"),
     ],
 )
@@ -535,3 +545,27 @@ def test_signal_helpers():
 
     execute = epics_signal_x("Execute")
     assert execute._backend.write_pv == "Execute"
+
+
+async def test_str_enum_returns_enum(ioc: IOC):
+    await ioc.make_backend(MyEnum, "enum")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
+
+    sig = epics_signal_rw(MyEnum, pv_name)
+    await sig.connect()
+    val = await sig.get_value()
+    assert repr(val) == "<MyEnum.b: 'Bbb'>"
+    assert val is MyEnum.b
+    assert val == "Bbb"
+
+
+async def test_str_returns_enum(ioc: IOC):
+    await ioc.make_backend(str, "enum")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
+
+    sig = epics_signal_rw(str, pv_name)
+    await sig.connect()
+    val = await sig.get_value()
+    assert val == MyEnum.b
+    assert val == "Bbb"
+    assert val is not MyEnum.b

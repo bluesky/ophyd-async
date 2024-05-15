@@ -50,25 +50,27 @@ async def panda_t():
             create_children_from_annotations(self)
             super().__init__(name)
 
-        async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
-            await super().connect(sim, timeout)
+        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
+            await super().connect(mock=mock, timeout=timeout)
 
     yield Panda
 
 
 @pytest.fixture
-async def sim_panda(panda_t):
-    async with DeviceCollector(sim=True):
-        sim_panda = panda_t("PANDAQSRV:", "sim_panda")
+async def mock_panda(panda_t):
+    async with DeviceCollector(mock=True):
+        mock_panda = panda_t("PANDAQSRV:", "mock_panda")
 
-    assert sim_panda.name == "sim_panda"
-    yield sim_panda
+    assert mock_panda.name == "mock_panda"
+    yield mock_panda
 
 
-def test_panda_names_correct(sim_panda):
-    assert sim_panda.seq[1].name == "sim_panda-seq-1"
-    assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
+def test_panda_names_correct(mock_panda):
+    assert mock_panda.seq[1].name == "mock_panda-seq-1"
+    assert mock_panda.pulse[1].name == "mock_panda-pulse-1"
 
 
 def test_panda_name_set(panda_t):
@@ -76,7 +78,7 @@ def test_panda_name_set(panda_t):
     assert panda.name == "panda"
 
 
-async def test_panda_children_connected(sim_panda):
+async def test_panda_children_connected(mock_panda):
     # try to set and retrieve from simulated values...
     table = SeqTable(
         repeats=np.array([1, 1, 1, 32]).astype(np.uint16),
@@ -102,11 +104,11 @@ async def test_panda_children_connected(sim_panda):
         oute2=np.array([1, 0, 1, 0]).astype(np.bool_),
         outf2=np.array([1, 0, 0, 0]).astype(np.bool_),
     )
-    await sim_panda.pulse[1].delay.set(20.0)
-    await sim_panda.seq[1].table.set(table)
+    await mock_panda.pulse[1].delay.set(20.0)
+    await mock_panda.seq[1].table.set(table)
 
-    readback_pulse = await sim_panda.pulse[1].delay.get_value()
-    readback_seq = await sim_panda.seq[1].table.get_value()
+    readback_pulse = await mock_panda.pulse[1].delay.get_value()
+    readback_seq = await mock_panda.seq[1].table.get_value()
 
     assert readback_pulse == 20.0
     assert readback_seq == table

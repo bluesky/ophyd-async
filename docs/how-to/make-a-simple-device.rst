@@ -30,7 +30,8 @@ its Python type, which could be:
 
 - A primitive (`str`, `int`, `float`)
 - An array (`numpy.typing.NDArray` or ``Sequence[str]``)
-- An enum (`enum.Enum`). 
+- An enum (`enum.Enum`) which **must** also extend `str`
+    - `str` and ``EnumClass(str, Enum)`` are the only valid ``datatype`` for an enumerated signal.
 
 The rest of the arguments are PV connection information, in this case the PV suffix.
 

@@ -8,7 +8,7 @@ from ophyd_async.core import StandardReadable
 from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
 from ophyd_async.core.signal import (
     observe_value,
-    soft_signal_r_and_backend,
+    soft_signal_r_and_setter,
     soft_signal_rw,
 )
 from ophyd_async.core.standard_readable import ConfigSignal, HintedSignal
@@ -26,7 +26,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         - instant: bool: whether to move instantly, or with a delay
         """
         with self.add_children_as_readables(HintedSignal):
-            self.user_readback, self._user_readback = soft_signal_r_and_backend(
+            self.user_readback, self._user_readback_set = soft_signal_r_and_setter(
                 float, 0
             )
 
@@ -106,14 +106,15 @@ class SimMotor(StandardReadable, Movable, Stoppable):
                 # update position based on time elapsed
                 if time_elapsed >= travel_time:
                     # successfully reached our target position
-                    await self._user_readback.put(new_position)
+                    self._user_readback_set(new_position)
+                    self._set_success = True
                     break
                 else:
                     current_position = (
                         old_position + distance * time_elapsed / travel_time
                     )
 
-                await self._user_readback.put(current_position)
+                self._user_readback_set(current_position)
 
                 # 10hz update loop
                 await asyncio.sleep(0.1)

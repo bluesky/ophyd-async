@@ -20,6 +20,7 @@ dependencies = [
     "event-model<1.21.0",
     "p4p",
     "pyyaml",
+    "colorlog",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -64,7 +65,6 @@ dev = [
     "tox-direct",
     "types-mock",
     "types-pyyaml",
-    "colorlog"
 ]
 
 [project.scripts]
@@ -86,7 +86,6 @@ write_to = "src/ophyd_async/_version.py"
 addopts = """
     --tb=native -vv --strict-markers --doctest-modules
     --doctest-glob="*.rst" --doctest-glob="*.md" --ignore=docs/examples
-    --cov=src/ophyd_async --cov-report term --cov-report xml:cov.xml
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"
