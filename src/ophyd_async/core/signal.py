@@ -316,7 +316,8 @@ async def assert_reading(
         await assert_reading(readable, reading)
 
     """
-    assert await readable.read() == reading
+    the_reading = await readable.read()
+    assert the_reading == reading, "%s == %s" % (the_reading, reading)
 
 
 async def assert_configuration(
@@ -339,7 +340,11 @@ async def assert_configuration(
         await assert_configuration(configurable configuration)
 
     """
-    assert await configurable.read_configuration() == configuration
+    the_configurable = await configurable.read_configuration()
+    assert the_configurable == configuration, "%s == %s" % (
+        the_configurable,
+        configuration,
+    )
 
 
 def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
@@ -359,8 +364,11 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
         assert_emitted(docs, start=1, descriptor=1,
         resource=1, datum=1, event=1, stop=1)
     """
-    assert list(docs) == list(numbers)
-    assert {name: len(d) for name, d in docs.items()} == numbers
+    assert list(docs) == list(numbers), "%s == %s" % (list(docs), list(numbers))
+    assert {name: len(d) for name, d in docs.items()} == numbers, "%s == %s" % (
+        docs,
+        numbers,
+    )
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
