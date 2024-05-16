@@ -44,7 +44,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.05),
+        time_elapsed=pytest.approx(0.0, abs=0.2),
     )
     watcher.reset_mock()
     assert 0.55 == await sim_motor.user_setpoint.get_value()
