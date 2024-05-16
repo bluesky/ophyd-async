@@ -292,21 +292,22 @@ class StandardDetector(
             f"Detector {self.controller} needs at least {required}s deadtime, "
             f"but trigger logic provides only {self._trigger_info.deadtime}s"
         )
-
         self._arm_status = await self.controller.arm(
             num=self._trigger_info.num,
             trigger=self._trigger_info.trigger,
             exposure=self._trigger_info.livetime,
         )
-
-    def kickoff(self, timeout: Optional[float] = None):
         self._fly_start = time.monotonic()
-        self._fly_status = WatchableAsyncStatus(
-            self._observe_writer_indicies(self._last_frame), timeout
-        )
-        return self._fly_status
 
-    async def _observe_writer_indicies(self, end_observation: int):
+    @AsyncStatus.wrap
+    async def kickoff(self):
+        if not self._arm_status:
+            raise Exception("Detector not armed!")
+
+    @WatchableAsyncStatus.wrap
+    async def complete(self):
+        assert self._arm_status, "Prepare not run"
+        assert self._trigger_info
         async for index in self.writer.observe_indices_written(
             self._frame_writing_timeout
         ):
@@ -314,18 +315,13 @@ class StandardDetector(
                 name=self.name,
                 current=index,
                 initial=self._initial_frame,
-                target=end_observation,
+                target=self._trigger_info.num,
                 unit="",
                 precision=0,
                 time_elapsed=time.monotonic() - self._fly_start,
             )
-            if index >= end_observation:
+            if index >= self._trigger_info.num:
                 break
-
-    @AsyncStatus.wrap
-    async def complete(self) -> AsyncStatus:
-        assert self._fly_status, "Kickoff not run"
-        return await self._fly_status
 
     async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe

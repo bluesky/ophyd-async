@@ -37,7 +37,7 @@ class AsyncStatusBase(Status):
                 asyncio.wait_for(awaitable, timeout=timeout)
             )
         self.task.add_done_callback(self._run_callbacks)
-        self._callbacks = cast(list[Callback[Status]], [])
+        self._callbacks: list[Callback[Status]] = []
 
     def __await__(self):
         return self.task.__await__()
