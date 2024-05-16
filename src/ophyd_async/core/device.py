@@ -36,10 +36,6 @@ class Device(HasName):
     # None if connect hasn't started, an Event if it has, a set Event if it's done
     _connect_task: Optional[asyncio.Task] = None
 
-    # Previous connect was successful, False on initialization
-    # since there was no previous connect
-    _previous_connect_success: bool = False
-
     def __init__(self, name: str = "") -> None:
         self.set_name(name)
 
@@ -96,12 +92,12 @@ class Device(HasName):
             Time to wait before failing with a TimeoutError.
         """
 
-        self._previous_connect_success = (
-            self._connect_task is not None
+        previous_connect_ok = (
+            self._connect_task
             and self._connect_task.done()
             and not self._connect_task.exception()
         )
-        if force_reconnect or not self._previous_connect_success:
+        if force_reconnect or not previous_connect_ok:
             # Kick off a connection
             coros = {
                 name: child_device.connect(mock, timeout=timeout)
@@ -112,9 +108,6 @@ class Device(HasName):
         assert self._connect_task, "Connect task not created, this shouldn't happen"
         # Wait for it to complete
         await self._connect_task
-        self._previous_connect_success = (
-            self._connect_task.done() and not self._connect_task.exception()
-        )
 
 
 VT = TypeVar("VT", bound=Device)
