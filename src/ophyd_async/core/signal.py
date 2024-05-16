@@ -317,7 +317,7 @@ async def assert_reading(
 
     """
     the_reading = await readable.read()
-    assert the_reading == reading, "%s == %s" % (the_reading, reading)
+    assert expected_reading == actual_reading, "Expected %s to produce %s but actually got %s" % (readable.name, expected_reading, actual_reading)
 
 
 async def assert_configuration(
@@ -365,9 +365,10 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
         resource=1, datum=1, event=1, stop=1)
     """
     assert list(docs) == list(numbers), "%s == %s" % (list(docs), list(numbers))
-    assert {name: len(d) for name, d in docs.items()} == numbers, "%s == %s" % (
-        docs,
+    actual_numbers = {name: len(d) for name, d in docs.items()}
+    assert actual_numbers == numbers, "For each document type expected %s but got %s" % (
         numbers,
+        actual_numbers,
     )
 
 
