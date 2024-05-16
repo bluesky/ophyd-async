@@ -42,7 +42,6 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     return det
 
 
-
 def count_sim(dets: List[StandardDetector], times: int = 1):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 

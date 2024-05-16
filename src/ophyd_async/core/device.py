@@ -24,8 +24,6 @@ from bluesky.run_engine import call_in_bluesky_event_loop
 from .utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
-_background_connect_task = set()
-
 class Device(HasName):
     """Common base class for all Ophyd Async Devices.
 
@@ -94,20 +92,22 @@ class Device(HasName):
             Time to wait before failing with a TimeoutError.
         """
 
-        previous_connect_ok = (self._connect_task is not None) and self._connect_task.done() and not self._connect_task.exception()
+        previous_connect_ok = (
+            self._connect_task
+            and self._connect_task.done()
+            and not self._connect_task.exception()
+        )
         if force_reconnect or not previous_connect_ok:
             # Kick off a connection
             coros = {
                 name: child_device.connect(mock, timeout=timeout)
                 for name, child_device in self.children()
             }
-            _background_connect_task.add(self._connect_task)
             self._connect_task = asyncio.create_task(wait_for_connection(**coros))
 
         assert self._connect_task, "Connect task not created, this shouldn't happen"
         # Wait for it to complete
         await self._connect_task
-        _background_connect_task.discard(self._connect_task)
 
 
 VT = TypeVar("VT", bound=Device)
