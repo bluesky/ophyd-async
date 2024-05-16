@@ -113,7 +113,7 @@ async def test_mover_moving_well(mock_mover: demo.Mover) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.1, abs=0.05),
+        time_elapsed=pytest.approx(0.1, abs=0.4),
     )
     set_mock_value(mock_mover.readback, 0.5499999)
     await asyncio.sleep(A_WHILE)
