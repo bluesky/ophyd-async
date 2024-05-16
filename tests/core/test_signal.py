@@ -172,6 +172,15 @@ async def test_assert_reaading(mock_signal: SignalRW):
     await assert_reading(mock_signal, dummy_reading)
 
 
+async def test_failed_assert_reaading(mock_signal: SignalRW):
+    set_mock_value(mock_signal, 888)
+    dummy_reading = {
+        "mock_signal": Reading({"alarm_severity": 0, "timestamp": ANY, "value": 88})
+    }
+    with pytest.raises(AssertionError):
+        await assert_reading(mock_signal, dummy_reading)
+
+
 class DummyReadable(StandardReadable):
     """A demo Readable to produce read and config signal"""
 
