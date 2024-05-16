@@ -278,7 +278,9 @@ def soft_signal_r_and_setter(
     return (signal, backend.set_value)
 
 
-def _generate_assert_error_msg(name: str, expected_result: str, actuall_result) -> str:
+def _generate_assert_error_msg(
+    name: str, expected_result: str, actuall_result: str
+) -> str:
     WARNING = "\033[93m"
     FAIL = "\033[91m"
     ENDC = "\033[0m"
