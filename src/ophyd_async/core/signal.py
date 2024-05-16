@@ -382,21 +382,10 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
     assert list(docs) == list(numbers), _generate_assert_error_msg(
         "documents", list(numbers), list(docs)
     )
-
-    # "%s == %s" % (list(docs), list(numbers))
     actual_numbers = {name: len(d) for name, d in docs.items()}
     assert actual_numbers == numbers, _generate_assert_error_msg(
         "emitted", numbers, actual_numbers
     )
-
-
-"""
-        "For each document type expected %s but got %s"
-        % (
-            numbers,
-            actual_numbers,
-        )
-    """
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
