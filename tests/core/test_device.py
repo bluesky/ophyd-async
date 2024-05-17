@@ -22,7 +22,9 @@ class DummyBaseDevice(Device):
     def __init__(self) -> None:
         self.connected = False
 
-    async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
+    async def connect(
+        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
+    ):
         self.connected = True
 
 
@@ -192,7 +194,7 @@ async def test_device_with_device_collector_lazily_connects():
 async def test_no_reconnect_signals_if_not_forced():
     parent = DummyDeviceGroup("parent")
 
-    async def inner_connect(mock, timeout):
+    async def inner_connect(mock, timeout, force_reconnect):
         parent.child1.connected = True
 
     parent.child1.connect = Mock(side_effect=inner_connect)

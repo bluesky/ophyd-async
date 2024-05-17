@@ -78,7 +78,7 @@ class Device(HasName):
         self,
         mock: bool = False,
         timeout: float = DEFAULT_TIMEOUT,
-        force_reconnect=False,
+        force_reconnect: bool = False,
     ):
         """Connect self and all child Devices.
 
@@ -100,7 +100,9 @@ class Device(HasName):
         if force_reconnect or not previous_connect_ok:
             # Kick off a connection
             coros = {
-                name: child_device.connect(mock, timeout=timeout)
+                name: child_device.connect(
+                    mock, timeout=timeout, force_reconnect=force_reconnect
+                )
                 for name, child_device in self.children()
             }
             self._connect_task = asyncio.create_task(wait_for_connection(**coros))
