@@ -50,13 +50,17 @@ async def test_async_status_has_no_exception_if_coroutine_successful(normal_coro
 
 
 async def test_async_status_success_if_cancelled(normal_coroutine):
-    status = AsyncStatus(normal_coroutine())
+    coro = normal_coroutine()
+    status = AsyncStatus(coro)
     assert status.exception() is None
     status.task.cancel()
     with pytest.raises(asyncio.CancelledError):
         await status
     assert status.success is False
     assert isinstance(status.exception(), asyncio.CancelledError)
+    # asyncio will RuntimeWarning us about this never being awaited if we don't.
+    # RunEngine handled this as a special case
+    await coro
 
 
 async def coroutine_to_wrap(time: float):
@@ -122,7 +126,7 @@ class FailingMovable(Movable, Device):
 
 
 async def test_status_propogates_traceback_under_RE(RE) -> None:
-    expected_call_stack = ["_set", "_fail"]
+    expected_call_stack = ["wait_for", "_set", "_fail"]
     d = FailingMovable()
     with pytest.raises(FailedStatus) as ctx:
         RE(bps.mv(d, 3))
@@ -145,3 +149,41 @@ async def test_async_status_exception_timeout():
     st = AsyncStatus(asyncio.sleep(0.1))
     with pytest.raises(Exception):
         st.exception(timeout=1.0)
+
+
+@pytest.fixture
+def loop():
+    return asyncio.get_event_loop()
+
+
+def test_asyncstatus_wraps_bare_func(loop):
+    async def do_test():
+        @AsyncStatus.wrap
+        async def coro_status():
+            await asyncio.sleep(0.01)
+
+        st = coro_status()
+        assert isinstance(st, AsyncStatus)
+        await asyncio.wait_for(st.task, None)
+        assert st.done
+
+    loop.run_until_complete(do_test())
+
+
+def test_asyncstatus_wraps_bare_func_with_args_kwargs(loop):
+    async def do_test():
+        test_result = 5
+
+        @AsyncStatus.wrap
+        async def coro_status(x: int, y: int, *, z=False):
+            await asyncio.sleep(0.01)
+            nonlocal test_result
+            test_result = x * y if z else 0
+
+        st = coro_status(3, 4, z=True)
+        assert isinstance(st, AsyncStatus)
+        await asyncio.wait_for(st.task, None)
+        assert st.done
+        assert test_result == 12
+
+    loop.run_until_complete(do_test())

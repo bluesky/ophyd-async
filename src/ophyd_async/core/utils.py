@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from dataclasses import dataclass
 from typing import (
     Awaitable,
     Callable,
     Dict,
+    Generic,
     Iterable,
     List,
     Optional,
+    ParamSpec,
     Type,
     TypeVar,
     Union,
@@ -18,6 +21,7 @@ import numpy as np
 from bluesky.protocols import Reading
 
 T = TypeVar("T")
+P = ParamSpec("P")
 Callback = Callable[[T], None]
 
 #: A function that will be called with the Reading and value when the
@@ -75,6 +79,21 @@ class NotConnected(Exception):
 
     def __str__(self) -> str:
         return self.format_error_string(indent="")
+
+
+@dataclass(frozen=True)
+class WatcherUpdate(Generic[T]):
+    """A dataclass such that, when expanded, it provides the kwargs for a watcher"""
+
+    current: T
+    initial: T
+    target: T
+    name: str | None = None
+    unit: str | None = None
+    precision: float | None = None
+    fraction: float | None = None
+    time_elapsed: float | None = None
+    time_remaining: float | None = None
 
 
 async def wait_for_connection(**coros: Awaitable[None]):

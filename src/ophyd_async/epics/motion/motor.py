@@ -1,10 +1,17 @@
 import asyncio
-import time
-from typing import Callable, List, Optional
+from dataclasses import replace
 
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import AsyncStatus, ConfigSignal, HintedSignal, StandardReadable
+from ophyd_async.core import (
+    AsyncStatus,
+    ConfigSignal,
+    HintedSignal,
+    StandardReadable,
+    WatchableAsyncStatus,
+)
+from ophyd_async.core.signal import observe_value
+from ophyd_async.core.utils import WatcherUpdate
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -41,54 +48,46 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.user_readback.set_name(name)
 
     async def _move(
-        self, new_position: float, watchers: Optional[List[Callable]] = None
-    ):
-        if watchers is None:
-            watchers = []
+        self, new_position: float
+    ) -> tuple[WatcherUpdate[float], AsyncStatus]:
         self._set_success = True
-        start = time.monotonic()
         old_position, units, precision = await asyncio.gather(
             self.user_setpoint.get_value(),
             self.motor_egu.get_value(),
             self.precision.get_value(),
         )
-
-        def update_watchers(current_position: float):
-            for watcher in watchers:
-                watcher(
-                    name=self.name,
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    unit=units,
-                    precision=precision,
-                    time_elapsed=time.monotonic() - start,
-                )
-
-        self.user_readback.subscribe_value(update_watchers)
-        try:
-            await self.user_setpoint.set(new_position)
-        finally:
-            self.user_readback.clear_sub(update_watchers)
+        move_status = self.user_setpoint.set(new_position, wait=True)
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
+        return (
+            WatcherUpdate(
+                initial=old_position,
+                current=old_position,
+                target=new_position,
+                unit=units,
+                precision=precision,
+            ),
+            move_status,
+        )
 
-    def move(self, new_position: float, timeout: Optional[float] = None):
-        """Commandline only synchronous move of a Motor"""
-        from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
-
-        if in_bluesky_event_loop():
-            raise RuntimeError("Will deadlock run engine if run in a plan")
-        call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
-
-    def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:
-        watchers: List[Callable] = []
-        coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return AsyncStatus(coro, watchers)
+    @WatchableAsyncStatus.wrap
+    async def set(self, new_position: float, timeout: float | None = None):
+        update, move_status = await self._move(new_position)
+        async for current_position in observe_value(
+            self.user_readback, done_status=move_status
+        ):
+            if not self._set_success:
+                raise RuntimeError("Motor was stopped")
+            yield replace(
+                update,
+                name=self.name,
+                current=current_position,
+            )
 
     async def stop(self, success=False):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        status = self.motor_stop.trigger(wait=False)
-        await status
+        await self.motor_stop.trigger(wait=False)
+        # Trigger any callbacks
+        await self.user_readback._backend.put(await self.user_readback.get_value())
