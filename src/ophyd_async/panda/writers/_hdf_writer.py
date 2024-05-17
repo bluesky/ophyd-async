@@ -53,10 +53,11 @@ class PandaHDFWriter(DetectorWriter):
                 str(info.root / info.resource_dir)
             ),
             self.panda_device.data.hdf_file_name.set(
-                info.filename,
+                f"{info.filename}.h5",
             ),
             self.panda_device.data.num_capture.set(0),
             # TODO: Set create_dir_depth once available
+            # https://github.com/bluesky/ophyd-async/issues/317
         )
 
         # Wait for it to start, stashing the status that tells us when it finishes

@@ -93,9 +93,9 @@ async def mock_panda(panda_t):
 
 
 @pytest.fixture
-async def sim_writer(tmp_path, mock_panda) -> PandaHDFWriter:
-    fp = StaticFilenameProvider(mock_panda.name)
-    dp = StaticPathProvider(fp, tmp_path, filename_suffix="/data.h5")
+async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
+    fp = StaticFilenameProvider("data")
+    dp = StaticPathProvider(fp, tmp_path / mock_panda.name)
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
             prefix="TEST-PANDA",
@@ -143,9 +143,9 @@ async def test_open_close_sets_capture(mock_writer: PandaHDFWriter):
 async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_path):
     await mock_writer.open()
     path = await mock_writer.panda_device.data.hdf_directory.get_value()
-    assert path == str(tmp_path)
+    assert path.startswith(str(tmp_path))
     name = await mock_writer.panda_device.data.hdf_file_name.get_value()
-    assert name == "mock_panda/data.h5"
+    assert name == "data.h5"
 
 
 async def test_open_errors_when_multiplier_not_one(mock_writer: PandaHDFWriter):
