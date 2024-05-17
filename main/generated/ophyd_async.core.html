@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.3a5.dev2+g4c4da2c documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.3a5.dev3+g1c0e20e documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=85acc4b3"></script>
+    <script src="../_static/documentation_options.js?v=52b34249"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -481,6 +481,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalRW.html">ophyd_async.core.SignalRW</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalX.html">ophyd_async.core.SignalX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html">ophyd_async.core.AsyncStatus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.WatchableAsyncStatus.html">ophyd_async.core.WatchableAsyncStatus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DirectoryInfo.html">ophyd_async.core.DirectoryInfo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DirectoryProvider.html">ophyd_async.core.DirectoryProvider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NameProvider.html">ophyd_async.core.NameProvider</a></li>
@@ -761,39 +762,42 @@ may change API on minor release numbers before then</p>
 <td><p>Signal that puts the default value</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a></p></td>
-<td><p>Convert asyncio awaitable to bluesky Status interface</p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.DirectoryInfo.html#ophyd_async.core.DirectoryInfo" title="ophyd_async.core.DirectoryInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirectoryInfo</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.WatchableAsyncStatus.html#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a></p></td>
+<td><p>Convert AsyncIterator of WatcherUpdates to bluesky Status interface.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.DirectoryInfo.html#ophyd_async.core.DirectoryInfo" title="ophyd_async.core.DirectoryInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirectoryInfo</span></code></a></p></td>
 <td><p>Information about where and how to write a file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.DirectoryProvider.html#ophyd_async.core.DirectoryProvider" title="ophyd_async.core.DirectoryProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirectoryProvider</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.DirectoryProvider.html#ophyd_async.core.DirectoryProvider" title="ophyd_async.core.DirectoryProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirectoryProvider</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.NameProvider.html#ophyd_async.core.NameProvider" title="ophyd_async.core.NameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NameProvider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.NameProvider.html#ophyd_async.core.NameProvider" title="ophyd_async.core.NameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NameProvider</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.ShapeProvider.html#ophyd_async.core.ShapeProvider" title="ophyd_async.core.ShapeProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ShapeProvider</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.ShapeProvider.html#ophyd_async.core.ShapeProvider" title="ophyd_async.core.ShapeProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ShapeProvider</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.StaticDirectoryProvider.html#ophyd_async.core.StaticDirectoryProvider" title="ophyd_async.core.StaticDirectoryProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticDirectoryProvider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.StaticDirectoryProvider.html#ophyd_async.core.StaticDirectoryProvider" title="ophyd_async.core.StaticDirectoryProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticDirectoryProvider</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardReadable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardReadable</span></code></a></p></td>
 <td><p>Device that owns its children and provides useful default behavior.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.ConfigSignal.html#ophyd_async.core.ConfigSignal" title="ophyd_async.core.ConfigSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.ConfigSignal.html#ophyd_async.core.ConfigSignal" title="ophyd_async.core.ConfigSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.HintedSignal.html#ophyd_async.core.HintedSignal" title="ophyd_async.core.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.HintedSignal.html#ophyd_async.core.HintedSignal" title="ophyd_async.core.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.TriggerInfo.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.TriggerInfo.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a></p></td>
 <td><p>Minimal set of information required to setup triggering on a detector</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.TriggerLogic.html#ophyd_async.core.TriggerLogic" title="ophyd_async.core.TriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TriggerLogic</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.TriggerLogic.html#ophyd_async.core.TriggerLogic" title="ophyd_async.core.TriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TriggerLogic</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.HardwareTriggeredFlyable.html#ophyd_async.core.HardwareTriggeredFlyable" title="ophyd_async.core.HardwareTriggeredFlyable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HardwareTriggeredFlyable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.HardwareTriggeredFlyable.html#ophyd_async.core.HardwareTriggeredFlyable" title="ophyd_async.core.HardwareTriggeredFlyable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HardwareTriggeredFlyable</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>

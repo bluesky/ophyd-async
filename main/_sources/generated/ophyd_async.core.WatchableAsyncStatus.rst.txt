@@ -3,12 +3,12 @@
     Ophyd async is included on a provisional basis until the v1.0 release and 
     may change API on minor release numbers before then
 
-ophyd\_async.core.AsyncStatus
-=============================
+ophyd\_async.core.WatchableAsyncStatus
+======================================
 
 .. currentmodule:: ophyd_async.core
 
-.. autoclass:: AsyncStatus
+.. autoclass:: WatchableAsyncStatus
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,9 +22,10 @@ ophyd\_async.core.AsyncStatus
    .. autosummary::
       :nosignatures:
    
-      ~AsyncStatus.add_callback
-      ~AsyncStatus.exception
-      ~AsyncStatus.wrap
+      ~WatchableAsyncStatus.add_callback
+      ~WatchableAsyncStatus.exception
+      ~WatchableAsyncStatus.watch
+      ~WatchableAsyncStatus.wrap
    
    
 
@@ -34,7 +35,7 @@ ophyd\_async.core.AsyncStatus
 
    .. autosummary::
    
-      ~AsyncStatus.done
-      ~AsyncStatus.success
+      ~WatchableAsyncStatus.done
+      ~WatchableAsyncStatus.success
    
    

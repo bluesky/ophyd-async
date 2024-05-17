@@ -28,7 +28,6 @@ ophyd\_async.epics.demo.Mover
       ~Mover.connect
       ~Mover.describe
       ~Mover.describe_configuration
-      ~Mover.move
       ~Mover.read
       ~Mover.read_configuration
       ~Mover.set

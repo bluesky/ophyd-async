@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.detector &#8212; ophyd-async 0.3a5.dev2+g4c4da2c documentation</title>
+    <title>ophyd_async.core.detector &#8212; ophyd-async 0.3a5.dev3+g1c0e20e documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=85acc4b3"></script>
+    <script src="../../../_static/documentation_options.js?v=52b34249"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -513,9 +513,9 @@ document.write(`
 
 <span class="kn">from</span> <span class="nn">ophyd_async.protocols</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
 
-<span class="kn">from</span> <span class="nn">.async_status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
+<span class="kn">from</span> <span class="nn">.async_status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span>
 <span class="kn">from</span> <span class="nn">.device</span> <span class="kn">import</span> <span class="n">Device</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">WatcherUpdate</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 
@@ -708,7 +708,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TriggerInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># For kickoff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WatchableAsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">:</span> <span class="nb">float</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_intial_frame</span><span class="p">:</span> <span class="nb">int</span>
@@ -836,47 +836,41 @@ document.write(`
             <span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="si">}</span><span class="s2"> needs at least </span><span class="si">{</span><span class="n">required</span><span class="si">}</span><span class="s2">s deadtime, &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;but trigger logic provides only </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="si">}</span><span class="s2">s&quot;</span>
         <span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">(</span>
             <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
             <span class="n">trigger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span>
             <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
 
 <div class="viewcode-block" id="StandardDetector.kickoff">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.kickoff">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span> <span class="o">=</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fly</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span></div>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Detector not armed!&quot;</span><span class="p">)</span></div>
 
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_fly</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observe_writer_indicies</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_observe_writer_indicies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">end_observation</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_frame_writing_timeout</span>
-        <span class="p">):</span>
-            <span class="k">for</span> <span class="n">watcher</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span>
-                <span class="n">watcher</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
-                    <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="n">end_observation</span><span class="p">,</span>
-                    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                    <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">end_observation</span><span class="p">:</span>
-                <span class="k">break</span>
 
 <div class="viewcode-block" id="StandardDetector.complete">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.complete">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">,</span> <span class="s2">&quot;Kickoff not run&quot;</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span></div>
+    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">,</span> <span class="s2">&quot;Prepare not run&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_frame_writing_timeout</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">:</span>
+                <span class="k">break</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.describe_collect">

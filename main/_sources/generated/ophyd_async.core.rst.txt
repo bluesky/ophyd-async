@@ -75,6 +75,7 @@ ophyd\_async.core
       SignalRW
       SignalX
       AsyncStatus
+      WatchableAsyncStatus
       DirectoryInfo
       DirectoryProvider
       NameProvider

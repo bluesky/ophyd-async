@@ -28,7 +28,6 @@ ophyd\_async.epics.motion.Motor
       ~Motor.connect
       ~Motor.describe
       ~Motor.describe_configuration
-      ~Motor.move
       ~Motor.read
       ~Motor.read_configuration
       ~Motor.set
