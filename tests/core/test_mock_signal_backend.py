@@ -35,11 +35,7 @@ async def test_mock_signal_backend(connect_mock_mode):
     assert await mock_signal._backend.get_value() == ""
     await mock_signal._backend.put("test")
     assert await mock_signal._backend.get_value() == "test"
-
-    mock_signal._backend.mock.get_value.assert_called_once
-
-    mock_signal._backend.mock["get_value"].assert_called_once
-    assert mock_signal._backend.mock.put.call_args_list == [
+    assert mock_signal._backend.put_mock.call_args_list == [
         call("test", wait=True, timeout=None),
     ]
 
