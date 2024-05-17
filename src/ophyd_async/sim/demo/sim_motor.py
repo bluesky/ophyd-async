@@ -1,13 +1,18 @@
 import asyncio
 import time
-from typing import Callable, List, Optional
+from dataclasses import replace
 
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import StandardReadable
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.signal import soft_signal_r_and_setter, soft_signal_rw
+from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
+from ophyd_async.core.signal import (
+    observe_value,
+    soft_signal_r_and_setter,
+    soft_signal_rw,
+)
 from ophyd_async.core.standard_readable import ConfigSignal, HintedSignal
+from ophyd_async.core.utils import WatcherUpdate
 
 
 class SimMotor(StandardReadable, Movable, Stoppable):
@@ -27,10 +32,10 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
         with self.add_children_as_readables(ConfigSignal):
             self.velocity = soft_signal_rw(float, 1.0)
-            self.egu = soft_signal_rw(float, "mm")
+            self.egu = soft_signal_rw(str, "mm")
 
         self._instant = instant
-        self._move_task: Optional[asyncio.Task] = None
+        self._move_status: AsyncStatus | None = None
 
         # Define some signals
         self.user_setpoint = soft_signal_rw(float, 0)
@@ -44,21 +49,37 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         """
         Stop the motor if it is moving
         """
-        if self._move_task:
-            self._move_task.cancel()
-            self._move_task = None
+        if self._move_status:
+            self._move_status.task.cancel()
+            self._move_status = None
+
+        async def trigger_callbacks():
+            await self.user_readback._backend.put(
+                await self.user_readback._backend.get_value()
+            )
+
+        asyncio.create_task(trigger_callbacks())
 
         self._set_success = success
 
-    def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:  # noqa: F821
+    @WatchableAsyncStatus.wrap
+    async def set(self, new_position: float, timeout: float | None = None):
         """
         Asynchronously move the motor to a new position.
         """
-        watchers: List[Callable] = []
-        coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return AsyncStatus(coro, watchers)
+        update, move_status = await self._move(new_position, timeout)
+        async for current_position in observe_value(
+            self.user_readback, done_status=move_status
+        ):
+            if not self._set_success:
+                raise RuntimeError("Motor was stopped")
+            yield replace(
+                update,
+                name=self.name,
+                current=current_position,
+            )
 
-    async def _move(self, new_position: float, watchers: List[Callable] = []):
+    async def _move(self, new_position: float, timeout: float | None = None):
         """
         Start the motor moving to a new position.
 
@@ -67,6 +88,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         """
         self.stop()
         start = time.monotonic()
+        self._set_success = True
 
         current_position = await self.user_readback.get_value()
         distance = abs(new_position - current_position)
@@ -94,25 +116,18 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
                 self._user_readback_set(current_position)
 
-                # notify watchers of the new position
-                for watcher in watchers:
-                    watcher(
-                        name=self.name,
-                        current=current_position,
-                        initial=old_position,
-                        target=new_position,
-                        unit=units,
-                        time_elapsed=time.monotonic() - start,
-                    )
-
                 # 10hz update loop
                 await asyncio.sleep(0.1)
 
-        # set up a task that updates the motor position at 10hz
-        self._move_task = asyncio.create_task(update_position())
+        # set up a task that updates the motor position at ~10hz
+        self._move_status = AsyncStatus(asyncio.wait_for(update_position(), timeout))
 
-        try:
-            await self._move_task
-        finally:
-            if not self._set_success:
-                raise RuntimeError("Motor was stopped")
+        return (
+            WatcherUpdate(
+                initial=old_position,
+                current=old_position,
+                target=new_position,
+                unit=units,
+            ),
+            self._move_status,
+        )
