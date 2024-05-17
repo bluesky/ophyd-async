@@ -92,14 +92,13 @@ class Device(HasName):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
-
-        previous_connect_ok = (
+        # If previous connect with same args has started and not errored, can use it
+        can_use_previous_connect = (
             self._connect_task
-            and self._connect_task.done()
-            and not self._connect_task.exception()
+            and not (self._connect_task.done() and self._connect_task.exception())
             and self._connect_mock_arg == mock
         )
-        if force_reconnect or not previous_connect_ok:
+        if force_reconnect or not can_use_previous_connect:
             # Kick off a connection
             coros = {
                 name: child_device.connect(

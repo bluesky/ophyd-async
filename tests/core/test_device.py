@@ -9,13 +9,16 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     DeviceVector,
+    MockSignalBackend,
     NotConnected,
     wait_for_connection,
 )
+from ophyd_async.core.soft_signal_backend import SoftSignalBackend
 from ophyd_async.epics.motion import motor
 from ophyd_async.planstubs.ensure_connected import (
     ensure_connected,
 )
+from ophyd_async.sim.demo.sim_motor import SimMotor
 
 
 class DummyBaseDevice(Device):
@@ -140,6 +143,16 @@ async def test_device_lazily_connects(RE):
         and mock_motor._connect_task.done()
         and not mock_motor._connect_task.exception()
     )
+
+
+async def test_device_mock_and_back_again(RE):
+    motor = SimMotor("motor")
+    assert not motor._connect_task
+    await motor.connect(mock=False)
+    assert isinstance(motor.egu._backend, SoftSignalBackend)
+    assert motor._connect_task
+    await motor.connect(mock=True)
+    assert isinstance(motor.egu._backend, MockSignalBackend)
 
 
 class MotorBundle(Device):
