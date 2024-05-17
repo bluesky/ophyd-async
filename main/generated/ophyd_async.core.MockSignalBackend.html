@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.MockSignalBackend &#8212; ophyd-async 0.3a5.dev5+g91e0e6f documentation</title>
+    <title>ophyd_async.core.MockSignalBackend &#8212; ophyd-async 0.3a5.dev6+g302597c documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=3a4b28a9"></script>
+    <script src="../_static/documentation_options.js?v=cb151b20"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -677,6 +677,12 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.MockSignalBackend.datatype" title="ophyd_async.core.MockSignalBackend.datatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datatype</span></code></a></p></td>
 <td><p>Datatype of the signal value</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.MockSignalBackend.put_mock" title="ophyd_async.core.MockSignalBackend.put_mock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">put_mock</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.MockSignalBackend.put_proceeds" title="ophyd_async.core.MockSignalBackend.put_proceeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">put_proceeds</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py attribute">
@@ -693,6 +699,16 @@ may change API on minor release numbers before then</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend.connect">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/mock_signal_backend.html#MockSignalBackend.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockSignalBackend.connect" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend.put_mock">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put_mock</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock" title="(in Python v3.12)"><span class="pre">Mock</span></a></em><a class="headerlink" href="#ophyd_async.core.MockSignalBackend.put_mock" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend.put_proceeds">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put_proceeds</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Event</span></em><a class="headerlink" href="#ophyd_async.core.MockSignalBackend.put_proceeds" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -790,6 +806,8 @@ may change API on minor release numbers before then</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.datatype"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.datatype</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.source"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.source()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.connect"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.connect()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.put_mock"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.put_mock</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.put_proceeds"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.put_proceeds</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.put"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.put()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.set_value"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.set_value()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.get_descriptor"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.get_descriptor()</span></code></a></li>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.mock_signal_backend &#8212; ophyd-async 0.3a5.dev5+g91e0e6f documentation</title>
+    <title>ophyd_async.core.mock_signal_backend &#8212; ophyd-async 0.3a5.dev6+g302597c documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3a4b28a9"></script>
+    <script src="../../../_static/documentation_options.js?v=cb151b20"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -481,8 +481,9 @@ document.write(`
                   
   <h1>Source code for ophyd_async.core.mock_signal_backend</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span>
-<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">MagicMock</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">Mock</span>
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Descriptor</span><span class="p">,</span> <span class="n">Reading</span>
 
@@ -520,15 +521,9 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span> <span class="o">=</span> <span class="n">initial_backend</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">put_proceeds</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">put_proceeds</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-
 <div class="viewcode-block" id="MockSignalBackend.source">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.source">[docs]</a>
     <span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_backend</span><span class="p">:</span>
             <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;mock+</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;mock+</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span></div>
@@ -537,13 +532,23 @@ document.write(`
 <div class="viewcode-block" id="MockSignalBackend.connect">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.connect">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+        <span class="k">pass</span></div>
 
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">put_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mock</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Mock</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;put&quot;</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">put_proceeds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">:</span>
+        <span class="n">put_proceeds</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="n">put_proceeds</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">put_proceeds</span>
 
 <div class="viewcode-block" id="MockSignalBackend.put">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.put">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">put_mock</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">wait</span><span class="p">:</span>
@@ -553,28 +558,24 @@ document.write(`
 <div class="viewcode-block" id="MockSignalBackend.set_value">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.set_value">[docs]</a>
     <span class="k">def</span> <span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MockSignalBackend.get_descriptor">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.get_descriptor">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_descriptor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Descriptor</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">get_descriptor</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span><span class="o">.</span><span class="n">get_descriptor</span><span class="p">(</span><span class="n">source</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MockSignalBackend.get_reading">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.get_reading">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="MockSignalBackend.get_value">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.get_value">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span></div>
 
 
@@ -582,7 +583,6 @@ document.write(`
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.get_setpoint">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;For a soft signal, the setpoint and readback values are the same.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">get_setpoint</span><span class="p">()</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span><span class="o">.</span><span class="n">get_setpoint</span><span class="p">()</span></div>
 
 
@@ -595,7 +595,6 @@ document.write(`
 <div class="viewcode-block" id="MockSignalBackend.set_callback">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend.set_callback">[docs]</a>
     <span class="k">def</span> <span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ReadingValueCallback</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span></div>
 </div>
 

@@ -42,5 +42,7 @@ ophyd\_async.core.MockSignalBackend
    .. autosummary::
    
       ~MockSignalBackend.datatype
+      ~MockSignalBackend.put_mock
+      ~MockSignalBackend.put_proceeds
    
    
