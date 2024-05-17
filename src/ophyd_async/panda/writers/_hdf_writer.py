@@ -79,10 +79,10 @@ async def get_signals_marked_for_capture(
         capture_signals.keys(), capture_signals.values(), signal_values
     ):
         signal_path = signal_path.replace("_capture", "")
-        if (signal_value.value in iter(Capture)) and (signal_value.value != Capture.No):
+        if (signal_value in iter(Capture)) and (signal_value != Capture.No):
             signals_to_capture[signal_path] = CaptureSignalWrapper(
                 signal_object,
-                signal_value.value,
+                signal_value,
             )
 
     return signals_to_capture
@@ -149,7 +149,7 @@ class PandaHDFWriter(DetectorWriter):
                 else split_path[-2]
             )
 
-            for suffix in str(capture_signal.capture_type).split(" "):
+            for suffix in capture_signal.capture_type.split(" "):
                 self._datasets.append(
                     _HDFDataset(
                         name,
