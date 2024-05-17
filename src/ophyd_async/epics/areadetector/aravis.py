@@ -2,7 +2,7 @@ from typing import get_args
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import DirectoryProvider, StandardDetector, TriggerInfo
+from ophyd_async.core import DirectoryProvider, StandardDetector
 from ophyd_async.epics.areadetector.controllers.aravis_controller import (
     AravisController,
 )
@@ -44,10 +44,6 @@ class AravisDetector(StandardDetector, HasHints):
             config_sigs=(self.drv.acquire_time,),
             name=name,
         )
-
-    async def _prepare(self, value: TriggerInfo) -> None:
-        await self.drv.fetch_deadtime()
-        await super()._prepare(value)
 
     def get_external_trigger_gpio(self):
         return self._controller.gpio_number

@@ -24,58 +24,12 @@ async def adaravis(
     return adaravis
 
 
-@pytest.mark.parametrize(
-    "model,pixel_format,deadtime",
-    [
-        ("Manta G-125", "Mono12Packed", 63e-6),
-        ("Manta G-125B", "Mono12Packed", 63e-6),
-        ("Manta G-125", "Mono8", 63e-6),
-        ("Manta G-125B", "Mono8", 63e-6),
-        ("Manta G-235", "Mono8", 118e-6),
-        ("Manta G-235B", "Mono8", 118e-6),
-        ("Manta G-235", "RGB8Packed", 390e-6),
-        ("Manta G-235B", "RGB8Packed", 390e-6),
-        ("Manta G-609", "", 47e-6),
-        ("Manta G-609", "foo", 47e-6),
-        ("Manta G-609", None, 47e-6),
-    ],
-)
-async def test_deadtime_fetched(
-    model: str,
-    pixel_format: str,
-    deadtime: float,
+@pytest.mark.parametrize("exposure_time", [0.0, 0.1, 1.0, 10.0, 100.0])
+async def test_deadtime_invariant_with_exposure_time(
+    exposure_time: float,
     adaravis: AravisDetector,
 ):
-    set_mock_value(adaravis.drv.model, model)
-    set_mock_value(adaravis.drv.pixel_format, pixel_format)
-
-    await adaravis.drv.fetch_deadtime()
-    # deadtime invariant with exposure time
-    assert adaravis.controller.get_deadtime(0) == deadtime
-    assert adaravis.controller.get_deadtime(500) == deadtime
-
-
-async def test_unknown_model_deadtime(
-    adaravis: AravisDetector,
-):
-    set_mock_value(adaravis.drv.model, "FOO")
-
-    with pytest.raises(ValueError, match="Model FOO does not have defined deadtimes"):
-        await adaravis.drv.fetch_deadtime()
-
-
-async def test_unknown_pixel_format_deadtime(
-    adaravis: AravisDetector,
-):
-    set_mock_value(adaravis.drv.model, "Manta G-235")
-    set_mock_value(adaravis.drv.pixel_format, "BAR")
-
-    with pytest.raises(
-        ValueError,
-        match="Model Manta G-235 does not have a defined deadtime "
-        "for pixel format BAR",
-    ):
-        await adaravis.drv.fetch_deadtime()
+    assert adaravis.controller.get_deadtime(exposure_time) == 1961e-6
 
 
 async def test_trigger_source_set_to_gpio_line(adaravis: AravisDetector):
@@ -191,8 +145,6 @@ async def test_can_decribe_collect(adaravis: AravisDetector):
 
 
 async def test_unsupported_trigger_excepts(adaravis: AravisDetector):
-    set_mock_value(adaravis.drv.model, "Manta G-125")
-    set_mock_value(adaravis.drv.pixel_format, "Mono12Packed")
     with pytest.raises(
         ValueError,
         # str(EnumClass.value) handling changed in Python 3.11
