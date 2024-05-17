@@ -21,6 +21,7 @@ from bluesky.protocols import (
     Location,
     Movable,
     Reading,
+    Status,
     Subscribable,
 )
 
@@ -392,7 +393,9 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
     )
 
 
-async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
+async def observe_value(
+    signal: SignalR[T], timeout=None, done_status: Status | None = None
+) -> AsyncGenerator[T, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
     Parameters
@@ -400,6 +403,8 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
     signal:
         Call subscribe_value on this at the start, and clear_sub on it at the
         end
+    done_status:
+        If this status is complete, stop observing and make the iterator return.
 
     Notes
     -----
@@ -408,7 +413,10 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
         async for value in observe_value(sig):
             do_something_with(value)
     """
-    q: asyncio.Queue[T] = asyncio.Queue()
+
+    class StatusIsDone: ...
+
+    q: asyncio.Queue[T | StatusIsDone] = asyncio.Queue()
     if timeout is None:
         get_value = q.get
     else:
@@ -416,10 +424,17 @@ async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, N
         async def get_value():
             return await asyncio.wait_for(q.get(), timeout)
 
+    if done_status is not None:
+        done_status.add_callback(lambda _: q.put_nowait(StatusIsDone()))
+
     signal.subscribe_value(q.put_nowait)
     try:
         while True:
-            yield await get_value()
+            item = await get_value()
+            if not isinstance(item, StatusIsDone):
+                yield item
+            else:
+                break
     finally:
         signal.clear_sub(q.put_nowait)
 

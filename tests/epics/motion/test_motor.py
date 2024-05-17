@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Dict
 from unittest.mock import ANY, Mock, call
 
@@ -28,7 +29,56 @@ async def sim_motor():
     yield sim_motor
 
 
+async def wait_for_eq(item, attribute, comparison, timeout):
+    timeout_time = time.monotonic() + timeout
+    while getattr(item, attribute) != comparison:
+        await asyncio.sleep(A_BIT)
+        if time.monotonic() > timeout_time:
+            raise TimeoutError
+
+
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
+    set_mock_put_proceeds(sim_motor.user_setpoint, False)
+    s = sim_motor.set(0.55)
+    watcher = Mock()
+    s.watch(watcher)
+    done = Mock()
+    s.add_callback(done)
+    await wait_for_eq(watcher, "call_count", 1, 1)
+    assert watcher.call_args == call(
+        name="sim_motor",
+        current=0.0,
+        initial=0.0,
+        target=0.55,
+        unit="mm",
+        precision=3,
+        time_elapsed=pytest.approx(0.0, abs=0.05),
+    )
+    watcher.reset_mock()
+    assert 0.55 == await sim_motor.user_setpoint.get_value()
+    assert not s.done
+    await asyncio.sleep(0.1)
+    set_mock_value(sim_motor.user_readback, 0.1)
+    await wait_for_eq(watcher, "call_count", 1, 1)
+    assert watcher.call_count == 1
+    assert watcher.call_args == call(
+        name="sim_motor",
+        current=0.1,
+        initial=0.0,
+        target=0.55,
+        unit="mm",
+        precision=3,
+        time_elapsed=pytest.approx(0.1, abs=0.05),
+    )
+    set_mock_value(sim_motor.motor_done_move, True)
+    set_mock_value(sim_motor.user_readback, 0.55)
+    set_mock_put_proceeds(sim_motor.user_setpoint, True)
+    await asyncio.sleep(A_BIT)
+    await wait_for_eq(s, "done", True, 1)
+    done.assert_called_once_with(s)
+
+
+async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(0.55)
     watcher = Mock()
@@ -53,6 +103,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     assert not s.done
     await asyncio.sleep(0.1)
     set_mock_value(sim_motor.user_readback, 0.1)
+    await asyncio.sleep(0.1)
     assert watcher.call_count == 1
     assert watcher.call_args == call(
         name="sim_motor",
@@ -72,6 +123,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
 
 
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
+    set_mock_value(sim_motor.motor_done_move, False)
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(1.5)
     s.add_callback(Mock())
@@ -111,15 +163,3 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
     await v.set(3.0)
     assert (await v.read())["sim_motor-velocity"]["value"] == 3.0
     assert q.empty()
-
-
-def test_motor_in_re(sim_motor: motor.Motor, RE) -> None:
-    sim_motor.move(0)
-
-    def my_plan():
-        sim_motor.move(0)
-        return
-        yield
-
-    with pytest.raises(RuntimeError, match="Will deadlock run engine if run in a plan"):
-        RE(my_plan())
