@@ -1,5 +1,6 @@
 import asyncio
 import traceback
+from unittest.mock import Mock
 
 import pytest
 
@@ -8,16 +9,25 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     DeviceVector,
+    MockSignalBackend,
     NotConnected,
     wait_for_connection,
 )
+from ophyd_async.core.soft_signal_backend import SoftSignalBackend
+from ophyd_async.epics.motion import motor
+from ophyd_async.planstubs.ensure_connected import (
+    ensure_connected,
+)
+from ophyd_async.sim.demo.sim_motor import SimMotor
 
 
 class DummyBaseDevice(Device):
     def __init__(self) -> None:
         self.connected = False
 
-    async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
+    async def connect(
+        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
+    ):
         self.connected = True
 
 
@@ -117,3 +127,98 @@ async def test_device_log_has_correct_name():
     assert device.log.extra["ophyd_async_device_name"] == ""
     device.set_name("device")
     assert device.log.extra["ophyd_async_device_name"] == "device"
+
+
+async def test_device_lazily_connects(RE):
+    async with DeviceCollector(mock=True, connect=False):
+        mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+
+    assert not mock_motor._connect_task
+
+    # When ready to connect
+    RE(ensure_connected(mock_motor, mock=True))
+
+    assert (
+        mock_motor._connect_task
+        and mock_motor._connect_task.done()
+        and not mock_motor._connect_task.exception()
+    )
+
+
+async def test_device_mock_and_back_again(RE):
+    motor = SimMotor("motor")
+    assert not motor._connect_task
+    await motor.connect(mock=False)
+    assert isinstance(motor.egu._backend, SoftSignalBackend)
+    assert motor._connect_task
+    await motor.connect(mock=True)
+    assert isinstance(motor.egu._backend, MockSignalBackend)
+
+
+class MotorBundle(Device):
+    def __init__(self, name: str) -> None:
+        self.X = motor.Motor("BLxxI-MO-TABLE-01:X")
+        self.Y = motor.Motor("BLxxI-MO-TABLE-01:Y")
+        self.V: DeviceVector[motor.Motor] = DeviceVector(
+            {
+                0: motor.Motor("BLxxI-MO-TABLE-21:X"),
+                1: motor.Motor("BLxxI-MO-TABLE-21:Y"),
+                2: motor.Motor("BLxxI-MO-TABLE-21:Z"),
+            }
+        )
+
+
+async def test_device_with_children_lazily_connects(RE):
+    parentMotor = MotorBundle("parentMotor")
+
+    for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
+        parentMotor.V.values()
+    ):
+        assert device._connect_task is None
+    RE(ensure_connected(parentMotor, mock=True))
+
+    for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
+        parentMotor.V.values()
+    ):
+        assert (
+            device._connect_task is not None
+            and device._connect_task.done()
+            and not device._connect_task.exception()
+        )
+
+
+async def test_device_with_device_collector_lazily_connects():
+    mock_motor = motor.Motor("NONE_EXISTENT")
+    with pytest.raises(NotConnected):
+        await mock_motor.connect(mock=False, timeout=0.01)
+    assert (
+        mock_motor._connect_task is not None
+        and mock_motor._connect_task.done()
+        and mock_motor._connect_task.exception()
+    )
+    await mock_motor.connect(mock=True, timeout=0.01)
+    assert (
+        mock_motor._connect_task is not None
+        and mock_motor._connect_task.done()
+        and not mock_motor._connect_task.exception()
+    )
+
+
+async def test_no_reconnect_signals_if_not_forced():
+    parent = DummyDeviceGroup("parent")
+
+    async def inner_connect(mock, timeout, force_reconnect):
+        parent.child1.connected = True
+
+    parent.child1.connect = Mock(side_effect=inner_connect)
+    await parent.connect(mock=True, timeout=0.01)
+    assert parent.child1.connected
+    assert parent.child1.connect.call_count == 1
+    await parent.connect(mock=True, timeout=0.01)
+    assert parent.child1.connected
+    assert parent.child1.connect.call_count == 1
+
+    for count in range(2, 10):
+        await parent.connect(mock=True, timeout=0.01, force_reconnect=True)
+        assert parent.child1.connected
+        assert parent.child1.connect.call_count == count
