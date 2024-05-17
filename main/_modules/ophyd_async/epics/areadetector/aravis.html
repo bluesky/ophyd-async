@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.areadetector.aravis &#8212; ophyd-async 0.3a5.dev4+g5bcac12 documentation</title>
+    <title>ophyd_async.epics.areadetector.aravis &#8212; ophyd-async 0.3a5.dev5+g91e0e6f documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=12b8e5cd"></script>
+    <script src="../../../../_static/documentation_options.js?v=3a4b28a9"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -484,7 +484,7 @@ document.write(`
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">HasHints</span><span class="p">,</span> <span class="n">Hints</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DirectoryProvider</span><span class="p">,</span> <span class="n">StandardDetector</span><span class="p">,</span> <span class="n">TriggerInfo</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DirectoryProvider</span><span class="p">,</span> <span class="n">StandardDetector</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.areadetector.controllers.aravis_controller</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AravisController</span><span class="p">,</span>
 <span class="p">)</span>
@@ -528,10 +528,6 @@ document.write(`
             <span class="n">config_sigs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="p">,),</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">fetch_deadtime</span><span class="p">()</span>
-        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AravisDetector.get_external_trigger_gpio">
 <a class="viewcode-back" href="../../../../generated/ophyd_async.epics.areadetector.AravisDetector.html#ophyd_async.epics.areadetector.AravisDetector.get_external_trigger_gpio">[docs]</a>
