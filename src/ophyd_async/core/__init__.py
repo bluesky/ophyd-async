@@ -1,5 +1,6 @@
 from ._providers import (
     AutoIncrementFilenameProvider,
+    AutoIncrementingPathProvider,
     FilenameProvider,
     NameProvider,
     PathInfo,
@@ -75,6 +76,7 @@ from .utils import (
 __all__ = [
     "AsyncStatus",
     "AutoIncrementFilenameProvider",
+    "AutoIncrementingPathProvider",
     "CalculatableTimeout",
     "CalculateTimeout",
     "Callback",

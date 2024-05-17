@@ -168,7 +168,7 @@ class AutoIncrementingPathProvider(PathProvider):
         self._inc_counter += 1
         if self._inc_counter == self._num_calls_per_inc:
             self._inc_counter = 0
-            self._current_value += 1
+            self._current_value += self._increment
 
         return PathInfo(
             root=self._directory_path,

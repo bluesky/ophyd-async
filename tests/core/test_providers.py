@@ -6,6 +6,7 @@ import pytest
 
 from ophyd_async.core import (
     AutoIncrementFilenameProvider,
+    AutoIncrementingPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
 )
@@ -47,6 +48,18 @@ def test_uuid_filename_provider_no_namespace(
 
     with pytest.raises(ValueError):
         dp()
+
+
+def test_auto_increment_path_provider(static_filename_provider, tmp_path):
+    auto_inc_path_provider = AutoIncrementingPathProvider(
+        static_filename_provider, tmp_path, num_calls_per_inc=3, increment=2
+    )
+
+    for i in range(3):
+        info = auto_inc_path_provider()
+        assert os.path.basename(info.resource_dir) == "00000"
+    info = auto_inc_path_provider()
+    assert os.path.basename(info.resource_dir) == "00002"
 
 
 def test_ymd_path_provider(static_filename_provider, tmp_path):
