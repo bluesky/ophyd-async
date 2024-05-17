@@ -1,6 +1,7 @@
 import asyncio
+from functools import cached_property
 from typing import Optional, Type
-from unittest.mock import MagicMock
+from unittest.mock import Mock
 
 from bluesky.protocols import Descriptor, Reading
 
@@ -36,51 +37,49 @@ class MockSignalBackend(SignalBackend):
         else:
             self.soft_backend = initial_backend
 
-        self.mock = MagicMock()
-
-        self.put_proceeds = asyncio.Event()
-        self.put_proceeds.set()
-
     def source(self, name: str) -> str:
-        self.mock.source(name)
         if self.initial_backend:
             return f"mock+{self.initial_backend.source(name)}"
         return f"mock+{name}"
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
-        self.mock.connect(timeout=timeout)
+        pass
+
+    @cached_property
+    def put_mock(self) -> Mock:
+        return Mock(name="put")
+
+    @cached_property
+    def put_proceeds(self) -> asyncio.Event:
+        put_proceeds = asyncio.Event()
+        put_proceeds.set()
+        return put_proceeds
 
     async def put(self, value: Optional[T], wait=True, timeout=None):
-        self.mock.put(value, wait=wait, timeout=timeout)
+        self.put_mock(value, wait=wait, timeout=timeout)
         await self.soft_backend.put(value, wait=wait, timeout=timeout)
 
         if wait:
             await asyncio.wait_for(self.put_proceeds.wait(), timeout=timeout)
 
     def set_value(self, value: T):
-        self.mock.set_value(value)
         self.soft_backend.set_value(value)
 
     async def get_descriptor(self, source: str) -> Descriptor:
-        self.mock.get_descriptor(source)
         return await self.soft_backend.get_descriptor(source)
 
     async def get_reading(self) -> Reading:
-        self.mock.get_reading()
         return await self.soft_backend.get_reading()
 
     async def get_value(self) -> T:
-        self.mock.get_value()
         return await self.soft_backend.get_value()
 
     async def get_setpoint(self) -> T:
         """For a soft signal, the setpoint and readback values are the same."""
-        self.mock.get_setpoint()
         return await self.soft_backend.get_setpoint()
 
     async def get_datakey(self, source: str) -> Descriptor:
         return await self.soft_backend.get_datakey(source)
 
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
-        self.mock.set_callback(callback)
         self.soft_backend.set_callback(callback)
