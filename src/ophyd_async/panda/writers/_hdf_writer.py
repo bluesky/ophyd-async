@@ -126,7 +126,7 @@ class PandaHDFWriter(DetectorWriter):
                 str(info.root / info.resource_dir)
             ),
             self.panda_device.data.hdf_file_name.set(
-                f"{info.prefix}{self.panda_device.name}{info.suffix}",
+                f"{info.prefix}{self.panda_device.name}{info.suffix}.h5",
             ),
             self.panda_device.data.num_capture.set(0),
         )

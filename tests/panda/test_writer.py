@@ -68,7 +68,7 @@ async def mock_panda(panda_t):
 @pytest.fixture
 async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     dir_prov = StaticDirectoryProvider(
-        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data.h5"
+        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data"
     )
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
