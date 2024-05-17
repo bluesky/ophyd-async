@@ -47,12 +47,9 @@ def fly_and_collect(
     yield from bps.kickoff_all(flyer, *detectors)
 
     # collect_while_completing
-    yield from bps.complete_all(flyer, *detectors, group="complete")
-
-    done = False
-    while not done:
-        done = yield from bps.wait(group="complete", timeout=0.5)
-        yield from bps.collect(*detectors, name=stream_name)
+    yield from bps.collect_while_completing(
+        [flyer], detectors, flush_period=0.5, stream_name=stream_name
+    )
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
