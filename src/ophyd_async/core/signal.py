@@ -65,7 +65,9 @@ class Signal(Device, Generic[T]):
         self._initial_backend = self._backend = backend
         super().__init__(name)
 
-    async def connect(self, mock=False, timeout=DEFAULT_TIMEOUT):
+    async def connect(
+        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
+    ):
         if mock and not isinstance(self._backend, MockSignalBackend):
             # Using a soft backend, look to the initial value
             self._backend = MockSignalBackend(
