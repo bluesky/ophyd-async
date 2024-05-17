@@ -278,6 +278,19 @@ def soft_signal_r_and_setter(
     return (signal, backend.set_value)
 
 
+def _generate_assert_error_msg(
+    name: str, expected_result: str, actuall_result: str
+) -> str:
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    return (
+        f"Expected {WARNING}{name}{ENDC} to produce"
+        + f"\n{FAIL}{actuall_result}{ENDC}"
+        + f"\nbut actually got \n{FAIL}{expected_result}{ENDC}"
+    )
+
+
 async def assert_value(signal: SignalR[T], value: Any) -> None:
     """Assert a signal's value and compare it an expected signal.
 
@@ -294,11 +307,14 @@ async def assert_value(signal: SignalR[T], value: Any) -> None:
         await assert_value(signal, value)
 
     """
-    assert await signal.get_value() == value
+    actual_value = await signal.get_value()
+    assert actual_value == value, _generate_assert_error_msg(
+        signal.name, value, actual_value
+    )
 
 
 async def assert_reading(
-    readable: AsyncReadable, reading: Mapping[str, Reading]
+    readable: AsyncReadable, expected_reading: Mapping[str, Reading]
 ) -> None:
     """Assert readings from readable.
 
@@ -316,7 +332,10 @@ async def assert_reading(
         await assert_reading(readable, reading)
 
     """
-    assert await readable.read() == reading
+    actual_reading = await readable.read()
+    assert expected_reading == actual_reading, _generate_assert_error_msg(
+        readable.name, expected_reading, actual_reading
+    )
 
 
 async def assert_configuration(
@@ -339,7 +358,10 @@ async def assert_configuration(
         await assert_configuration(configurable configuration)
 
     """
-    assert await configurable.read_configuration() == configuration
+    actual_configurable = await configurable.read_configuration()
+    assert configuration == actual_configurable, _generate_assert_error_msg(
+        configurable.name, configuration, actual_configurable
+    )
 
 
 def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
@@ -359,8 +381,13 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
         assert_emitted(docs, start=1, descriptor=1,
         resource=1, datum=1, event=1, stop=1)
     """
-    assert list(docs) == list(numbers)
-    assert {name: len(d) for name, d in docs.items()} == numbers
+    assert list(docs) == list(numbers), _generate_assert_error_msg(
+        "documents", list(numbers), list(docs)
+    )
+    actual_numbers = {name: len(d) for name, d in docs.items()}
+    assert actual_numbers == numbers, _generate_assert_error_msg(
+        "emitted", numbers, actual_numbers
+    )
 
 
 async def observe_value(signal: SignalR[T], timeout=None) -> AsyncGenerator[T, None]:
