@@ -32,7 +32,7 @@ from .async_status import AsyncStatus
 from .device import Device
 from .signal_backend import SignalBackend
 from .soft_signal_backend import SoftSignalBackend
-from .utils import DEFAULT_TIMEOUT, Callback, T
+from .utils import DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout, Callback, T
 
 
 def _add_timeout(func):
@@ -213,15 +213,14 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
         self._del_cache(self._get_cache().set_staged(False))
 
 
-USE_DEFAULT_TIMEOUT = "USE_DEFAULT_TIMEOUT"
-
-
 class SignalW(Signal[T], Movable):
     """Signal that can be set"""
 
-    def set(self, value: T, wait=True, timeout=USE_DEFAULT_TIMEOUT) -> AsyncStatus:
+    def set(
+        self, value: T, wait=True, timeout: CalculatableTimeout = CalculateTimeout
+    ) -> AsyncStatus:
         """Set the value and return a status saying when it's done"""
-        if timeout is USE_DEFAULT_TIMEOUT:
+        if timeout is CalculateTimeout:
             timeout = self._timeout
 
         async def do_set():
@@ -248,9 +247,11 @@ class SignalRW(SignalR[T], SignalW[T], Locatable):
 class SignalX(Signal):
     """Signal that puts the default value"""
 
-    def trigger(self, wait=True, timeout=USE_DEFAULT_TIMEOUT) -> AsyncStatus:
+    def trigger(
+        self, wait=True, timeout: CalculatableTimeout = CalculateTimeout
+    ) -> AsyncStatus:
         """Trigger the action and return a status saying when it's done"""
-        if timeout is USE_DEFAULT_TIMEOUT:
+        if timeout is CalculateTimeout:
             timeout = self._timeout
         coro = self._backend.put(None, wait=wait, timeout=timeout)
         return AsyncStatus(coro)
@@ -270,7 +271,7 @@ def soft_signal_r_and_setter(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
-) -> Tuple[SignalR[T], Callable[[T]]]:
+) -> Tuple[SignalR[T], Callable[[T], None]]:
     """Returns a tuple of a read-only Signal and a callable through
     which the signal can be internally modified within the device. Use
     soft_signal_rw if you want a device that is externally modifiable
@@ -394,7 +395,7 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
 
 
 async def observe_value(
-    signal: SignalR[T], timeout=None, done_status: Status | None = None
+    signal: SignalR[T], timeout: float | None = None, done_status: Status | None = None
 ) -> AsyncGenerator[T, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
@@ -403,8 +404,12 @@ async def observe_value(
     signal:
         Call subscribe_value on this at the start, and clear_sub on it at the
         end
+    timeout:
+        If given, how long to wait for each updated value in seconds. If an update
+        is not produced in this time then raise asyncio.TimeoutError
     done_status:
         If this status is complete, stop observing and make the iterator return.
+        If it raises an exception then this exception will be raised by the iterator.
 
     Notes
     -----
@@ -414,9 +419,7 @@ async def observe_value(
             do_something_with(value)
     """
 
-    class StatusIsDone: ...
-
-    q: asyncio.Queue[T | StatusIsDone] = asyncio.Queue()
+    q: asyncio.Queue[T | Status] = asyncio.Queue()
     if timeout is None:
         get_value = q.get
     else:
@@ -425,16 +428,19 @@ async def observe_value(
             return await asyncio.wait_for(q.get(), timeout)
 
     if done_status is not None:
-        done_status.add_callback(lambda _: q.put_nowait(StatusIsDone()))
+        done_status.add_callback(q.put_nowait)
 
     signal.subscribe_value(q.put_nowait)
     try:
         while True:
             item = await get_value()
-            if not isinstance(item, StatusIsDone):
-                yield item
+            if done_status and item is done_status:
+                if exc := done_status.exception():
+                    raise exc
+                else:
+                    break
             else:
-                break
+                yield item
     finally:
         signal.clear_sub(q.put_nowait)
 

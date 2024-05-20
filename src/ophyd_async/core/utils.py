@@ -31,6 +31,17 @@ DEFAULT_TIMEOUT = 10.0
 ErrorText = Union[str, Dict[str, Exception]]
 
 
+class CalculateTimeout:
+    """Sentinel class used to implement ``myfunc(timeout=CalculateTimeout)``
+
+    This signifies that the function should calculate a suitable non-zero
+    timeout itself
+    """
+
+
+CalculatableTimeout = float | None | Type[CalculateTimeout]
+
+
 class NotConnected(Exception):
     """Exception to be raised if a `Device.connect` is cancelled"""
 
