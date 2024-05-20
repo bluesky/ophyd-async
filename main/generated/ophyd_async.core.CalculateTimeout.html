@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.DeviceVector &#8212; ophyd-async 0.3a6.dev1+gd2ed67e documentation</title>
+    <title>ophyd_async.core.CalculateTimeout &#8212; ophyd-async 0.3a6.dev1+gd2ed67e documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.core.DeviceVector';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.core.CalculateTimeout';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.2';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -55,8 +55,8 @@
     <link rel="icon" href="../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.core.Signal" href="ophyd_async.core.Signal.html" />
-    <link rel="prev" title="ophyd_async.core.DeviceCollector" href="ophyd_async.core.DeviceCollector.html" />
+    <link rel="next" title="ophyd_async.core.NotConnected" href="ophyd_async.core.NotConnected.html" />
+    <link rel="prev" title="ophyd_async.core.HardwareTriggeredFlyable" href="ophyd_async.core.HardwareTriggeredFlyable.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -474,7 +474,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardDetector.html">ophyd_async.core.StandardDetector</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.Device.html">ophyd_async.core.Device</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceCollector.html">ophyd_async.core.DeviceCollector</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.DeviceVector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceVector.html">ophyd_async.core.DeviceVector</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.Signal.html">ophyd_async.core.Signal</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalR.html">ophyd_async.core.SignalR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalW.html">ophyd_async.core.SignalW</a></li>
@@ -493,7 +493,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.TriggerInfo.html">ophyd_async.core.TriggerInfo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.TriggerLogic.html">ophyd_async.core.TriggerLogic</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HardwareTriggeredFlyable.html">ophyd_async.core.HardwareTriggeredFlyable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.CalculateTimeout.html">ophyd_async.core.CalculateTimeout</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.CalculateTimeout</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NotConnected.html">ophyd_async.core.NotConnected</a></li>
 </ul>
 </li>
@@ -631,192 +631,20 @@ document.write(`
 <p>Ophyd async is included on a provisional basis until the v1.0 release and
 may change API on minor release numbers before then</p>
 </div>
-<section id="ophyd-async-core-devicevector">
-<h1>ophyd_async.core.DeviceVector<a class="headerlink" href="#ophyd-async-core-devicevector" title="Link to this heading">#</a></h1>
+<section id="ophyd-async-core-calculatetimeout">
+<h1>ophyd_async.core.CalculateTimeout<a class="headerlink" href="#ophyd-async-core-calculatetimeout" title="Link to this heading">#</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">DeviceVector</span></span><a class="reference internal" href="../_modules/ophyd_async/core/device.html#DeviceVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceVector" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">VT</span></code>], <a class="reference internal" href="ophyd_async.core.Device.html#ophyd_async.core.Device" title="ophyd_async.core.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a></p>
-<p>Defines device components with indices.</p>
-<p>In the below example, foos becomes a dictionary on the parent device
-at runtime, so parent.foos[2] returns a FooDevice. For example usage see
-<code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicSensorGroup</span></code></p>
+<dt class="sig sig-object py" id="ophyd_async.core.CalculateTimeout">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">CalculateTimeout</span></span><a class="reference internal" href="../_modules/ophyd_async/core/utils.html#CalculateTimeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.CalculateTimeout" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Sentinel class used to implement <code class="docutils literal notranslate"><span class="pre">myfunc(timeout=CalculateTimeout)</span></code></p>
+<p>This signifies that the function should calculate a suitable non-zero
+timeout itself</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.children" title="ophyd_async.core.DeviceVector.children"><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.clear" title="ophyd_async.core.DeviceVector.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.connect" title="ophyd_async.core.DeviceVector.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code></a></p></td>
-<td><p>Connect self and all child Devices.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.copy" title="ophyd_async.core.DeviceVector.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.fromkeys" title="ophyd_async.core.DeviceVector.fromkeys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fromkeys</span></code></a></p></td>
-<td><p>Create a new dictionary with keys from iterable and values set to value.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.get" title="ophyd_async.core.DeviceVector.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a></p></td>
-<td><p>Return the value for key if key is in the dictionary, else default.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.items" title="ophyd_async.core.DeviceVector.items"><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.keys" title="ophyd_async.core.DeviceVector.keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.pop" title="ophyd_async.core.DeviceVector.pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code></a></p></td>
-<td><p>If the key is not found, return the default if given; otherwise, raise a KeyError.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.popitem" title="ophyd_async.core.DeviceVector.popitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code></a></p></td>
-<td><p>Remove and return a (key, value) pair as a 2-tuple.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.set_name" title="ophyd_async.core.DeviceVector.set_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_name</span></code></a></p></td>
-<td><p>Set <code class="docutils literal notranslate"><span class="pre">self.name=name</span></code> and each <code class="docutils literal notranslate"><span class="pre">self.child.name=name+&quot;-child&quot;</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.setdefault" title="ophyd_async.core.DeviceVector.setdefault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setdefault</span></code></a></p></td>
-<td><p>Insert key with a value of default if key is not in the dictionary.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.update" title="ophyd_async.core.DeviceVector.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a></p></td>
-<td><p>If E is present and has a .keys() method, then does:  for k in E: D[k] = E[k] If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v In either case, this is followed by: for k in F:  D[k] = F[k]</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.values" title="ophyd_async.core.DeviceVector.values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code></a></p></td>
-<td><p></p></td>
-</tr>
 </tbody>
 </table>
-<p class="rubric">Attributes</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.log" title="ophyd_async.core.DeviceVector.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.name" title="ophyd_async.core.DeviceVector.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
-<td><p>Return the name of the Device</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceVector.parent" title="ophyd_async.core.DeviceVector.parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parent</span></code></a></p></td>
-<td><p>The parent Device if it exists</p></td>
-</tr>
-</tbody>
-</table>
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.children">
-<span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.12)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.Device.html#ophyd_async.core.Device" title="ophyd_async.core.device.Device"><span class="pre">Device</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/device.html#DeviceVector.children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceVector.children" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#ophyd_async.core.DeviceVector.clear" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.connect">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.DeviceVector.connect" title="Link to this definition">#</a></dt>
-<dd><p>Connect self and all child Devices.</p>
-<p>Contains a timeout that gets propagated to child.connect methods.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mock</strong> – If True then use <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code> for all Signals</p></li>
-<li><p><strong>timeout</strong> – Time to wait before failing with a TimeoutError.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">shallow</span> <span class="pre">copy</span> <span class="pre">of</span> <span class="pre">D</span></span></span><a class="headerlink" href="#ophyd_async.core.DeviceVector.copy" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.fromkeys">
-<span class="sig-name descname"><span class="pre">fromkeys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.DeviceVector.fromkeys" title="Link to this definition">#</a></dt>
-<dd><p>Create a new dictionary with keys from iterable and values set to value.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.DeviceVector.get" title="Link to this definition">#</a></dt>
-<dd><p>Return the value for key if key is in the dictionary, else default.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.items">
-<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">items</span></span></span><a class="headerlink" href="#ophyd_async.core.DeviceVector.items" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.keys">
-<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">keys</span></span></span><a class="headerlink" href="#ophyd_async.core.DeviceVector.keys" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.log">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#ophyd_async.core.DeviceVector.log" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></em><a class="headerlink" href="#ophyd_async.core.DeviceVector.name" title="Link to this definition">#</a></dt>
-<dd><p>Return the name of the Device</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.parent">
-<span class="sig-name descname"><span class="pre">parent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.Device.html#ophyd_async.core.Device" title="ophyd_async.core.device.Device"><span class="pre">Device</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ophyd_async.core.DeviceVector.parent" title="Link to this definition">#</a></dt>
-<dd><p>The parent Device if it exists</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.pop">
-<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default=&lt;unrepresentable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.DeviceVector.pop" title="Link to this definition">#</a></dt>
-<dd><p>If the key is not found, return the default if given; otherwise,
-raise a KeyError.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.popitem">
-<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.DeviceVector.popitem" title="Link to this definition">#</a></dt>
-<dd><p>Remove and return a (key, value) pair as a 2-tuple.</p>
-<p>Pairs are returned in LIFO (last-in, first-out) order.
-Raises KeyError if the dict is empty.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.set_name">
-<span class="sig-name descname"><span class="pre">set_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.DeviceVector.set_name" title="Link to this definition">#</a></dt>
-<dd><p>Set <code class="docutils literal notranslate"><span class="pre">self.name=name</span></code> and each <code class="docutils literal notranslate"><span class="pre">self.child.name=name+&quot;-child&quot;</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> – New name to set</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.setdefault">
-<span class="sig-name descname"><span class="pre">setdefault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.core.DeviceVector.setdefault" title="Link to this definition">#</a></dt>
-<dd><p>Insert key with a value of default if key is not in the dictionary.</p>
-<p>Return the value for key if key is in the dictionary, else default.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">**F</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Update</span> <span class="pre">D</span> <span class="pre">from</span> <span class="pre">dict/iterable</span> <span class="pre">E</span> <span class="pre">and</span> <span class="pre">F.</span></span></span><a class="headerlink" href="#ophyd_async.core.DeviceVector.update" title="Link to this definition">#</a></dt>
-<dd><p>If E is present and has a .keys() method, then does:  for k in E: D[k] = E[k]
-If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
-In either case, this is followed by: for k in F:  D[k] = F[k]</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceVector.values">
-<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">an</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">values</span></span></span><a class="headerlink" href="#ophyd_async.core.DeviceVector.values" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </section>
@@ -832,20 +660,20 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.core.DeviceCollector.html"
+       href="ophyd_async.core.HardwareTriggeredFlyable.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">ophyd_async.core.DeviceCollector</p>
+        <p class="prev-next-title">ophyd_async.core.HardwareTriggeredFlyable</p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.core.Signal.html"
+       href="ophyd_async.core.NotConnected.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">ophyd_async.core.Signal</p>
+        <p class="prev-next-title">ophyd_async.core.NotConnected</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -867,26 +695,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector"><code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.children"><code class="docutils literal notranslate"><span class="pre">DeviceVector.children()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.clear"><code class="docutils literal notranslate"><span class="pre">DeviceVector.clear()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.connect"><code class="docutils literal notranslate"><span class="pre">DeviceVector.connect()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.copy"><code class="docutils literal notranslate"><span class="pre">DeviceVector.copy()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.fromkeys"><code class="docutils literal notranslate"><span class="pre">DeviceVector.fromkeys()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.get"><code class="docutils literal notranslate"><span class="pre">DeviceVector.get()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.items"><code class="docutils literal notranslate"><span class="pre">DeviceVector.items()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.keys"><code class="docutils literal notranslate"><span class="pre">DeviceVector.keys()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.log"><code class="docutils literal notranslate"><span class="pre">DeviceVector.log</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.name"><code class="docutils literal notranslate"><span class="pre">DeviceVector.name</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.parent"><code class="docutils literal notranslate"><span class="pre">DeviceVector.parent</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.pop"><code class="docutils literal notranslate"><span class="pre">DeviceVector.pop()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.popitem"><code class="docutils literal notranslate"><span class="pre">DeviceVector.popitem()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.set_name"><code class="docutils literal notranslate"><span class="pre">DeviceVector.set_name()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.setdefault"><code class="docutils literal notranslate"><span class="pre">DeviceVector.setdefault()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.update"><code class="docutils literal notranslate"><span class="pre">DeviceVector.update()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector.values"><code class="docutils literal notranslate"><span class="pre">DeviceVector.values()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CalculateTimeout"><code class="docutils literal notranslate"><span class="pre">CalculateTimeout</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -894,7 +703,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.core.DeviceVector.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.core.CalculateTimeout.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -909,7 +718,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/generated/ophyd_async.core.DeviceVector.rst.txt">
+    <a href="../_sources/generated/ophyd_async.core.CalculateTimeout.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

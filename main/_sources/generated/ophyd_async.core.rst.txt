@@ -87,6 +87,7 @@ ophyd\_async.core
       TriggerInfo
       TriggerLogic
       HardwareTriggeredFlyable
+      CalculateTimeout
    
    
 
