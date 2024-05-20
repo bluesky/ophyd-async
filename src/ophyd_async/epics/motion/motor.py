@@ -46,7 +46,7 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.user_readback.set_name(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float):
+    async def set(self, new_position: float, timeout: float | None = None):
         self._set_success = True
         (
             old_position,
@@ -61,11 +61,14 @@ class Motor(StandardReadable, Movable, Stoppable):
             self.velocity.get_value(),
             self.acceleration_time.get_value(),
         )
-        assert velocity > 0, "Motor has zero velocity"
-        move_time = abs(new_position - old_position) / velocity + 2 * acceleration_time
-        move_status = self.user_setpoint.set(
-            new_position, wait=True, timeout=move_time + DEFAULT_TIMEOUT
-        )
+        if timeout is None:
+            assert velocity > 0, "Motor has zero velocity"
+            timeout = (
+                abs(new_position - old_position) / velocity
+                + 2 * acceleration_time
+                + DEFAULT_TIMEOUT
+            )
+        move_status = self.user_setpoint.set(new_position, wait=True, timeout=timeout)
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
         ):

@@ -84,7 +84,7 @@ class Mover(StandardReadable, Movable, Stoppable):
         self.readback.set_name(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float):
+    async def set(self, new_position: float, timeout: float | None = None):
         self._set_success = True
         old_position, units, precision, velocity = await asyncio.gather(
             self.setpoint.get_value(),
@@ -92,14 +92,13 @@ class Mover(StandardReadable, Movable, Stoppable):
             self.precision.get_value(),
             self.velocity.get_value(),
         )
-        assert velocity > 0, "Mover has zero velocity"
-        move_time = abs(new_position - old_position) / velocity
+        if timeout is None:
+            assert velocity > 0, "Mover has zero velocity"
+            timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
         # Make an Event that will be set on completion, and a Status that will
         # error if not done in time
         done = asyncio.Event()
-        done_status = AsyncStatus(
-            asyncio.wait_for(done.wait(), move_time + DEFAULT_TIMEOUT)
-        )
+        done_status = AsyncStatus(asyncio.wait_for(done.wait(), timeout))
         # Wait for the value to set, but don't wait for put completion callback
         await self.setpoint.set(new_position, wait=False)
         async for current_position in observe_value(
