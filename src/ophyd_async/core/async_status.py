@@ -49,9 +49,7 @@ class AsyncStatusBase(Status):
             self._callbacks.append(callback)
 
     def _run_callbacks(self, task: asyncio.Task):
-        if not task.cancelled():
-            for callback in self._callbacks:
-                callback(self)
+            callback(self)
 
     def exception(self, timeout: float | None = 0.0) -> BaseException | None:
         if timeout != 0.0:

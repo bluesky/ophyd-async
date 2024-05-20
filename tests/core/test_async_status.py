@@ -50,17 +50,18 @@ async def test_async_status_has_no_exception_if_coroutine_successful(normal_coro
 
 
 async def test_async_status_success_if_cancelled(normal_coroutine):
+    cbs = []
     coro = normal_coroutine()
     status = AsyncStatus(coro)
+    status.add_callback(cbs.append)
     assert status.exception() is None
     status.task.cancel()
+    assert not cbs
     with pytest.raises(asyncio.CancelledError):
         await status
+    assert cbs == [status]
     assert status.success is False
     assert isinstance(status.exception(), asyncio.CancelledError)
-    # asyncio will RuntimeWarning us about this never being awaited if we don't.
-    # RunEngine handled this as a special case
-    await coro
 
 
 async def coroutine_to_wrap(time: float):
