@@ -1,9 +1,20 @@
+from __future__ import annotations
+
 from abc import abstractmethod
-from typing import Dict, Protocol, runtime_checkable
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    Protocol,
+    TypeVar,
+    runtime_checkable,
+)
 
 from bluesky.protocols import DataKey, HasName, Reading
 
-from ophyd_async.core.async_status import AsyncStatus
+if TYPE_CHECKING:
+    from ophyd_async.core.async_status import AsyncStatus
 
 
 @runtime_checkable
@@ -94,3 +105,22 @@ class AsyncStageable(Protocol):
         unstaging.
         """
         ...
+
+
+C = TypeVar("C", contravariant=True)
+
+
+class Watcher(Protocol, Generic[C]):
+    @staticmethod
+    def __call__(
+        *,
+        current: C,
+        initial: C,
+        target: C,
+        name: str | None,
+        unit: str | None,
+        precision: float | None,
+        fraction: float | None,
+        time_elapsed: float | None,
+        time_remaining: float | None,
+    ) -> Any: ...

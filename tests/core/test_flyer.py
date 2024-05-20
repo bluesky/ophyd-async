@@ -15,13 +15,12 @@ from ophyd_async.core import (
     DetectorTrigger,
     DetectorWriter,
     HardwareTriggeredFlyable,
-    SignalRW,
-    SimSignalBackend,
     TriggerInfo,
     TriggerLogic,
 )
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.signal import observe_value
+from ophyd_async.epics.signal.signal import epics_signal_rw
 
 
 class TriggerState(str, Enum):
@@ -51,7 +50,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyWriter(DetectorWriter):
     def __init__(self, name: str, shape: Sequence[int]):
-        self.dummy_signal = SignalRW(backend=SimSignalBackend(int))
+        self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
         self._file: Optional[ComposeStreamResourceBundle] = None
@@ -112,8 +111,8 @@ class DummyWriter(DetectorWriter):
 @pytest.fixture
 async def detector_list(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     writers = [DummyWriter("testa", (1, 1)), DummyWriter("testb", (1, 1))]
-    await writers[0].dummy_signal.connect(sim=True)
-    await writers[1].dummy_signal.connect(sim=True)
+    await writers[0].dummy_signal.connect(mock=True)
+    await writers[1].dummy_signal.connect(mock=True)
 
     async def dummy_arm_1(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)

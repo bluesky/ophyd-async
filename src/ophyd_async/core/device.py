@@ -1,5 +1,6 @@
 """Base device"""
 
+import asyncio
 import sys
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
@@ -30,6 +31,9 @@ class Device(HasName):
     _name: str = ""
     #: The parent Device if it exists
     parent: Optional["Device"] = None
+    # None if connect hasn't started, a Task if it has
+    _connect_task: Optional[asyncio.Task] = None
+    _connect_mock_arg: bool = False
 
     def __init__(self, name: str = "") -> None:
         self.set_name(name)
@@ -69,24 +73,43 @@ class Device(HasName):
             child.set_name(child_name)
             child.parent = self
 
-    async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
+    async def connect(
+        self,
+        mock: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+    ):
         """Connect self and all child Devices.
 
         Contains a timeout that gets propagated to child.connect methods.
 
         Parameters
         ----------
-        sim:
-            If True then connect in simulation mode.
+        mock:
+            If True then use ``MockSignalBackend`` for all Signals
         timeout:
             Time to wait before failing with a TimeoutError.
         """
-        coros = {
-            name: child_device.connect(sim, timeout=timeout)
-            for name, child_device in self.children()
-        }
-        if coros:
-            await wait_for_connection(**coros)
+        # If previous connect with same args has started and not errored, can use it
+        can_use_previous_connect = (
+            self._connect_task
+            and not (self._connect_task.done() and self._connect_task.exception())
+            and self._connect_mock_arg == mock
+        )
+        if force_reconnect or not can_use_previous_connect:
+            # Kick off a connection
+            coros = {
+                name: child_device.connect(
+                    mock, timeout=timeout, force_reconnect=force_reconnect
+                )
+                for name, child_device in self.children()
+            }
+            self._connect_task = asyncio.create_task(wait_for_connection(**coros))
+            self._connect_mock_arg = mock
+
+        assert self._connect_task, "Connect task not created, this shouldn't happen"
+        # Wait for it to complete
+        await self._connect_task
 
 
 VT = TypeVar("VT", bound=Device)
@@ -116,9 +139,9 @@ class DeviceCollector:
         If True, call ``device.set_name(variable_name)`` on all collected
         Devices
     connect:
-        If True, call ``device.connect(sim)`` in parallel on all
+        If True, call ``device.connect(mock)`` in parallel on all
         collected Devices
-    sim:
+    mock:
         If True, connect Signals in simulation mode
     timeout:
         How long to wait for connect before logging an exception
@@ -140,12 +163,12 @@ class DeviceCollector:
         self,
         set_name=True,
         connect=True,
-        sim=False,
+        mock=False,
         timeout: float = 10.0,
     ):
         self._set_name = set_name
         self._connect = connect
-        self._sim = sim
+        self._mock = mock
         self._timeout = timeout
         self._names_on_enter: Set[str] = set()
         self._objects_on_exit: Dict[str, Any] = {}
@@ -179,7 +202,7 @@ class DeviceCollector:
                     obj.set_name(name)
                 if self._connect:
                     connect_coroutines[name] = obj.connect(
-                        self._sim, timeout=self._timeout
+                        self._mock, timeout=self._timeout
                     )
 
         # Connect to all the devices

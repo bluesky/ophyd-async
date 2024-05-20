@@ -6,22 +6,27 @@ import random
 import string
 import subprocess
 import sys
-import time
 from enum import Enum
 from pathlib import Path
-from typing import Callable, List, Optional
 
 import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
-    AsyncStatus,
     ConfigSignal,
     Device,
     DeviceVector,
     HintedSignal,
     StandardReadable,
+    WatchableAsyncStatus,
     observe_value,
+)
+from ophyd_async.core.async_status import AsyncStatus
+from ophyd_async.core.utils import (
+    DEFAULT_TIMEOUT,
+    CalculatableTimeout,
+    CalculateTimeout,
+    WatcherUpdate,
 )
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
@@ -66,11 +71,9 @@ class Mover(StandardReadable, Movable, Stoppable):
         # Define some signals
         with self.add_children_as_readables(HintedSignal):
             self.readback = epics_signal_r(float, prefix + "Readback")
-
         with self.add_children_as_readables(ConfigSignal):
             self.velocity = epics_signal_rw(float, prefix + "Velocity")
             self.units = epics_signal_r(str, prefix + "Readback.EGU")
-
         self.setpoint = epics_signal_rw(float, prefix + "Setpoint")
         self.precision = epics_signal_r(int, prefix + "Readback.PREC")
         # Signals that collide with standard methods should have a trailing underscore
@@ -85,46 +88,42 @@ class Mover(StandardReadable, Movable, Stoppable):
         # Readback should be named the same as its parent in read()
         self.readback.set_name(name)
 
-    async def _move(self, new_position: float, watchers: List[Callable] = []):
+    @WatchableAsyncStatus.wrap
+    async def set(
+        self, new_position: float, timeout: CalculatableTimeout = CalculateTimeout
+    ):
         self._set_success = True
-        # time.monotonic won't go backwards in case of NTP corrections
-        start = time.monotonic()
-        old_position, units, precision = await asyncio.gather(
+        old_position, units, precision, velocity = await asyncio.gather(
             self.setpoint.get_value(),
             self.units.get_value(),
             self.precision.get_value(),
+            self.velocity.get_value(),
         )
+        if timeout is CalculateTimeout:
+            assert velocity > 0, "Mover has zero velocity"
+            timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
+        # Make an Event that will be set on completion, and a Status that will
+        # error if not done in time
+        done = asyncio.Event()
+        done_status = AsyncStatus(asyncio.wait_for(done.wait(), timeout))
         # Wait for the value to set, but don't wait for put completion callback
         await self.setpoint.set(new_position, wait=False)
-        async for current_position in observe_value(self.readback):
-            for watcher in watchers:
-                watcher(
-                    name=self.name,
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    unit=units,
-                    precision=precision,
-                    time_elapsed=time.monotonic() - start,
-                )
+        async for current_position in observe_value(
+            self.readback, done_status=done_status
+        ):
+            yield WatcherUpdate(
+                current=current_position,
+                initial=old_position,
+                target=new_position,
+                name=self.name,
+                unit=units,
+                precision=precision,
+            )
             if np.isclose(current_position, new_position):
+                done.set()
                 break
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
-
-    def move(self, new_position: float, timeout: Optional[float] = None):
-        """Commandline only synchronous move of a Motor"""
-        from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
-
-        if in_bluesky_event_loop():
-            raise RuntimeError("Will deadlock run engine if run in a plan")
-        call_in_bluesky_event_loop(self._move(new_position), timeout)  # type: ignore
-
-    # TODO: this fails if we call from the cli, but works if we "ipython await" it
-    def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:
-        watchers: List[Callable] = []
-        coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return AsyncStatus(coro, watchers)
 
     async def stop(self, success=True):
         self._set_success = success

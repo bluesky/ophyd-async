@@ -5,7 +5,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     DeviceCollector,
     DirectoryProvider,
-    set_sim_value,
+    set_mock_value,
 )
 from ophyd_async.epics.areadetector.vimba import VimbaDetector
 
@@ -15,7 +15,7 @@ async def advimba(
     RE: RunEngine,
     static_directory_provider: DirectoryProvider,
 ) -> VimbaDetector:
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         advimba = VimbaDetector("VIMBA:", static_directory_provider)
 
     return advimba
@@ -29,14 +29,14 @@ async def test_get_deadtime(
 
 
 async def test_arming_trig_modes(advimba: VimbaDetector):
-    set_sim_value(advimba.drv.trig_source, "Freerun")
-    set_sim_value(advimba.drv.trigger_mode, "Off")
-    set_sim_value(advimba.drv.expose_mode, "Timed")
+    set_mock_value(advimba.drv.trig_source, "Freerun")
+    set_mock_value(advimba.drv.trigger_mode, "Off")
+    set_mock_value(advimba.drv.expose_mode, "Timed")
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await advimba.controller.arm(num=1, trigger=trig_mode)
         # Prevent timeouts
-        set_sim_value(advimba.drv.acquire, True)
+        set_mock_value(advimba.drv.acquire, True)
 
     # Default TriggerSource
     assert (await advimba.drv.trig_source.get_value()) == "Freerun"
@@ -74,14 +74,14 @@ async def test_can_read(advimba: VimbaDetector):
 
 
 async def test_decribe_describes_writer_dataset(advimba: VimbaDetector):
-    set_sim_value(advimba._writer.hdf.file_path_exists, True)
-    set_sim_value(advimba._writer.hdf.capture, True)
+    set_mock_value(advimba._writer.hdf.file_path_exists, True)
+    set_mock_value(advimba._writer.hdf.capture, True)
 
     assert await advimba.describe() == {}
     await advimba.stage()
     assert await advimba.describe() == {
         "advimba": {
-            "source": "soft://advimba-hdf-full_file_name",
+            "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
             "external": "STREAM:",
@@ -94,9 +94,9 @@ async def test_can_collect(
 ):
     directory_info = static_directory_provider()
     full_file_name = directory_info.root / directory_info.resource_dir / "foo.h5"
-    set_sim_value(advimba.hdf.full_file_name, str(full_file_name))
-    set_sim_value(advimba._writer.hdf.file_path_exists, True)
-    set_sim_value(advimba._writer.hdf.capture, True)
+    set_mock_value(advimba.hdf.full_file_name, str(full_file_name))
+    set_mock_value(advimba._writer.hdf.file_path_exists, True)
+    set_mock_value(advimba._writer.hdf.capture, True)
     await advimba.stage()
     docs = [(name, doc) async for name, doc in advimba.collect_asset_docs(1)]
     assert len(docs) == 2
@@ -123,13 +123,13 @@ async def test_can_collect(
 
 
 async def test_can_decribe_collect(advimba: VimbaDetector):
-    set_sim_value(advimba._writer.hdf.file_path_exists, True)
-    set_sim_value(advimba._writer.hdf.capture, True)
+    set_mock_value(advimba._writer.hdf.file_path_exists, True)
+    set_mock_value(advimba._writer.hdf.capture, True)
     assert (await advimba.describe_collect()) == {}
     await advimba.stage()
     assert (await advimba.describe_collect()) == {
         "advimba": {
-            "source": "soft://advimba-hdf-full_file_name",
+            "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
             "external": "STREAM:",
