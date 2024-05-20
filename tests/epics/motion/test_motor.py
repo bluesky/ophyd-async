@@ -120,16 +120,20 @@ async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
 
 
 async def test_motor_move_timeout(sim_motor: motor.Motor):
+    class MyTimeout(Exception):
+        pass
+
     def do_timeout(value, wait=False, timeout=None):
         # Check we were given the right timeout of move_time + DEFAULT_TIMEOUT
         assert timeout == 10.3
-        raise ValueError("I Timed Out")
+        # Raise custom exception to be clear it bubbles up
+        raise MyTimeout()
 
     callback_on_mock_put(sim_motor.user_setpoint, do_timeout)
     s = sim_motor.set(0.3)
     watcher = Mock()
     s.watch(watcher)
-    with pytest.raises(ValueError, match="I Timed Out"):
+    with pytest.raises(MyTimeout):
         await s
     watcher.assert_called_once_with(
         name="sim_motor",
