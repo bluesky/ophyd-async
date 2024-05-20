@@ -149,10 +149,10 @@ async def test_device_mock_and_back_again(RE):
     motor = SimMotor("motor")
     assert not motor._connect_task
     await motor.connect(mock=False)
-    assert isinstance(motor.egu._backend, SoftSignalBackend)
+    assert isinstance(motor.units._backend, SoftSignalBackend)
     assert motor._connect_task
     await motor.connect(mock=True)
-    assert isinstance(motor.egu._backend, MockSignalBackend)
+    assert isinstance(motor.units._backend, MockSignalBackend)
 
 
 class MotorBundle(Device):

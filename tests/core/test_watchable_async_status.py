@@ -86,13 +86,9 @@ class ASTestDeviceSingleSet(ASTestDevice):
 class ASTestDeviceTimeoutSet(ASTestDevice):
     @WatchableAsyncStatus.wrap
     async def set(self, val, timeout=0.01):
-        assert self._staged
-        await asyncio.sleep(0.01)
-        self._sig_setter(val - 1)  # type: ignore
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(timeout)
         yield WatcherUpdate(1, 1, 1)
-        await asyncio.sleep(0.01)
-        yield WatcherUpdate(1, 1, 1)
+        raise asyncio.TimeoutError()
 
 
 class ASTestDeviceIteratorSet(ASTestDevice):

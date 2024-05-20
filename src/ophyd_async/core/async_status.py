@@ -9,7 +9,6 @@ from typing import (
     Awaitable,
     Callable,
     Generic,
-    SupportsFloat,
     Type,
     TypeVar,
     cast,
@@ -27,15 +26,11 @@ WAS = TypeVar("WAS", bound="WatchableAsyncStatus")
 class AsyncStatusBase(Status):
     """Convert asyncio awaitable to bluesky Status interface"""
 
-    def __init__(self, awaitable: Awaitable, timeout: SupportsFloat | None = None):
-        if isinstance(timeout, SupportsFloat):
-            timeout = float(timeout)
+    def __init__(self, awaitable: Awaitable):
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
-            self.task = asyncio.create_task(
-                asyncio.wait_for(awaitable, timeout=timeout)
-            )
+            self.task = asyncio.create_task(awaitable)
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks: list[Callback[Status]] = []
 
@@ -49,9 +44,8 @@ class AsyncStatusBase(Status):
             self._callbacks.append(callback)
 
     def _run_callbacks(self, task: asyncio.Task):
-        if not task.cancelled():
-            for callback in self._callbacks:
-                callback(self)
+        for callback in self._callbacks:
+            callback(self)
 
     def exception(self, timeout: float | None = 0.0) -> BaseException | None:
         if timeout != 0.0:
@@ -93,14 +87,11 @@ class AsyncStatusBase(Status):
 class AsyncStatus(AsyncStatusBase):
     @classmethod
     def wrap(cls: Type[AS], f: Callable[P, Awaitable]) -> Callable[P, AS]:
+        """Wrap an async function in an AsyncStatus."""
+
         @functools.wraps(f)
         def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AS:
-            # We can't type this more properly because Concatenate/ParamSpec doesn't
-            # yet support keywords
-            # https://peps.python.org/pep-0612/#concatenating-keyword-parameters
-            timeout = kwargs.get("timeout")
-            assert isinstance(timeout, SupportsFloat) or timeout is None
-            return cls(f(*args, **kwargs), timeout=timeout)
+            return cls(f(*args, **kwargs))
 
         # type is actually functools._Wrapped[P, Awaitable, P, AS]
         # but functools._Wrapped is not necessarily available
@@ -110,15 +101,11 @@ class AsyncStatus(AsyncStatusBase):
 class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
     """Convert AsyncIterator of WatcherUpdates to bluesky Status interface."""
 
-    def __init__(
-        self,
-        iterator: AsyncIterator[WatcherUpdate[T]],
-        timeout: SupportsFloat | None = None,
-    ):
+    def __init__(self, iterator: AsyncIterator[WatcherUpdate[T]]):
         self._watchers: list[Watcher] = []
         self._start = time.monotonic()
         self._last_update: WatcherUpdate[T] | None = None
-        super().__init__(self._notify_watchers_from(iterator), timeout)
+        super().__init__(self._notify_watchers_from(iterator))
 
     async def _notify_watchers_from(self, iterator: AsyncIterator[WatcherUpdate[T]]):
         async for update in iterator:
@@ -146,14 +133,10 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
         cls: Type[WAS],
         f: Callable[P, AsyncIterator[WatcherUpdate[T]]],
     ) -> Callable[P, WAS]:
-        """Wrap an AsyncIterator in a WatchableAsyncStatus. If it takes
-        'timeout' as an argument, this must be a float or None, and it
-        will be propagated to the status."""
+        """Wrap an AsyncIterator in a WatchableAsyncStatus."""
 
         @functools.wraps(f)
         def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WAS:
-            timeout = kwargs.get("timeout")
-            assert isinstance(timeout, SupportsFloat) or timeout is None
-            return cls(f(*args, **kwargs), timeout=timeout)
+            return cls(f(*args, **kwargs))
 
         return cast(Callable[P, WAS], wrap_f)
