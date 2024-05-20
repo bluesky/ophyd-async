@@ -22,7 +22,12 @@ from ophyd_async.core import (
     observe_value,
 )
 from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, WatcherUpdate
+from ophyd_async.core.utils import (
+    DEFAULT_TIMEOUT,
+    CalculatableTimeout,
+    CalculateTimeout,
+    WatcherUpdate,
+)
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -84,7 +89,9 @@ class Mover(StandardReadable, Movable, Stoppable):
         self.readback.set_name(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float, timeout: float | None = None):
+    async def set(
+        self, new_position: float, timeout: CalculatableTimeout = CalculateTimeout
+    ):
         self._set_success = True
         old_position, units, precision, velocity = await asyncio.gather(
             self.setpoint.get_value(),
@@ -92,7 +99,7 @@ class Mover(StandardReadable, Movable, Stoppable):
             self.precision.get_value(),
             self.velocity.get_value(),
         )
-        if timeout is None:
+        if timeout is CalculateTimeout:
             assert velocity > 0, "Mover has zero velocity"
             timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
         # Make an Event that will be set on completion, and a Status that will

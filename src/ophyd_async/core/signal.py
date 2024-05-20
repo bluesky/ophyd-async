@@ -32,7 +32,7 @@ from .async_status import AsyncStatus
 from .device import Device
 from .signal_backend import SignalBackend
 from .soft_signal_backend import SoftSignalBackend
-from .utils import DEFAULT_TIMEOUT, Callback, T
+from .utils import DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout, Callback, T
 
 
 def _add_timeout(func):
@@ -213,15 +213,14 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
         self._del_cache(self._get_cache().set_staged(False))
 
 
-USE_DEFAULT_TIMEOUT = "USE_DEFAULT_TIMEOUT"
-
-
 class SignalW(Signal[T], Movable):
     """Signal that can be set"""
 
-    def set(self, value: T, wait=True, timeout=USE_DEFAULT_TIMEOUT) -> AsyncStatus:
+    def set(
+        self, value: T, wait=True, timeout: CalculatableTimeout = CalculateTimeout
+    ) -> AsyncStatus:
         """Set the value and return a status saying when it's done"""
-        if timeout is USE_DEFAULT_TIMEOUT:
+        if timeout is CalculateTimeout:
             timeout = self._timeout
 
         async def do_set():
@@ -248,9 +247,11 @@ class SignalRW(SignalR[T], SignalW[T], Locatable):
 class SignalX(Signal):
     """Signal that puts the default value"""
 
-    def trigger(self, wait=True, timeout=USE_DEFAULT_TIMEOUT) -> AsyncStatus:
+    def trigger(
+        self, wait=True, timeout: CalculatableTimeout = CalculateTimeout
+    ) -> AsyncStatus:
         """Trigger the action and return a status saying when it's done"""
-        if timeout is USE_DEFAULT_TIMEOUT:
+        if timeout is CalculateTimeout:
             timeout = self._timeout
         coro = self._backend.put(None, wait=wait, timeout=timeout)
         return AsyncStatus(coro)

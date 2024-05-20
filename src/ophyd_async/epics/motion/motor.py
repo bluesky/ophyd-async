@@ -9,7 +9,12 @@ from ophyd_async.core import (
     WatchableAsyncStatus,
 )
 from ophyd_async.core.signal import observe_value
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, WatcherUpdate
+from ophyd_async.core.utils import (
+    DEFAULT_TIMEOUT,
+    CalculatableTimeout,
+    CalculateTimeout,
+    WatcherUpdate,
+)
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -46,7 +51,9 @@ class Motor(StandardReadable, Movable, Stoppable):
         self.user_readback.set_name(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float, timeout: float | None = None):
+    async def set(
+        self, new_position: float, timeout: CalculatableTimeout = CalculateTimeout
+    ):
         self._set_success = True
         (
             old_position,
@@ -61,7 +68,7 @@ class Motor(StandardReadable, Movable, Stoppable):
             self.velocity.get_value(),
             self.acceleration_time.get_value(),
         )
-        if timeout is None:
+        if timeout is CalculateTimeout:
             assert velocity > 0, "Motor has zero velocity"
             timeout = (
                 abs(new_position - old_position) / velocity
