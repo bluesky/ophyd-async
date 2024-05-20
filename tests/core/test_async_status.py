@@ -127,7 +127,7 @@ class FailingMovable(Movable, Device):
 
 
 async def test_status_propogates_traceback_under_RE(RE) -> None:
-    expected_call_stack = ["wait_for", "_set", "_fail"]
+    expected_call_stack = ["_set", "_fail"]
     d = FailingMovable()
     with pytest.raises(FailedStatus) as ctx:
         RE(bps.mv(d, 3))

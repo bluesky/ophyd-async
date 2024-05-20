@@ -1,17 +1,15 @@
 import asyncio
-from dataclasses import replace
 
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
-    AsyncStatus,
     ConfigSignal,
     HintedSignal,
     StandardReadable,
     WatchableAsyncStatus,
 )
 from ophyd_async.core.signal import observe_value
-from ophyd_async.core.utils import WatcherUpdate
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, WatcherUpdate
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -47,42 +45,40 @@ class Motor(StandardReadable, Movable, Stoppable):
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
-    async def _move(
-        self, new_position: float
-    ) -> tuple[WatcherUpdate[float], AsyncStatus]:
+    @WatchableAsyncStatus.wrap
+    async def set(self, new_position: float):
         self._set_success = True
-        old_position, units, precision = await asyncio.gather(
+        (
+            old_position,
+            units,
+            precision,
+            velocity,
+            acceleration_time,
+        ) = await asyncio.gather(
             self.user_setpoint.get_value(),
             self.motor_egu.get_value(),
             self.precision.get_value(),
+            self.velocity.get_value(),
+            self.acceleration_time.get_value(),
         )
-        move_status = self.user_setpoint.set(new_position, wait=True)
-        if not self._set_success:
-            raise RuntimeError("Motor was stopped")
-        return (
-            WatcherUpdate(
-                initial=old_position,
-                current=old_position,
-                target=new_position,
-                unit=units,
-                precision=precision,
-            ),
-            move_status,
+        assert velocity > 0, "Motor has zero velocity"
+        move_time = abs(new_position - old_position) / velocity + 2 * acceleration_time
+        move_status = self.user_setpoint.set(
+            new_position, wait=True, timeout=move_time + DEFAULT_TIMEOUT
         )
-
-    @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float, timeout: float | None = None):
-        update, move_status = await self._move(new_position)
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
         ):
-            if not self._set_success:
-                raise RuntimeError("Motor was stopped")
-            yield replace(
-                update,
-                name=self.name,
+            yield WatcherUpdate(
                 current=current_position,
+                initial=old_position,
+                target=new_position,
+                name=self.name,
+                unit=units,
+                precision=precision,
             )
+        if not self._set_success:
+            raise RuntimeError("Motor was stopped")
 
     async def stop(self, success=False):
         self._set_success = success

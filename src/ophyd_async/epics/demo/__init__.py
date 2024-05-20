@@ -6,7 +6,6 @@ import random
 import string
 import subprocess
 import sys
-from dataclasses import replace
 from enum import Enum
 from pathlib import Path
 
@@ -22,7 +21,8 @@ from ophyd_async.core import (
     WatchableAsyncStatus,
     observe_value,
 )
-from ophyd_async.core.utils import WatcherUpdate
+from ophyd_async.core.async_status import AsyncStatus
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, WatcherUpdate
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -66,11 +66,9 @@ class Mover(StandardReadable, Movable, Stoppable):
         # Define some signals
         with self.add_children_as_readables(HintedSignal):
             self.readback = epics_signal_r(float, prefix + "Readback")
-
         with self.add_children_as_readables(ConfigSignal):
             self.velocity = epics_signal_rw(float, prefix + "Velocity")
             self.units = epics_signal_r(str, prefix + "Readback.EGU")
-
         self.setpoint = epics_signal_rw(float, prefix + "Setpoint")
         self.precision = epics_signal_r(int, prefix + "Readback.PREC")
         # Signals that collide with standard methods should have a trailing underscore
@@ -85,41 +83,41 @@ class Mover(StandardReadable, Movable, Stoppable):
         # Readback should be named the same as its parent in read()
         self.readback.set_name(name)
 
-    async def _move(self, new_position: float):
+    @WatchableAsyncStatus.wrap
+    async def set(self, new_position: float):
         self._set_success = True
-        # time.monotonic won't go backwards in case of NTP corrections
-        old_position, units, precision = await asyncio.gather(
+        old_position, units, precision, velocity = await asyncio.gather(
             self.setpoint.get_value(),
             self.units.get_value(),
             self.precision.get_value(),
+            self.velocity.get_value(),
+        )
+        assert velocity > 0, "Mover has zero velocity"
+        move_time = abs(new_position - old_position) / velocity
+        # Make an Event that will be set on completion, and a Status that will
+        # error if not done in time
+        done = asyncio.Event()
+        done_status = AsyncStatus(
+            asyncio.wait_for(done.wait(), move_time + DEFAULT_TIMEOUT)
         )
         # Wait for the value to set, but don't wait for put completion callback
-        move_status = self.setpoint.set(new_position, wait=True)
-        if not self._set_success:
-            raise RuntimeError("Motor was stopped")
-        # return a template to set() which it can use to yield progress updates
-        return (
-            WatcherUpdate(
+        await self.setpoint.set(new_position, wait=False)
+        async for current_position in observe_value(
+            self.readback, done_status=done_status
+        ):
+            yield WatcherUpdate(
+                current=current_position,
                 initial=old_position,
-                current=old_position,
                 target=new_position,
+                name=self.name,
                 unit=units,
                 precision=precision,
-            ),
-            move_status,
-        )
-
-    @WatchableAsyncStatus.wrap  # uses the timeout argument from the function it wraps
-    async def set(self, new_position: float, timeout: float | None = None):
-        update, _ = await self._move(new_position)
-        async for current_position in observe_value(self.readback):
-            yield replace(
-                update,
-                name=self.name,
-                current=current_position,
             )
             if np.isclose(current_position, new_position):
+                done.set()
                 break
+        if not self._set_success:
+            raise RuntimeError("Motor was stopped")
 
     async def stop(self, success=True):
         self._set_success = success

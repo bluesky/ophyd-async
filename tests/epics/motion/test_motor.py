@@ -11,6 +11,7 @@ from ophyd_async.core import (
     set_mock_put_proceeds,
     set_mock_value,
 )
+from ophyd_async.core.mock_signal_utils import callback_on_mock_put
 from ophyd_async.epics.motion import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
@@ -116,6 +117,29 @@ async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
     await asyncio.sleep(A_BIT)
     assert s.done
     done.assert_called_once_with(s)
+
+
+async def test_motor_move_timeout(sim_motor: motor.Motor):
+    def do_timeout(value, wait=False, timeout=None):
+        # Check we were given the right timeout of move_time + DEFAULT_TIMEOUT
+        assert timeout == 10.3
+        raise ValueError("I Timed Out")
+
+    callback_on_mock_put(sim_motor.user_setpoint, do_timeout)
+    s = sim_motor.set(0.3)
+    watcher = Mock()
+    s.watch(watcher)
+    with pytest.raises(ValueError, match="I Timed Out"):
+        await s
+    watcher.assert_called_once_with(
+        name="sim_motor",
+        current=0.0,
+        initial=0.0,
+        target=0.3,
+        unit="mm",
+        precision=3,
+        time_elapsed=pytest.approx(0.0, abs=0.05),
+    )
 
 
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
