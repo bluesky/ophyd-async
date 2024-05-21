@@ -2,14 +2,15 @@ from typing import List
 
 import bluesky.plan_stubs as bps
 
-from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo
+from ophyd_async.core.detector import (DetectorTrigger, StandardDetector,
+                                       TriggerInfo)
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
 from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
 from ophyd_async.panda._trigger import SeqTableInfo
 
 
-def fly_and_collect(
+def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
     detectors: List[StandardDetector],
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
