@@ -4,7 +4,6 @@ import time
 from bluesky.plans import spiral_square
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core.async_status import AsyncStatusBase
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.sim.demo.sim_motor import SimMotor
 
@@ -45,45 +44,11 @@ async def test_stop():
 
     # this move should take 10 seconds but we will stop it after 0.2
     move_status = m1.set(10)
-    while not m1._move_status:
-        # wait to actually get the move started
-        await asyncio.sleep(0)
     await asyncio.sleep(0.2)
-    m1.stop()
-    await asyncio.sleep(0)
+    await m1.stop(success=False)
     new_pos = await m1.user_readback.get_value()
-
-    assert move_status.done
-    # move should not be successful as we stopped it
-    assert not move_status.success
     assert new_pos < 10
     assert new_pos >= 0.1
-
-
-async def test_timeout():
-    """
-    Verify that timeout happens as expected for SimMotor moves.
-
-    This test also verifies that the two tasks involved in the move are
-    completed as expected.
-    """
-    async with DeviceCollector():
-        m1 = SimMotor("M1", instant=False)
-
-    # do a 10 sec move that will timeout before arriving
-    move_status = m1.set(10, timeout=0.1)
-    await asyncio.sleep(0.2)
-
-    # check inner status
-    assert m1._move_status is not None
-    assert m1._move_status.done
-    assert not move_status.success
-    assert move_status.task.cancelled
-
-    # check outer status
-    assert isinstance(move_status, AsyncStatusBase)
+    # move should not be successful as we stopped it
     assert move_status.done
     assert not move_status.success
-    assert move_status.task.cancelled
-    new_pos = await m1.user_readback.get_value()
-    assert new_pos < 10

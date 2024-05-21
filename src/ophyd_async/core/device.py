@@ -1,7 +1,5 @@
 """Base device"""
 
-from __future__ import annotations
-
 import asyncio
 import sys
 from functools import cached_property
@@ -32,7 +30,7 @@ class Device(HasName):
 
     _name: str = ""
     #: The parent Device if it exists
-    parent: Optional[Device] = None
+    parent: Optional["Device"] = None
     # None if connect hasn't started, a Task if it has
     _connect_task: Optional[asyncio.Task] = None
     _connect_mock_arg: bool = False
@@ -51,7 +49,7 @@ class Device(HasName):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
-    def children(self) -> Iterator[Tuple[str, Device]]:
+    def children(self) -> Iterator[Tuple[str, "Device"]]:
         for attr_name, attr in self.__dict__.items():
             if attr_name != "parent" and isinstance(attr, Device):
                 yield attr_name, attr

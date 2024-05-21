@@ -6,6 +6,7 @@ from bluesky.run_engine import RunEngine
 from super_state_machine.errors import TransitionError
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, NotConnected
+from ophyd_async.core.mock_signal_utils import set_mock_value
 from ophyd_async.epics.motion import motor
 
 
@@ -86,6 +87,7 @@ def test_async_device_connector_run_engine_same_event_loop():
     async def set_up_device():
         async with DeviceCollector(mock=True):
             mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+        set_mock_value(mock_motor.velocity, 1)
         return mock_motor
 
     loop = asyncio.new_event_loop()
