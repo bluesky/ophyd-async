@@ -227,3 +227,55 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         "stream_datum",
         "stop",
     ]
+
+
+async def test_time_resolved_fly_and_collect_with_static_seq_table(
+    RE: RunEngine,
+    detectors: tuple[StandardDetector],
+    panda,
+):
+    names = []
+    docs = []
+    detector_list = list(detectors)
+
+    def append_and_print(name, doc):
+        names.append(name)
+        docs.append(doc)
+
+    RE.subscribe(append_and_print)
+
+    # Trigger parameters
+    number_of_frames = 1
+    exposure = 1
+    shutter_time = 0.004
+
+    # Make flyer
+    trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
+    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+
+    def fly():
+        yield from bps.stage_all(*detector_list, flyer)
+        yield from bps.open_run()
+        yield from time_resolved_fly_and_collect_with_static_seq_table(
+            stream_name="stream1",
+            detectors=detector_list,
+            flyer=flyer,
+            number_of_frames=number_of_frames,
+            exposure=exposure,
+            shutter_time=shutter_time,
+        )
+        yield from bps.close_run()
+        yield from bps.unstage_all(flyer, *detector_list)
+
+    # fly scan
+    RE(fly())
+
+    assert names == [
+        "start",
+        "descriptor",
+        "stream_resource",
+        "stream_datum",
+        "stream_resource",
+        "stream_datum",
+        "stop",
+    ]
