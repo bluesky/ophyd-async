@@ -1,6 +1,8 @@
 Flyscanning
 ===========
 
+See the documents in the [bluesky cookbook](http://blueskyproject.io/bluesky-cookbook/glossary/flyscanning.html)
+
 Hardware
 --------
 
