@@ -15,6 +15,7 @@ class KinetixReadoutMode(str, Enum):
     sensitivity = 1
     speed = 2
     dynamic_range = 3
+    sub_electron = 4
 
 
 class KinetixDriver(ADBase):

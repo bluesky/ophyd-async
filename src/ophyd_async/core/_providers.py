@@ -186,29 +186,24 @@ class YMDPathProvider(PathProvider):
         device_name_as_base_dir: bool = False,
     ) -> None:
         self._filename_provider = filename_provider
-        self._directory_path = directory_path
+        self._directory_path = Path(directory_path)
         self._create_dir_depth = create_dir_depth
         self._device_name_as_base_dir = device_name_as_base_dir
 
     def __call__(self, device_name=None) -> PathInfo:
-        current_date = date.today()
+        sep = os.path.sep
+        current_date = date.today().strftime(f"%Y{sep}%m{sep}%d")
         if device_name is None:
-            resource_dir = os.path.join(
-                str(current_date.year), str(current_date.month), str(current_date.day)
-            )
+            resource_dir = current_date
         elif self._device_name_as_base_dir:
             resource_dir = os.path.join(
-                str(current_date.year),
-                str(current_date.month),
-                str(current_date.day),
+                current_date,
                 device_name,
             )
         else:
             resource_dir = os.path.join(
                 device_name,
-                str(current_date.year),
-                str(current_date.month),
-                str(current_date.day),
+                current_date,
             )
 
         filename = self._filename_provider()
