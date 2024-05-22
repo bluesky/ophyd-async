@@ -231,6 +231,21 @@ async def test_callback_on_mock_put_no_ctx():
     ]
 
 
+async def test_callback_on_mock_put_fails_if_args_are_not_correct():
+    mock_signal = SignalRW(SoftSignalBackend(float))
+    await mock_signal.connect(mock=True)
+
+    def some_function_without_kwargs(arg):
+        pass
+
+    callback_on_mock_put(mock_signal, some_function_without_kwargs)
+    with pytest.raises(TypeError) as exc:
+        await mock_signal.set(10.0)
+    assert str(exc.value).endswith(
+        "some_function_without_kwargs() got an unexpected keyword argument 'wait'"
+    )
+
+
 async def test_set_mock_values(mock_signals):
     signal1, signal2 = mock_signals
 
