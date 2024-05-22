@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Flyscanning &#8212; ophyd-async 0.3a6.dev4+g8950a2f documentation</title>
+    <title>Flyscanning &#8212; ophyd-async 0.3a6.dev5+g9f332e3 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=6cb26702"></script>
+    <script src="../_static/documentation_options.js?v=1b0520bd"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -507,30 +507,7 @@ document.write(`
                   
   <section id="flyscanning">
 <h1>Flyscanning<a class="headerlink" href="#flyscanning" title="Link to this heading">#</a></h1>
-<p>Flyscanning (also known as hardware triggered scanning, asynchronous acquisition, and hardware synchronized scanning) is the practice of accelerating the rate of data collection by handing control over to an external hardware system that can control and synchronize the triggering of detectors with other signals and/or commands. Flyscans take many forms.</p>
-<section id="detector-synchronization">
-<span id="detectorsync"></span><h2>Detector Synchronization<a class="headerlink" href="#detector-synchronization" title="Link to this heading">#</a></h2>
-<figure class="align-default">
-<a class="reference internal image-reference" href="../_images/simple-hardware-scan.png"><img alt="hardware-triggered setup" src="../_images/simple-hardware-scan.png" style="width: 300px;" />
-</a>
-</figure>
-<p>A triggering system can send pulses to two or more detectors to make them expose simultaneously, or at different multiples of the same base rate (e.g. 200Hz and 400Hz).</p>
-</section>
-<section id="motor-trajectory-scanning">
-<span id="motortraj"></span><h2>Motor Trajectory Scanning<a class="headerlink" href="#motor-trajectory-scanning" title="Link to this heading">#</a></h2>
-<figure class="align-default">
-<img alt="trajectory scanning setup" src="../_images/hardware-triggered-scan.png" />
-</figure>
-<p>The triggering system can be configured to trigger the detectors at the same time as the motion controller commands the motors to go to certain points, or even exactly when they reach those points, using the readback values. This can be achieved on the scale of microseconds/nanoseconds, in comparison to traditional soft scans controlled via a network, which normally synchronize on the scale of seconds.</p>
-</section>
-<section id="outer-scanning">
-<span id="outerscan"></span><h2>Outer Scanning<a class="headerlink" href="#outer-scanning" title="Link to this heading">#</a></h2>
-<p>Outer scans are flyscans nested inside soft scans.</p>
-<figure class="align-default">
-<img alt="hardware-triggered setup" src="../_images/outer-scan.png" />
-</figure>
-<p>In the example above a 2D grid scan in <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> is repeated in a third dimension: <code class="docutils literal notranslate"><span class="pre">z</span></code>. Given that <code class="docutils literal notranslate"><span class="pre">z</span></code> only needs to move for every 1 in every 25 points, it could be synchronized via software rather than hardware without significantly affecting scan time (and saving the effort/expense of wiring it into a triggering system). It then becomes the responsibility of the software to move <code class="docutils literal notranslate"><span class="pre">z</span></code>, hand control to the external hardware, wait for one grid’s worth of points, take control back, and repeat.</p>
-</section>
+<p>See the documents in the [bluesky cookbook](<a class="reference external" href="http://blueskyproject.io/bluesky-cookbook/glossary/flyscanning.html">http://blueskyproject.io/bluesky-cookbook/glossary/flyscanning.html</a>)</p>
 <section id="hardware">
 <h2>Hardware<a class="headerlink" href="#hardware" title="Link to this heading">#</a></h2>
 <p>Ophyd-async ships with support for Quantum Detectors’ <a class="reference external" href="https://quantumdetectors.com/products/pandabox/">PandA</a> and <a class="reference external" href="https://quantumdetectors.com/products/zebra/">Zebra</a> as triggering mechanisms.</p>
@@ -596,9 +573,6 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-synchronization">Detector Synchronization</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#motor-trajectory-scanning">Motor Trajectory Scanning</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#outer-scanning">Outer Scanning</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hardware">Hardware</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#role-of-ophyd-async">Role of Ophyd-Async</a></li>
 </ul>

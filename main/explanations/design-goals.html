@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Design Goals &#8212; ophyd-async 0.3a6.dev4+g8950a2f documentation</title>
+    <title>Design Goals &#8212; ophyd-async 0.3a6.dev5+g9f332e3 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=6cb26702"></script>
+    <script src="../_static/documentation_options.js?v=1b0520bd"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -533,7 +533,7 @@ document.write(`
 <p><a class="reference internal" href="flyscanning.html"><span class="doc">Flyscanning</span></a></p>
 </div>
 <p>Ophyd-async should provide the same building blocks for defining flyscans scans as <a class="reference external" href="https://github.com/dls-controls/pymalcolm">malcolm</a>. It should support PandA and Zebra as timing masters by default, but also provide easy helpers for developers to write support for their own devices.</p>
-<p>It should enable <a class="reference internal" href="flyscanning.html#motortraj"><span class="std std-ref">motor trajectory scanning</span></a> and <a class="reference internal" href="flyscanning.html#detectorsync"><span class="std std-ref">multiple triggering rates</span></a> based around a base rate, and pausing/resuming scans. Scans should be modelled using <a class="reference external" href="https://github.com/dls-controls/scanspec">scanspec</a>, which serves as a universal language for defining trajectory and time-resolved scans, and converted to the underlying format of the given motion controller. It should also be possible to define an <a class="reference internal" href="flyscanning.html#outerscan"><span class="std std-ref">outer scan</span></a>.</p>
+<p>It should enable motor trajectory scanning and multiple triggering rates based around a base rate, and pausing/resuming scans. Scans should be modelled using <a class="reference external" href="https://github.com/dls-controls/scanspec">scanspec</a>, which serves as a universal language for defining trajectory and time-resolved scans, and converted to the underlying format of the given motion controller. It should also be possible to define an outer scan .</p>
 </section>
 <section id="improved-trajectory-calculation">
 <h2>Improved Trajectory Calculation<a class="headerlink" href="#improved-trajectory-calculation" title="Link to this heading">#</a></h2>
