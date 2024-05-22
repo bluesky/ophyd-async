@@ -32,7 +32,7 @@ Parity with Malcolm
 
 Ophyd-async should provide the same building blocks for defining flyscans scans as malcolm_. It should support PandA and Zebra as timing masters by default, but also provide easy helpers for developers to write support for their own devices.
 
-It should enable `motor trajectory scanning <motortraj_>` and `multiple triggering rates<detectorsync_>` based around a base rate, and pausing/resuming scans. Scans should be modelled using scanspec_, which serves as a universal language for defining trajectory and time-resolved scans, and converted to the underlying format of the given motion controller. It should also be possible to define an `outer scan <outerscan_>`.
+It should enable motor trajectory scanning and multiple triggering rates based around a base rate, and pausing/resuming scans. Scans should be modelled using scanspec_, which serves as a universal language for defining trajectory and time-resolved scans, and converted to the underlying format of the given motion controller. It should also be possible to define an outer scan .
 
 
 Improved Trajectory Calculation
