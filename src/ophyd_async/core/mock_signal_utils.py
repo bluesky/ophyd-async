@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, Callable, Generator, Iterable, Iterator, List
+from typing import Any, Callable, Iterable, Iterator, List
 from unittest.mock import ANY, Mock
 
 from ophyd_async.core.signal import Signal
@@ -127,11 +127,7 @@ def _unset_side_effect_cm(put_mock: Mock):
     put_mock.side_effect = None
 
 
-# linting isn't smart enought to realize @contextmanager will give use a
-# ContextManager[None]
-def callback_on_mock_put(
-    signal: Signal, callback: Callable[[T], None]
-) -> Generator[None, None, None]:
+def callback_on_mock_put(signal: Signal, callback: Callable[[T], None]):
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being
