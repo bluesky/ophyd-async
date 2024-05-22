@@ -13,8 +13,9 @@ from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import HDFPanda
 from ophyd_async.panda._trigger import StaticSeqTableTriggerLogic
 from ophyd_async.panda.writers._hdf_writer import Capture
-from ophyd_async.plan_stubs import \
-    prepare_static_seq_table_flyer_and_detectors_with_same_trigger
+from ophyd_async.plan_stubs import (
+    prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
+)
 
 
 @pytest.fixture
