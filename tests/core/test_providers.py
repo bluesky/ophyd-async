@@ -16,10 +16,15 @@ def test_auto_increment_filename_provider(static_path_provider_factory):
     auto_inc_fp = AutoIncrementFilenameProvider(inc_delimeter="")
     dp = static_path_provider_factory(auto_inc_fp)
 
+    # Our filenames should go from 00000 to 99999.
+    # We increment by one each time, so just check if casting filename to
+    # int gets us i.
     for i in range(100000):
         info = dp()
         assert int(info.filename) == i
 
+    # Since default max digits is 5, incrementing one more time to 100000
+    # will go over the limit and raise a value error
     with pytest.raises(ValueError):
         dp()
 
@@ -28,9 +33,13 @@ def test_auto_increment_filename_provider(static_path_provider_factory):
     "uuid_version", [uuid.uuid1, uuid.uuid3, uuid.uuid4, uuid.uuid5]
 )
 def test_uuid_filename_provider(static_path_provider_factory, uuid_version):
-    uuid_fp = UUIDFilenameProvider(uuid_call_func=uuid_version)
+    uuid_call_args = []
     if uuid_version in [uuid.uuid3, uuid.uuid5]:
-        uuid_fp.specify_uuid_namespace(uuid.NAMESPACE_URL, "test")
+        uuid_call_args = [uuid.NAMESPACE_URL, "test"]
+    uuid_fp = UUIDFilenameProvider(
+        uuid_call_func=uuid_version, uuid_call_args=uuid_call_args
+    )
+
     dp = static_path_provider_factory(uuid_fp)
 
     info = dp()

@@ -1,10 +1,11 @@
 import os
 import uuid
 from abc import abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Protocol, Sequence
+from typing import List, Optional, Protocol, Sequence
 
 
 @dataclass
@@ -53,25 +54,23 @@ class StaticFilenameProvider(FilenameProvider):
 
 
 class UUIDFilenameProvider(FilenameProvider):
-    def __init__(self, uuid_call_func: callable = uuid.uuid4):
+    def __init__(
+        self, uuid_call_func: Callable = uuid.uuid4, uuid_call_args: Optional[List] = []
+    ):
         self._uuid_call_func = uuid_call_func
-        self._uuid_namespace = None
-        self._uuid_name = None
-
-    def specify_uuid_namespace(self, namespace, name):
-        self._uuid_namespace = namespace
-        self._uuid_name = name
+        self._uuid_call_args = uuid_call_args
 
     def __call__(self) -> str:
-        if self._uuid_call_func in [uuid.uuid3, uuid.uuid5]:
-            if self._uuid_namespace is None or self._uuid_name is None:
-                raise ValueError(
-                    f"To use {self._uuid_call_func} to generate UUID filenames,"
-                    " UUID namespace and name must be set!"
-                )
-            uuid_str = self._uuid_call_func(self._uuid_namespace, self._uuid_name)
-        else:
-            uuid_str = self._uuid_call_func()
+        if (
+            self._uuid_call_func in [uuid.uuid3, uuid.uuid5]
+            and len(self._uuid_call_args) < 2
+        ):
+            raise ValueError(
+                f"To use {self._uuid_call_func} to generate UUID filenames,"
+                " UUID namespace and name must be passed as args!"
+            )
+
+        uuid_str = self._uuid_call_func(*self._uuid_call_args)
         return f"{uuid_str}"
 
 
@@ -97,7 +96,7 @@ class AutoIncrementFilenameProvider(FilenameProvider):
                   exceeded maximum of {self._max_digits} digits!"
             )
 
-        padded_counter = str(self._current_value).rjust(self._max_digits, "0")
+        padded_counter = f"{self._current_value:0{self._max_digits}}"
 
         filename = f"{self._base_filename}{self._inc_delimeter}{padded_counter}"
 
@@ -157,7 +156,7 @@ class AutoIncrementingPathProvider(PathProvider):
     def __call__(self, device_name=None) -> PathInfo:
         filename = self._filename_provider()
 
-        padded_counter = str(self._current_value).rjust(self._max_digits, "0")
+        padded_counter = f"{self._current_value:0{self._max_digits}}"
 
         resource_dir = str(padded_counter)
         if self._base_name is not None:
@@ -183,7 +182,7 @@ class YMDPathProvider(PathProvider):
         self,
         filename_provider: FilenameProvider,
         directory_path: Path,
-        create_dir_depth: int = 0,
+        create_dir_depth: int = -3,  # Default to -3 to create YMD dirs
         device_name_as_base_dir: bool = False,
     ) -> None:
         self._filename_provider = filename_provider
