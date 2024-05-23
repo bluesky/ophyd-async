@@ -255,13 +255,8 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
 
         set_mock_value(flyer.trigger_logic.seq.active, 1)
 
-        yield from bps.kickoff(flyer, wait=True)
-        for detector in detector_list:
-            yield from bps.kickoff(detector)
-
-        yield from bps.complete(flyer, wait=False, group="complete")
-        for detector in detector_list:
-            yield from bps.complete(detector, wait=False, group="complete")
+        yield from bps.kickoff_all(flyer, *detectors)
+        yield from bps.complete_all(flyer, *detectors, wait=False, group="complete")
 
         # Manually incremenet the index as if a frame was taken
         for detector in detector_list:
