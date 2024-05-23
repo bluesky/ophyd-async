@@ -10,7 +10,7 @@ from ophyd_async.core.soft_signal_backend import SoftSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
-class MockSignalBackend(SignalBackend):
+class MockSignalBackend(SignalBackend[T]):
     def __init__(
         self,
         datatype: Optional[Type[T]] = None,
@@ -31,11 +31,11 @@ class MockSignalBackend(SignalBackend):
 
         if not isinstance(self.initial_backend, SoftSignalBackend):
             # If the backend is a hard signal backend, or not provided,
-            # then we create a soft signal to mimick it
+            # then we create a soft signal to mimic it
 
             self.soft_backend = SoftSignalBackend(datatype=datatype)
         else:
-            self.soft_backend = initial_backend
+            self.soft_backend = self.initial_backend
 
     def source(self, name: str) -> str:
         if self.initial_backend:
@@ -64,9 +64,6 @@ class MockSignalBackend(SignalBackend):
 
     def set_value(self, value: T):
         self.soft_backend.set_value(value)
-
-    async def get_descriptor(self, source: str) -> Descriptor:
-        return await self.soft_backend.get_descriptor(source)
 
     async def get_reading(self) -> Reading:
         return await self.soft_backend.get_reading()
