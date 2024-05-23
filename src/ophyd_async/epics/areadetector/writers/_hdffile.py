@@ -24,11 +24,13 @@ class _HDFFile:
         self._last_emitted = 0
         self._bundles = [
             compose_stream_resource(
-                spec="AD_HDF5_SWMR_SLICE",
-                root=str(path_info.root),
+                mimetype="application/x-hdf5",
+                uri=f"file://{full_file_name}",
+                # spec="AD_HDF5_SWMR_SLICE",
+                # root=str(path_info.root),
                 data_key=ds.name,
-                resource_path=str(full_file_name.relative_to(path_info.root)),
-                resource_kwargs={
+                # resource_path=str(full_file_name.relative_to(path_info.root)),
+                parameters={
                     "path": ds.path,
                     "multiplier": ds.multiplier,
                     "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",

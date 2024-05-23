@@ -27,11 +27,13 @@ class _HDFFile:
         self._last_emitted = 0
         self._bundles = [
             compose_stream_resource(
-                spec="AD_HDF5_SWMR_SLICE",
-                root=str(path_info.root),
+                mimetype="application/x-hdf5",
+                uri=f"file://{full_file_name}",
+                # spec="AD_HDF5_SWMR_SLICE",
+                # root=str(path_info.root),
                 data_key=ds.name,
-                resource_path=(f"{str(path_info.root)}/{full_file_name}"),
-                resource_kwargs={
+                # resource_path=(f"{str(path_info.root)}/{full_file_name}"),
+                parameters={
                     "name": ds.name,
                     "block": ds.block,
                     "path": ds.path,
