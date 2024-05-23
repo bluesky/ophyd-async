@@ -39,7 +39,7 @@ class HardwareTriggeredFlyable(
     def __init__(
         self,
         trigger_logic: TriggerLogic[T],
-        configuration_signals: Sequence[SignalR],
+        configuration_signals: Sequence[SignalR] = (),
         name: str = "",
     ):
         self._trigger_logic = trigger_logic

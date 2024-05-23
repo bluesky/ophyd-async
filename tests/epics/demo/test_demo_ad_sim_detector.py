@@ -1,10 +1,12 @@
 """Integration tests for a StandardDetector using a HDFWriter and ADSimController."""
 
 import time
+from collections import defaultdict
 from pathlib import Path
 from typing import List, cast
 
 import bluesky.plan_stubs as bps
+import bluesky.preprocessors as bpp
 import pytest
 from bluesky import RunEngine
 from bluesky.utils import new_uid
@@ -17,6 +19,7 @@ from ophyd_async.core import (
     callback_on_mock_put,
     set_mock_value,
 )
+from ophyd_async.core.signal import assert_emitted
 from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
@@ -102,9 +105,34 @@ async def two_detectors(tmp_path: Path):
         set_mock_value(controller.driver.image_mode, ImageMode.continuous)
         set_mock_value(writer.hdf.num_capture, 1000)
         set_mock_value(writer.hdf.num_captured, 0)
+        set_mock_value(writer.hdf.file_path_exists, True)
         set_mock_value(controller.driver.array_size_x, 1024 + i)
         set_mock_value(controller.driver.array_size_y, 768 + i)
     yield deta, detb
+
+
+async def test_two_detectors_fly_different_rate(
+    two_detectors: List[DemoADSimDetector], RE: RunEngine
+):
+    docs = defaultdict(list)
+
+    @bpp.stage_decorator(two_detectors)
+    @bpp.run_decorator()
+    def fly_plan():
+        yield from bps.declare_stream(*two_detectors, name="primary")
+        # Make one produce some frames and collect
+        set_mock_value(two_detectors[0].hdf.num_captured, 15)
+        yield from bps.collect(*two_detectors)
+        # It shouldn't make anything as the other one is lagging
+        assert "stream_datum" not in docs
+        # Make the other one produce some frames
+        set_mock_value(two_detectors[1].hdf.num_captured, 15)
+        yield from bps.collect(*two_detectors)
+
+    RE(fly_plan(), lambda name, doc: docs[name].append(doc))
+    assert_emitted(
+        docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, stop=1
+    )
 
 
 async def test_two_detectors_step(
