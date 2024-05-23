@@ -31,6 +31,7 @@ async def test_mock_signal_backend(connect_mock_mode):
     # If mock is false it will be handled like a normal signal, otherwise it will
     # initalize a new backend from the one in the line above
     await mock_signal.connect(mock=connect_mock_mode)
+    assert isinstance(mock_signal._backend, MockSignalBackend)
 
     assert await mock_signal._backend.get_value() == ""
     await mock_signal._backend.put("test")
@@ -74,6 +75,8 @@ async def test_set_mock_put_proceeds():
     mock_signal = SignalW(SoftSignalBackend(str))
     await mock_signal.connect(mock=True)
 
+    assert isinstance(mock_signal._backend, MockSignalBackend)
+
     assert mock_signal._backend.put_proceeds.is_set() is True
 
     set_mock_put_proceeds(mock_signal, False)
@@ -95,6 +98,7 @@ async def test_set_mock_put_proceeds_timeout():
 async def test_put_proceeds_timeout():
     mock_signal = SignalW(SoftSignalBackend(str))
     await mock_signal.connect(mock=True)
+    assert isinstance(mock_signal._backend, MockSignalBackend)
 
     assert mock_signal._backend.put_proceeds.is_set() is True
 
@@ -115,11 +119,11 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
         assert_mock_put_called_with(signal, 10)
     exc_msgs.append(str(exc.value))
     with pytest.raises(AssertionError) as exc:
-        async with mock_puts_blocked(signal, 10):
+        async with mock_puts_blocked(signal):
             ...
     exc_msgs.append(str(exc.value))
     with pytest.raises(AssertionError) as exc:
-        with callback_on_mock_put(signal, 10):
+        with callback_on_mock_put(signal, lambda x: _):
             ...
     exc_msgs.append(str(exc.value))
     with pytest.raises(AssertionError) as exc:
@@ -216,10 +220,8 @@ async def test_callback_on_mock_put_no_ctx():
     mock_signal = SignalRW(SoftSignalBackend(float))
     await mock_signal.connect(mock=True)
     calls = []
-    (
-        callback_on_mock_put(
-            mock_signal, lambda *args, **kwargs: calls.append({**kwargs, "_args": args})
-        ),
+    callback_on_mock_put(
+        mock_signal, lambda *args, **kwargs: calls.append({**kwargs, "_args": args})
     )
     await mock_signal.set(10.0)
     assert calls == [
@@ -249,16 +251,16 @@ async def test_callback_on_mock_put_fails_if_args_are_not_correct():
 async def test_set_mock_values(mock_signals):
     signal1, signal2 = mock_signals
 
-    await signal2.get_value() == "first_value"
+    assert await signal2.get_value() == "first_value"
     for value_set in set_mock_values(signal1, ["second_value", "third_value"]):
         assert await signal1.get_value() == value_set
 
     iterator = set_mock_values(signal2, ["second_value", "third_value"])
-    await signal2.get_value() == "first_value"
+    assert await signal2.get_value() == "first_value"
     next(iterator)
-    await signal2.get_value() == "second_value"
+    assert await signal2.get_value() == "second_value"
     next(iterator)
-    await signal2.get_value() == "third_value"
+    assert await signal2.get_value() == "third_value"
 
 
 async def test_set_mock_values_exhausted_passes(mock_signals):

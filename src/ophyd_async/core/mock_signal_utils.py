@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, Callable, Iterable, Iterator, List
+from typing import Any, Callable, Iterable
 from unittest.mock import ANY, Mock
 
 from ophyd_async.core.signal import Signal
@@ -22,7 +22,7 @@ def set_mock_value(signal: Signal[T], value: T):
     backend.set_value(value)
 
 
-def set_mock_put_proceeds(signal: Signal[T], proceeds: bool):
+def set_mock_put_proceeds(signal: Signal, proceeds: bool):
     """Allow or block a put with wait=True from proceeding"""
     backend = _get_mock_signal_backend(signal)
 
@@ -33,7 +33,7 @@ def set_mock_put_proceeds(signal: Signal[T], proceeds: bool):
 
 
 @asynccontextmanager
-async def mock_puts_blocked(*signals: List[Signal]):
+async def mock_puts_blocked(*signals: Signal):
     for signal in signals:
         set_mock_put_proceeds(signal, False)
     yield
@@ -79,7 +79,7 @@ class _SetValuesIterator:
         return next_value
 
     def __del__(self):
-        if self.require_all_consumed and self.index != len(self.values):
+        if self.require_all_consumed and self.index != len(list(self.values)):
             raise AssertionError("Not all values have been consumed.")
 
 
@@ -87,7 +87,7 @@ def set_mock_values(
     signal: Signal,
     values: Iterable[Any],
     require_all_consumed: bool = False,
-) -> Iterator[Any]:
+) -> _SetValuesIterator:
     """Iterator to set a signal to a sequence of values, optionally repeating the
     sequence.
 
@@ -127,7 +127,7 @@ def _unset_side_effect_cm(put_mock: Mock):
     put_mock.side_effect = None
 
 
-def callback_on_mock_put(signal: Signal, callback: Callable[[T], None]):
+def callback_on_mock_put(signal: Signal[T], callback: Callable[[T], None]):
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being
