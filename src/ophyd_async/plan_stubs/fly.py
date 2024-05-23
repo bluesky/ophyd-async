@@ -32,9 +32,8 @@ def time_resolved_fly_and_collect_with_static_seq_table(
     stages/unstages the devices, and opens and closes the run.
 
     """
-    # Ensure there is at least on detector
-    if len(detectors) == 0:
-        raise ValueError
+    if not detectors:
+        raise ValueError("No detectors provided. There must be at least one.")
 
     # Set up scan and prepare trigger
     deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
