@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager, contextmanager
 from typing import Any, Callable, Iterable
-from unittest.mock import ANY, Mock
+from unittest.mock import Mock
 
 from ophyd_async.core.signal import Signal
 from ophyd_async.core.utils import T
@@ -41,9 +41,8 @@ async def mock_puts_blocked(*signals: Signal):
         set_mock_put_proceeds(signal, True)
 
 
-def assert_mock_put_called_with(signal: Signal, value: Any, wait=ANY, timeout=ANY):
-    backend = _get_mock_signal_backend(signal)
-    backend.put_mock.assert_called_with(value, wait=wait, timeout=timeout)
+def get_mock_put(signal: Signal) -> Mock:
+    return _get_mock_signal_backend(signal).put_mock
 
 
 def reset_mock_put_calls(signal: Signal):

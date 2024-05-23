@@ -1,26 +1,22 @@
 import asyncio
 import re
 from itertools import repeat
-from unittest.mock import MagicMock, call
+from unittest.mock import ANY, MagicMock, call
 
 import pytest
 
 from ophyd_async.core import MockSignalBackend, SignalRW
 from ophyd_async.core.device import Device, DeviceCollector
 from ophyd_async.core.mock_signal_utils import (
-    assert_mock_put_called_with,
     callback_on_mock_put,
+    get_mock_put,
     mock_puts_blocked,
     reset_mock_put_calls,
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
 )
-from ophyd_async.core.signal import (
-    SignalW,
-    soft_signal_r_and_setter,
-    soft_signal_rw,
-)
+from ophyd_async.core.signal import SignalW, soft_signal_r_and_setter, soft_signal_rw
 from ophyd_async.core.soft_signal_backend import SoftSignalBackend
 from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw
 
@@ -116,7 +112,7 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
         set_mock_value(signal, 10)
     exc_msgs.append(str(exc.value))
     with pytest.raises(AssertionError) as exc:
-        assert_mock_put_called_with(signal, 10)
+        get_mock_put(signal).assert_called_once_with(10)
     exc_msgs.append(str(exc.value))
     with pytest.raises(AssertionError) as exc:
         async with mock_puts_blocked(signal):
@@ -141,16 +137,13 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
         )
 
 
-async def test_assert_mock_put_called_with():
+async def test_get_mock_put():
     mock_signal = epics_signal_rw(str, "READ_PV", "WRITE_PV", name="mock_name")
     await mock_signal.connect(mock=True)
     await mock_signal.set("test_value", wait=True, timeout=100)
 
-    # can leave out kwargs
-    assert_mock_put_called_with(mock_signal, "test_value")
-    assert_mock_put_called_with(mock_signal, "test_value", wait=True)
-    assert_mock_put_called_with(mock_signal, "test_value", timeout=100)
-    assert_mock_put_called_with(mock_signal, "test_value", wait=True, timeout=100)
+    mock = get_mock_put(mock_signal)
+    mock.assert_called_once_with("test_value", wait=True, timeout=100)
 
     def err_text(text, wait, timeout):
         return (
@@ -166,7 +159,7 @@ async def test_assert_mock_put_called_with():
         ("test_value", False, 0),  # wait and timeout wrong
     ]:
         with pytest.raises(AssertionError) as exc:
-            assert_mock_put_called_with(mock_signal, text, wait=wait, timeout=timeout)
+            mock.assert_called_once_with(text, wait=wait, timeout=timeout)
         for err_substr in err_text(text, wait, timeout):
             assert err_substr in str(exc.value)
 
@@ -302,10 +295,10 @@ async def test_set_mock_values_exhausted_fails(mock_signals):
 async def test_reset_mock_put_calls(mock_signals):
     signal1, signal2 = mock_signals
     await signal1.set("test_value", wait=True, timeout=1)
-    assert_mock_put_called_with(signal1, "test_value")
+    get_mock_put(signal1).assert_called_with("test_value", wait=ANY, timeout=ANY)
     reset_mock_put_calls(signal1)
     with pytest.raises(AssertionError) as exc:
-        assert_mock_put_called_with(signal1, "test_value")
+        get_mock_put(signal1).assert_called_with("test_value", wait=ANY, timeout=ANY)
     # Replacing spaces because they change between runners
     # (e.g the github actions runner has more)
     assert str(exc.value).replace(" ", "").replace("\n", "") == (
