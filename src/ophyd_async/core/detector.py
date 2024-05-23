@@ -332,7 +332,7 @@ class StandardDetector(
         # Collect stream datum documents for all indices written.
         # The index is optional, and provided for fly scans, however this needs to be
         # retrieved for step scans.
-        if not index:
+        if index is None:
             index = await self.writer.get_indices_written()
         async for doc in self.writer.collect_stream_docs(index):
             yield doc

@@ -13,7 +13,7 @@ from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import HDFPanda
 from ophyd_async.panda._trigger import StaticSeqTableTriggerLogic
 from ophyd_async.panda.writers._hdf_writer import Capture
-from ophyd_async.planstubs.prepare_trigger_and_dets import (
+from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
 
@@ -80,12 +80,11 @@ async def test_hdf_panda_hardware_triggered_flyable(
         yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
             flyer,
             [mock_hdf_panda],
-            num=1,
-            width=exposure,
+            number_of_frames=1,
+            exposure=exposure,
             deadtime=mock_hdf_panda.controller.get_deadtime(1),
             shutter_time=shutter_time,
         )
-        # mock_hdf_panda.controller.disarm.assert_called_once  # type: ignore
 
         yield from bps.open_run()
         yield from bps.declare_stream(mock_hdf_panda, name="main_stream", collect=True)
@@ -120,7 +119,6 @@ async def test_hdf_panda_hardware_triggered_flyable(
 
         yield from bps.unstage_all(flyer, mock_hdf_panda)
         yield from bps.wait_for([lambda: mock_hdf_panda.controller.disarm()])
-        # assert mock_hdf_panda.controller.disarm.called  # type: ignore
 
     # fly scan
     RE(flying_plan())

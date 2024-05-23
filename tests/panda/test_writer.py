@@ -68,7 +68,7 @@ async def mock_panda(panda_t):
 @pytest.fixture
 async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     dir_prov = StaticDirectoryProvider(
-        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data.h5"
+        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data"
     )
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
@@ -205,4 +205,4 @@ async def test_numeric_blocks_correctly_formated(mock_writer: PandaHDFWriter):
         "ophyd_async.panda.writers._hdf_writer.get_signals_marked_for_capture",
         get_numeric_signal,
     ):
-        assert "test-panda-block-1-Capture.Value" in await mock_writer.open()
+        assert "test-panda-block-1-Value" in await mock_writer.open()
