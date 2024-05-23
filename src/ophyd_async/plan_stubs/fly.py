@@ -45,16 +45,11 @@ def time_resolved_fly_and_collect_with_static_seq_table(
         period=period,
     )
     yield from bps.declare_stream(*detectors, name=stream_name, collect=True)
-    yield from bps.kickoff(flyer, wait=True)
-    for detector in detectors:
-        yield from bps.kickoff(detector)
+    yield from bps.kickoff_all(flyer, *detectors)
 
     # collect_while_completing
     group = short_uid(label="complete")
-
-    yield from bps.complete(flyer, wait=False, group=group)
-    for detector in detectors:
-        yield from bps.complete(detector, wait=False, group=group)
+    yield from bps.complete_all(*detectors, flyer, group=group, wait=False)
 
     done = False
     while not done:
