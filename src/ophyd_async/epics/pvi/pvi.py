@@ -91,7 +91,7 @@ def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
         return
     common_sub_devices = get_type_hints(common_device)
     for sub_name, sub_device in common_sub_devices.items():
-        if sub_name in ("_name", "parent"):
+        if sub_name.startswith("_") or sub_name == "parent":
             continue
         assert entry.sub_entries
         device_t, is_optional = _strip_union(sub_device)
@@ -161,7 +161,7 @@ def _mock_common_blocks(device: Device, stripped_type: Optional[Type] = None):
     sub_devices = (
         (field, field_type)
         for field, field_type in get_type_hints(device_t).items()
-        if field not in ("_name", "parent")
+        if not field.startswith("_") and field != "parent"
     )
 
     for device_name, device_cls in sub_devices:

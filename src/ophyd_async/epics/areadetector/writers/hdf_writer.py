@@ -43,12 +43,13 @@ class HDFWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None
         info = self._directory_provider()
+        file_path = str(info.root / info.resource_dir)
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self.hdf.file_path.set(str(info.root / info.resource_dir)),
+            self.hdf.file_path.set(file_path),
             self.hdf.file_name.set(f"{info.prefix}{self.hdf.name}{info.suffix}"),
             self.hdf.file_template.set("%s/%s.h5"),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
@@ -59,7 +60,7 @@ class HDFWriter(DetectorWriter):
 
         assert (
             await self.hdf.file_path_exists.get_value()
-        ), f"File path {self.hdf.file_path.get_value()} for hdf plugin does not exist"
+        ), f"File path {file_path} for hdf plugin does not exist"
 
         # Overwrite num_capture to go forever
         await self.hdf.num_capture.set(0)

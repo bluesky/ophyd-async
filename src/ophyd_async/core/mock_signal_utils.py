@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, Callable, Generator, Iterable, Iterator, List
-from unittest.mock import ANY
+from typing import Any, Callable, Iterable, Iterator, List
+from unittest.mock import ANY, Mock
 
 from ophyd_async.core.signal import Signal
 from ophyd_async.core.utils import T
@@ -43,12 +43,12 @@ async def mock_puts_blocked(*signals: List[Signal]):
 
 def assert_mock_put_called_with(signal: Signal, value: Any, wait=ANY, timeout=ANY):
     backend = _get_mock_signal_backend(signal)
-    backend.mock.put.assert_called_with(value, wait=wait, timeout=timeout)
+    backend.put_mock.assert_called_with(value, wait=wait, timeout=timeout)
 
 
 def reset_mock_put_calls(signal: Signal):
     backend = _get_mock_signal_backend(signal)
-    backend.mock.put.reset_mock()
+    backend.put_mock.reset_mock()
 
 
 class _SetValuesIterator:
@@ -122,16 +122,12 @@ def set_mock_values(
 
 
 @contextmanager
-def _unset_side_effect_cm(mock):
+def _unset_side_effect_cm(put_mock: Mock):
     yield
-    mock.put.side_effect = None
+    put_mock.side_effect = None
 
 
-# linting isn't smart enought to realize @contextmanager will give use a
-# ContextManager[None]
-def callback_on_mock_put(
-    signal: Signal, callback: Callable[[T], None]
-) -> Generator[None, None, None]:
+def callback_on_mock_put(signal: Signal, callback: Callable[[T], None]):
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being
@@ -145,5 +141,5 @@ def callback_on_mock_put(
         The callback to call when the backend is put to during the context.
     """
     backend = _get_mock_signal_backend(signal)
-    backend.mock.put.side_effect = callback
-    return _unset_side_effect_cm(backend.mock)
+    backend.put_mock.side_effect = callback
+    return _unset_side_effect_cm(backend.put_mock)

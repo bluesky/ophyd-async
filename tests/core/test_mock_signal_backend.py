@@ -35,11 +35,7 @@ async def test_mock_signal_backend(connect_mock_mode):
     assert await mock_signal._backend.get_value() == ""
     await mock_signal._backend.put("test")
     assert await mock_signal._backend.get_value() == "test"
-
-    mock_signal._backend.mock.get_value.assert_called_once
-
-    mock_signal._backend.mock["get_value"].assert_called_once
-    assert mock_signal._backend.mock.put.call_args_list == [
+    assert mock_signal._backend.put_mock.call_args_list == [
         call("test", wait=True, timeout=None),
     ]
 
@@ -233,6 +229,21 @@ async def test_callback_on_mock_put_no_ctx():
             "wait": True,
         }
     ]
+
+
+async def test_callback_on_mock_put_fails_if_args_are_not_correct():
+    mock_signal = SignalRW(SoftSignalBackend(float))
+    await mock_signal.connect(mock=True)
+
+    def some_function_without_kwargs(arg):
+        pass
+
+    callback_on_mock_put(mock_signal, some_function_without_kwargs)
+    with pytest.raises(TypeError) as exc:
+        await mock_signal.set(10.0)
+    assert str(exc.value).endswith(
+        "some_function_without_kwargs() got an unexpected keyword argument 'wait'"
+    )
 
 
 async def test_set_mock_values(mock_signals):
