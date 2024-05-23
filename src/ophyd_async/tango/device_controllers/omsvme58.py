@@ -75,13 +75,15 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
             await self.position.set(new_position)
             await asyncio.sleep(0.1)
             counter = 0
-            while await self._state.get_value() == DevState.MOVING:
+            state = await self._state.get_value()
+            while state == DevState.MOVING:
                 # Update the watchers with the current position every 0.5 seconds
                 if counter % 5 == 0:
                     current_position = await self.position.get_value()
                     update_watchers(current_position)
                     counter = 0
                 await asyncio.sleep(0.1)
+                state = await self._state.get_value()
                 counter += 1
         finally:
             if self.position.is_cachable():

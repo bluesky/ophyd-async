@@ -10,7 +10,6 @@ from ophyd_async.tango import TangoReadableDevice, tango_signal_rw, tango_signal
 
 # --------------------------------------------------------------------
 class SIS3820Counter(TangoReadableDevice):  # Triggerable
-
     # --------------------------------------------------------------------
     def __init__(self, trl: str, name="") -> None:
         TangoReadableDevice.__init__(self, trl, name)
@@ -18,7 +17,6 @@ class SIS3820Counter(TangoReadableDevice):  # Triggerable
 
     # --------------------------------------------------------------------
     def register_signals(self):
-
         self.counts = tango_signal_rw(
             float, self.trl + "/counts", device_proxy=self.proxy
         )
@@ -40,5 +38,8 @@ class SIS3820Counter(TangoReadableDevice):  # Triggerable
     # --------------------------------------------------------------------
     async def read(self) -> Dict[str, Reading]:
         ret = await super().read()
-        await self.reset.trigger()
         return ret
+
+    async def stage(self):
+        await self.reset.trigger()
+        await super().stage()
