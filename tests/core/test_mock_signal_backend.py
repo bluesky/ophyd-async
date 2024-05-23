@@ -352,3 +352,13 @@ async def test_writing_to_soft_signals_in_mock():
     assert await signal.get_value() == 0
     backend_put(100)
     assert await signal.get_value() == 100
+
+
+async def test_when_put_mock_called_with_typo_then_fails_but_calling_directly_passes():
+    mock_signal = SignalRW(SoftSignalBackend(int))
+    await mock_signal.connect(mock=True)
+    assert isinstance(mock_signal._backend, MockSignalBackend)
+    mock = mock_signal._backend.put_mock
+    with pytest.raises(AttributeError):
+        mock.asssert_called_once()  # Note typo here is deliberate!
+    mock()

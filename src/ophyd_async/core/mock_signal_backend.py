@@ -1,6 +1,6 @@
 import asyncio
 from functools import cached_property
-from typing import Optional, Type
+from typing import Callable, Optional, Type
 from unittest.mock import Mock
 
 from bluesky.protocols import Descriptor, Reading
@@ -47,7 +47,7 @@ class MockSignalBackend(SignalBackend[T]):
 
     @cached_property
     def put_mock(self) -> Mock:
-        return Mock(name="put")
+        return Mock(name="put", spec=Callable)
 
     @cached_property
     def put_proceeds(self) -> asyncio.Event:
