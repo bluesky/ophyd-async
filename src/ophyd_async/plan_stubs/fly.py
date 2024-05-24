@@ -89,7 +89,7 @@ def time_resolved_fly_and_collect_with_static_seq_table(
     The standard basic flow for a flyscan:
 
     - Set up the flyer with a static sequence table and detectors with a trigger
-        (A plan stub callable is passed in to do this preperation)
+        (A default plan stub is provided for this but a custom one can be used instead.)
     - Declare the stream and kickoff the scan
     - Collect while completing
 
