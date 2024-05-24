@@ -329,7 +329,6 @@ async def test_time_resolved_fly_and_collect_with_static_seq_table(
             stream_name="stream1",
             detectors=detector_list,
             flyer=flyer,
-            prepare_flyer_and_detectors=prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
             number_of_frames=number_of_frames,
             exposure=exposure,
             shutter_time=shutter_time,
