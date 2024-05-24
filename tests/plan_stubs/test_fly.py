@@ -349,3 +349,31 @@ async def test_time_resolved_fly_and_collect_with_static_seq_table(
         "stream_datum",
         "stop",
     ]
+
+
+@pytest.mark.parametrize("detector_list", [[], None])
+async def test_at_least_one_detector_in_fly_plan(
+    RE: RunEngine,
+    flyer,
+    detector_list,
+):
+    # Trigger parameters
+    number_of_frames = 1
+    exposure = 1
+    shutter_time = 0.004
+
+    assert not detector_list
+
+    def fly():
+        yield from time_resolved_fly_and_collect_with_static_seq_table(
+            stream_name="stream1",
+            detectors=detector_list,
+            flyer=flyer,
+            number_of_frames=number_of_frames,
+            exposure=exposure,
+            shutter_time=shutter_time,
+        )
+
+    with pytest.raises(ValueError) as exc:
+        RE(fly())
+        assert str(exc) == "No detectors provided. There must be at least one."
