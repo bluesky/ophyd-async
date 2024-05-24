@@ -176,7 +176,7 @@ class TangoMover(TangoReadableDevice, Locatable, Stoppable):
         start = time.monotonic()
         start_position = await self.position.get_value()
 
-        def update_watchers(current_position: float):
+        def update_watchers(current_position: float) -> None:
             for watcher in watchers:
                 watcher(
                     name=self.name,

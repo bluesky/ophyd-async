@@ -24,7 +24,7 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
         self._set_success = True
 
     # --------------------------------------------------------------------
-    def register_signals(self):
+    def register_signals(self) -> None:
         self.sampletime = tango_signal_rw(
             float, self.trl + "/sampletime", device_proxy=self.proxy
         )
@@ -47,12 +47,14 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
         self.set_name(self.name)
 
     # --------------------------------------------------------------------
-    async def _trigger(self, watchers: List[Callable] = []):
+    async def _trigger(self, watchers: List[Callable] or None = None) -> None:
+        if watchers is None:
+            watchers = []
         self._set_success = True
         start = time.monotonic()
         total_time = await self.sampletime.get_value()
 
-        def update_watchers(remaining_time: float):
+        def update_watchers(remaining_time: float) -> None:
             for watcher in watchers:
                 watcher(
                     name=self.name,
@@ -94,7 +96,7 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
         return AsyncStatus(self._trigger(watchers), watchers)
 
     # --------------------------------------------------------------------
-    def prepare(self, p_time) -> AsyncStatus:
+    def prepare(self, p_time: float) -> AsyncStatus:
         return self.sampletime.set(p_time)
 
     # --------------------------------------------------------------------

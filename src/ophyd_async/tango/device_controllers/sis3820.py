@@ -5,18 +5,19 @@ from typing import Dict
 # from bluesky.protocols import Triggerable
 from bluesky.protocols import Reading
 
+from ophyd_async.core import AsyncStatus
 from ophyd_async.tango import TangoReadableDevice, tango_signal_rw, tango_signal_x
 
 
 # --------------------------------------------------------------------
 class SIS3820Counter(TangoReadableDevice):  # Triggerable
     # --------------------------------------------------------------------
-    def __init__(self, trl: str, name="") -> None:
+    def __init__(self, trl: str, name: str = "") -> None:
         TangoReadableDevice.__init__(self, trl, name)
         self._set_success = True
 
     # --------------------------------------------------------------------
-    def register_signals(self):
+    def register_signals(self) -> None:
         self.counts = tango_signal_rw(
             float, self.trl + "/counts", device_proxy=self.proxy
         )
@@ -30,16 +31,12 @@ class SIS3820Counter(TangoReadableDevice):  # Triggerable
 
         self.set_name(self.name)
 
-    # --------------------------------------------------------------------
-    # Theoretically counter has to be reset before triggering, but I do not how to do it
-    # def trigger(self) -> AsyncStatus:
-    #     return self.reset.trigger()
-
-    # --------------------------------------------------------------------
     async def read(self) -> Dict[str, Reading]:
         ret = await super().read()
         return ret
 
-    async def stage(self):
+    def trigger(self) -> AsyncStatus:
+        return AsyncStatus(self._trigger())
+
+    async def _trigger(self) -> None:
         await self.reset.trigger()
-        await super().stage()

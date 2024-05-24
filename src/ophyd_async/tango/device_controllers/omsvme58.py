@@ -19,12 +19,12 @@ from tango import DevState
 # --------------------------------------------------------------------
 class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
     # --------------------------------------------------------------------
-    def __init__(self, trl: str, name="") -> None:
+    def __init__(self, trl: str, name: str = "") -> None:
         TangoReadableDevice.__init__(self, trl, name)
         self._set_success = True
 
     # --------------------------------------------------------------------
-    def register_signals(self):
+    def register_signals(self) -> None:
         self.position = tango_signal_rw(
             float, self.trl + "/position", device_proxy=self.proxy
         )
@@ -52,12 +52,16 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
         self.set_name(self.name)
 
     # --------------------------------------------------------------------
-    async def _move(self, new_position: float, watchers: List[Callable] = []):
+    async def _move(
+        self, new_position: float, watchers: List[Callable] or None = None
+    ) -> None:
+        if watchers is None:
+            watchers = []
         self._set_success = True
         start = time.monotonic()
         start_position = await self.position.get_value()
 
-        def update_watchers(current_position: float):
+        def update_watchers(current_position: float) -> None:
             for watcher in watchers:
                 watcher(
                     name=self.name,
@@ -106,8 +110,6 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
         return Location(setpoint=set_point, readback=readback)
 
     # --------------------------------------------------------------------
-    async def stop(self, success=False):
+    def stop(self, success: bool = False) -> AsyncStatus:
         self._set_success = success
-        # Put with completion will never complete as we are waiting for completion on
-        # the move above, so need to pass wait=False
-        await self._stop.trigger()
+        return AsyncStatus(self._stop.trigger())
