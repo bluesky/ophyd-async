@@ -42,6 +42,7 @@ async def mock_puts_blocked(*signals: Signal):
 
 
 def get_mock_put(signal: Signal) -> Mock:
+    """Get the mock associated with the put call on the signal."""
     return _get_mock_signal_backend(signal).put_mock
 
 
