@@ -28,7 +28,7 @@ class _HDFFile:
         self._bundles = [
             compose_stream_resource(
                 mimetype="application/x-hdf5",
-                uri=f"file://{full_file_name}",
+                uri=f"file://localhost{path_info.root / full_file_name}",
                 # spec="AD_HDF5_SWMR_SLICE",
                 # root=str(path_info.root),
                 data_key=ds.name,
