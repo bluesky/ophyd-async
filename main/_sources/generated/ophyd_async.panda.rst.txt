@@ -46,6 +46,7 @@ ophyd\_async.panda
       PandaPcapController
       TimeUnits
       DataBlock
+      StaticSeqTableTriggerLogic
    
    
 
