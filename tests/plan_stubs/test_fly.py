@@ -350,9 +350,12 @@ async def test_time_resolved_fly_and_collect_with_static_seq_table(
         "stop",
     ]
 
-@pytest.mark.parametrize("detector_list", [[],None])
+
+@pytest.mark.parametrize("detector_list", [[], None])
 async def test_at_least_one_detector_in_fly_plan(
-    RE: RunEngine, flyer, detector_list,
+    RE: RunEngine,
+    flyer,
+    detector_list,
 ):
     # Trigger parameters
     number_of_frames = 1
@@ -373,4 +376,4 @@ async def test_at_least_one_detector_in_fly_plan(
 
     with pytest.raises(ValueError) as exc:
         RE(fly())
-        assert(str(exc)=="No detectors provided. There must be at least one.")
+        assert str(exc) == "No detectors provided. There must be at least one."
