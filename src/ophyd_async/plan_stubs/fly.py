@@ -14,6 +14,7 @@ def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
     detectors: List[StandardDetector],
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    prepare_flyer_and_detectors: callable,
     number_of_frames: int,
     exposure: int,
     shutter_time: float,
@@ -25,6 +26,7 @@ def time_resolved_fly_and_collect_with_static_seq_table(
     The standard basic flow for a flyscan:
 
     - Set up the flyer with a static sequence table and detectors with a trigger
+        (A plan stub callable is passed in to do this preperation)
     - Declare the stream and kickoff the scan
     - Collect while completing
 
@@ -37,7 +39,7 @@ def time_resolved_fly_and_collect_with_static_seq_table(
 
     # Set up scan and prepare trigger
     deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
-    yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
+    yield from prepare_flyer_and_detectors(
         flyer,
         detectors,
         number_of_frames=number_of_frames,
