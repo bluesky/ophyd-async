@@ -81,7 +81,6 @@ async def test_hdf_panda_hardware_triggered_flyable(
             [mock_hdf_panda],
             number_of_frames=1,
             exposure=exposure,
-            deadtime=mock_hdf_panda.controller.get_deadtime(1),
             shutter_time=shutter_time,
         )
 

@@ -17,7 +17,6 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     detectors: List[StandardDetector],
     number_of_frames: int,
     exposure: float,
-    deadtime: float,
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
@@ -32,6 +31,8 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     This prepares all supplied detectors with the same trigger.
 
     """
+    deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
+
     trigger_info = TriggerInfo(
         num=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
@@ -72,17 +73,14 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
-    detectors: List[StandardDetector],
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
-    number_of_frames: int,
-    exposure: float,
-    shutter_time: float,
-    repeats: int = 1,
-    period: float = 0.0,
+    detectors: List[StandardDetector],
     prepare_flyer_and_detectors: Callable[
         Concatenate[HardwareTriggeredFlyable[SeqTableInfo], List[StandardDetector], P],
         Any,
     ] = prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
+    *prepare_args: P.args,
+    **prepare_kwargs: P.kwargs,
 ):
     """Run a scan wth a flyer and multiple detectors.
 
@@ -101,16 +99,11 @@ def time_resolved_fly_and_collect_with_static_seq_table(
         raise ValueError("No detectors provided. There must be at least one.")
 
     # Set up scan and prepare trigger
-    deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
     yield from prepare_flyer_and_detectors(
         flyer,
         detectors,
-        number_of_frames=number_of_frames,
-        exposure=exposure,
-        deadtime=deadtime,
-        shutter_time=shutter_time,
-        repeats=repeats,
-        period=period,
+        *prepare_args,
+        **prepare_kwargs,
     )
     yield from bps.declare_stream(*detectors, name=stream_name, collect=True)
     yield from bps.kickoff(flyer, wait=True)

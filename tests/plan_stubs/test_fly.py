@@ -228,7 +228,6 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
 
     number_of_frames = 1
     exposure = 1
-    deadtime = max(det.controller.get_deadtime(1) for det in detector_list)
     shutter_time = 0.004
 
     trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
@@ -242,7 +241,6 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
             detector_list,
             number_of_frames=number_of_frames,
             exposure=exposure,
-            deadtime=deadtime,
             shutter_time=shutter_time,
         )
 
