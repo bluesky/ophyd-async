@@ -24,7 +24,6 @@ ophyd\_async.core.MockSignalBackend
    
       ~MockSignalBackend.connect
       ~MockSignalBackend.get_datakey
-      ~MockSignalBackend.get_descriptor
       ~MockSignalBackend.get_reading
       ~MockSignalBackend.get_setpoint
       ~MockSignalBackend.get_value

@@ -20,7 +20,7 @@ ophyd\_async.core
       :toctree:
       :nosignatures:
    
-      assert_mock_put_called_with
+      get_mock_put
       callback_on_mock_put
       mock_puts_blocked
       set_mock_values

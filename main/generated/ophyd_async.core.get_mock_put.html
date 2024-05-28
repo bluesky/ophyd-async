@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.panda.seq_table_from_rows &#8212; ophyd-async 0.3a6.dev13+gee65c72 documentation</title>
+    <title>ophyd_async.core.get_mock_put &#8212; ophyd-async 0.3a6.dev13+gee65c72 documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.panda.seq_table_from_rows';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.core.get_mock_put';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.2';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -55,8 +55,8 @@
     <link rel="icon" href="../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.panda.phase_sorter" href="ophyd_async.panda.phase_sorter.html" />
-    <link rel="prev" title="ophyd_async.panda.seq_table_from_arrays" href="ophyd_async.panda.seq_table_from_arrays.html" />
+    <link rel="next" title="ophyd_async.core.callback_on_mock_put" href="ophyd_async.core.callback_on_mock_put.html" />
+    <link rel="prev" title="ophyd_async.core" href="ophyd_async.core.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -437,8 +437,8 @@ document.write(`
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../reference/api.html">API</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.core.html">ophyd_async.core</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_mock_put.html">ophyd_async.core.get_mock_put</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.core.html">ophyd_async.core</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.get_mock_put</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.callback_on_mock_put.html">ophyd_async.core.callback_on_mock_put</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.mock_puts_blocked.html">ophyd_async.core.mock_puts_blocked</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_values.html">ophyd_async.core.set_mock_values</a></li>
@@ -540,9 +540,9 @@ document.write(`
 </li>
 </ul>
 </li>
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.panda.html">ophyd_async.panda</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.panda.html">ophyd_async.panda</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.seq_table_from_arrays.html">ophyd_async.panda.seq_table_from_arrays</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.panda.seq_table_from_rows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.seq_table_from_rows.html">ophyd_async.panda.seq_table_from_rows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.phase_sorter.html">ophyd_async.panda.phase_sorter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.CommonPandaBlocks.html">ophyd_async.panda.CommonPandaBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.HDFPanda.html">ophyd_async.panda.HDFPanda</a></li>
@@ -608,7 +608,7 @@ document.write(`
     <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
     
     
-    <li class="breadcrumb-item"><a href="ophyd_async.panda.html" class="nav-link">ophyd_async.panda</a></li>
+    <li class="breadcrumb-item"><a href="ophyd_async.core.html" class="nav-link">ophyd_async.core</a></li>
     
     <li class="breadcrumb-item active" aria-current="page">ophyd_async....</li>
   </ul>
@@ -627,12 +627,12 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="ophyd-async-panda-seq-table-from-rows">
-<h1>ophyd_async.panda.seq_table_from_rows<a class="headerlink" href="#ophyd-async-panda-seq-table-from-rows" title="Link to this heading">#</a></h1>
+  <section id="ophyd-async-core-get-mock-put">
+<h1>ophyd_async.core.get_mock_put<a class="headerlink" href="#ophyd-async-core-get-mock-put" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.panda.seq_table_from_rows">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.panda.</span></span><span class="sig-name descname"><span class="pre">seq_table_from_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.panda.SeqTableRow.html#ophyd_async.panda.SeqTableRow" title="ophyd_async.panda._table.SeqTableRow"><span class="pre">SeqTableRow</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/panda/_table.html#seq_table_from_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.panda.seq_table_from_rows" title="Link to this definition">#</a></dt>
-<dd><p>Constructs a sequence table from a series of rows.</p>
+<dt class="sig sig-object py" id="ophyd_async.core.get_mock_put">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_mock_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.Signal.html#ophyd_async.core.Signal" title="ophyd_async.core.signal.Signal"><span class="pre">Signal</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock" title="(in Python v3.12)"><span class="pre">Mock</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/mock_signal_utils.html#get_mock_put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_mock_put" title="Link to this definition">#</a></dt>
+<dd><p>Get the mock associated with the put call on the signal.</p>
 </dd></dl>
 
 </section>
@@ -648,20 +648,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.panda.seq_table_from_arrays.html"
+       href="ophyd_async.core.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">ophyd_async.panda.seq_table_from_arrays</p>
+        <p class="prev-next-title">ophyd_async.core</p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.panda.phase_sorter.html"
+       href="ophyd_async.core.callback_on_mock_put.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">ophyd_async.panda.phase_sorter</p>
+        <p class="prev-next-title">ophyd_async.core.callback_on_mock_put</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -683,7 +683,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.panda.seq_table_from_rows"><code class="docutils literal notranslate"><span class="pre">seq_table_from_rows()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_mock_put"><code class="docutils literal notranslate"><span class="pre">get_mock_put()</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -691,7 +691,7 @@ document.write(`
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.panda.seq_table_from_rows.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.core.get_mock_put.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -706,7 +706,7 @@ document.write(`
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/generated/ophyd_async.panda.seq_table_from_rows.rst.txt">
+    <a href="../_sources/generated/ophyd_async.core.get_mock_put.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

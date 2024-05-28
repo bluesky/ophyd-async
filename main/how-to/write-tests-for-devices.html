@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Write Tests for Devices &#8212; ophyd-async 0.3a6.dev12+g39dbff6 documentation</title>
+    <title>Write Tests for Devices &#8212; ophyd-async 0.3a6.dev13+gee65c72 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=442c28e5"></script>
+    <script src="../_static/documentation_options.js?v=b584a397"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,6 +561,30 @@ may change API on minor release numbers before then</p>
                 <span class="s2">&quot;alarm_severity&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">},</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Given that the mock signal holds a <code class="docutils literal notranslate"><span class="pre">unittest.mock.Mock</span></code> object you can retrieve this object and assert that the device has been set correctly using <code class="docutils literal notranslate"><span class="pre">get_mock_put</span></code>. You are also free to use any other behaviour that <code class="docutils literal notranslate"><span class="pre">unittest.mock.Mock</span></code> provides, such as in this example which sets the parent of the mock to allow ordering across signals to be asserted:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_retrieve_mock_and_assert</span><span class="p">(</span><span class="n">mock_mover</span><span class="p">:</span> <span class="n">demo</span><span class="o">.</span><span class="n">Mover</span><span class="p">):</span>
+    <span class="n">mover_setpoint_mock</span> <span class="o">=</span> <span class="n">get_mock_put</span><span class="p">(</span><span class="n">mock_mover</span><span class="o">.</span><span class="n">setpoint</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">mock_mover</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">mover_setpoint_mock</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">ANY</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">ANY</span><span class="p">)</span>
+
+    <span class="c1"># Assert that velocity is set before move</span>
+    <span class="n">mover_velocity_mock</span> <span class="o">=</span> <span class="n">get_mock_put</span><span class="p">(</span><span class="n">mock_mover</span><span class="o">.</span><span class="n">velocity</span><span class="p">)</span>
+
+    <span class="n">parent_mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
+    <span class="n">parent_mock</span><span class="o">.</span><span class="n">attach_mock</span><span class="p">(</span><span class="n">mover_setpoint_mock</span><span class="p">,</span> <span class="s2">&quot;setpoint&quot;</span><span class="p">)</span>
+    <span class="n">parent_mock</span><span class="o">.</span><span class="n">attach_mock</span><span class="p">(</span><span class="n">mover_velocity_mock</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">mock_mover</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">mock_mover</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">67</span><span class="p">)</span>
+
+    <span class="n">parent_mock</span><span class="o">.</span><span class="n">assert_has_calls</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">velocity</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">ANY</span><span class="p">),</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">setpoint</span><span class="p">(</span><span class="mi">67</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">ANY</span><span class="p">),</span>
+        <span class="p">]</span>
     <span class="p">)</span>
 </pre></div>
 </div>
