@@ -1,0 +1,6 @@
+ophyd\_async.core.reset\_mock\_put\_calls
+=========================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: reset_mock_put_calls

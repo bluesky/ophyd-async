@@ -1,0 +1,52 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.panda.SeqTableRow
+==============================
+
+.. currentmodule:: ophyd_async.panda
+
+.. autoclass:: SeqTableRow
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SeqTableRow.outa1
+      ~SeqTableRow.outa2
+      ~SeqTableRow.outb1
+      ~SeqTableRow.outb2
+      ~SeqTableRow.outc1
+      ~SeqTableRow.outc2
+      ~SeqTableRow.outd1
+      ~SeqTableRow.outd2
+      ~SeqTableRow.oute1
+      ~SeqTableRow.oute2
+      ~SeqTableRow.outf1
+      ~SeqTableRow.outf2
+      ~SeqTableRow.position
+      ~SeqTableRow.repeats
+      ~SeqTableRow.time1
+      ~SeqTableRow.time2
+      ~SeqTableRow.trigger
+   
+   
