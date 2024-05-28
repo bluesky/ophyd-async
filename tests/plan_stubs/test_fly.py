@@ -6,6 +6,7 @@ import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
+from bluesky.utils import FailedStatus
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
 from ophyd_async.core import (
@@ -374,3 +375,68 @@ async def test_at_least_one_detector_in_fly_plan(
     with pytest.raises(ValueError) as exc:
         RE(fly())
         assert str(exc) == "No detectors provided. There must be at least one."
+
+
+async def test_invalid_param_spec_args_raises_exception_with_default_prepare(
+    RE: RunEngine,
+    flyer,
+    detectors: tuple[StandardDetector],
+):
+    detector_list = list(detectors)
+    number_of_frames = 1
+
+    def fly():
+        yield from time_resolved_fly_and_collect_with_static_seq_table(
+            stream_name="stream1",
+            detectors=detector_list,
+            flyer=flyer,
+            number_of_frames=number_of_frames,
+        )
+
+    with pytest.raises(TypeError) as exc:
+        RE(fly())
+        assert (
+            str(exc)
+            == "prepare_static_seq_table_flyer_and_detectors_with_same_trigger()"
+            "missing 2 required positional arguments: 'exposure' and 'shutter_time'"
+        )
+
+
+async def test_prepare_params_passed_through_param_spec(
+    RE: RunEngine,
+    flyer,
+    detectors: tuple[StandardDetector],
+):
+    """
+    Pass a mock prepare method through with params. The run should fail as
+    prepare has occured but the detectors are not armed by the mock.
+    """
+    detector_list = list(detectors)
+    number_of_frames = 1
+
+    def prepare_with_exposure(
+        flyer: HardwareTriggeredFlyable,
+        detectors: list[StandardDetector],
+        number_of_frames: int,
+    ):
+        yield from {}
+
+    mock = Mock()
+    mock.side_effect = prepare_with_exposure
+
+    def fly():
+        yield from bps.stage_all(*detector_list, flyer)
+        yield from bps.open_run()
+        yield from time_resolved_fly_and_collect_with_static_seq_table(
+            stream_name="stream1",
+            detectors=detector_list,
+            flyer=flyer,
+            prepare_flyer_and_detectors=mock,
+            number_of_frames=number_of_frames,
+        )
+        yield from bps.close_run()
+        yield from bps.unstage_all(flyer, *detector_list)
+
+    with pytest.raises(FailedStatus) as exc:
+        RE(fly())
+        assert str(exc) == "Detector not armed!"
