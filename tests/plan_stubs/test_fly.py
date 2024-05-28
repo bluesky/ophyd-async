@@ -228,7 +228,6 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
 
     number_of_frames = 1
     exposure = 1
-    deadtime = max(det.controller.get_deadtime(1) for det in detector_list)
     shutter_time = 0.004
 
     trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
@@ -242,7 +241,6 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
             detector_list,
             number_of_frames=number_of_frames,
             exposure=exposure,
-            deadtime=deadtime,
             shutter_time=shutter_time,
         )
 
@@ -327,8 +325,8 @@ async def test_time_resolved_fly_and_collect_with_static_seq_table(
         yield from bps.open_run()
         yield from time_resolved_fly_and_collect_with_static_seq_table(
             stream_name="stream1",
-            detectors=detector_list,
             flyer=flyer,
+            detectors=detector_list,
             number_of_frames=number_of_frames,
             exposure=exposure,
             shutter_time=shutter_time,
@@ -366,8 +364,8 @@ async def test_at_least_one_detector_in_fly_plan(
     def fly():
         yield from time_resolved_fly_and_collect_with_static_seq_table(
             stream_name="stream1",
-            detectors=detector_list,
             flyer=flyer,
+            detectors=detector_list,
             number_of_frames=number_of_frames,
             exposure=exposure,
             shutter_time=shutter_time,
