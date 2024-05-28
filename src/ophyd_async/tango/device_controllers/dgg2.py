@@ -18,18 +18,42 @@ from tango import DevState
 
 # --------------------------------------------------------------------
 class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
+    trl: str
+    name: str
+    src_dict: dict = {
+        "sampletime": "/sampletime",
+        "remainingtime": "/remainingtime",
+        "startandwaitfortimer": "/startandwaitfortimer",
+        "start": "/start",
+        "state": "/state",
+    }
+
     # --------------------------------------------------------------------
-    def __init__(self, trl: str, name="") -> None:
+    def __init__(self, trl: str, name="", sources: dict = None) -> None:
+        if sources is None:
+            sources = {}
+        self.src_dict["sampletime"] = sources.get("sampletime", "/sampletime")
+        self.src_dict["remainingtime"] = sources.get("remainingtime", "/remainingtime")
+        self.src_dict["startandwaitfortimer"] = sources.get(
+            "startandwaitfortimer", "/startandwaitfortimer"
+        )
+        self.src_dict["start"] = sources.get("start", "/start")
+        self.src_dict["state"] = sources.get("state", "/state")
+
+        for key in self.src_dict:
+            if not self.src_dict[key].startswith("/"):
+                self.src_dict[key] = "/" + self.src_dict[key]
+
         TangoReadableDevice.__init__(self, trl, name)
         self._set_success = True
 
     # --------------------------------------------------------------------
     def register_signals(self) -> None:
         self.sampletime = tango_signal_rw(
-            float, self.trl + "/sampletime", device_proxy=self.proxy
+            float, self.trl + self.src_dict["sampletime"], device_proxy=self.proxy
         )
         self.remainingtime = tango_signal_rw(
-            float, self.trl + "/remainingtime", device_proxy=self.proxy
+            float, self.trl + self.src_dict["remainingtime"], device_proxy=self.proxy
         )
 
         self.set_readable_signals(
@@ -37,12 +61,16 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
         )
 
         self.startandwaitfortimer = tango_signal_x(
-            self.trl + "/startandwaitfortimer", device_proxy=self.proxy
+            self.trl + self.src_dict["startandwaitfortimer"], device_proxy=self.proxy
         )
 
-        self.start = tango_signal_x(self.trl + "/start", device_proxy=self.proxy)
+        self.start = tango_signal_x(
+            self.trl + self.src_dict["start"], device_proxy=self.proxy
+        )
 
-        self._state = tango_signal_r(DevState, self.trl + "/state", self.proxy)
+        self._state = tango_signal_r(
+            DevState, self.trl + self.src_dict["state"], self.proxy
+        )
 
         self.set_name(self.name)
 

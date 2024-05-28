@@ -18,27 +18,53 @@ from tango import DevState
 
 # --------------------------------------------------------------------
 class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
+    trl: str
+    name: str
+    src_dict: dict = {
+        "position": "/position",
+        "baserate": "/baserate",
+        "slewrate": "/slewrate",
+        "conversion": "/conversion",
+        "acceleration": "/acceleration",
+        "stop": "/stopmove",
+        "state": "/state",
+    }
+
     # --------------------------------------------------------------------
-    def __init__(self, trl: str, name: str = "") -> None:
+    def __init__(self, trl: str, name: str = "", sources: dict = None) -> None:
+        if sources is None:
+            sources = {}
+        self.src_dict["position"] = sources.get("position", "/position")
+        self.src_dict["baserate"] = sources.get("baserate", "/baserate")
+        self.src_dict["slewrate"] = sources.get("slewrate", "/slewrate")
+        self.src_dict["conversion"] = sources.get("conversion", "/conversion")
+        self.src_dict["acceleration"] = sources.get("acceleration", "/acceleration")
+        self.src_dict["stop"] = sources.get("stop", "/stopmove")
+        self.src_dict["state"] = sources.get("state", "/state")
+
+        for key in self.src_dict:
+            if not self.src_dict[key].startswith("/"):
+                self.src_dict[key] = "/" + self.src_dict[key]
+
         TangoReadableDevice.__init__(self, trl, name)
         self._set_success = True
 
     # --------------------------------------------------------------------
     def register_signals(self) -> None:
         self.position = tango_signal_rw(
-            float, self.trl + "/position", device_proxy=self.proxy
+            float, self.trl + self.src_dict["position"], device_proxy=self.proxy
         )
         self.baserate = tango_signal_rw(
-            int, self.trl + "/baserate", device_proxy=self.proxy
+            int, self.trl + self.src_dict["baserate"], device_proxy=self.proxy
         )
         self.slewrate = tango_signal_rw(
-            int, self.trl + "/slewrate", device_proxy=self.proxy
+            int, self.trl + self.src_dict["slewrate"], device_proxy=self.proxy
         )
         self.conversion = tango_signal_rw(
-            float, self.trl + "/conversion", device_proxy=self.proxy
+            float, self.trl + self.src_dict["conversion"], device_proxy=self.proxy
         )
         self.acceleration = tango_signal_rw(
-            int, self.trl + "/acceleration", device_proxy=self.proxy
+            int, self.trl + self.src_dict["acceleration"], device_proxy=self.proxy
         )
 
         self.set_readable_signals(
@@ -46,8 +72,10 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
             config=[self.baserate, self.slewrate, self.conversion, self.acceleration],
         )
 
-        self._stop = tango_signal_x(self.trl + "/stopmove", self.proxy)
-        self._state = tango_signal_r(DevState, self.trl + "/state", self.proxy)
+        self._stop = tango_signal_x(self.trl + self.src_dict["stop"], self.proxy)
+        self._state = tango_signal_r(
+            DevState, self.trl + self.src_dict["state"], self.proxy
+        )
 
         self.set_name(self.name)
 
