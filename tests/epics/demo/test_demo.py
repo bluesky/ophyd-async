@@ -258,7 +258,7 @@ async def test_read_sensor(mock_sensor: demo.Sensor):
     ] == demo.EnergyMode.low
     desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
-    assert desc["choices"] == ["Low Energy", "High Energy"]  # type: ignore
+    assert desc["choices"] == ("Low Energy", "High Energy")  # type: ignore
     set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"

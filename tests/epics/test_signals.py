@@ -19,7 +19,8 @@ import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import DataKey, Reading
 
-from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
+from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
+from ophyd_async.core.signal_backend import RuntimeEnum
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics._backend.common import LimitPair, Limits
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
@@ -263,6 +264,7 @@ ls2 = "another string that is just longer than forty characters"
         (float, "float", 3.141, 43.5, {"ca", "pva"}),
         (str, "str", "hello", "goodbye", {"ca", "pva"}),
         (MyEnum, "enum", MyEnum.b, MyEnum.c, {"ca", "pva"}),
+        (RuntimeEnum["Aaa", "Bbb"], "enum", "Bbb", "Ccc", {"ca", "pva"}),
         # numpy arrays of numpy types
         (
             npt.NDArray[np.int8],
@@ -495,6 +497,15 @@ class EnumNoString(Enum):
             (
                 "has choices ('Aaa', 'Bbb', 'Ccc'), which do not match "
                 "<enum 'BadEnum'>, which has ('Aaa', 'B', 'Ccc')"
+            ),
+        ),
+        (
+            RuntimeEnum["Aaa", "B", "Ccc"],
+            "enum",
+            (
+                "has choices ('Aaa', 'Bbb', 'Ccc'), "
+                "which do not match RuntimeEnum, which has "
+                "frozenset("
             ),
         ),
         (int, "str", "has type str not int"),

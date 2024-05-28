@@ -24,6 +24,8 @@ class Limits(TypedDict):
     def __bool__(self) -> bool:
         return any(self.alarm, self.control, self.display, self.warning)
 
+from ophyd_async.core.signal_backend import RuntimeEnum
+
 
 def get_supported_values(
     pv: str,
@@ -33,9 +35,15 @@ def get_supported_values(
     if not datatype:
         return {x: x or "_" for x in pv_choices}
 
-    if not issubclass(datatype, str):
+    if issubclass(datatype, RuntimeEnum):
+        if not datatype.choices.issubset(frozenset(pv_choices)):
+            raise TypeError(
+                f"{pv} has choices {pv_choices}, "
+                f"which do not match RuntimeEnum, which has {datatype.choices}"
+            )
+    elif not issubclass(datatype, str):
         raise TypeError(f"{pv} is type Enum but doesn't inherit from String")
-    if issubclass(datatype, Enum):
+    elif issubclass(datatype, Enum):
         choices = tuple(v.value for v in datatype)
         if set(choices) != set(pv_choices):
             raise TypeError(

@@ -1,5 +1,14 @@
 from abc import abstractmethod
-from typing import Generic, Optional, Type
+from typing import (
+    TYPE_CHECKING,
+    ClassVar,
+    Dict,
+    FrozenSet,
+    Generic,
+    Literal,
+    Optional,
+    Type,
+)
 
 from bluesky.protocols import DataKey, Reading
 
@@ -45,3 +54,52 @@ class SignalBackend(Generic[T]):
     @abstractmethod
     def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
         """Observe changes to the current value, timestamp and severity"""
+
+
+if TYPE_CHECKING:
+    RuntimeEnum = Literal
+else:
+
+    class _RuntimeEnumMeta(type):
+        # Intentionally immutable class variable
+        __enum_classes_created: Dict[FrozenSet[str], Type["RuntimeEnum"]] = {}
+
+        def __str__(cls):
+            if hasattr(cls, "choices"):
+                return f"RuntimeEnum{list(cls.choices)}"
+            return "RuntimeEnum"
+
+        def __getitem__(cls, choices):
+            if isinstance(choices, str):
+                choices = (choices,)
+            else:
+                if not isinstance(choices, tuple) or not all(
+                    isinstance(c, str) for c in choices
+                ):
+                    raise TypeError(
+                        f"Choices must be a str or a tuple of str, not {choices}."
+                    )
+                if len(set(choices)) != len(choices):
+                    raise TypeError("Duplicate elements in runtime enum choices.")
+
+            default_choice_local = choices[0]
+            choices_frozenset = frozenset(choices)
+
+            # If the enum has already been created, return it (ignoring order)
+            if choices_frozenset in _RuntimeEnumMeta.__enum_classes_created:
+                return _RuntimeEnumMeta.__enum_classes_created[choices_frozenset]
+
+            # Create a new enum subclass
+            class _RuntimeEnum(cls):
+                choices = choices_frozenset
+                default_choice = default_choice_local
+
+            _RuntimeEnumMeta.__enum_classes_created[choices_frozenset] = _RuntimeEnum
+            return _RuntimeEnum
+
+    class RuntimeEnum(metaclass=_RuntimeEnumMeta):
+        choices: ClassVar[FrozenSet[str]]
+        default_choice: ClassVar[str]
+
+        def __init__(self):
+            raise RuntimeError("RuntimeEnum cannot be instantiated")

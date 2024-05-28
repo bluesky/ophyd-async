@@ -31,7 +31,7 @@ def string_d(value):
 
 
 def enum_d(value):
-    return {"dtype": "string", "shape": [], "choices": ["Aaa", "Bbb", "Ccc"]}
+    return {"dtype": "string", "shape": [], "choices": ("Aaa", "Bbb", "Ccc")}
 
 
 def waveform_d(value):
