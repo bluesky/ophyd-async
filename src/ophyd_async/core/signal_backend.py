@@ -14,7 +14,7 @@ class SignalBackend(Generic[T]):
 
     #: Like ca://PV_PREFIX:SIGNAL
     @abstractmethod
-    def source(name: str) -> str:
+    def source(self, name: str) -> str:
         """Return source of signal. Signals may pass a name to the backend, which can be
         used or discarded."""
 
