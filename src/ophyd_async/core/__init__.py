@@ -24,12 +24,10 @@ from .device_save_loader import (
     walk_rw_signals,
 )
 from .flyer import HardwareTriggeredFlyable, TriggerLogic
-from .mock_signal_backend import (
-    MockSignalBackend,
-)
+from .mock_signal_backend import MockSignalBackend
 from .mock_signal_utils import (
-    assert_mock_put_called_with,
     callback_on_mock_put,
+    get_mock_put,
     mock_puts_blocked,
     reset_mock_put_calls,
     set_mock_put_proceeds,
@@ -70,7 +68,7 @@ from .utils import (
 )
 
 __all__ = [
-    "assert_mock_put_called_with",
+    "get_mock_put",
     "callback_on_mock_put",
     "mock_puts_blocked",
     "set_mock_values",

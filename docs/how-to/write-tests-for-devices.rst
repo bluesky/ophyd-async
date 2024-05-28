@@ -41,6 +41,11 @@ In addition this example also utilizes helper functions like ``assert_reading`` 
    :pyobject: test_sensor_reading_shows_value
 
 
+Given that the mock signal holds a ``unittest.mock.Mock`` object you can retrieve this object and assert that the device has been set correctly using ``get_mock_put``. You are also free to use any other behaviour that ``unittest.mock.Mock`` provides, such as in this example which sets the parent of the mock to allow ordering across signals to be asserted:
+
+.. literalinclude:: ../../tests/epics/demo/test_demo.py
+   :pyobject: test_retrieve_mock_and_assert
+
 There are several other test utility functions:
 
 Use ``callback_on_mock_put``, for hooking in logic when a mock value changes (e.g. because someone puts to it). This can be called directly, or used as a context, with the callbacks ending after exit.

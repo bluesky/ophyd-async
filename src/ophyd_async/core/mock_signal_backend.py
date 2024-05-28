@@ -1,6 +1,6 @@
 import asyncio
 from functools import cached_property
-from typing import Optional, Type
+from typing import Callable, Optional, Type
 from unittest.mock import Mock
 
 from bluesky.protocols import Descriptor, Reading
@@ -10,7 +10,7 @@ from ophyd_async.core.soft_signal_backend import SoftSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
-class MockSignalBackend(SignalBackend):
+class MockSignalBackend(SignalBackend[T]):
     def __init__(
         self,
         datatype: Optional[Type[T]] = None,
@@ -31,11 +31,11 @@ class MockSignalBackend(SignalBackend):
 
         if not isinstance(self.initial_backend, SoftSignalBackend):
             # If the backend is a hard signal backend, or not provided,
-            # then we create a soft signal to mimick it
+            # then we create a soft signal to mimic it
 
             self.soft_backend = SoftSignalBackend(datatype=datatype)
         else:
-            self.soft_backend = initial_backend
+            self.soft_backend = self.initial_backend
 
     def source(self, name: str) -> str:
         if self.initial_backend:
@@ -47,7 +47,7 @@ class MockSignalBackend(SignalBackend):
 
     @cached_property
     def put_mock(self) -> Mock:
-        return Mock(name="put")
+        return Mock(name="put", spec=Callable)
 
     @cached_property
     def put_proceeds(self) -> asyncio.Event:
@@ -64,9 +64,6 @@ class MockSignalBackend(SignalBackend):
 
     def set_value(self, value: T):
         self.soft_backend.set_value(value)
-
-    async def get_descriptor(self, source: str) -> Descriptor:
-        return await self.soft_backend.get_descriptor(source)
 
     async def get_reading(self) -> Reading:
         return await self.soft_backend.get_reading()
