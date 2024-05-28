@@ -1,0 +1,6 @@
+ophyd\_async.core.mock\_puts\_blocked
+=====================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: mock_puts_blocked

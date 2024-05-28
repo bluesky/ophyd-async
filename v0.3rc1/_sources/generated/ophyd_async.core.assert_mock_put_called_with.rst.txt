@@ -1,0 +1,6 @@
+ophyd\_async.core.assert\_mock\_put\_called\_with
+=================================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: assert_mock_put_called_with
