@@ -1,4 +1,4 @@
-from typing import List, ParamSpec
+from typing import List
 
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
@@ -8,8 +8,6 @@ from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
 from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
 from ophyd_async.panda._trigger import SeqTableInfo
-
-P = ParamSpec("P")
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
