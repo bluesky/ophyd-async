@@ -1,4 +1,4 @@
-from typing import Any, Callable, Concatenate, List, ParamSpec
+from typing import List
 
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
@@ -9,15 +9,12 @@ from ophyd_async.core.utils import in_micros
 from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
 from ophyd_async.panda._trigger import SeqTableInfo
 
-P = ParamSpec("P")
-
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
     detectors: List[StandardDetector],
     number_of_frames: int,
     exposure: float,
-    deadtime: float,
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
@@ -32,13 +29,17 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     This prepares all supplied detectors with the same trigger.
 
     """
+    if not detectors:
+        raise ValueError("No detectors provided. There must be at least one.")
+
+    deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
+
     trigger_info = TriggerInfo(
         num=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
         livetime=exposure,
     )
-
     trigger_time = number_of_frames * (exposure + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
 
@@ -70,48 +71,18 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     yield from bps.wait(group="prep")
 
 
-def time_resolved_fly_and_collect_with_static_seq_table(
+def fly_and_collect(
     stream_name: str,
-    detectors: List[StandardDetector],
     flyer: HardwareTriggeredFlyable[SeqTableInfo],
-    number_of_frames: int,
-    exposure: float,
-    shutter_time: float,
-    repeats: int = 1,
-    period: float = 0.0,
-    prepare_flyer_and_detectors: Callable[
-        Concatenate[HardwareTriggeredFlyable[SeqTableInfo], List[StandardDetector], P],
-        Any,
-    ] = prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
+    detectors: List[StandardDetector],
 ):
-    """Run a scan wth a flyer and multiple detectors.
+    """Kickoff, complete and collect with a flyer and multiple detectors.
 
-    The standard basic flow for a flyscan:
-
-    - Set up the flyer with a static sequence table and detectors with a trigger
-        (A default plan stub is provided for this but a custom one can be used instead.)
-    - Declare the stream and kickoff the scan
-    - Collect while completing
-
-    This needs to be used in a plan that instantates detectors and a flyer,
-    stages/unstages the devices, and opens and closes the run.
+    This stub takes a flyer and one or more detectors that have been prepared. It
+    declares a stream for the detectors, then kicks off the detectors and the flyer.
+    The detectors are collected until the flyer and detectors have completed.
 
     """
-    if not detectors:
-        raise ValueError("No detectors provided. There must be at least one.")
-
-    # Set up scan and prepare trigger
-    deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
-    yield from prepare_flyer_and_detectors(
-        flyer,
-        detectors,
-        number_of_frames=number_of_frames,
-        exposure=exposure,
-        deadtime=deadtime,
-        shutter_time=shutter_time,
-        repeats=repeats,
-        period=period,
-    )
     yield from bps.declare_stream(*detectors, name=stream_name, collect=True)
     yield from bps.kickoff(flyer, wait=True)
     for detector in detectors:
@@ -138,3 +109,41 @@ def time_resolved_fly_and_collect_with_static_seq_table(
             name=stream_name,
         )
     yield from bps.wait(group=group)
+
+
+def time_resolved_fly_and_collect_with_static_seq_table(
+    stream_name: str,
+    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    detectors: List[StandardDetector],
+    number_of_frames: int,
+    exposure: float,
+    shutter_time: float,
+    repeats: int = 1,
+    period: float = 0.0,
+):
+    """Run a scan wth a flyer and multiple detectors.
+
+    The stub demonstrates the standard basic flow for a flyscan:
+
+    - Prepare the flyer and detectors with a trigger
+    - Fly and collect:
+       - Declare the stream and kickoff the scan
+       - Collect while completing
+
+    This needs to be used in a plan that instantates detectors and a flyer,
+    stages/unstages the devices, and opens and closes the run.
+
+    """
+
+    # Set up scan and prepare trigger
+    yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
+        flyer,
+        detectors,
+        number_of_frames=number_of_frames,
+        exposure=exposure,
+        shutter_time=shutter_time,
+        repeats=repeats,
+        period=period,
+    )
+    # Run the fly scan
+    yield from fly_and_collect(stream_name, flyer, detectors)
