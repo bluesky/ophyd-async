@@ -46,14 +46,19 @@ class PilatusController(DetectorControl):
             self._drv.num_images.set(999_999 if num == 0 else num),
             self._drv.image_mode.set(ImageMode.multiple),
         )
-        return await asyncio.gather(
-            # Standard arm the detector and wait for the acquire PV to be True
-            start_acquiring_driver_and_ensure_status(self._drv),
-            # The pilatus has an additional PV that goes True when the camserver
-            # is actually ready. Should wait for that too or we risk dropping
-            # a frame
-            wait_for_value(self._drv.armed_for_triggers, True, timeout=10.0),
-        )
+
+        @AsyncStatus.wrap
+        async def send_arm_command_and_wait_until_armed():
+            await asyncio.gather(
+                # Standard arm the detector and wait for the acquire PV to be True
+                start_acquiring_driver_and_ensure_status(self._drv),
+                # The pilatus has an additional PV that goes True when the camserver
+                # is actually ready. Should wait for that too or we risk dropping
+                # a frame
+                wait_for_value(self._drv.armed_for_triggers, True, timeout=10.0),
+            )
+
+        return send_arm_command_and_wait_until_armed()
 
     @classmethod
     def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:
