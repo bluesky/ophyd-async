@@ -173,8 +173,8 @@ class StandardDetector(
             config_sigs: Signals to read when describe and read
             configuration are called. Defaults to ().
             name: Device name. Defaults to "".
-            writer_timeout: Timeout for frame writing to start, if the
-            timeout is reached, ophyd-async assumes the detector
+            writer_timeout: Length of time after exposure for frame writing to
+            start, if the timeout is reached, ophyd-async assumes the detector
             has a problem and raises an error.
             Defaults to DEFAULT_TIMEOUT.
         """
@@ -182,6 +182,7 @@ class StandardDetector(
         self._writer = writer
         self._describe: Dict[str, DataKey] = {}
         self._config_sigs = list(config_sigs)
+
         self._frame_writing_timeout = writer_timeout
         # For prepare
         self._arm_status: Optional[AsyncStatus] = None
@@ -254,6 +255,7 @@ class StandardDetector(
         await written_status
         end_observation = indices_written + 1
 
+        # we don't have to consider livetime for step scan timeout
         async for index in self.writer.observe_indices_written(
             self._frame_writing_timeout
         ):
@@ -309,7 +311,7 @@ class StandardDetector(
         assert self._arm_status, "Prepare not run"
         assert self._trigger_info
         async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
+            self._frame_writing_timeout + self._trigger_info.livetime
         ):
             yield WatcherUpdate(
                 name=self.name,
