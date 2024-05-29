@@ -5,7 +5,7 @@
 
 # ophyd-async
 
-Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango
+Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango.
 
 |    Source     |     <https://github.com/bluesky/ophyd-async>      |
 | :-----------: | :-----------------------------------------------: |
