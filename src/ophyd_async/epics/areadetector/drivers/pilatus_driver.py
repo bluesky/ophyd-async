@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
+from ophyd_async.epics.signal.signal import epics_signal_rw_rbv, epics_signal_r
 
 from .ad_base import ADBase
 
@@ -18,4 +18,5 @@ class PilatusDriver(ADBase):
         self.trigger_mode = epics_signal_rw_rbv(
             PilatusTriggerMode, prefix + "TriggerMode"
         )
+        self.armed_for_triggers = epics_signal_r(bool, prefix + "Armed")
         super().__init__(prefix, name)

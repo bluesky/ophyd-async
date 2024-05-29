@@ -1,6 +1,7 @@
 import asyncio
 from typing import Optional
 
+from ophyd_async.core import wait_for_value
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
@@ -45,7 +46,7 @@ class PilatusController(DetectorControl):
             self._drv.num_images.set(999_999 if num == 0 else num),
             self._drv.image_mode.set(ImageMode.multiple),
         )
-        return await start_acquiring_driver_and_ensure_status(self._drv)
+        return await asyncio.gather(start_acquiring_driver_and_ensure_status(self._drv), wait_for_value(self._drv.armed_for_triggers, True, timeout=10.0))
 
     @classmethod
     def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:
