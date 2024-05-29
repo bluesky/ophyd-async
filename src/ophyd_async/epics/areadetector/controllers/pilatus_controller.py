@@ -1,7 +1,7 @@
 import asyncio
 from typing import Optional
 
-from ophyd_async.core import wait_for_value
+from ophyd_async.core import DEFAULT_TIMEOUT, wait_for_value
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
@@ -55,7 +55,9 @@ class PilatusController(DetectorControl):
                 # The pilatus has an additional PV that goes True when the camserver
                 # is actually ready. Should wait for that too or we risk dropping
                 # a frame
-                wait_for_value(self._drv.armed_for_triggers, True, timeout=10.0),
+                wait_for_value(
+                    self._drv.armed_for_triggers, True, timeout=DEFAULT_TIMEOUT
+                ),
             )
 
         return send_arm_command_and_wait_until_armed()
