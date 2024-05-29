@@ -1,7 +1,6 @@
 from enum import Enum
 
-from ophyd_async.epics.signal.signal import epics_signal_rw_rbv, epics_signal_r
-
+from ...signal import epics_signal_r, epics_signal_rw_rbv
 from .ad_base import ADBase
 
 
