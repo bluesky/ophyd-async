@@ -73,7 +73,7 @@ class Signal(Device, Generic[T]):
         backend: Optional[SignalBackend[T]] = None,
     ):
         if backend:
-            if self._init_backend and backend != self._init_backend:
+            if self._initial_backend and backend != self._initial_backend:
                 raise ValueError(
                     "Backend at connection different from initialised one."
                 )
