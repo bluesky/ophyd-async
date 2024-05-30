@@ -5,7 +5,7 @@ from ._providers import (
     ShapeProvider,
     StaticDirectoryProvider,
 )
-from .async_status import AsyncStatus
+from .async_status import AsyncStatus, WatchableAsyncStatus
 from .detector import (
     DetectorControl,
     DetectorTrigger,
@@ -24,6 +24,16 @@ from .device_save_loader import (
     walk_rw_signals,
 )
 from .flyer import HardwareTriggeredFlyable, TriggerLogic
+from .mock_signal_backend import MockSignalBackend
+from .mock_signal_utils import (
+    callback_on_mock_put,
+    get_mock_put,
+    mock_puts_blocked,
+    reset_mock_put_calls,
+    set_mock_put_proceeds,
+    set_mock_value,
+    set_mock_values,
+)
 from .signal import (
     Signal,
     SignalR,
@@ -36,18 +46,17 @@ from .signal import (
     assert_value,
     observe_value,
     set_and_wait_for_value,
-    set_sim_callback,
-    set_sim_put_proceeds,
-    set_sim_value,
-    soft_signal_r_and_backend,
+    soft_signal_r_and_setter,
     soft_signal_rw,
     wait_for_value,
 )
 from .signal_backend import SignalBackend
-from .sim_signal_backend import SimSignalBackend
+from .soft_signal_backend import SoftSignalBackend
 from .standard_readable import ConfigSignal, HintedSignal, StandardReadable
 from .utils import (
     DEFAULT_TIMEOUT,
+    CalculatableTimeout,
+    CalculateTimeout,
     Callback,
     NotConnected,
     ReadingValueCallback,
@@ -59,9 +68,15 @@ from .utils import (
 )
 
 __all__ = [
+    "get_mock_put",
+    "callback_on_mock_put",
+    "mock_puts_blocked",
+    "set_mock_values",
+    "reset_mock_put_calls",
     "SignalBackend",
-    "SimSignalBackend",
+    "SoftSignalBackend",
     "DetectorControl",
+    "MockSignalBackend",
     "DetectorTrigger",
     "DetectorWriter",
     "StandardDetector",
@@ -73,15 +88,15 @@ __all__ = [
     "SignalW",
     "SignalRW",
     "SignalX",
-    "soft_signal_r_and_backend",
+    "soft_signal_r_and_setter",
     "soft_signal_rw",
     "observe_value",
     "set_and_wait_for_value",
-    "set_sim_callback",
-    "set_sim_put_proceeds",
-    "set_sim_value",
+    "set_mock_put_proceeds",
+    "set_mock_value",
     "wait_for_value",
     "AsyncStatus",
+    "WatchableAsyncStatus",
     "DirectoryInfo",
     "DirectoryProvider",
     "NameProvider",
@@ -93,6 +108,8 @@ __all__ = [
     "TriggerInfo",
     "TriggerLogic",
     "HardwareTriggeredFlyable",
+    "CalculateTimeout",
+    "CalculatableTimeout",
     "DEFAULT_TIMEOUT",
     "Callback",
     "NotConnected",

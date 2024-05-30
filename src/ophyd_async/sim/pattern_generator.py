@@ -23,8 +23,8 @@ from event_model import (
 )
 
 from ophyd_async.core import DirectoryInfo, DirectoryProvider
+from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import SignalR, observe_value
-from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
@@ -158,8 +158,8 @@ class PatternGenerator:
         self.written_images_counter: int = 0
 
         # it automatically initializes to 0
-        self.signal_backend = SimSignalBackend(int)
-        self.sim_signal = SignalR(self.signal_backend)
+        self.signal_backend = MockSignalBackend(int)
+        self.mock_signal = SignalR(self.signal_backend)
         blob = np.array(
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
@@ -220,7 +220,7 @@ class PatternGenerator:
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
     ) -> Dict[str, DataKey]:
-        await self.sim_signal.connect()
+        await self.mock_signal.connect()
 
         self.target_path = self._get_new_path(directory)
 
@@ -314,5 +314,5 @@ class PatternGenerator:
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        async for num_captured in observe_value(self.sim_signal, timeout=timeout):
+        async for num_captured in observe_value(self.mock_signal, timeout=timeout):
             yield num_captured // self.multiplier

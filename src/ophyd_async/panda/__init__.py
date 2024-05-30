@@ -15,6 +15,7 @@ from ._table import (
     seq_table_from_arrays,
     seq_table_from_rows,
 )
+from ._trigger import StaticSeqTableTriggerLogic
 from ._utils import phase_sorter
 
 __all__ = [
@@ -33,4 +34,5 @@ __all__ = [
     "TimeUnits",
     "DataBlock",
     "CommonPandABlocks",
+    "StaticSeqTableTriggerLogic",
 ]

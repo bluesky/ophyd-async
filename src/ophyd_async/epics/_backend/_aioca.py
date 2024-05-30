@@ -28,7 +28,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import get_supported_enum_class
+from .common import get_supported_values
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -79,7 +79,7 @@ class CaArrayConverter(CaConverter):
 
 @dataclass
 class CaEnumConverter(CaConverter):
-    enum_class: Type[Enum]
+    choices: dict[str, str]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -88,11 +88,15 @@ class CaEnumConverter(CaConverter):
             return value
 
     def value(self, value: AugmentedValue):
-        return self.enum_class(value)
+        return self.choices[value]
 
     def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        choices = [e.value for e in self.enum_class]
-        return {"source": source, "dtype": "string", "shape": [], "choices": choices}
+        return {
+            "source": source,
+            "dtype": "string",
+            "shape": [],
+            "choices": list(self.choices),
+        }
 
 
 class DisconnectedCaConverter(CaConverter):
@@ -138,8 +142,8 @@ def make_converter(
         pv_choices = get_unique(
             {k: tuple(v.enums) for k, v in values.items()}, "choices"
         )
-        enum_class = get_supported_enum_class(pv, datatype, pv_choices)
-        return CaEnumConverter(dbr.DBR_STRING, None, enum_class)
+        supported_values = get_supported_values(pv, datatype, pv_choices)
+        return CaEnumConverter(dbr.DBR_STRING, None, supported_values)
     else:
         value = list(values.values())[0]
         # Done the dbr check, so enough to check one of the values

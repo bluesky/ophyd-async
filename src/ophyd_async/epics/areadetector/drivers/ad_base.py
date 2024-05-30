@@ -9,7 +9,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 
-from ...signal.signal import epics_signal_r, epics_signal_rw, epics_signal_rw_rbv
+from ...signal.signal import epics_signal_r, epics_signal_rw_rbv
 from ..utils import ImageMode
 from ..writers.nd_plugin import NDArrayBase
 
@@ -43,18 +43,12 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
 class ADBase(NDArrayBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         # Define some signals
-        self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire")
         self.acquire_time = epics_signal_rw_rbv(float, prefix + "AcquireTime")
         self.num_images = epics_signal_rw_rbv(int, prefix + "NumImages")
         self.image_mode = epics_signal_rw_rbv(ImageMode, prefix + "ImageMode")
-        self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
-        self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
-        self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
         self.detector_state = epics_signal_r(
             DetectorState, prefix + "DetectorState_RBV"
         )
-        # There is no _RBV for this one
-        self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
         super().__init__(prefix, name=name)
 
 

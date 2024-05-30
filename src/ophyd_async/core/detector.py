@@ -31,9 +31,9 @@ from bluesky.protocols import (
 
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
-from .async_status import AsyncStatus
+from .async_status import AsyncStatus, WatchableAsyncStatus
 from .device import Device
-from .utils import DEFAULT_TIMEOUT, merge_gathered_dicts
+from .utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 T = TypeVar("T")
 
@@ -188,7 +188,7 @@ class StandardDetector(
         self._trigger_info: Optional[TriggerInfo] = None
         # For kickoff
         self._watchers: List[Callable] = []
-        self._fly_status: Optional[AsyncStatus] = None
+        self._fly_status: Optional[WatchableAsyncStatus] = None
         self._fly_start: float
 
         self._intial_frame: int
@@ -292,42 +292,36 @@ class StandardDetector(
             f"Detector {self.controller} needs at least {required}s deadtime, "
             f"but trigger logic provides only {self._trigger_info.deadtime}s"
         )
-
         self._arm_status = await self.controller.arm(
             num=self._trigger_info.num,
             trigger=self._trigger_info.trigger,
             exposure=self._trigger_info.livetime,
         )
-
-    @AsyncStatus.wrap
-    async def kickoff(self) -> None:
-        self._fly_status = AsyncStatus(self._fly(), self._watchers)
         self._fly_start = time.monotonic()
 
-    async def _fly(self) -> None:
-        await self._observe_writer_indicies(self._last_frame)
+    @AsyncStatus.wrap
+    async def kickoff(self):
+        if not self._arm_status:
+            raise Exception("Detector not armed!")
 
-    async def _observe_writer_indicies(self, end_observation: int):
+    @WatchableAsyncStatus.wrap
+    async def complete(self):
+        assert self._arm_status, "Prepare not run"
+        assert self._trigger_info
         async for index in self.writer.observe_indices_written(
             self._frame_writing_timeout
         ):
-            for watcher in self._watchers:
-                watcher(
-                    name=self.name,
-                    current=index,
-                    initial=self._initial_frame,
-                    target=end_observation,
-                    unit="",
-                    precision=0,
-                    time_elapsed=time.monotonic() - self._fly_start,
-                )
-            if index >= end_observation:
+            yield WatcherUpdate(
+                name=self.name,
+                current=index,
+                initial=self._initial_frame,
+                target=self._trigger_info.num,
+                unit="",
+                precision=0,
+                time_elapsed=time.monotonic() - self._fly_start,
+            )
+            if index >= self._trigger_info.num:
                 break
-
-    @AsyncStatus.wrap
-    async def complete(self) -> AsyncStatus:
-        assert self._fly_status, "Kickoff not run"
-        return await self._fly_status
 
     async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe
@@ -338,7 +332,7 @@ class StandardDetector(
         # Collect stream datum documents for all indices written.
         # The index is optional, and provided for fly scans, however this needs to be
         # retrieved for step scans.
-        if not index:
+        if index is None:
             index = await self.writer.get_indices_written()
         async for doc in self.writer.collect_stream_docs(index):
             yield doc

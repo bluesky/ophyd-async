@@ -45,17 +45,19 @@ def pvi_test_device_t():
             super().__init__(name)
 
         async def connect(
-            self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
         ) -> None:
-            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
 
-            await super().connect(sim)
+            await super().connect(mock=mock)
 
     yield TestDevice
 
 
-async def test_fill_pvi_entries_sim_mode(pvi_test_device_t):
-    async with DeviceCollector(sim=True):
+async def test_fill_pvi_entries_mock_mode(pvi_test_device_t):
+    async with DeviceCollector(mock=True):
         test_device = pvi_test_device_t("PREFIX:")
 
     # device vectors are typed
@@ -107,11 +109,13 @@ def pvi_test_device_create_children_from_annotations_t():
             create_children_from_annotations(self)
 
         async def connect(
-            self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
         ) -> None:
-            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
 
-            await super().connect(sim)
+            await super().connect(mock=mock)
 
     yield TestDevice
 
@@ -134,7 +138,7 @@ async def test_device_create_children_from_annotations(
     assert not hasattr(device, "signal_rw")
     assert not hasattr(top_block_1_device, "signal_rw")
 
-    await device.connect(sim=True)
+    await device.connect(mock=True)
 
     # The memory addresses have not changed
     assert device.device is block_2_device
