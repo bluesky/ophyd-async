@@ -164,7 +164,6 @@ class StandardDetector(
         writer: DetectorWriter,
         config_sigs: Sequence[AsyncReadable] = (),
         name: str = "",
-        writer_timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
         """
         Constructor
@@ -175,16 +174,11 @@ class StandardDetector(
             config_sigs: Signals to read when describe and read
             configuration are called. Defaults to ().
             name: Device name. Defaults to "".
-            writer_timeout: Timeout for frame writing to start, if the
-            timeout is reached, ophyd-async assumes the detector
-            has a problem and raises an error.
-            Defaults to DEFAULT_TIMEOUT.
         """
         self._controller = controller
         self._writer = writer
         self._describe: Dict[str, DataKey] = {}
         self._config_sigs = list(config_sigs)
-        self._frame_writing_timeout = writer_timeout
         # For prepare
         self._arm_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
@@ -257,7 +251,7 @@ class StandardDetector(
         end_observation = indices_written + 1
 
         async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
+            DEFAULT_TIMEOUT + self._trigger_info.livetime + self._trigger_info.deadtime
         ):
             if index >= end_observation:
                 break
@@ -311,7 +305,12 @@ class StandardDetector(
         assert self._arm_status, "Prepare not run"
         assert self._trigger_info
         async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
+            self._trigger_info.frame_timeout
+            or (
+                DEFAULT_TIMEOUT
+                + self._trigger_info.livetime
+                + self._trigger_info.deadtime
+            )
         ):
             yield WatcherUpdate(
                 name=self.name,
