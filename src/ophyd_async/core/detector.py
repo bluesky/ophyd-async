@@ -63,6 +63,8 @@ class TriggerInfo:
     deadtime: float
     #: What is the maximum high time of the triggers
     livetime: float
+    #: What is the maximum timeout on waiting for a frame
+    frame_timeout: float | None = None
 
 
 class DetectorControl(ABC):
