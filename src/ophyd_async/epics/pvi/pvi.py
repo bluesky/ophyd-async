@@ -301,7 +301,9 @@ async def fill_pvi_entries(
 
 
 def create_children_from_annotations(
-    device: Device, included_optional_fields: Tuple[str, ...] = ()
+    device: Device,
+    included_optional_fields: Tuple[str, ...] = (),
+    device_vectors: Dict[str, int] = {"seq": 3},
 ):
     """For intializing blocks at __init__ of ``device``."""
     for name, device_type in get_type_hints(type(device)).items():
