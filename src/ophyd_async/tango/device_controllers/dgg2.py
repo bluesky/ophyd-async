@@ -121,7 +121,7 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
     # --------------------------------------------------------------------
     def trigger(self) -> AsyncStatus:
         watchers: List[Callable] = []
-        return AsyncStatus(self._trigger(watchers), watchers)
+        return AsyncStatus(self._trigger(watchers))
 
     # --------------------------------------------------------------------
     def prepare(self, p_time: float) -> AsyncStatus:

@@ -140,4 +140,4 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
     # --------------------------------------------------------------------
     def stop(self, success: bool = False) -> AsyncStatus:
         self._set_success = success
-        return AsyncStatus(self._stop.trigger())
+        return self._stop.trigger()
