@@ -102,9 +102,8 @@ class MockDetector(StandardDetector):
         writer: DetectorWriter,
         config_sigs: Sequence[AsyncReadable] = [],
         name: str = "",
-        writer_timeout: float = 1,
     ) -> None:
-        super().__init__(controller, writer, config_sigs, name, writer_timeout)
+        super().__init__(controller, writer, config_sigs, name)
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
@@ -112,7 +111,12 @@ class MockDetector(StandardDetector):
         assert self._trigger_info
         self.writer.increment_index()
         async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
+            self._trigger_info.frame_timeout
+            or (
+                DEFAULT_TIMEOUT
+                + self._trigger_info.livetime
+                + self._trigger_info.deadtime
+            )
         ):
             yield WatcherUpdate(
                 name=self.name,
@@ -143,13 +147,11 @@ async def detectors(RE: RunEngine) -> tuple[MockDetector, MockDetector]:
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
-        writer_timeout=3,
     )
     detector_2 = MockDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
-        writer_timeout=3,
     )
     return (detector_1, detector_2)
 

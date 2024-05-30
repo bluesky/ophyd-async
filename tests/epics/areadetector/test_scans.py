@@ -83,7 +83,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
 ):
     set_mock_value(writer.hdf.file_path_exists, True)
     detector: StandardDetector[Any] = StandardDetector(
-        controller, writer, name="detector", writer_timeout=0.01
+        controller, writer, name="detector"
     )
 
     with pytest.raises(Exception) as exc:
@@ -97,7 +97,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
     set_mock_value(writer.hdf.file_path_exists, True)
 
     detector: StandardDetector[Optional[TriggerInfo]] = StandardDetector(
-        controller, writer, writer_timeout=0.01
+        controller, writer
     )
     trigger_logic = DummyTriggerLogic()
 

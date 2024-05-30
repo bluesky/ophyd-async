@@ -16,7 +16,6 @@ class SimPatternDetector(StandardDetector):
         path: Path,
         config_sigs: Sequence[AsyncReadable] = [],
         name: str = "sim_pattern_detector",
-        writer_timeout: float = 1,
     ) -> None:
         self.directory_provider: DirectoryProvider = StaticDirectoryProvider(path)
         self.pattern_generator = PatternGenerator()
@@ -33,5 +32,4 @@ class SimPatternDetector(StandardDetector):
             writer=writer,
             config_sigs=config_sigs,
             name=name,
-            writer_timeout=writer_timeout,
         )
