@@ -54,7 +54,7 @@ async def test_signals_equality_raises():
 
 async def test_set_mock_put_proceeds():
     sim_signal = Signal(MockSignalBackend(str))
-    await sim_signal.connect(sim=True)
+    await sim_signal.connect(mock=True)
 
     assert sim_signal._backend.put_proceeds.is_set() is True
 
@@ -68,7 +68,7 @@ async def test_signal_connect_fails_with_different_backend_on_connection():
     sim_signal = Signal(MockSignalBackend(str, "test"))
 
     with pytest.raises(ValueError):
-        await sim_signal.connect(sim=True, backend=MockSignalBackend(int, "test"))
+        await sim_signal.connect(mock=True, backend=MockSignalBackend(int, "test"))
 
 
 async def time_taken_by(coro) -> float:
