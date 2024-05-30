@@ -76,7 +76,7 @@ async def test_trigger_mode_set_without_armed_pv(pilatus: PilatusDetector):
         0.1,
     ):
         with pytest.raises(TimeoutError):
-            await _trigger(pilatus, DetectorTrigger.internal, trigger_and_complete)
+            await _trigger(pilatus, PilatusTriggerMode.internal, trigger_and_complete)
 
 
 async def _trigger(

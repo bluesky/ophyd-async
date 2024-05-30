@@ -47,7 +47,6 @@ class PilatusController(DetectorControl):
             self._drv.image_mode.set(ImageMode.multiple),
         )
 
-        @AsyncStatus.wrap
         async def send_arm_command_and_wait_until_armed():
             await asyncio.gather(
                 # Standard arm the detector and wait for the acquire PV to be True
@@ -56,11 +55,13 @@ class PilatusController(DetectorControl):
                 # is actually ready. Should wait for that too or we risk dropping
                 # a frame
                 wait_for_value(
-                    self._drv.armed_for_triggers, True, timeout=DEFAULT_TIMEOUT
+                    self._drv.armed_for_triggers,
+                    True,
+                    timeout=DEFAULT_TIMEOUT,
                 ),
             )
 
-        return send_arm_command_and_wait_until_armed()
+        return AsyncStatus(send_arm_command_and_wait_until_armed())
 
     @classmethod
     def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:
