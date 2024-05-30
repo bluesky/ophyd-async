@@ -38,7 +38,6 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
             writer=writer,
             config_sigs=config_sigs,
             name=name,
-            writer_timeout=DEFAULT_TIMEOUT,
         )
 
     async def connect(
