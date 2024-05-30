@@ -241,11 +241,15 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
+        # set default trigger_info
+        self._trigger_info = TriggerInfo(
+            num=1, trigger=DetectorTrigger.internal, deadtime=0.0, livetime=0.0
+        )
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(
-            num=1,
-            trigger=DetectorTrigger.internal,
+            num=self._trigger_info.num,
+            trigger=self._trigger_info.trigger,
         )
         await written_status
         end_observation = indices_written + 1
