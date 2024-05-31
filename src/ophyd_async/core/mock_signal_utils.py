@@ -79,8 +79,22 @@ class _SetValuesIterator:
         return next_value
 
     def __del__(self):
-        if self.require_all_consumed and self.index != len(list(self.values)):
-            raise AssertionError("Not all values have been consumed.")
+        if self.require_all_consumed:
+            # Values is cast to a list here because the user has supplied
+            # require_all_consumed=True, we can therefore assume they
+            # supplied a finite list.
+            # In the case of require_all_consumed=False, an infinite
+            # iterble is permitted
+            values = list(self.values)
+            if self.index != len(values):
+                # Report the values consumed and the values yet to be
+                # consumed
+                consumed = values[0 : self.index]
+                to_be_consumed = values[self.index :]
+                raise AssertionError(
+                    f"{self.signal.name}: {consumed} were consumed "
+                    f"but {to_be_consumed} were not consumed"
+                )
 
 
 def set_mock_values(
