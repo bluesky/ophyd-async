@@ -19,7 +19,7 @@ import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import DataKey, Reading
 
-from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
+from ophyd_async.core import SignalBackend, T
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics._backend.common import LimitPair, Limits
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
@@ -31,6 +31,7 @@ from ophyd_async.epics.signal.signal import (
     epics_signal_w,
     epics_signal_x,
 )
+from ophyd_async.plan_stubs.device_save_loader import load_from_yaml, save_to_yaml
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))

@@ -8,8 +8,8 @@ from bluesky.plan_stubs import abs_set, wait
 from bluesky.protocols import Location
 from bluesky.utils import Msg
 
-from .device import Device
-from .signal import SignalRW
+from ..core.device import Device
+from ..core.signal import SignalRW
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.Node:

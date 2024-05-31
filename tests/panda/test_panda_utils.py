@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import save_device
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.pvi import fill_pvi_entries
@@ -11,6 +10,7 @@ from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.panda import CommonPandaBlocks, TimeUnits
 from ophyd_async.panda._common_blocks import DataBlock
 from ophyd_async.panda._utils import phase_sorter
+from ophyd_async.plan_stubs import save_device
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ async def mock_panda():
     yield mock_panda
 
 
-@patch("ophyd_async.core.device_save_loader.save_to_yaml")
+@patch("ophyd_async.plan_stubs.device_save_loader.save_to_yaml")
 async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
     RE(save_device(mock_panda, "path", sorter=phase_sorter))
     mock_save_to_yaml.assert_called_once()
