@@ -63,7 +63,7 @@ class _SetValuesIterator:
         require_all_consumed: bool = False,
     ):
         self.signal = signal
-        self.values = values
+        self.values = list(values)
         self.require_all_consumed = require_all_consumed
         self.index = 0
 
@@ -79,8 +79,13 @@ class _SetValuesIterator:
         return next_value
 
     def __del__(self):
-        if self.require_all_consumed and self.index != len(list(self.values)):
-            raise AssertionError("Not all values have been consumed.")
+        if self.require_all_consumed and self.index != len(self.values):
+            consumed = self.values[0 : self.index]
+            to_be_consumed = self.values[self.index :]
+            raise AssertionError(
+                f"{self.signal.name}: {consumed} were consumed "
+                f"but {to_be_consumed} were not consumed"
+            )
 
 
 def set_mock_values(
