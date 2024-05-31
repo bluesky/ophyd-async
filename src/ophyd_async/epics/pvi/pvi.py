@@ -313,6 +313,8 @@ def create_children_from_annotations(
         if is_optional and name not in included_optional_fields:
             continue
         is_device_vector, device_type = _strip_device_vector(device_type)
+        if is_device_vector and not device_vectors:
+            continue
         if (
             (is_device_vector and name not in device_vectors.keys())
             or ((origin := get_origin(device_type)) and issubclass(origin, Signal))
@@ -322,4 +324,4 @@ def create_children_from_annotations(
 
         sub_device = device_type()
         setattr(device, name, sub_device)
-        create_children_from_annotations(sub_device, device_vectors)
+        create_children_from_annotations(sub_device, device_vectors=device_vectors)
