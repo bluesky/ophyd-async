@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.mock_signal_utils &#8212; ophyd-async 0.3.1.dev1+g1aff3bd documentation</title>
+    <title>ophyd_async.core.mock_signal_utils &#8212; ophyd-async 0.3.1.dev2+gb2b8bba documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=a965cf4d"></script>
+    <script src="../../../_static/documentation_options.js?v=45cc7f1a"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -580,8 +580,22 @@ document.write(`
         <span class="k">return</span> <span class="n">next_value</span>
 
     <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">require_all_consumed</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;Not all values have been consumed.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">require_all_consumed</span><span class="p">:</span>
+            <span class="c1"># Values is cast to a list here because the user has supplied</span>
+            <span class="c1"># require_all_consumed=True, we can therefore assume they</span>
+            <span class="c1"># supplied a finite list.</span>
+            <span class="c1"># In the case of require_all_consumed=False, an infinite</span>
+            <span class="c1"># iterble is permitted</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+                <span class="c1"># Report the values consumed and the values yet to be</span>
+                <span class="c1"># consumed</span>
+                <span class="n">consumed</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+                <span class="n">to_be_consumed</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="p">:]</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">consumed</span><span class="si">}</span><span class="s2"> were consumed &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but </span><span class="si">{</span><span class="n">to_be_consumed</span><span class="si">}</span><span class="s2"> were not consumed&quot;</span>
+                <span class="p">)</span>
 
 
 <div class="viewcode-block" id="set_mock_values">
