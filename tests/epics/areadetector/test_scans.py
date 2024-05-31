@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 from typing import Any, Optional
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -23,6 +23,8 @@ from ophyd_async.core import (
 from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+
+DEFAULT_TIMEOUT = 1
 
 
 class DummyTriggerLogic(TriggerLogic[int]):
@@ -76,6 +78,7 @@ def writer(RE, tmp_path: Path) -> HDFWriter:
     )
 
 
+@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: HDFWriter,
@@ -92,6 +95,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
+@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter):
     controller = DummyController()
     set_mock_value(writer.hdf.file_path_exists, True)
