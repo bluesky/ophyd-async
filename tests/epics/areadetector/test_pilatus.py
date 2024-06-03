@@ -49,13 +49,11 @@ async def test_trigger_mode_set(
     expected_trigger_mode: PilatusTriggerMode,
 ):
     async def trigger_and_complete():
+        set_mock_value(pilatus.drv.armed_for_triggers, True)
         status = await pilatus.controller.arm(
             num=1,
             trigger=detector_trigger,
         )
-        # Prevent timeouts
-        set_mock_value(pilatus.drv.acquire, True)
-        set_mock_value(pilatus.drv.armed_for_triggers, True)
         await status
 
     await _trigger(pilatus, expected_trigger_mode, trigger_and_complete)
@@ -67,8 +65,6 @@ async def test_trigger_mode_set_without_armed_pv(pilatus: PilatusDetector):
             num=1,
             trigger=DetectorTrigger.internal,
         )
-        # Prevent timeouts
-        set_mock_value(pilatus.drv.acquire, True)
         await status
 
     with patch(
