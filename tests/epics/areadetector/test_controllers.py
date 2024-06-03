@@ -23,7 +23,7 @@ async def pilatus_driver(RE) -> PilatusDriver:
 @pytest.fixture
 async def pilatus(RE, pilatus_driver: PilatusDriver) -> PilatusController:
     async with DeviceCollector(mock=True):
-        controller = PilatusController(pilatus_driver)
+        controller = PilatusController(pilatus_driver, readout_time=2.28)
 
     return controller
 
