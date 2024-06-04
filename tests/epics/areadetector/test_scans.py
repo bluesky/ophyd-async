@@ -24,8 +24,6 @@ from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 
-DEFAULT_TIMEOUT = 1
-
 
 class DummyTriggerLogic(TriggerLogic[int]):
     def __init__(self): ...
