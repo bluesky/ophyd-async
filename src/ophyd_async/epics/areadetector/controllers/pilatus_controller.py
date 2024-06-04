@@ -24,14 +24,13 @@ class PilatusController(DetectorControl):
     def __init__(
         self,
         driver: PilatusDriver,
+        readout_time: float,
     ) -> None:
         self._drv = driver
+        self._readout_time = readout_time
 
     def get_deadtime(self, exposure: float) -> float:
-        # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
-        """The required minimum time difference between ExpPeriod and ExpTime
-        (readout time) is 2.28 ms"""
-        return 2.28e-3
+        return self._readout_time
 
     async def arm(
         self,
