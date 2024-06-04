@@ -124,13 +124,11 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
-        writer_timeout=3,
     )
     detector_2: StandardDetector[Any] = StandardDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
-        writer_timeout=3,
     )
 
     return (detector_1, detector_2)
