@@ -1,6 +1,6 @@
 from enum import Enum
 from functools import partial
-from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -8,12 +8,10 @@ import yaml
 from bluesky.plan_stubs import abs_set, wait
 from bluesky.protocols import Location
 from bluesky.utils import Msg
-from epicscorelibs.ca.dbr import ca_array, ca_float, ca_int, ca_str
+from epicscorelibs.ca.dbr import ca_array
 
 from .device import Device
 from .signal import SignalRW
-
-CaType = Union[ca_float, ca_int, ca_str, ca_array]
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.Node:
@@ -22,14 +20,11 @@ def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.No
     )
 
 
-def ca_dbr_representer(dumper: yaml.Dumper, value: CaType) -> yaml.Node:
+def ca_dbr_representer(dumper: yaml.Dumper, value: ca_array) -> yaml.Node:
     # if it's an array, just call ndarray_representer...
     represent_array = partial(ndarray_representer, dumper)
 
-    representers: Dict[CaType, Callable[[CaType], yaml.Node]] = {
-        ca_float: dumper.represent_float,
-        ca_int: dumper.represent_int,
-        ca_str: dumper.represent_str,
+    representers: Dict[ca_array, Callable[[ca_array], yaml.Node]] = {
         ca_array: represent_array,
     }
     return representers[type(value)](value)
@@ -152,9 +147,6 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
 
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
 
-    yaml.add_representer(ca_float, ca_dbr_representer, Dumper=yaml.Dumper)
-    yaml.add_representer(ca_int, ca_dbr_representer, Dumper=yaml.Dumper)
-    yaml.add_representer(ca_str, ca_dbr_representer, Dumper=yaml.Dumper)
     yaml.add_representer(ca_array, ca_dbr_representer, Dumper=yaml.Dumper)
 
     with open(save_path, "w") as file:
