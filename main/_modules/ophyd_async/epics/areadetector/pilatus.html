@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.areadetector.pilatus &#8212; ophyd-async 0.3.1.dev4+g0d0c7e7 documentation</title>
+    <title>ophyd_async.epics.areadetector.pilatus &#8212; ophyd-async 0.3.1.dev5+g6ee3cfde documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=b280aae8"></script>
+    <script src="../../../../_static/documentation_options.js?v=8df99ce8"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -484,7 +484,9 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.areadetector.pilatus</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Hints</span>
+<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Hints</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DirectoryProvider</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.core.detector</span> <span class="kn">import</span> <span class="n">StandardDetector</span>
@@ -495,6 +497,20 @@ document.write(`
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.areadetector.drivers.pilatus_driver</span> <span class="kn">import</span> <span class="n">PilatusDriver</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.areadetector.writers.hdf_writer</span> <span class="kn">import</span> <span class="n">HDFWriter</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.areadetector.writers.nd_file_hdf</span> <span class="kn">import</span> <span class="n">NDFileHDF</span>
+
+
+<span class="c1">#: Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf</span>
+<span class="c1">#: The required minimum time difference between ExpPeriod and ExpTime</span>
+<span class="c1">#: (readout time) is 2.28 ms</span>
+<span class="c1">#: We provide an option to override for newer Pilatus models</span>
+<span class="k">class</span> <span class="nc">PilatusReadoutTime</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pilatus readout time per model in ms&quot;&quot;&quot;</span>
+
+    <span class="c1"># Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf</span>
+    <span class="n">pilatus2</span> <span class="o">=</span> <span class="mf">2.28e-3</span>
+
+    <span class="c1"># Cite: https://media.dectris.com/user-manual-pilatus3-2020.pdf</span>
+    <span class="n">pilatus3</span> <span class="o">=</span> <span class="mf">0.95e-3</span>
 
 
 <div class="viewcode-block" id="PilatusDetector">
@@ -509,15 +525,16 @@ document.write(`
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">directory_provider</span><span class="p">:</span> <span class="n">DirectoryProvider</span><span class="p">,</span>
-        <span class="n">drv_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
-        <span class="n">hdf_suffix</span><span class="o">=</span><span class="s2">&quot;HDF1:&quot;</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">readout_time</span><span class="p">:</span> <span class="n">PilatusReadoutTime</span> <span class="o">=</span> <span class="n">PilatusReadoutTime</span><span class="o">.</span><span class="n">pilatus3</span><span class="p">,</span>
+        <span class="n">drv_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
+        <span class="n">hdf_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HDF1:&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drv</span> <span class="o">=</span> <span class="n">PilatusDriver</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">drv_suffix</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">NDFileHDF</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">hdf_suffix</span><span class="p">)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">PilatusController</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
+            <span class="n">PilatusController</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">,</span> <span class="n">readout_time</span><span class="o">=</span><span class="n">readout_time</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
             <span class="n">HDFWriter</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="p">,</span>
                 <span class="n">directory_provider</span><span class="p">,</span>
