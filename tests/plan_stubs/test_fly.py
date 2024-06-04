@@ -1,6 +1,6 @@
 import time
 from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
-from unittest.mock import Mock, create_autospec
+from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
@@ -40,6 +40,7 @@ class DummyWriter(DetectorWriter):
         self._file: Optional[ComposeStreamResourceBundle] = None
         self._last_emitted = 0
         self.index = 0
+        self.observe_indices_written_timeout_log = []
 
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         return {
@@ -51,10 +52,10 @@ class DummyWriter(DetectorWriter):
             )
         }
 
-    @create_autospec
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
+        self.observe_indices_written_timeout_log.append(timeout)
         num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):
             yield num_captured
@@ -379,12 +380,13 @@ async def test_at_least_one_detector_in_fly_plan(
         assert str(exc) == "No detectors provided. There must be at least one."
 
 
-@pytest.mark.parametrize("frame_timeout", [5.0, None])
-async def test_trigger_info_supplies_timeout_if_present_uses_default_if_not(
+@pytest.mark.parametrize("timeout_setting,expected_timeout", [(None, 12), (5.0, 5.0)])
+async def test_trigger_sets_or_defaults_timeout(
     RE: RunEngine,
-    flyer,
-    detectors: tuple[StandardDetector],
-    frame_timeout: float,
+    flyer: HardwareTriggeredFlyable,
+    detectors: tuple[StandardDetector, ...],
+    timeout_setting: float | None,
+    expected_timeout: float,
 ):
     detector_list = list(detectors)
 
@@ -403,21 +405,12 @@ async def test_trigger_info_supplies_timeout_if_present_uses_default_if_not(
             number_of_frames=number_of_frames,
             exposure=exposure,
             shutter_time=shutter_time,
-            frame_timeout=frame_timeout,
+            frame_timeout=timeout_setting,
         )
         yield from bps.close_run()
         yield from bps.unstage_all(flyer, *detector_list)
 
     RE(fly())
 
-    for detector in detector_list:
-        if frame_timeout == 5:
-            assert detector._trigger_info.frame_timeout == frame_timeout
-            detector.writer.observe_indices_written.assert_called_with(frame_timeout)
-        elif frame_timeout is None:
-            total_timeout = (
-                DEFAULT_TIMEOUT
-                + detector._trigger_info.livetime
-                + detector._trigger_info.deadtime
-            )
-            detector.writer.observe_indices_written.assert_called_with(total_timeout)
+    for detector in detectors:
+        assert detector.writer.observe_indices_written_timeout_log == [expected_timeout]
