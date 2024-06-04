@@ -272,9 +272,14 @@ def soft_signal_rw(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
+    units: Optional[str] = None,
+    precision: Optional[int] = None,
 ) -> SignalRW[T]:
     """Creates a read-writable Signal with a SoftSignalBackend"""
-    signal = SignalRW(SoftSignalBackend(datatype, initial_value), name=name)
+    signal = SignalRW(
+        SoftSignalBackend(datatype, initial_value, units=units, precision=precision),
+        name=name,
+    )
     return signal
 
 
@@ -282,12 +287,16 @@ def soft_signal_r_and_setter(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
+    units: Optional[str] = None,
+    precision: Optional[int] = None,
 ) -> Tuple[SignalR[T], Callable[[T], None]]:
     """Returns a tuple of a read-only Signal and a callable through
     which the signal can be internally modified within the device. Use
     soft_signal_rw if you want a device that is externally modifiable
     """
-    backend = SoftSignalBackend(datatype, initial_value)
+    backend = SoftSignalBackend(
+        datatype, initial_value, units=units, precision=precision
+    )
     signal = SignalR(backend, name=name)
 
     return (signal, backend.set_value)
