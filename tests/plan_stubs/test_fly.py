@@ -1,5 +1,5 @@
 import time
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock, create_autospec
 
 import bluesky.plan_stubs as bps
@@ -8,9 +8,14 @@ from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorControl, DetectorWriter,
-                              HardwareTriggeredFlyable, observe_value,
-                              set_mock_value)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    DetectorControl,
+    DetectorWriter,
+    HardwareTriggeredFlyable,
+    observe_value,
+    set_mock_value,
+)
 from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
@@ -22,7 +27,8 @@ from ophyd_async.epics.signal.signal import epics_signal_rw
 from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
-    time_resolved_fly_and_collect_with_static_seq_table)
+    time_resolved_fly_and_collect_with_static_seq_table,
+)
 from ophyd_async.protocols import AsyncReadable
 
 
@@ -408,7 +414,7 @@ async def test_trigger_info_supplies_timeout_if_present_uses_default_if_not(
         if frame_timeout == 5:
             assert detector._trigger_info.frame_timeout == frame_timeout
             detector.writer.observe_indices_written.assert_called_with(frame_timeout)
-        elif frame_timeout == None:
+        elif frame_timeout is None:
             total_timeout = (
                 DEFAULT_TIMEOUT
                 + detector._trigger_info.livetime
