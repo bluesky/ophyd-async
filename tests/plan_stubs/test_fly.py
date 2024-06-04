@@ -1,6 +1,6 @@
 import time
-from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
-from unittest.mock import Mock
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from unittest.mock import Mock, create_autospec
 
 import bluesky.plan_stubs as bps
 import pytest
@@ -8,14 +8,9 @@ from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    DetectorControl,
-    DetectorWriter,
-    HardwareTriggeredFlyable,
-    observe_value,
-    set_mock_value,
-)
+from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorControl, DetectorWriter,
+                              HardwareTriggeredFlyable, observe_value,
+                              set_mock_value)
 from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
@@ -27,8 +22,7 @@ from ophyd_async.epics.signal.signal import epics_signal_rw
 from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
-    time_resolved_fly_and_collect_with_static_seq_table,
-)
+    time_resolved_fly_and_collect_with_static_seq_table)
 from ophyd_async.protocols import AsyncReadable
 
 
@@ -51,6 +45,7 @@ class DummyWriter(DetectorWriter):
             )
         }
 
+    @create_autospec
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
@@ -376,3 +371,47 @@ async def test_at_least_one_detector_in_fly_plan(
     with pytest.raises(ValueError) as exc:
         RE(fly())
         assert str(exc) == "No detectors provided. There must be at least one."
+
+
+@pytest.mark.parametrize("frame_timeout", [5.0, None])
+async def test_trigger_info_supplies_timeout_if_present_uses_default_if_not(
+    RE: RunEngine,
+    flyer,
+    detectors: tuple[StandardDetector],
+    frame_timeout: float,
+):
+    detector_list = list(detectors)
+
+    # Trigger parameters
+    number_of_frames = 1
+    exposure = 1
+    shutter_time = 0.004
+
+    def fly():
+        yield from bps.stage_all(*detector_list, flyer)
+        yield from bps.open_run()
+        yield from time_resolved_fly_and_collect_with_static_seq_table(
+            stream_name="stream1",
+            flyer=flyer,
+            detectors=detector_list,
+            number_of_frames=number_of_frames,
+            exposure=exposure,
+            shutter_time=shutter_time,
+            frame_timeout=frame_timeout,
+        )
+        yield from bps.close_run()
+        yield from bps.unstage_all(flyer, *detector_list)
+
+    RE(fly())
+
+    for detector in detector_list:
+        if frame_timeout == 5:
+            assert detector._trigger_info.frame_timeout == frame_timeout
+            detector.writer.observe_indices_written.assert_called_with(frame_timeout)
+        elif frame_timeout == None:
+            total_timeout = (
+                DEFAULT_TIMEOUT
+                + detector._trigger_info.livetime
+                + detector._trigger_info.deadtime
+            )
+            detector.writer.observe_indices_written.assert_called_with(total_timeout)
