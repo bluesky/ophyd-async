@@ -9,15 +9,11 @@ from typing import (
 
 import h5py
 import numpy as np
-from bluesky.protocols import DataKey, StreamAsset
-<<<<<<< HEAD
-from bluesky.protocols import Descriptor, StreamAsset
+from bluesky.protocols import DataKey
+from bluesky.protocols import StreamAsset
 
-from ophyd_async.core import DirectoryInfo, DirectoryProvider
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
-=======
 
->>>>>>> 86d7f978d (few more changes to merge _HDFFile classes)
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.signal import SignalR, observe_value
 from ophyd_async.core.utils import DEFAULT_TIMEOUT

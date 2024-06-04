@@ -93,17 +93,10 @@ async def test_can_collect(
     advimba: VimbaDetector, static_directory_provider: DirectoryProvider
 ):
     directory_info = static_directory_provider()
-<<<<<<< HEAD
-    full_file_name = directory_info.root / directory_info.resource_dir / "foo.h5"
+    full_file_name = "foo.h5"
     set_mock_value(advimba.hdf.full_file_name, str(full_file_name))
     set_mock_value(advimba._writer.hdf.file_path_exists, True)
     set_mock_value(advimba._writer.hdf.capture, True)
-=======
-    full_file_name = "foo.h5"
-    set_sim_value(advimba.hdf.full_file_name, str(full_file_name))
-    set_sim_value(advimba._writer.hdf.file_path_exists, True)
-    set_sim_value(advimba._writer.hdf.capture, True)
->>>>>>> 86d7f978d (few more changes to merge _HDFFile classes)
     await advimba.stage()
     docs = [(name, doc) async for name, doc in advimba.collect_asset_docs(1)]
     assert len(docs) == 2
