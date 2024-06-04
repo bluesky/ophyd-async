@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, List, Optional
-
+import event_model
 from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
     StreamDatum,
     StreamResource,
 )
-
 from ophyd_async.core import DirectoryInfo
 
 
@@ -26,6 +25,9 @@ class _HDFDataset:
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
+
+def versiontuple(v):
+    return tuple(map(int, (v.split("."))))
 
 
 class _HDFFile:
@@ -46,27 +48,50 @@ class _HDFFile:
             self._bundles = []
             return None
 
-        path = f"{str(directory_info.root)}/{full_file_name}"
-        root = str(directory_info.root)
-        bundler_composer = ComposeStreamResource()
+        if versiontuple(event_model.__version__) < versiontuple('1.21.0'):
+            path = f"{str(directory_info.root)}/{full_file_name}"
+            root = str(directory_info.root)
+            bundler_composer = ComposeStreamResource()
 
-        self._bundles: List[ComposeStreamResourceBundle] = [
-            bundler_composer(
-                spec=SLICE_NAME,
-                root=root,
-                resource_path=path,
-                data_key=ds.name.replace("/", "_"),
-                resource_kwargs={
-                    "name": ds.name,
-                    "block": ds.block,
-                    "path": ds.path,
-                    "shape": ds.shape,
-                    "multiplier": ds.multiplier,
-                    "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-                },
-            )
-            for ds in datasets
-        ]
+            self._bundles: List[ComposeStreamResourceBundle] = [
+                bundler_composer(
+                    spec=SLICE_NAME,
+                    root=root,
+                    resource_path=path,
+                    data_key=ds.name.replace("/", "_"),
+                    resource_kwargs={
+                        "name": ds.name,
+                        "block": ds.block,
+                        "path": ds.path,
+                        "shape": ds.shape,
+                        "multiplier": ds.multiplier,
+                        "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                    },
+                )
+                for ds in datasets
+            ]
+        else:
+            path = f"{str(directory_info.root)}/{full_file_name}"
+            root = str(directory_info.root)
+            bundler_composer = ComposeStreamResource()
+
+            self._bundles: List[ComposeStreamResourceBundle] = [
+                bundler_composer(
+                    spec=SLICE_NAME,
+                    root=root,
+                    resource_path=path,
+                    data_key=ds.name.replace("/", "_"),
+                    resource_kwargs={
+                        "name": ds.name,
+                        "block": ds.block,
+                        "path": ds.path,
+                        "shape": ds.shape,
+                        "multiplier": ds.multiplier,
+                        "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                    },
+                )
+                for ds in datasets
+            ]
 
     def stream_resources(self) -> Iterator[StreamResource]:
         for bundle in self._bundles:
