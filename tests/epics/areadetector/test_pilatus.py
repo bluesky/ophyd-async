@@ -12,7 +12,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusTriggerMode
-from ophyd_async.epics.areadetector.pilatus import PilatusDetector
+from ophyd_async.epics.areadetector.pilatus import PilatusDetector, PilatusReadoutTime
 
 
 @pytest.fixture
@@ -29,11 +29,13 @@ async def pilatus(
 async def test_deadtime_overridable(static_directory_provider: DirectoryProvider):
     async with DeviceCollector(mock=True):
         pilatus = PilatusDetector(
-            "PILATUS:", static_directory_provider, readout_time=5.0
+            "PILATUS:",
+            static_directory_provider,
+            readout_time=PilatusReadoutTime.pilatus2,
         )
     pilatus_controller = pilatus.controller
     # deadtime invariant with exposure time
-    assert pilatus_controller.get_deadtime(0) == 5.0
+    assert pilatus_controller.get_deadtime(0) == 2.28e-3
 
 
 async def test_deadtime_invariant(
@@ -41,8 +43,8 @@ async def test_deadtime_invariant(
 ):
     pilatus_controller = pilatus.controller
     # deadtime invariant with exposure time
-    assert pilatus_controller.get_deadtime(0) == 2.28e-3
-    assert pilatus_controller.get_deadtime(500) == 2.28e-3
+    assert pilatus_controller.get_deadtime(0) == 0.95e-3
+    assert pilatus_controller.get_deadtime(500) == 0.95e-3
 
 
 @pytest.mark.parametrize(
