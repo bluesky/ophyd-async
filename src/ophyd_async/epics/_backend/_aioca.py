@@ -17,6 +17,7 @@ from aioca import (
 from aioca.types import AugmentedValue, Dbr, Format
 from bluesky.protocols import DataKey, Dtype, Reading
 from epicscorelibs.ca import dbr
+from epicscorelibs.ca.dbr import ca_float, ca_int, ca_str
 
 from ophyd_async.core import (
     ReadingValueCallback,
@@ -60,6 +61,17 @@ class CaConverter:
 
     def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
+
+
+class CaToBuiltinConverter(CaConverter):
+    _primitive_type: Type
+
+    def __init__(self, primitive_type, read_dbr):
+        super().__init__(read_dbr, None)
+        self._primitive_type = primitive_type
+
+    def value(self, value: AugmentedValue):
+        return self._primitive_type(value)
 
 
 class CaLongStrConverter(CaConverter):
@@ -147,11 +159,21 @@ def make_converter(
     else:
         value = list(values.values())[0]
         # Done the dbr check, so enough to check one of the values
-        if datatype and not isinstance(value, datatype):
-            raise TypeError(
-                f"{pv} has type {type(value).__name__.replace('ca_', '')} "
-                + f"not {datatype.__name__}"
-            )
+        if datatype:
+            if not isinstance(value, datatype):
+                raise TypeError(
+                    f"{pv} has type {type(value).__name__.replace('ca_', '')} "
+                    + f"not {datatype.__name__}"
+                )
+            if type(value) is not datatype:
+                return CaToBuiltinConverter(datatype, pv_dbr)
+        match value:
+            case ca_float():
+                return CaToBuiltinConverter(float, pv_dbr)
+            case ca_int():
+                return CaToBuiltinConverter(int, pv_dbr)
+            case ca_str():
+                return CaToBuiltinConverter(str, pv_dbr)
         return CaConverter(pv_dbr, None)
 
 
