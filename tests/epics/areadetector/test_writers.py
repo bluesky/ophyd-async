@@ -1,6 +1,7 @@
 from typing import Sequence
 from unittest.mock import patch
 
+import event_model
 import pytest
 
 from ophyd_async.core import (
@@ -10,6 +11,13 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+
+
+def test_event_model_version():
+    with patch.object(event_model, "__version__", "1.23.0") as mock:  # noqa: F841
+        assert event_model.__version__ == "1.23.0"
+        # new_hdffile = _HDFFile(directory_info='some_info',
+        # full_file_name=Path('some_path'), datasets=[_HDFDataset('some_name')])
 
 
 class DummyShapeProvider(ShapeProvider):

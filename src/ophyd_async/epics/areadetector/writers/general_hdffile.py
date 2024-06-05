@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, List, Optional
+
 import event_model
 from event_model import (
     ComposeStreamResource,
@@ -8,6 +9,7 @@ from event_model import (
     StreamDatum,
     StreamResource,
 )
+
 from ophyd_async.core import DirectoryInfo
 
 
@@ -25,6 +27,7 @@ class _HDFDataset:
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
+
 
 def versiontuple(v):
     return tuple(map(int, (v.split("."))))
@@ -48,7 +51,9 @@ class _HDFFile:
             self._bundles = []
             return None
 
-        if versiontuple(event_model.__version__) < versiontuple('1.21.0'):
+        if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
+            print("OHHHHH HEREEEEEEEEEEE")
+
             path = f"{str(directory_info.root)}/{full_file_name}"
             root = str(directory_info.root)
             bundler_composer = ComposeStreamResource()
@@ -71,17 +76,17 @@ class _HDFFile:
                 for ds in datasets
             ]
         else:
+            print("HEREEEEEEEEEEE")
             path = f"{str(directory_info.root)}/{full_file_name}"
             root = str(directory_info.root)
             bundler_composer = ComposeStreamResource()
 
             self._bundles: List[ComposeStreamResourceBundle] = [
                 bundler_composer(
-                    spec=SLICE_NAME,
-                    root=root,
-                    resource_path=path,
+                    mimetype="application/x-hdf5",
+                    uri=path,
                     data_key=ds.name.replace("/", "_"),
-                    resource_kwargs={
+                    parameters={
                         "name": ds.name,
                         "block": ds.block,
                         "path": ds.path,
@@ -89,6 +94,8 @@ class _HDFFile:
                         "multiplier": ds.multiplier,
                         "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
                     },
+                    uid=None,
+                    validate=True,
                 )
                 for ds in datasets
             ]

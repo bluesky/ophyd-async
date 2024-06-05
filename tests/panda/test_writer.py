@@ -11,11 +11,10 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_mock_value,
 )
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import CommonPandaBlocks
-from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
-
 from ophyd_async.panda.writers._hdf_writer import (
     Capture,
     CaptureSignalWrapper,
@@ -23,6 +22,7 @@ from ophyd_async.panda.writers._hdf_writer import (
     get_capture_signals,
     get_signals_marked_for_capture,
 )
+
 
 @pytest.fixture
 async def panda_t():

@@ -9,12 +9,10 @@ from typing import (
 
 import h5py
 import numpy as np
-from bluesky.protocols import DataKey
-from bluesky.protocols import StreamAsset
-
-from ophyd_async.core.mock_signal_backend import MockSignalBackend
+from bluesky.protocols import DataKey, StreamAsset
 
 from ophyd_async.core import DirectoryProvider
+from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import SignalR, observe_value
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
