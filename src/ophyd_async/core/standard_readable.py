@@ -254,6 +254,8 @@ class HintedSignal(HasHints, AsyncReadable):
 
     @property
     def hints(self) -> Hints:
+        if self.signal.name == "":
+            return {"fields": []} 
         return {"fields": [self.signal.name]}
 
     @classmethod
