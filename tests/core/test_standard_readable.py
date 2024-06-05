@@ -8,9 +8,8 @@ from bluesky.protocols import HasHints
 from ophyd_async.core import ConfigSignal, HintedSignal, StandardReadable
 from ophyd_async.core.device import Device, DeviceVector
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
-from ophyd_async.core.signal import SignalR
+from ophyd_async.core.signal import SignalR, soft_signal_r_and_setter
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
-from src.ophyd_async.core.signal import soft_signal_r_and_setter
 
 
 def test_standard_readable_hints():
