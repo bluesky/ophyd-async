@@ -129,7 +129,7 @@ class PvaEnumConverter(PvaConverter):
     def value(self, value):
         return self.choices[value["value"]["index"]]
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def descriptor(self, source: str, value) -> DataKey:
         return dict(source=source, dtype="string", shape=[], choices=self.choices)
 
 
@@ -137,7 +137,7 @@ class PvaBoolConverter(PvaConverter):
     def value(self, value):
         return bool(value["value"]["index"])
 
-    def descriptor(self, source: str, value) -> Descriptor:
+    def descriptor(self, source: str, value) -> DataKey:
         return dict(source=source, dtype="bool", shape=[])
 
 

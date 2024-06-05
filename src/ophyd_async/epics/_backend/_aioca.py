@@ -17,7 +17,6 @@ from aioca import (
 )
 from aioca.types import AugmentedValue, Dbr, Format
 from bluesky.protocols import DataKey, Dtype, Reading
-from bluesky.protocols import DataKey, Dtype, Reading
 from epicscorelibs.ca import dbr
 
 from ophyd_async.core import (
@@ -148,7 +147,6 @@ class CaEnumConverter(CaConverter):
 
 @dataclass
 class CaBoolConverter(CaConverter):
-
     def value(self, value: AugmentedValue) -> bool:
         return bool(value)
 
