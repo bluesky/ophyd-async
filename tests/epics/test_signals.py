@@ -191,7 +191,7 @@ def descriptor(protocol: str, suffix: str, value=None) -> DataKey:
 
     dtype = get_dtype(suffix)
 
-    d = dict(dtype=dtype, shape=[len(value)] if dtype == "array" else [])
+    d = {"dtype": dtype, "shape": [len(value)] if dtype == "array" else []}
     if get_internal_dtype(suffix) == "enum":
         d["choices"] = [e.value for e in type(value)]
 
