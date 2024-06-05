@@ -69,10 +69,11 @@ async def test_signal_connect_fails_if_different_backend_but_same_by_value():
     initial_backend = MockSignalBackend(str)
     sim_signal = Signal(initial_backend)
 
-    with pytest.raises(ValueError):
-        await sim_signal.connect(mock=True, backend=MockSignalBackend(str))
+    with pytest.raises(ValueError) as exc:
+        await sim_signal.connect(mock=False, backend=MockSignalBackend(str))
+    assert str(exc.value) == "<whatever output string>" 
 
-    await sim_signal.connect(mock=True, backend=initial_backend)
+    await sim_signal.connect(mock=False, backend=initial_backend)
 
 
 async def time_taken_by(coro) -> float:
