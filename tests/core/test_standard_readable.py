@@ -229,3 +229,4 @@ def test_standard_readable_add_children_multi_nested():
         inner.b, _ = soft_signal_r_and_setter(float, initial_value=6.0)
     with outer.add_children_as_readables():
         outer.inner = inner
+    assert outer
