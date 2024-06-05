@@ -81,6 +81,9 @@ class Signal(Device, Generic[T]):
         if mock and not isinstance(self._backend, MockSignalBackend):
             # Using a soft backend, look to the initial value
             self._backend = MockSignalBackend(initial_backend=self._backend)
+
+        if self._backend is None:
+            raise RuntimeError("`connect` called on signal without backend")
         self.log.debug(f"Connecting to {self.source}")
         await self._backend.connect(timeout=timeout)
 
