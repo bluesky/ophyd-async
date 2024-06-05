@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, List, Optional
+from urllib.parse import urlunparse
 
 import event_model
 from event_model import (
@@ -16,6 +17,8 @@ from ophyd_async.core import DirectoryInfo
 @dataclass
 class _HDFDataset:
     name: str
+    dtype_numpy: Optional[str] = None
+    swmr: bool = False
     shape: Optional[List[int]] = None
     multiplier: Optional[int] = 1
     path: Optional[str] = None
@@ -45,16 +48,17 @@ class _HDFFile:
         directory_info: DirectoryInfo,
         full_file_name: Path,
         datasets: List[_HDFDataset],
+        hostname: str = "localhost",
     ) -> None:
         self._last_emitted = 0
+        self._hostname = hostname
+
         if len(datasets) == 0:
             self._bundles = []
             return None
 
         if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
-            print("OHHHHH HEREEEEEEEEEEE")
-
-            path = f"{str(directory_info.root)}/{full_file_name}"
+            path = f"{directory_info.root/full_file_name}"
             root = str(directory_info.root)
             bundler_composer = ComposeStreamResource()
 
@@ -76,23 +80,27 @@ class _HDFFile:
                 for ds in datasets
             ]
         else:
-            print("HEREEEEEEEEEEE")
-            path = f"{str(directory_info.root)}/{full_file_name}"
-            root = str(directory_info.root)
             bundler_composer = ComposeStreamResource()
+
+            uri = urlunparse(
+                (
+                    "file",
+                    self._hostname,
+                    str((directory_info.root / full_file_name).absolute()),
+                    "",
+                    "",
+                    None,
+                )
+            )
 
             self._bundles: List[ComposeStreamResourceBundle] = [
                 bundler_composer(
                     mimetype="application/x-hdf5",
-                    uri=path,
+                    uri=uri,
                     data_key=ds.name.replace("/", "_"),
                     parameters={
-                        "name": ds.name,
-                        "block": ds.block,
                         "path": ds.path,
-                        "shape": ds.shape,
-                        "multiplier": ds.multiplier,
-                        "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                        "swmr": ds.swmr,
                     },
                     uid=None,
                     validate=True,

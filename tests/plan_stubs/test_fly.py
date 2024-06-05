@@ -3,6 +3,7 @@ from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
+import event_model
 import pytest
 from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
@@ -22,6 +23,7 @@ from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.flyer import TriggerLogic
 from ophyd_async.core.signal import SignalR
 from ophyd_async.core.utils import WatcherUpdate
+from ophyd_async.epics.areadetector.writers.general_hdffile import versiontuple
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
 from ophyd_async.epics.signal.signal import epics_signal_rw
 from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic
@@ -68,17 +70,30 @@ class DummyWriter(DetectorWriter):
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._file:
-                self._file = compose_stream_resource(
-                    spec="AD_HDF5_SWMR_SLICE",
-                    root="/",
-                    data_key=self._name,
-                    resource_path="",
-                    resource_kwargs={
-                        "path": "",
-                        "multiplier": 1,
-                        "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-                    },
-                )
+                if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
+                    self._file = compose_stream_resource(
+                        spec="AD_HDF5_SWMR_SLICE",
+                        root="/",
+                        data_key=self._name,
+                        resource_path="",
+                        resource_kwargs={
+                            "path": "",
+                            "multiplier": 1,
+                            "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",  # noqa: E501
+                        },
+                    )
+                else:
+                    self._file = compose_stream_resource(
+                        mimetype="application/x-hdf5",
+                        uri="",
+                        data_key=self._name,
+                        parameters={
+                            "path": "",
+                            "swmr": False,
+                        },
+                        uid=None,
+                        validate=True,
+                    )
                 yield "stream_resource", self._file.stream_resource_doc
 
             if indices_written >= self._last_emitted:

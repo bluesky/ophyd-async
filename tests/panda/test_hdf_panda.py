@@ -1,5 +1,6 @@
 from typing import Dict
 
+import event_model
 import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
@@ -9,6 +10,7 @@ from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.mock_signal_utils import callback_on_mock_put
 from ophyd_async.core.signal import SignalR, assert_emitted
+from ophyd_async.epics.areadetector.writers.general_hdffile import versiontuple
 from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
 from ophyd_async.panda.writers._hdf_writer import Capture
@@ -142,16 +144,25 @@ async def test_hdf_panda_hardware_triggered_flyable(
         ("a", "b"), docs["stream_resource"], data_key_names
     ):
         assert stream_resource["data_key"] == data_key_name
-        assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
         assert stream_resource["run_start"] == docs["start"][0]["uid"]
-        assert stream_resource["resource_kwargs"] == {
-            "block": f"block_{block_letter}",
-            "multiplier": 1,
-            "name": data_key_name,
-            "path": f"BLOCK_{block_letter.upper()}-TEST-{data_key_name.split('-')[-1]}",
-            "shape": [1],
-            "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-        }
+
+        if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
+            assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
+            assert stream_resource["resource_kwargs"] == {
+                "block": f"block_{block_letter}",
+                "multiplier": 1,
+                "name": data_key_name,
+                "path": f"BLOCK_{block_letter.upper()}"
+                f"-TEST-{data_key_name.split('-')[-1]}",
+                "shape": [1],
+                "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+            }
+        else:
+            assert stream_resource["parameters"] == {
+                "swmr": False,
+                "path": f"BLOCK_{block_letter.upper()}"
+                f"-TEST-{data_key_name.split('-')[-1]}",
+            }
 
     # test stream datum
     for stream_datum in docs["stream_datum"]:

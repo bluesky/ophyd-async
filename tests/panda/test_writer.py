@@ -1,6 +1,7 @@
 import asyncio
 from unittest.mock import patch
 
+import event_model
 import pytest
 
 from ophyd_async.core import (
@@ -11,7 +12,10 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_mock_value,
 )
-from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
+from ophyd_async.epics.areadetector.writers.general_hdffile import (
+    _HDFFile,
+    versiontuple,
+)
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import CommonPandaBlocks
@@ -189,7 +193,10 @@ async def test_collect_stream_docs(mock_writer: PandaHDFWriter):
     assert mock_writer._file._last_emitted == 1
     resource_doc = mock_writer._file._bundles[0].stream_resource_doc
     assert resource_doc["data_key"] == "test-panda-block_a-test-Min"
-    assert "mock_panda/data.h5" in resource_doc["resource_path"]
+    if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
+        assert "mock_panda/data.h5" in resource_doc["resource_path"]
+    else:
+        assert "mock_panda/data.h5" in resource_doc["uri"]
 
 
 async def test_numeric_blocks_correctly_formated(mock_writer: PandaHDFWriter):
