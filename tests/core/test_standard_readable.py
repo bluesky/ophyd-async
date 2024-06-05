@@ -10,6 +10,7 @@ from ophyd_async.core.device import Device, DeviceVector
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import SignalR
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
+from src.ophyd_async.core.signal import soft_signal_r_and_setter
 
 
 def test_standard_readable_hints():
@@ -219,3 +220,13 @@ def test_standard_readable_set_readable_signals():
     assert all(isinstance(x, ConfigSignal) for x in sr._configurables)
     assert len(sr._stageables) == 1
     assert all(isinstance(x, HintedSignal) for x in sr._stageables)
+
+
+def test_standard_readable_add_children_multi_nested():
+    inner = StandardReadable()
+    outer = StandardReadable()
+    with inner.add_children_as_readables(HintedSignal):
+        inner.a, _ = soft_signal_r_and_setter(float, initial_value=5.0)
+        inner.b, _ = soft_signal_r_and_setter(float, initial_value=6.0)
+    with outer.add_children_as_readables():
+        outer.inner = inner
