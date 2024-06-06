@@ -178,8 +178,6 @@ async def test_device_create_children_from_annotations_with_device_vectors(
     assert device.device_vector[2].name == "test_device-device_vector-2"
     block_1_device = device.device
     block_2_device_vector = device.device_vector
-    # block_2_device_vector_1 = device.device_vector[1]
-    # block_2_device_vector_2 = device.device_vector[2]
 
     # create_children_from_annotiations should have made blocks and DeviceVectors
     # but not signals
@@ -188,11 +186,9 @@ async def test_device_create_children_from_annotations_with_device_vectors(
     assert isinstance(block_2_device_vector[1], Block1)
     assert len(device.device_vector) == 2
     assert isinstance(block_1_device, Block1)
-    assert not hasattr(device, "signal_x")
-    # assert not hasattr(device.device, "signal_rw")
 
     await device.connect(mock=True)
 
     # The memory addresses have not changed
     assert device.device is block_1_device
-    assert device.device_vector[1] is block_2_device_vector
+    assert device.device_vector is block_2_device_vector

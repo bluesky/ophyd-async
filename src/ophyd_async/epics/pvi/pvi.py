@@ -179,12 +179,15 @@ def _mock_common_blocks(device: Device, stripped_type: Optional[Type] = None):
                 sub_device_2 = device_cls(SoftSignalBackend(signal_dtype))
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
             else:
-                sub_device = DeviceVector(
-                    {
-                        1: getattr(device, device_name, device_cls()),
-                        2: getattr(device, device_name, device_cls()),
-                    }
-                )
+                if hasattr(device, device_name):
+                    continue
+                else:
+                    sub_device = DeviceVector(
+                        {
+                            1: getattr(device, device_name, device_cls()),
+                            2: getattr(device, device_name, device_cls()),
+                        }
+                    )
 
                 for sub_device_in_vector in sub_device.values():
                     _mock_common_blocks(sub_device_in_vector, stripped_type=device_cls)
@@ -327,9 +330,10 @@ def create_children_from_annotations(
                 {i: device_type() for i in range(1, device_vectors[name] + 1)}
             )
             setattr(device, name, n_device_vector)
-            create_children_from_annotations(
-                n_device_vector, device_vectors=device_vectors
-            )
+            for sub_device in list(n_device_vector.values()):
+                create_children_from_annotations(
+                    sub_device, device_vectors=device_vectors
+                )
         else:
             sub_device = device_type()
             setattr(device, name, sub_device)
