@@ -2,7 +2,7 @@ import asyncio
 import atexit
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
@@ -308,9 +308,9 @@ class PvaSignalBackend(SignalBackend[T]):
             )
             raise NotConnected(f"pva://{self.write_pv}") from exc
 
-    async def get_datakey(self, source: str) -> DataKey:
+    async def get_datakey(self) -> DataKey:
         value = await self.ctxt.get(self.read_pv)
-        return self.converter.get_datakey(source, value)
+        return self.converter.get_datakey(self.source(), value)
 
     def _pva_request_string(self, fields: List[str]) -> str:
         """

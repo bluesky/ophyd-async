@@ -1,6 +1,6 @@
 import logging
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from math import isnan, nan
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
@@ -104,7 +104,7 @@ class CaConverter:
             "alarm_severity": -1 if value.severity > 2 else value.severity,
         }
 
-    def descriptor(self, value: AugmentedValue) -> DataKey:
+    def get_datakey(self, value: AugmentedValue) -> DataKey:
         return _data_key_from_augmented_value(value)
 
 
@@ -136,9 +136,9 @@ class CaEnumConverter(CaConverter):
     def value(self, value: AugmentedValue):
         return self.choices[value]
 
-    def descriptor(self, value: AugmentedValue) -> DataKey:
+    def get_datakey(self, value: AugmentedValue) -> DataKey:
         # Sometimes DBR_TYPE returns as String, must pass choices still
-        return _data_key_from_augmented_value(value, choices=[self.choices.keys()])
+        return _data_key_from_augmented_value(value, choices=list(self.choices.keys()))
 
 
 @dataclass
@@ -146,7 +146,7 @@ class CaBoolConverter(CaConverter):
     def value(self, value: AugmentedValue) -> bool:
         return bool(value)
 
-    def descriptor(self, value: AugmentedValue) -> DataKey:
+    def get_datakey(self, value: AugmentedValue) -> DataKey:
         return _data_key_from_augmented_value(value, dtype="bool")
 
 
@@ -275,7 +275,7 @@ class CaSignalBackend(SignalBackend[T]):
 
     async def get_datakey(self) -> DataKey:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.datakey(value)
+        return self.converter.get_datakey(value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)

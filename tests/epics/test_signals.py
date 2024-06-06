@@ -132,7 +132,7 @@ async def assert_monitor_then_put(
     try:
         # Check descriptor
         source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=source, **descriptor) == await backend.get_descriptor()
+        assert dict(source=source, **descriptor) == await backend.get_datakey()
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -522,7 +522,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
-            } == await backend.get_descriptor()
+            } == await backend.get_datakey()
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())
