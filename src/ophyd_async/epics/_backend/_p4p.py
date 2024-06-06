@@ -114,11 +114,8 @@ class PvaEnumConverter(PvaConverter):
     choices on this class.
     """
 
-    enum_class: Type[Enum]
-    choices: List[str] = field(init=False)
-
-    def __post_init__(self):
-        self.choices = [e.value for e in self.enum_class]
+    def __init__(self, choices: Dict[str, str]):
+        self.choices = tuple(choices.values())
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -129,12 +126,12 @@ class PvaEnumConverter(PvaConverter):
     def value(self, value):
         return self.choices[value["value"]["index"]]
 
-    def descriptor(self, source: str, value) -> DataKey:
+    def get_datakey(self, source: str, value) -> DataKey:
         return {
             "source": source,
             "dtype": "string",
             "shape": [],
-            "choices": self.choices,
+            "choices": list(self.choices),
         }
 
 
@@ -142,7 +139,7 @@ class PvaBoolConverter(PvaConverter):
     def value(self, value):
         return bool(value["value"]["index"])
 
-    def descriptor(self, source: str, value) -> DataKey:
+    def get_datakey(self, source: str, value) -> DataKey:
         return {"source": source, "dtype": "bool", "shape": []}
 
 

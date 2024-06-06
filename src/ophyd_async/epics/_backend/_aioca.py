@@ -125,11 +125,7 @@ class CaEnumConverter(CaConverter):
     choices on this class.
     """
 
-    enum_class: Type[Enum]
-    choices: List[str] = field(init=False)
-
-    def __post_init__(self):
-        self.choices = [e.value for e in self.enum_class]
+    choices: Dict[str, str]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
@@ -138,11 +134,11 @@ class CaEnumConverter(CaConverter):
             return value
 
     def value(self, value: AugmentedValue):
-        return self.enum_class(value)
+        return self.choices[value]
 
     def descriptor(self, value: AugmentedValue) -> DataKey:
         # Sometimes DBR_TYPE returns as String, must pass choices still
-        return _data_key_from_augmented_value(value, choices=self.choices)
+        return _data_key_from_augmented_value(value, choices=[self.choices.keys()])
 
 
 @dataclass
@@ -277,9 +273,9 @@ class CaSignalBackend(SignalBackend[T]):
             timeout=None,
         )
 
-    async def get_descriptor(self) -> DataKey:
+    async def get_datakey(self) -> DataKey:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.descriptor(value)
+        return self.converter.datakey(value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)
