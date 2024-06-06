@@ -8,7 +8,7 @@ on:
       event-model-version:
         type: string
         description: The version of event-model to install
-        required: true
+        required: false
       runs-on:
         type: string
         description: The runner to run this job on
@@ -56,6 +56,9 @@ jobs:
 
       - name: Install specific version of event-model.
         run: pip install "event-model==${{ inputs.event-model-version }}"
+        # By default, leave whatever was installed by pyproject.toml
+        # (likely latest version).
+        if inputs.event-model-version != ''
 
       - name: Run tests
         run: tox -e tests
