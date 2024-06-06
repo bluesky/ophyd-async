@@ -5,6 +5,10 @@ on:
         type: string
         description: The version of python to install
         required: true
+      event-model-version:
+        type: string
+        description: The version of event-model to install
+        required: true
       runs-on:
         type: string
         description: The runner to run this job on
