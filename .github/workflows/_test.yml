@@ -50,6 +50,9 @@ jobs:
           python-version: ${{ inputs.python-version }}
           pip-install: ".[dev]"
 
+      - name: Install specific version of event-model.
+        run: pip install "event-model==${{ inputs.event-model-version }}"
+
       - name: Run tests
         run: tox -e tests
 
