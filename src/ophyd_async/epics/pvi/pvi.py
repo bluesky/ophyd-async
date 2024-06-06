@@ -322,6 +322,15 @@ def create_children_from_annotations(
         ):
             continue
 
-        sub_device = device_type()
-        setattr(device, name, sub_device)
-        create_children_from_annotations(sub_device, device_vectors=device_vectors)
+        if is_device_vector:
+            n_device_vector = DeviceVector(
+                {i: device_type() for i in range(1, device_vectors[name] + 1)}
+            )
+            setattr(device, name, n_device_vector)
+            create_children_from_annotations(
+                n_device_vector, device_vectors=device_vectors
+            )
+        else:
+            sub_device = device_type()
+            setattr(device, name, sub_device)
+            create_children_from_annotations(sub_device, device_vectors=device_vectors)

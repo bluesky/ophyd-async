@@ -144,3 +144,55 @@ async def test_device_create_children_from_annotations(
     assert device.device is block_2_device
     assert device.device.device is block_1_device
     assert device.signal_device is top_block_1_device
+
+
+@pytest.fixture
+def pvi_test_device_with_device_vectors_t():
+    """A fixture since pytest discourages init in test case classes"""
+
+    class TestDevice(Block2):
+        def __init__(self, prefix: str, name: str = ""):
+            self._prefix = prefix
+            create_children_from_annotations(self, device_vectors={"device_vector": 2})
+            super().__init__(name)
+
+        async def connect(
+            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
+        ) -> None:
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
+
+            await super().connect(mock=mock)
+
+    yield TestDevice
+
+
+async def test_device_create_children_from_annotations_with_device_vectors(
+    pvi_test_device_with_device_vectors_t,
+):
+    async with DeviceCollector(mock=True):
+        device = pvi_test_device_with_device_vectors_t("PREFIX:", name="test_device")
+
+    assert device.device_vector[1].name == "test_device-device_vector-1"
+    assert device.device_vector[2].name == "test_device-device_vector-2"
+    block_1_device = device.device
+    block_2_device_vector = device.device_vector
+    # block_2_device_vector_1 = device.device_vector[1]
+    # block_2_device_vector_2 = device.device_vector[2]
+
+    # create_children_from_annotiations should have made blocks and DeviceVectors
+    # but not signals
+    assert hasattr(device, "device_vector")
+    assert isinstance(block_2_device_vector, DeviceVector)
+    assert isinstance(block_2_device_vector[1], Block1)
+    assert len(device.device_vector) == 2
+    assert isinstance(block_1_device, Block1)
+    assert not hasattr(device, "signal_x")
+    # assert not hasattr(device.device, "signal_rw")
+
+    await device.connect(mock=True)
+
+    # The memory addresses have not changed
+    assert device.device is block_1_device
+    assert device.device_vector[1] is block_2_device_vector
