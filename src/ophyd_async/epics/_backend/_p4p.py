@@ -114,7 +114,7 @@ class PvaEnumConverter(PvaConverter):
     choices on this class.
     """
 
-    def __init__(self, choices: Dict[str, str]):
+    def __init__(self, choices: dict[str, str]):
         self.choices = tuple(choices.values())
 
     def write_value(self, value: Union[Enum, str]):

@@ -38,7 +38,6 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_CHAR: "string",
     dbr.DBR_LONG: "integer",
     dbr.DBR_DOUBLE: "number",
-    dbr.DBR_ENUM: "string",
 }
 _common_meta = {
     "units",
@@ -125,7 +124,7 @@ class CaEnumConverter(CaConverter):
     choices on this class.
     """
 
-    choices: Dict[str, str]
+    choices: dict[str, str]
 
     def write_value(self, value: Union[Enum, str]):
         if isinstance(value, Enum):
