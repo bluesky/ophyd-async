@@ -21,7 +21,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import _common_meta, get_supported_values
+from .common import common_meta, get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -67,7 +67,7 @@ def _data_key_from_value(
         shape=shape,
     )
     if display_data is not None:
-        for key in _common_meta:
+        for key in common_meta:
             attr = getattr(display_data, key, nan)
             if isinstance(attr, str) or not isnan(attr):
                 d[key] = attr

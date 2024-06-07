@@ -29,7 +29,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import _common_meta, get_supported_values
+from .common import common_meta, get_supported_values
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -71,7 +71,7 @@ def _data_key_from_augmented_value(
         # strictly value.element_count >= len(value)
         shape=[] if scalar else [len(value)],
     )
-    for key in _common_meta:
+    for key in common_meta:
         attr = getattr(value, key, nan)
         if isinstance(attr, str) or not isnan(attr):
             d[key] = attr
