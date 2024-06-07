@@ -1,10 +1,27 @@
+from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional, Tuple, Type
+from typing import Dict, Generic, Optional, Tuple, Type
+
+from ophyd_async.core import T
 
 common_meta = {
     "units",
     "precision",
 }
+
+
+@dataclass
+class LimitPair(Generic[T]):
+    high: T | None = None
+    low: T | None = None
+
+
+@dataclass
+class Limits(Generic[T]):
+    control: LimitPair[T]
+    display: LimitPair[T]
+    warning: LimitPair[T]
+    alarm: LimitPair[T]
 
 
 def get_supported_values(

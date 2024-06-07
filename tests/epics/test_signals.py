@@ -164,15 +164,18 @@ class MyEnum(str, Enum):
 
 _metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
     "ca": {
-        "integer": {"units": ANY},
-        "bool": {"units": ANY},
-        "number": {"units": ANY, "precision": ANY},
+        "bool": {"units": ANY, "limits": ANY},
+        "integer": {"units": ANY, "limits": ANY},
+        "number": {"units": ANY, "limits": ANY, "precision": ANY},
+        "enum": {"limits": ANY},
+        "string": {"limits": ANY},
     },
     "pva": {
-        "integer": {"units": ANY, "precision": ANY},
-        "string": {"units": ANY, "precision": ANY},
-        "bool": {},
-        "number": {"units": ANY, "precision": ANY},
+        "bool": {"limits": ANY},
+        "integer": {"units": ANY, "precision": ANY, "limits": ANY},
+        "number": {"units": ANY, "precision": ANY, "limits": ANY},
+        "enum": {"limits": ANY},
+        "string": {"units": ANY, "precision": ANY, "limits": ANY},
     },
 }
 
@@ -529,6 +532,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
+                "limits": ANY,
             } == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))

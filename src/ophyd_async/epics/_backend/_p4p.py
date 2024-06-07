@@ -21,7 +21,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import common_meta, get_supported_values
+from .common import LimitPair, Limits, common_meta, get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -75,7 +75,42 @@ def _data_key_from_value(
     if choices is not None:
         d["choices"] = choices
 
+    d["limits"] = _limits_from_value(value)
+
     return d
+
+
+def _limits_from_value(value: Value) -> Limits:
+    _empty_limit = LimitPair()
+
+    def get_cd_limit(limit: str) -> LimitPair:
+        cd = getattr(value, limit, None)
+        if cd is None:
+            return _empty_limit
+        low = getattr(cd, "limitLow")
+        high = getattr(cd, "limitHigh")
+        return LimitPair(low=low, high=high)
+
+    control_limit = get_cd_limit("control")
+    display_limit = get_cd_limit("display")
+    warning_and_alarm = getattr(value, "valueAlarm", None)
+
+    def get_wa_limit(limit: str) -> LimitPair:
+        if warning_and_alarm is None:
+            return _empty_limit
+        low = getattr(warning_and_alarm, f"low{limit}Limit", None)
+        high = getattr(warning_and_alarm, f"high{limit}Limit", None)
+        return LimitPair(low=low, high=high)
+
+    warning_limit = get_wa_limit("Warning")
+    alarm_limit = get_wa_limit("Alarm")
+
+    return Limits(
+        control=control_limit,
+        display=display_limit,
+        warning=warning_limit,
+        alarm=alarm_limit,
+    )
 
 
 class PvaConverter:

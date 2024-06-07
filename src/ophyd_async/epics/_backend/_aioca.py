@@ -29,7 +29,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import common_meta, get_supported_values
+from .common import LimitPair, Limits, common_meta, get_supported_values
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -78,7 +78,24 @@ def _data_key_from_augmented_value(
 
     if choices is not None:
         d["choices"] = choices
+
+    d["limits"] = _limits_from_augmented_value(value)
+
     return d
+
+
+def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
+    def get_limits(limit: str) -> LimitPair:
+        lower = getattr(value, f"lower_{limit}_limit", None)
+        upper = getattr(value, f"upper_{limit}_limit", None)
+        return LimitPair(low=lower, high=upper)
+
+    return Limits(
+        control=get_limits("ctrl"),
+        display=get_limits("disp"),
+        warning=get_limits("warning"),
+        alarm=get_limits("alarm"),
+    )
 
 
 @dataclass
