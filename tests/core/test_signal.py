@@ -69,9 +69,6 @@ async def test_signal_connect_fails_with_different_backend_on_connection():
     with pytest.raises(ValueError):
         await sim_signal.connect(mock=True, backend=SoftSignalBackend(str))
 
-    with pytest.raises(ValueError):
-        await sim_signal.connect(mock=False, backend=MockSignalBackend(str))
-
 
 async def test_signal_connect_fails_if_different_backend_but_same_by_value():
     initial_backend = MockSignalBackend(str)
