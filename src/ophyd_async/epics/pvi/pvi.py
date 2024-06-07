@@ -180,12 +180,12 @@ def _mock_common_blocks(device: Device, stripped_type: Optional[Type] = None):
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
             else:
                 if hasattr(device, device_name):
-                    continue
+                    sub_device = getattr(device, device_name)
                 else:
                     sub_device = DeviceVector(
                         {
-                            1: getattr(device, device_name, device_cls()),
-                            2: getattr(device, device_name, device_cls()),
+                            1: device_cls(),
+                            2: device_cls(),
                         }
                     )
 
