@@ -319,7 +319,7 @@ def create_children_from_annotations(
         if is_device_vector and not device_vectors:
             continue
         if (
-            (is_device_vector and name not in device_vectors.keys())
+            (is_device_vector and (not device_vectors or name not in device_vectors))
             or ((origin := get_origin(device_type)) and issubclass(origin, Signal))
             or (isclass(device_type) and issubclass(device_type, Signal))
         ):
