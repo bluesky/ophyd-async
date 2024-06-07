@@ -273,7 +273,7 @@ class CaSignalBackend(SignalBackend[T]):
             timeout=None,
         )
 
-    async def get_datakey(self) -> DataKey:
+    async def get_datakey(self, source: str) -> DataKey:
         value = await self._caget(FORMAT_CTRL)
         return self.converter.get_datakey(value)
 

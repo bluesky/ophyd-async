@@ -132,7 +132,7 @@ async def assert_monitor_then_put(
     try:
         # Check descriptor
         source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=source, **descriptor) == await backend.get_datakey()
+        assert dict(source=source, **descriptor) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -303,7 +303,7 @@ async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path) -> None:
     await assert_monitor_then_put(
         ioc,
         suffix,
-        descriptor(ioc.protocol, suffix, suffix),
+        descriptor(ioc.protocol, suffix, True),
         False,
         True,
         bool,
@@ -449,7 +449,7 @@ async def test_pva_table(ioc: IOC) -> None:
         enum=[MyEnum.c, MyEnum.b],
     )
     # TODO: what should this be for a variable length table?
-    descriptor = {"dtype": "object", "shape": []}
+    descriptor = {"dtype": "object", "shape": [], "source": "test-source"}
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")
@@ -457,7 +457,7 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check descriptor
-            dict(source=backend.source, **descriptor) == await backend.get_descriptor()
+            descriptor == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -522,7 +522,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
-            } == await backend.get_datakey()
+            } == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
             await raw_data_backend.put(p.flatten())

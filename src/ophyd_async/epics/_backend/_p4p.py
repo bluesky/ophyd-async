@@ -310,7 +310,7 @@ class PvaSignalBackend(SignalBackend[T]):
 
     async def get_datakey(self, source: str) -> DataKey:
         value = await self.ctxt.get(self.read_pv)
-        return self.converter.get_datakey(self.source(source), value)
+        return self.converter.get_datakey(source, value)
 
     def _pva_request_string(self, fields: List[str]) -> str:
         """
