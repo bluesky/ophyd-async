@@ -4,6 +4,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
+from math import isnan, nan
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -20,7 +21,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import get_supported_values
+from .common import _common_meta, get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -37,6 +38,44 @@ specifier_to_dtype: Dict[str, Dtype] = {
     "d": "number",  # float64
     "s": "string",
 }
+
+
+def _data_key_from_value(
+    source: str,
+    value: Value,
+    *,
+    shape: Optional[list[int]] = None,
+    choices: Optional[list[str]] = None,
+    dtype: Optional[str] = None,
+) -> DataKey:
+    """
+    Args:
+        value (Value): Description of the the return type of a DB record
+        kwargs: Overrides for the returned values.
+            e.g. to force treating a value as an Enum by passing choices
+
+    Returns:
+        DataKey: A rich DataKey describing the DB record
+    """
+    shape = shape or []
+    dtype = dtype or specifier_to_dtype[value.type().aspy("value")]
+    display_data = getattr(value, "display", None)
+
+    d = DataKey(
+        source=source,
+        dtype=dtype,
+        shape=shape,
+    )
+    if display_data is not None:
+        for key in _common_meta:
+            attr = getattr(display_data, key, nan)
+            if isinstance(attr, str) or not isnan(attr):
+                d[key] = attr
+
+    if choices is not None:
+        d["choices"] = choices
+
+    return d
 
 
 class PvaConverter:
@@ -56,8 +95,7 @@ class PvaConverter:
         }
 
     def get_datakey(self, source: str, value) -> DataKey:
-        dtype = specifier_to_dtype[value.type().aspy("value")]
-        return {"source": source, "dtype": dtype, "shape": []}
+        return _data_key_from_value(source, value)
 
     def metadata_fields(self) -> List[str]:
         """
@@ -74,7 +112,9 @@ class PvaConverter:
 
 class PvaArrayConverter(PvaConverter):
     def get_datakey(self, source: str, value) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value["value"])]}
+        return _data_key_from_value(
+            source, value, dtype="array", shape=[len(value["value"])]
+        )
 
 
 class PvaNDArrayConverter(PvaConverter):
@@ -98,7 +138,7 @@ class PvaNDArrayConverter(PvaConverter):
 
     def get_datakey(self, source: str, value) -> DataKey:
         dims = self._get_dimensions(value)
-        return {"source": source, "dtype": "array", "shape": dims}
+        return _data_key_from_value(source, value, dtype="array", shape=dims)
 
     def write_value(self, value):
         # No clear use-case for writing directly to an NDArray, and some
@@ -127,12 +167,9 @@ class PvaEnumConverter(PvaConverter):
         return self.choices[value["value"]["index"]]
 
     def get_datakey(self, source: str, value) -> DataKey:
-        return {
-            "source": source,
-            "dtype": "string",
-            "shape": [],
-            "choices": list(self.choices),
-        }
+        return _data_key_from_value(
+            source, value, choices=list(self.choices), dtype="string"
+        )
 
 
 class PvaBoolConverter(PvaConverter):
@@ -140,7 +177,7 @@ class PvaBoolConverter(PvaConverter):
         return bool(value["value"]["index"])
 
     def get_datakey(self, source: str, value) -> DataKey:
-        return {"source": source, "dtype": "bool", "shape": []}
+        return _data_key_from_value(source, value, dtype="bool")
 
 
 class PvaTableConverter(PvaConverter):
@@ -149,7 +186,7 @@ class PvaTableConverter(PvaConverter):
 
     def get_datakey(self, source: str, value) -> DataKey:
         # This is wrong, but defer until we know how to actually describe a table
-        return {"source": source, "dtype": "object", "shape": []}  # type: ignore
+        return _data_key_from_value(source, value, dtype="object")
 
 
 class PvaDictConverter(PvaConverter):

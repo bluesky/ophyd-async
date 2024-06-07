@@ -1,6 +1,11 @@
 from enum import Enum
 from typing import Dict, Optional, Tuple, Type
 
+_common_meta = {
+    "units",
+    "precision",
+}
+
 
 def get_supported_values(
     pv: str,

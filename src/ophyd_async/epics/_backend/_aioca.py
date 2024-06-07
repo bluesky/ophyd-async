@@ -29,7 +29,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import get_supported_values
+from .common import _common_meta, get_supported_values
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -38,10 +38,6 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_CHAR: "string",
     dbr.DBR_LONG: "integer",
     dbr.DBR_DOUBLE: "number",
-}
-_common_meta = {
-    "units",
-    "precision",
 }
 
 

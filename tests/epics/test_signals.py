@@ -162,10 +162,18 @@ class MyEnum(str, Enum):
     c = "Ccc"
 
 
-_metadata: Dict[str, Dict[str, Any]] = {
-    "integer": {"units": ANY},
-    "bool": {"units": ANY},
-    "number": {"units": ANY, "precision": ANY},
+_metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
+    "ca": {
+        "integer": {"units": ANY},
+        "bool": {"units": ANY},
+        "number": {"units": ANY, "precision": ANY},
+    },
+    "pva": {
+        "integer": {"units": ANY, "precision": ANY},
+        "string": {"units": ANY, "precision": ANY},
+        "bool": {},
+        "number": {"units": ANY, "precision": ANY},
+    },
 }
 
 
@@ -195,8 +203,7 @@ def descriptor(protocol: str, suffix: str, value=None) -> DataKey:
     if get_internal_dtype(suffix) == "enum":
         d["choices"] = [e.value for e in type(value)]
 
-    if protocol == "ca":
-        d.update(_metadata.get(get_internal_dtype(suffix), {}))
+    d.update(_metadata[protocol].get(get_internal_dtype(suffix), {}))
 
     return d
 
