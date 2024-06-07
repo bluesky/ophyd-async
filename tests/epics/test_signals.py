@@ -121,7 +121,7 @@ class MonitorQueue:
 async def assert_monitor_then_put(
     ioc: IOC,
     suffix: str,
-    descriptor: dict,
+    datakey: dict,
     initial_value: T,
     put_value: T,
     datatype: Optional[Type[T]] = None,
@@ -130,9 +130,9 @@ async def assert_monitor_then_put(
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
     try:
-        # Check descriptor
+        # Check datakey
         source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=source, **descriptor) == await backend.get_datakey(source)
+        assert dict(source=source, **datakey) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(pytest.approx(initial_value))
         # Put to new value and check that
@@ -177,7 +177,7 @@ _metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
 }
 
 
-def descriptor(protocol: str, suffix: str, value=None) -> DataKey:
+def datakey(protocol: str, suffix: str, value=None) -> DataKey:
     def get_internal_dtype(suffix: str) -> str:
         # uint32, [u]int64 backed by DBR_DOUBLE, have precision
         if "float" in suffix or "uint32" in suffix or "int64" in suffix:
@@ -266,7 +266,7 @@ async def test_backend_get_put_monitor(
     await assert_monitor_then_put(
         ioc,
         suffix,
-        descriptor(ioc.protocol, suffix, initial_value),
+        datakey(ioc.protocol, suffix, initial_value),
         initial_value,
         put_value,
         datatype,
@@ -275,7 +275,7 @@ async def test_backend_get_put_monitor(
     await assert_monitor_then_put(
         ioc,
         suffix,
-        descriptor(ioc.protocol, suffix, put_value),
+        datakey(ioc.protocol, suffix, put_value),
         put_value,
         initial_value,
         datatype=None,
@@ -301,7 +301,7 @@ async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path) -> None:
     await assert_monitor_then_put(
         ioc,
         suffix,
-        descriptor(ioc.protocol, suffix),
+        datakey(ioc.protocol, suffix),
         True,
         False,
         bool,
@@ -310,7 +310,7 @@ async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path) -> None:
     await assert_monitor_then_put(
         ioc,
         suffix,
-        descriptor(ioc.protocol, suffix, True),
+        datakey(ioc.protocol, suffix, True),
         False,
         True,
         bool,
@@ -456,15 +456,15 @@ async def test_pva_table(ioc: IOC) -> None:
         enum=[MyEnum.c, MyEnum.b],
     )
     # TODO: what should this be for a variable length table?
-    descriptor = {"dtype": "object", "shape": [], "source": "test-source"}
+    datakey = {"dtype": "object", "shape": [], "source": "test-source"}
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")
         # Make a monitor queue that will monitor for updates
         q = MonitorQueue(backend)
         try:
-            # Check descriptor
-            descriptor == await backend.get_datakey("test-source")
+            # Check datakey
+            datakey == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -497,7 +497,7 @@ async def test_pvi_structure(ioc: IOC) -> None:
     }
 
     try:
-        # Check descriptor
+        # Check datakey
         with pytest.raises(NotImplementedError):
             await backend.get_datakey("")
         # Check initial value
