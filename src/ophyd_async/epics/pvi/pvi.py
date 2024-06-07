@@ -330,7 +330,7 @@ def create_children_from_annotations(
                 {i: device_type() for i in range(1, device_vectors[name] + 1)}
             )
             setattr(device, name, n_device_vector)
-            for sub_device in list(n_device_vector.values()):
+            for sub_device in n_device_vector.values():
                 create_children_from_annotations(
                     sub_device, device_vectors=device_vectors
                 )
