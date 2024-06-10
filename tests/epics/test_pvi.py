@@ -154,7 +154,7 @@ def pvi_test_device_with_device_vectors_t():
         device_vector: DeviceVector[Block1]
         device: Optional[Block1]
         signal_x: SignalX
-        signal_rw: SignalRW[int]
+        signal_rw: Optional[SignalRW[int]]
 
     class TestDevice(TestBlock):
         def __init__(self, prefix: str, name: str = ""):
