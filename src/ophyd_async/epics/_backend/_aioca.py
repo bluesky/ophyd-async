@@ -91,10 +91,10 @@ def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
         return LimitPair(low=lower, high=upper)
 
     return Limits(
+        alarm=get_limits("alarm"),
         control=get_limits("ctrl"),
         display=get_limits("disp"),
         warning=get_limits("warning"),
-        alarm=get_limits("alarm"),
     )
 
 

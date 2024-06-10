@@ -106,10 +106,10 @@ def _limits_from_value(value: Value) -> Limits:
     alarm_limit = get_wa_limit("Alarm")
 
     return Limits(
+        alarm=alarm_limit,
         control=control_limit,
         display=display_limit,
         warning=warning_limit,
-        alarm=alarm_limit,
     )
 
 
