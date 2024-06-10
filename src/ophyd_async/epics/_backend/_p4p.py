@@ -75,41 +75,35 @@ def _data_key_from_value(
     if choices is not None:
         d["choices"] = choices
 
-    d["limits"] = _limits_from_value(value)
+    if limits := _limits_from_value(value):
+        d["limits"] = limits
 
     return d
 
 
 def _limits_from_value(value: Value) -> Limits:
-    _empty_limit = LimitPair()
+    valueAlarm = getattr(value, "valueAlarm", None)
+    _empty_limit = LimitPair(low=nan, high=nan)
 
-    def get_cd_limit(limit: str) -> LimitPair:
-        cd = getattr(value, limit, None)
-        if cd is None:
+    def get_control_or_display_limit(limit: str) -> LimitPair:
+        if (control_or_display := getattr(value, limit, None)) is None:
             return _empty_limit
-        low = getattr(cd, "limitLow")
-        high = getattr(cd, "limitHigh")
+        low = getattr(control_or_display, "limitLow", nan)
+        high = getattr(control_or_display, "limitHigh", nan)
         return LimitPair(low=low, high=high)
 
-    control_limit = get_cd_limit("control")
-    display_limit = get_cd_limit("display")
-    warning_and_alarm = getattr(value, "valueAlarm", None)
-
-    def get_wa_limit(limit: str) -> LimitPair:
-        if warning_and_alarm is None:
+    def get_alarm_or_warning_limit(limit: str) -> LimitPair:
+        if valueAlarm is None:
             return _empty_limit
-        low = getattr(warning_and_alarm, f"low{limit}Limit", None)
-        high = getattr(warning_and_alarm, f"high{limit}Limit", None)
+        low = getattr(valueAlarm, f"low{limit}Limit", nan)
+        high = getattr(valueAlarm, f"low{limit}Limit", nan)
         return LimitPair(low=low, high=high)
-
-    warning_limit = get_wa_limit("Warning")
-    alarm_limit = get_wa_limit("Alarm")
 
     return Limits(
-        alarm=alarm_limit,
-        control=control_limit,
-        display=display_limit,
-        warning=warning_limit,
+        alarm=get_alarm_or_warning_limit("Alarm"),
+        control=get_control_or_display_limit("control"),
+        display=get_control_or_display_limit("display"),
+        warning=get_alarm_or_warning_limit("Warning"),
     )
 
 

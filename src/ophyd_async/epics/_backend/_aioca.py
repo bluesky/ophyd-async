@@ -79,16 +79,17 @@ def _data_key_from_augmented_value(
     if choices is not None:
         d["choices"] = choices
 
-    d["limits"] = _limits_from_augmented_value(value)
+    if limits := _limits_from_augmented_value(value):
+        d["limits"] = limits
 
     return d
 
 
 def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
     def get_limits(limit: str) -> LimitPair:
-        lower = getattr(value, f"lower_{limit}_limit", None)
-        upper = getattr(value, f"upper_{limit}_limit", None)
-        return LimitPair(low=lower, high=upper)
+        low = getattr(value, f"lower_{limit}_limit", nan)
+        high = getattr(value, f"upper_{limit}_limit", nan)
+        return LimitPair(low=low, high=high)
 
     return Limits(
         alarm=get_limits("alarm"),

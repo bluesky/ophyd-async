@@ -1,6 +1,6 @@
-from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional, Tuple, Type
+from math import isnan
+from typing import Dict, Optional, Tuple, Type, TypedDict
 
 common_meta = {
     "units",
@@ -8,24 +8,22 @@ common_meta = {
 }
 
 
-@dataclass
-class LimitPair:
-    high: float | None = None
-    low: float | None = None
+class LimitPair(TypedDict):
+    high: float
+    low: float
 
-    def __bool__(self):
-        return self.high is not None or self.low is not None
+    def __bool__(self) -> bool:
+        return isnan(self.low) and isnan(self.high)
 
 
-@dataclass
-class Limits:
+class Limits(TypedDict):
     alarm: LimitPair
     control: LimitPair
     display: LimitPair
     warning: LimitPair
 
-    def __bool__(self):
-        return any(self.control, self.display, self.warning, self.alarm)
+    def __bool__(self) -> bool:
+        return any(self.alarm, self.control, self.display, self.warning)
 
 
 def get_supported_values(

@@ -8,6 +8,7 @@ import time
 from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
+from math import nan
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
 from unittest.mock import ANY
@@ -627,7 +628,7 @@ async def test_signal_returns_units_and_precision(ioc: IOC):
 
     sig = epics_signal_rw(float, pv_name)
     await sig.connect()
-    datakey = await sig.describe()[""]
+    datakey = (await sig.describe())[""]
     assert datakey["units"] == "mm"
     assert datakey["precision"] == 1
 
@@ -638,7 +639,7 @@ async def test_signal_not_return_none_units_and_precision(ioc: IOC):
 
     sig = epics_signal_rw(str, pv_name)
     await sig.connect()
-    datakey = await sig.describe()[""]
+    datakey = (await sig.describe())[""]
     assert not hasattr(datakey, "units")
     assert not hasattr(datakey, "precision")
 
@@ -649,13 +650,13 @@ async def test_signal_returns_limits(ioc: IOC):
 
     expected_limits = Limits(
         # LOW, HIGH
-        alarm=LimitPair(low=2, high=98),
+        alarm=LimitPair(low=2.0, high=98.0),
         # DRVL, DRVH
-        control=LimitPair(low=10, high=90),
+        control=LimitPair(low=10.0, high=90.0),
         # LOPR, HOPR
-        display=LimitPair(low=0, high=100),
+        display=LimitPair(low=0.0, high=100.0),
         # LOLO, HIHI
-        warning=LimitPair(low=5, high=96),
+        warning=LimitPair(low=5.0, high=96.0),
     )
 
     sig = epics_signal_rw(int, pv_name)
@@ -669,14 +670,14 @@ async def test_signal_returns_partial_limits(ioc: IOC):
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:pint"
 
     expected_limits = Limits(
-        # LOW, HIGH, not set
-        alarm=LimitPair(),
-        # LOLO, HIHI
-        warning=LimitPair(low=5, high=96),
-        # DRVL, DRVH, not set
-        control=LimitPair(),
+        # LOW, HIGH
+        alarm=LimitPair(low=nan, high=nan),
+        # DRVL, DRVH
+        control=LimitPair(low=10.0, high=90.0),
         # LOPR, HOPR
-        display=LimitPair(low=0, high=100),
+        display=LimitPair(low=0.0, high=100.0),
+        # LOLO, HIHI
+        warning=LimitPair(low=nan, high=nan),
     )
 
     sig = epics_signal_rw(int, pv_name)
@@ -686,9 +687,9 @@ async def test_signal_returns_partial_limits(ioc: IOC):
 
 
 async def test_signal_not_return_no_limits(ioc: IOC):
-    await ioc.make_backend(int, "enum")
+    await ioc.make_backend(MyEnum, "enum")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
     sig = epics_signal_rw(MyEnum, pv_name)
     await sig.connect()
-    datakey = await sig.describe()
+    datakey = (await sig.describe())[""]
     assert not hasattr(datakey, "limits")
