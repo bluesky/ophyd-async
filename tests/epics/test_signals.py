@@ -8,7 +8,6 @@ import time
 from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
-from math import nan
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
 from unittest.mock import ANY
@@ -666,18 +665,39 @@ async def test_signal_returns_limits(ioc: IOC):
 
 
 async def test_signal_returns_partial_limits(ioc: IOC):
-    await ioc.make_backend(int, "pint")
-    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:pint"
+    await ioc.make_backend(int, "partialint")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:partialint"
 
     expected_limits = Limits(
         # LOW, HIGH
-        alarm=LimitPair(low=nan, high=nan),
+        alarm=LimitPair(low=None, high=None),
         # DRVL, DRVH
         control=LimitPair(low=10.0, high=90.0),
         # LOPR, HOPR
         display=LimitPair(low=0.0, high=100.0),
         # LOLO, HIHI
-        warning=LimitPair(low=nan, high=nan),
+        warning=LimitPair(low=5.0, high=96.0),
+    )
+
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+    limits = (await sig.describe())[""]["limits"]
+    assert limits == expected_limits
+
+
+async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
+    await ioc.make_backend(int, "lessint")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:lessint"
+
+    expected_limits = Limits(
+        # LOW, HIGH
+        alarm=LimitPair(low=5.0, high=96.0),
+        # DRVL, DRVH
+        control=LimitPair(low=None, high=None),
+        # LOPR, HOPR
+        display=LimitPair(low=0.0, high=100.0),
+        # LOLO, HIHI
+        warning=LimitPair(low=None, high=None),
     )
 
     sig = epics_signal_rw(int, pv_name)

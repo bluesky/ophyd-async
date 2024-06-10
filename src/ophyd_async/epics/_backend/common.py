@@ -1,5 +1,4 @@
 from enum import Enum
-from math import isnan
 from typing import Dict, Optional, Tuple, Type, TypedDict
 
 common_meta = {
@@ -9,11 +8,11 @@ common_meta = {
 
 
 class LimitPair(TypedDict):
-    high: float
-    low: float
+    high: float | None
+    low: float | None
 
     def __bool__(self) -> bool:
-        return isnan(self.low) and isnan(self.high)
+        return self.low is None and self.high is None
 
 
 class Limits(TypedDict):

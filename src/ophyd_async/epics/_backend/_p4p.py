@@ -83,21 +83,25 @@ def _data_key_from_value(
 
 def _limits_from_value(value: Value) -> Limits:
     valueAlarm = getattr(value, "valueAlarm", None)
-    _empty_limit = LimitPair(low=nan, high=nan)
+    _empty_limit = LimitPair(low=None, high=None)
 
     def get_control_or_display_limit(limit: str) -> LimitPair:
         if (control_or_display := getattr(value, limit, None)) is None:
             return _empty_limit
-        low = getattr(control_or_display, "limitLow", nan)
-        high = getattr(control_or_display, "limitHigh", nan)
-        return LimitPair(low=low, high=high)
+        low = getattr(control_or_display, "limitLow", None)
+        high = getattr(control_or_display, "limitHigh", None)
+        return LimitPair(
+            low=None if isnan(low) else low, high=None if isnan(high) else high
+        )
 
     def get_alarm_or_warning_limit(limit: str) -> LimitPair:
         if valueAlarm is None:
             return _empty_limit
-        low = getattr(valueAlarm, f"low{limit}Limit", nan)
-        high = getattr(valueAlarm, f"low{limit}Limit", nan)
-        return LimitPair(low=low, high=high)
+        low = getattr(valueAlarm, f"low{limit}Limit", None)
+        high = getattr(valueAlarm, f"low{limit}Limit", None)
+        return LimitPair(
+            low=None if isnan(low) else low, high=None if isnan(high) else high
+        )
 
     return Limits(
         alarm=get_alarm_or_warning_limit("Alarm"),

@@ -23,10 +23,21 @@ record(longout, "$(P)int") {
   field(PINI, "YES")
 }
 
-record(longout, "$(P)lint") {
+record(longout, "$(P)partialint") {
   field(HOPR, "100")
   field(HIHI, "98")
+  field(DRVH, "90")
+  field(DRVL, "10")
   field(LOLO, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(longout, "$(P)lessint") {
+  field(HOPR, "100")
+  field(LOW, "98")
+  field(HIGH, "2")
   field(LOPR, "0")
   field(VAL, "42")
   field(PINI, "YES")
