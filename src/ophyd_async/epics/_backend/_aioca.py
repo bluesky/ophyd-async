@@ -2,8 +2,9 @@ import logging
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Sequence, Type, Union
+from typing import Any, Dict, Optional, Type, Union
 
+import numpy as np
 from aioca import (
     FORMAT_CTRL,
     FORMAT_RAW,
@@ -17,7 +18,6 @@ from aioca import (
 from aioca.types import AugmentedValue, Dbr, Format
 from bluesky.protocols import DataKey, Dtype, Reading
 from epicscorelibs.ca import dbr
-from epicscorelibs.ca.dbr import ca_float, ca_int, ca_str
 
 from ophyd_async.core import (
     ReadingValueCallback,
@@ -50,7 +50,10 @@ class CaConverter:
         return value
 
     def value(self, value: AugmentedValue):
-        return value
+        # for channel access ca_xxx classes, this
+        # invokes __pos__ operator to return an instance of
+        # the builtin base class
+        return +value
 
     def reading(self, value: AugmentedValue):
         return {
@@ -61,17 +64,6 @@ class CaConverter:
 
     def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
-
-
-class CaToBuiltinConverter(CaConverter):
-    _primitive_type: Type
-
-    def __init__(self, primitive_type, read_dbr):
-        super().__init__(read_dbr, None)
-        self._primitive_type = primitive_type
-
-    def value(self, value: AugmentedValue):
-        return self._primitive_type(value)
 
 
 class CaLongStrConverter(CaConverter):
@@ -127,8 +119,10 @@ def make_converter(
         return CaLongStrConverter()
     elif is_array and pv_dbr == dbr.DBR_STRING:
         # Waveform of strings, check we wanted this
-        if datatype and datatype != Sequence[str]:
-            raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
+        if datatype:
+            datatype_dtype = get_dtype(datatype)
+            if not datatype_dtype or not np.can_cast(datatype_dtype, np.str_):
+                raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
         return CaArrayConverter(pv_dbr, None)
     elif is_array:
         pv_dtype = get_unique({k: v.dtype for k, v in values.items()}, "dtypes")
@@ -165,15 +159,6 @@ def make_converter(
                     f"{pv} has type {type(value).__name__.replace('ca_', '')} "
                     + f"not {datatype.__name__}"
                 )
-            if type(value) is not datatype:
-                return CaToBuiltinConverter(datatype, pv_dbr)
-        match value:
-            case ca_float():
-                return CaToBuiltinConverter(float, pv_dbr)
-            case ca_int():
-                return CaToBuiltinConverter(int, pv_dbr)
-            case ca_str():
-                return CaToBuiltinConverter(str, pv_dbr)
         return CaConverter(pv_dbr, None)
 
 

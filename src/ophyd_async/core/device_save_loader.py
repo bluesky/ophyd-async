@@ -1,5 +1,4 @@
 from enum import Enum
-from functools import partial
 from typing import Any, Callable, Dict, Generator, List, Optional, Sequence
 
 import numpy as np
@@ -18,16 +17,6 @@ def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.No
     return dumper.represent_sequence(
         "tag:yaml.org,2002:seq", array.tolist(), flow_style=True
     )
-
-
-def ca_dbr_representer(dumper: yaml.Dumper, value: ca_array) -> yaml.Node:
-    # if it's an array, just call ndarray_representer...
-    represent_array = partial(ndarray_representer, dumper)
-
-    representers: Dict[ca_array, Callable[[ca_array], yaml.Node]] = {
-        ca_array: represent_array,
-    }
-    return representers[type(value)](value)
 
 
 class OphydDumper(yaml.Dumper):
@@ -146,8 +135,7 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
     """
 
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
-
-    yaml.add_representer(ca_array, ca_dbr_representer, Dumper=yaml.Dumper)
+    yaml.add_representer(ca_array, ndarray_representer, Dumper=yaml.Dumper)
 
     with open(save_path, "w") as file:
         yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)
