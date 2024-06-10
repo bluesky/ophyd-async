@@ -150,15 +150,20 @@ async def test_device_create_children_from_annotations(
 def pvi_test_device_with_device_vectors_t():
     """A fixture since pytest discourages init in test case classes"""
 
-    class TestDevice(Block2):
+    class TestBlock(Device):
+        device_vector: DeviceVector[Block1]
+        device: Optional[Block1]
+        signal_x: SignalX
+        signal_rw: SignalRW[int]
+
+    class TestDevice(TestBlock):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
             create_children_from_annotations(
                 self,
-                included_optional_fields=("optional_signal_rw",),
-                device_vectors={"device_vector": 2}
+                included_optional_fields=("device",),
+                device_vectors={"device_vector": 2},
             )
-                
             super().__init__(name)
 
         async def connect(
@@ -176,8 +181,7 @@ def pvi_test_device_with_device_vectors_t():
 async def test_device_create_children_from_annotations_with_device_vectors(
     pvi_test_device_with_device_vectors_t,
 ):
-    async with DeviceCollector(mock=True):
-        device = pvi_test_device_with_device_vectors_t("PREFIX:", name="test_device")
+    device = pvi_test_device_with_device_vectors_t("PREFIX:", name="test_device")
 
     assert device.device_vector[1].name == "test_device-device_vector-1"
     assert device.device_vector[2].name == "test_device-device_vector-2"
@@ -185,8 +189,9 @@ async def test_device_create_children_from_annotations_with_device_vectors(
     block_2_device_vector = device.device_vector
 
     # create_children_from_annotiations should have made blocks and DeviceVectors
-    # but not signals
+    # and optional Block
     assert hasattr(device, "device_vector")
+    assert not hasattr(device, "signal_rw")
     assert isinstance(block_2_device_vector, DeviceVector)
     assert isinstance(block_2_device_vector[1], Block1)
     assert len(device.device_vector) == 2
