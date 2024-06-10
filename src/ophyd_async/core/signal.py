@@ -57,7 +57,7 @@ class Signal(Device, Generic[T]):
 
     def __init__(
         self,
-        backend: SignalBackend[T],
+        backend: Optional[SignalBackend[T]] = None,
         timeout: Optional[float] = DEFAULT_TIMEOUT,
         name: str = "",
     ) -> None:
@@ -66,13 +66,24 @@ class Signal(Device, Generic[T]):
         super().__init__(name)
 
     async def connect(
-        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
+        self,
+        mock=False,
+        timeout=DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+        backend: Optional[SignalBackend[T]] = None,
     ):
+        if backend:
+            if self._initial_backend and backend is not self._initial_backend:
+                raise ValueError(
+                    "Backend at connection different from initialised one."
+                )
+            self._backend = backend
         if mock and not isinstance(self._backend, MockSignalBackend):
             # Using a soft backend, look to the initial value
-            self._backend = MockSignalBackend(
-                initial_backend=self._initial_backend,
-            )
+            self._backend = MockSignalBackend(initial_backend=self._backend)
+
+        if self._backend is None:
+            raise RuntimeError("`connect` called on signal without backend")
         self.log.debug(f"Connecting to {self.source}")
         await self._backend.connect(timeout=timeout)
 

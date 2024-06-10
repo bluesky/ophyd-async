@@ -179,7 +179,15 @@ def _mock_common_blocks(device: Device, stripped_type: Optional[Type] = None):
                 sub_device_2 = device_cls(SoftSignalBackend(signal_dtype))
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
             else:
-                sub_device = DeviceVector({1: device_cls(), 2: device_cls()})
+                if hasattr(device, device_name):
+                    sub_device = getattr(device, device_name)
+                else:
+                    sub_device = DeviceVector(
+                        {
+                            1: device_cls(),
+                            2: device_cls(),
+                        }
+                    )
 
                 for sub_device_in_vector in sub_device.values():
                     _mock_common_blocks(sub_device_in_vector, stripped_type=device_cls)
@@ -296,7 +304,9 @@ async def fill_pvi_entries(
 
 
 def create_children_from_annotations(
-    device: Device, included_optional_fields: Tuple[str, ...] = ()
+    device: Device,
+    included_optional_fields: Tuple[str, ...] = (),
+    device_vectors: Optional[Dict[str, int]] = None,
 ):
     """For intializing blocks at __init__ of ``device``."""
     for name, device_type in get_type_hints(type(device)).items():
@@ -307,12 +317,22 @@ def create_children_from_annotations(
             continue
         is_device_vector, device_type = _strip_device_vector(device_type)
         if (
-            is_device_vector
+            (is_device_vector and (not device_vectors or name not in device_vectors))
             or ((origin := get_origin(device_type)) and issubclass(origin, Signal))
             or (isclass(device_type) and issubclass(device_type, Signal))
         ):
             continue
 
-        sub_device = device_type()
-        setattr(device, name, sub_device)
-        create_children_from_annotations(sub_device)
+        if is_device_vector:
+            n_device_vector = DeviceVector(
+                {i: device_type() for i in range(1, device_vectors[name] + 1)}
+            )
+            setattr(device, name, n_device_vector)
+            for sub_device in n_device_vector.values():
+                create_children_from_annotations(
+                    sub_device, device_vectors=device_vectors
+                )
+        else:
+            sub_device = device_type()
+            setattr(device, name, sub_device)
+            create_children_from_annotations(sub_device, device_vectors=device_vectors)
