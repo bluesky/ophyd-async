@@ -161,7 +161,7 @@ def pvi_test_device_with_device_vectors_t():
             self._prefix = prefix
             create_children_from_annotations(
                 self,
-                included_optional_fields=("device",),
+                included_optional_fields=("device", "signal_rw"),
                 device_vectors={"device_vector": 2},
             )
             super().__init__(name)
