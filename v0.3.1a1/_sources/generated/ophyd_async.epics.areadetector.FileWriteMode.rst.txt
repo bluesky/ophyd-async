@@ -1,0 +1,85 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.areadetector.FileWriteMode
+=============================================
+
+.. currentmodule:: ophyd_async.epics.areadetector
+
+.. autoclass:: FileWriteMode
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~FileWriteMode.encode
+      ~FileWriteMode.replace
+      ~FileWriteMode.split
+      ~FileWriteMode.rsplit
+      ~FileWriteMode.join
+      ~FileWriteMode.capitalize
+      ~FileWriteMode.casefold
+      ~FileWriteMode.title
+      ~FileWriteMode.center
+      ~FileWriteMode.count
+      ~FileWriteMode.expandtabs
+      ~FileWriteMode.find
+      ~FileWriteMode.partition
+      ~FileWriteMode.index
+      ~FileWriteMode.ljust
+      ~FileWriteMode.lower
+      ~FileWriteMode.lstrip
+      ~FileWriteMode.rfind
+      ~FileWriteMode.rindex
+      ~FileWriteMode.rjust
+      ~FileWriteMode.rstrip
+      ~FileWriteMode.rpartition
+      ~FileWriteMode.splitlines
+      ~FileWriteMode.strip
+      ~FileWriteMode.swapcase
+      ~FileWriteMode.translate
+      ~FileWriteMode.upper
+      ~FileWriteMode.startswith
+      ~FileWriteMode.endswith
+      ~FileWriteMode.removeprefix
+      ~FileWriteMode.removesuffix
+      ~FileWriteMode.isascii
+      ~FileWriteMode.islower
+      ~FileWriteMode.isupper
+      ~FileWriteMode.istitle
+      ~FileWriteMode.isspace
+      ~FileWriteMode.isdecimal
+      ~FileWriteMode.isdigit
+      ~FileWriteMode.isnumeric
+      ~FileWriteMode.isalpha
+      ~FileWriteMode.isalnum
+      ~FileWriteMode.isidentifier
+      ~FileWriteMode.isprintable
+      ~FileWriteMode.zfill
+      ~FileWriteMode.format
+      ~FileWriteMode.format_map
+      ~FileWriteMode.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~FileWriteMode.single
+      ~FileWriteMode.capture
+      ~FileWriteMode.stream
+   
+   

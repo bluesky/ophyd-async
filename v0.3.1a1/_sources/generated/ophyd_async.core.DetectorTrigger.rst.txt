@@ -1,0 +1,86 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core.DetectorTrigger
+=================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autoclass:: DetectorTrigger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~DetectorTrigger.encode
+      ~DetectorTrigger.replace
+      ~DetectorTrigger.split
+      ~DetectorTrigger.rsplit
+      ~DetectorTrigger.join
+      ~DetectorTrigger.capitalize
+      ~DetectorTrigger.casefold
+      ~DetectorTrigger.title
+      ~DetectorTrigger.center
+      ~DetectorTrigger.count
+      ~DetectorTrigger.expandtabs
+      ~DetectorTrigger.find
+      ~DetectorTrigger.partition
+      ~DetectorTrigger.index
+      ~DetectorTrigger.ljust
+      ~DetectorTrigger.lower
+      ~DetectorTrigger.lstrip
+      ~DetectorTrigger.rfind
+      ~DetectorTrigger.rindex
+      ~DetectorTrigger.rjust
+      ~DetectorTrigger.rstrip
+      ~DetectorTrigger.rpartition
+      ~DetectorTrigger.splitlines
+      ~DetectorTrigger.strip
+      ~DetectorTrigger.swapcase
+      ~DetectorTrigger.translate
+      ~DetectorTrigger.upper
+      ~DetectorTrigger.startswith
+      ~DetectorTrigger.endswith
+      ~DetectorTrigger.removeprefix
+      ~DetectorTrigger.removesuffix
+      ~DetectorTrigger.isascii
+      ~DetectorTrigger.islower
+      ~DetectorTrigger.isupper
+      ~DetectorTrigger.istitle
+      ~DetectorTrigger.isspace
+      ~DetectorTrigger.isdecimal
+      ~DetectorTrigger.isdigit
+      ~DetectorTrigger.isnumeric
+      ~DetectorTrigger.isalpha
+      ~DetectorTrigger.isalnum
+      ~DetectorTrigger.isidentifier
+      ~DetectorTrigger.isprintable
+      ~DetectorTrigger.zfill
+      ~DetectorTrigger.format
+      ~DetectorTrigger.format_map
+      ~DetectorTrigger.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DetectorTrigger.internal
+      ~DetectorTrigger.edge_trigger
+      ~DetectorTrigger.constant_gate
+      ~DetectorTrigger.variable_gate
+   
+   
