@@ -294,15 +294,15 @@ def soft_signal_r_and_setter(
 
 
 def _generate_assert_error_msg(
-    name: str, expected_result: str, actuall_result: str
+    name: str, expected_result: str, actual_result: str
 ) -> str:
     WARNING = "\033[93m"
     FAIL = "\033[91m"
     ENDC = "\033[0m"
     return (
         f"Expected {WARNING}{name}{ENDC} to produce"
-        + f"\n{FAIL}{actuall_result}{ENDC}"
-        + f"\nbut actually got \n{FAIL}{expected_result}{ENDC}"
+        + f"\n{FAIL}{expected_result}{ENDC}"
+        + f"\nbut actually got \n{FAIL}{actual_result}{ENDC}"
     )
 
 
@@ -324,7 +324,9 @@ async def assert_value(signal: SignalR[T], value: Any) -> None:
     """
     actual_value = await signal.get_value()
     assert actual_value == value, _generate_assert_error_msg(
-        signal.name, value, actual_value
+        name=signal.name,
+        expected_result=value,
+        actual_result=actual_value,
     )
 
 
@@ -349,7 +351,9 @@ async def assert_reading(
     """
     actual_reading = await readable.read()
     assert expected_reading == actual_reading, _generate_assert_error_msg(
-        readable.name, expected_reading, actual_reading
+        name=readable.name,
+        expected_result=expected_reading,
+        actual_result=actual_reading,
     )
 
 
@@ -375,7 +379,9 @@ async def assert_configuration(
     """
     actual_configurable = await configurable.read_configuration()
     assert configuration == actual_configurable, _generate_assert_error_msg(
-        configurable.name, configuration, actual_configurable
+        name=configurable.name,
+        expected_result=configuration,
+        actual_result=actual_configurable,
     )
 
 
@@ -397,11 +403,15 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
         resource=1, datum=1, event=1, stop=1)
     """
     assert list(docs) == list(numbers), _generate_assert_error_msg(
-        "documents", list(numbers), list(docs)
+        name="documents",
+        expected_result=list(numbers),
+        actual_result=list(docs),
     )
     actual_numbers = {name: len(d) for name, d in docs.items()}
     assert actual_numbers == numbers, _generate_assert_error_msg(
-        "emitted", numbers, actual_numbers
+        name="emitted",
+        expected_result=numbers,
+        actual_result=actual_numbers,
     )
 
 
