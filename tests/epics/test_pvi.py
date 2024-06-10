@@ -153,7 +153,12 @@ def pvi_test_device_with_device_vectors_t():
     class TestDevice(Block2):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            create_children_from_annotations(self, device_vectors={"device_vector": 2})
+            create_children_from_annotations(
+                self,
+                included_optional_fields=("optional_signal_rw",),
+                device_vectors={"device_vector": 2}
+            )
+                
             super().__init__(name)
 
         async def connect(
