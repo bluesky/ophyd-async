@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.signal &#8212; ophyd-async 0.3.1.dev6+g0b05b9c0 documentation</title>
+    <title>ophyd_async.core.signal &#8212; ophyd-async 0.3.1a2.dev1+g389194fa documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=d44a648e"></script>
+    <script src="../../../_static/documentation_options.js?v=2cfa624c"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -826,15 +826,15 @@ document.write(`
 
 
 <span class="k">def</span> <span class="nf">_generate_assert_error_msg</span><span class="p">(</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expected_result</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">actuall_result</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expected_result</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">actual_result</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="n">WARNING</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[93m&quot;</span>
     <span class="n">FAIL</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[91m&quot;</span>
     <span class="n">ENDC</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">WARNING</span><span class="si">}{</span><span class="n">name</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2"> to produce&quot;</span>
-        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">FAIL</span><span class="si">}{</span><span class="n">actuall_result</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">but actually got </span><span class="se">\n</span><span class="si">{</span><span class="n">FAIL</span><span class="si">}{</span><span class="n">expected_result</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">FAIL</span><span class="si">}{</span><span class="n">expected_result</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">but actually got </span><span class="se">\n</span><span class="si">{</span><span class="n">FAIL</span><span class="si">}{</span><span class="n">actual_result</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
 
 
@@ -858,7 +858,9 @@ document.write(`
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">actual_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">actual_value</span> <span class="o">==</span> <span class="n">value</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">actual_value</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">expected_result</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_value</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -886,7 +888,9 @@ document.write(`
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">actual_reading</span> <span class="o">=</span> <span class="k">await</span> <span class="n">readable</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">expected_reading</span> <span class="o">==</span> <span class="n">actual_reading</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">readable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">expected_reading</span><span class="p">,</span> <span class="n">actual_reading</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">readable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">expected_result</span><span class="o">=</span><span class="n">expected_reading</span><span class="p">,</span>
+        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_reading</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -915,7 +919,9 @@ document.write(`
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">actual_configurable</span> <span class="o">=</span> <span class="k">await</span> <span class="n">configurable</span><span class="o">.</span><span class="n">read_configuration</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">configuration</span> <span class="o">==</span> <span class="n">actual_configurable</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">configurable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">actual_configurable</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">configurable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">expected_result</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
+        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_configurable</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -940,11 +946,15 @@ document.write(`
 <span class="sd">        resource=1, datum=1, event=1, stop=1)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">numbers</span><span class="p">),</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="s2">&quot;documents&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">numbers</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;documents&quot;</span><span class="p">,</span>
+        <span class="n">expected_result</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">numbers</span><span class="p">),</span>
+        <span class="n">actual_result</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">docs</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">actual_numbers</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
     <span class="k">assert</span> <span class="n">actual_numbers</span> <span class="o">==</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="s2">&quot;emitted&quot;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">actual_numbers</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;emitted&quot;</span><span class="p">,</span>
+        <span class="n">expected_result</span><span class="o">=</span><span class="n">numbers</span><span class="p">,</span>
+        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_numbers</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
