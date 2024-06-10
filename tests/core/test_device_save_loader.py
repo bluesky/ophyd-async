@@ -1,6 +1,6 @@
 from enum import Enum
 from os import path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Sequence
 from unittest.mock import patch
 
 import numpy as np
@@ -48,9 +48,43 @@ class DummyDeviceGroup(Device):
         self.position: npt.NDArray[np.int32]
 
 
+class MyEnum(str, Enum):
+    one = "one"
+    two = "two"
+    three = "three"
+
+
+class DummyDeviceGroupAllTypes(Device):
+    def __init__(self, name: str):
+        self.pv_int: SignalRW = epics_signal_rw(int, "PV1")
+        self.pv_float: SignalRW = epics_signal_rw(float, "PV2")
+        self.pv_str: SignalRW = epics_signal_rw(str, "PV2")
+        self.pv_enum_str: SignalRW = epics_signal_rw(MyEnum, "PV3")
+        self.pv_enum: SignalRW = epics_signal_rw(MyEnum, "PV4")
+        self.pv_array_int8 = epics_signal_rw(npt.NDArray[np.int8], "PV5")
+        self.pv_array_uint8 = epics_signal_rw(npt.NDArray[np.uint8], "PV6")
+        self.pv_array_int16 = epics_signal_rw(npt.NDArray[np.int16], "PV7")
+        self.pv_array_uint16 = epics_signal_rw(npt.NDArray[np.uint16], "PV8")
+        self.pv_array_int32 = epics_signal_rw(npt.NDArray[np.int32], "PV9")
+        self.pv_array_uint32 = epics_signal_rw(npt.NDArray[np.uint32], "PV10")
+        self.pv_array_int64 = epics_signal_rw(npt.NDArray[np.int64], "PV11")
+        self.pv_array_uint64 = epics_signal_rw(npt.NDArray[np.uint64], "PV12")
+        self.pv_array_float32 = epics_signal_rw(npt.NDArray[np.float32], "PV13")
+        self.pv_array_float64 = epics_signal_rw(npt.NDArray[np.float64], "PV14")
+        self.pv_array_npstr = epics_signal_rw(npt.NDArray[np.str_], "PV15")
+        self.pv_array_str = epics_signal_rw(Sequence[str], "PV16")
+
+
 @pytest.fixture
 async def device() -> DummyDeviceGroup:
     device = DummyDeviceGroup("parent")
+    await device.connect(mock=True)
+    return device
+
+
+@pytest.fixture
+async def device_all_types() -> DummyDeviceGroupAllTypes:
+    device = DummyDeviceGroupAllTypes("parent")
     await device.connect(mock=True)
     return device
 
@@ -71,6 +105,66 @@ async def test_enum_yaml_formatting(tmp_path):
     assert all(isinstance(value, str) for value in saved_enums)
     # check values of enums same
     assert saved_enums == enums
+
+
+async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
+    # Populate fake device with PV's...
+    await device_all_types.pv_int.set(1)
+    await device_all_types.pv_float.set(1.234)
+    await device_all_types.pv_str.set("test_string")
+    await device_all_types.pv_enum_str.set("two")
+    await device_all_types.pv_enum.set(MyEnum.two)
+    for pv, dtype in {
+        device_all_types.pv_array_int8: np.int8,
+        device_all_types.pv_array_uint8: np.uint8,
+        device_all_types.pv_array_int16: np.int16,
+        device_all_types.pv_array_uint16: np.uint16,
+        device_all_types.pv_array_int32: np.int32,
+        device_all_types.pv_array_uint32: np.uint32,
+        device_all_types.pv_array_int64: np.int64,
+        device_all_types.pv_array_uint64: np.uint64,
+    }.items():
+        await pv.set([np.iinfo(dtype).min, np.iinfo(dtype).max, 0, 1, 2, 3, 4])
+    for pv, dtype in {
+        device_all_types.pv_array_float32: np.float32,
+        device_all_types.pv_array_float64: np.float64,
+    }.items():
+        finfo = np.finfo(dtype)
+        data = np.array(
+            [
+                finfo.min,
+                finfo.max,
+                finfo.smallest_normal,
+                finfo.smallest_subnormal,
+                0,
+                1.234,
+                2.34e5,
+                3.45e-6,
+            ],
+            dtype=dtype,
+        )
+
+        await pv.set(data)
+    await device_all_types.pv_array_npstr.set(
+        np.array(["one", "two", "three"], dtype=np.str_),
+    )
+    await device_all_types.pv_array_str.set(
+        ["one", "two", "three"],
+    )
+
+    # Create save plan from utility functions
+    def save_my_device():
+        signalRWs = walk_rw_signals(device_all_types)
+        values = yield from get_signal_values(signalRWs)
+
+        save_to_yaml([values], path.join(tmp_path, "test_file.yaml"))
+
+    RE(save_my_device())
+
+    actual_file_path = path.join(tmp_path, "test_file.yaml")
+    with open(actual_file_path, "r") as actual_file:
+        with open("tests/test_data/test_yaml_save.yml") as expected_file:
+            assert actual_file.read() == expected_file.read()
 
 
 async def test_save_device(RE: RunEngine, device, tmp_path):
