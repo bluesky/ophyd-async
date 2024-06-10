@@ -283,15 +283,15 @@ def soft_signal_r_and_setter(
 
 
 def _generate_assert_error_msg(
-    name: str, expected_result: str, actuall_result: str
+    name: str, expected_result: str, actual_result: str
 ) -> str:
     WARNING = "\033[93m"
     FAIL = "\033[91m"
     ENDC = "\033[0m"
     return (
         f"Expected {WARNING}{name}{ENDC} to produce"
-        + f"\n{FAIL}{actuall_result}{ENDC}"
-        + f"\nbut actually got \n{FAIL}{expected_result}{ENDC}"
+        + f"\n{FAIL}{expected_result}{ENDC}"
+        + f"\nbut actually got \n{FAIL}{actual_result}{ENDC}"
     )
 
 
