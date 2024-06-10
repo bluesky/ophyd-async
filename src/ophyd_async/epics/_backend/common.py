@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Generic, Optional, Tuple, Type
-
-from ophyd_async.core import T
+from typing import Dict, Optional, Tuple, Type
 
 common_meta = {
     "units",
@@ -11,17 +9,23 @@ common_meta = {
 
 
 @dataclass
-class LimitPair(Generic[T]):
-    high: T | None = None
-    low: T | None = None
+class LimitPair:
+    high: float | None = None
+    low: float | None = None
+
+    def __bool__(self):
+        return self.high is not None or self.low is not None
 
 
 @dataclass
-class Limits(Generic[T]):
-    control: LimitPair[T]
-    display: LimitPair[T]
-    warning: LimitPair[T]
-    alarm: LimitPair[T]
+class Limits:
+    alarm: LimitPair
+    control: LimitPair
+    display: LimitPair
+    warning: LimitPair
+
+    def __bool__(self):
+        return any(self.control, self.display, self.warning, self.alarm)
 
 
 def get_supported_values(
