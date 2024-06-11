@@ -33,13 +33,13 @@ def get_full_file_description(
 ):
     full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
-        source = f"soft://{d.name}"
+        source = f"soft://{d.data_key}"
         shape = outer_shape + tuple(d.shape)
         dtype = "number" if d.shape == [1] else "array"
         descriptor = DataKey(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
         )
-        key = d.name.replace("/", "_")
+        key = d.data_key
         full_file_description[key] = descriptor
     return full_file_description
 
@@ -149,7 +149,7 @@ class PatternGenerator:
         datasets = self._get_datasets()
         for d in datasets:
             self._handle_for_h5_file.create_dataset(
-                name=d.name,
+                name=d.data_key,
                 shape=d.shape,
                 dtype=d.dtype,
                 maxshape=d.maxshape,
@@ -176,14 +176,14 @@ class PatternGenerator:
     def _get_datasets(self) -> List[_HDFDataset]:
         raw_dataset = _HDFDataset(
             # name=data_name,
-            name=DATA_PATH,
+            data_key=DATA_PATH,
             dtype=np.uint8,
             shape=(1, self.height, self.width),
             maxshape=(None, self.height, self.width),
         )
 
         sum_dataset = _HDFDataset(
-            name=SUM_PATH,
+            data_key=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
             maxshape=(None,),

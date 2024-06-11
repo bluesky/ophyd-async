@@ -160,8 +160,9 @@ async def test_hdf_panda_hardware_triggered_flyable(
         else:
             assert stream_resource["parameters"] == {
                 "swmr": False,
-                "path": f"BLOCK_{block_letter.upper()}"
+                "dataset": f"BLOCK_{block_letter.upper()}"
                 f"-TEST-{data_key_name.split('-')[-1]}",
+                "multiplier": 1,
             }
 
     # test stream datum

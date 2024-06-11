@@ -113,8 +113,9 @@ async def test_can_collect(
             == "file://localhost" + str(directory_info.root) + "/foo.h5"
         )
         assert stream_resource["parameters"] == {
-            "path": "/entry/data/data",
+            "dataset": "/entry/data/data",
             "swmr": False,
+            "multiplier": 1,
         }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]

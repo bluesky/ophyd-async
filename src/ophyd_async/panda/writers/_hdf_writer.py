@@ -153,15 +153,15 @@ class PandaHDFWriter(DetectorWriter):
                     _HDFDataset(
                         device_name=name,
                         block=block_name,
-                        name=f"{name}-{block_name}-{signal_name}-{suffix}",
-                        path=f"{block_name}-{signal_name}".upper() + f"-{suffix}",
+                        data_key=f"{name}-{block_name}-{signal_name}-{suffix}",
+                        dataset=f"{block_name}-{signal_name}".upper() + f"-{suffix}",
                         shape=[1],
                         multiplier=1,
                     )
                 )
 
         describe = {
-            ds.name: DataKey(
+            ds.data_key: DataKey(
                 source=self.panda_device.data.hdf_directory.source,
                 shape=ds.shape,
                 dtype="array" if ds.shape != [1] else "number",
