@@ -16,12 +16,14 @@ from ophyd_async.core import DirectoryInfo
 
 @dataclass
 class _HDFDataset:
-    name: str
+    #: Name of the data_key within the Descriptor document
+    data_key: str
     dtype_numpy: Optional[str] = None
     swmr: bool = False
     shape: Optional[List[int]] = None
     multiplier: Optional[int] = 1
-    path: Optional[str] = None
+    #: Name of the dataset within the HDF file
+    dataset: Optional[str] = None
     device_name: Optional[str] = None
     block: Optional[str] = None
     maxshape: tuple[Any, ...] = (None,)
@@ -67,11 +69,11 @@ class _HDFFile:
                     spec=SLICE_NAME,
                     root=root,
                     resource_path=path,
-                    data_key=ds.name.replace("/", "_"),
+                    data_key=ds.data_key,
                     resource_kwargs={
-                        "name": ds.name,
+                        "name": ds.data_key,
                         "block": ds.block,
-                        "path": ds.path,
+                        "dataset": ds.dataset,
                         "shape": ds.shape,
                         "multiplier": ds.multiplier,
                         "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
@@ -97,10 +99,11 @@ class _HDFFile:
                 bundler_composer(
                     mimetype="application/x-hdf5",
                     uri=uri,
-                    data_key=ds.name.replace("/", "_"),
+                    data_key=ds.data_key,
                     parameters={
-                        "path": ds.path,
+                        "dataset": ds.dataset,
                         "swmr": ds.swmr,
+                        "multiplier": ds.multiplier,
                     },
                     uid=None,
                     validate=True,
