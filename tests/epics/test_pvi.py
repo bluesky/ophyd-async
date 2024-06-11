@@ -144,3 +144,61 @@ async def test_device_create_children_from_annotations(
     assert device.device is block_2_device
     assert device.device.device is block_1_device
     assert device.signal_device is top_block_1_device
+
+
+@pytest.fixture
+def pvi_test_device_with_device_vectors_t():
+    """A fixture since pytest discourages init in test case classes"""
+
+    class TestBlock(Device):
+        device_vector: DeviceVector[Block1]
+        device: Optional[Block1]
+        signal_x: SignalX
+        signal_rw: Optional[SignalRW[int]]
+
+    class TestDevice(TestBlock):
+        def __init__(self, prefix: str, name: str = ""):
+            self._prefix = prefix
+            create_children_from_annotations(
+                self,
+                included_optional_fields=("device", "signal_rw"),
+                device_vectors={"device_vector": 2},
+            )
+            super().__init__(name)
+
+        async def connect(
+            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
+        ) -> None:
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
+
+            await super().connect(mock=mock)
+
+    yield TestDevice
+
+
+async def test_device_create_children_from_annotations_with_device_vectors(
+    pvi_test_device_with_device_vectors_t,
+):
+    device = pvi_test_device_with_device_vectors_t("PREFIX:", name="test_device")
+
+    assert device.device_vector[1].name == "test_device-device_vector-1"
+    assert device.device_vector[2].name == "test_device-device_vector-2"
+    block_1_device = device.device
+    block_2_device_vector = device.device_vector
+
+    # create_children_from_annotiations should have made DeviceVectors
+    # and an optional Block, but no signals
+    assert hasattr(device, "device_vector")
+    assert not hasattr(device, "signal_rw")
+    assert isinstance(block_2_device_vector, DeviceVector)
+    assert isinstance(block_2_device_vector[1], Block1)
+    assert len(device.device_vector) == 2
+    assert isinstance(block_1_device, Block1)
+
+    await device.connect(mock=True)
+
+    # The memory addresses have not changed
+    assert device.device is block_1_device
+    assert device.device_vector is block_2_device_vector

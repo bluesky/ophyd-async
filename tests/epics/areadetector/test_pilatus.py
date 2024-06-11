@@ -12,7 +12,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusTriggerMode
-from ophyd_async.epics.areadetector.pilatus import PilatusDetector
+from ophyd_async.epics.areadetector.pilatus import PilatusDetector, PilatusReadoutTime
 
 
 @pytest.fixture
@@ -26,13 +26,25 @@ async def pilatus(
     return adpilatus
 
 
+async def test_deadtime_overridable(static_directory_provider: DirectoryProvider):
+    async with DeviceCollector(mock=True):
+        pilatus = PilatusDetector(
+            "PILATUS:",
+            static_directory_provider,
+            readout_time=PilatusReadoutTime.pilatus2,
+        )
+    pilatus_controller = pilatus.controller
+    # deadtime invariant with exposure time
+    assert pilatus_controller.get_deadtime(0) == 2.28e-3
+
+
 async def test_deadtime_invariant(
     pilatus: PilatusDetector,
 ):
     pilatus_controller = pilatus.controller
     # deadtime invariant with exposure time
-    assert pilatus_controller.get_deadtime(0) == 2.28e-3
-    assert pilatus_controller.get_deadtime(500) == 2.28e-3
+    assert pilatus_controller.get_deadtime(0) == 0.95e-3
+    assert pilatus_controller.get_deadtime(500) == 0.95e-3
 
 
 @pytest.mark.parametrize(
@@ -49,13 +61,11 @@ async def test_trigger_mode_set(
     expected_trigger_mode: PilatusTriggerMode,
 ):
     async def trigger_and_complete():
+        set_mock_value(pilatus.drv.armed_for_triggers, True)
         status = await pilatus.controller.arm(
             num=1,
             trigger=detector_trigger,
         )
-        # Prevent timeouts
-        set_mock_value(pilatus.drv.acquire, True)
-        set_mock_value(pilatus.drv.armed_for_triggers, True)
         await status
 
     await _trigger(pilatus, expected_trigger_mode, trigger_and_complete)
@@ -67,8 +77,6 @@ async def test_trigger_mode_set_without_armed_pv(pilatus: PilatusDetector):
             num=1,
             trigger=DetectorTrigger.internal,
         )
-        # Prevent timeouts
-        set_mock_value(pilatus.drv.acquire, True)
         await status
 
     with patch(

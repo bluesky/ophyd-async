@@ -40,6 +40,7 @@ class DummyWriter(DetectorWriter):
         self._file: Optional[ComposeStreamResourceBundle] = None
         self._last_emitted = 0
         self.index = 0
+        self.observe_indices_written_timeout_log = []
 
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         return {
@@ -54,6 +55,7 @@ class DummyWriter(DetectorWriter):
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
+        self.observe_indices_written_timeout_log.append(timeout)
         num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):
             yield num_captured
@@ -102,9 +104,8 @@ class MockDetector(StandardDetector):
         writer: DetectorWriter,
         config_sigs: Sequence[AsyncReadable] = [],
         name: str = "",
-        writer_timeout: float = 1,
     ) -> None:
-        super().__init__(controller, writer, config_sigs, name, writer_timeout)
+        super().__init__(controller, writer, config_sigs, name)
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
@@ -112,7 +113,12 @@ class MockDetector(StandardDetector):
         assert self._trigger_info
         self.writer.increment_index()
         async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
+            self._trigger_info.frame_timeout
+            or (
+                DEFAULT_TIMEOUT
+                + self._trigger_info.livetime
+                + self._trigger_info.deadtime
+            )
         ):
             yield WatcherUpdate(
                 name=self.name,
@@ -143,13 +149,11 @@ async def detectors(RE: RunEngine) -> tuple[MockDetector, MockDetector]:
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
-        writer_timeout=3,
     )
     detector_2 = MockDetector(
         Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
-        writer_timeout=3,
     )
     return (detector_1, detector_2)
 
@@ -374,3 +378,39 @@ async def test_at_least_one_detector_in_fly_plan(
     with pytest.raises(ValueError) as exc:
         RE(fly())
         assert str(exc) == "No detectors provided. There must be at least one."
+
+
+@pytest.mark.parametrize("timeout_setting,expected_timeout", [(None, 12), (5.0, 5.0)])
+async def test_trigger_sets_or_defaults_timeout(
+    RE: RunEngine,
+    flyer: HardwareTriggeredFlyable,
+    detectors: tuple[StandardDetector, ...],
+    timeout_setting: float | None,
+    expected_timeout: float,
+):
+    detector_list = list(detectors)
+
+    # Trigger parameters
+    number_of_frames = 1
+    exposure = 1
+    shutter_time = 0.004
+
+    def fly():
+        yield from bps.stage_all(*detector_list, flyer)
+        yield from bps.open_run()
+        yield from time_resolved_fly_and_collect_with_static_seq_table(
+            stream_name="stream1",
+            flyer=flyer,
+            detectors=detector_list,
+            number_of_frames=number_of_frames,
+            exposure=exposure,
+            shutter_time=shutter_time,
+            frame_timeout=timeout_setting,
+        )
+        yield from bps.close_run()
+        yield from bps.unstage_all(flyer, *detector_list)
+
+    RE(fly())
+
+    for detector in detectors:
+        assert detector.writer.observe_indices_written_timeout_log == [expected_timeout]

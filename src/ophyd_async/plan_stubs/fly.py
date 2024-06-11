@@ -18,6 +18,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
+    frame_timeout: float | None = None,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
 
@@ -39,6 +40,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
         livetime=exposure,
+        frame_timeout=frame_timeout,
     )
     trigger_time = number_of_frames * (exposure + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
@@ -120,6 +122,7 @@ def time_resolved_fly_and_collect_with_static_seq_table(
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
+    frame_timeout: float | None = None,
 ):
     """Run a scan wth a flyer and multiple detectors.
 
@@ -144,6 +147,7 @@ def time_resolved_fly_and_collect_with_static_seq_table(
         shutter_time=shutter_time,
         repeats=repeats,
         period=period,
+        frame_timeout=frame_timeout,
     )
     # Run the fly scan
     yield from fly_and_collect(stream_name, flyer, detectors)
