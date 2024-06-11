@@ -2,8 +2,9 @@ import logging
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Sequence, Type, Union
+from typing import Any, Dict, Optional, Type, Union
 
+import numpy as np
 from aioca import (
     FORMAT_CTRL,
     FORMAT_RAW,
@@ -49,7 +50,10 @@ class CaConverter:
         return value
 
     def value(self, value: AugmentedValue):
-        return value
+        # for channel access ca_xxx classes, this
+        # invokes __pos__ operator to return an instance of
+        # the builtin base class
+        return +value
 
     def reading(self, value: AugmentedValue):
         return {
@@ -75,6 +79,9 @@ class CaLongStrConverter(CaConverter):
 class CaArrayConverter(CaConverter):
     def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         return {"source": source, "dtype": "array", "shape": [len(value)]}
+
+    def value(self, value: AugmentedValue):
+        return np.array(value, copy=False)
 
 
 @dataclass
@@ -115,8 +122,10 @@ def make_converter(
         return CaLongStrConverter()
     elif is_array and pv_dbr == dbr.DBR_STRING:
         # Waveform of strings, check we wanted this
-        if datatype and datatype != Sequence[str]:
-            raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
+        if datatype:
+            datatype_dtype = get_dtype(datatype)
+            if not datatype_dtype or not np.can_cast(datatype_dtype, np.str_):
+                raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
         return CaArrayConverter(pv_dbr, None)
     elif is_array:
         pv_dtype = get_unique({k: v.dtype for k, v in values.items()}, "dtypes")
