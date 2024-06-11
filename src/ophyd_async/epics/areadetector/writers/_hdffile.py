@@ -26,10 +26,7 @@ class _HDFFile:
             compose_stream_resource(
                 mimetype="application/x-hdf5",
                 uri=f"file://localhost{full_file_name}",
-                # spec="AD_HDF5_SWMR_SLICE",
-                # root=str(path_info.root),
                 data_key=ds.name,
-                # resource_path=str(full_file_name.relative_to(path_info.root)),
                 parameters={
                     "path": ds.path,
                     "multiplier": ds.multiplier,

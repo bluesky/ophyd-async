@@ -56,8 +56,6 @@ class HdfStreamProvider:
         full_file_name: Path,
         datasets: List[DatasetConfig],
     ) -> List[StreamAsset]:
-        # path = str(full_file_name.relative_to(path_info.root))
-        # root = str(path_info.root)
         bundler_composer = ComposeStreamResource()
 
         bundles: List[ComposeStreamResourceBundle] = []
@@ -66,9 +64,6 @@ class HdfStreamProvider:
             bundler_composer(
                 mimetype="application/x-hdf5",
                 uri=f"file://{full_file_name}",
-                # spec=SLICE_NAME,
-                # root=root,
-                # resource_path=path,
                 data_key=d.name.replace("/", "_"),
                 parameters={
                     "path": d.path,

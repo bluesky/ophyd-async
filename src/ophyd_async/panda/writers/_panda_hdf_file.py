@@ -29,10 +29,7 @@ class _HDFFile:
             compose_stream_resource(
                 mimetype="application/x-hdf5",
                 uri=f"file://localhost{path_info.root / full_file_name}",
-                # spec="AD_HDF5_SWMR_SLICE",
-                # root=str(path_info.root),
                 data_key=ds.name,
-                # resource_path=(f"{str(path_info.root)}/{full_file_name}"),
                 parameters={
                     "name": ds.name,
                     "block": ds.block,
