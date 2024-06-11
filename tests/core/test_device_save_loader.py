@@ -124,7 +124,11 @@ async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
         device_all_types.pv_array_int64: np.int64,
         device_all_types.pv_array_uint64: np.uint64,
     }.items():
-        await pv.set([np.iinfo(dtype).min, np.iinfo(dtype).max, 0, 1, 2, 3, 4])
+        await pv.set(
+            np.array(
+                [np.iinfo(dtype).min, np.iinfo(dtype).max, 0, 1, 2, 3, 4], dtype=dtype
+            )
+        )
     for pv, dtype in {
         device_all_types.pv_array_float32: np.float32,
         device_all_types.pv_array_float64: np.float64,

@@ -80,6 +80,9 @@ class CaArrayConverter(CaConverter):
     def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
         return {"source": source, "dtype": "array", "shape": [len(value)]}
 
+    def value(self, value: AugmentedValue):
+        return np.array(value, copy=False)
+
 
 @dataclass
 class CaEnumConverter(CaConverter):
@@ -153,12 +156,11 @@ def make_converter(
     else:
         value = list(values.values())[0]
         # Done the dbr check, so enough to check one of the values
-        if datatype:
-            if not isinstance(value, datatype):
-                raise TypeError(
-                    f"{pv} has type {type(value).__name__.replace('ca_', '')} "
-                    + f"not {datatype.__name__}"
-                )
+        if datatype and not isinstance(value, datatype):
+            raise TypeError(
+                f"{pv} has type {type(value).__name__.replace('ca_', '')} "
+                + f"not {datatype.__name__}"
+            )
         return CaConverter(pv_dbr, None)
 
 
