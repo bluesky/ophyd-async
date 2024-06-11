@@ -8,12 +8,14 @@ Accepted
 
 ## Context
 
-[](./0004-repository-structure) proposed a top level repository structure divided into:
+[](./0004-repository-structure) proposed a top level repository structure. This builds upon it, suggesting a top level structure divided into:
 
 - `ophyd_async.core`: Core classes like `Device`, `Signal` and `AsyncStatus`
 - `ophyd_async.epics`: Epics specific signals and devices
 - `ophyd_async.tango`: Tango specific signals and devices
-- `ophyd_async.panda`: PandA Device written on top of Epics or Tango modules
+- `ophyd_async.fastcs`: FastCS (EPICS or Tango) devices like PandA
+- `ophyd_async.planstubs`: Plan stubs for various flyscan functionality
+- `ophyd_async.sim`: Simulated devices for demos and tests
 
 This ADR proposes a public sub-package structure. The internal private structure should be flat, but can change according to the number of classes in a public package.
 
@@ -22,10 +24,12 @@ This ADR proposes a public sub-package structure. The internal private structure
 ### core
 
 There will be a flat public namespace under core, with contents reimported from an underscore prefixed python files, e.g.:
+
 - `_status.py` for `AsyncStatus`, `WatchableAsyncStatus`, etc.
 - `_protocol.py` for `AsyncReadable`, `AsyncStatus`, etc.
 - `_device.py` for `Device`, `DeviceVector`, etc.
 - `_signal.py` for `Signal`, `SignalBackend`, `observe_signal`, etc.
+- `_mock.py` for `MockSignalBackend`, `get_mock_put`, etc.
 - `_readable.py` for `StandardReadable`, `ConfigSignal`, `HintedSignal`, etc.
 - `_detector.py` for `StandardDetector`, `DetectorWriter`, `DetectorControl`, `TriggerInfo`, etc.
 - `_flyer.py` for `StandardFlyer`, `FlyerControl`, etc.
@@ -63,19 +67,28 @@ Detector modules should include a reference `StandardDetector` subclass, but wit
 
 This has not been created at the time of writing, but it is envisioned that it will follow the EPICS structure where it makes sense.
 
-### panda
+### fastcs
 
-This should be a top level namespace containing the `CommonPandaBlocks`, `SeqBlock`, `PandaHdfWriter`, `PandaPcapController`, etc. These should be included in files like `_control.py`, `_writer.py`, `_block.py`, `_table.py` and imported into the top level namespace.
+There will be one subpackage for each FastCS Device. At the time of writing there are none of these, but PandA and Odin will shortly be converted to FastCS, so it makes sense to make:
+
+- `fastcs.panda`
+- `fastcs.odin`
+
+in preparation. 
+
+For PandA its namespace should contain `CommonPandaBlocks`, `SeqBlock`, `PandaHdfWriter`, `PandaPcapController`, etc. These should be included in files like `_control.py`, `_writer.py`, `_block.py`, `_table.py` and imported into the `panda` namespace.
 
 ### planstubs
 
-There will be some planstubs for shared setup that may reach across modules like `epics` and `panda`, these should live in a `planstubs/` package.
+There will be some planstubs for shared setup that may reach across modules like `epics` and `fastcs/panda`, these should live in a `planstubs/` package.
 
 ### sim
 
 There will be 2 subpackages:
-- `sim.demo` for demo devices like `PatternDetector` used in tutorials.
-- `sim.testing` for devices that will support tests in `ophyd-async` and `bluesky`.
+- `sim.demo` for demo devices like `SimPatternDetector` and `SimMotor` used in tutorials.
+- `sim.testing` for devices that will support tests in `ophyd-async` and `bluesky`. Some test fixtures could be moved here
+
+There should probably be one file per Device, in an underscore prefixed file reimported into the public namespace, e.g. `demo/_sim_motor.py` and `demo/_sim_pattern_detector.py`.
 
 ## Consequences
 
