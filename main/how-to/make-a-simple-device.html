@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a Simple Device &#8212; ophyd-async 0.3.1a2.dev2+gcbbb2950 documentation</title>
+    <title>Make a Simple Device &#8212; ophyd-async 0.3.1a2.dev3+gb59d1e21 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../_static/documentation_options.js?v=56f90862"></script>
+    <script src="../_static/documentation_options.js?v=f0a281ea"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -512,12 +512,12 @@ may change API on minor release numbers before then</p>
 <h1>Make a Simple Device<a class="headerlink" href="#make-a-simple-device" title="Link to this heading">#</a></h1>
 <p>To make a simple device, you need to subclass from the
 <a class="reference internal" href="../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> class, create some <a class="reference internal" href="../generated/ophyd_async.core.Signal.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> instances, and optionally implement
-other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.13.0a4.dev209+g63750adc)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
-<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a4.dev209+g63750adc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
+other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.13.0a4.dev213+gc3417ca7)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a4.dev213+gc3417ca7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
 <p>The rest of this guide will show examples from <code class="docutils literal notranslate"><span class="pre">src/ophyd_async/epics/demo/__init__.py</span></code></p>
 <section id="readable">
 <h2>Readable<a class="headerlink" href="#readable" title="Link to this heading">#</a></h2>
-<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.13.0a4.dev209+g63750adc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../generated/ophyd_async.epics.demo.Sensor.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
+<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.13.0a4.dev213+gc3417ca7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../generated/ophyd_async.epics.demo.Sensor.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
 define some signals, then tell the superclass which signals should contribute to
 <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
@@ -631,7 +631,7 @@ and implement some addition protocols:</p>
         <span class="k">await</span> <span class="n">status</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a4.dev209+g63750adc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>. This
+<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a4.dev213+gc3417ca7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>. This
 creates a <a class="reference external" href="https://docs.python.org/3/glossary.html#term-coroutine" title="(in Python v3.12)"><code class="xref any docutils literal notranslate"><span class="pre">coroutine</span></code></a> <code class="docutils literal notranslate"><span class="pre">do_set()</span></code> which gets the old position, units and
 precision in parallel, sets the setpoint, then observes the readback value,
 informing watchers of the progress. When it gets to the requested value it
