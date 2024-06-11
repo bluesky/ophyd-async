@@ -7,7 +7,6 @@ import yaml
 from bluesky.plan_stubs import abs_set, wait
 from bluesky.protocols import Location
 from bluesky.utils import Msg
-from epicscorelibs.ca.dbr import ca_array
 
 from .device import Device
 from .signal import SignalRW
@@ -135,7 +134,6 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
     """
 
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
-    yaml.add_representer(ca_array, ndarray_representer, Dumper=yaml.Dumper)
 
     with open(save_path, "w") as file:
         yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)
