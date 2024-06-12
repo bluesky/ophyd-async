@@ -9,8 +9,8 @@ from bluesky.protocols import DataKey, StreamAsset
 from event_model import (ComposeStreamResource, ComposeStreamResourceBundle,
                          StreamDatum, StreamRange, StreamResource)
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DirectoryInfo, DirectoryProvider
-from ophyd_async.core.mock_signal_backend import MockSignalBackend
+from ophyd_async.core import (DEFAULT_TIMEOUT, DirectoryInfo,
+                              DirectoryProvider, MockSignalBackend)
 from ophyd_async.core.signal import SignalR, observe_value
 
 # raw data path
