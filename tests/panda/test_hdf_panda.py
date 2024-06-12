@@ -57,6 +57,7 @@ async def test_hdf_panda_passes_blocks_to_controller(mock_hdf_panda: HDFPanda):
 async def test_hdf_panda_hardware_triggered_flyable(
     RE: RunEngine,
     mock_hdf_panda,
+    tmp_path
 ):
     docs = {}
 
@@ -142,6 +143,8 @@ async def test_hdf_panda_hardware_triggered_flyable(
         ("a", "b"), docs["stream_resource"], data_key_names
     ):
         assert stream_resource["data_key"] == data_key_name
+        assert stream_resource["root"] == str(tmp_path)
+        assert stream_resource["resource_path"] == "test-panda.h5"
         assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
         assert stream_resource["run_start"] == docs["start"][0]["uid"]
         assert stream_resource["resource_kwargs"] == {
