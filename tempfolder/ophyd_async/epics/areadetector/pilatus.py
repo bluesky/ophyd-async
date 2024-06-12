@@ -2,11 +2,9 @@ from enum import Enum
 
 from bluesky.protocols import Hints
 
-from ophyd_async.core import DirectoryProvider
-from ophyd_async.core.detector import StandardDetector
-from ophyd_async.epics.areadetector.controllers.pilatus_controller import (
-    PilatusController,
-)
+from ophyd_async.core import DirectoryProvider, StandardDetector
+from ophyd_async.epics.areadetector.controllers.pilatus_controller import \
+    PilatusController
 from ophyd_async.epics.areadetector.drivers.ad_base import ADBaseShapeProvider
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusDriver
 from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter

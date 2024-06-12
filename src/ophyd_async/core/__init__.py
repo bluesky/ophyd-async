@@ -1,5 +1,5 @@
-from ._detector import (DetectorControl, DetectorTrigger, StandardDetector,
-                        TriggerInfo)
+from ._detector import (DetectorControl, DetectorTrigger, DetectorWriter,
+                        StandardDetector, TriggerInfo)
 from ._device import Device, DeviceCollector, DeviceVector
 from ._flyer import StandardFlyer, TriggerLogic
 from ._mock_signal_utils import (callback_on_mock_put, get_mock_put,
@@ -18,6 +18,7 @@ from ._utils import (DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout,
 __all__ = [
     "DetectorControl",
     "DetectorTrigger",
+    "DetectorWriter",
     "StandardDetector",
     "TriggerInfo",
 

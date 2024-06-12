@@ -2,8 +2,7 @@ from typing import AsyncGenerator, AsyncIterator, Dict
 
 from bluesky.protocols import DataKey
 
-from ophyd_async.core import DirectoryProvider
-from ophyd_async.core.detector import DetectorWriter
+from ophyd_async.core import DetectorWriter, DirectoryProvider
 from ophyd_async.sim.pattern_generator import PatternGenerator
 
 
