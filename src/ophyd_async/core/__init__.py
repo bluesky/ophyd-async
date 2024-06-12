@@ -6,7 +6,8 @@ from ._mock_signal_utils import (callback_on_mock_put, get_mock_put,
                                  mock_puts_blocked, reset_mock_put_calls,
                                  set_mock_put_proceeds, set_mock_value,
                                  set_mock_values)
-from ._providers import StaticDirectoryProvider
+from ._providers import (DirectoryInfo, DirectoryProvider,
+                         StaticDirectoryProvider)
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
 from ._signal import (MockSignalBackend, Signal, SignalBackend,
                       SoftSignalBackend)
@@ -37,6 +38,8 @@ __all__ = [
     "set_mock_value",
     "set_mock_values",
 
+    "DirectoryInfo",
+    "DirectoryProvider",
     "StaticDirectoryProvider",
 
     "ConfigSignal",
