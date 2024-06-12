@@ -4,10 +4,9 @@ import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (StaticDirectoryProvider, callback_on_mock_put,
-                              set_mock_value)
+from ophyd_async.core import (StandardFlyer, StaticDirectoryProvider,
+                              callback_on_mock_put, set_mock_value)
 from ophyd_async.core.device import Device
-from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.signal import SignalR, assert_emitted
 from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
@@ -70,7 +69,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     exposure = 1
 
     trigger_logic = StaticSeqTableTriggerLogic(mock_hdf_panda.seq[1])
-    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, [], name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(mock_hdf_panda, flyer)

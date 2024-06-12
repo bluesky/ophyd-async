@@ -9,9 +9,9 @@ from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
-                              DetectorWriter, HardwareTriggeredFlyable,
-                              StandardDetector, WatchableAsyncStatus,
-                              WatcherUpdate, observe_value, set_mock_value)
+                              DetectorWriter, StandardDetector, StandardFlyer,
+                              WatchableAsyncStatus, WatcherUpdate,
+                              observe_value, set_mock_value)
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.flyer import TriggerLogic
 from ophyd_async.core.signal import SignalR
@@ -172,7 +172,7 @@ async def panda():
 
 @pytest.fixture
 async def flyer(panda):
-    class MockFlyer(HardwareTriggeredFlyable):
+    class MockFlyer(StandardFlyer):
         def __init__(
             self,
             trigger_logic: TriggerLogic,
@@ -227,7 +227,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     shutter_time = 0.004
 
     trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
-    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, [], name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
@@ -375,7 +375,7 @@ async def test_at_least_one_detector_in_fly_plan(
 @pytest.mark.parametrize("timeout_setting,expected_timeout", [(None, 12), (5.0, 5.0)])
 async def test_trigger_sets_or_defaults_timeout(
     RE: RunEngine,
-    flyer: HardwareTriggeredFlyable,
+    flyer: StandardFlyer,
     detectors: tuple[StandardDetector, ...],
     timeout_setting: float | None,
     expected_timeout: float,

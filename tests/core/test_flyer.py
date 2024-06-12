@@ -11,8 +11,8 @@ from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorControl,
                               DetectorTrigger, DetectorWriter,
-                              HardwareTriggeredFlyable, StandardDetector,
-                              TriggerInfo, TriggerLogic)
+                              StandardDetector, StandardFlyer, TriggerInfo,
+                              TriggerLogic)
 from ophyd_async.core.signal import observe_value
 from ophyd_async.epics.signal.signal import epics_signal_rw
 
@@ -141,7 +141,7 @@ async def test_hardware_triggered_flyable(
     RE.subscribe(append_and_print)
 
     trigger_logic = DummyTriggerLogic()
-    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, [], name="flyer")
     trigger_info = TriggerInfo(
         num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
@@ -219,11 +219,11 @@ async def test_hardware_triggered_flyable(
 
 # To do: Populate configuration signals
 async def test_describe_configuration():
-    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
+    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
     assert await flyer.describe_configuration() == {}
 
 
 # To do: Populate configuration signals
 async def test_read_configuration():
-    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
+    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
     assert await flyer.read_configuration() == {}

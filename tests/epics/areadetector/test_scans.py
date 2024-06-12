@@ -8,18 +8,10 @@ import bluesky.plans as bp
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    DeviceCollector,
-    HardwareTriggeredFlyable,
-    StandardDetector,
-    StaticDirectoryProvider,
-    TriggerInfo,
-    TriggerLogic,
-    set_mock_value,
-)
+from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
+                              DeviceCollector, StandardDetector, StandardFlyer,
+                              StaticDirectoryProvider, TriggerInfo,
+                              TriggerLogic, set_mock_value)
 from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
@@ -103,7 +95,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
     )
     trigger_logic = DummyTriggerLogic()
 
-    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, [], name="flyer")
     trigger_info = TriggerInfo(
         num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
