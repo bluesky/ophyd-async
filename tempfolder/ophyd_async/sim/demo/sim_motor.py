@@ -4,11 +4,10 @@ import time
 
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import (AsyncStatus, StandardReadable,
-                              WatchableAsyncStatus, WatcherUpdate,
-                              observe_value, soft_signal_r_and_setter,
-                              soft_signal_rw)
-from ophyd_async.core.standard_readable import ConfigSignal, HintedSignal
+from ophyd_async.core import (AsyncStatus, ConfigSignal, HintedSignal,
+                              StandardReadable, WatchableAsyncStatus,
+                              WatcherUpdate, observe_value,
+                              soft_signal_r_and_setter, soft_signal_rw)
 
 
 class SimMotor(StandardReadable, Movable, Stoppable):
