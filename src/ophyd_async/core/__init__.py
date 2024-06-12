@@ -2,6 +2,7 @@ from ._detector import (DetectorControl, DetectorTrigger, StandardDetector,
                         TriggerInfo)
 from ._device import Device, DeviceCollector, DeviceVector
 from ._flyer import StandardFlyer, TriggerLogic
+from ._providers import StaticDirectoryProvider
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "StandardReadable",
     "StandardFlyer",
     "TriggerLogic",
+    "StaticDirectoryProvider",
 ]
