@@ -8,20 +8,26 @@ from ._status import AsyncStatus
 from ._utils import DEFAULT_TIMEOUT, in_micros, wait_for_connection
 
 __all__ = [
+    "DetectorControl",
+    "DetectorTrigger",
+    "StandardDetector",
+    "TriggerInfo",
+
     "Device",
     "DeviceCollector",
     "DeviceVector",
-    "StandardDetector",
-    "DetectorControl",
-    "TriggerInfo",
-    "DetectorTrigger",
+    
+    "StandardFlyer",
+    "TriggerLogic",
+
+    "StaticDirectoryProvider",
+
     "ConfigSignal",
     "HintedSignal", 
     "StandardReadable",
-    "StandardFlyer",
-    "TriggerLogic",
-    "StaticDirectoryProvider",
+
     "AsyncStatus",
+
     "DEFAULT_TIMEOUT",
     "in_micros",
     "wait_for_connection",
