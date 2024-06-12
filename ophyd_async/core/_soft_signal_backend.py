@@ -10,8 +10,8 @@ from typing import Dict, Generic, Optional, Type, Union, cast, get_origin
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
 
-from .signal_backend import SignalBackend
-from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
+from ._signal_backend import SignalBackend
+from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
     str: "string",

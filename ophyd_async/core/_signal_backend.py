@@ -3,7 +3,7 @@ from typing import Generic, Optional, Type
 
 from bluesky.protocols import DataKey, Reading
 
-from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
+from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
 class SignalBackend(Generic[T]):
