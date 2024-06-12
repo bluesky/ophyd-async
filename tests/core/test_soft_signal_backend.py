@@ -9,7 +9,7 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import Signal, SignalBackend, T
-from ophyd_async.core.soft_signal_backend import SoftSignalBackend
+from ophyd_async.core.soft_signal_backend import SignalMetadata, SoftSignalBackend
 
 
 class MyEnum(str, Enum):
@@ -137,18 +137,35 @@ async def test_soft_signal_descriptor_fails_for_invalid_class():
 
 async def test_soft_signal_descriptor_with_metadata():
     soft_signal = Signal(
-        SoftSignalBackend(int, 0, units="mm", precision=0, foo={"foo": "bar"})
+        SoftSignalBackend(int, 0, metadata=SignalMetadata(units="mm", precision=0))
     )
     await soft_signal.connect()
     datakey = await soft_signal._backend.get_datakey("")
     assert datakey["units"] == "mm"
     assert datakey["precision"] == 0
-    assert datakey["foo"]["foo"] == "bar"
 
-
-async def test_soft_signal_descriptor_with_metadata_no_initial_value():
-    soft_signal = Signal(SoftSignalBackend(int, units="", precision=1))
+    soft_signal = Signal(SoftSignalBackend(int, metadata=SignalMetadata(units="")))
     await soft_signal.connect()
     datakey = await soft_signal._backend.get_datakey("")
     assert datakey["units"] == ""
-    assert datakey["precision"] == 1
+    assert not hasattr(datakey, "precision")
+
+
+async def test_soft_signal_descriptor_with_no_metadata_not_passed():
+    soft_signal = Signal(SoftSignalBackend(int))
+    await soft_signal.connect()
+    datakey = await soft_signal._backend.get_datakey("")
+    assert not hasattr(datakey, "units")
+    assert not hasattr(datakey, "precision")
+
+    soft_signal = Signal(SoftSignalBackend(int, metadata=None))
+    await soft_signal.connect()
+    datakey = await soft_signal._backend.get_datakey("")
+    assert not hasattr(datakey, "units")
+    assert not hasattr(datakey, "precision")
+
+    soft_signal = Signal(SoftSignalBackend(int, metadata={}))
+    await soft_signal.connect()
+    datakey = await soft_signal._backend.get_datakey("")
+    assert not hasattr(datakey, "units")
+    assert not hasattr(datakey, "precision")

@@ -31,7 +31,7 @@ from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageab
 from .async_status import AsyncStatus
 from .device import Device
 from .signal_backend import SignalBackend
-from .soft_signal_backend import SoftSignalBackend
+from .soft_signal_backend import SignalMetadata, SoftSignalBackend
 from .utils import DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout, Callback, T
 
 
@@ -272,13 +272,15 @@ def soft_signal_rw(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
-    **metadata,
+    units: str | None = None,
+    precision: int | None = None,
 ) -> SignalRW[T]:
     """Creates a read-writable Signal with a SoftSignalBackend.
-    May pass metadata as kwargs, which are propagated into describe.
+    May pass metadata, which are propagated into describe.
     """
+    metadata = SignalMetadata(units=units, precision=precision)
     signal = SignalRW(
-        SoftSignalBackend(datatype, initial_value, **metadata),
+        SoftSignalBackend(datatype, initial_value, metadata=metadata),
         name=name,
     )
     return signal
@@ -288,14 +290,16 @@ def soft_signal_r_and_setter(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
-    **metadata,
+    units: str | None = None,
+    precision: int | None = None,
 ) -> Tuple[SignalR[T], Callable[[T], None]]:
     """Returns a tuple of a read-only Signal and a callable through
     which the signal can be internally modified within the device.
-    May pass metadata as kwargs, which are propagated into describe.
+    May pass metadata, which are propagated into describe.
     Use soft_signal_rw if you want a device that is externally modifiable
     """
-    backend = SoftSignalBackend(datatype, initial_value, **metadata)
+    metadata = SignalMetadata(units=units, precision=precision)
+    backend = SoftSignalBackend(datatype, initial_value, metadata=metadata)
     signal = SignalR(backend, name=name)
 
     return (signal, backend.set_value)

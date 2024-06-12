@@ -5,7 +5,7 @@ import time
 from collections import abc
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Generic, Optional, Type, Union, cast, get_origin
+from typing import Dict, Generic, Optional, Type, TypedDict, Union, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -19,6 +19,11 @@ primitive_dtypes: Dict[type, Dtype] = {
     float: "number",
     bool: "boolean",
 }
+
+
+class SignalMetadata(TypedDict):
+    units: str | None = None
+    precision: int | None = None
 
 
 class SoftConverter(Generic[T]):
@@ -121,11 +126,11 @@ class SoftSignalBackend(SignalBackend[T]):
         self,
         datatype: Optional[Type[T]],
         initial_value: Optional[T] = None,
-        **signal_metadata,
+        metadata: SignalMetadata = None,
     ) -> None:
         self.datatype = datatype
         self._initial_value = initial_value
-        self._metadata = signal_metadata
+        self._metadata = metadata or {}
         self.converter: SoftConverter = make_converter(datatype)
         if self._initial_value is None:
             self._initial_value = self.converter.make_initial_value(self.datatype)
