@@ -26,7 +26,7 @@ This ADR proposes a public sub-package structure. The internal private structure
 There will be a flat public namespace under core, with contents reimported from an underscore prefixed python files, e.g.:
 
 - `_status.py` for `AsyncStatus`, `WatchableAsyncStatus`, etc.
-- `_protocol.py` for `AsyncReadable`, `AsyncStatus`, etc.
+- `_protocol.py` for `AsyncReadable`, `AsyncStageable`, etc.
 - `_device.py` for `Device`, `DeviceVector`, etc.
 - `_signal.py` for `Signal`, `SignalBackend`, `observe_signal`, etc.
 - `_mock.py` for `MockSignalBackend`, `get_mock_put`, etc.
