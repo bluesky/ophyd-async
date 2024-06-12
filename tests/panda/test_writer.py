@@ -9,10 +9,9 @@ from ophyd_async.epics.pvi import (create_children_from_annotations,
                                    fill_pvi_entries)
 from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.fastcs.panda import (Capture, CaptureSignalWrapper,
-                                      CommonPandaBlocks, PandaHDFWriter,
-                                      get_capture_signals,
+                                      CommonPandaBlocks, HDFFile,
+                                      PandaHDFWriter, get_capture_signals,
                                       get_signals_marked_for_capture)
-from ophyd_async.panda.writers._panda_hdf_file import _HDFFile
 
 
 @pytest.fixture
@@ -176,7 +175,7 @@ async def test_collect_stream_docs(mock_writer: PandaHDFWriter):
     await mock_writer.open()
 
     [item async for item in mock_writer.collect_stream_docs(1)]
-    assert type(mock_writer._file) is _HDFFile
+    assert type(mock_writer._file) is HDFFile
     assert mock_writer._file._last_emitted == 1
     resource_doc = mock_writer._file._bundles[0].stream_resource_doc
     assert resource_doc["data_key"] == "test-panda-block_a-test-Min"

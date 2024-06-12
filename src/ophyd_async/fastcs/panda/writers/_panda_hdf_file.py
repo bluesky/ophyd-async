@@ -8,7 +8,7 @@ from ophyd_async.core import DirectoryInfo
 
 
 @dataclass
-class _HDFDataset:
+class HDFDataset:
     device_name: str
     block: str
     name: str
@@ -17,12 +17,12 @@ class _HDFDataset:
     multiplier: int
 
 
-class _HDFFile:
+class HDFFile:
     def __init__(
         self,
         directory_info: DirectoryInfo,
         full_file_name: Path,
-        datasets: List[_HDFDataset],
+        datasets: List[HDFDataset],
     ) -> None:
         self._last_emitted = 0
         self._bundles = [

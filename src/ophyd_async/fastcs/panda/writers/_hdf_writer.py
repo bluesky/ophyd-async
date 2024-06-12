@@ -12,7 +12,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorWriter, Device,
                               observe_value, wait_for_value)
 from ophyd_async.fastcs.panda import CommonPandaBlocks
 
-from ._panda_hdf_file import _HDFDataset, _HDFFile
+from ._panda_hdf_file import HDFDataset, HDFFile
 
 
 class Capture(str, Enum):
@@ -95,8 +95,8 @@ class PandaHDFWriter(DetectorWriter):
         self._prefix = prefix
         self._directory_provider = directory_provider
         self._name_provider = name_provider
-        self._datasets: List[_HDFDataset] = []
-        self._file: Optional[_HDFFile] = None
+        self._datasets: List[HDFDataset] = []
+        self._file: Optional[HDFFile] = None
         self._multiplier = 1
 
     # Triggered on PCAP arm
@@ -144,7 +144,7 @@ class PandaHDFWriter(DetectorWriter):
 
             for suffix in capture_signal.capture_type.split(" "):
                 self._datasets.append(
-                    _HDFDataset(
+                    HDFDataset(
                         name,
                         block_name,
                         f"{name}-{block_name}-{signal_name}-{suffix}",
@@ -196,7 +196,7 @@ class PandaHDFWriter(DetectorWriter):
         # TODO: fail if we get dropped frames
         if indices_written:
             if not self._file:
-                self._file = _HDFFile(
+                self._file = HDFFile(
                     self._directory_provider(),
                     Path(await self.panda_device.data.hdf_file_name.get_value()),
                     self._datasets,
