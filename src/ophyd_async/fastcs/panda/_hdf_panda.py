@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    DirectoryProvider,
-    SignalR,
-    StandardDetector,
-)
-from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.core import (DEFAULT_TIMEOUT, DirectoryProvider, SignalR,
+                              StandardDetector)
+from ophyd_async.epics.pvi import (create_children_from_annotations,
+                                   fill_pvi_entries)
 
 from ._common_blocks import CommonPandaBlocks
 from ._panda_controller import PandaPcapController
