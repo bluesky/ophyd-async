@@ -21,7 +21,7 @@ class _HDFFile:
     def __init__(
         self,
         directory_info: DirectoryInfo,
-        full_file_name: Path,
+        full_file_path: Path,
         datasets: List[_HDFDataset],
     ) -> None:
         self._last_emitted = 0
@@ -30,7 +30,7 @@ class _HDFFile:
                 spec="AD_HDF5_SWMR_SLICE",
                 root=str(directory_info.root),
                 data_key=ds.name,
-                resource_path=(f"{str(directory_info.root)}/{full_file_name}"),
+                resource_path=str(full_file_path.relative_to(directory_info.root)),
                 resource_kwargs={
                     "name": ds.name,
                     "block": ds.block,
