@@ -3,9 +3,9 @@ from typing import List
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
-from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo
+from ophyd_async.core import (DetectorTrigger, StandardDetector, TriggerInfo,
+                              in_micros)
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
-from ophyd_async.core.utils import in_micros
 from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
 from ophyd_async.panda._trigger import SeqTableInfo
 
