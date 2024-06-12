@@ -8,27 +8,20 @@ from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    DetectorControl,
-    DetectorWriter,
-    HardwareTriggeredFlyable,
-    observe_value,
-    set_mock_value,
-)
-from ophyd_async.core import AsyncStatus, WatchableAsyncStatus
+from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
+                              DetectorWriter, HardwareTriggeredFlyable,
+                              WatchableAsyncStatus, WatcherUpdate,
+                              observe_value, set_mock_value)
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.flyer import TriggerLogic
 from ophyd_async.core.signal import SignalR
-from ophyd_async.core.utils import WatcherUpdate
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
 from ophyd_async.epics.signal.signal import epics_signal_rw
 from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
-    time_resolved_fly_and_collect_with_static_seq_table,
-)
+    time_resolved_fly_and_collect_with_static_seq_table)
 from ophyd_async.protocols import AsyncReadable
 
 

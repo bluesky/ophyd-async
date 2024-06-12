@@ -6,10 +6,9 @@ import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import Movable
 
-from ophyd_async.core import AsyncStatus, WatchableAsyncStatus
+from ophyd_async.core import AsyncStatus, WatchableAsyncStatus, WatcherUpdate
 from ophyd_async.core.signal import soft_signal_r_and_setter
 from ophyd_async.core.standard_readable import StandardReadable
-from ophyd_async.core.utils import WatcherUpdate
 
 
 class SetFailed(Exception):

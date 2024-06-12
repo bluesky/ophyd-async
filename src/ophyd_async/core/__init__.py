@@ -7,7 +7,9 @@ from ._readable import ConfigSignal, HintedSignal, StandardReadable
 from ._signal import (MockSignalBackend, Signal, SignalBackend,
                       SoftSignalBackend)
 from ._status import AsyncStatus
-from ._utils import DEFAULT_TIMEOUT, in_micros, wait_for_connection
+from ._utils import (DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout,
+                     NotConnected, WatcherUpdate, in_micros ,
+                     wait_for_connection)
 
 __all__ = [
     "DetectorControl",
@@ -36,6 +38,10 @@ __all__ = [
     "AsyncStatus",
 
     "DEFAULT_TIMEOUT",
+    "CalculatableTimeout",
+    "CalculateTimeout",
+    "NotConnected",
+    "WatcherUpdate",
     "in_micros",
     "wait_for_connection",
 ]

@@ -1,31 +1,17 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import (
-    Any,
-    AsyncGenerator,
-    AsyncIterator,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-)
+from typing import (Any, AsyncGenerator, AsyncIterator, Dict, Iterator, List,
+                    Optional, Sequence)
 
 import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
-from event_model import (
-    ComposeStreamResource,
-    ComposeStreamResourceBundle,
-    StreamDatum,
-    StreamRange,
-    StreamResource,
-)
+from event_model import (ComposeStreamResource, ComposeStreamResourceBundle,
+                         StreamDatum, StreamRange, StreamResource)
 
-from ophyd_async.core import DirectoryInfo, DirectoryProvider
+from ophyd_async.core import DEFAULT_TIMEOUT, DirectoryInfo, DirectoryProvider
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import SignalR, observe_value
-from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
 DATA_PATH = "/entry/data/data"
