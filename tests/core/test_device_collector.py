@@ -5,8 +5,8 @@ from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 from super_state_machine.errors import TransitionError
 
-from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, NotConnected
-from ophyd_async.core.mock_signal_utils import set_mock_value
+from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
+                              NotConnected, set_mock_value)
 from ophyd_async.epics.motion import motor
 
 
