@@ -39,14 +39,9 @@ class SoftConverter(Generic[T]):
         self,
         source: str,
         value,
-        units: Optional[str] = None,
-        precision: Optional[int] = None,
+        **metadata
     ) -> DataKey:
-        dk = {"source": source, "shape": []}
-        if units is not None:  # Allow for "" dimensionless units
-            dk["units"] = units
-        if precision is not None:
-            dk["precision"] = precision
+        dk = {"source": source, "shape": [], **metadata}
         dtype = type(value)
         if np.issubdtype(dtype, np.integer):
             dtype = int
@@ -70,15 +65,9 @@ class SoftArrayConverter(SoftConverter):
         self,
         source: str,
         value,
-        units: Optional[str] = None,
-        precision: Optional[int] = None,
+        **metadata
     ) -> DataKey:
-        dk = {"source": source, "dtype": "array", "shape": [len(value)]}
-        if units is not None:  # Allow for "" dimensionless units
-            dk["units"] = units
-        if precision is not None:
-            dk["precision"] = precision
-        return dk
+        return {"source": source, "dtype": "array", "shape": [len(value)], **metadata}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -104,16 +93,16 @@ class SoftEnumConverter(SoftConverter):
         self,
         source: str,
         value,
-        units: Optional[str] = None,
-        precision: Optional[int] = None,
+        **metadata
     ) -> DataKey:
         choices = [e.value for e in self.enum_class]
-        dk = {"source": source, "dtype": "string", "shape": [], "choices": choices}
-        if units is not None:  # Allow for "" dimensionless units
-            dk["units"] = units
-        if precision is not None:
-            dk["precision"] = precision
-        return dk
+        return {
+                "source": source,
+                "dtype": "string",
+                "shape": [],
+                "choices": choices,
+                **metadata
+            }
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -142,20 +131,16 @@ class SoftSignalBackend(SignalBackend[T]):
     _initial_value: Optional[T]
     _timestamp: float
     _severity: int
-    _units: Optional[str]
-    _precision: Optional[int]
 
     def __init__(
         self,
         datatype: Optional[Type[T]],
         initial_value: Optional[T] = None,
-        units: Optional[str] = None,
-        precision: Optional[int] = None,
+        **signal_metadata
     ) -> None:
         self.datatype = datatype
         self._initial_value = initial_value
-        self._units = units
-        self._precision = precision
+        self._metadata = signal_metadata
         self.converter: SoftConverter = make_converter(datatype)
         if self._initial_value is None:
             self._initial_value = self.converter.make_initial_value(self.datatype)
@@ -195,7 +180,7 @@ class SoftSignalBackend(SignalBackend[T]):
 
     async def get_datakey(self, source: str) -> DataKey:
         return self.converter.get_datakey(
-            source, self._value, self._units, self._precision
+            source, self._value, **self._metadata
         )
 
     async def get_reading(self) -> Reading:

@@ -133,3 +133,20 @@ async def test_soft_signal_descriptor_fails_for_invalid_class():
 
     with pytest.raises(AssertionError):
         await soft_signal._backend.get_datakey("")
+
+async def test_soft_signal_descriptor_with_metadata():
+    soft_signal = Signal(SoftSignalBackend(int, 0,
+                                           units="mm", precision=0, foo={"foo": "bar"}))
+    await soft_signal.connect()
+    datakey = await soft_signal._backend.get_datakey("")
+    assert datakey["units"] == "mm"
+    assert datakey["precision"] == 0
+    assert datakey["foo"]["foo"] == "bar"
+
+async def test_soft_signal_descriptor_with_metadata_no_initial_value():
+    soft_signal = Signal(SoftSignalBackend(int,
+                                           units="", precision=1))
+    await soft_signal.connect()
+    datakey = await soft_signal._backend.get_datakey("")
+    assert datakey["units"] == ""
+    assert datakey["precision"] == 1
