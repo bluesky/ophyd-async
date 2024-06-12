@@ -82,7 +82,7 @@ class Signal(Device, Generic[T]):
         return hash(id(self))
 
 
-class _SignalCache(Generic[T]):
+class SignalCache(Generic[T]):
     def __init__(self, backend: SignalBackend[T], signal: Signal):
         self._signal = signal
         self._staged = False
@@ -143,11 +143,11 @@ class _SignalCache(Generic[T]):
 class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
     """Signal that can be read from and monitored"""
 
-    _cache: Optional[_SignalCache] = None
+    _cache: Optional[SignalCache] = None
 
     def _backend_or_cache(
         self, cached: Optional[bool]
-    ) -> Union[_SignalCache, SignalBackend]:
+    ) -> Union[SignalCache, SignalBackend]:
         # If cached is None then calculate it based on whether we already have a cache
         if cached is None:
             cached = self._cache is not None
@@ -157,9 +157,9 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
         else:
             return self._backend
 
-    def _get_cache(self) -> _SignalCache:
+    def _get_cache(self) -> SignalCache:
         if not self._cache:
-            self._cache = _SignalCache(self._backend, self)
+            self._cache = SignalCache(self._backend, self)
         return self._cache
 
     def _del_cache(self, needed: bool):

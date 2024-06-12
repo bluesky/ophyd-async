@@ -10,9 +10,9 @@ from ._mock_signal_utils import (callback_on_mock_put, get_mock_put,
 from ._providers import (DirectoryInfo, DirectoryProvider, NameProvider,
                          ShapeProvider, StaticDirectoryProvider)
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
-from ._signal import (Signal, SignalR, SignalRW, SignalW, assert_configuration,
-                      assert_emitted, assert_reading, assert_value,
-                      observe_value, set_and_wait_for_value,
+from ._signal import (Signal, SignalCache, SignalR, SignalRW, SignalW,
+                      assert_configuration, assert_emitted, assert_reading,
+                      assert_value, observe_value, set_and_wait_for_value,
                       soft_signal_r_and_setter, soft_signal_rw, wait_for_value)
 from ._signal_backend import SignalBackend
 from ._soft_signal_backend import SoftSignalBackend
@@ -56,6 +56,7 @@ __all__ = [
     "StandardReadable",
 
     "Signal",
+    "SignalCache",
     "SignalR",
     "SignalRW",
     "SignalW",
