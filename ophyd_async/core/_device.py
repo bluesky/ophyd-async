@@ -19,7 +19,7 @@ from typing import (
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
 
-from .utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
+from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
 class Device(HasName):
