@@ -52,6 +52,11 @@ __all__ = [
 
     "DEFAULT_DATE_FORMAT",
     "DEFAULT_FORMAT",
+    "ColoredFormatterWithDeviceName",
+    "config_ophyd_async_logging",
+    "current_handler",
+    "logger",
+    "validate_level",
 
     "MockSignalBackend",
 
