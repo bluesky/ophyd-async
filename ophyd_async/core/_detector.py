@@ -5,35 +5,17 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import (
-    AsyncGenerator,
-    AsyncIterator,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Optional,
-    Sequence,
-    TypeVar,
-)
+from typing import (AsyncGenerator, AsyncIterator, Callable, Dict, Generic,
+                    List, Optional, Sequence, TypeVar)
 
-from bluesky.protocols import (
-    Collectable,
-    DataKey,
-    Flyable,
-    Preparable,
-    Reading,
-    Stageable,
-    StreamAsset,
-    Triggerable,
-    WritesStreamAssets,
-)
+from bluesky.protocols import (Collectable, DataKey, Flyable, Preparable,
+                               Reading, Stageable, StreamAsset, Triggerable,
+                               WritesStreamAssets)
 
-from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
-
-from .async_status import AsyncStatus, WatchableAsyncStatus
-from .device import Device
-from .utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
+from ._device import Device
+from ._protocol import AsyncConfigurable, AsyncReadable
+from ._status import AsyncStatus, WatchableAsyncStatus
+from ._utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 T = TypeVar("T")
 
