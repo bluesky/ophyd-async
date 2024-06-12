@@ -6,9 +6,9 @@ from ._providers import StaticDirectoryProvider
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
 from ._signal import (MockSignalBackend, Signal, SignalBackend,
                       SoftSignalBackend)
-from ._status import AsyncStatus
+from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout,
-                     NotConnected, WatcherUpdate, in_micros ,
+                     NotConnected, WatcherUpdate, in_micros,
                      wait_for_connection)
 
 __all__ = [
@@ -36,6 +36,7 @@ __all__ = [
     "SoftSignalBackend",
 
     "AsyncStatus",
+    "WatchableAsyncStatus",
 
     "DEFAULT_TIMEOUT",
     "CalculatableTimeout",
