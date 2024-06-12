@@ -18,10 +18,10 @@ from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
 # raw data path
-DATA_PATH = "/entry/data/data"
+DATA_PATH = "_entry_data_data"
 
 # pixel sum path
-SUM_PATH = "/entry/sum"
+SUM_PATH = "_entry_sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 

@@ -22,14 +22,14 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
         descriptor = await writer.open()
 
     assert descriptor == {
-        "/entry/data/data": {
-            "source": "soft:///entry/data/data",
+        "_entry_data_data": {
+            "source": "soft://_entry_data_data",
             "shape": (1, 240, 320),
             "dtype": "array",
             "external": "STREAM:",
         },
-        "/entry/sum": {
-            "source": "soft:///entry/sum",
+        "_entry_sum": {
+            "source": "soft://_entry_sum",
             "shape": (1,),
             "dtype": "array",
             "external": "STREAM:",
