@@ -4,6 +4,7 @@ from ._device import Device, DeviceCollector, DeviceVector
 from ._flyer import StandardFlyer, TriggerLogic
 from ._providers import StaticDirectoryProvider
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
+from ._status import AsyncStatus
 
 __all__ = [
     "Device",
@@ -19,4 +20,5 @@ __all__ = [
     "StandardFlyer",
     "TriggerLogic",
     "StaticDirectoryProvider",
+    "AsyncStatus",
 ]
