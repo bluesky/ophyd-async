@@ -22,7 +22,7 @@ async def mock_hdf_panda(tmp_path):
     class CaptureBlock(Device):
         test_capture: SignalR
 
-    directory_provider = StaticDirectoryProvider(str(tmp_path), filename_prefix="test")
+    directory_provider = StaticDirectoryProvider(str(tmp_path), filename_prefix="test-")
     mock_hdf_panda = HDFPanda(
         "HDFPANDA:", directory_provider=directory_provider, name="panda"
     )
@@ -55,9 +55,7 @@ async def test_hdf_panda_passes_blocks_to_controller(mock_hdf_panda: HDFPanda):
 
 
 async def test_hdf_panda_hardware_triggered_flyable(
-    RE: RunEngine,
-    mock_hdf_panda,
-    tmp_path
+    RE: RunEngine, mock_hdf_panda, tmp_path
 ):
     docs = {}
 

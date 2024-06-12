@@ -207,7 +207,7 @@ class PandaHDFWriter(DetectorWriter):
                 file = Path(await self.panda_device.data.hdf_file_name.get_value())
                 self._file = _HDFFile(
                     self._directory_provider(),
-                    dir/file,
+                    dir / file,
                     self._datasets,
                 )
                 for doc in self._file.stream_resources():
