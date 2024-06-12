@@ -73,7 +73,7 @@ class _HDFFile:
                     resource_kwargs={
                         "name": ds.data_key,
                         "block": ds.block,
-                        "dataset": ds.dataset,
+                        "path": ds.dataset,
                         "shape": ds.shape,
                         "multiplier": ds.multiplier,
                         "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
