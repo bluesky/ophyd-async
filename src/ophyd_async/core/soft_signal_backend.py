@@ -35,12 +35,7 @@ class SoftConverter(Generic[T]):
             alarm_severity=-1 if severity > 2 else severity,
         )
 
-    def get_datakey(
-        self,
-        source: str,
-        value,
-        **metadata
-    ) -> DataKey:
+    def get_datakey(self, source: str, value, **metadata) -> DataKey:
         dk = {"source": source, "shape": [], **metadata}
         dtype = type(value)
         if np.issubdtype(dtype, np.integer):
@@ -61,12 +56,7 @@ class SoftConverter(Generic[T]):
 
 
 class SoftArrayConverter(SoftConverter):
-    def get_datakey(
-        self,
-        source: str,
-        value,
-        **metadata
-    ) -> DataKey:
+    def get_datakey(self, source: str, value, **metadata) -> DataKey:
         return {"source": source, "dtype": "array", "shape": [len(value)], **metadata}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
@@ -89,20 +79,15 @@ class SoftEnumConverter(SoftConverter):
         else:
             return self.enum_class(value)
 
-    def get_datakey(
-        self,
-        source: str,
-        value,
-        **metadata
-    ) -> DataKey:
+    def get_datakey(self, source: str, value, **metadata) -> DataKey:
         choices = [e.value for e in self.enum_class]
         return {
-                "source": source,
-                "dtype": "string",
-                "shape": [],
-                "choices": choices,
-                **metadata
-            }
+            "source": source,
+            "dtype": "string",
+            "shape": [],
+            "choices": choices,
+            **metadata,
+        }
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -136,7 +121,7 @@ class SoftSignalBackend(SignalBackend[T]):
         self,
         datatype: Optional[Type[T]],
         initial_value: Optional[T] = None,
-        **signal_metadata
+        **signal_metadata,
     ) -> None:
         self.datatype = datatype
         self._initial_value = initial_value
@@ -179,9 +164,7 @@ class SoftSignalBackend(SignalBackend[T]):
             self.callback(reading, self._value)
 
     async def get_datakey(self, source: str) -> DataKey:
-        return self.converter.get_datakey(
-            source, self._value, **self._metadata
-        )
+        return self.converter.get_datakey(source, self._value, **self._metadata)
 
     async def get_reading(self) -> Reading:
         return self.converter.reading(self._value, self._timestamp, self._severity)

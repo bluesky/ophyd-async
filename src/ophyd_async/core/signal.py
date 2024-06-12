@@ -272,7 +272,7 @@ def soft_signal_rw(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
-    **metadata
+    **metadata,
 ) -> SignalRW[T]:
     """Creates a read-writable Signal with a SoftSignalBackend.
     May pass metadata as kwargs, which are propagated into describe.
@@ -283,20 +283,19 @@ def soft_signal_rw(
     )
     return signal
 
+
 def soft_signal_r_and_setter(
     datatype: Optional[Type[T]] = None,
     initial_value: Optional[T] = None,
     name: str = "",
-    **metadata
+    **metadata,
 ) -> Tuple[SignalR[T], Callable[[T], None]]:
     """Returns a tuple of a read-only Signal and a callable through
     which the signal can be internally modified within the device.
     May pass metadata as kwargs, which are propagated into describe.
     Use soft_signal_rw if you want a device that is externally modifiable
     """
-    backend = SoftSignalBackend(
-        datatype, initial_value, **metadata
-    )
+    backend = SoftSignalBackend(datatype, initial_value, **metadata)
     signal = SignalR(backend, name=name)
 
     return (signal, backend.set_value)
