@@ -3,7 +3,8 @@ from typing import Optional
 
 from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
                               DirectoryProvider)
-from ophyd_async.sim.pattern_generator import PatternGenerator
+
+from ._pattern_generator import PatternGenerator
 
 
 class SimPatternDetectorControl(DetectorControl):
