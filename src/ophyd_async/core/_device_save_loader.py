@@ -11,8 +11,8 @@ from bluesky.protocols import Location
 from bluesky.utils import Msg
 from epicscorelibs.ca.dbr import ca_array, ca_float, ca_int, ca_str
 
-from .device import Device
-from .signal import SignalRW
+from ._device import Device
+from ._signal import SignalRW
 
 CaType = Union[ca_float, ca_int, ca_str, ca_array]
 
