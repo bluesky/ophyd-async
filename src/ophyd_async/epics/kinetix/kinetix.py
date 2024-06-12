@@ -5,7 +5,7 @@ from ophyd_async.epics.areadetector.controllers.kinetix_controller import (
     KinetixController,
 )
 from ophyd_async.epics.areadetector.drivers import ADBaseShapeProvider
-from ophyd_async.epics.areadetector.drivers.kinetix_driver import KinetixDriver
+from ophyd_async.epics.kinetix.kinetix_driver import KinetixDriver
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 
 

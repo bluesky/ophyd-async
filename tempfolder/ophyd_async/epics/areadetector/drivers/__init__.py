@@ -5,7 +5,7 @@ from .ad_base import (
     start_acquiring_driver_and_ensure_status,
 )
 from .aravis_driver import AravisDriver
-from .kinetix_driver import KinetixDriver
+from ......src.ophyd_async.epics.kinetix.kinetix_driver import KinetixDriver
 from .pilatus_driver import PilatusDriver
 from .vimba_driver import VimbaDriver
 
