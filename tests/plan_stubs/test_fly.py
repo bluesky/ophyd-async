@@ -16,7 +16,7 @@ from ophyd_async.core import (
     observe_value,
     set_mock_value,
 )
-from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
+from ophyd_async.core import AsyncStatus, WatchableAsyncStatus
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.flyer import TriggerLogic
