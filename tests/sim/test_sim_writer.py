@@ -2,10 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import StaticDirectoryProvider
-from ophyd_async.core.device import DeviceCollector
+from ophyd_async.core import DeviceCollector, StaticDirectoryProvider
 from ophyd_async.sim import PatternGenerator
-from ophyd_async.sim.sim_pattern_detector_writer import SimPatternDetectorWriter
+from ophyd_async.sim.sim_pattern_detector_writer import \
+    SimPatternDetectorWriter
 
 
 @pytest.fixture

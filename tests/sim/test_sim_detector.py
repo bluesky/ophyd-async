@@ -1,6 +1,6 @@
 import pytest
 
-from ophyd_async.core.device import DeviceCollector
+from ophyd_async.core import DeviceCollector
 from ophyd_async.epics.motion import motor
 from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
 

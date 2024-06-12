@@ -3,8 +3,7 @@ from unittest.mock import patch
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import DEFAULT_TIMEOUT, save_device
-from ophyd_async.core.device import DeviceCollector
+from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, save_device
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.panda import CommonPandaBlocks, TimeUnits

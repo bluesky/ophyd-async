@@ -9,10 +9,10 @@ from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
-                              DetectorWriter, StandardDetector, StandardFlyer,
+                              DetectorWriter, DeviceCollector,
+                              StandardDetector, StandardFlyer,
                               WatchableAsyncStatus, WatcherUpdate,
                               observe_value, set_mock_value)
-from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.flyer import TriggerLogic
 from ophyd_async.core.signal import SignalR
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
