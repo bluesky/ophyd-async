@@ -6,6 +6,8 @@ from ._table import (SeqTable, SeqTableRow, SeqTrigger, seq_table_from_arrays,
                      seq_table_from_rows)
 from ._trigger import SeqTableInfo, StaticSeqTableTriggerLogic
 from ._utils import phase_sorter
+from .writers import (Capture, CaptureSignalWrapper, PandaHDFWriter,
+                      get_capture_signals, get_signals_marked_for_capture)
 
 __all__ = [
     "CommonPandaBlocks",
@@ -29,4 +31,10 @@ __all__ = [
     "StaticSeqTableTriggerLogic",
 
     "phase_sorter",
+
+    "Capture",
+    "CaptureSignalWrapper",
+    "PandaHDFWriter",
+    "get_capture_signals",
+    "get_signals_marked_for_capture",
 ]

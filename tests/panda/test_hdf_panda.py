@@ -8,8 +8,8 @@ from ophyd_async.core import (Device, SignalR, StandardFlyer,
                               StaticDirectoryProvider, assert_emitted,
                               callback_on_mock_put, set_mock_value)
 from ophyd_async.epics.signal.signal import epics_signal_r
-from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
-from ophyd_async.panda.writers._hdf_writer import Capture
+from ophyd_async.fastcs.panda import (Capture, HDFPanda,
+                                      StaticSeqTableTriggerLogic)
 from ophyd_async.plan_stubs import \
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger
 

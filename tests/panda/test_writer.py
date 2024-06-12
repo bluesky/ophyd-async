@@ -3,24 +3,15 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    Device,
-    DeviceCollector,
-    SignalR,
-    StaticDirectoryProvider,
-    set_mock_value,
-)
-from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
+                              SignalR, StaticDirectoryProvider, set_mock_value)
+from ophyd_async.epics.pvi import (create_children_from_annotations,
+                                   fill_pvi_entries)
 from ophyd_async.epics.signal.signal import epics_signal_r
-from ophyd_async.panda import CommonPandaBlocks
-from ophyd_async.panda.writers._hdf_writer import (
-    Capture,
-    CaptureSignalWrapper,
-    PandaHDFWriter,
-    get_capture_signals,
-    get_signals_marked_for_capture,
-)
+from ophyd_async.fastcs.panda import (Capture, CaptureSignalWrapper,
+                                      CommonPandaBlocks, PandaHDFWriter,
+                                      get_capture_signals,
+                                      get_signals_marked_for_capture)
 from ophyd_async.panda.writers._panda_hdf_file import _HDFFile
 
 

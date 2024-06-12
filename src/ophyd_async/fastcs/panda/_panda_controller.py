@@ -1,13 +1,10 @@
 import asyncio
 from typing import Optional
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    wait_for_value,
-)
-from ophyd_async.panda import PcapBlock
+from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
+                              wait_for_value)
+
+from ._common_blocks import PcapBlock
 
 
 class PandaPcapController(DetectorControl):
