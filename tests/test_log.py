@@ -8,19 +8,19 @@ import pytest
 from ophyd_async.core import (DEFAULT_DATE_FORMAT, DEFAULT_FORMAT,
                               ColoredFormatterWithDeviceName, Device,
                               config_ophyd_async_logging, current_handler,
-                              logger, )
+                              logger, validate_level)
 
 
 def test_validate_level():
-    assert log._validate_level("CRITICAL") == 50
-    assert log._validate_level("ERROR") == 40
-    assert log._validate_level("WARNING") == 30
-    assert log._validate_level("INFO") == 20
-    assert log._validate_level("DEBUG") == 10
-    assert log._validate_level("NOTSET") == 0
-    assert log._validate_level(123) == 123
+    assert validate_level("CRITICAL") == 50
+    assert validate_level("ERROR") == 40
+    assert validate_level("WARNING") == 30
+    assert validate_level("INFO") == 20
+    assert validate_level("DEBUG") == 10
+    assert validate_level("NOTSET") == 0
+    assert validate_level(123) == 123
     with pytest.raises(ValueError):
-        log._validate_level("MYSTERY")
+        validate_level("MYSTERY")
 
 
 @patch("ophyd_async.core._log.current_handler")

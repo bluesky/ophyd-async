@@ -33,7 +33,7 @@ class ColoredFormatterWithDeviceName(colorlog.ColoredFormatter):
         return message
 
 
-def _validate_level(level) -> int:
+def validate_level(level) -> int:
     """
     Return an int for level comparison
     """

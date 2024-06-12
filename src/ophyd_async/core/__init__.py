@@ -7,7 +7,7 @@ from ._device_save_loader import (all_at_once, get_signal_values, load_device,
 from ._flyer import StandardFlyer, TriggerLogic
 from ._log import (DEFAULT_DATE_FORMAT, DEFAULT_FORMAT,
                    ColoredFormatterWithDeviceName, config_ophyd_async_logging,
-                   current_handler,logger)
+                   current_handler, logger, validate_level)
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (callback_on_mock_put, get_mock_put,
                                  mock_puts_blocked, reset_mock_put_calls,
