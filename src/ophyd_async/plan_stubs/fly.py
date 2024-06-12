@@ -3,15 +3,14 @@ from typing import List
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
-from ophyd_async.core import (DetectorTrigger, StandardDetector, TriggerInfo,
-                              in_micros)
-from ophyd_async.core.flyer import HardwareTriggeredFlyable
+from ophyd_async.core import (DetectorTrigger, StandardDetector, StandardFlyer,
+                              TriggerInfo, in_micros)
 from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
 from ophyd_async.panda._trigger import SeqTableInfo
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    flyer: StandardFlyer[SeqTableInfo],
     detectors: List[StandardDetector],
     number_of_frames: int,
     exposure: float,
@@ -75,7 +74,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
 def fly_and_collect(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    flyer: StandardFlyer[SeqTableInfo],
     detectors: List[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
@@ -115,7 +114,7 @@ def fly_and_collect(
 
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    flyer: StandardFlyer[SeqTableInfo],
     detectors: List[StandardDetector],
     number_of_frames: int,
     exposure: float,
