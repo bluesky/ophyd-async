@@ -12,8 +12,7 @@ from event_model import ComposeStreamResourceBundle, compose_stream_resource
 from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorControl,
                               DetectorTrigger, DetectorWriter,
                               StandardDetector, StandardFlyer, TriggerInfo,
-                              TriggerLogic)
-from ophyd_async.core.signal import observe_value
+                              TriggerLogic, observe_value)
 from ophyd_async.epics.signal.signal import epics_signal_rw
 
 

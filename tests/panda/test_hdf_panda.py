@@ -4,9 +4,9 @@ import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (Device, StandardFlyer, StaticDirectoryProvider,
+from ophyd_async.core import (Device, SignalR, StandardFlyer,
+                              StaticDirectoryProvider, assert_emitted,
                               callback_on_mock_put, set_mock_value)
-from ophyd_async.core.signal import SignalR, assert_emitted
 from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
 from ophyd_async.panda.writers._hdf_writer import Capture

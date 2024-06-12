@@ -10,8 +10,8 @@ from event_model import (ComposeStreamResource, ComposeStreamResourceBundle,
                          StreamDatum, StreamRange, StreamResource)
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, DirectoryInfo,
-                              DirectoryProvider, MockSignalBackend)
-from ophyd_async.core.signal import SignalR, observe_value
+                              DirectoryProvider, MockSignalBackend, SignalR,
+                              observe_value)
 
 # raw data path
 DATA_PATH = "/entry/data/data"

@@ -5,9 +5,9 @@ import time
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (AsyncStatus, StandardReadable,
-                              WatchableAsyncStatus, WatcherUpdate)
-from ophyd_async.core.signal import (observe_value, soft_signal_r_and_setter,
-                                     soft_signal_rw)
+                              WatchableAsyncStatus, WatcherUpdate,
+                              observe_value, soft_signal_r_and_setter,
+                              soft_signal_rw)
 from ophyd_async.core.standard_readable import ConfigSignal, HintedSignal
 
 

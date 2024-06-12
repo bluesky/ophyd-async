@@ -18,7 +18,7 @@ async def writer(tmp_path) -> SimPatternDetectorWriter:
 
 
 async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWriter):
-    with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
+    with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         descriptor = await writer.open()
 
     assert descriptor == {

@@ -5,8 +5,7 @@ from bluesky.protocols import Movable, Stoppable
 from ophyd_async.core import (DEFAULT_TIMEOUT, CalculatableTimeout,
                               CalculateTimeout, ConfigSignal, HintedSignal,
                               StandardReadable, WatchableAsyncStatus,
-                              WatcherUpdate)
-from ophyd_async.core.signal import observe_value
+                              WatcherUpdate, observe_value)
 
 from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 

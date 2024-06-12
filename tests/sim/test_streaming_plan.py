@@ -3,7 +3,7 @@ from collections import defaultdict
 from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core.signal import assert_emitted
+from ophyd_async.core import assert_emitted
 from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
 
 

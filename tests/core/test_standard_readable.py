@@ -6,8 +6,8 @@ import pytest
 from bluesky.protocols import HasHints
 
 from ophyd_async.core import (ConfigSignal, Device, DeviceVector, HintedSignal,
-                              MockSignalBackend, StandardReadable)
-from ophyd_async.core.signal import SignalR, soft_signal_r_and_setter
+                              MockSignalBackend, SignalR, StandardReadable,
+                              soft_signal_r_and_setter)
 from ophyd_async.protocols import (AsyncConfigurable, AsyncReadable,
                                    AsyncStageable)
 
