@@ -10,6 +10,7 @@ class DataBlock(Device):
     # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
     hdf_file_name: SignalRW[str]
+    hdf_full_file_path: SignalR[str]
     num_capture: SignalRW[int]
     num_captured: SignalR[int]
     capture: SignalRW[bool]

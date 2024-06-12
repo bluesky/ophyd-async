@@ -203,11 +203,9 @@ class PandaHDFWriter(DetectorWriter):
         # TODO: fail if we get dropped frames
         if indices_written:
             if not self._file:
-                dir = Path(await self.panda_device.data.hdf_directory.get_value())
-                file = Path(await self.panda_device.data.hdf_file_name.get_value())
                 self._file = _HDFFile(
                     self._directory_provider(),
-                    dir / file,
+                    Path(await self.panda_device.data.hdf_full_file_path.get_value()),
                     self._datasets,
                 )
                 for doc in self._file.stream_resources():
