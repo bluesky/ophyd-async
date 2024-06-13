@@ -12,6 +12,8 @@ from ophyd_async.core import (
     ConfigSignal,
     DeviceCollector,
     HintedSignal,
+    MockSignalBackend,
+    Signal,
     SignalR,
     SignalRW,
     SoftSignalBackend,
@@ -48,6 +50,35 @@ async def test_signals_equality_raises():
         match=re.escape("'>' not supported between instances of 'SignalRW' and 'int'"),
     ):
         s1 > 4
+
+
+async def test_signal_can_be_given_backend_on_connect():
+    sim_signal = SignalR()
+    backend = MockSignalBackend(int)
+    assert sim_signal._backend is None
+    await sim_signal.connect(mock=False, backend=backend)
+    assert await sim_signal.get_value() == 0
+
+
+async def test_signal_connect_fails_with_different_backend_on_connection():
+    sim_signal = Signal(MockSignalBackend(str))
+
+    with pytest.raises(ValueError):
+        await sim_signal.connect(mock=True, backend=MockSignalBackend(int))
+
+    with pytest.raises(ValueError):
+        await sim_signal.connect(mock=True, backend=SoftSignalBackend(str))
+
+
+async def test_signal_connect_fails_if_different_backend_but_same_by_value():
+    initial_backend = MockSignalBackend(str)
+    sim_signal = Signal(initial_backend)
+
+    with pytest.raises(ValueError) as exc:
+        await sim_signal.connect(mock=False, backend=MockSignalBackend(str))
+    assert str(exc.value) == "Backend at connection different from initialised one."
+
+    await sim_signal.connect(mock=False, backend=initial_backend)
 
 
 async def time_taken_by(coro) -> float:

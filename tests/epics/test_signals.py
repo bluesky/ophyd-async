@@ -9,7 +9,18 @@ from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
+from types import GenericAlias
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypedDict,
+)
 from unittest.mock import ANY
 
 import numpy as np
@@ -18,7 +29,7 @@ import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import DataKey, Reading
 
-from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
+from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics._backend.common import LimitPair, Limits
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
@@ -93,6 +104,28 @@ def ioc(request):
         pass
 
 
+def assert_types_are_equal(t_actual, t_expected, actual_value):
+    expected_plain_type = getattr(t_expected, "__origin__", t_expected)
+    if issubclass(expected_plain_type, np.ndarray):
+        actual_plain_type = getattr(t_actual, "__origin__", t_actual)
+        assert actual_plain_type == expected_plain_type
+        actual_dtype_type = actual_value.dtype.type
+        expected_dtype_type = t_expected.__args__[1].__args__[0]
+        assert actual_dtype_type == expected_dtype_type
+    elif (
+        expected_plain_type is not str
+        and not issubclass(expected_plain_type, Enum)
+        and issubclass(expected_plain_type, Sequence)
+    ):
+        actual_plain_type = getattr(t_actual, "__origin__", t_actual)
+        assert issubclass(actual_plain_type, expected_plain_type)
+        assert len(actual_value) == 0 or isinstance(
+            actual_value[0], t_expected.__args__[0]
+        )
+    else:
+        assert t_actual == t_expected
+
+
 class MonitorQueue:
     def __init__(self, backend: SignalBackend):
         self.backend = backend
@@ -102,7 +135,7 @@ class MonitorQueue:
     def add_reading_value(self, reading: Reading, value):
         self.updates.put_nowait((reading, value))
 
-    async def assert_updates(self, expected_value):
+    async def assert_updates(self, expected_value, expected_type=None):
         expected_reading = {
             "value": expected_value,
             "timestamp": pytest.approx(time.time(), rel=0.1),
@@ -113,10 +146,20 @@ class MonitorQueue:
         backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
 
         assert value == expected_value == backend_value
+        if expected_type:
+            assert_types_are_equal(type(value), expected_type, value)
+            assert_types_are_equal(type(backend_value), expected_type, backend_value)
         assert reading == expected_reading == backend_reading
 
     def close(self):
         self.backend.set_callback(None)
+
+
+def _is_numpy_subclass(t):
+    if t is None:
+        return False
+    plain_type = t.__origin__ if isinstance(t, GenericAlias) else t
+    return issubclass(plain_type, np.ndarray)
 
 
 async def assert_monitor_then_put(
@@ -126,6 +169,7 @@ async def assert_monitor_then_put(
     initial_value: T,
     put_value: T,
     datatype: Optional[Type[T]] = None,
+    check_type: Optional[bool] = True,
 ):
     backend = await ioc.make_backend(datatype, suffix)
     # Make a monitor queue that will monitor for updates
@@ -135,10 +179,15 @@ async def assert_monitor_then_put(
         source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
         assert dict(source=source, **datakey) == await backend.get_datakey(source)
         # Check initial value
-        await q.assert_updates(pytest.approx(initial_value))
+        await q.assert_updates(
+            pytest.approx(initial_value),
+            datatype if check_type else None,
+        )
         # Put to new value and check that
         await backend.put(put_value)
-        await q.assert_updates(pytest.approx(put_value))
+        await q.assert_updates(
+            pytest.approx(put_value), datatype if check_type else None
+        )
     finally:
         q.close()
 
@@ -215,33 +264,101 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
 ls1 = "a string that is just longer than forty characters"
 ls2 = "another string that is just longer than forty characters"
 
-ca_dtype_mapping = {
-    np.int8: np.uint8,
-    np.uint16: np.int32,
-    np.uint32: np.float64,
-    np.int64: np.float64,
-    np.uint64: np.float64,
-}
-
 
 @pytest.mark.parametrize(
-    "datatype, suffix, initial_value, put_value",
+    "datatype, suffix, initial_value, put_value, supported_backends",
     [
-        (int, "int", 42, 43),
-        (float, "float", 3.141, 43.5),
-        (str, "str", "hello", "goodbye"),
-        (MyEnum, "enum", MyEnum.b, MyEnum.c),
-        (npt.NDArray[np.int8], "int8a", [-128, 127], [-8, 3, 44]),
-        (npt.NDArray[np.uint8], "uint8a", [0, 255], [218]),
-        (npt.NDArray[np.int16], "int16a", [-32768, 32767], [-855]),
-        (npt.NDArray[np.uint16], "uint16a", [0, 65535], [5666]),
-        (npt.NDArray[np.int32], "int32a", [-2147483648, 2147483647], [-2]),
-        (npt.NDArray[np.uint32], "uint32a", [0, 4294967295], [1022233]),
-        (npt.NDArray[np.int64], "int64a", [-2147483649, 2147483648], [-3]),
-        (npt.NDArray[np.uint64], "uint64a", [0, 4294967297], [995444]),
-        (npt.NDArray[np.float32], "float32a", [0.000002, -123.123], [1.0]),
-        (npt.NDArray[np.float64], "float64a", [0.1, -12345678.123], [0.2]),
-        (Sequence[str], "stra", ["five", "six", "seven"], ["nine", "ten"]),
+        # python builtin scalars
+        (int, "int", 42, 43, {"ca", "pva"}),
+        (float, "float", 3.141, 43.5, {"ca", "pva"}),
+        (str, "str", "hello", "goodbye", {"ca", "pva"}),
+        (MyEnum, "enum", MyEnum.b, MyEnum.c, {"ca", "pva"}),
+        (str, "enum", "Bbb", "Ccc", enum_d, {"ca", "pva"}),
+        # numpy arrays of numpy types
+        (
+            npt.NDArray[np.int8],
+            "int8a",
+            [-128, 127],
+            [-8, 3, 44],
+            {"pva"},
+        ),
+        (
+            npt.NDArray[np.uint8],
+            "uint8a",
+            [0, 255],
+            [218],
+            {"ca", "pva"},
+        ),
+        (
+            npt.NDArray[np.int16],
+            "int16a",
+            [-32768, 32767],
+            [-855],
+            {"ca", "pva"},
+        ),
+        (
+            npt.NDArray[np.uint16],
+            "uint16a",
+            [0, 65535],
+            [5666],
+            {"pva"},
+        ),
+        (
+            npt.NDArray[np.int32],
+            "int32a",
+            [-2147483648, 2147483647],
+            [-2],
+            {"ca", "pva"},
+        ),
+        (
+            npt.NDArray[np.uint32],
+            "uint32a",
+            [0, 4294967295],
+            [1022233],
+            {"pva"},
+        ),
+        (
+            npt.NDArray[np.int64],
+            "int64a",
+            [-2147483649, 2147483648],
+            [-3],
+            {"pva"},
+        ),
+        (
+            npt.NDArray[np.uint64],
+            "uint64a",
+            [0, 4294967297],
+            [995444],
+            {"pva"},
+        ),
+        (
+            npt.NDArray[np.float32],
+            "float32a",
+            [0.000002, -123.123],
+            [1.0],
+            {"ca", "pva"},
+        ),
+        (
+            npt.NDArray[np.float64],
+            "float64a",
+            [0.1, -12345678.123],
+            [0.2],
+            {"ca", "pva"},
+        ),
+        (
+            Sequence[str],
+            "stra",
+            ["five", "six", "seven"],
+            ["nine", "ten"],
+            {"pva"},
+        ),
+        (
+            npt.NDArray[np.str_],
+            "stra",
+            ["five", "six", "seven"],
+            ["nine", "ten"],
+            {"ca"},
+        ),
         # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
         # (str, "longstr", ls1, ls2),
         # (str, "longstr2.VAL$", ls1, ls2),
@@ -254,17 +371,13 @@ async def test_backend_get_put_monitor(
     initial_value: T,
     put_value: T,
     tmp_path,
+    supported_backends: set[str],
 ):
     # ca can't support all the types
-    dtype = get_dtype(datatype)
-    if ioc.protocol == "ca" and dtype and dtype.type in ca_dtype_mapping:
-        if dtype == np.int8:
-            # CA maps uint8 onto int8 rather than upcasting, so we need to change
-            # initial array
-            initial_value, put_value = [  # type: ignore
-                np.array(x).astype(np.uint8) for x in (initial_value, put_value)
-            ]
-        datatype = npt.NDArray[ca_dtype_mapping[dtype.type]]  # type: ignore
+    for backend in supported_backends:
+        assert backend in ["ca", "pva"]
+    if ioc.protocol not in supported_backends:
+        return
     # With the given datatype, check we have the correct initial value and putting
     # works
     await assert_monitor_then_put(

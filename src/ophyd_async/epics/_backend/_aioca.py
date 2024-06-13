@@ -5,6 +5,7 @@ from enum import Enum
 from math import isnan, nan
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
+import numpy as np
 from aioca import (
     FORMAT_CTRL,
     FORMAT_RAW,
@@ -108,7 +109,10 @@ class CaConverter:
         return value
 
     def value(self, value: AugmentedValue):
-        return value
+        # for channel access ca_xxx classes, this
+        # invokes __pos__ operator to return an instance of
+        # the builtin base class
+        return +value
 
     def reading(self, value: AugmentedValue):
         return {
@@ -129,6 +133,14 @@ class CaLongStrConverter(CaConverter):
         # Add a null in here as this is what the commandline caput does
         # TODO: this should be in the server so check if it can be pushed to asyn
         return value + "\0"
+
+
+class CaArrayConverter(CaConverter):
+    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
+        return {"source": source, "dtype": "array", "shape": [len(value)]}
+
+    def value(self, value: AugmentedValue):
+        return np.array(value, copy=False)
 
 
 @dataclass
