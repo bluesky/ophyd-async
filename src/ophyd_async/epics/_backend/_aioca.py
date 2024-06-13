@@ -136,9 +136,6 @@ class CaLongStrConverter(CaConverter):
 
 
 class CaArrayConverter(CaConverter):
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value)]}
-
     def value(self, value: AugmentedValue):
         return np.array(value, copy=False)
 
