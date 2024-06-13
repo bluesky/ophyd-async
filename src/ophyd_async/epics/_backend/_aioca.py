@@ -135,14 +135,6 @@ class CaLongStrConverter(CaConverter):
         return value + "\0"
 
 
-class CaArrayConverter(CaConverter):
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value)]}
-
-    def value(self, value: AugmentedValue):
-        return np.array(value, copy=False)
-
-
 @dataclass
 class CaEnumConverter(CaConverter):
     """To prevent issues when a signal is restarted and returns with different enum
