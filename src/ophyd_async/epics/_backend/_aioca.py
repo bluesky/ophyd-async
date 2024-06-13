@@ -3,7 +3,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan, nan
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 import numpy as np
 from aioca import (
@@ -191,8 +191,10 @@ def make_converter(
         return CaLongStrConverter()
     elif is_array and pv_dbr == dbr.DBR_STRING:
         # Waveform of strings, check we wanted this
-        if datatype and datatype != Sequence[str]:
-            raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
+        if datatype:
+            datatype_dtype = get_dtype(datatype)
+            if not datatype_dtype or not np.can_cast(datatype_dtype, np.str_):
+                raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
         return CaConverter(pv_dbr, None)
     elif is_array:
         pv_dtype = get_unique({k: v.dtype for k, v in values.items()}, "dtypes")
