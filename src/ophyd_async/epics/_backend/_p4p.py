@@ -4,6 +4,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
+from math import isnan, nan
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -20,7 +21,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import get_supported_values
+from .common import LimitPair, Limits, common_meta, get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -37,6 +38,67 @@ specifier_to_dtype: Dict[str, Dtype] = {
     "d": "number",  # float64
     "s": "string",
 }
+
+
+def _data_key_from_value(
+    source: str,
+    value: Value,
+    *,
+    shape: Optional[list[int]] = None,
+    choices: Optional[list[str]] = None,
+    dtype: Optional[str] = None,
+) -> DataKey:
+    """
+    Args:
+        value (Value): Description of the the return type of a DB record
+        shape: Optional override shape when len(shape) > 1
+        choices: Optional list of enum choices to pass as metadata in the datakey
+        dtype: Optional override dtype when AugmentedValue is ambiguous, e.g. booleans
+
+    Returns:
+        DataKey: A rich DataKey describing the DB record
+    """
+    shape = shape or []
+    dtype = dtype or specifier_to_dtype[value.type().aspy("value")]
+    display_data = getattr(value, "display", None)
+
+    d = DataKey(
+        source=source,
+        dtype=dtype,
+        shape=shape,
+    )
+    if display_data is not None:
+        for key in common_meta:
+            attr = getattr(display_data, key, nan)
+            if isinstance(attr, str) or not isnan(attr):
+                d[key] = attr
+
+    if choices is not None:
+        d["choices"] = choices
+
+    if limits := _limits_from_value(value):
+        d["limits"] = limits
+
+    return d
+
+
+def _limits_from_value(value: Value) -> Limits:
+    def get_limits(
+        substucture_name: str, low_name: str = "limitLow", high_name: str = "limitHigh"
+    ) -> LimitPair:
+        substructure = getattr(value, substucture_name, None)
+        low = getattr(substructure, low_name, nan)
+        high = getattr(substructure, high_name, nan)
+        return LimitPair(
+            low=None if isnan(low) else low, high=None if isnan(high) else high
+        )
+
+    return Limits(
+        alarm=get_limits("valueAlarm", "lowAlarmLimit", "highAlarmLimit"),
+        control=get_limits("control"),
+        display=get_limits("display"),
+        warning=get_limits("valueAlarm", "lowWarningLimit", "highWarningLimit"),
+    )
 
 
 class PvaConverter:
@@ -56,8 +118,7 @@ class PvaConverter:
         }
 
     def get_datakey(self, source: str, value) -> DataKey:
-        dtype = specifier_to_dtype[value.type().aspy("value")]
-        return {"source": source, "dtype": dtype, "shape": []}
+        return _data_key_from_value(source, value)
 
     def metadata_fields(self) -> List[str]:
         """
@@ -74,7 +135,9 @@ class PvaConverter:
 
 class PvaArrayConverter(PvaConverter):
     def get_datakey(self, source: str, value) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value["value"])]}
+        return _data_key_from_value(
+            source, value, dtype="array", shape=[len(value["value"])]
+        )
 
 
 class PvaNDArrayConverter(PvaConverter):
@@ -98,7 +161,7 @@ class PvaNDArrayConverter(PvaConverter):
 
     def get_datakey(self, source: str, value) -> DataKey:
         dims = self._get_dimensions(value)
-        return {"source": source, "dtype": "array", "shape": dims}
+        return _data_key_from_value(source, value, dtype="array", shape=dims)
 
     def write_value(self, value):
         # No clear use-case for writing directly to an NDArray, and some
@@ -109,6 +172,11 @@ class PvaNDArrayConverter(PvaConverter):
 
 @dataclass
 class PvaEnumConverter(PvaConverter):
+    """To prevent issues when a signal is restarted and returns with different enum
+    values or orders, we put treat an Enum signal as a string, and cache the
+    choices on this class.
+    """
+
     def __init__(self, choices: dict[str, str]):
         self.choices = tuple(choices.values())
 
@@ -122,20 +190,17 @@ class PvaEnumConverter(PvaConverter):
         return self.choices[value["value"]["index"]]
 
     def get_datakey(self, source: str, value) -> DataKey:
-        return {
-            "source": source,
-            "dtype": "string",
-            "shape": [],
-            "choices": list(self.choices),
-        }
+        return _data_key_from_value(
+            source, value, choices=list(self.choices), dtype="string"
+        )
 
 
-class PvaEnumBoolConverter(PvaConverter):
+class PvaEmumBoolConverter(PvaConverter):
     def value(self, value):
-        return value["value"]["index"]
+        return bool(value["value"]["index"])
 
     def get_datakey(self, source: str, value) -> DataKey:
-        return {"source": source, "dtype": "integer", "shape": []}
+        return _data_key_from_value(source, value, dtype="bool")
 
 
 class PvaTableConverter(PvaConverter):
@@ -144,7 +209,7 @@ class PvaTableConverter(PvaConverter):
 
     def get_datakey(self, source: str, value) -> DataKey:
         # This is wrong, but defer until we know how to actually describe a table
-        return {"source": source, "dtype": "object", "shape": []}  # type: ignore
+        return _data_key_from_value(source, value, dtype="object")
 
 
 class PvaDictConverter(PvaConverter):
@@ -213,7 +278,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         )
         if pv_choices_len != 2:
             raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
-        return PvaEnumBoolConverter()
+        return PvaEmumBoolConverter()
     elif "NTEnum" in typeid:
         # This is an Enum
         pv_choices = get_unique(

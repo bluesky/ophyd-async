@@ -2,7 +2,8 @@ import logging
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Type, Union
+from math import isnan, nan
+from typing import Any, Dict, List, Optional, Type, Union
 
 import numpy as np
 from aioca import (
@@ -29,7 +30,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import get_supported_values
+from .common import LimitPair, Limits, common_meta, get_supported_values
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
@@ -39,6 +40,64 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_LONG: "integer",
     dbr.DBR_DOUBLE: "number",
 }
+
+
+def _data_key_from_augmented_value(
+    value: AugmentedValue,
+    *,
+    choices: Optional[List[str]] = None,
+    dtype: Optional[str] = None,
+) -> DataKey:
+    """Use the return value of get with FORMAT_CTRL to construct a DataKey
+    describing the signal. See docstring of AugmentedValue for expected
+    value fields by DBR type.
+
+    Args:
+        value (AugmentedValue): Description of the the return type of a DB record
+        choices: Optional list of enum choices to pass as metadata in the datakey
+        dtype: Optional override dtype when AugmentedValue is ambiguous, e.g. booleans
+
+    Returns:
+        DataKey: A rich DataKey describing the DB record
+    """
+    source = f"ca://{value.name}"
+    assert value.ok, f"Error reading {source}: {value}"
+
+    scalar = value.element_count == 1
+    dtype = dtype or dbr_to_dtype[value.datatype]
+
+    d = DataKey(
+        source=source,
+        dtype=dtype if scalar else "array",
+        # strictly value.element_count >= len(value)
+        shape=[] if scalar else [len(value)],
+    )
+    for key in common_meta:
+        attr = getattr(value, key, nan)
+        if isinstance(attr, str) or not isnan(attr):
+            d[key] = attr
+
+    if choices is not None:
+        d["choices"] = choices
+
+    if limits := _limits_from_augmented_value(value):
+        d["limits"] = limits
+
+    return d
+
+
+def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
+    def get_limits(limit: str) -> LimitPair:
+        low = getattr(value, f"lower_{limit}_limit", None)
+        high = getattr(value, f"upper_{limit}_limit", None)
+        return LimitPair(low=low, high=high)
+
+    return Limits(
+        alarm=get_limits("alarm"),
+        control=get_limits("ctrl"),
+        display=get_limits("disp"),
+        warning=get_limits("warning"),
+    )
 
 
 @dataclass
@@ -62,8 +121,8 @@ class CaConverter:
             "alarm_severity": -1 if value.severity > 2 else value.severity,
         }
 
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {"source": source, "dtype": dbr_to_dtype[value.datatype], "shape": []}
+    def get_datakey(self, value: AugmentedValue) -> DataKey:
+        return _data_key_from_augmented_value(value)
 
 
 class CaLongStrConverter(CaConverter):
@@ -77,15 +136,17 @@ class CaLongStrConverter(CaConverter):
 
 
 class CaArrayConverter(CaConverter):
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value)]}
-
     def value(self, value: AugmentedValue):
         return np.array(value, copy=False)
 
 
 @dataclass
 class CaEnumConverter(CaConverter):
+    """To prevent issues when a signal is restarted and returns with different enum
+    values or orders, we put treat an Enum signal as a string, and cache the
+    choices on this class.
+    """
+
     choices: dict[str, str]
 
     def write_value(self, value: Union[Enum, str]):
@@ -97,13 +158,18 @@ class CaEnumConverter(CaConverter):
     def value(self, value: AugmentedValue):
         return self.choices[value]
 
-    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
-        return {
-            "source": source,
-            "dtype": "string",
-            "shape": [],
-            "choices": list(self.choices),
-        }
+    def get_datakey(self, value: AugmentedValue) -> DataKey:
+        # Sometimes DBR_TYPE returns as String, must pass choices still
+        return _data_key_from_augmented_value(value, choices=list(self.choices.keys()))
+
+
+@dataclass
+class CaBoolConverter(CaConverter):
+    def value(self, value: AugmentedValue) -> bool:
+        return bool(value)
+
+    def get_datakey(self, value: AugmentedValue) -> DataKey:
+        return _data_key_from_augmented_value(value, dtype="bool")
 
 
 class DisconnectedCaConverter(CaConverter):
@@ -145,7 +211,7 @@ def make_converter(
         )
         if pv_choices_len != 2:
             raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
-        return CaConverter(dbr.DBR_SHORT, dbr.DBR_SHORT)
+        return CaBoolConverter(dbr.DBR_SHORT, dbr.DBR_SHORT)
     elif pv_dbr == dbr.DBR_ENUM:
         # This is an Enum
         pv_choices = get_unique(
@@ -233,7 +299,7 @@ class CaSignalBackend(SignalBackend[T]):
 
     async def get_datakey(self, source: str) -> DataKey:
         value = await self._caget(FORMAT_CTRL)
-        return self.converter.get_datakey(source, value)
+        return self.converter.get_datakey(value)
 
     async def get_reading(self) -> Reading:
         value = await self._caget(FORMAT_TIME)
