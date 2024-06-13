@@ -98,7 +98,7 @@ def _limits_from_value(value: Value) -> Limits:
         if valueAlarm is None:
             return _empty_limit
         low = getattr(valueAlarm, f"low{limit}Limit", None)
-        high = getattr(valueAlarm, f"low{limit}Limit", None)
+        high = getattr(valueAlarm, f"high{limit}Limit", None)
         return LimitPair(
             low=None if isnan(low) else low, high=None if isnan(high) else high
         )

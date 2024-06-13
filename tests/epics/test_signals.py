@@ -649,13 +649,13 @@ async def test_signal_returns_limits(ioc: IOC):
 
     expected_limits = Limits(
         # LOW, HIGH
-        alarm=LimitPair(low=2.0, high=98.0),
+        warning=LimitPair(low=5.0, high=96.0),
         # DRVL, DRVH
         control=LimitPair(low=10.0, high=90.0),
         # LOPR, HOPR
         display=LimitPair(low=0.0, high=100.0),
         # LOLO, HIHI
-        warning=LimitPair(low=5.0, high=96.0),
+        alarm=LimitPair(low=2.0, high=98.0),
     )
 
     sig = epics_signal_rw(int, pv_name)
@@ -667,16 +667,17 @@ async def test_signal_returns_limits(ioc: IOC):
 async def test_signal_returns_partial_limits(ioc: IOC):
     await ioc.make_backend(int, "partialint")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:partialint"
+    not_set = 0 if ioc.protocol == "ca" else None
 
     expected_limits = Limits(
-        # LOW, HIGH
-        alarm=LimitPair(low=None, high=None),
+        # LOLO, HIHI
+        alarm=LimitPair(low=2.0, high=98.0),
         # DRVL, DRVH
         control=LimitPair(low=10.0, high=90.0),
         # LOPR, HOPR
         display=LimitPair(low=0.0, high=100.0),
-        # LOLO, HIHI
-        warning=LimitPair(low=5.0, high=96.0),
+        # HSV, LSV not set.
+        warning=LimitPair(low=not_set, high=not_set),
     )
 
     sig = epics_signal_rw(int, pv_name)
@@ -688,16 +689,17 @@ async def test_signal_returns_partial_limits(ioc: IOC):
 async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
     await ioc.make_backend(int, "lessint")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:lessint"
+    not_set = 0 if ioc.protocol == "ca" else None
 
     expected_limits = Limits(
-        # LOW, HIGH
-        alarm=LimitPair(low=5.0, high=96.0),
-        # DRVL, DRVH
-        control=LimitPair(low=None, high=None),
+        # LOLO, HIHI
+        alarm=LimitPair(low=not_set, high=not_set),
+        # control = display if DRVL, DRVH not set
+        control=LimitPair(low=0.0, high=100.0),
         # LOPR, HOPR
         display=LimitPair(low=0.0, high=100.0),
-        # LOLO, HIHI
-        warning=LimitPair(low=None, high=None),
+        # LOW, HIGH
+        warning=LimitPair(low=2.0, high=98.0),
     )
 
     sig = epics_signal_rw(int, pv_name)
