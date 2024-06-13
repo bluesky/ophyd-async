@@ -10,17 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from types import GenericAlias
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Literal,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    TypedDict,
-)
+from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
 from unittest.mock import ANY
 
 import numpy as np
@@ -273,7 +263,7 @@ ls2 = "another string that is just longer than forty characters"
         (float, "float", 3.141, 43.5, {"ca", "pva"}),
         (str, "str", "hello", "goodbye", {"ca", "pva"}),
         (MyEnum, "enum", MyEnum.b, MyEnum.c, {"ca", "pva"}),
-        (str, "enum", "Bbb", "Ccc", enum_d, {"ca", "pva"}),
+        (str, "enum", "Bbb", "Ccc", {"ca", "pva"}),
         # numpy arrays of numpy types
         (
             npt.NDArray[np.int8],
