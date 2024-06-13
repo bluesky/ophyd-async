@@ -83,32 +83,21 @@ def _data_key_from_value(
 
 
 def _limits_from_value(value: Value) -> Limits:
-    valueAlarm = getattr(value, "valueAlarm", None)
-    _empty_limit = LimitPair(low=None, high=None)
-
-    def get_control_or_display_limit(limit: str) -> LimitPair:
-        if (control_or_display := getattr(value, limit, None)) is None:
-            return _empty_limit
-        low = getattr(control_or_display, "limitLow", None)
-        high = getattr(control_or_display, "limitHigh", None)
-        return LimitPair(
-            low=None if isnan(low) else low, high=None if isnan(high) else high
-        )
-
-    def get_alarm_or_warning_limit(limit: str) -> LimitPair:
-        if valueAlarm is None:
-            return _empty_limit
-        low = getattr(valueAlarm, f"low{limit}Limit", None)
-        high = getattr(valueAlarm, f"high{limit}Limit", None)
+    def get_limits(
+        substucture_name: str, low_name: str = "limitLow", high_name: str = "limitHigh"
+    ) -> LimitPair:
+        substructure = getattr(value, substucture_name, None)
+        low = getattr(substructure, low_name, nan)
+        high = getattr(substructure, high_name, nan)
         return LimitPair(
             low=None if isnan(low) else low, high=None if isnan(high) else high
         )
 
     return Limits(
-        alarm=get_alarm_or_warning_limit("Alarm"),
-        control=get_control_or_display_limit("control"),
-        display=get_control_or_display_limit("display"),
-        warning=get_alarm_or_warning_limit("Warning"),
+        alarm=get_limits("valueAlarm", "lowAlarmLimit", "highAlarmLimit"),
+        control=get_limits("control"),
+        display=get_limits("display"),
+        warning=get_limits("valueAlarm", "lowWarningLimit", "highWarningLimit"),
     )
 
 
