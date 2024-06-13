@@ -51,8 +51,9 @@ def _data_key_from_value(
     """
     Args:
         value (Value): Description of the the return type of a DB record
-        kwargs: Overrides for the returned values.
-            e.g. to force treating a value as an Enum by passing choices
+        shape: Optional override shape when len(shape) > 1
+        choices: Optional list of enum choices to pass as metadata in the datakey
+        dtype: Optional override dtype when AugmentedValue is ambiguous, e.g. booleans
 
     Returns:
         DataKey: A rich DataKey describing the DB record
@@ -183,7 +184,7 @@ class PvaNDArrayConverter(PvaConverter):
 @dataclass
 class PvaEnumConverter(PvaConverter):
     """To prevent issues when a signal is restarted and returns with different enum
-    values or orders, we put treat an Enum signal as a DBR_STRING, and cache the
+    values or orders, we put treat an Enum signal as a string, and cache the
     choices on this class.
     """
 

@@ -54,8 +54,8 @@ def _data_key_from_augmented_value(
 
     Args:
         value (AugmentedValue): Description of the the return type of a DB record
-        kwargs: Overrides for the returned values.
-            e.g. to force treating a value as an Enum by passing choices
+        choices: Optional list of enum choices to pass as metadata in the datakey
+        dtype: Optional override dtype when AugmentedValue is ambiguous, e.g. booleans
 
     Returns:
         DataKey: A rich DataKey describing the DB record
@@ -143,7 +143,7 @@ class CaArrayConverter(CaConverter):
 @dataclass
 class CaEnumConverter(CaConverter):
     """To prevent issues when a signal is restarted and returns with different enum
-    values or orders, we put treat an Enum signal as a DBR_STRING, and cache the
+    values or orders, we put treat an Enum signal as a string, and cache the
     choices on this class.
     """
 
@@ -203,7 +203,7 @@ def make_converter(
                 raise TypeError(f"{pv} has type [{pv_dtype}] not {datatype.__name__}")
             if dtype != pv_dtype:
                 raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
-        return CaConverter(pv_dbr, None)
+        return CaArrayConverter(pv_dbr, None)
     elif pv_dbr == dbr.DBR_ENUM and datatype is bool:
         # Database can't do bools, so are often representated as enums, CA can do int
         pv_choices_len = get_unique(
