@@ -25,8 +25,8 @@ from ._signal_backend import SignalBackend
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout,
-                     NotConnected, WatcherUpdate, in_micros,
-                     wait_for_connection)
+                     NotConnected, ReadingValueCallback, T, WatcherUpdate,
+                     get_dtype, get_unique, in_micros, wait_for_connection)
 
 __all__ = [
     "DetectorControl",
@@ -107,7 +107,11 @@ __all__ = [
     "CalculatableTimeout",
     "CalculateTimeout",
     "NotConnected",
+    "ReadingValueCallback",
+    "T",
     "WatcherUpdate",
+    "get_dtype",
+    "get_unique",
     "in_micros",
     "wait_for_connection",
 ]
