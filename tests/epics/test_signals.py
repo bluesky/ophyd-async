@@ -20,6 +20,7 @@ from bluesky.protocols import DataKey, Reading
 
 from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
+from ophyd_async.epics._backend.common import LimitPair, Limits
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
 from ophyd_async.epics.signal.signal import (
     _make_backend,
@@ -164,15 +165,18 @@ class MyEnum(str, Enum):
 
 _metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
     "ca": {
-        "integer": {"units": ANY},
-        "bool": {"units": ANY},
-        "number": {"units": ANY, "precision": ANY},
+        "bool": {"units": ANY, "limits": ANY},
+        "integer": {"units": ANY, "limits": ANY},
+        "number": {"units": ANY, "limits": ANY, "precision": ANY},
+        "enum": {"limits": ANY},
+        "string": {"limits": ANY},
     },
     "pva": {
-        "integer": {"units": ANY, "precision": ANY},
-        "string": {"units": ANY, "precision": ANY},
-        "bool": {},
-        "number": {"units": ANY, "precision": ANY},
+        "bool": {"limits": ANY},
+        "integer": {"units": ANY, "precision": ANY, "limits": ANY},
+        "number": {"units": ANY, "precision": ANY, "limits": ANY},
+        "enum": {"limits": ANY},
+        "string": {"units": ANY, "precision": ANY, "limits": ANY},
     },
 }
 
@@ -529,6 +533,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
+                "limits": ANY,
             } == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
@@ -614,3 +619,99 @@ async def test_str_returns_enum(ioc: IOC):
     assert val == MyEnum.b
     assert val == "Bbb"
     assert val is not MyEnum.b
+
+
+async def test_signal_returns_units_and_precision(ioc: IOC):
+    await ioc.make_backend(float, "float")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float"
+
+    sig = epics_signal_rw(float, pv_name)
+    await sig.connect()
+    datakey = (await sig.describe())[""]
+    assert datakey["units"] == "mm"
+    assert datakey["precision"] == 1
+
+
+async def test_signal_not_return_none_units_and_precision(ioc: IOC):
+    await ioc.make_backend(str, "str")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:str"
+
+    sig = epics_signal_rw(str, pv_name)
+    await sig.connect()
+    datakey = (await sig.describe())[""]
+    assert not hasattr(datakey, "units")
+    assert not hasattr(datakey, "precision")
+
+
+async def test_signal_returns_limits(ioc: IOC):
+    await ioc.make_backend(int, "int")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:int"
+
+    expected_limits = Limits(
+        # LOW, HIGH
+        warning=LimitPair(low=5.0, high=96.0),
+        # DRVL, DRVH
+        control=LimitPair(low=10.0, high=90.0),
+        # LOPR, HOPR
+        display=LimitPair(low=0.0, high=100.0),
+        # LOLO, HIHI
+        alarm=LimitPair(low=2.0, high=98.0),
+    )
+
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+    limits = (await sig.describe())[""]["limits"]
+    assert limits == expected_limits
+
+
+async def test_signal_returns_partial_limits(ioc: IOC):
+    await ioc.make_backend(int, "partialint")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:partialint"
+    not_set = 0 if ioc.protocol == "ca" else None
+
+    expected_limits = Limits(
+        # LOLO, HIHI
+        alarm=LimitPair(low=2.0, high=98.0),
+        # DRVL, DRVH
+        control=LimitPair(low=10.0, high=90.0),
+        # LOPR, HOPR
+        display=LimitPair(low=0.0, high=100.0),
+        # HSV, LSV not set.
+        warning=LimitPair(low=not_set, high=not_set),
+    )
+
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+    limits = (await sig.describe())[""]["limits"]
+    assert limits == expected_limits
+
+
+async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
+    await ioc.make_backend(int, "lessint")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:lessint"
+    not_set = 0 if ioc.protocol == "ca" else None
+
+    expected_limits = Limits(
+        # LOLO, HIHI
+        alarm=LimitPair(low=not_set, high=not_set),
+        # control = display if DRVL, DRVH not set
+        control=LimitPair(low=0.0, high=100.0),
+        # LOPR, HOPR
+        display=LimitPair(low=0.0, high=100.0),
+        # LOW, HIGH
+        warning=LimitPair(low=2.0, high=98.0),
+    )
+
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+    limits = (await sig.describe())[""]["limits"]
+    assert limits == expected_limits
+
+
+async def test_signal_not_return_no_limits(ioc: IOC):
+    await ioc.make_backend(MyEnum, "enum")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
+    sig = epics_signal_rw(MyEnum, pv_name)
+    await sig.connect()
+    datakey = (await sig.describe())[""]
+    assert not hasattr(datakey, "limits")

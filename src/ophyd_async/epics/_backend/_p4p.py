@@ -21,7 +21,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
-from .common import _common_meta, get_supported_values
+from .common import LimitPair, Limits, common_meta, get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: Dict[str, Dtype] = {
@@ -67,7 +67,7 @@ def _data_key_from_value(
         shape=shape,
     )
     if display_data is not None:
-        for key in _common_meta:
+        for key in common_meta:
             attr = getattr(display_data, key, nan)
             if isinstance(attr, str) or not isnan(attr):
                 d[key] = attr
@@ -75,7 +75,40 @@ def _data_key_from_value(
     if choices is not None:
         d["choices"] = choices
 
+    if limits := _limits_from_value(value):
+        d["limits"] = limits
+
     return d
+
+
+def _limits_from_value(value: Value) -> Limits:
+    valueAlarm = getattr(value, "valueAlarm", None)
+    _empty_limit = LimitPair(low=None, high=None)
+
+    def get_control_or_display_limit(limit: str) -> LimitPair:
+        if (control_or_display := getattr(value, limit, None)) is None:
+            return _empty_limit
+        low = getattr(control_or_display, "limitLow", None)
+        high = getattr(control_or_display, "limitHigh", None)
+        return LimitPair(
+            low=None if isnan(low) else low, high=None if isnan(high) else high
+        )
+
+    def get_alarm_or_warning_limit(limit: str) -> LimitPair:
+        if valueAlarm is None:
+            return _empty_limit
+        low = getattr(valueAlarm, f"low{limit}Limit", None)
+        high = getattr(valueAlarm, f"high{limit}Limit", None)
+        return LimitPair(
+            low=None if isnan(low) else low, high=None if isnan(high) else high
+        )
+
+    return Limits(
+        alarm=get_alarm_or_warning_limit("Alarm"),
+        control=get_control_or_display_limit("control"),
+        display=get_control_or_display_limit("display"),
+        warning=get_alarm_or_warning_limit("Warning"),
+    )
 
 
 class PvaConverter:
