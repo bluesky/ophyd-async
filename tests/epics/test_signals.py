@@ -794,7 +794,7 @@ async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
     not_set = 0 if ioc.protocol == "ca" else None
 
     expected_limits = Limits(
-        # LOLO, HIHI
+        # HSV, LSV not set
         alarm=LimitPair(low=not_set, high=not_set),
         # control = display if DRVL, DRVH not set
         control=LimitPair(low=0.0, high=100.0),
