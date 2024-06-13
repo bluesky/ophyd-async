@@ -10,8 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from types import GenericAlias
-from typing import (Any, Dict, Literal, Optional, Sequence, Tuple, Type,
-                    TypedDict)
+from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
 from unittest.mock import ANY
 
 import numpy as np
@@ -24,10 +23,14 @@ from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics._backend.common import LimitPair, Limits
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
-from ophyd_async.epics.signal.signal import (_make_backend, epics_signal_r,
-                                             epics_signal_rw,
-                                             epics_signal_rw_rbv,
-                                             epics_signal_w, epics_signal_x)
+from ophyd_async.epics.signal.signal import (
+    _make_backend,
+    epics_signal_r,
+    epics_signal_rw,
+    epics_signal_rw_rbv,
+    epics_signal_w,
+    epics_signal_x,
+)
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
