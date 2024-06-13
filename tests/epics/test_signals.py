@@ -10,27 +10,18 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from types import GenericAlias
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Literal,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    TypedDict,
-)
+from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
 from unittest.mock import ANY
 
 import numpy as np
 import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
-from bluesky.protocols import Reading
+from bluesky.protocols import DataKey, Reading
 
 from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
 from ophyd_async.core.utils import NotConnected
+from ophyd_async.epics._backend.common import LimitPair, Limits
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
 from ophyd_async.epics.signal.signal import (
     _make_backend,
@@ -164,7 +155,7 @@ def _is_numpy_subclass(t):
 async def assert_monitor_then_put(
     ioc: IOC,
     suffix: str,
-    descriptor: dict,
+    datakey: dict,
     initial_value: T,
     put_value: T,
     datatype: Optional[Type[T]] = None,
@@ -174,9 +165,9 @@ async def assert_monitor_then_put(
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
     try:
-        # Check descriptor
-        pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
-        assert dict(source=pv_name, **descriptor) == await backend.get_datakey(pv_name)
+        # Check datakey
+        source = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:{suffix}"
+        assert dict(source=source, **datakey) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(
             pytest.approx(initial_value),
@@ -211,24 +202,53 @@ class MyEnum(str, Enum):
     c = "Ccc"
 
 
-def integer_d(value):
-    return {"dtype": "integer", "shape": []}
+_metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
+    "ca": {
+        "bool": {"units": ANY, "limits": ANY},
+        "integer": {"units": ANY, "limits": ANY},
+        "number": {"units": ANY, "limits": ANY, "precision": ANY},
+        "enum": {"limits": ANY},
+        "string": {"limits": ANY},
+    },
+    "pva": {
+        "bool": {"limits": ANY},
+        "integer": {"units": ANY, "precision": ANY, "limits": ANY},
+        "number": {"units": ANY, "precision": ANY, "limits": ANY},
+        "enum": {"limits": ANY},
+        "string": {"units": ANY, "precision": ANY, "limits": ANY},
+    },
+}
 
 
-def number_d(value):
-    return {"dtype": "number", "shape": []}
+def datakey(protocol: str, suffix: str, value=None) -> DataKey:
+    def get_internal_dtype(suffix: str) -> str:
+        # uint32, [u]int64 backed by DBR_DOUBLE, have precision
+        if "float" in suffix or "uint32" in suffix or "int64" in suffix:
+            return "number"
+        if "int" in suffix:
+            return "integer"
+        if "bool" in suffix:
+            return "bool"
+        if "enum" in suffix:
+            return "enum"
+        return "string"
 
+    def get_dtype(suffix: str) -> str:
+        if suffix.endswith("a"):
+            return "array"
+        if "enum" in suffix:
+            return "string"
+        return get_internal_dtype(suffix)
 
-def string_d(value):
-    return {"dtype": "string", "shape": []}
+    dtype = get_dtype(suffix)
 
+    d = {"dtype": dtype, "shape": [len(value)] if dtype == "array" else []}
+    if get_internal_dtype(suffix) == "enum":
+        d["choices"] = [e.value for e in type(value)]
 
-def enum_d(value):
-    return {"dtype": "string", "shape": [], "choices": ["Aaa", "Bbb", "Ccc"]}
+    d.update(_metadata[protocol].get(get_internal_dtype(suffix), {}))
 
-
-def waveform_d(value):
-    return {"dtype": "array", "shape": [len(value)]}
+    return d
 
 
 ls1 = "a string that is just longer than forty characters"
@@ -236,21 +256,19 @@ ls2 = "another string that is just longer than forty characters"
 
 
 @pytest.mark.parametrize(
-    "datatype, suffix, initial_value, put_value, descriptor, supported_backends",
+    "datatype, suffix, initial_value, put_value, supported_backends",
     [
         # python builtin scalars
-        (int, "int", 42, 43, integer_d, {"ca", "pva"}),
-        (float, "float", 3.141, 43.5, number_d, {"ca", "pva"}),
-        (str, "str", "hello", "goodbye", string_d, {"ca", "pva"}),
-        (MyEnum, "enum", MyEnum.b, MyEnum.c, enum_d, {"ca", "pva"}),
-        (str, "enum", "Bbb", "Ccc", enum_d, {"ca", "pva"}),
+        (int, "int", 42, 43, {"ca", "pva"}),
+        (float, "float", 3.141, 43.5, {"ca", "pva"}),
+        (str, "str", "hello", "goodbye", {"ca", "pva"}),
+        (MyEnum, "enum", MyEnum.b, MyEnum.c, {"ca", "pva"}),
         # numpy arrays of numpy types
         (
             npt.NDArray[np.int8],
             "int8a",
             [-128, 127],
             [-8, 3, 44],
-            waveform_d,
             {"pva"},
         ),
         (
@@ -258,7 +276,6 @@ ls2 = "another string that is just longer than forty characters"
             "uint8a",
             [0, 255],
             [218],
-            waveform_d,
             {"ca", "pva"},
         ),
         (
@@ -266,7 +283,6 @@ ls2 = "another string that is just longer than forty characters"
             "int16a",
             [-32768, 32767],
             [-855],
-            waveform_d,
             {"ca", "pva"},
         ),
         (
@@ -274,7 +290,6 @@ ls2 = "another string that is just longer than forty characters"
             "uint16a",
             [0, 65535],
             [5666],
-            waveform_d,
             {"pva"},
         ),
         (
@@ -282,7 +297,6 @@ ls2 = "another string that is just longer than forty characters"
             "int32a",
             [-2147483648, 2147483647],
             [-2],
-            waveform_d,
             {"ca", "pva"},
         ),
         (
@@ -290,7 +304,6 @@ ls2 = "another string that is just longer than forty characters"
             "uint32a",
             [0, 4294967295],
             [1022233],
-            waveform_d,
             {"pva"},
         ),
         (
@@ -298,7 +311,6 @@ ls2 = "another string that is just longer than forty characters"
             "int64a",
             [-2147483649, 2147483648],
             [-3],
-            waveform_d,
             {"pva"},
         ),
         (
@@ -306,7 +318,6 @@ ls2 = "another string that is just longer than forty characters"
             "uint64a",
             [0, 4294967297],
             [995444],
-            waveform_d,
             {"pva"},
         ),
         (
@@ -314,7 +325,6 @@ ls2 = "another string that is just longer than forty characters"
             "float32a",
             [0.000002, -123.123],
             [1.0],
-            waveform_d,
             {"ca", "pva"},
         ),
         (
@@ -322,7 +332,6 @@ ls2 = "another string that is just longer than forty characters"
             "float64a",
             [0.1, -12345678.123],
             [0.2],
-            waveform_d,
             {"ca", "pva"},
         ),
         (
@@ -330,7 +339,6 @@ ls2 = "another string that is just longer than forty characters"
             "stra",
             ["five", "six", "seven"],
             ["nine", "ten"],
-            waveform_d,
             {"pva"},
         ),
         (
@@ -338,12 +346,11 @@ ls2 = "another string that is just longer than forty characters"
             "stra",
             ["five", "six", "seven"],
             ["nine", "ten"],
-            waveform_d,
             {"ca"},
         ),
         # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
-        # (str, "longstr", ls1, ls2, string_d),
-        # (str, "longstr2.VAL$", ls1, ls2, string_d),
+        # (str, "longstr", ls1, ls2),
+        # (str, "longstr2.VAL$", ls1, ls2),
     ],
 )
 async def test_backend_get_put_monitor(
@@ -352,7 +359,6 @@ async def test_backend_get_put_monitor(
     suffix: str,
     initial_value: T,
     put_value: T,
-    descriptor: Callable[[Any], dict],
     tmp_path,
     supported_backends: set[str],
 ):
@@ -366,7 +372,7 @@ async def test_backend_get_put_monitor(
     await assert_monitor_then_put(
         ioc,
         suffix,
-        descriptor(initial_value),
+        datakey(ioc.protocol, suffix, initial_value),
         initial_value,
         put_value,
         datatype,
@@ -375,7 +381,7 @@ async def test_backend_get_put_monitor(
     await assert_monitor_then_put(
         ioc,
         suffix,
-        descriptor(put_value),
+        datakey(ioc.protocol, suffix, put_value),
         put_value,
         initial_value,
         datatype=None,
@@ -388,16 +394,38 @@ async def test_backend_get_put_monitor(
 
 
 @pytest.mark.parametrize("suffix", ["bool", "bool_unnamed"])
-async def test_bool_conversion_of_enum(ioc: IOC, suffix: str) -> None:
+async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path) -> None:
+    """Booleans are converted to Short Enumerations with values 0,1 as database does
+    not support boolean natively.
+    The flow of test_backend_get_put_monitor Gets a value with a dtype of None: we
+    cannot tell the difference between an enum with 2 members and a boolean, so
+    cannot get a DataKey that does not mutate form.
+    This test otherwise performs the same.
+    """
+    # With the given datatype, check we have the correct initial value and putting
+    # works
     await assert_monitor_then_put(
         ioc,
-        suffix=suffix,
-        descriptor=integer_d(True),
-        initial_value=True,
-        put_value=False,
-        datatype=bool,
-        check_type=False,
+        suffix,
+        datakey(ioc.protocol, suffix),
+        True,
+        False,
+        bool,
     )
+    # With datatype guessed from CA/PVA, check we can set it back to the initial value
+    await assert_monitor_then_put(
+        ioc,
+        suffix,
+        datakey(ioc.protocol, suffix, True),
+        False,
+        True,
+        bool,
+    )
+
+    yaml_path = tmp_path / "test.yaml"
+    save_to_yaml([{"test": False}], yaml_path)
+    loaded = load_from_yaml(yaml_path)
+    assert np.all(loaded[0]["test"] is False)
 
 
 async def test_error_raised_on_disconnected_PV(ioc: IOC) -> None:
@@ -534,17 +562,15 @@ async def test_pva_table(ioc: IOC) -> None:
         enum=[MyEnum.c, MyEnum.b],
     )
     # TODO: what should this be for a variable length table?
-    descriptor = {"dtype": "object", "shape": []}
+    datakey = {"dtype": "object", "shape": [], "source": "test-source"}
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")
         # Make a monitor queue that will monitor for updates
         q = MonitorQueue(backend)
         try:
-            # Check descriptor
-            dict(source="test-source", **descriptor) == await backend.get_datakey(
-                "test-source"
-            )
+            # Check datakey
+            datakey == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -577,7 +603,7 @@ async def test_pvi_structure(ioc: IOC) -> None:
     }
 
     try:
-        # Check descriptor
+        # Check datakey
         with pytest.raises(NotImplementedError):
             await backend.get_datakey("")
         # Check initial value
@@ -609,6 +635,7 @@ async def test_pva_ntdarray(ioc: IOC):
                 "source": "test-source",
                 "dtype": "array",
                 "shape": [2, 3],
+                "limits": ANY,
             } == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
@@ -694,3 +721,99 @@ async def test_str_returns_enum(ioc: IOC):
     assert val == MyEnum.b
     assert val == "Bbb"
     assert val is not MyEnum.b
+
+
+async def test_signal_returns_units_and_precision(ioc: IOC):
+    await ioc.make_backend(float, "float")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float"
+
+    sig = epics_signal_rw(float, pv_name)
+    await sig.connect()
+    datakey = (await sig.describe())[""]
+    assert datakey["units"] == "mm"
+    assert datakey["precision"] == 1
+
+
+async def test_signal_not_return_none_units_and_precision(ioc: IOC):
+    await ioc.make_backend(str, "str")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:str"
+
+    sig = epics_signal_rw(str, pv_name)
+    await sig.connect()
+    datakey = (await sig.describe())[""]
+    assert not hasattr(datakey, "units")
+    assert not hasattr(datakey, "precision")
+
+
+async def test_signal_returns_limits(ioc: IOC):
+    await ioc.make_backend(int, "int")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:int"
+
+    expected_limits = Limits(
+        # LOW, HIGH
+        warning=LimitPair(low=5.0, high=96.0),
+        # DRVL, DRVH
+        control=LimitPair(low=10.0, high=90.0),
+        # LOPR, HOPR
+        display=LimitPair(low=0.0, high=100.0),
+        # LOLO, HIHI
+        alarm=LimitPair(low=2.0, high=98.0),
+    )
+
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+    limits = (await sig.describe())[""]["limits"]
+    assert limits == expected_limits
+
+
+async def test_signal_returns_partial_limits(ioc: IOC):
+    await ioc.make_backend(int, "partialint")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:partialint"
+    not_set = 0 if ioc.protocol == "ca" else None
+
+    expected_limits = Limits(
+        # LOLO, HIHI
+        alarm=LimitPair(low=2.0, high=98.0),
+        # DRVL, DRVH
+        control=LimitPair(low=10.0, high=90.0),
+        # LOPR, HOPR
+        display=LimitPair(low=0.0, high=100.0),
+        # HSV, LSV not set.
+        warning=LimitPair(low=not_set, high=not_set),
+    )
+
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+    limits = (await sig.describe())[""]["limits"]
+    assert limits == expected_limits
+
+
+async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
+    await ioc.make_backend(int, "lessint")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:lessint"
+    not_set = 0 if ioc.protocol == "ca" else None
+
+    expected_limits = Limits(
+        # HSV, LSV not set
+        alarm=LimitPair(low=not_set, high=not_set),
+        # control = display if DRVL, DRVH not set
+        control=LimitPair(low=0.0, high=100.0),
+        # LOPR, HOPR
+        display=LimitPair(low=0.0, high=100.0),
+        # LOW, HIGH
+        warning=LimitPair(low=2.0, high=98.0),
+    )
+
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+    limits = (await sig.describe())[""]["limits"]
+    assert limits == expected_limits
+
+
+async def test_signal_not_return_no_limits(ioc: IOC):
+    await ioc.make_backend(MyEnum, "enum")
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
+    sig = epics_signal_rw(MyEnum, pv_name)
+    await sig.connect()
+    datakey = (await sig.describe())[""]
+    assert not hasattr(datakey, "limits")
