@@ -135,6 +135,14 @@ class CaLongStrConverter(CaConverter):
         return value + "\0"
 
 
+class CaArrayConverter(CaConverter):
+    def get_datakey(self, source: str, value: AugmentedValue) -> DataKey:
+        return {"source": source, "dtype": "array", "shape": [len(value)]}
+
+    def value(self, value: AugmentedValue):
+        return np.array(value, copy=False)
+
+
 @dataclass
 class CaEnumConverter(CaConverter):
     """To prevent issues when a signal is restarted and returns with different enum
@@ -187,7 +195,7 @@ def make_converter(
             datatype_dtype = get_dtype(datatype)
             if not datatype_dtype or not np.can_cast(datatype_dtype, np.str_):
                 raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
-        return CaConverter(pv_dbr, None)
+        return CaArrayConverter(pv_dbr, None)
     elif is_array:
         pv_dtype = get_unique({k: v.dtype for k, v in values.items()}, "dtypes")
         # This is an array
