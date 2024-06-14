@@ -326,6 +326,38 @@ async def test_mock_signal_of_soft_signal_backend_receives_intial_value():
     assert await soft_device.my_signal.get_value() == 10
 
 
+async def test_mock_signal_of_soft_signal_backend_receives_metadata():
+    class SomeDevice(Device):
+        def __init__(self, name):
+            self.my_signal = soft_signal_rw(
+                datatype=float, initial_value=1.0, name=name, units="mm", precision=2
+            )
+
+    mocked_device = SomeDevice("mocked_device")
+    await mocked_device.connect(mock=True)
+    soft_device = SomeDevice("soft_device")
+    await soft_device.connect(mock=False)
+
+    assert await mocked_device.my_signal.describe() == {
+        "mocked_device": {
+            "dtype": "number",
+            "shape": [],
+            "source": "mock+soft://mocked_device",
+            "units": "mm",
+            "precision": 2,
+        }
+    }
+    assert await soft_device.my_signal.describe() == {
+        "soft_device": {
+            "dtype": "number",
+            "shape": [],
+            "source": "soft://soft_device",
+            "units": "mm",
+            "precision": 2,
+        }
+    }
+
+
 async def test_writing_to_soft_signals_in_mock():
     class MyDevice(Device):
         def __init__(self, prefix: str, name: str = ""):
