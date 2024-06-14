@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.soft_signal_backend &#8212; ophyd-async 0.3.1a2.dev4+g20a9b853 documentation</title>
+    <title>ophyd_async.core.soft_signal_backend &#8212; ophyd-async 0.3.2.dev1+ge4ab7d65 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=7bccd02c"></script>
+    <script src="../../../_static/documentation_options.js?v=aadbf309"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,7 +491,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">abc</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_origin</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypedDict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_origin</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">Dtype</span><span class="p">,</span> <span class="n">Reading</span>
@@ -505,6 +505,11 @@ document.write(`
     <span class="nb">float</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
     <span class="nb">bool</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
 <span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">SignalMetadata</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <span class="k">class</span> <span class="nc">SoftConverter</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
@@ -521,7 +526,8 @@ document.write(`
             <span class="n">alarm_severity</span><span class="o">=-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">severity</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">severity</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+        <span class="n">dk</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="o">**</span><span class="n">metadata</span><span class="p">}</span>
         <span class="n">dtype</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
             <span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span>
@@ -530,8 +536,8 @@ document.write(`
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">dtype</span> <span class="ow">in</span> <span class="n">primitive_dtypes</span>
         <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;invalid converter for value of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">dtype_name</span> <span class="o">=</span> <span class="n">primitive_dtypes</span><span class="p">[</span><span class="n">dtype</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">dtype_name</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="n">dk</span><span class="p">[</span><span class="s2">&quot;dtype&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">primitive_dtypes</span><span class="p">[</span><span class="n">dtype</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">dk</span>
 
     <span class="k">def</span> <span class="nf">make_initial_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -541,8 +547,8 @@ document.write(`
 
 
 <span class="k">class</span> <span class="nc">SoftArrayConverter</span><span class="p">(</span><span class="n">SoftConverter</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)]}</span>
+    <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)],</span> <span class="o">**</span><span class="n">metadata</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">make_initial_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -564,9 +570,15 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">enum_class</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
         <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">enum_class</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="n">choices</span><span class="p">}</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+            <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="n">choices</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">make_initial_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -602,9 +614,11 @@ document.write(`
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">SignalMetadata</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="n">datatype</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial_value</span> <span class="o">=</span> <span class="n">initial_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="p">:</span> <span class="n">SoftConverter</span> <span class="o">=</span> <span class="n">make_converter</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_initial_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">make_initial_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">)</span>
@@ -657,7 +671,7 @@ document.write(`
 <div class="viewcode-block" id="SoftSignalBackend.get_datakey">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.SoftSignalBackend.html#ophyd_async.core.SoftSignalBackend.get_datakey">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">get_datakey</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">get_datakey</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SoftSignalBackend.get_reading">

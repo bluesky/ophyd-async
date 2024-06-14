@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.signal &#8212; ophyd-async 0.3.1a2.dev4+g20a9b853 documentation</title>
+    <title>ophyd_async.core.signal &#8212; ophyd-async 0.3.2.dev1+ge4ab7d65 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=7bccd02c"></script>
+    <script src="../../../_static/documentation_options.js?v=aadbf309"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -517,7 +517,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">.async_status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
 <span class="kn">from</span> <span class="nn">.device</span> <span class="kn">import</span> <span class="n">Device</span>
 <span class="kn">from</span> <span class="nn">.signal_backend</span> <span class="kn">import</span> <span class="n">SignalBackend</span>
-<span class="kn">from</span> <span class="nn">.soft_signal_backend</span> <span class="kn">import</span> <span class="n">SoftSignalBackend</span>
+<span class="kn">from</span> <span class="nn">.soft_signal_backend</span> <span class="kn">import</span> <span class="n">SignalMetadata</span><span class="p">,</span> <span class="n">SoftSignalBackend</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">CalculatableTimeout</span><span class="p">,</span> <span class="n">CalculateTimeout</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">T</span>
 
 
@@ -811,9 +811,17 @@ document.write(`
     <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a read-writable Signal with a SoftSignalBackend&quot;&quot;&quot;</span>
-    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalRW</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a read-writable Signal with a SoftSignalBackend.</span>
+<span class="sd">    May pass metadata, which are propagated into describe.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">SignalMetadata</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalRW</span><span class="p">(</span>
+        <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">signal</span></div>
 
 
@@ -824,12 +832,16 @@ document.write(`
     <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a tuple of a read-only Signal and a callable through</span>
-<span class="sd">    which the signal can be internally modified within the device. Use</span>
-<span class="sd">    soft_signal_rw if you want a device that is externally modifiable</span>
+<span class="sd">    which the signal can be internally modified within the device.</span>
+<span class="sd">    May pass metadata, which are propagated into describe.</span>
+<span class="sd">    Use soft_signal_rw if you want a device that is externally modifiable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">SignalMetadata</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
     <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">)</span></div>
