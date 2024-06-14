@@ -1,66 +1,45 @@
-from dataclasses import dataclass
 from pathlib import Path
 from typing import (
-    Any,
     AsyncGenerator,
     AsyncIterator,
     Dict,
-    Iterator,
     List,
     Optional,
-    Sequence,
 )
 
 import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
-from event_model import (
-    ComposeStreamResource,
-    ComposeStreamResourceBundle,
-    StreamDatum,
-    StreamRange,
-    StreamResource,
-)
 
-from ophyd_async.core import DirectoryInfo, DirectoryProvider
+from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import SignalR, observe_value
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
 # raw data path
-DATA_PATH = "/entry/data/data"
+DATA_PATH = "_entry_data_data"
 
 # pixel sum path
-SUM_PATH = "/entry/sum"
+SUM_PATH = "_entry_sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 
-@dataclass
-class DatasetConfig:
-    name: str
-    shape: Sequence[int]
-    maxshape: tuple[Any, ...] = (None,)
-    path: Optional[str] = None
-    multiplier: Optional[int] = 1
-    dtype: Optional[Any] = None
-    fillvalue: Optional[int] = None
-
-
 def get_full_file_description(
-    datasets: List[DatasetConfig], outer_shape: tuple[int, ...]
+    datasets: List[_HDFDataset], outer_shape: tuple[int, ...]
 ):
     full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
-        source = f"soft://{d.name}"
+        source = f"soft://{d.data_key}"
         shape = outer_shape + tuple(d.shape)
         dtype = "number" if d.shape == [1] else "array"
         descriptor = DataKey(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
         )
-        key = d.name.replace("/", "_")
+        key = d.data_key
         full_file_description[key] = descriptor
     return full_file_description
 
@@ -79,67 +58,6 @@ def generate_interesting_pattern(x: float, y: float) -> float:
     """
     z = 0.5 + (np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)) / 2
     return z
-
-
-class HdfStreamProvider:
-    def __init__(
-        self,
-        directory_info: DirectoryInfo,
-        full_file_name: Path,
-        datasets: List[DatasetConfig],
-    ) -> None:
-        self._last_emitted = 0
-        self._bundles: List[ComposeStreamResourceBundle] = self._compose_bundles(
-            directory_info, full_file_name, datasets
-        )
-
-    def _compose_bundles(
-        self,
-        directory_info: DirectoryInfo,
-        full_file_name: Path,
-        datasets: List[DatasetConfig],
-    ) -> List[StreamAsset]:
-        path = str(full_file_name.relative_to(directory_info.root))
-        root = str(directory_info.root)
-        bundler_composer = ComposeStreamResource()
-
-        bundles: List[ComposeStreamResourceBundle] = []
-
-        bundles = [
-            bundler_composer(
-                spec=SLICE_NAME,
-                root=root,
-                resource_path=path,
-                data_key=d.name.replace("/", "_"),
-                resource_kwargs={
-                    "path": d.path,
-                    "multiplier": d.multiplier,
-                    "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-                },
-            )
-            for d in datasets
-        ]
-        return bundles
-
-    def stream_resources(self) -> Iterator[StreamResource]:
-        for bundle in self._bundles:
-            yield bundle.stream_resource_doc
-
-    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
-        # Indices are relative to resource
-        if indices_written > self._last_emitted:
-            updated_stream_range = StreamRange(
-                start=self._last_emitted,
-                stop=indices_written,
-            )
-            self._last_emitted = indices_written
-            for bundle in self._bundles:
-                yield bundle.compose_stream_datum(indices=updated_stream_range)
-        return None
-
-    def close(self) -> None:
-        for bundle in self._bundles:
-            bundle.close()
 
 
 class PatternGenerator:
@@ -165,7 +83,7 @@ class PatternGenerator:
             * MAX_UINT8_VALUE
         )
         self.STARTING_BLOB = blob
-        self._hdf_stream_provider: Optional[HdfStreamProvider] = None
+        self._hdf_stream_provider: Optional[_HDFFile] = None
         self._handle_for_h5_file: Optional[h5py.File] = None
         self.target_path: Optional[Path] = None
 
@@ -231,7 +149,7 @@ class PatternGenerator:
         datasets = self._get_datasets()
         for d in datasets:
             self._handle_for_h5_file.create_dataset(
-                name=d.name,
+                name=d.data_key,
                 shape=d.shape,
                 dtype=d.dtype,
                 maxshape=d.maxshape,
@@ -255,24 +173,24 @@ class PatternGenerator:
         new_path: Path = info.root / info.resource_dir / filename
         return new_path
 
-    def _get_datasets(self) -> List[DatasetConfig]:
-        raw_dataset = DatasetConfig(
+    def _get_datasets(self) -> List[_HDFDataset]:
+        raw_dataset = _HDFDataset(
             # name=data_name,
-            name=DATA_PATH,
+            data_key=DATA_PATH,
             dtype=np.uint8,
             shape=(1, self.height, self.width),
             maxshape=(None, self.height, self.width),
         )
 
-        sum_dataset = DatasetConfig(
-            name=SUM_PATH,
+        sum_dataset = _HDFDataset(
+            data_key=SUM_PATH,
             dtype=np.float64,
             shape=(1,),
             maxshape=(None,),
             fillvalue=-1,
         )
 
-        datasets: List[DatasetConfig] = [raw_dataset, sum_dataset]
+        datasets: List[_HDFDataset] = [raw_dataset, sum_dataset]
         return datasets
 
     async def collect_stream_docs(
@@ -294,7 +212,7 @@ class PatternGenerator:
                 assert self.target_path, "open file has not been called"
                 datasets = self._get_datasets()
                 self._datasets = datasets
-                self._hdf_stream_provider = HdfStreamProvider(
+                self._hdf_stream_provider = _HDFFile(
                     self._directory_provider(),
                     self.target_path,
                     self._datasets,
