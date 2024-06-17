@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.panda._common_blocks &#8212; ophyd-async 0.3.2.dev3+g299b4bd4 documentation</title>
+    <title>ophyd_async.panda._common_blocks &#8212; ophyd-async 0.3.2.dev4+gfebf9cea documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=75af3246"></script>
+    <script src="../../../_static/documentation_options.js?v=8c933cc4"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -489,7 +489,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.panda._table</span> <span class="kn">import</span> <span class="n">SeqTable</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.panda._table</span> <span class="kn">import</span> <span class="n">DatasetTable</span><span class="p">,</span> <span class="n">SeqTable</span>
 
 
 <div class="viewcode-block" id="DataBlock">
@@ -501,7 +501,8 @@ document.write(`
     <span class="n">num_capture</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">num_captured</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">capture</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">flush_period</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></div>
+    <span class="n">flush_period</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">datasets</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">DatasetTable</span><span class="p">]</span></div>
 
 
 

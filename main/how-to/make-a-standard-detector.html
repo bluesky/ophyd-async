@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.3.2.dev3+g299b4bd4 documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.3.2.dev4+gfebf9cea documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../_static/documentation_options.js?v=75af3246"></script>
+    <script src="../_static/documentation_options.js?v=8c933cc4"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -634,15 +634,11 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">directory_provider</span><span class="p">:</span> <span class="n">DirectoryProvider</span><span class="p">,</span>
-        <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
         <span class="n">panda_device</span><span class="p">:</span> <span class="n">CommonPandaBlocks</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span> <span class="o">=</span> <span class="n">panda_device</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_directory_provider</span> <span class="o">=</span> <span class="n">directory_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">_HDFDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_HDFFile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="mi">1</span>
@@ -651,14 +647,9 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
     <span class="k">async</span> <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve and get descriptor of all PandA signals marked for capture&quot;&quot;&quot;</span>
 
-        <span class="c1"># Get capture PVs by looking at panda. Gives mapping of dotted attribute path</span>
-        <span class="c1"># to Signal object</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">capture_signals</span> <span class="o">=</span> <span class="n">get_capture_signals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="p">)</span>
-
         <span class="c1"># Ensure flushes are immediate</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">flush_period</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">to_capture</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_signals_marked_for_capture</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">capture_signals</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_directory_provider</span><span class="p">()</span>
         <span class="c1"># Set the initial values</span>
@@ -674,36 +665,21 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
 
         <span class="c1"># Wait for it to start, stashing the status that tells us when it finishes</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">multiplier</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;All PandA datasets should be scalar, multiplier should be 1&quot;</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">attribute_path</span><span class="p">,</span> <span class="n">capture_signal</span> <span class="ow">in</span> <span class="n">to_capture</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">split_path</span> <span class="o">=</span> <span class="n">attribute_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
-            <span class="n">signal_name</span> <span class="o">=</span> <span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="c1"># Get block names from numbered blocks, eg INENC[1]</span>
-            <span class="n">block_name</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span><span class="si">}{</span><span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="k">if</span> <span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">()</span>
-                <span class="k">else</span> <span class="n">split_path</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-            <span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="n">capture_signal</span><span class="o">.</span><span class="n">capture_type</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="n">_HDFDataset</span><span class="p">(</span>
-                        <span class="n">name</span><span class="p">,</span>
-                        <span class="n">block_name</span><span class="p">,</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">signal_name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">signal_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                        <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">()</span>
 
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a describe based on the datasets PV</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_datasets</span><span class="p">()</span>
         <span class="n">describe</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">data_key</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
                 <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
                 <span class="n">shape</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
@@ -712,6 +688,18 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
             <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">describe</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_update_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load data from the datasets PV on the panda, update internal</span>
+<span class="sd">        representation of datasets that the panda will write.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">capture_table</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">_HDFDataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
 
     <span class="c1"># Next few functions are exactly the same as AD writer. Could move as default</span>
     <span class="c1"># StandardDetector behavior</span>
@@ -775,9 +763,7 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
         <span class="n">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">controller</span> <span class="o">=</span> <span class="n">PandaPcapController</span><span class="p">(</span><span class="n">pcap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="p">)</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="n">PandaHDFWriter</span><span class="p">(</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
             <span class="n">directory_provider</span><span class="o">=</span><span class="n">directory_provider</span><span class="p">,</span>
-            <span class="n">name_provider</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
             <span class="n">panda_device</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>

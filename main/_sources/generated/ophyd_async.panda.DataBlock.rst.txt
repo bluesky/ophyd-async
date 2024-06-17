@@ -43,5 +43,6 @@ ophyd\_async.panda.DataBlock
       ~DataBlock.num_captured
       ~DataBlock.capture
       ~DataBlock.flush_period
+      ~DataBlock.datasets
    
    

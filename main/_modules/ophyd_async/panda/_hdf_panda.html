@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.panda._hdf_panda &#8212; ophyd-async 0.3.2.dev3+g299b4bd4 documentation</title>
+    <title>ophyd_async.panda._hdf_panda &#8212; ophyd-async 0.3.2.dev4+gfebf9cea documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=75af3246"></script>
+    <script src="../../../_static/documentation_options.js?v=8c933cc4"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -516,9 +516,7 @@ document.write(`
         <span class="n">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">controller</span> <span class="o">=</span> <span class="n">PandaPcapController</span><span class="p">(</span><span class="n">pcap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="p">)</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="n">PandaHDFWriter</span><span class="p">(</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
             <span class="n">directory_provider</span><span class="o">=</span><span class="n">directory_provider</span><span class="p">,</span>
-            <span class="n">name_provider</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
             <span class="n">panda_device</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
