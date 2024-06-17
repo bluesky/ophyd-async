@@ -28,9 +28,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         create_children_from_annotations(self)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
-            prefix=prefix,
             directory_provider=directory_provider,
-            name_provider=lambda: name,
             panda_device=self,
         )
         super().__init__(
