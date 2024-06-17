@@ -1,0 +1,86 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.panda.TimeUnits
+============================
+
+.. currentmodule:: ophyd_async.panda
+
+.. autoclass:: TimeUnits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TimeUnits.encode
+      ~TimeUnits.replace
+      ~TimeUnits.split
+      ~TimeUnits.rsplit
+      ~TimeUnits.join
+      ~TimeUnits.capitalize
+      ~TimeUnits.casefold
+      ~TimeUnits.title
+      ~TimeUnits.center
+      ~TimeUnits.count
+      ~TimeUnits.expandtabs
+      ~TimeUnits.find
+      ~TimeUnits.partition
+      ~TimeUnits.index
+      ~TimeUnits.ljust
+      ~TimeUnits.lower
+      ~TimeUnits.lstrip
+      ~TimeUnits.rfind
+      ~TimeUnits.rindex
+      ~TimeUnits.rjust
+      ~TimeUnits.rstrip
+      ~TimeUnits.rpartition
+      ~TimeUnits.splitlines
+      ~TimeUnits.strip
+      ~TimeUnits.swapcase
+      ~TimeUnits.translate
+      ~TimeUnits.upper
+      ~TimeUnits.startswith
+      ~TimeUnits.endswith
+      ~TimeUnits.removeprefix
+      ~TimeUnits.removesuffix
+      ~TimeUnits.isascii
+      ~TimeUnits.islower
+      ~TimeUnits.isupper
+      ~TimeUnits.istitle
+      ~TimeUnits.isspace
+      ~TimeUnits.isdecimal
+      ~TimeUnits.isdigit
+      ~TimeUnits.isnumeric
+      ~TimeUnits.isalpha
+      ~TimeUnits.isalnum
+      ~TimeUnits.isidentifier
+      ~TimeUnits.isprintable
+      ~TimeUnits.zfill
+      ~TimeUnits.format
+      ~TimeUnits.format_map
+      ~TimeUnits.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TimeUnits.min
+      ~TimeUnits.s
+      ~TimeUnits.ms
+      ~TimeUnits.us
+   
+   
