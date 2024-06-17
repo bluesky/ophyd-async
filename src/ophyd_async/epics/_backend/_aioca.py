@@ -88,9 +88,11 @@ def _data_key_from_augmented_value(
 
 def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
     def get_limits(limit: str) -> LimitPair:
-        low = getattr(value, f"lower_{limit}_limit", None)
-        high = getattr(value, f"upper_{limit}_limit", None)
-        return LimitPair(low=low, high=high)
+        low = getattr(value, f"lower_{limit}_limit", nan)
+        high = getattr(value, f"upper_{limit}_limit", nan)
+        return LimitPair(
+            low=None if isnan(low) else low, high=None if isnan(high) else high
+        )
 
     return Limits(
         alarm=get_limits("alarm"),
