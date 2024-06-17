@@ -46,7 +46,7 @@ class StaticDirectoryProvider(DirectoryProvider):
         if isinstance(directory_path, str):
             directory_path = Path(directory_path)
         self._directory_info = DirectoryInfo(
-            root=directory_path,
+            root=directory_path.resolve(),
             resource_dir=resource_dir,
             prefix=filename_prefix,
             suffix=filename_suffix,
