@@ -85,7 +85,7 @@ class PandaHDFWriter(DetectorWriter):
 
         capture_table = await self.panda_device.data.datasets.get_value()
         self._datasets = [
-            _HDFDataset(dataset_name, dataset_name, [1], multiplier=1)
+            _HDFDataset(dataset_name, "/" + dataset_name, [1], multiplier=1)
             for dataset_name in capture_table["name"]
         ]
 

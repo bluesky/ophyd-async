@@ -30,7 +30,7 @@ class _HDFFile:
                 data_key=ds.data_key,
                 resource_path=(f"{str(directory_info.root)}/{full_file_name}"),
                 resource_kwargs={
-                    "internal_path": ds.internal_path,
+                    "path": ds.internal_path,
                     "multiplier": ds.multiplier,
                     "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
                 },

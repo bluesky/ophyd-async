@@ -188,7 +188,7 @@ async def test_collect_stream_docs(
             "data_key": name,
             "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
             "resource_kwargs": {
-                "internal_path": name,
+                "path": "/" + name,
                 "multiplier": 1,
                 "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
             },

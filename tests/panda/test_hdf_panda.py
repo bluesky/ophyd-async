@@ -145,7 +145,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
         assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
         assert stream_resource["run_start"] == docs["start"][0]["uid"]
         assert stream_resource["resource_kwargs"] == {
-            "internal_path": dataset_name,
+            "path": "/" + dataset_name,
             "multiplier": 1,
             "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
         }
