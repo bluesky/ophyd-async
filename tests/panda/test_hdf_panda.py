@@ -1,5 +1,6 @@
 from typing import Dict
 
+import numpy as np
 import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
@@ -9,9 +10,8 @@ from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.mock_signal_utils import callback_on_mock_put
 from ophyd_async.core.signal import SignalR, assert_emitted
-from ophyd_async.epics.signal.signal import epics_signal_r
 from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
-from ophyd_async.panda.writers._hdf_writer import Capture
+from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
@@ -26,25 +26,28 @@ async def mock_hdf_panda(tmp_path):
     mock_hdf_panda = HDFPanda(
         "HDFPANDA:", directory_provider=directory_provider, name="panda"
     )
-    block_a = CaptureBlock(name="block_a")
-    block_b = CaptureBlock(name="block_b")
-    block_a.test_capture = epics_signal_r(
-        Capture, "pva://test_capture_a", name="test_capture_a"
-    )
-    block_b.test_capture = epics_signal_r(
-        Capture, "pva://test_capture_b", name="test_capture_b"
-    )
-
-    setattr(mock_hdf_panda, "block_a", block_a)
-    setattr(mock_hdf_panda, "block_b", block_b)
     await mock_hdf_panda.connect(mock=True)
 
     def link_function(value, **kwargs):
         set_mock_value(mock_hdf_panda.pcap.active, value)
 
     callback_on_mock_put(mock_hdf_panda.pcap.arm, link_function)
-    set_mock_value(block_a.test_capture, Capture.Min)
-    set_mock_value(block_b.test_capture, Capture.Diff)
+
+    set_mock_value(
+        mock_hdf_panda.data.datasets,
+        DatasetTable(
+            name=np.array(
+                [
+                    "x",
+                    "y",
+                ]
+            ),
+            hdf5_type=[
+                PandaHdf5DatasetType.UINT_32,
+                PandaHdf5DatasetType.FLOAT_64,
+            ],
+        ),
+    )
 
     yield mock_hdf_panda
 
@@ -127,10 +130,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
 
     # test descriptor
     data_key_names: Dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
-    assert data_key_names == [
-        "panda-block_a-test-Min",
-        "panda-block_b-test-Diff",
-    ]
+    assert data_key_names == ["x", "y"]
     for data_key_name in data_key_names:
         assert (
             docs["descriptor"][0]["data_keys"][data_key_name]["source"]
@@ -138,17 +138,15 @@ async def test_hdf_panda_hardware_triggered_flyable(
         )
 
     # test stream resources
-    for block_letter, stream_resource, data_key_name in zip(
-        ("a", "b"), docs["stream_resource"], data_key_names
+    for dataset_name, stream_resource, data_key_name in zip(
+        ("x", "y"), docs["stream_resource"], data_key_names
     ):
         assert stream_resource["data_key"] == data_key_name
         assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
         assert stream_resource["run_start"] == docs["start"][0]["uid"]
         assert stream_resource["resource_kwargs"] == {
-            "block": f"block_{block_letter}",
+            "path": "/" + dataset_name,
             "multiplier": 1,
-            "name": data_key_name,
-            "path": f"BLOCK_{block_letter.upper()}-TEST-{data_key_name.split('-')[-1]}",
             "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
         }
 

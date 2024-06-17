@@ -6,6 +6,16 @@ import numpy as np
 import numpy.typing as npt
 
 
+class PandaHdf5DatasetType(str, Enum):
+    FLOAT_64 = "float64"
+    UINT_32 = "uint32"
+
+
+class DatasetTable(TypedDict):
+    name: npt.NDArray[np.str_]
+    hdf5_type: Sequence[PandaHdf5DatasetType]
+
+
 class SeqTrigger(str, Enum):
     IMMEDIATE = "Immediate"
     BITA_0 = "BITA=0"
