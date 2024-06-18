@@ -12,9 +12,8 @@ from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
                               DeviceCollector, StandardDetector, StandardFlyer,
                               StaticDirectoryProvider, TriggerInfo,
                               TriggerLogic, set_mock_value)
-from ophyd_async.epics.areadetector.controllers import ADSimController
-from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+from ophyd_async.epics.adcore import ADBase, HDFWriter, NDFileHDF
+from ophyd_async.epics.adsimdetector import SimController
 
 
 class DummyTriggerLogic(TriggerLogic[int]):
@@ -48,11 +47,11 @@ class DummyController(DetectorControl):
 
 
 @pytest.fixture
-def controller(RE) -> ADSimController:
+def controller(RE) -> SimController:
     with DeviceCollector(mock=True):
         drv = ADBase("DRV")
 
-    return ADSimController(drv)
+    return SimController(drv)
 
 
 @pytest.fixture
@@ -72,7 +71,7 @@ def writer(RE, tmp_path: Path) -> HDFWriter:
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: HDFWriter,
-    controller: ADSimController,
+    controller: SimController,
 ):
     set_mock_value(writer.hdf.file_path_exists, True)
     detector: StandardDetector[Any] = StandardDetector(

@@ -4,15 +4,10 @@ from unittest.mock import patch
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (
-    DetectorTrigger,
-    DeviceCollector,
-    DirectoryProvider,
-    TriggerInfo,
-    set_mock_value,
-)
-from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusTriggerMode
-from ophyd_async.epics.areadetector.pilatus import PilatusDetector, PilatusReadoutTime
+from ophyd_async.core import (DetectorTrigger, DeviceCollector,
+                              DirectoryProvider, TriggerInfo, set_mock_value)
+from ophyd_async.epics.adpilatus import (PilatusDetector, PilatusReadoutTime,
+                                         PilatusTriggerMode)
 
 
 @pytest.fixture
@@ -80,7 +75,7 @@ async def test_trigger_mode_set_without_armed_pv(pilatus: PilatusDetector):
         await status
 
     with patch(
-        "ophyd_async.epics.areadetector.controllers.pilatus_controller.DEFAULT_TIMEOUT",
+        "ophyd_async.epics.adpilatus._pilatus_controller.DEFAULT_TIMEOUT",
         0.1,
     ):
         with pytest.raises(TimeoutError):

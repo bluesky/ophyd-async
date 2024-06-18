@@ -3,12 +3,11 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector, set_mock_value
-from ophyd_async.epics.areadetector.controllers import (ADSimController,
-                                                        PilatusController)
-from ophyd_async.epics.areadetector.drivers import ADBase, PilatusDriver
-from ophyd_async.epics.areadetector.drivers.pilatus_driver import \
-    PilatusTriggerMode
-from ophyd_async.epics.areadetector.utils import ImageMode
+from ophyd_async.epics import ImageMode
+from ophyd_async.epics.adcore import ADBase
+from ophyd_async.epics.adpilatus import (PilatusController, PilatusDriver,
+                                         PilatusTriggerMode)
+from ophyd_async.epics.adsimdetector import SimController
 
 
 @pytest.fixture
@@ -28,15 +27,15 @@ async def pilatus(RE, pilatus_driver: PilatusDriver) -> PilatusController:
 
 
 @pytest.fixture
-async def ad(RE) -> ADSimController:
+async def ad(RE) -> SimController:
     async with DeviceCollector(mock=True):
         drv = ADBase("DRIVER:")
-        controller = ADSimController(drv)
+        controller = SimController(drv)
 
     return controller
 
 
-async def test_ad_controller(RE, ad: ADSimController):
+async def test_ad_controller(RE, ad: SimController):
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         await ad.arm(num=1)
 
@@ -46,7 +45,7 @@ async def test_ad_controller(RE, ad: ADSimController):
     assert await driver.acquire.get_value() is True
 
     with patch(
-        "ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None
+        "ophyd_async.epics.utils.wait_for_value", return_value=None
     ):
         await ad.disarm()
 
