@@ -13,8 +13,8 @@ from ophyd_async.core import (DeviceCollector, NotConnected, assert_emitted,
                               assert_reading, assert_value,
                               callback_on_mock_put, get_mock_put,
                               set_mock_value)
-from ophyd_async.epics.demo import (Mover, Sensor, SensorGroup,
-                                    start_ioc_subprocess)
+from ophyd_async.epics.demo import (EnergyMode, Mover, SampleStage, Sensor,
+                                    SensorGroup, start_ioc_subprocess)
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -250,14 +250,14 @@ async def test_read_sensor(mock_sensor: Sensor):
     assert (await mock_sensor.read())["mock_sensor-value"]["value"] == 0
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
-    ] == demo.EnergyMode.low
+    ] == EnergyMode.low
     desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
     assert desc["choices"] == ["Low Energy", "High Energy"]  # type: ignore
-    set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
+    set_mock_value(mock_sensor.mode, EnergyMode.high)
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
-    ] == demo.EnergyMode.high
+    ] == EnergyMode.high
     await mock_sensor.unstage()
 
 
@@ -277,7 +277,7 @@ async def test_sensor_in_plan(RE: RunEngine, mock_sensor: Sensor):
 
 
 async def test_assembly_renaming() -> None:
-    thing = demo.SampleStage("PRE")
+    thing = SampleStage("PRE")
     await thing.connect(mock=True)
     assert thing.x.name == ""
     assert thing.x.velocity.name == ""

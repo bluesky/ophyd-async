@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from .mover import Mover, SampleStage
-from .sensor import Sensor, SensorGroup
+from .sensor import EnergyMode, Sensor, SensorGroup
 
 
 def start_ioc_subprocess() -> str:
@@ -49,6 +49,7 @@ def start_ioc_subprocess() -> str:
 __all__ = [
     "Mover",
     "SampleStage",
+    "EnergyMode",
     "Sensor",
     "SensorGroup",
 ]
