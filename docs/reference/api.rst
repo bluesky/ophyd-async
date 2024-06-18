@@ -26,4 +26,5 @@ This is the internal API reference for ophyd_async
 
     core
     epics
-    panda
+    fastcs
+    plan_stubs
