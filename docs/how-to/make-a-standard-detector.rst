@@ -50,15 +50,15 @@ Writing a non-AreaDetector StandardDetector
 A non-AreaDetector `StandardDetector` should implement `DetectorControl` and `DetectorWriter` directly.
 Here we construct a `DetectorControl` that co-ordinates signals on a PandA PositionCapture block - a child device "pcap" of the `StandardDetector` implementation, analogous to the :py:class:`FooDriver`.
 
-.. literalinclude:: ../../src/ophyd_async/panda/_panda_controller.py
+.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_panda_controller.py
    :pyobject: PandaPcapController
 
 The PandA may write a number of fields, and the :py:class:`PandaHDFWriter` co-ordinates those, configures the filewriter and describes the data for the RunEngine.
 
-.. literalinclude:: ../../src/ophyd_async/panda/writers/_hdf_writer.py
+.. literalinclude:: ../../src/ophyd_async/fastcs/panda/writers/_hdf_writer.py
    :pyobject: PandaHDFWriter
 
 The PandA StandardDetector implementation simply ties the component parts and its child devices together.
 
-.. literalinclude:: ../../src/ophyd_async/panda/_hdf_panda.py
+.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_hdf_panda.py
    :pyobject: HDFPanda
