@@ -19,14 +19,7 @@ from ophyd_async.core import (
     get_mock_put,
     set_mock_value,
 )
-from ophyd_async.epics.demo import (
-    EnergyMode,
-    Mover,
-    SampleStage,
-    Sensor,
-    SensorGroup,
-    start_ioc_subprocess,
-)
+from ophyd_async.epics import demo
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -34,9 +27,9 @@ A_WHILE = 0.001
 
 
 @pytest.fixture
-async def mock_mover() -> Mover:
+async def mock_mover() -> demo.Mover:
     async with DeviceCollector(mock=True):
-        mock_mover = Mover("BLxxI-MO-TABLE-01:X:")
+        mock_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
         # Signals connected here
 
     assert mock_mover.name == "mock_mover"
@@ -47,9 +40,9 @@ async def mock_mover() -> Mover:
 
 
 @pytest.fixture
-async def mock_sensor() -> Sensor:
+async def mock_sensor() -> demo.Sensor:
     async with DeviceCollector(mock=True):
-        mock_sensor = Sensor("MOCK:SENSOR:")
+        mock_sensor = demo.Sensor("MOCK:SENSOR:")
         # Signals connected here
 
     assert mock_sensor.name == "mock_sensor"
@@ -57,16 +50,16 @@ async def mock_sensor() -> Sensor:
 
 
 @pytest.fixture
-async def mock_sensor_group() -> SensorGroup:
+async def mock_sensor_group() -> demo.SensorGroup:
     async with DeviceCollector(mock=True):
-        mock_sensor_group = SensorGroup("MOCK:SENSOR:")
+        mock_sensor_group = demo.SensorGroup("MOCK:SENSOR:")
         # Signals connected here
 
     assert mock_sensor_group.name == "mock_sensor_group"
     return mock_sensor_group
 
 
-async def test_mover_stopped(mock_mover: Mover):
+async def test_mover_stopped(mock_mover: demo.Mover):
     callbacks = []
     callback_on_mock_put(
         mock_mover.stop_, lambda v, *args, **kwargs: callbacks.append(v)
@@ -116,7 +109,7 @@ class DemoWatcher:
         self._event.clear()
 
 
-async def test_mover_moving_well(mock_mover: Mover) -> None:
+async def test_mover_moving_well(mock_mover: demo.Mover) -> None:
     s = mock_mover.set(0.55)
     watcher = DemoWatcher()
     s.watch(watcher)
@@ -156,7 +149,7 @@ async def test_mover_moving_well(mock_mover: Mover) -> None:
     done2.assert_called_once_with(s)
 
 
-async def test_sensor_reading_shows_value(mock_sensor: Sensor):
+async def test_sensor_reading_shows_value(mock_sensor: demo.Sensor):
     # Check default value
     await assert_value(mock_sensor.value, pytest.approx(0.0))
     assert (await mock_sensor.value.get_value()) == pytest.approx(0.0)
@@ -184,7 +177,7 @@ async def test_sensor_reading_shows_value(mock_sensor: Sensor):
     )
 
 
-async def test_retrieve_mock_and_assert(mock_mover: Mover):
+async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
     mover_setpoint_mock = get_mock_put(mock_mover.setpoint)
     await mock_mover.setpoint.set(10)
     mover_setpoint_mock.assert_called_once_with(10, wait=ANY, timeout=ANY)
@@ -207,7 +200,7 @@ async def test_retrieve_mock_and_assert(mock_mover: Mover):
     )
 
 
-async def test_read_mover(mock_mover: Mover):
+async def test_read_mover(mock_mover: demo.Mover):
     await mock_mover.stage()
     assert (await mock_mover.read())["mock_mover"]["value"] == 0.0
     assert (await mock_mover.read_configuration())["mock_mover-velocity"]["value"] == 1
@@ -223,7 +216,7 @@ async def test_read_mover(mock_mover: Mover):
     assert await mock_mover.describe()
 
 
-async def test_set_velocity(mock_mover: Mover) -> None:
+async def test_set_velocity(mock_mover: demo.Mover) -> None:
     v = mock_mover.velocity
     q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
@@ -239,7 +232,7 @@ async def test_set_velocity(mock_mover: Mover) -> None:
 async def test_mover_disconncted():
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
-            m = Mover("ca://PRE:", name="mover")
+            m = demo.Mover("ca://PRE:", name="mover")
     assert m.name == "mover"
 
 
@@ -247,9 +240,9 @@ async def test_sensor_disconnected(caplog):
     caplog.set_level(10)
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
-            s = Sensor("ca://PRE:", name="sensor")
+            s = demo.Sensor("ca://PRE:", name="sensor")
     logs = caplog.get_records("call")
-    logs = [log for log in logs if "signal" not in log.pathname]
+    logs = [log for log in logs if "_signal" not in log.pathname]
     assert len(logs) == 2
 
     assert logs[0].message == ("signal ca://PRE:Value timed out")
@@ -257,23 +250,23 @@ async def test_sensor_disconnected(caplog):
     assert s.name == "sensor"
 
 
-async def test_read_sensor(mock_sensor: Sensor):
+async def test_read_sensor(mock_sensor: demo.Sensor):
     mock_sensor.stage()
     assert (await mock_sensor.read())["mock_sensor-value"]["value"] == 0
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
-    ] == EnergyMode.low
+    ] == demo.EnergyMode.low
     desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
     assert desc["choices"] == ["Low Energy", "High Energy"]  # type: ignore
-    set_mock_value(mock_sensor.mode, EnergyMode.high)
+    set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
-    ] == EnergyMode.high
+    ] == demo.EnergyMode.high
     await mock_sensor.unstage()
 
 
-async def test_sensor_in_plan(RE: RunEngine, mock_sensor: Sensor):
+async def test_sensor_in_plan(RE: RunEngine, mock_sensor: demo.Sensor):
     """Tests mock sensor behavior within a RunEngine plan.
 
     This test verifies that the sensor emits the expected documents
@@ -289,7 +282,7 @@ async def test_sensor_in_plan(RE: RunEngine, mock_sensor: Sensor):
 
 
 async def test_assembly_renaming() -> None:
-    thing = SampleStage("PRE")
+    thing = demo.SampleStage("PRE")
     await thing.connect(mock=True)
     assert thing.x.name == ""
     assert thing.x.velocity.name == ""
@@ -305,13 +298,13 @@ async def test_assembly_renaming() -> None:
 async def test_dynamic_sensor_group_disconnected():
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
-            mock_sensor_group_dynamic = SensorGroup("MOCK:SENSOR:")
+            mock_sensor_group_dynamic = demo.SensorGroup("MOCK:SENSOR:")
 
     assert mock_sensor_group_dynamic.name == "mock_sensor_group_dynamic"
 
 
 async def test_dynamic_sensor_group_read_and_describe(
-    mock_sensor_group: SensorGroup,
+    mock_sensor_group: demo.SensorGroup,
 ):
     set_mock_value(mock_sensor_group.sensors[1].value, 0.0)
     set_mock_value(mock_sensor_group.sensors[2].value, 0.5)
@@ -362,7 +355,7 @@ async def test_dynamic_sensor_group_read_and_describe(
 
 @patch("ophyd_async.epics.demo.subprocess.Popen")
 async def test_ioc_starts(mock_popen: Mock):
-    start_ioc_subprocess()
+    demo.start_ioc_subprocess()
     mock_popen.assert_called_once_with(
         ANY,
         stdin=subprocess.PIPE,
