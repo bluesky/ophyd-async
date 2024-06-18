@@ -7,8 +7,8 @@ from typing import (Any, Callable, Dict, FrozenSet, Literal, Optional, Tuple,
 from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceVector, Signal,
                               SoftSignalBackend)
 from ophyd_async.epics._backend._p4p import PvaSignalBackend
-from ophyd_async.epics.signal.signal import (epics_signal_r, epics_signal_rw,
-                                             epics_signal_w, epics_signal_x)
+from ophyd_async.epics.signal import (epics_signal_r, epics_signal_rw,
+                                      epics_signal_w, epics_signal_x)
 
 T = TypeVar("T")
 Access = FrozenSet[
