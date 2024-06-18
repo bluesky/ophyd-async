@@ -5,16 +5,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ophyd_async.core import (
-    DEFAULT_DATE_FORMAT,
-    DEFAULT_FORMAT,
-    ColoredFormatterWithDeviceName,
-    Device,
-    config_ophyd_async_logging,
-    current_handler,
-    logger,
-    validate_level,
-)
+from ophyd_async.core import (DEFAULT_DATE_FORMAT, DEFAULT_FORMAT,
+                              ColoredFormatterWithDeviceName, Device,
+                              config_ophyd_async_logging, current_handler,
+                              logger, validate_level)
 
 
 def test_validate_level():
