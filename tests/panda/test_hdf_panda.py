@@ -7,7 +7,7 @@ from bluesky.run_engine import RunEngine
 from ophyd_async.core import (Device, SignalR, StandardFlyer,
                               StaticDirectoryProvider, assert_emitted,
                               callback_on_mock_put, set_mock_value)
-from ophyd_async.epics.signal.signal import epics_signal_r
+from ophyd_async.epics.signal import epics_signal_r
 from ophyd_async.fastcs.panda import (Capture, HDFPanda,
                                       StaticSeqTableTriggerLogic)
 from ophyd_async.plan_stubs import \

@@ -7,7 +7,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
                               SignalR, StaticDirectoryProvider, set_mock_value)
 from ophyd_async.epics.pvi import (create_children_from_annotations,
                                    fill_pvi_entries)
-from ophyd_async.epics.signal.signal import epics_signal_r
+from ophyd_async.epics.signal import epics_signal_r
 from ophyd_async.fastcs.panda import (Capture, CaptureSignalWrapper,
                                       CommonPandaBlocks, HDFFile,
                                       PandaHDFWriter, get_capture_signals,

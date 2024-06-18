@@ -15,7 +15,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
                               observe_value, set_mock_value)
 from ophyd_async.core.flyer import TriggerLogic
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
-from ophyd_async.epics.signal.signal import epics_signal_rw
+from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.fastcs.panda import (CommonPandaBlocks,
                                       StaticSeqTableTriggerLogic)
 from ophyd_async.plan_stubs import (
