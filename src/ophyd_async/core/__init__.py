@@ -17,7 +17,7 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._providers import (DirectoryInfo, DirectoryProvider, NameProvider,
                          ShapeProvider, StaticDirectoryProvider)
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
-from ._signal import (Signal, SignalCache, SignalR, SignalRW, SignalW,
+from ._signal import (Signal, SignalCache, SignalR, SignalRW, SignalW, SignalX,
                       assert_configuration, assert_emitted, assert_reading,
                       assert_value, observe_value, set_and_wait_for_value,
                       soft_signal_r_and_setter, soft_signal_rw, wait_for_value)
@@ -88,6 +88,7 @@ __all__ = [
     "SignalR",
     "SignalRW",
     "SignalW",
+    "SignalX",
     "assert_configuration",
     "assert_emitted",
     "assert_reading",
