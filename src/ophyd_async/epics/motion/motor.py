@@ -95,5 +95,3 @@ class Motor(StandardReadable, Movable, Stoppable):
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
         await self.motor_stop.trigger(wait=False)
-        # Trigger any callbacks
-        await self.user_readback._backend.put(await self.user_readback.get_value())
