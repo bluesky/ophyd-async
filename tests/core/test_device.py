@@ -9,7 +9,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
                               SoftSignalBackend, wait_for_connection)
 from ophyd_async.epics import motor
 from ophyd_async.plan_stubs.ensure_connected import ensure_connected
-from ophyd_async.sim import SimMotor
+from ophyd_async.sim.demo import SimMotor
 
 
 class DummyBaseDevice(Device):

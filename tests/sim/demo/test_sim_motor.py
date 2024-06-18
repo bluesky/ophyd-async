@@ -5,7 +5,7 @@ from bluesky.plans import spiral_square
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import DeviceCollector
-from ophyd_async.sim.demo.sim_motor import SimMotor
+from ophyd_async.sim.demo import SimMotor
 
 
 async def test_move_sim_in_plan():
