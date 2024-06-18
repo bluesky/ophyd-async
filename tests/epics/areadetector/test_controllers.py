@@ -7,7 +7,7 @@ from ophyd_async.epics import ImageMode
 from ophyd_async.epics.adcore import ADBase
 from ophyd_async.epics.adpilatus import (PilatusController, PilatusDriver,
                                          PilatusTriggerMode)
-from ophyd_async.epics.adsimdetector import SimController
+from ophyd_async.epics.adsim import SimController
 
 
 @pytest.fixture

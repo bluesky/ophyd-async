@@ -5,7 +5,7 @@ from bluesky.utils import new_uid
 from ophyd_async.core import (AsyncReadable, DeviceCollector, StandardFlyer,
                               StaticDirectoryProvider)
 from ophyd_async.epics.adcore import ADBase, NDFileHDF
-from ophyd_async.epics.adsimdetector import SimDetector
+from ophyd_async.epics.adsim import SimDetector
 from ophyd_async.sim.demo import SimMotor
 
 

@@ -13,7 +13,7 @@ from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
                               StaticDirectoryProvider, TriggerInfo,
                               TriggerLogic, set_mock_value)
 from ophyd_async.epics.adcore import ADBase, HDFWriter, NDFileHDF
-from ophyd_async.epics.adsimdetector import SimController
+from ophyd_async.epics.adsim import SimController
 
 
 class DummyTriggerLogic(TriggerLogic[int]):
