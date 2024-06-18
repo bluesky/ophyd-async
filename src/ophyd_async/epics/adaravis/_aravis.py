@@ -3,12 +3,11 @@ from typing import get_args
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import DirectoryProvider, StandardDetector
-from ophyd_async.epics.areadetector.controllers.aravis_controller import (
-    AravisController,
-)
 from ophyd_async.epics.areadetector.drivers import ADBaseShapeProvider
-from ophyd_async.epics.areadetector.drivers.aravis_driver import AravisDriver
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+
+from ._aravis_controller import AravisController
+from ._aravis_driver import AravisDriver
 
 
 class AravisDetector(StandardDetector, HasHints):
