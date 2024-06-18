@@ -111,4 +111,11 @@ async def test_unsupported_trigger_excepts(pilatus: PilatusDetector):
         # str(EnumClass.value) handling changed in Python 3.11
         match=r"PilatusController only supports the following trigger types: .* but",
     ):
-        await pilatus.prepare(TriggerInfo(1, DetectorTrigger.edge_trigger, 1, 1))
+        await pilatus.prepare(TriggerInfo(1, DetectorTrigger.edge_trigger, 1.0, 1.0))
+
+
+async def test_exposure_time_and_acquire_period_set(pilatus: PilatusDetector):
+    set_mock_value(pilatus.drv.armed_for_triggers, True)
+    await pilatus.prepare(TriggerInfo(1, DetectorTrigger.internal, 1.0, 1.0))
+    assert (await pilatus.drv.acquire_time.get_value()) == 1.0
+    assert (await pilatus.drv.acquire_period.get_value()) == 1.0 + 950e-6
