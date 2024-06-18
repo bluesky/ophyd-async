@@ -7,6 +7,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+from .mover import Mover, SampleStage
+from .sensor import Sensor, SensorGroup
+
 
 def start_ioc_subprocess() -> str:
     """Start an IOC subprocess with EPICS database for sample stage and sensor
@@ -41,3 +44,11 @@ def start_ioc_subprocess() -> str:
     )
     atexit.register(process.communicate, "exit")
     return pv_prefix
+
+
+__all__ = [
+    "Mover",
+    "SampleStage",
+    "Sensor",
+    "SensorGroup",
+]
