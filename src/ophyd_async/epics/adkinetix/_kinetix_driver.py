@@ -2,7 +2,8 @@ from enum import Enum
 
 from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
 
-from .....tempfolder.ophyd_async.epics.areadetector.drivers.ad_base import ADBase
+from .....tempfolder.ophyd_async.epics.areadetector.drivers.ad_base import \
+    ADBase
 
 
 class KinetixTriggerMode(str, Enum):
