@@ -9,7 +9,7 @@ from ophyd_async.epics.adcore import (DEFAULT_GOOD_STATES, ADBase,
                                       start_acquiring_driver_and_ensure_status)
 
 
-class ADSimController(DetectorControl):
+class SimController(DetectorControl):
     def __init__(
         self, driver: ADBase, good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES)
     ) -> None:

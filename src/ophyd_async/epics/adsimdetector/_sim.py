@@ -1,14 +1,14 @@
 from typing import Sequence
 
 from ophyd_async.core import DirectoryProvider, SignalR, StandardDetector
+from ophyd_async.epics.adcore import (ADBase, ADBaseShapeProvider, HDFWriter,
+                                      NDFileHDF)
 
-from ..areadetector.controllers import ADSimController
-from ..areadetector.drivers import ADBase, ADBaseShapeProvider
-from ..areadetector.writers import HDFWriter, NDFileHDF
+from ._sim_controller import SimController
 
 
-class DemoADSimDetector(StandardDetector):
-    _controller: ADSimController
+class SimDetector(StandardDetector):
+    _controller: SimController
     _writer: HDFWriter
 
     def __init__(
@@ -23,7 +23,7 @@ class DemoADSimDetector(StandardDetector):
         self.hdf = hdf
 
         super().__init__(
-            ADSimController(self.drv),
+            SimController(self.drv),
             HDFWriter(
                 self.hdf,
                 directory_provider,
