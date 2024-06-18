@@ -1,5 +1,6 @@
-from ._single_trigger_det import SingleTriggerDet
+from .utils import ImageMode, stop_busy_record
 
 __all__ = [
-    "SingleTriggerDet",
+    "ImageMode",
+    "stop_busy_record",
 ]
