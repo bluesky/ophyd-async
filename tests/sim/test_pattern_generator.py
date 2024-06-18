@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from ophyd_async.core import StaticDirectoryProvider
-from ophyd_async.sim.pattern_generator import DATA_PATH, SUM_PATH, PatternGenerator
+from ophyd_async.sim.demo import DATA_PATH, SUM_PATH, PatternGenerator
 
 
 @pytest.fixture
