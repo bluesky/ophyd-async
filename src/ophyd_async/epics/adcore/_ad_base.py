@@ -2,16 +2,12 @@ import asyncio
 from enum import Enum
 from typing import FrozenSet, Sequence, Set
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    AsyncStatus,
-    ShapeProvider,
-    set_and_wait_for_value,
-)
+from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, ShapeProvider,
+                              set_and_wait_for_value)
 
 from ...signal.signal import epics_signal_r, epics_signal_rw_rbv
 from ..utils import ImageMode
-from ..writers.nd_plugin import NDArrayBase
+from .writers.nd_plugin import NDArrayBase
 
 
 class DetectorState(str, Enum):
