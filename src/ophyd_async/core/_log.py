@@ -109,7 +109,7 @@ def config_ophyd_async_logging(
             fmt=fmt, datefmt=datefmt, log_colors=DEFAULT_LOG_COLORS, no_color=color
         )
 
-    levelno = _validate_level(level)
+    levelno = validate_level(level)
     handler.setFormatter(formatter)
     handler.setLevel(levelno)
 
