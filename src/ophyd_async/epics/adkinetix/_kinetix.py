@@ -1,8 +1,7 @@
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import DirectoryProvider, StandardDetector
-from ophyd_async.epics.areadetector.drivers import ADBaseShapeProvider
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
 
 from ._kinetix_controller import KinetixController
 from ._kinetix_driver import KinetixDriver
