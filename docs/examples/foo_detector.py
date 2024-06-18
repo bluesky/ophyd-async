@@ -3,26 +3,18 @@ from typing import Optional
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    DirectoryProvider,
-    StandardDetector,
-)
-from ophyd_async.epics import ImageMode, ad_rw, stop_busy_record
-from ophyd_async.epics.adcore import (
-    ADBase,
-    ADBaseShapeProvider,
-    HDFWriter,
-    NDFileHDF,
-    start_acquiring_driver_and_ensure_status,
-)
+from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
+                              DirectoryProvider, StandardDetector)
+from ophyd_async.epics import ImageMode, stop_busy_record
+from ophyd_async.epics.adcore import (ADBase, ADBaseShapeProvider, HDFWriter,
+                                      NDFileHDF,
+                                      start_acquiring_driver_and_ensure_status)
+from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
 class FooDriver(ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.trigger_mode = ad_rw(str, prefix + "TriggerMode")
+        self.trigger_mode = epics_signal_rw_rbv(str, prefix + "TriggerMode")
         super().__init__(prefix, name)
 
 
