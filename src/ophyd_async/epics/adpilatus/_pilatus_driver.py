@@ -1,7 +1,8 @@
 from enum import Enum
 
+from ophyd_async.epics.adcore import ADBase
+
 from ...signal import epics_signal_r, epics_signal_rw_rbv
-from .ad_base import ADBase
 
 
 class PilatusTriggerMode(str, Enum):
