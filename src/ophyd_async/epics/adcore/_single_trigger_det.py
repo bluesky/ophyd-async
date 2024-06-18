@@ -8,7 +8,7 @@ from ophyd_async.core import (AsyncStatus, ConfigSignal, HintedSignal, SignalR,
 from ophyd_async.epics import ImageMode
 
 from ._ad_base import ADBase
-from .writers.nd_plugin import NDPluginBase
+from .writers._nd_plugin import NDPluginBase
 
 
 class SingleTriggerDet(StandardReadable, Triggerable):

@@ -11,7 +11,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorWriter,
 
 from ._hdfdataset import _HDFDataset
 from ._hdffile import _HDFFile
-from .nd_file_hdf import FileWriteMode, NDFileHDF
+from ._nd_file_hdf import FileWriteMode, NDFileHDF
 
 
 class HDFWriter(DetectorWriter):
