@@ -1,10 +1,11 @@
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import DirectoryProvider, StandardDetector
-from ophyd_async.epics.areadetector.controllers.vimba_controller import VimbaController
 from ophyd_async.epics.areadetector.drivers import ADBaseShapeProvider
-from ophyd_async.epics.areadetector.drivers.vimba_driver import VimbaDriver
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+
+from ._vimba_controller import VimbaController
+from ._vimba_driver import VimbaDriver
 
 
 class VimbaDetector(StandardDetector, HasHints):
