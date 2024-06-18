@@ -90,7 +90,7 @@ class SoftEnumConverter(SoftConverter):
         if issubclass(datatype, Enum):
             self.choices = tuple(v.value for v in datatype)
         else:
-            self.choices = datatype.choices
+            self.choices = tuple(datatype.choices)
 
     def write_value(self, value: Union[Enum, str]) -> str:
         if isinstance(value, Enum):
@@ -99,12 +99,11 @@ class SoftEnumConverter(SoftConverter):
             return value
 
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        choices = [e.value for e in self.enum_class]
         return {
             "source": source,
             "dtype": "string",
             "shape": [],
-            "choices": choices,
+            "choices": self.choices,
             **metadata,
         }
 

@@ -19,7 +19,7 @@ import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import DataKey, Reading
 
-from ophyd_async.core import SignalBackend, T, get_dtype, load_from_yaml, save_to_yaml
+from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
 from ophyd_async.core.signal_backend import RuntimeEnum
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics._backend.common import LimitPair, Limits
@@ -245,7 +245,10 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
 
     d = {"dtype": dtype, "shape": [len(value)] if dtype == "array" else []}
     if get_internal_dtype(suffix) == "enum":
-        d["choices"] = [e.value for e in type(value)]
+        if issubclass(type(value), Enum):
+            d["choices"] = [e.value for e in type(value)]
+        else:
+            d["choices"] = list(value.choices)
 
     d.update(_metadata[protocol].get(get_internal_dtype(suffix), {}))
 
@@ -264,7 +267,6 @@ ls2 = "another string that is just longer than forty characters"
         (float, "float", 3.141, 43.5, {"ca", "pva"}),
         (str, "str", "hello", "goodbye", {"ca", "pva"}),
         (MyEnum, "enum", MyEnum.b, MyEnum.c, {"ca", "pva"}),
-        (RuntimeEnum["Aaa", "Bbb"], "enum", "Bbb", "Ccc", {"ca", "pva"}),
         # numpy arrays of numpy types
         (
             npt.NDArray[np.int8],

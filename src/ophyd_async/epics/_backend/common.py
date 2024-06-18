@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Dict, Optional, Tuple, Type, TypedDict
 
+from ophyd_async.core.signal_backend import RuntimeEnum
+
 common_meta = {
     "units",
     "precision",
@@ -24,7 +26,6 @@ class Limits(TypedDict):
     def __bool__(self) -> bool:
         return any(self.alarm, self.control, self.display, self.warning)
 
-from ophyd_async.core.signal_backend import RuntimeEnum
 
 
 def get_supported_values(
