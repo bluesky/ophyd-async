@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motion.motor &#8212; ophyd-async 0.3.2.dev4+gfebf9cea documentation</title>
+    <title>ophyd_async.epics.motion.motor &#8212; ophyd-async 0.3.3.dev1+g5f4a8278 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=8c933cc4"></script>
+    <script src="../../../../_static/documentation_options.js?v=44d42514"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -590,9 +590,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
         <span class="c1"># Put with completion will never complete as we are waiting for completion on</span>
         <span class="c1"># the move above, so need to pass wait=False</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="c1"># Trigger any callbacks</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span></div>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
