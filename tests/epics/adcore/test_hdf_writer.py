@@ -5,7 +5,7 @@ import pytest
 
 from ophyd_async.core import (DeviceCollector, ShapeProvider,
                               StaticDirectoryProvider, set_mock_value)
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+from ophyd_async.epics.adcore import HDFWriter, NDFileHDF
 
 
 class DummyShapeProvider(ShapeProvider):
