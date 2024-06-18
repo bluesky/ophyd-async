@@ -13,7 +13,7 @@ from ._mock_signal_utils import (callback_on_mock_put, get_mock_put,
                                  mock_puts_blocked, reset_mock_put_calls,
                                  set_mock_put_proceeds, set_mock_value,
                                  set_mock_values)
-from ._protocol import AsyncReadable
+from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._providers import (DirectoryInfo, DirectoryProvider, NameProvider,
                          ShapeProvider, StaticDirectoryProvider)
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
@@ -69,7 +69,9 @@ __all__ = [
     "set_mock_value",
     "set_mock_values",
 
+    "AsyncConfigurable",
     "AsyncReadable",
+    "AsyncStageable",
 
     "DirectoryInfo",
     "DirectoryProvider",
