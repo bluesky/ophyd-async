@@ -4,7 +4,7 @@ from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import assert_emitted
-from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
+from ophyd_async.sim import SimPatternDetector
 
 
 # NOTE the async operations with h5py are non-trival

@@ -8,7 +8,7 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (DeviceCollector, callback_on_mock_put,
                               set_mock_put_proceeds, set_mock_value)
-from ophyd_async.epics.motion import motor
+from ophyd_async.epics import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run

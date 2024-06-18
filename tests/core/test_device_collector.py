@@ -7,7 +7,7 @@ from super_state_machine.errors import TransitionError
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
                               NotConnected, set_mock_value)
-from ophyd_async.epics.motion import motor
+from ophyd_async.epics import motor
 
 
 class FailingDevice(Device):
