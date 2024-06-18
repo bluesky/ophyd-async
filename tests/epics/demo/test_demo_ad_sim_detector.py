@@ -14,11 +14,9 @@ from bluesky.utils import new_uid
 from ophyd_async.core import (AsyncStatus, DeviceCollector, StandardDetector,
                               StaticDirectoryProvider, assert_emitted,
                               callback_on_mock_put, set_mock_value)
-from ophyd_async.epics.areadetector.controllers import ADSimController
-from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
-from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
+from ophyd_async.epics import FileWriteMode, ImageMode
+from ophyd_async.epics.adcore import ADBase, HDFWriter, NDFileHDF
+from ophyd_async.epics.adsim import SimController, SimDetector
 
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
@@ -27,7 +25,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     async with DeviceCollector(mock=True):
         drv = ADBase(f"{prefix}DRV:", name="drv")
         hdf = NDFileHDF(f"{prefix}HDF:")
-        det = DemoADSimDetector(
+        det = SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
 
@@ -106,7 +104,7 @@ async def two_detectors(tmp_path: Path):
 
 
 async def test_two_detectors_fly_different_rate(
-    two_detectors: List[DemoADSimDetector], RE: RunEngine
+    two_detectors: List[SimDetector], RE: RunEngine
 ):
     docs = defaultdict(list)
 
@@ -144,7 +142,7 @@ async def test_two_detectors_step(
 
     RE(count_sim(two_detectors, times=1))
 
-    controller_a = cast(ADSimController, two_detectors[0].controller)
+    controller_a = cast(SimController, two_detectors[0].controller)
     writer_a = cast(HDFWriter, two_detectors[0].writer)
     writer_b = cast(HDFWriter, two_detectors[1].writer)
 
@@ -272,8 +270,8 @@ async def test_trigger_logic():
 
     Probably the best thing to do here is mock the detector.controller.driver and
     detector.writer.hdf. Then, mock out set_and_wait_for_value in
-    ophyd_async.epics.DemoADSimDetector.controllers.standard_controller.ADSimController
-    so that, as well as setting detector.controller.driver.acquire to True, it sets
+    ophyd_async.epics.adsim._sim_controller.SimController so that, as well as
+    setting detector.controller.driver.acquire to True, it sets
     detector.writer.hdf.num_captured to 1, using set_mock_value
     """
     ...
@@ -287,7 +285,7 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(RE, tmp_path: P
 
     async with DeviceCollector(mock=True):
         hdf = NDFileHDF("FOO:HDF:")
-        det = DemoADSimDetector(
+        det = SimDetector(
             drv,
             hdf,
             dp,
