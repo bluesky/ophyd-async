@@ -5,9 +5,9 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
                               DetectorTrigger, wait_for_value)
 from ophyd_async.epics.areadetector.drivers.ad_base import \
     start_acquiring_driver_and_ensure_status
-from ophyd_async.epics.areadetector.drivers.pilatus_driver import (
-    PilatusDriver, PilatusTriggerMode)
 from ophyd_async.epics.areadetector.utils import ImageMode, stop_busy_record
+
+from ._pilatus_driver import PilatusDriver, PilatusTriggerMode
 
 
 class PilatusController(DetectorControl):
