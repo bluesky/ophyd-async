@@ -1,8 +1,7 @@
 from enum import Enum
 
+from ophyd_async.epics.adcore import ADBase
 from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
-
-from .ad_base import ADBase
 
 
 class VimbaPixelFormat(str, Enum):
