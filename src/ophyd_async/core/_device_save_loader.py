@@ -1,7 +1,6 @@
 from enum import Enum
 from functools import partial
-from typing import (Any, Callable, Dict, Generator, List, Optional, Sequence,
-                    Union)
+from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt

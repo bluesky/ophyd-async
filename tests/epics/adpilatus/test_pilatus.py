@@ -4,10 +4,18 @@ from unittest.mock import patch
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (DetectorTrigger, DeviceCollector,
-                              DirectoryProvider, TriggerInfo, set_mock_value)
-from ophyd_async.epics.adpilatus import (PilatusDetector, PilatusReadoutTime,
-                                         PilatusTriggerMode)
+from ophyd_async.core import (
+    DetectorTrigger,
+    DeviceCollector,
+    DirectoryProvider,
+    TriggerInfo,
+    set_mock_value,
+)
+from ophyd_async.epics.adpilatus import (
+    PilatusDetector,
+    PilatusReadoutTime,
+    PilatusTriggerMode,
+)
 
 
 @pytest.fixture

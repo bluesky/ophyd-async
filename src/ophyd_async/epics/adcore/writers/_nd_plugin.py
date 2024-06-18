@@ -1,8 +1,11 @@
 from enum import Enum
 
 from ophyd_async.core import Device
-from ophyd_async.epics.signal import (epics_signal_r, epics_signal_rw,
-                                      epics_signal_rw_rbv)
+from ophyd_async.epics.signal import (
+    epics_signal_r,
+    epics_signal_rw,
+    epics_signal_rw_rbv,
+)
 
 
 class Callback(str, Enum):

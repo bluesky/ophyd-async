@@ -9,12 +9,24 @@ from bluesky import plans as bp
 from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (DeviceCollector, NotConnected, assert_emitted,
-                              assert_reading, assert_value,
-                              callback_on_mock_put, get_mock_put,
-                              set_mock_value)
-from ophyd_async.epics.demo import (EnergyMode, Mover, SampleStage, Sensor,
-                                    SensorGroup, start_ioc_subprocess)
+from ophyd_async.core import (
+    DeviceCollector,
+    NotConnected,
+    assert_emitted,
+    assert_reading,
+    assert_value,
+    callback_on_mock_put,
+    get_mock_put,
+    set_mock_value,
+)
+from ophyd_async.epics.demo import (
+    EnergyMode,
+    Mover,
+    SampleStage,
+    Sensor,
+    SensorGroup,
+    start_ioc_subprocess,
+)
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run

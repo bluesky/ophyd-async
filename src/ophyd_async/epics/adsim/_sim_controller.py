@@ -1,12 +1,19 @@
 import asyncio
 from typing import Optional, Set
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
-                              DetectorTrigger)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+)
 from ophyd_async.epics import ImageMode, stop_busy_record
-from ophyd_async.epics.adcore import (DEFAULT_GOOD_STATES, ADBase,
-                                      DetectorState,
-                                      start_acquiring_driver_and_ensure_status)
+from ophyd_async.epics.adcore import (
+    DEFAULT_GOOD_STATES,
+    ADBase,
+    DetectorState,
+    start_acquiring_driver_and_ensure_status,
+)
 
 
 class SimController(DetectorControl):

@@ -3,8 +3,13 @@ import re
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (DetectorTrigger, DeviceCollector,
-                              DirectoryProvider, TriggerInfo, set_mock_value)
+from ophyd_async.core import (
+    DetectorTrigger,
+    DeviceCollector,
+    DirectoryProvider,
+    TriggerInfo,
+    set_mock_value,
+)
 from ophyd_async.epics.adaravis import AravisDetector
 
 

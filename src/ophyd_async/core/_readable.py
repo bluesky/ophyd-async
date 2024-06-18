@@ -1,7 +1,6 @@
 import warnings
 from contextlib import contextmanager
-from typing import (Callable, Dict, Generator, Optional, Sequence, Tuple, Type,
-                    Union)
+from typing import Callable, Dict, Generator, Optional, Sequence, Tuple, Type, Union
 
 from bluesky.protocols import DataKey, HasHints, Hints, Reading
 

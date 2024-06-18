@@ -3,8 +3,11 @@ import asyncio
 import pytest
 
 from ophyd_async.core import DeviceCollector, set_mock_value
-from ophyd_async.epics.adcore import (ADBase, DetectorState,
-                                      start_acquiring_driver_and_ensure_status)
+from ophyd_async.epics.adcore import (
+    ADBase,
+    DetectorState,
+    start_acquiring_driver_and_ensure_status,
+)
 
 
 @pytest.fixture

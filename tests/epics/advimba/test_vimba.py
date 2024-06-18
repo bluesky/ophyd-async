@@ -1,8 +1,12 @@
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (DetectorTrigger, DeviceCollector,
-                              DirectoryProvider, set_mock_value)
+from ophyd_async.core import (
+    DetectorTrigger,
+    DeviceCollector,
+    DirectoryProvider,
+    set_mock_value,
+)
 from ophyd_async.epics.advimba import VimbaDetector
 
 

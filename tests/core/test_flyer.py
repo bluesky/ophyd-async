@@ -9,10 +9,17 @@ from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorControl,
-                              DetectorTrigger, DetectorWriter,
-                              StandardDetector, StandardFlyer, TriggerInfo,
-                              TriggerLogic, observe_value)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    DetectorControl,
+    DetectorTrigger,
+    DetectorWriter,
+    StandardDetector,
+    StandardFlyer,
+    TriggerInfo,
+    TriggerLogic,
+    observe_value,
+)
 from ophyd_async.epics.signal import epics_signal_rw
 
 

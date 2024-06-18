@@ -10,9 +10,16 @@ from bluesky.protocols import DataKey, Dtype, Reading
 from p4p import Value
 from p4p.client.asyncio import Context, Subscription
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, NotConnected,
-                              ReadingValueCallback, SignalBackend, T,
-                              get_dtype, get_unique, wait_for_connection)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    NotConnected,
+    ReadingValueCallback,
+    SignalBackend,
+    T,
+    get_dtype,
+    get_unique,
+    wait_for_connection,
+)
 
 from ._common import get_supported_values
 

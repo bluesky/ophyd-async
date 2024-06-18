@@ -5,12 +5,29 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import (AsyncGenerator, AsyncIterator, Callable, Dict, Generic,
-                    List, Optional, Sequence, TypeVar)
+from typing import (
+    AsyncGenerator,
+    AsyncIterator,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    TypeVar,
+)
 
-from bluesky.protocols import (Collectable, DataKey, Flyable, Preparable,
-                               Reading, Stageable, StreamAsset, Triggerable,
-                               WritesStreamAssets)
+from bluesky.protocols import (
+    Collectable,
+    DataKey,
+    Flyable,
+    Preparable,
+    Reading,
+    Stageable,
+    StreamAsset,
+    Triggerable,
+    WritesStreamAssets,
+)
 
 from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable

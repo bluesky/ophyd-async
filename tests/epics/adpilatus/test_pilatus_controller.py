@@ -2,8 +2,11 @@ import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector, set_mock_value
 from ophyd_async.epics import ImageMode
-from ophyd_async.epics.adpilatus import (PilatusController, PilatusDriver,
-                                         PilatusTriggerMode)
+from ophyd_async.epics.adpilatus import (
+    PilatusController,
+    PilatusDriver,
+    PilatusTriggerMode,
+)
 
 
 @pytest.fixture

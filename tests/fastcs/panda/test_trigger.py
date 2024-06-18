@@ -2,8 +2,7 @@ import pytest
 
 from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector
 from ophyd_async.epics.pvi import fill_pvi_entries
-from ophyd_async.fastcs.panda import (CommonPandaBlocks,
-                                      StaticSeqTableTriggerLogic)
+from ophyd_async.fastcs.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic
 
 
 @pytest.fixture

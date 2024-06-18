@@ -6,8 +6,6 @@ __all__ = [
     "DATA_PATH",
     "SUM_PATH",
     "PatternGenerator",
-
     "SimPatternDetectorWriter",
-
-    "SimPatternDetector"
+    "SimPatternDetector",
 ]

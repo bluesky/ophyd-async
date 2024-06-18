@@ -3,10 +3,19 @@ from typing import List
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
-from ophyd_async.core import (DetectorTrigger, StandardDetector, StandardFlyer,
-                              TriggerInfo, in_micros)
-from ophyd_async.fastcs.panda import (SeqTable, SeqTableInfo, SeqTableRow,
-                                      seq_table_from_rows)
+from ophyd_async.core import (
+    DetectorTrigger,
+    StandardDetector,
+    StandardFlyer,
+    TriggerInfo,
+    in_micros,
+)
+from ophyd_async.fastcs.panda import (
+    SeqTable,
+    SeqTableInfo,
+    SeqTableRow,
+    seq_table_from_rows,
+)
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(

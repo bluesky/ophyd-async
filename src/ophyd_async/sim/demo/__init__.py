@@ -1,5 +1,10 @@
-from ._pattern_detector import (DATA_PATH, SUM_PATH, PatternGenerator,
-                                SimPatternDetector, SimPatternDetectorWriter)
+from ._pattern_detector import (
+    DATA_PATH,
+    SUM_PATH,
+    PatternGenerator,
+    SimPatternDetector,
+    SimPatternDetectorWriter,
+)
 from ._sim_motor import SimMotor
 
 __all__ = [
@@ -8,6 +13,5 @@ __all__ = [
     "PatternGenerator",
     "SimPatternDetectorWriter",
     "SimPatternDetector",
-
     "SimMotor",
 ]

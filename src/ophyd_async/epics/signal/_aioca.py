@@ -4,15 +4,30 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional, Sequence, Type, Union
 
-from aioca import (FORMAT_CTRL, FORMAT_RAW, FORMAT_TIME, CANothing,
-                   Subscription, caget, camonitor, caput)
+from aioca import (
+    FORMAT_CTRL,
+    FORMAT_RAW,
+    FORMAT_TIME,
+    CANothing,
+    Subscription,
+    caget,
+    camonitor,
+    caput,
+)
 from aioca.types import AugmentedValue, Dbr, Format
 from bluesky.protocols import DataKey, Dtype, Reading
 from epicscorelibs.ca import dbr
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, NotConnected,
-                              ReadingValueCallback, SignalBackend, T,
-                              get_dtype, get_unique, wait_for_connection)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    NotConnected,
+    ReadingValueCallback,
+    SignalBackend,
+    T,
+    get_dtype,
+    get_unique,
+    wait_for_connection,
+)
 
 from ._common import get_supported_values
 

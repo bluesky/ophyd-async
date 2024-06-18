@@ -6,8 +6,12 @@ from bluesky import RunEngine
 from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, save_device
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.epics.signal import epics_signal_rw
-from ophyd_async.fastcs.panda import (CommonPandaBlocks, DataBlock, TimeUnits,
-                                      phase_sorter)
+from ophyd_async.fastcs.panda import (
+    CommonPandaBlocks,
+    DataBlock,
+    TimeUnits,
+    phase_sorter,
+)
 
 
 @pytest.fixture

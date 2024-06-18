@@ -5,9 +5,7 @@ from ._pilatus_driver import PilatusDriver, PilatusTriggerMode
 __all__ = [
     "PilatusDetector",
     "PilatusReadoutTime",
-
     "PilatusController",
-
     "PilatusDriver",
     "PilatusTriggerMode",
 ]

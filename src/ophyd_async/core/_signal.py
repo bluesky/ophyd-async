@@ -2,11 +2,28 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import (Any, AsyncGenerator, Callable, Dict, Generic, Mapping,
-                    Optional, Tuple, Type, Union)
+from typing import (
+    Any,
+    AsyncGenerator,
+    Callable,
+    Dict,
+    Generic,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
-from bluesky.protocols import (DataKey, Locatable, Location, Movable, Reading,
-                               Status, Subscribable)
+from bluesky.protocols import (
+    DataKey,
+    Locatable,
+    Location,
+    Movable,
+    Reading,
+    Status,
+    Subscribable,
+)
 
 from ._device import Device
 from ._mock_signal_backend import MockSignalBackend
@@ -14,8 +31,7 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus
-from ._utils import (DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout,
-                     Callback, T)
+from ._utils import DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout, Callback, T
 
 
 def _add_timeout(func):

@@ -1,8 +1,7 @@
 from typing import Sequence
 
 from ophyd_async.core import DirectoryProvider, SignalR, StandardDetector
-from ophyd_async.epics.adcore import (ADBase, ADBaseShapeProvider, HDFWriter,
-                                      NDFileHDF)
+from ophyd_async.epics.adcore import ADBase, ADBaseShapeProvider, HDFWriter, NDFileHDF
 
 from ._sim_controller import SimController
 

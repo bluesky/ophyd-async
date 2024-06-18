@@ -8,8 +8,12 @@ from bluesky.utils import ProgressBarManager, register_transform
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
 
 from ophyd_async.core import DeviceCollector
-from ophyd_async.epics.demo import (SampleStage, Sensor, SensorGroup,
-                                    start_ioc_subprocess)
+from ophyd_async.epics.demo import (
+    SampleStage,
+    Sensor,
+    SensorGroup,
+    start_ioc_subprocess,
+)
 
 # Create a run engine, with plotting, progressbar and transform
 RE = RunEngine({}, call_returns_result=True)
