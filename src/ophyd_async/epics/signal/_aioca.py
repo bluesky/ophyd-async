@@ -14,7 +14,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, NotConnected,
                               ReadingValueCallback, SignalBackend, T,
                               get_dtype, get_unique, wait_for_connection)
 
-from .common import get_supported_values
+from ._common import get_supported_values
 
 dbr_to_dtype: Dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",

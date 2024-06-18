@@ -4,15 +4,8 @@ from __future__ import annotations
 
 from typing import Optional, Tuple, Type
 
-from ophyd_async.core import (
-    SignalBackend,
-    SignalR,
-    SignalRW,
-    SignalW,
-    SignalX,
-    T,
-    get_unique,
-)
+from ophyd_async.core import (SignalBackend, SignalR, SignalRW, SignalW,
+                              SignalX, T, get_unique)
 
 from ._epics_transport import EpicsTransport
 
