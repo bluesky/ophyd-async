@@ -169,9 +169,9 @@ async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path)
     assert np.array_equal(array_value, np.array([1, 1, 1, 1, 1]))
 
 
-@patch("ophyd_async.core.device_save_loader.load_from_yaml")
-@patch("ophyd_async.core.device_save_loader.walk_rw_signals")
-@patch("ophyd_async.core.device_save_loader.set_signal_values")
+@patch("ophyd_async.core._device_save_loader.load_from_yaml")
+@patch("ophyd_async.core._device_save_loader.walk_rw_signals")
+@patch("ophyd_async.core._device_save_loader.set_signal_values")
 async def test_load_device(
     mock_set_signal_values, mock_walk_rw_signals, mock_load_from_yaml, device
 ):
