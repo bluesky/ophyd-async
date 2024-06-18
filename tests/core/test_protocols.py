@@ -2,12 +2,10 @@ from pathlib import Path
 
 from bluesky.utils import new_uid
 
-from ophyd_async import protocols as bs_protocols
-from ophyd_async.core import (DeviceCollector, StandardFlyer,
+from ophyd_async.core import (AsyncReadable, DeviceCollector, StandardFlyer,
                               StaticDirectoryProvider)
-from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.areadetector.writers import NDFileHDF
-from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
+from ophyd_async.epics.adcore import ADBase, NDFileHDF
+from ophyd_async.epics.adsimdetector import SimDetector
 from ophyd_async.sim.demo import SimMotor
 
 
@@ -17,7 +15,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     async with DeviceCollector(mock=True):
         drv = ADBase(f"{prefix}DRV:")
         hdf = NDFileHDF(f"{prefix}HDF:")
-        det = DemoADSimDetector(
+        det = SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
 
@@ -27,6 +25,6 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
 async def test_readable():
     async with DeviceCollector(mock=True):
         det = await make_detector("test", "test det", Path("/tmp"))
-    assert isinstance(SimMotor, bs_protocols.AsyncReadable)
-    assert isinstance(det, bs_protocols.AsyncReadable)
-    assert not isinstance(StandardFlyer, bs_protocols.AsyncReadable)
+    assert isinstance(SimMotor, AsyncReadable)
+    assert isinstance(det, AsyncReadable)
+    assert not isinstance(StandardFlyer, AsyncReadable)
