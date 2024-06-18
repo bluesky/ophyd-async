@@ -2,9 +2,9 @@ import asyncio
 from typing import Optional
 
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
+from ophyd_async.epics import ImageMode, stop_busy_record
 from ophyd_async.epics.adcore import start_acquiring_driver_and_ensure_status
 
-from ..utils import ImageMode, stop_busy_record
 from ._kinetix_driver import KinetixDriver, KinetixTriggerMode
 
 KINETIX_TRIGGER_MODE_MAP = {

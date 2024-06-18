@@ -5,9 +5,9 @@ from bluesky.protocols import Triggerable
 
 from ophyd_async.core import (AsyncStatus, ConfigSignal, HintedSignal, SignalR,
                               StandardReadable)
+from ophyd_async.epics import ImageMode
 
 from ._ad_base import ADBase
-from .utils import ImageMode
 from .writers.nd_plugin import NDPluginBase
 
 
