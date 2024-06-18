@@ -192,7 +192,7 @@ async def test_numeric_blocks_correctly_formated(mock_writer: PandaHDFWriter):
         }
 
     with patch(
-        "ophyd_async.panda.writers._hdf_writer.get_signals_marked_for_capture",
+        "ophyd_async.fastcs.panda.writers._hdf_writer.get_signals_marked_for_capture",
         get_numeric_signal,
     ):
         assert "test-panda-block-1-Value" in await mock_writer.open()
