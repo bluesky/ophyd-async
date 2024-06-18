@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Literal
 
-from ophyd_async.epics.areadetector.drivers import ADBase
+from ophyd_async.epics.adcore import ADBase
 from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
 
 
