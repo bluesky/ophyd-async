@@ -9,7 +9,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
                               SoftSignalBackend, wait_for_connection)
 from ophyd_async.epics import motor
 from ophyd_async.plan_stubs import ensure_connected
-from ophyd_async.sim.demo import SimMotor
+from ophyd_async.sim import demo
 
 
 class DummyBaseDevice(Device):
@@ -137,7 +137,7 @@ async def test_device_lazily_connects(RE):
 
 
 async def test_device_mock_and_back_again(RE):
-    motor = SimMotor("motor")
+    motor = demo.SimMotor("motor")
     assert not motor._connect_task
     await motor.connect(mock=False)
     assert isinstance(motor.units._backend, SoftSignalBackend)

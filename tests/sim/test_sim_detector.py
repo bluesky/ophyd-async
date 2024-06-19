@@ -2,7 +2,7 @@ import pytest
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.epics import motor
-from ophyd_async.sim.demo import SimPatternDetector
+from ophyd_async.sim import demo
 
 
 @pytest.fixture
@@ -13,7 +13,7 @@ async def sim_motor():
 
 
 async def test_sim_pattern_detector_initialization(
-    sim_pattern_detector: SimPatternDetector,
+    sim_pattern_detector: demo.SimPatternDetector,
 ):
     assert (
         sim_pattern_detector.pattern_generator
@@ -21,16 +21,16 @@ async def test_sim_pattern_detector_initialization(
 
 
 async def test_detector_creates_controller_and_writer(
-    sim_pattern_detector: SimPatternDetector,
+    sim_pattern_detector: demo.SimPatternDetector,
 ):
     assert sim_pattern_detector.writer
     assert sim_pattern_detector.controller
 
 
 async def test_writes_pattern_to_file(
-    sim_pattern_detector: SimPatternDetector, sim_motor: motor.Motor, tmp_path
+    sim_pattern_detector: demo.SimPatternDetector, sim_motor: motor.Motor, tmp_path
 ):
-    sim_pattern_detector = SimPatternDetector(
+    sim_pattern_detector = demo.SimPatternDetector(
         config_sigs=[*sim_motor._readables], path=tmp_path
     )
 
@@ -48,5 +48,5 @@ async def test_set_x_and_y(sim_pattern_detector):
     assert sim_pattern_detector.pattern_generator.x == 200
 
 
-async def test_initial_blob(sim_pattern_detector: SimPatternDetector):
+async def test_initial_blob(sim_pattern_detector: demo.SimPatternDetector):
     assert sim_pattern_detector.pattern_generator.STARTING_BLOB.any()
