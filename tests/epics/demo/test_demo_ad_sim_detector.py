@@ -16,7 +16,7 @@ from ophyd_async.core import (AsyncStatus, DeviceCollector, StandardDetector,
                               callback_on_mock_put, set_mock_value)
 from ophyd_async.epics.adcore import (ADBase, FileWriteMode, HDFWriter,
                                       ImageMode, NDFileHDF)
-from ophyd_async.epics.adsim import SimController, SimDetector
+from ophyd_async.epics.adsimdetector import SimController, SimDetector
 
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
@@ -270,7 +270,7 @@ async def test_trigger_logic():
 
     Probably the best thing to do here is mock the detector.controller.driver and
     detector.writer.hdf. Then, mock out set_and_wait_for_value in
-    ophyd_async.epics.adsim._sim_controller.SimController so that, as well as
+    ophyd_async.epics.adsimdetector._sim_controller.SimController so that, as well as
     setting detector.controller.driver.acquire to True, it sets
     detector.writer.hdf.num_captured to 1, using set_mock_value
     """

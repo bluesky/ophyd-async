@@ -8,21 +8,12 @@ import bluesky.plans as bp
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    DeviceCollector,
-    ShapeProvider,
-    StandardDetector,
-    StandardFlyer,
-    StaticDirectoryProvider,
-    TriggerInfo,
-    TriggerLogic,
-    set_mock_value,
-)
+from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
+                              DeviceCollector, ShapeProvider, StandardDetector,
+                              StandardFlyer, StaticDirectoryProvider,
+                              TriggerInfo, TriggerLogic, set_mock_value)
 from ophyd_async.epics.adcore import ADBase, HDFWriter, NDFileHDF
-from ophyd_async.epics.adsim import SimController
+from ophyd_async.epics.adsimdetector import SimController
 
 
 class DummyShapeProvider(ShapeProvider):

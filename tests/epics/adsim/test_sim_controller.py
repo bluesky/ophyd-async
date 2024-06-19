@@ -4,7 +4,7 @@ import pytest
 
 from ophyd_async.core import DeviceCollector
 from ophyd_async.epics.adcore import ADBase, ImageMode
-from ophyd_async.epics.adsim import SimController
+from ophyd_async.epics.adsimdetector import SimController
 
 
 @pytest.fixture
