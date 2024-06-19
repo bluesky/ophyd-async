@@ -6,7 +6,7 @@ from ophyd_async.core import DirectoryProvider, StandardDetector
 from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
 
 from ._pilatus_controller import PilatusController
-from ._pilatus_driver import PilatusDriver
+from ._pilatus_io import PilatusDriverIO
 
 
 #: Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
@@ -38,7 +38,7 @@ class PilatusDetector(StandardDetector):
         hdf_suffix: str = "HDF1:",
         name: str = "",
     ):
-        self.drv = PilatusDriver(prefix + drv_suffix)
+        self.drv = PilatusDriverIO(prefix + drv_suffix)
         self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(

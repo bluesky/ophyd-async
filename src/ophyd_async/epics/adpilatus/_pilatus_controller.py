@@ -1,17 +1,12 @@
 import asyncio
 from typing import Optional
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    wait_for_value,
-)
+from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
+                              DetectorTrigger, wait_for_value)
 from ophyd_async.epics import ImageMode, stop_busy_record
 from ophyd_async.epics.adcore import start_acquiring_driver_and_ensure_status
 
-from ._pilatus_driver import PilatusDriver, PilatusTriggerMode
+from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
 
 class PilatusController(DetectorControl):
@@ -23,7 +18,7 @@ class PilatusController(DetectorControl):
 
     def __init__(
         self,
-        driver: PilatusDriver,
+        driver: PilatusDriverIO,
         readout_time: float,
     ) -> None:
         self._drv = driver
