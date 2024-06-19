@@ -14,9 +14,9 @@ from bluesky.utils import new_uid
 from ophyd_async.core import (AsyncStatus, DeviceCollector, StandardDetector,
                               StaticDirectoryProvider, assert_emitted,
                               callback_on_mock_put, set_mock_value)
+from ophyd_async.epics import adsimdetector
 from ophyd_async.epics.adcore import (ADBase, FileWriteMode, HDFWriter,
                                       ImageMode, NDFileHDF)
-from ophyd_async.epics.adsimdetector import SimController, SimDetector
 
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
@@ -25,7 +25,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     async with DeviceCollector(mock=True):
         drv = ADBase(f"{prefix}DRV:", name="drv")
         hdf = NDFileHDF(f"{prefix}HDF:")
-        det = SimDetector(
+        det = adsimdetector.SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
 
@@ -104,7 +104,7 @@ async def two_detectors(tmp_path: Path):
 
 
 async def test_two_detectors_fly_different_rate(
-    two_detectors: List[SimDetector], RE: RunEngine
+    two_detectors: List[adsimdetector.SimDetector], RE: RunEngine
 ):
     docs = defaultdict(list)
 
@@ -142,7 +142,7 @@ async def test_two_detectors_step(
 
     RE(count_sim(two_detectors, times=1))
 
-    controller_a = cast(SimController, two_detectors[0].controller)
+    controller_a = cast(adsimdetector.SimController, two_detectors[0].controller)
     writer_a = cast(HDFWriter, two_detectors[0].writer)
     writer_b = cast(HDFWriter, two_detectors[1].writer)
 
@@ -285,7 +285,7 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(RE, tmp_path: P
 
     async with DeviceCollector(mock=True):
         hdf = NDFileHDF("FOO:HDF:")
-        det = SimDetector(
+        det = adsimdetector.SimDetector(
             drv,
             hdf,
             dp,

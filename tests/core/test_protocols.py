@@ -4,8 +4,8 @@ from bluesky.utils import new_uid
 
 from ophyd_async.core import (AsyncReadable, DeviceCollector, StandardFlyer,
                               StaticDirectoryProvider)
+from ophyd_async.epics import adsimdetector
 from ophyd_async.epics.adcore import ADBase, NDFileHDF
-from ophyd_async.epics.adsimdetector import SimDetector
 from ophyd_async.sim import demo
 
 
@@ -15,7 +15,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     async with DeviceCollector(mock=True):
         drv = ADBase(f"{prefix}DRV:")
         hdf = NDFileHDF(f"{prefix}HDF:")
-        det = SimDetector(
+        det = adsimdetector.SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
 
