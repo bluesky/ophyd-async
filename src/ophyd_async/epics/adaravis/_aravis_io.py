@@ -1,3 +1,4 @@
+
 from enum import Enum
 from typing import Literal
 
@@ -22,10 +23,13 @@ class AravisTriggerMode(str, Enum):
 AravisTriggerSource = Literal["Freerun", "Line1", "Line2", "Line3", "Line4"]
 
 
-class AravisDriver(ADBase):
+class AravisDriverIO(ADBase):
     # If instantiating a new instance, ensure it is supported in the _deadtimes dict
     """Generic Driver supporting the Manta and Mako drivers.
     Fetches deadtime prior to use in a Streaming scan.
+
+    This mirrors the interface provided by ADAravis/db/aravisCamera.template.
+
     Requires driver firmware up to date:
     - Model_RBV must be of the form "^(Mako|Manta) (model)$"
     """

@@ -6,7 +6,7 @@ from ophyd_async.core import DirectoryProvider, StandardDetector
 from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
 
 from ._aravis_controller import AravisController
-from ._aravis_driver import AravisDriver
+from ._aravis_io import AravisDriverIO
 
 
 class AravisDetector(StandardDetector, HasHints):
@@ -28,7 +28,7 @@ class AravisDetector(StandardDetector, HasHints):
         name="",
         gpio_number: AravisController.GPIO_NUMBER = 1,
     ):
-        self.drv = AravisDriver(prefix + drv_suffix)
+        self.drv = AravisDriverIO(prefix + drv_suffix)
         self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
