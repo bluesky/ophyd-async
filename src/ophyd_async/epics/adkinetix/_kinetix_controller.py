@@ -5,7 +5,7 @@ from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
 from ophyd_async.epics import ImageMode, stop_busy_record
 from ophyd_async.epics.adcore import start_acquiring_driver_and_ensure_status
 
-from ._kinetix_driver import KinetixDriver, KinetixTriggerMode
+from ._kinetix_io import KinetixDriverIO, KinetixTriggerMode
 
 KINETIX_TRIGGER_MODE_MAP = {
     DetectorTrigger.internal: KinetixTriggerMode.internal,
@@ -18,7 +18,7 @@ KINETIX_TRIGGER_MODE_MAP = {
 class KinetixController(DetectorControl):
     def __init__(
         self,
-        driver: KinetixDriver,
+        driver: KinetixDriverIO,
     ) -> None:
         self._drv = driver
 
