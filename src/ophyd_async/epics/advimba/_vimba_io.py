@@ -45,7 +45,8 @@ class VimbaExposeOutMode(str, Enum):
     trigger_width = "TriggerWidth"  # Expose for length of high signal
 
 
-class VimbaDriver(ADBase):
+class VimbaDriverIO(ADBase):
+    """This mirrors the interface provided by ADVimba/db/vimba.template."""
     def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
         self.convert_format = epics_signal_rw_rbv(

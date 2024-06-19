@@ -5,12 +5,8 @@ from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
 from ophyd_async.epics import ImageMode, stop_busy_record
 from ophyd_async.epics.adcore import start_acquiring_driver_and_ensure_status
 
-from ._vimba_driver import (
-    VimbaDriver,
-    VimbaExposeOutMode,
-    VimbaOnOff,
-    VimbaTriggerSource,
-)
+from ._vimba_io import (VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff,
+                        VimbaTriggerSource)
 
 TRIGGER_MODE = {
     DetectorTrigger.internal: VimbaOnOff.off,
@@ -30,7 +26,7 @@ EXPOSE_OUT_MODE = {
 class VimbaController(DetectorControl):
     def __init__(
         self,
-        driver: VimbaDriver,
+        driver: VimbaDriverIO,
     ) -> None:
         self._drv = driver
 
