@@ -19,7 +19,7 @@ from typing import (
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
 
-from .signal_backend import RuntimeEnum, SignalBackend
+from .signal_backend import SignalBackend, SubsetEnum
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
@@ -86,11 +86,11 @@ class SoftArrayConverter(SoftConverter):
 class SoftEnumConverter(SoftConverter):
     choices: Tuple[str, ...]
 
-    def __init__(self, datatype: Union[RuntimeEnum, Enum]):  # type: ignore
+    def __init__(self, datatype: Union[SubsetEnum, Enum]):  # type: ignore
         if issubclass(datatype, Enum):
             self.choices = tuple(v.value for v in datatype)
         else:
-            self.choices = tuple(datatype.choices)
+            self.choices = datatype.choices
 
     def write_value(self, value: Union[Enum, str]) -> str:
         if isinstance(value, Enum):
@@ -113,14 +113,14 @@ class SoftEnumConverter(SoftConverter):
 
         if issubclass(datatype, Enum):
             return cast(T, list(datatype.__members__.values())[0])  # type: ignore
-        return cast(T, datatype.default_choice)
+        return cast(T, self.choices[0])
 
 
 def make_converter(datatype):
     is_array = get_dtype(datatype) is not None
     is_sequence = get_origin(datatype) == abc.Sequence
     is_enum = inspect.isclass(datatype) and (
-        issubclass(datatype, Enum) or issubclass(datatype, RuntimeEnum)
+        issubclass(datatype, Enum) or issubclass(datatype, SubsetEnum)  # type: ignore
     )
 
     if is_array or is_sequence:

@@ -20,7 +20,7 @@ from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import DataKey, Reading
 
 from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
-from ophyd_async.core.signal_backend import RuntimeEnum
+from ophyd_async.core.signal_backend import SubsetEnum
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics._backend.common import LimitPair, Limits
 from ophyd_async.epics.signal._epics_transport import EpicsTransport
@@ -202,6 +202,8 @@ class MyEnum(str, Enum):
     b = "Bbb"
     c = "Ccc"
 
+
+MySubsetEnum = SubsetEnum["Aaa", "Bbb", "Ccc"]
 
 _metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
     "ca": {
@@ -502,19 +504,26 @@ class EnumNoString(Enum):
             ),
         ),
         (
-            RuntimeEnum["Aaa", "B", "Ccc"],
+            rt_enum := SubsetEnum["Aaa", "B", "Ccc"],
             "enum",
             (
                 "has choices ('Aaa', 'Bbb', 'Ccc'), "
-                "which do not match RuntimeEnum, which has "
-                "frozenset("
+                # SubsetEnum string output isn't deterministic
+                f"which is not a superset of {str(rt_enum)}."
             ),
         ),
         (int, "str", "has type str not int"),
         (str, "float", "has type float not str"),
         (str, "stra", "has type [str] not str"),
         (int, "uint8a", "has type [uint8] not int"),
-        (float, "enum", "is type Enum but doesn't inherit from String"),
+        (
+            float,
+            "enum",
+            (
+                "has choices ('Aaa', 'Bbb', 'Ccc'). "
+                "Use an Enum or SubsetEnum to represent this."
+            ),
+        ),
         (npt.NDArray[np.int32], "float64a", "has type [float64] not [int32]"),
     ],
 )
@@ -724,16 +733,14 @@ async def test_str_enum_returns_enum(ioc: IOC):
     assert val == "Bbb"
 
 
-async def test_str_returns_enum(ioc: IOC):
-    await ioc.make_backend(str, "enum")
+async def test_runtime_enum_returns_str(ioc: IOC):
+    await ioc.make_backend(MySubsetEnum, "enum")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
+    sig = epics_signal_rw(MySubsetEnum, pv_name)
 
-    sig = epics_signal_rw(str, pv_name)
     await sig.connect()
     val = await sig.get_value()
-    assert val == MyEnum.b
     assert val == "Bbb"
-    assert val is not MyEnum.b
 
 
 async def test_signal_returns_units_and_precision(ioc: IOC):

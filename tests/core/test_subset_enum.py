@@ -3,28 +3,29 @@ from epicscorelibs.ca import dbr
 from p4p import Value as P4PValue
 from p4p.nt import NTEnum
 
-from ophyd_async.core import RuntimeEnum
+from ophyd_async.core import SubsetEnum
 from ophyd_async.epics._backend._aioca import make_converter as aioca_make_converter
 from ophyd_async.epics._backend._p4p import make_converter as p4p_make_converter
 from ophyd_async.epics.signal.signal import epics_signal_rw
 
 
 async def test_runtime_enum_behaviour():
-    rt_enum = RuntimeEnum["A", "B"]
+    rt_enum = SubsetEnum["A", "B"]
 
     with pytest.raises(RuntimeError) as exc:
         rt_enum()
-    assert str(exc.value) == "RuntimeEnum cannot be instantiated"
+    assert str(exc.value) == "SubsetEnum cannot be instantiated"
 
-    assert issubclass(rt_enum, RuntimeEnum)
-    assert issubclass(rt_enum, RuntimeEnum["A", "B"])
-    assert issubclass(rt_enum, RuntimeEnum["B", "A"])
+    assert issubclass(rt_enum, SubsetEnum)
+    assert issubclass(rt_enum, SubsetEnum["A", "B"])
+    assert rt_enum is SubsetEnum["A", "B"]
+    assert not issubclass(rt_enum, SubsetEnum["B", "A"])
 
-    assert str(rt_enum) in ("RuntimeEnum['A', 'B']", "RuntimeEnum['B', 'A']")
-    assert str(RuntimeEnum) == "RuntimeEnum"
+    assert str(rt_enum) == "SubsetEnum['A', 'B']"
+    assert str(SubsetEnum) == "SubsetEnum"
 
     with pytest.raises(TypeError) as exc:
-        RuntimeEnum["A", "B", "A"]
+        SubsetEnum["A", "B", "A"]
     assert str(exc.value) == "Duplicate elements in runtime enum choices."
 
 
@@ -44,12 +45,12 @@ async def test_ca_runtime_enum_converter():
             self.enums = ["A", "B", "C"]  # More than the runtime enum
 
     epics_value = EpicsValue()
-    rt_enum = RuntimeEnum["A", "B"]
+    rt_enum = SubsetEnum["A", "B"]
     converter = aioca_make_converter(
         rt_enum, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
     assert converter.choices == {"A": "A", "B": "B", "C": "C"}
-    assert rt_enum.choices.issubset(frozenset(converter.choices.keys()))
+    assert set(rt_enum.choices).issubset(set(converter.choices.keys()))
 
 
 async def test_pva_runtime_enum_converter():
@@ -60,18 +61,16 @@ async def test_pva_runtime_enum_converter():
             "value.choices": ["A", "B", "C"],
         },
     )
-    rt_enum = RuntimeEnum["A", "B"]
+    rt_enum = SubsetEnum["A", "B"]
     converter = p4p_make_converter(
         rt_enum, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
-    assert frozenset(("A", "B")).issubset(frozenset(converter.choices))
+    assert {"A", "B"}.issubset(set(converter.choices))
 
 
 async def test_runtime_enum_signal():
-    signal_rw_pva = epics_signal_rw(
-        RuntimeEnum["A1", "B1"], "ca://RW_PV", name="signal"
-    )
-    signal_rw_ca = epics_signal_rw(RuntimeEnum["A2", "B2"], "ca://RW_PV", name="signal")
+    signal_rw_pva = epics_signal_rw(SubsetEnum["A1", "B1"], "ca://RW_PV", name="signal")
+    signal_rw_ca = epics_signal_rw(SubsetEnum["A2", "B2"], "ca://RW_PV", name="signal")
     await signal_rw_pva.connect(mock=True)
     await signal_rw_ca.connect(mock=True)
     await signal_rw_pva.get_value() == "A1"
@@ -82,5 +81,6 @@ async def test_runtime_enum_signal():
     await signal_rw_ca.get_value() == "B2"
 
     # Will accept string values even if they're not in the runtime enum
-    await signal_rw_pva.set("C1")
-    await signal_rw_ca.set("C2")
+    # Though type checking should compain
+    await signal_rw_pva.set("C1")  # type: ignore
+    await signal_rw_ca.set("C2")  # type: ignore

@@ -1,12 +1,11 @@
 from abc import abstractmethod
 from typing import (
-    TYPE_CHECKING,
     ClassVar,
     Dict,
     FrozenSet,
     Generic,
-    Literal,
     Optional,
+    Tuple,
     Type,
 )
 
@@ -56,50 +55,41 @@ class SignalBackend(Generic[T]):
         """Observe changes to the current value, timestamp and severity"""
 
 
-if TYPE_CHECKING:
-    RuntimeEnum = Literal
-else:
+class _SubsetEnumMeta(type):
+    # Intentionally immutable class variable
+    __enum_classes_created: Dict[Tuple[str, ...], Type["SubsetEnum"]] = {}
 
-    class _RuntimeEnumMeta(type):
-        # Intentionally immutable class variable
-        __enum_classes_created: Dict[FrozenSet[str], Type["RuntimeEnum"]] = {}
+    def __str__(cls):
+        if hasattr(cls, "choices"):
+            return f"SubsetEnum{list(cls.choices)}"
+        return "SubsetEnum"
 
-        def __str__(cls):
-            if hasattr(cls, "choices"):
-                return f"RuntimeEnum{list(cls.choices)}"
-            return "RuntimeEnum"
+    def __getitem__(cls, _choices):
+        if isinstance(_choices, str):
+            _choices = (_choices,)
+        else:
+            if not isinstance(_choices, tuple) or not all(
+                isinstance(c, str) for c in _choices
+            ):
+                raise TypeError(
+                    f"Choices must be a str or a tuple of str, not {type(_choices)}."
+                )
+            if len(set(_choices)) != len(_choices):
+                raise TypeError("Duplicate elements in runtime enum choices.")
 
-        def __getitem__(cls, choices):
-            if isinstance(choices, str):
-                choices = (choices,)
-            else:
-                if not isinstance(choices, tuple) or not all(
-                    isinstance(c, str) for c in choices
-                ):
-                    raise TypeError(
-                        f"Choices must be a str or a tuple of str, not {choices}."
-                    )
-                if len(set(choices)) != len(choices):
-                    raise TypeError("Duplicate elements in runtime enum choices.")
+        # If the enum has already been created (with this order)
+        if _choices in _SubsetEnumMeta.__enum_classes_created:
+            return _SubsetEnumMeta.__enum_classes_created[_choices]
 
-            default_choice_local = choices[0]
-            choices_frozenset = frozenset(choices)
+        class _SubsetEnum(cls):
+            choices = _choices
 
-            # If the enum has already been created, return it (ignoring order)
-            if choices_frozenset in _RuntimeEnumMeta.__enum_classes_created:
-                return _RuntimeEnumMeta.__enum_classes_created[choices_frozenset]
+        _SubsetEnumMeta.__enum_classes_created[_choices] = _SubsetEnum
+        return _SubsetEnum
 
-            # Create a new enum subclass
-            class _RuntimeEnum(cls):
-                choices = choices_frozenset
-                default_choice = default_choice_local
 
-            _RuntimeEnumMeta.__enum_classes_created[choices_frozenset] = _RuntimeEnum
-            return _RuntimeEnum
+class SubsetEnum(metaclass=_SubsetEnumMeta):
+    choices: ClassVar[FrozenSet[str]]
 
-    class RuntimeEnum(metaclass=_RuntimeEnumMeta):
-        choices: ClassVar[FrozenSet[str]]
-        default_choice: ClassVar[str]
-
-        def __init__(self):
-            raise RuntimeError("RuntimeEnum cannot be instantiated")
+    def __init__(self):
+        raise RuntimeError("SubsetEnum cannot be instantiated")
