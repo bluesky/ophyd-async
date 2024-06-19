@@ -3,8 +3,8 @@ import pytest
 from bluesky import RunEngine
 
 from ophyd_async.core import DeviceCollector, set_mock_value
-from ophyd_async.epics import ImageMode
-from ophyd_async.epics.adcore import ADBase, NDPluginStats, SingleTriggerDet
+from ophyd_async.epics.adcore import (ADBase, ImageMode, NDPluginStats,
+                                      SingleTriggerDet)
 
 
 @pytest.fixture

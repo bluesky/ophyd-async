@@ -1,4 +1,4 @@
-from ophyd_async.epics import NDAttributeDataType, NDAttributesXML
+from ophyd_async.epics.adcore import NDAttributeDataType, NDAttributesXML
 
 
 def test_ndattribute_writing_xml():

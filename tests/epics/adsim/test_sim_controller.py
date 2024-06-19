@@ -3,8 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import DeviceCollector
-from ophyd_async.epics import ImageMode
-from ophyd_async.epics.adcore import ADBase
+from ophyd_async.epics.adcore import ADBase, ImageMode
 from ophyd_async.epics.adsim import SimController
 
 

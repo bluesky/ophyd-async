@@ -11,17 +11,11 @@ import pytest
 from bluesky import RunEngine
 from bluesky.utils import new_uid
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DeviceCollector,
-    StandardDetector,
-    StaticDirectoryProvider,
-    assert_emitted,
-    callback_on_mock_put,
-    set_mock_value,
-)
-from ophyd_async.epics import FileWriteMode, ImageMode
-from ophyd_async.epics.adcore import ADBase, HDFWriter, NDFileHDF
+from ophyd_async.core import (AsyncStatus, DeviceCollector, StandardDetector,
+                              StaticDirectoryProvider, assert_emitted,
+                              callback_on_mock_put, set_mock_value)
+from ophyd_async.epics.adcore import (ADBase, FileWriteMode, HDFWriter,
+                                      ImageMode, NDFileHDF)
 from ophyd_async.epics.adsim import SimController, SimDetector
 
 
