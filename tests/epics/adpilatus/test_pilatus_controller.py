@@ -14,7 +14,9 @@ async def mock_pilatus_driver(RE) -> adpilatus.PilatusDriverIO:
 
 
 @pytest.fixture
-async def mock_pilatus_controller(RE, pilatus_driver: adpilatus.PilatusDriverIO) -> adpilatus.PilatusController:
+async def mock_pilatus_controller(
+    RE, pilatus_driver: adpilatus.PilatusDriverIO
+) -> adpilatus.PilatusController:
     async with DeviceCollector(mock=True):
         controller = adpilatus.PilatusController(pilatus_driver, readout_time=2.28)
 
@@ -27,13 +29,16 @@ async def test_pilatus_controller(
     mock_pilatus_driver: adpilatus.PilatusDriverIO,
 ):
     set_mock_value(mock_pilatus_driver.armed_for_triggers, True)
-    status = await mock_pilatus_controller.arm(num=1, trigger=DetectorTrigger.constant_gate)
+    status = await mock_pilatus_controller.arm(
+        num=1, trigger=DetectorTrigger.constant_gate
+    )
     await status
 
     assert await mock_pilatus_driver.num_images.get_value() == 1
     assert await mock_pilatus_driver.image_mode.get_value() == ImageMode.multiple
     assert (
-        await mock_pilatus_driver.trigger_mode.get_value() == adpilatus.PilatusTriggerMode.ext_enable
+        await mock_pilatus_driver.trigger_mode.get_value()
+        == adpilatus.PilatusTriggerMode.ext_enable
     )
     assert await mock_pilatus_driver.acquire.get_value() is True
 

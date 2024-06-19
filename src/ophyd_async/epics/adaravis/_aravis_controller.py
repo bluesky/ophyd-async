@@ -1,8 +1,12 @@
 import asyncio
 from typing import Literal, Optional, Tuple
 
-from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
-                              set_and_wait_for_value)
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+    set_and_wait_for_value,
+)
 from ophyd_async.epics.adcore import ImageMode, stop_busy_record
 
 from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource

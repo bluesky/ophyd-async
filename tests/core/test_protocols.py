@@ -2,8 +2,12 @@ from pathlib import Path
 
 from bluesky.utils import new_uid
 
-from ophyd_async.core import (AsyncReadable, DeviceCollector, StandardFlyer,
-                              StaticDirectoryProvider)
+from ophyd_async.core import (
+    AsyncReadable,
+    DeviceCollector,
+    StandardFlyer,
+    StaticDirectoryProvider,
+)
 from ophyd_async.epics import adsimdetector
 from ophyd_async.epics.adcore import ADBase, NDFileHDF
 from ophyd_async.sim import demo

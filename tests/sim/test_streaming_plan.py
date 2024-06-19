@@ -10,7 +10,9 @@ from ophyd_async.sim import demo
 # NOTE the async operations with h5py are non-trival
 # because of lack of native support for async operations
 # see https://github.com/h5py/h5py/issues/837
-async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: demo.SimPatternDetector):
+async def test_streaming_plan(
+    RE: RunEngine, sim_pattern_detector: demo.SimPatternDetector
+):
     names = []
     docs = []
 

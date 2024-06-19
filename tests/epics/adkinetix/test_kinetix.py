@@ -16,7 +16,9 @@ async def mock_adkinetix(
     static_directory_provider: DirectoryProvider,
 ) -> adkinetix.KinetixDetector:
     async with DeviceCollector(mock=True):
-        mock_adkinetix = adkinetix.KinetixDetector("KINETIX:", static_directory_provider)
+        mock_adkinetix = adkinetix.KinetixDetector(
+            "KINETIX:", static_directory_provider
+        )
 
     return mock_adkinetix
 
@@ -61,7 +63,9 @@ async def test_can_read(mock_adkinetix: adkinetix.KinetixDetector):
     assert (await mock_adkinetix.read()) == {}
 
 
-async def test_decribe_describes_writer_dataset(mock_adkinetix: adkinetix.KinetixDetector):
+async def test_decribe_describes_writer_dataset(
+    mock_adkinetix: adkinetix.KinetixDetector,
+):
     set_mock_value(mock_adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(mock_adkinetix._writer.hdf.capture, True)
 
@@ -78,7 +82,8 @@ async def test_decribe_describes_writer_dataset(mock_adkinetix: adkinetix.Kineti
 
 
 async def test_can_collect(
-    mock_adkinetix: adkinetix.KinetixDetector, static_directory_provider: DirectoryProvider
+    mock_adkinetix: adkinetix.KinetixDetector,
+    static_directory_provider: DirectoryProvider,
 ):
     directory_info = static_directory_provider()
     full_file_name = directory_info.root / directory_info.resource_dir / "foo.h5"

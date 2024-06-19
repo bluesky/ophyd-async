@@ -2,9 +2,11 @@ import asyncio
 from typing import Optional
 
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
-from ophyd_async.epics.adcore import (ImageMode,
-                                      start_acquiring_driver_and_ensure_status,
-                                      stop_busy_record)
+from ophyd_async.epics.adcore import (
+    ImageMode,
+    start_acquiring_driver_and_ensure_status,
+    stop_busy_record,
+)
 
 from ._kinetix_io import KinetixDriverIO, KinetixTriggerMode
 

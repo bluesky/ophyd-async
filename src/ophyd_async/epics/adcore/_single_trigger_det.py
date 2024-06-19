@@ -3,8 +3,13 @@ from typing import Sequence
 
 from bluesky.protocols import Triggerable
 
-from ophyd_async.core import (AsyncStatus, ConfigSignal, HintedSignal, SignalR,
-                              StandardReadable)
+from ophyd_async.core import (
+    AsyncStatus,
+    ConfigSignal,
+    HintedSignal,
+    SignalR,
+    StandardReadable,
+)
 
 from ._ad_base import ADBase
 from ._utils import ImageMode
