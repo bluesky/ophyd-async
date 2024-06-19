@@ -3,7 +3,7 @@ from ._ad_base import (DEFAULT_GOOD_STATES, ADBase, ADBaseShapeProvider,
 from ._single_trigger_det import SingleTriggerDet
 from ._utils import (FileWriteMode, ImageMode, NDAttributeDataType,
                      NDAttributesXML, stop_busy_record)
-from .writers import HDFWriter, NDFileHDF, NDPluginStats
+from ._writers import HDFWriter, NDFileHDF, NDPluginStats
 
 __all__ = [
     "DEFAULT_GOOD_STATES",
