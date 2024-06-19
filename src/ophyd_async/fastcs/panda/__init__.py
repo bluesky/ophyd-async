@@ -17,7 +17,7 @@ from ._table import (
 )
 from ._trigger import SeqTableInfo, StaticSeqTableTriggerLogic
 from ._utils import phase_sorter
-from .writers import (
+from ._writers import (
     Capture,
     CaptureSignalWrapper,
     HDFDataset,
