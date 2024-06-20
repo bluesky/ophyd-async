@@ -3,14 +3,23 @@ from __future__ import annotations
 import inspect
 import time
 from collections import abc
-from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Generic, Optional, Type, TypedDict, Union, cast, get_origin
+from typing import (
+    Dict,
+    Generic,
+    Optional,
+    Tuple,
+    Type,
+    TypedDict,
+    Union,
+    cast,
+    get_origin,
+)
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
 
-from .signal_backend import SignalBackend
+from .signal_backend import RuntimeSubsetEnum, SignalBackend
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
@@ -74,23 +83,27 @@ class SoftArrayConverter(SoftConverter):
         return cast(T, datatype(shape=0))  # type: ignore
 
 
-@dataclass
 class SoftEnumConverter(SoftConverter):
-    enum_class: Type[Enum]
+    choices: Tuple[str, ...]
 
-    def write_value(self, value: Union[Enum, str]) -> Enum:
-        if isinstance(value, Enum):
-            return value
+    def __init__(self, datatype: Union[RuntimeSubsetEnum, Enum]):
+        if issubclass(datatype, Enum):
+            self.choices = tuple(v.value for v in datatype)
         else:
-            return self.enum_class(value)
+            self.choices = datatype.choices
+
+    def write_value(self, value: Union[Enum, str]) -> str:
+        if isinstance(value, Enum):
+            return value.value
+        else:  # Runtime enum
+            return value
 
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        choices = [e.value for e in self.enum_class]
         return {
             "source": source,
             "dtype": "string",
             "shape": [],
-            "choices": choices,
+            "choices": self.choices,
             **metadata,
         }
 
@@ -98,13 +111,17 @@ class SoftEnumConverter(SoftConverter):
         if datatype is None:
             return cast(T, None)
 
-        return cast(T, list(datatype.__members__.values())[0])  # type: ignore
+        if issubclass(datatype, Enum):
+            return cast(T, list(datatype.__members__.values())[0])  # type: ignore
+        return cast(T, self.choices[0])
 
 
 def make_converter(datatype):
     is_array = get_dtype(datatype) is not None
     is_sequence = get_origin(datatype) == abc.Sequence
-    is_enum = issubclass(datatype, Enum) if inspect.isclass(datatype) else False
+    is_enum = inspect.isclass(datatype) and (
+        issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
+    )
 
     if is_array or is_sequence:
         return SoftArrayConverter()
