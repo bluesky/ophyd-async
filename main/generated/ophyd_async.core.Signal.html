@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.Signal &#8212; ophyd-async 0.3.3.dev2+gd55dcb17 documentation</title>
+    <title>ophyd_async.core.Signal &#8212; ophyd-async 0.3.3.dev3+g9165c5ae documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../_static/documentation_options.js?v=3c76ba03"></script>
+    <script src="../_static/documentation_options.js?v=f59781c7"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,8 +55,8 @@
     <link rel="icon" href="../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.core.SignalR" href="ophyd_async.core.SignalR.html" />
-    <link rel="prev" title="ophyd_async.core.DeviceVector" href="ophyd_async.core.DeviceVector.html" />
+    <link rel="next" title="ophyd_async.core.SignalBackend" href="ophyd_async.core.SignalBackend.html" />
+    <link rel="prev" title="ophyd_async.core.ShapeProvider" href="ophyd_async.core.ShapeProvider.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -442,62 +442,64 @@ document.write(`
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../reference/api.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.core.html">ophyd_async.core</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_mock_put.html">ophyd_async.core.get_mock_put</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_configuration.html">ophyd_async.core.assert_configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_emitted.html">ophyd_async.core.assert_emitted</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_reading.html">ophyd_async.core.assert_reading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_value.html">ophyd_async.core.assert_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.callback_on_mock_put.html">ophyd_async.core.callback_on_mock_put</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_dtype.html">ophyd_async.core.get_dtype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_mock_put.html">ophyd_async.core.get_mock_put</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_signal_values.html">ophyd_async.core.get_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_unique.html">ophyd_async.core.get_unique</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_device.html">ophyd_async.core.load_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_from_yaml.html">ophyd_async.core.load_from_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.merge_gathered_dicts.html">ophyd_async.core.merge_gathered_dicts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.mock_puts_blocked.html">ophyd_async.core.mock_puts_blocked</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_values.html">ophyd_async.core.set_mock_values</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.reset_mock_put_calls.html">ophyd_async.core.reset_mock_put_calls</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html">ophyd_async.core.soft_signal_r_and_setter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html">ophyd_async.core.soft_signal_rw</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.observe_value.html">ophyd_async.core.observe_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.reset_mock_put_calls.html">ophyd_async.core.reset_mock_put_calls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_device.html">ophyd_async.core.save_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_to_yaml.html">ophyd_async.core.save_to_yaml</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_value.html">ophyd_async.core.set_and_wait_for_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_put_proceeds.html">ophyd_async.core.set_mock_put_proceeds</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_value.html">ophyd_async.core.set_mock_value</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_dtype.html">ophyd_async.core.get_dtype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_unique.html">ophyd_async.core.get_unique</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.merge_gathered_dicts.html">ophyd_async.core.merge_gathered_dicts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_connection.html">ophyd_async.core.wait_for_connection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_signal_values.html">ophyd_async.core.get_signal_values</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_from_yaml.html">ophyd_async.core.load_from_yaml</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_to_yaml.html">ophyd_async.core.save_to_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_values.html">ophyd_async.core.set_mock_values</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_signal_values.html">ophyd_async.core.set_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html">ophyd_async.core.soft_signal_r_and_setter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html">ophyd_async.core.soft_signal_rw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_connection.html">ophyd_async.core.wait_for_connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.walk_rw_signals.html">ophyd_async.core.walk_rw_signals</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_device.html">ophyd_async.core.load_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_device.html">ophyd_async.core.save_device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_reading.html">ophyd_async.core.assert_reading</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_value.html">ophyd_async.core.assert_value</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_configuration.html">ophyd_async.core.assert_configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_emitted.html">ophyd_async.core.assert_emitted</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalBackend.html">ophyd_async.core.SignalBackend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SoftSignalBackend.html">ophyd_async.core.SoftSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html">ophyd_async.core.AsyncStatus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.CalculateTimeout.html">ophyd_async.core.CalculateTimeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ConfigSignal.html">ophyd_async.core.ConfigSignal</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorControl.html">ophyd_async.core.DetectorControl</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.MockSignalBackend.html">ophyd_async.core.MockSignalBackend</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorTrigger.html">ophyd_async.core.DetectorTrigger</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorWriter.html">ophyd_async.core.DetectorWriter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardDetector.html">ophyd_async.core.StandardDetector</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.Device.html">ophyd_async.core.Device</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceCollector.html">ophyd_async.core.DeviceCollector</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceVector.html">ophyd_async.core.DeviceVector</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.Signal</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalR.html">ophyd_async.core.SignalR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalW.html">ophyd_async.core.SignalW</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalRW.html">ophyd_async.core.SignalRW</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalX.html">ophyd_async.core.SignalX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html">ophyd_async.core.AsyncStatus</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.WatchableAsyncStatus.html">ophyd_async.core.WatchableAsyncStatus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DirectoryInfo.html">ophyd_async.core.DirectoryInfo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DirectoryProvider.html">ophyd_async.core.DirectoryProvider</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NameProvider.html">ophyd_async.core.NameProvider</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ShapeProvider.html">ophyd_async.core.ShapeProvider</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticDirectoryProvider.html">ophyd_async.core.StaticDirectoryProvider</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardReadable.html">ophyd_async.core.StandardReadable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ConfigSignal.html">ophyd_async.core.ConfigSignal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HardwareTriggeredFlyable.html">ophyd_async.core.HardwareTriggeredFlyable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HintedSignal.html">ophyd_async.core.HintedSignal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.MockSignalBackend.html">ophyd_async.core.MockSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NameProvider.html">ophyd_async.core.NameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.RuntimeSubsetEnum.html">ophyd_async.core.RuntimeSubsetEnum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SubsetEnum.html">ophyd_async.core.SubsetEnum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ShapeProvider.html">ophyd_async.core.ShapeProvider</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.Signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalBackend.html">ophyd_async.core.SignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalR.html">ophyd_async.core.SignalR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalRW.html">ophyd_async.core.SignalRW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalW.html">ophyd_async.core.SignalW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalX.html">ophyd_async.core.SignalX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SoftSignalBackend.html">ophyd_async.core.SoftSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardDetector.html">ophyd_async.core.StandardDetector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardReadable.html">ophyd_async.core.StandardReadable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticDirectoryProvider.html">ophyd_async.core.StaticDirectoryProvider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.TriggerInfo.html">ophyd_async.core.TriggerInfo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.TriggerLogic.html">ophyd_async.core.TriggerLogic</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HardwareTriggeredFlyable.html">ophyd_async.core.HardwareTriggeredFlyable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.CalculateTimeout.html">ophyd_async.core.CalculateTimeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.WatchableAsyncStatus.html">ophyd_async.core.WatchableAsyncStatus</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NotConnected.html">ophyd_async.core.NotConnected</a></li>
 </ul>
 </details></li>
@@ -740,20 +742,20 @@ may change API on minor release numbers before then</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.core.DeviceVector.html"
+       href="ophyd_async.core.ShapeProvider.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">ophyd_async.core.DeviceVector</p>
+        <p class="prev-next-title">ophyd_async.core.ShapeProvider</p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.core.SignalR.html"
+       href="ophyd_async.core.SignalBackend.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">ophyd_async.core.SignalR</p>
+        <p class="prev-next-title">ophyd_async.core.SignalBackend</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
