@@ -75,7 +75,6 @@ class Signal(Device, Generic[T]):
         force_reconnect: bool = False,
         backend: Optional[SignalBackend[T]] = None,
     ):
-
         if backend:
             if self._backend and backend is not self._backend:
                 # test if the backend from a previous connection is the same
@@ -90,8 +89,8 @@ class Signal(Device, Generic[T]):
                 )
             self._backend = backend
         if (
-            self._previous_connect_was_mock is not None and
-            self._previous_connect_was_mock != mock
+            self._previous_connect_was_mock is not None
+            and self._previous_connect_was_mock != mock
         ):
             raise RuntimeError(
                 f"`connect(mock={mock}) called on a function where the previous "
@@ -105,21 +104,20 @@ class Signal(Device, Generic[T]):
         if self._backend is None:
             raise RuntimeError("`connect` called on signal without backend")
 
-        can_use_previous_connection: bool =(
-            self._connect_task is not None
-            and not (self._connect_task.done() and self._connect_task.exception())
+        can_use_previous_connection: bool = self._connect_task is not None and not (
+            self._connect_task.done() and self._connect_task.exception()
         )
 
         if force_reconnect or not can_use_previous_connection:
             self.log.debug(f"Connecting to {self.source}")
             self._connect_task = asyncio.create_task(
-                asyncio.sleep(0.001) if mock else self._backend.connect(timeout=timeout)
+                self._backend.connect(timeout=timeout)
             )
         else:
             self.log.debug(f"Reusing previous connection to {self.source}")
-        assert self._connect_task, (
-            "this assert is for type analysis and will never fail"
-        )
+        assert (
+            self._connect_task
+        ), "this assert is for type analysis and will never fail"
         await self._connect_task
 
     @property

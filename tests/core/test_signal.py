@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 import time
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY
 
 import numpy
 import pytest
@@ -96,27 +96,50 @@ async def test_signal_connect_fails_if_different_backend_but_same_by_type():
     await signal.connect(connect_time_backend)
 
 
-@patch("ophyd_async.core.device.getLogger")
-@patch("ophyd_async.core.device.LoggerAdapter")
-async def test_signal_connects_to_previous_backend(mock_logger_adapter, mock_get_logger):
-    mock_logger_instance = Mock()
-    mock_logger_adapter.return_value = mock_logger_instance
-    signal = Signal(MockSignalBackend(int))
-    await signal.connect(mock=True)
-    assert signal._backend.datatype== int
-    await signal.connect(mock=True)
-    response = f"Reusing previous connection to {signal.source}"
-    mock_logger_instance.assert_called_once_with(response)
+async def test_signal_connects_to_previous_backend(caplog):
+    caplog.set_level(logging.DEBUG)
+    int_mock_backend = MockSignalBackend(int)
+    original_connect = int_mock_backend.connect
 
+    async def new_connect(timeout=1):
+        await asyncio.sleep(0.1)
+        await original_connect(timeout=timeout)
 
-async def test_signal_connects_with_force_reconnect():
-    signal = Signal(MockSignalBackend(int))
-    await signal.connect(mock=True)
+    int_mock_backend.connect = new_connect
+    signal = Signal(int_mock_backend)
+    await signal.connect()  # no need to pass the mock parameter as already specified
     assert signal._backend.datatype == int
-    with patch("ophyd_async.core.device.log.debug") as debug:
-        await signal.connect(mock=True, force_reconnect=True)
-        response = f"Connecting to {signal.source}"
-        debug.assert_called_once_with(response)
+    await signal.connect()  # no need to pass the mock parameter as already specified
+    response = f"Reusing previous connection to {signal.source}"
+    assert response in caplog.text
+
+
+async def test_signal_connects_with_force_reconnect(caplog):
+    caplog.set_level(logging.DEBUG)
+    signal = Signal(MockSignalBackend(int))
+    await signal.connect()  # no need to pass the mock parameter as already specified
+    assert signal._backend.datatype == int
+    await signal.connect(
+        force_reconnect=True
+    )  # no need to pass the mock parameter as already specified
+    response = f"Connecting to {signal.source}"
+    assert response in caplog.text
+
+
+@pytest.mark.parametrize(
+    "first, second",
+    [(True, False), (True, False)],
+)
+async def test_rejects_reconnect_when_connects_have_diff_mock_status(
+    caplog, first, second
+):
+    caplog.set_level(logging.DEBUG)
+    signal = Signal(MockSignalBackend(int))
+    await signal.connect(mock=first)
+    assert signal._backend.datatype == int
+    await signal.connect(mock=second)
+    response = f"Connecting to {signal.source}"
+    assert caplog.text.__contains__(response)
 
 
 async def test_signal_lazily_connects(RE):
@@ -353,4 +376,3 @@ async def test_subscription_logs(caplog):
     assert "Making subscription" in caplog.text
     cache.close()
     assert "Closing subscription on source" in caplog.text
-
