@@ -1,9 +1,9 @@
 from abc import abstractmethod
 from typing import (
+    TYPE_CHECKING,
     ClassVar,
-    Dict,
-    FrozenSet,
     Generic,
+    Literal,
     Optional,
     Tuple,
     Type,
@@ -55,41 +55,37 @@ class SignalBackend(Generic[T]):
         """Observe changes to the current value, timestamp and severity"""
 
 
-class _SubsetEnumMeta(type):
-    # Intentionally immutable class variable
-    __enum_classes_created: Dict[Tuple[str, ...], Type["SubsetEnum"]] = {}
+if TYPE_CHECKING:
+    SubsetEnum = Literal
+else:
 
-    def __str__(cls):
-        if hasattr(cls, "choices"):
-            return f"SubsetEnum{list(cls.choices)}"
-        return "SubsetEnum"
+    class _SubsetEnumMeta(type):
+        def __str__(cls):
+            if hasattr(cls, "choices"):
+                return f"SubsetEnum{list(cls.choices)}"
+            return "SubsetEnum"
 
-    def __getitem__(cls, _choices):
-        if isinstance(_choices, str):
-            _choices = (_choices,)
-        else:
-            if not isinstance(_choices, tuple) or not all(
-                isinstance(c, str) for c in _choices
-            ):
-                raise TypeError(
-                    f"Choices must be a str or a tuple of str, not {type(_choices)}."
-                )
-            if len(set(_choices)) != len(_choices):
-                raise TypeError("Duplicate elements in runtime enum choices.")
+        def __getitem__(cls, _choices):
+            if isinstance(_choices, str):
+                _choices = (_choices,)
+            else:
+                if not isinstance(_choices, tuple) or not all(
+                    isinstance(c, str) for c in _choices
+                ):
+                    raise TypeError(
+                        "Choices must be a str or a tuple of str, "
+                        f"not {type(_choices)}."
+                    )
+                if len(set(_choices)) != len(_choices):
+                    raise TypeError("Duplicate elements in runtime enum choices.")
 
-        # If the enum has already been created (with this order)
-        if _choices in _SubsetEnumMeta.__enum_classes_created:
-            return _SubsetEnumMeta.__enum_classes_created[_choices]
+            class _SubsetEnum(cls):
+                choices = _choices
 
-        class _SubsetEnum(cls):
-            choices = _choices
+            return _SubsetEnum
 
-        _SubsetEnumMeta.__enum_classes_created[_choices] = _SubsetEnum
-        return _SubsetEnum
+    class SubsetEnum(metaclass=_SubsetEnumMeta):
+        choices: ClassVar[Tuple[str, ...]]
 
-
-class SubsetEnum(metaclass=_SubsetEnumMeta):
-    choices: ClassVar[FrozenSet[str]]
-
-    def __init__(self):
-        raise RuntimeError("SubsetEnum cannot be instantiated")
+        def __init__(self):
+            raise RuntimeError("SubsetEnum cannot be instantiated")
