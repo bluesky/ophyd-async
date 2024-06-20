@@ -30,6 +30,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.signal import _SignalCache
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
+from ophyd_async.plan_stubs import ensure_connected
 
 
 async def test_signals_equality_raises():
@@ -63,8 +64,9 @@ async def test_signal_can_be_given_backend_on_connect():
 async def test_signal_connect_fails_with_different_backend_on_connection():
     sim_signal = Signal(MockSignalBackend(str))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as exc:
         await sim_signal.connect(mock=True, backend=MockSignalBackend(int))
+    assert str(exc.value) == "Backend at connection different from initialised one."
 
     with pytest.raises(ValueError):
         await sim_signal.connect(mock=True, backend=SoftSignalBackend(str))
@@ -79,6 +81,53 @@ async def test_signal_connect_fails_if_different_backend_but_same_by_value():
     assert str(exc.value) == "Backend at connection different from initialised one."
 
     await sim_signal.connect(mock=False, backend=initial_backend)
+
+
+async def test_signal_connect_fails_if_different_backend_but_same_by_type():
+    signal = Signal()
+    connect_time_backend = MockSignalBackend(int)
+    await signal.connect(backend=connect_time_backend)  # works
+    with pytest.raises(ValueError):
+        await signal.connect(
+            backend=MockSignalBackend(int)
+        )  # fails since backend is different
+
+    # forces reconnect as per , but passes since the backend is the same
+    await signal.connect(connect_time_backend)
+
+
+async def test_signal_lazily_connects(RE):
+    mock_signal_rw = soft_signal_rw(
+        int, "pva://this is an initial value not a pva pv", name="mock_signal"
+    )
+    await mock_signal_rw.connect(mock=False)
+    RE(ensure_connected(mock_signal_rw, mock=True))
+    assert (
+        mock_signal_rw._connect_task
+        and mock_signal_rw._connect_task.done()
+        and not mock_signal_rw._connect_task.exception()
+    )
+
+
+async def test_signal_mock_and_back_again(RE):
+    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
+    assert not mock_signal_rw._connect_task
+    await mock_signal_rw.connect(mock=False)
+    assert isinstance(mock_signal_rw._backend, SoftSignalBackend)
+    assert mock_signal_rw._connect_task
+    await mock_signal_rw.connect(mock=True)
+    assert isinstance(mock_signal_rw._backend, MockSignalBackend)
+
+
+async def test_connect_fails_then_next_connect_succeeds():
+    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
+    assert not mock_signal_rw._connect_task
+    await mock_signal_rw.connect(mock=False)
+    assert isinstance(mock_signal_rw._backend, SoftSignalBackend)
+    assert mock_signal_rw._connect_task
+    # todo is explicit disconnection needed?
+    await mock_signal_rw.connect(mock=True)
+    assert isinstance(mock_signal_rw._backend, MockSignalBackend)
 
 
 async def time_taken_by(coro) -> float:

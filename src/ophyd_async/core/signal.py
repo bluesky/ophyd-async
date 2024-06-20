@@ -63,6 +63,7 @@ class Signal(Device, Generic[T]):
     ) -> None:
         self._timeout = timeout
         self._initial_backend = self._backend = backend
+        self._connect_mock_arg = None
         super().__init__(name)
 
     async def connect(
@@ -73,6 +74,13 @@ class Signal(Device, Generic[T]):
         backend: Optional[SignalBackend[T]] = None,
     ):
         if backend:
+            if self._backend and backend is not self._backend:
+                # test if the backend from a previous connection is the same
+                # reject even if there was no initial backend
+                raise ValueError(
+                    "Backend at connection different from initialised one."
+                )
+
             if self._initial_backend and backend is not self._initial_backend:
                 raise ValueError(
                     "Backend at connection different from initialised one."
@@ -84,8 +92,12 @@ class Signal(Device, Generic[T]):
 
         if self._backend is None:
             raise RuntimeError("`connect` called on signal without backend")
+
         self.log.debug(f"Connecting to {self.source}")
-        await self._backend.connect(timeout=timeout)
+        self._connect_task = asyncio.create_task(
+            asyncio.sleep(0.001) if mock else self._backend.connect(timeout=timeout)
+        )
+        await self._connect_task
 
     @property
     def source(self) -> str:
