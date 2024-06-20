@@ -55,37 +55,39 @@ class SignalBackend(Generic[T]):
         """Observe changes to the current value, timestamp and severity"""
 
 
+class _RuntimeSubsetEnumMeta(type):
+    def __str__(cls):
+        if hasattr(cls, "choices"):
+            return f"SubsetEnum{list(cls.choices)}"
+        return "SubsetEnum"
+
+    def __getitem__(cls, _choices):
+        if isinstance(_choices, str):
+            _choices = (_choices,)
+        else:
+            if not isinstance(_choices, tuple) or not all(
+                isinstance(c, str) for c in _choices
+            ):
+                raise TypeError(
+                    "Choices must be a str or a tuple of str, " f"not {type(_choices)}."
+                )
+            if len(set(_choices)) != len(_choices):
+                raise TypeError("Duplicate elements in runtime enum choices.")
+
+        class _RuntimeSubsetEnum(cls):
+            choices = _choices
+
+        return _RuntimeSubsetEnum
+
+
+class RuntimeSubsetEnum(metaclass=_RuntimeSubsetEnumMeta):
+    choices: ClassVar[Tuple[str, ...]]
+
+    def __init__(self):
+        raise RuntimeError("SubsetEnum cannot be instantiated")
+
+
 if TYPE_CHECKING:
     SubsetEnum = Literal
 else:
-
-    class _SubsetEnumMeta(type):
-        def __str__(cls):
-            if hasattr(cls, "choices"):
-                return f"SubsetEnum{list(cls.choices)}"
-            return "SubsetEnum"
-
-        def __getitem__(cls, _choices):
-            if isinstance(_choices, str):
-                _choices = (_choices,)
-            else:
-                if not isinstance(_choices, tuple) or not all(
-                    isinstance(c, str) for c in _choices
-                ):
-                    raise TypeError(
-                        "Choices must be a str or a tuple of str, "
-                        f"not {type(_choices)}."
-                    )
-                if len(set(_choices)) != len(_choices):
-                    raise TypeError("Duplicate elements in runtime enum choices.")
-
-            class _SubsetEnum(cls):
-                choices = _choices
-
-            return _SubsetEnum
-
-    class SubsetEnum(metaclass=_SubsetEnumMeta):
-        choices: ClassVar[Tuple[str, ...]]
-
-        def __init__(self):
-            raise RuntimeError("SubsetEnum cannot be instantiated")
+    SubsetEnum = RuntimeSubsetEnum

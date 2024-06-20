@@ -50,7 +50,7 @@ from .signal import (
     soft_signal_rw,
     wait_for_value,
 )
-from .signal_backend import SignalBackend, SubsetEnum
+from .signal_backend import RuntimeSubsetEnum, SignalBackend, SubsetEnum
 from .soft_signal_backend import SoftSignalBackend
 from .standard_readable import ConfigSignal, HintedSignal, StandardReadable
 from .utils import (
@@ -88,6 +88,7 @@ __all__ = [
     "NameProvider",
     "NotConnected",
     "ReadingValueCallback",
+    "RuntimeSubsetEnum",
     "SubsetEnum",
     "ShapeProvider",
     "Signal",

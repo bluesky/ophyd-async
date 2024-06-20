@@ -2,7 +2,7 @@ import inspect
 from enum import Enum
 from typing import Dict, Optional, Tuple, Type, TypedDict
 
-from ophyd_async.core.signal_backend import SubsetEnum
+from ophyd_async.core.signal_backend import RuntimeSubsetEnum
 
 common_meta = {
     "units",
@@ -33,7 +33,7 @@ def get_supported_values(
     datatype: Optional[Type[str]],
     pv_choices: Tuple[str, ...],
 ) -> Dict[str, str]:
-    if inspect.isclass(datatype) and issubclass(datatype, SubsetEnum):
+    if inspect.isclass(datatype) and issubclass(datatype, RuntimeSubsetEnum):
         if not set(datatype.choices).issubset(set(pv_choices)):
             raise TypeError(
                 f"{pv} has choices {pv_choices}, "

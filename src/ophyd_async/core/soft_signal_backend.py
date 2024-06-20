@@ -19,7 +19,7 @@ from typing import (
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
 
-from .signal_backend import SignalBackend, SubsetEnum
+from .signal_backend import RuntimeSubsetEnum, SignalBackend
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
@@ -86,7 +86,7 @@ class SoftArrayConverter(SoftConverter):
 class SoftEnumConverter(SoftConverter):
     choices: Tuple[str, ...]
 
-    def __init__(self, datatype: Union[SubsetEnum, Enum]):  # type: ignore
+    def __init__(self, datatype: Union[RuntimeSubsetEnum, Enum]):
         if issubclass(datatype, Enum):
             self.choices = tuple(v.value for v in datatype)
         else:
@@ -120,7 +120,7 @@ def make_converter(datatype):
     is_array = get_dtype(datatype) is not None
     is_sequence = get_origin(datatype) == abc.Sequence
     is_enum = inspect.isclass(datatype) and (
-        issubclass(datatype, Enum) or issubclass(datatype, SubsetEnum)  # type: ignore
+        issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
     )
 
     if is_array or is_sequence:
