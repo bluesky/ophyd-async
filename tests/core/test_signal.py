@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 import time
-from unittest.mock import ANY
+from unittest.mock import ANY, Mock, patch
 
 import numpy
 import pytest
@@ -94,6 +94,29 @@ async def test_signal_connect_fails_if_different_backend_but_same_by_type():
 
     # forces reconnect as per , but passes since the backend is the same
     await signal.connect(connect_time_backend)
+
+
+@patch("ophyd_async.core.device.getLogger")
+@patch("ophyd_async.core.device.LoggerAdapter")
+async def test_signal_connects_to_previous_backend(mock_logger_adapter, mock_get_logger):
+    mock_logger_instance = Mock()
+    mock_logger_adapter.return_value = mock_logger_instance
+    signal = Signal(MockSignalBackend(int))
+    await signal.connect(mock=True)
+    assert signal._backend.datatype== int
+    await signal.connect(mock=True)
+    response = f"Reusing previous connection to {signal.source}"
+    mock_logger_instance.assert_called_once_with(response)
+
+
+async def test_signal_connects_with_force_reconnect():
+    signal = Signal(MockSignalBackend(int))
+    await signal.connect(mock=True)
+    assert signal._backend.datatype == int
+    with patch("ophyd_async.core.device.log.debug") as debug:
+        await signal.connect(mock=True, force_reconnect=True)
+        response = f"Connecting to {signal.source}"
+        debug.assert_called_once_with(response)
 
 
 async def test_signal_lazily_connects(RE):
@@ -330,3 +353,4 @@ async def test_subscription_logs(caplog):
     assert "Making subscription" in caplog.text
     cache.close()
     assert "Closing subscription on source" in caplog.text
+
