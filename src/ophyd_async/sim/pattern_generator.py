@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import (
+    Any,
     AsyncGenerator,
     AsyncIterator,
     Dict,
@@ -28,8 +30,15 @@ MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 
+@dataclass
+class PatternDataset(_HDFDataset):
+    maxshape: tuple[Any, ...] = (None,)
+    fillvalue = Optional[int] = None
+    dtype: Optional[type] = None
+
+
 def get_full_file_description(
-    datasets: List[_HDFDataset], outer_shape: tuple[int, ...]
+    datasets: List[PatternDataset], outer_shape: tuple[int, ...]
 ):
     full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
@@ -173,8 +182,8 @@ class PatternGenerator:
         new_path: Path = info.root / info.resource_dir / filename
         return new_path
 
-    def _get_datasets(self) -> List[_HDFDataset]:
-        raw_dataset = _HDFDataset(
+    def _get_datasets(self) -> List[PatternDataset]:
+        raw_dataset = PatternDataset(
             # name=data_name,
             data_key=DATA_PATH,
             dtype=np.uint8,
