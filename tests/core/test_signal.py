@@ -93,7 +93,7 @@ async def test_signal_connect_fails_if_different_backend_but_same_by_type():
         )  # fails since backend is different
 
     # forces reconnect as per , but passes since the backend is the same
-    await signal.connect(connect_time_backend)
+    await signal.connect(backend=connect_time_backend)
 
 
 async def test_signal_connects_to_previous_backend(caplog):

@@ -55,6 +55,8 @@ def _fail(self, other, *args, **kwargs):
 class Signal(Device, Generic[T]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
 
+    _previous_connect_was_mock = None
+
     def __init__(
         self,
         backend: Optional[SignalBackend[T]] = None,
@@ -90,10 +92,11 @@ class Signal(Device, Generic[T]):
                 f"connect was `mock={self._previous_connect_was_mock}`. Changing mock "
                 "value between connects is not permitted."
             )
+        self._previous_connect_was_mock = mock
+
         if mock and not isinstance(self._backend, MockSignalBackend):
             # Using a soft backend, look to the initial value
             self._backend = MockSignalBackend(initial_backend=self._backend)
-        self._previous_connect_was_mock = mock
 
         if self._backend is None:
             raise RuntimeError("`connect` called on signal without backend")
