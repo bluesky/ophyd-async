@@ -107,9 +107,9 @@ async def test_signal_connects_to_previous_backend(caplog):
 
     int_mock_backend.connect = new_connect
     signal = Signal(int_mock_backend)
-    await signal.connect()  # no need to pass the mock parameter as already specified
+    await signal.connect()
     assert signal._backend.datatype == int
-    await signal.connect()  # no need to pass the mock parameter as already specified
+    await signal.connect()
     response = f"Reusing previous connection to {signal.source}"
     assert response in caplog.text
 
@@ -117,13 +117,12 @@ async def test_signal_connects_to_previous_backend(caplog):
 async def test_signal_connects_with_force_reconnect(caplog):
     caplog.set_level(logging.DEBUG)
     signal = Signal(MockSignalBackend(int))
-    await signal.connect()  # no need to pass the mock parameter as already specified
+    await signal.connect()
     assert signal._backend.datatype == int
-    await signal.connect(
-        force_reconnect=True
-    )  # no need to pass the mock parameter as already specified
+    await signal.connect(force_reconnect=True)
     response = f"Connecting to {signal.source}"
     assert response in caplog.text
+    assert "Reusing previous connection to" not in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -137,15 +136,19 @@ async def test_rejects_reconnect_when_connects_have_diff_mock_status(
     signal = Signal(MockSignalBackend(int))
     await signal.connect(mock=first)
     assert signal._backend.datatype == int
-    await signal.connect(mock=second)
+    with pytest.raises(RuntimeError) as exc:
+        await signal.connect(mock=second)
+
+    assert f"`connect(mock={second})` called on a function where the previous " in str(
+        exc
+    )
+
     response = f"Connecting to {signal.source}"
-    assert caplog.text.__contains__(response)
+    assert response in caplog.text
 
 
 async def test_signal_lazily_connects(RE):
-    mock_signal_rw = soft_signal_rw(
-        int, "pva://this is an initial value not a pva pv", name="mock_signal"
-    )
+    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
     await mock_signal_rw.connect(mock=False)
     RE(ensure_connected(mock_signal_rw, mock=True))
     assert (

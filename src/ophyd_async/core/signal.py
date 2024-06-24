@@ -63,9 +63,6 @@ class Signal(Device, Generic[T]):
     ) -> None:
         self._timeout = timeout
         self._initial_backend = self._backend = backend
-        self._connect_mock_arg = None
-        self._connect_task: Optional[asyncio.Task] = None
-        self._previous_connect_was_mock: Optional[bool] = None
         super().__init__(name)
 
     async def connect(
@@ -83,23 +80,20 @@ class Signal(Device, Generic[T]):
                     "Backend at connection different from initialised one."
                 )
 
-            if self._initial_backend and backend is not self._initial_backend:
-                raise ValueError(
-                    "Backend at connection different from initialised one."
-                )
             self._backend = backend
         if (
             self._previous_connect_was_mock is not None
             and self._previous_connect_was_mock != mock
         ):
             raise RuntimeError(
-                f"`connect(mock={mock}) called on a function where the previous "
-                f"connect was mock={self._previous_connect_was_mock}. Changing mock "
+                f"`connect(mock={mock})` called on a function where the previous "
+                f"connect was `mock={self._previous_connect_was_mock}`. Changing mock "
                 "value between connects is not permitted."
             )
         if mock and not isinstance(self._backend, MockSignalBackend):
             # Using a soft backend, look to the initial value
             self._backend = MockSignalBackend(initial_backend=self._backend)
+            self._previous_connect_was_mock = True
 
         if self._backend is None:
             raise RuntimeError("`connect` called on signal without backend")
