@@ -143,14 +143,14 @@ async def test_device_lazily_connects(RE):
     )
 
 
-async def test_device_mock_and_back_again(RE):
+async def test_device_refuses_two_connects_differing_on_mock_attribute(RE):
     motor = SimMotor("motor")
     assert not motor._connect_task
     await motor.connect(mock=False)
     assert isinstance(motor.units._backend, SoftSignalBackend)
     assert motor._connect_task
     await motor.connect(mock=True)
-    assert isinstance(motor.units._backend, MockSignalBackend)
+    assert not isinstance(motor.units._backend, MockSignalBackend)
 
 
 class MotorBundle(Device):
@@ -185,7 +185,7 @@ async def test_device_with_children_lazily_connects(RE):
         )
 
 
-async def test_device_with_device_collector_lazily_connects():
+async def test_device_with_device_collector_refuses_to_connect_if_mock_switch():
     mock_motor = motor.Motor("NONE_EXISTENT")
     with pytest.raises(NotConnected):
         await mock_motor.connect(mock=False, timeout=0.01)
@@ -194,12 +194,8 @@ async def test_device_with_device_collector_lazily_connects():
         and mock_motor._connect_task.done()
         and mock_motor._connect_task.exception()
     )
-    await mock_motor.connect(mock=True, timeout=0.01)
-    assert (
-        mock_motor._connect_task is not None
-        and mock_motor._connect_task.done()
-        and not mock_motor._connect_task.exception()
-    )
+    with pytest.raises(NotConnected):
+        await mock_motor.connect(mock=True, timeout=0.01)
 
 
 async def test_no_reconnect_signals_if_not_forced():
