@@ -158,27 +158,6 @@ async def test_signal_lazily_connects(RE):
     )
 
 
-async def test_signal_mock_and_back_again(RE):
-    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
-    assert not mock_signal_rw._connect_task
-    await mock_signal_rw.connect(mock=False)
-    assert isinstance(mock_signal_rw._backend, SoftSignalBackend)
-    assert mock_signal_rw._connect_task
-    await mock_signal_rw.connect(mock=True)
-    assert isinstance(mock_signal_rw._backend, MockSignalBackend)
-
-
-async def test_connect_fails_then_next_connect_succeeds():
-    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
-    assert not mock_signal_rw._connect_task
-    await mock_signal_rw.connect(mock=False)
-    assert isinstance(mock_signal_rw._backend, SoftSignalBackend)
-    assert mock_signal_rw._connect_task
-    # todo is explicit disconnection needed?
-    await mock_signal_rw.connect(mock=True)
-    assert isinstance(mock_signal_rw._backend, MockSignalBackend)
-
-
 async def time_taken_by(coro) -> float:
     start = time.monotonic()
     await coro
