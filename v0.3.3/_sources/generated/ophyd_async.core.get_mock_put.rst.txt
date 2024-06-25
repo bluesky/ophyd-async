@@ -1,0 +1,6 @@
+ophyd\_async.core.get\_mock\_put
+================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: get_mock_put

@@ -1,0 +1,6 @@
+ophyd\_async.core.assert\_reading
+=================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: assert_reading
