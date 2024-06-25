@@ -107,9 +107,9 @@ async def test_signal_connects_to_previous_backend(caplog):
 
     int_mock_backend.connect = new_connect
     signal = Signal(int_mock_backend)
-    await signal.connect()
-    assert signal._backend.datatype == int
-    await signal.connect()
+    assert time_taken_by(
+        asyncio.gather(signal.connect(), signal.connect())
+    ) == pytest.approx(0.1, rel=1e-5)
     response = f"Reusing previous connection to {signal.source}"
     assert response in caplog.text
 
