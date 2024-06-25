@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator, List
+from typing import Iterator, List, Optional
 from urllib.parse import urlunparse
 
 import event_model
@@ -18,14 +18,14 @@ from ophyd_async.core import DirectoryInfo
 class _HDFDataset:
     #: Name of the data_key within the Descriptor document
     data_key: str
-    dtype_numpy: str = None
+    dtype_numpy: Optional[str] = None
     swmr: bool = False
-    shape: List[int] = None
+    shape: Optional[List[int]] = None
     multiplier: int = 1
     #: Name of the dataset within the HDF file
-    dataset: str = None
-    device_name: str = None
-    block: str = None
+    dataset: Optional[str] = None
+    device_name: Optional[str] = None
+    block: Optional[str] = None
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
