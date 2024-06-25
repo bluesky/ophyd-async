@@ -139,8 +139,8 @@ async def test_rejects_reconnect_when_connects_have_diff_mock_status(
     with pytest.raises(RuntimeError) as exc:
         await signal.connect(mock=second)
 
-    assert f"`connect(mock={second})` called on a function where the previous " in str(
-        exc
+    assert f"`connect(mock={second})` called on a `Signal` where the previous " in str(
+        exc.value
     )
 
     response = f"Connecting to {signal.source}"

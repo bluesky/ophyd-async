@@ -9,7 +9,6 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     DeviceVector,
-    MockSignalBackend,
     NotConnected,
     wait_for_connection,
 )
@@ -149,8 +148,12 @@ async def test_device_refuses_two_connects_differing_on_mock_attribute(RE):
     await motor.connect(mock=False)
     assert isinstance(motor.units._backend, SoftSignalBackend)
     assert motor._connect_task
-    await motor.connect(mock=True)
-    assert not isinstance(motor.units._backend, MockSignalBackend)
+    with pytest.raises(RuntimeError) as exc:
+        await motor.connect(mock=True)
+    assert str(exc.value) == (
+        "`connect(mock=True)` called on a `Device` where the previous connect was "
+        "`mock=False`. Changing mock value between connects is not permitted."
+    )
 
 
 class MotorBundle(Device):
@@ -194,8 +197,12 @@ async def test_device_with_device_collector_refuses_to_connect_if_mock_switch():
         and mock_motor._connect_task.done()
         and mock_motor._connect_task.exception()
     )
-    with pytest.raises(NotConnected):
+    with pytest.raises(RuntimeError) as exc:
         await mock_motor.connect(mock=True, timeout=0.01)
+    assert str(exc.value) == (
+        "`connect(mock=True)` called on a `Device` where the previous connect was "
+        "`mock=False`. Changing mock value between connects is not permitted."
+    )
 
 
 async def test_no_reconnect_signals_if_not_forced():
