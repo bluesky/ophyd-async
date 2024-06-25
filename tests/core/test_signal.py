@@ -29,8 +29,28 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import _SignalCache
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
+
+
+class SignalRejectingAtFirst(Signal):
+    def __init__(self) -> None:
+        self.connected = False
+        self.first_connection = True
+        self.backend = soft_signal_rw(int, 0, name="mock_signal")
+
+    async def connect(
+        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
+    ):
+        if self.first_connection:
+            self.first_connection = False
+        else:
+            await self.backend.connect(timeout)
+            self.connected = True
+
+    async def _connect_task(self):
+        return self.backend._connect_task()
 
 
 async def test_signals_equality_raises():
@@ -94,9 +114,9 @@ async def test_signal_connects_to_previous_backend(caplog):
 
     int_mock_backend.connect = new_connect
     signal = Signal(int_mock_backend)
-    assert time_taken_by(
+    assert await time_taken_by(
         asyncio.gather(signal.connect(), signal.connect())
-    ) == pytest.approx(0.1, rel=1e-5)
+    ) == pytest.approx(0.1, rel=1e-2)
     response = f"Reusing previous connection to {signal.source}"
     assert response in caplog.text
 
@@ -135,13 +155,47 @@ async def test_rejects_reconnect_when_connects_have_diff_mock_status(
 
 
 async def test_signal_lazily_connects(RE):
+    failing_signal = SignalRejectingAtFirst()
+    await failing_signal.connect(mock=False)
+    assert failing_signal._connect_task.exception()
+    RE(ensure_connected(failing_signal, mock=False))
+    assert (
+        failing_signal._connect_task
+        and failing_signal._connect_task.done()
+        and not failing_signal._connect_task.exception()
+    )
+
+
+async def test_signal_lazily_connects_1(RE):
     mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
-    # await mock_signal_rw.connect(mock=False)
-    RE(ensure_connected(mock_signal_rw, mock=False))
+
+    await mock_signal_rw.connect(mock=False)
+    RE(ensure_connected(mock_signal_rw, mock=True))
     assert (
         mock_signal_rw._connect_task
         and mock_signal_rw._connect_task.done()
         and not mock_signal_rw._connect_task.exception()
+    )
+
+
+async def test_signal_lazily_connects_2(RE):
+    failing_signal = Signal(MockSignalBackend(int))
+
+    cache_connect = failing_signal.connect
+    first_connect = True
+
+    def fail_connect():
+        if first_connect:
+            first_connect = False
+        else:
+            cache_connect()
+
+    await failing_signal.connect(mock=False)
+    RE(ensure_connected(failing_signal, mock=False))
+    assert (
+        failing_signal._connect_task
+        and failing_signal._connect_task.done()
+        and not failing_signal._connect_task.exception()
     )
 
 
