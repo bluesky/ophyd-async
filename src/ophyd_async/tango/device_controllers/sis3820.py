@@ -2,15 +2,14 @@ from __future__ import annotations
 
 from typing import Dict
 
-# from bluesky.protocols import Triggerable
-from bluesky.protocols import Reading
+from bluesky.protocols import Reading, Triggerable
 
 from ophyd_async.core import AsyncStatus
 from ophyd_async.tango import TangoReadableDevice, tango_signal_rw, tango_signal_x
 
 
 # --------------------------------------------------------------------
-class SIS3820Counter(TangoReadableDevice):  # Triggerable
+class SIS3820Counter(TangoReadableDevice, Triggerable):
     src_dict: dict = {
         "counts": "/counts",
         "offset": "/offset",
