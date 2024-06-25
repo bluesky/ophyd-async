@@ -22,6 +22,13 @@ class AravisTriggerMode(str, Enum):
 AravisTriggerSource = Literal["Freerun", "Line1", "Line2", "Line3", "Line4"]
 
 
+class AravisTriggerSource(str, Enum):
+    Freerun = "Freerun"
+    Line1 = "Line1"
+    FixedRate = "FixedRate" 
+    Software = "Software"
+
+
 class AravisDriver(ADBase):
     # If instantiating a new instance, ensure it is supported in the _deadtimes dict
     """Generic Driver supporting the Manta and Mako drivers.
@@ -34,5 +41,5 @@ class AravisDriver(ADBase):
         self.trigger_mode = epics_signal_rw_rbv(
             AravisTriggerMode, prefix + "TriggerMode"
         )
-        self.trigger_source = epics_signal_rw_rbv(str, prefix + "TriggerSource")
+        self.trigger_source = epics_signal_rw_rbv(AravisTriggerSource, prefix + "TriggerSource")
         super().__init__(prefix, name=name)
