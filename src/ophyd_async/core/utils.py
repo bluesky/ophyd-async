@@ -111,8 +111,6 @@ def get_dtype(typ: Type) -> Optional[np.dtype]:
         # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
         # so extract numpy.float64 from it
         return np.dtype(typ.__args__[1].__args__[0])  # type: ignore
-    elif typ == str:
-        return np.dtype("U")  # Unicode string type
     return None
 
 
