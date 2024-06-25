@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator, List, Optional
+from typing import Iterator, List
 from urllib.parse import urlunparse
 
 import event_model
@@ -26,10 +26,6 @@ class _HDFDataset:
     dataset: str = None
     device_name: str = None
     block: str = None
-
-    maxshape: tuple[Any, ...] = (None,)
-    fillvalue = Optional[int] = None
-    dtype: Optional[type] = None
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
