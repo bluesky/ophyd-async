@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 import time
-from unittest.mock import ANY
+from unittest.mock import ANY, Mock
 
 import numpy
 import pytest
@@ -196,6 +196,27 @@ async def test_signal_lazily_connects_2(RE):
         failing_signal._connect_task
         and failing_signal._connect_task.done()
         and not failing_signal._connect_task.exception()
+    )
+
+
+async def test_signal_lazily_connects_3(RE):
+    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
+    cached_connect = mock_signal_rw._backend.connect
+    fail_at_first_connect = Mock()
+    fail_at_first_connect.side_effect = [
+        Exception("Failure on first call"),
+        cached_connect,
+        cached_connect,
+    ]
+    mock_signal_rw._backend.connect = fail_at_first_connect
+
+    with pytest.raises(Exception, match="Failure on first call"):
+        await mock_signal_rw.connect(mock=False)
+    RE(ensure_connected(mock_signal_rw, mock=False))
+    assert (
+        mock_signal_rw._connect_task
+        and mock_signal_rw._connect_task.done()
+        and not mock_signal_rw._connect_task.exception()
     )
 
 
