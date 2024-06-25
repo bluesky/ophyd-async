@@ -74,11 +74,7 @@ class Signal(Device, Generic[T]):
     ):
         if backend:
             if self._backend and backend is not self._backend:
-                # test if the backend from a previous connection is the same
-                # reject even if there was no initial backend
-                raise ValueError(
-                    "Backend at connection different from initialised one."
-                )
+                raise ValueError("Backend at connection different from previous one.")
 
             self._backend = backend
         if (

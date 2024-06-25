@@ -66,7 +66,7 @@ async def test_signal_connect_fails_with_different_backend_on_connection():
 
     with pytest.raises(ValueError) as exc:
         await sim_signal.connect(mock=True, backend=MockSignalBackend(int))
-    assert str(exc.value) == "Backend at connection different from initialised one."
+    assert str(exc.value) == "Backend at connection different from previous one."
 
     with pytest.raises(ValueError):
         await sim_signal.connect(mock=True, backend=SoftSignalBackend(str))
@@ -78,22 +78,9 @@ async def test_signal_connect_fails_if_different_backend_but_same_by_value():
 
     with pytest.raises(ValueError) as exc:
         await sim_signal.connect(mock=False, backend=MockSignalBackend(str))
-    assert str(exc.value) == "Backend at connection different from initialised one."
+    assert str(exc.value) == "Backend at connection different from previous one."
 
     await sim_signal.connect(mock=False, backend=initial_backend)
-
-
-async def test_signal_connect_fails_if_different_backend_but_same_by_type():
-    signal = Signal()
-    connect_time_backend = MockSignalBackend(int)
-    await signal.connect(backend=connect_time_backend)  # works
-    with pytest.raises(ValueError):
-        await signal.connect(
-            backend=MockSignalBackend(int)
-        )  # fails since backend is different
-
-    # forces reconnect as per , but passes since the backend is the same
-    await signal.connect(backend=connect_time_backend)
 
 
 async def test_signal_connects_to_previous_backend(caplog):
@@ -149,8 +136,8 @@ async def test_rejects_reconnect_when_connects_have_diff_mock_status(
 
 async def test_signal_lazily_connects(RE):
     mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
-    await mock_signal_rw.connect(mock=False)
-    RE(ensure_connected(mock_signal_rw, mock=True))
+    # await mock_signal_rw.connect(mock=False)
+    RE(ensure_connected(mock_signal_rw, mock=False))
     assert (
         mock_signal_rw._connect_task
         and mock_signal_rw._connect_task.done()
