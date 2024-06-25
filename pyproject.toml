@@ -13,7 +13,7 @@ classifiers = [
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
     "networkx>=2.0",
-    "numpy",
+    "numpy<2.0.0",
     "packaging",
     "pint",
     "bluesky>=1.13.0a3",

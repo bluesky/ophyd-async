@@ -1,5 +1,28 @@
 from enum import Enum
-from typing import Dict, Optional, Tuple, Type
+from typing import Dict, Optional, Tuple, Type, TypedDict
+
+common_meta = {
+    "units",
+    "precision",
+}
+
+
+class LimitPair(TypedDict):
+    high: float | None
+    low: float | None
+
+    def __bool__(self) -> bool:
+        return self.low is None and self.high is None
+
+
+class Limits(TypedDict):
+    alarm: LimitPair
+    control: LimitPair
+    display: LimitPair
+    warning: LimitPair
+
+    def __bool__(self) -> bool:
+        return any(self.alarm, self.control, self.display, self.warning)
 
 
 def get_supported_values(

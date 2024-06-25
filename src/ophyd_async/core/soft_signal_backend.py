@@ -5,7 +5,7 @@ import time
 from collections import abc
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Generic, Optional, Type, Union, cast, get_origin
+from typing import Dict, Generic, Optional, Type, TypedDict, Union, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -19,6 +19,11 @@ primitive_dtypes: Dict[type, Dtype] = {
     float: "number",
     bool: "boolean",
 }
+
+
+class SignalMetadata(TypedDict):
+    units: str | None = None
+    precision: int | None = None
 
 
 class SoftConverter(Generic[T]):
@@ -35,7 +40,8 @@ class SoftConverter(Generic[T]):
             alarm_severity=-1 if severity > 2 else severity,
         )
 
-    def get_datakey(self, source: str, value) -> DataKey:
+    def get_datakey(self, source: str, value, **metadata) -> DataKey:
+        dk = {"source": source, "shape": [], **metadata}
         dtype = type(value)
         if np.issubdtype(dtype, np.integer):
             dtype = int
@@ -44,8 +50,8 @@ class SoftConverter(Generic[T]):
         assert (
             dtype in primitive_dtypes
         ), f"invalid converter for value of type {type(value)}"
-        dtype_name = primitive_dtypes[dtype]
-        return {"source": source, "dtype": dtype_name, "shape": []}
+        dk["dtype"] = primitive_dtypes[dtype]
+        return dk
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -55,8 +61,8 @@ class SoftConverter(Generic[T]):
 
 
 class SoftArrayConverter(SoftConverter):
-    def get_datakey(self, source: str, value) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value)]}
+    def get_datakey(self, source: str, value, **metadata) -> DataKey:
+        return {"source": source, "dtype": "array", "shape": [len(value)], **metadata}
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -78,9 +84,15 @@ class SoftEnumConverter(SoftConverter):
         else:
             return self.enum_class(value)
 
-    def get_datakey(self, source: str, value) -> DataKey:
+    def get_datakey(self, source: str, value, **metadata) -> DataKey:
         choices = [e.value for e in self.enum_class]
-        return {"source": source, "dtype": "string", "shape": [], "choices": choices}  # type: ignore
+        return {
+            "source": source,
+            "dtype": "string",
+            "shape": [],
+            "choices": choices,
+            **metadata,
+        }
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -114,9 +126,11 @@ class SoftSignalBackend(SignalBackend[T]):
         self,
         datatype: Optional[Type[T]],
         initial_value: Optional[T] = None,
+        metadata: SignalMetadata = None,
     ) -> None:
         self.datatype = datatype
         self._initial_value = initial_value
+        self._metadata = metadata or {}
         self.converter: SoftConverter = make_converter(datatype)
         if self._initial_value is None:
             self._initial_value = self.converter.make_initial_value(self.datatype)
@@ -155,7 +169,7 @@ class SoftSignalBackend(SignalBackend[T]):
             self.callback(reading, self._value)
 
     async def get_datakey(self, source: str) -> DataKey:
-        return self.converter.get_datakey(source, self._value)
+        return self.converter.get_datakey(source, self._value, **self._metadata)
 
     async def get_reading(self) -> Reading:
         return self.converter.reading(self._value, self._timestamp, self._severity)

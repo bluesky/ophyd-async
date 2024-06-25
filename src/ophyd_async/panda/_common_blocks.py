@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 
 from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW
-from ophyd_async.panda._table import SeqTable
+from ophyd_async.panda._table import DatasetTable, SeqTable
 
 
 class DataBlock(Device):
@@ -14,6 +14,7 @@ class DataBlock(Device):
     num_captured: SignalR[int]
     capture: SignalRW[bool]
     flush_period: SignalRW[float]
+    datasets: SignalR[DatasetTable]
 
 
 class PulseBlock(Device):
