@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 import time
-from unittest.mock import ANY, Mock
+from unittest.mock import ANY
 
 import numpy
 import pytest
@@ -32,25 +32,6 @@ from ophyd_async.core.signal import _SignalCache
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
-
-
-class SignalRejectingAtFirst(Signal):
-    def __init__(self) -> None:
-        self.connected = False
-        self.first_connection = True
-        self.backend = soft_signal_rw(int, 0, name="mock_signal")
-
-    async def connect(
-        self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
-    ):
-        if self.first_connection:
-            self.first_connection = False
-        else:
-            await self.backend.connect(timeout)
-            self.connected = True
-
-    async def _connect_task(self):
-        return self.backend._connect_task()
 
 
 async def test_signals_equality_raises():
@@ -155,68 +136,41 @@ async def test_rejects_reconnect_when_connects_have_diff_mock_status(
 
 
 async def test_signal_lazily_connects(RE):
-    failing_signal = SignalRejectingAtFirst()
-    await failing_signal.connect(mock=False)
-    assert failing_signal._connect_task.exception()
-    RE(ensure_connected(failing_signal, mock=False))
+    class MockSignalBackendFailingFirst(MockSignalBackend):
+        succeed_on_connect = False
+
+        async def connect(self, timeout=DEFAULT_TIMEOUT):
+            if self.succeed_on_connect:
+                self.succeed_on_connect = False
+                await super().connect(timeout=timeout)
+            else:
+                self.succeed_on_connect = True
+                raise RuntimeError("connect fail")
+
+    signal = SignalRW(MockSignalBackendFailingFirst(int))
+
+    with pytest.raises(RuntimeError, match="connect fail"):
+        await signal.connect(mock=False)
+
     assert (
-        failing_signal._connect_task
-        and failing_signal._connect_task.done()
-        and not failing_signal._connect_task.exception()
+        signal._connect_task
+        and signal._connect_task.done()
+        and signal._connect_task.exception()
     )
 
-
-async def test_signal_lazily_connects_1(RE):
-    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
-
-    await mock_signal_rw.connect(mock=False)
-    RE(ensure_connected(mock_signal_rw, mock=True))
+    RE(ensure_connected(signal, mock=False))
     assert (
-        mock_signal_rw._connect_task
-        and mock_signal_rw._connect_task.done()
-        and not mock_signal_rw._connect_task.exception()
+        signal._connect_task
+        and signal._connect_task.done()
+        and not signal._connect_task.exception()
     )
 
-
-async def test_signal_lazily_connects_2(RE):
-    failing_signal = Signal(MockSignalBackend(int))
-
-    cache_connect = failing_signal.connect
-    first_connect = True
-
-    def fail_connect():
-        if first_connect:
-            first_connect = False
-        else:
-            cache_connect()
-
-    await failing_signal.connect(mock=False)
-    RE(ensure_connected(failing_signal, mock=False))
+    # TODO https://github.com/bluesky/ophyd-async/issues/413
+    RE(ensure_connected(signal, mock=False, force_reconnect=True))
     assert (
-        failing_signal._connect_task
-        and failing_signal._connect_task.done()
-        and not failing_signal._connect_task.exception()
-    )
-
-
-async def test_signal_lazily_connects_3(RE):
-    mock_signal_rw = soft_signal_rw(int, 0, name="mock_signal")
-    cached_connect = mock_signal_rw._backend.connect
-    fail_at_first_connect = Mock()
-    fail_at_first_connect.side_effect = [
-        Exception("Failure on first call"),
-        cached_connect,
-        cached_connect,
-    ]
-    mock_signal_rw._backend.connect = fail_at_first_connect
-
-    with pytest.raises(Exception, match="Failure on first call"):
-        await mock_signal_rw.connect(mock=False)
-    RE(ensure_connected(mock_signal_rw, mock=False))
-    assert (
-        mock_signal_rw._connect_task
-        and mock_signal_rw._connect_task.done()
-        and not mock_signal_rw._connect_task.exception()
+        signal._connect_task
+        and signal._connect_task.done()
+        and signal._connect_task.exception()
     )
 
 

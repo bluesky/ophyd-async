@@ -88,7 +88,7 @@ class Signal(Device, Generic[T]):
             )
         self._previous_connect_was_mock = mock
 
-        if mock and not isinstance(self._backend, MockSignalBackend):
+        if mock and not issubclass(type(self._backend), MockSignalBackend):
             # Using a soft backend, look to the initial value
             self._backend = MockSignalBackend(initial_backend=self._backend)
 
