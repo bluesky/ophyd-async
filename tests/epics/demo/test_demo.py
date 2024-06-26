@@ -15,8 +15,9 @@ from ophyd_async.core import (
     assert_emitted,
     assert_reading,
     assert_value,
-    set_sim_callback,
-    set_sim_value,
+    callback_on_mock_put,
+    get_mock_put,
+    set_mock_value,
 )
 from ophyd_async.epics import demo
 
@@ -26,45 +27,78 @@ A_WHILE = 0.001
 
 
 @pytest.fixture
-async def sim_mover() -> demo.Mover:
-    async with DeviceCollector(sim=True):
-        sim_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
+async def mock_mover() -> demo.Mover:
+    async with DeviceCollector(mock=True):
+        mock_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
         # Signals connected here
 
-    assert sim_mover.name == "sim_mover"
-    set_sim_value(sim_mover.units, "mm")
-    set_sim_value(sim_mover.precision, 3)
-    set_sim_value(sim_mover.velocity, 1)
-    return sim_mover
+    assert mock_mover.name == "mock_mover"
+    set_mock_value(mock_mover.units, "mm")
+    set_mock_value(mock_mover.precision, 3)
+    set_mock_value(mock_mover.velocity, 1)
+    return mock_mover
 
 
 @pytest.fixture
-async def sim_sensor() -> demo.Sensor:
-    async with DeviceCollector(sim=True):
-        sim_sensor = demo.Sensor("SIM:SENSOR:")
+async def mock_sensor() -> demo.Sensor:
+    async with DeviceCollector(mock=True):
+        mock_sensor = demo.Sensor("MOCK:SENSOR:")
         # Signals connected here
 
-    assert sim_sensor.name == "sim_sensor"
-    return sim_sensor
+    assert mock_sensor.name == "mock_sensor"
+    return mock_sensor
 
 
 @pytest.fixture
-async def sim_sensor_group() -> demo.SensorGroup:
-    async with DeviceCollector(sim=True):
-        sim_sensor_group = demo.SensorGroup("SIM:SENSOR:")
+async def mock_sensor_group() -> demo.SensorGroup:
+    async with DeviceCollector(mock=True):
+        mock_sensor_group = demo.SensorGroup("MOCK:SENSOR:")
         # Signals connected here
 
-    assert sim_sensor_group.name == "sim_sensor_group"
-    return sim_sensor_group
+    assert mock_sensor_group.name == "mock_sensor_group"
+    return mock_sensor_group
 
 
-class Watcher:
+async def test_mover_stopped(mock_mover: demo.Mover):
+    callbacks = []
+    callback_on_mock_put(
+        mock_mover.stop_, lambda v, *args, **kwargs: callbacks.append(v)
+    )
+
+    await mock_mover.stop()
+    assert callbacks == [None]
+
+
+class DemoWatcher:
     def __init__(self) -> None:
         self._event = asyncio.Event()
         self._mock = Mock()
 
-    def __call__(self, *args, **kwargs):
-        self._mock(*args, **kwargs)
+    def __call__(
+        self,
+        *args,
+        current: float,
+        initial: float,
+        target: float,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: float | None = None,
+        fraction: float | None = None,
+        time_elapsed: float | None = None,
+        time_remaining: float | None = None,
+        **kwargs,
+    ):
+        self._mock(
+            *args,
+            current=current,
+            initial=initial,
+            target=target,
+            name=name,
+            unit=unit,
+            precision=precision,
+            time_elapsed=time_elapsed,
+            **kwargs,
+        )
         self._event.set()
 
     async def wait_for_call(self, *args, **kwargs):
@@ -75,14 +109,14 @@ class Watcher:
         self._event.clear()
 
 
-async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
-    s = sim_mover.set(0.55)
-    watcher = Watcher()
+async def test_mover_moving_well(mock_mover: demo.Mover) -> None:
+    s = mock_mover.set(0.55)
+    watcher = DemoWatcher()
     s.watch(watcher)
     done = Mock()
     s.add_callback(done)
     await watcher.wait_for_call(
-        name="sim_mover",
+        name="mock_mover",
         current=0.0,
         initial=0.0,
         target=0.55,
@@ -91,13 +125,13 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         time_elapsed=pytest.approx(0.0, abs=0.05),
     )
 
-    await assert_value(sim_mover.setpoint, 0.55)
+    await assert_value(mock_mover.setpoint, 0.55)
     assert not s.done
     done.assert_not_called()
     await asyncio.sleep(0.1)
-    set_sim_value(sim_mover.readback, 0.1)
+    set_mock_value(mock_mover.readback, 0.1)
     await watcher.wait_for_call(
-        name="sim_mover",
+        name="mock_mover",
         current=0.1,
         initial=0.0,
         target=0.55,
@@ -105,7 +139,7 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
-    set_sim_value(sim_mover.readback, 0.5499999)
+    set_mock_value(mock_mover.readback, 0.5499999)
     await asyncio.sleep(A_WHILE)
     assert s.done
     assert s.success
@@ -115,14 +149,14 @@ async def test_mover_moving_well(sim_mover: demo.Mover) -> None:
     done2.assert_called_once_with(s)
 
 
-async def test_sensor_reading_shows_value(sim_sensor: demo.Sensor):
+async def test_sensor_reading_shows_value(mock_sensor: demo.Sensor):
     # Check default value
-    await assert_value(sim_sensor.value, pytest.approx(0.0))
-    assert (await sim_sensor.value.get_value()) == pytest.approx(0.0)
+    await assert_value(mock_sensor.value, pytest.approx(0.0))
+    assert (await mock_sensor.value.get_value()) == pytest.approx(0.0)
     await assert_reading(
-        sim_sensor,
+        mock_sensor,
         {
-            "sim_sensor-value": {
+            "mock_sensor-value": {
                 "value": 0.0,
                 "alarm_severity": 0,
                 "timestamp": ANY,
@@ -130,11 +164,11 @@ async def test_sensor_reading_shows_value(sim_sensor: demo.Sensor):
         },
     )
     # Check different value
-    set_sim_value(sim_sensor.value, 5.0)
+    set_mock_value(mock_sensor.value, 5.0)
     await assert_reading(
-        sim_sensor,
+        mock_sensor,
         {
-            "sim_sensor-value": {
+            "mock_sensor-value": {
                 "value": 5.0,
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -143,39 +177,55 @@ async def test_sensor_reading_shows_value(sim_sensor: demo.Sensor):
     )
 
 
-async def test_mover_stopped(sim_mover: demo.Mover):
-    callbacks = []
-    set_sim_callback(sim_mover.stop_, lambda r, v: callbacks.append(v))
+async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
+    mover_setpoint_mock = get_mock_put(mock_mover.setpoint)
+    await mock_mover.setpoint.set(10)
+    mover_setpoint_mock.assert_called_once_with(10, wait=ANY, timeout=ANY)
 
-    assert callbacks == [None]
-    await sim_mover.stop()
-    assert callbacks == [None, None]
+    # Assert that velocity is set before move
+    mover_velocity_mock = get_mock_put(mock_mover.velocity)
+
+    parent_mock = Mock()
+    parent_mock.attach_mock(mover_setpoint_mock, "setpoint")
+    parent_mock.attach_mock(mover_velocity_mock, "velocity")
+
+    await mock_mover.velocity.set(100)
+    await mock_mover.setpoint.set(67)
+
+    parent_mock.assert_has_calls(
+        [
+            call.velocity(100, wait=True, timeout=ANY),
+            call.setpoint(67, wait=True, timeout=ANY),
+        ]
+    )
 
 
-async def test_read_mover(sim_mover: demo.Mover):
-    await sim_mover.stage()
-    assert (await sim_mover.read())["sim_mover"]["value"] == 0.0
-    assert (await sim_mover.read_configuration())["sim_mover-velocity"]["value"] == 1
-    assert (await sim_mover.describe_configuration())["sim_mover-units"]["shape"] == []
-    set_sim_value(sim_mover.readback, 0.5)
-    assert (await sim_mover.read())["sim_mover"]["value"] == 0.5
-    await sim_mover.unstage()
+async def test_read_mover(mock_mover: demo.Mover):
+    await mock_mover.stage()
+    assert (await mock_mover.read())["mock_mover"]["value"] == 0.0
+    assert (await mock_mover.read_configuration())["mock_mover-velocity"]["value"] == 1
+    assert (await mock_mover.describe_configuration())["mock_mover-units"][
+        "shape"
+    ] == []
+    set_mock_value(mock_mover.readback, 0.5)
+    assert (await mock_mover.read())["mock_mover"]["value"] == 0.5
+    await mock_mover.unstage()
     # Check we can still read and describe when not staged
-    set_sim_value(sim_mover.readback, 0.1)
-    assert (await sim_mover.read())["sim_mover"]["value"] == 0.1
-    assert await sim_mover.describe()
+    set_mock_value(mock_mover.readback, 0.1)
+    assert (await mock_mover.read())["mock_mover"]["value"] == 0.1
+    assert await mock_mover.describe()
 
 
-async def test_set_velocity(sim_mover: demo.Mover) -> None:
-    v = sim_mover.velocity
+async def test_set_velocity(mock_mover: demo.Mover) -> None:
+    v = mock_mover.velocity
     q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
-    assert (await q.get())["sim_mover-velocity"]["value"] == 1.0
+    assert (await q.get())["mock_mover-velocity"]["value"] == 1.0
     await v.set(2.0)
-    assert (await q.get())["sim_mover-velocity"]["value"] == 2.0
+    assert (await q.get())["mock_mover-velocity"]["value"] == 2.0
     v.clear_sub(q.put_nowait)
     await v.set(3.0)
-    assert (await v.read())["sim_mover-velocity"]["value"] == 3.0
+    assert (await v.read())["mock_mover-velocity"]["value"] == 3.0
     assert q.empty()
 
 
@@ -192,6 +242,7 @@ async def test_sensor_disconnected(caplog):
         async with DeviceCollector(timeout=0.1):
             s = demo.Sensor("ca://PRE:", name="sensor")
     logs = caplog.get_records("call")
+    logs = [log for log in logs if "signal" not in log.pathname]
     assert len(logs) == 2
 
     assert logs[0].message == ("signal ca://PRE:Value timed out")
@@ -199,24 +250,24 @@ async def test_sensor_disconnected(caplog):
     assert s.name == "sensor"
 
 
-async def test_read_sensor(sim_sensor: demo.Sensor):
-    sim_sensor.stage()
-    assert (await sim_sensor.read())["sim_sensor-value"]["value"] == 0
-    assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
+async def test_read_sensor(mock_sensor: demo.Sensor):
+    mock_sensor.stage()
+    assert (await mock_sensor.read())["mock_sensor-value"]["value"] == 0
+    assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.low
-    desc = (await sim_sensor.describe_configuration())["sim_sensor-mode"]
+    desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
-    assert desc["choices"] == ["Low Energy", "High Energy"]  # type: ignore
-    set_sim_value(sim_sensor.mode, demo.EnergyMode.high)
-    assert (await sim_sensor.read_configuration())["sim_sensor-mode"][
+    assert desc["choices"] == ("Low Energy", "High Energy")  # type: ignore
+    set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
+    assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.high
-    await sim_sensor.unstage()
+    await mock_sensor.unstage()
 
 
-async def test_sensor_in_plan(RE: RunEngine, sim_sensor: demo.Sensor):
-    """Tests sim sensor behavior within a RunEngine plan.
+async def test_sensor_in_plan(RE: RunEngine, mock_sensor: demo.Sensor):
+    """Tests mock sensor behavior within a RunEngine plan.
 
     This test verifies that the sensor emits the expected documents
      when used in plan(count).
@@ -226,13 +277,13 @@ async def test_sensor_in_plan(RE: RunEngine, sim_sensor: demo.Sensor):
     def capture_emitted(name, doc):
         docs[name].append(doc)
 
-    RE(bp.count([sim_sensor], num=2), capture_emitted)
+    RE(bp.count([mock_sensor], num=2), capture_emitted)
     assert_emitted(docs, start=1, descriptor=1, event=2, stop=1)
 
 
 async def test_assembly_renaming() -> None:
     thing = demo.SampleStage("PRE")
-    await thing.connect(sim=True)
+    await thing.connect(mock=True)
     assert thing.x.name == ""
     assert thing.x.velocity.name == ""
     assert thing.x.stop_.name == ""
@@ -244,51 +295,39 @@ async def test_assembly_renaming() -> None:
     assert thing.x.stop_.name == "foo-x-stop"
 
 
-def test_mover_in_re(sim_mover: demo.Mover, RE) -> None:
-    sim_mover.move(0)
-
-    def my_plan():
-        sim_mover.move(0)
-        return
-        yield
-
-    with pytest.raises(RuntimeError, match="Will deadlock run engine if run in a plan"):
-        RE(my_plan())
-
-
 async def test_dynamic_sensor_group_disconnected():
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
-            sim_sensor_group_dynamic = demo.SensorGroup("SIM:SENSOR:")
+            mock_sensor_group_dynamic = demo.SensorGroup("MOCK:SENSOR:")
 
-    assert sim_sensor_group_dynamic.name == "sim_sensor_group_dynamic"
+    assert mock_sensor_group_dynamic.name == "mock_sensor_group_dynamic"
 
 
 async def test_dynamic_sensor_group_read_and_describe(
-    sim_sensor_group: demo.SensorGroup,
+    mock_sensor_group: demo.SensorGroup,
 ):
-    set_sim_value(sim_sensor_group.sensors[1].value, 0.0)
-    set_sim_value(sim_sensor_group.sensors[2].value, 0.5)
-    set_sim_value(sim_sensor_group.sensors[3].value, 1.0)
+    set_mock_value(mock_sensor_group.sensors[1].value, 0.0)
+    set_mock_value(mock_sensor_group.sensors[2].value, 0.5)
+    set_mock_value(mock_sensor_group.sensors[3].value, 1.0)
 
-    await sim_sensor_group.stage()
-    description = await sim_sensor_group.describe()
+    await mock_sensor_group.stage()
+    description = await mock_sensor_group.describe()
 
-    await sim_sensor_group.unstage()
+    await mock_sensor_group.unstage()
     await assert_reading(
-        sim_sensor_group,
+        mock_sensor_group,
         {
-            "sim_sensor_group-sensors-1-value": {
+            "mock_sensor_group-sensors-1-value": {
                 "value": 0.0,
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "sim_sensor_group-sensors-2-value": {
+            "mock_sensor_group-sensors-2-value": {
                 "value": 0.5,
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "sim_sensor_group-sensors-3-value": {
+            "mock_sensor_group-sensors-3-value": {
                 "value": 1.0,
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -296,20 +335,20 @@ async def test_dynamic_sensor_group_read_and_describe(
         },
     )
     assert description == {
-        "sim_sensor_group-sensors-1-value": {
+        "mock_sensor_group-sensors-1-value": {
             "dtype": "number",
             "shape": [],
-            "source": "soft://sim_sensor_group-sensors-1-value",
+            "source": "mock+ca://MOCK:SENSOR:1:Value",
         },
-        "sim_sensor_group-sensors-2-value": {
+        "mock_sensor_group-sensors-2-value": {
             "dtype": "number",
             "shape": [],
-            "source": "soft://sim_sensor_group-sensors-2-value",
+            "source": "mock+ca://MOCK:SENSOR:2:Value",
         },
-        "sim_sensor_group-sensors-3-value": {
+        "mock_sensor_group-sensors-3-value": {
             "dtype": "number",
             "shape": [],
-            "source": "soft://sim_sensor_group-sensors-3-value",
+            "source": "mock+ca://MOCK:SENSOR:3:Value",
         },
     }
 

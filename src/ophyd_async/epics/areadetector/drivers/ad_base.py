@@ -5,12 +5,13 @@ from typing import FrozenSet, Sequence, Set
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
+    DetectorControl,
     ShapeProvider,
     set_and_wait_for_value,
 )
 
-from ...signal.signal import epics_signal_rw
-from ..utils import ImageMode, ad_r, ad_rw
+from ...signal.signal import epics_signal_r, epics_signal_rw_rbv
+from ..utils import ImageMode
 from ..writers.nd_plugin import NDArrayBase
 
 
@@ -43,17 +44,44 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
 class ADBase(NDArrayBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         # Define some signals
-        self.acquire = ad_rw(bool, prefix + "Acquire")
-        self.acquire_time = ad_rw(float, prefix + "AcquireTime")
-        self.num_images = ad_rw(int, prefix + "NumImages")
-        self.image_mode = ad_rw(ImageMode, prefix + "ImageMode")
-        self.array_counter = ad_rw(int, prefix + "ArrayCounter")
-        self.array_size_x = ad_r(int, prefix + "ArraySizeX")
-        self.array_size_y = ad_r(int, prefix + "ArraySizeY")
-        self.detector_state = ad_r(DetectorState, prefix + "DetectorState")
-        # There is no _RBV for this one
-        self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
+        self.acquire_time = epics_signal_rw_rbv(float, prefix + "AcquireTime")
+        self.acquire_period = epics_signal_rw_rbv(float, prefix + "AcquirePeriod")
+        self.num_images = epics_signal_rw_rbv(int, prefix + "NumImages")
+        self.image_mode = epics_signal_rw_rbv(ImageMode, prefix + "ImageMode")
+        self.detector_state = epics_signal_r(
+            DetectorState, prefix + "DetectorState_RBV"
+        )
         super().__init__(prefix, name=name)
+
+
+async def set_exposure_time_and_acquire_period_if_supplied(
+    controller: DetectorControl,
+    driver: ADBase,
+    exposure: float | None = None,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> None:
+    """
+    Sets the exposure time if it is not None and the acquire period to the
+    exposure time plus the deadtime. This is expected behavior for most
+    AreaDetectors, but some may require more specialized handling.
+
+    Parameters
+    ----------
+    controller:
+        Controller that can supply a deadtime.
+    driver:
+        The driver to start acquiring. Must subclass ADBase.
+    exposure:
+        Desired exposure time, this is a noop if it is None.
+    timeout:
+        How long to wait for the exposure time and acquire period to be set.
+    """
+    if exposure is not None:
+        full_frame_time = exposure + controller.get_deadtime(exposure)
+        await asyncio.gather(
+            driver.acquire_time.set(exposure, timeout=timeout),
+            driver.acquire_period.set(full_frame_time, timeout=timeout),
+        )
 
 
 async def start_acquiring_driver_and_ensure_status(

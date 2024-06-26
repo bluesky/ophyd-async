@@ -7,8 +7,8 @@ from bluesky.protocols import HasHints
 
 from ophyd_async.core import ConfigSignal, HintedSignal, StandardReadable
 from ophyd_async.core.device import Device, DeviceVector
-from ophyd_async.core.signal import SignalR
-from ophyd_async.core.sim_signal_backend import SimSignalBackend
+from ophyd_async.core.mock_signal_backend import MockSignalBackend
+from ophyd_async.core.signal import SignalR, soft_signal_r_and_setter
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
 
 
@@ -136,7 +136,7 @@ def test_standard_readable_add_children_cm_filters_non_devices():
         sr.b = MagicMock(spec=Device)
         sr.c = 1.0
         sr.d = "abc"
-        sr.e = MagicMock(spec=SimSignalBackend)
+        sr.e = MagicMock(spec=MockSignalBackend)
 
     # Can't use assert_called_once_with() as the order of items returned from
     # internal dict comprehension is not guaranteed
@@ -219,3 +219,14 @@ def test_standard_readable_set_readable_signals():
     assert all(isinstance(x, ConfigSignal) for x in sr._configurables)
     assert len(sr._stageables) == 1
     assert all(isinstance(x, HintedSignal) for x in sr._stageables)
+
+
+def test_standard_readable_add_children_multi_nested():
+    inner = StandardReadable()
+    outer = StandardReadable()
+    with inner.add_children_as_readables(HintedSignal):
+        inner.a, _ = soft_signal_r_and_setter(float, initial_value=5.0)
+        inner.b, _ = soft_signal_r_and_setter(float, initial_value=6.0)
+    with outer.add_children_as_readables():
+        outer.inner = inner
+    assert outer

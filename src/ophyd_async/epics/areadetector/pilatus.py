@@ -1,10 +1,9 @@
-from typing import Optional, Sequence
+from enum import Enum
 
 from bluesky.protocols import Hints
 
 from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.detector import StandardDetector
-from ophyd_async.core.signal import SignalR
 from ophyd_async.epics.areadetector.controllers.pilatus_controller import (
     PilatusController,
 )
@@ -12,6 +11,20 @@ from ophyd_async.epics.areadetector.drivers.ad_base import ADBaseShapeProvider
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusDriver
 from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter
 from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
+
+
+#: Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
+#: The required minimum time difference between ExpPeriod and ExpTime
+#: (readout time) is 2.28 ms
+#: We provide an option to override for newer Pilatus models
+class PilatusReadoutTime(float, Enum):
+    """Pilatus readout time per model in ms"""
+
+    # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
+    pilatus2 = 2.28e-3
+
+    # Cite: https://media.dectris.com/user-manual-pilatus3-2020.pdf
+    pilatus3 = 0.95e-3
 
 
 class PilatusDetector(StandardDetector):
@@ -22,26 +35,25 @@ class PilatusDetector(StandardDetector):
 
     def __init__(
         self,
-        name: str,
+        prefix: str,
         directory_provider: DirectoryProvider,
-        driver: PilatusDriver,
-        hdf: NDFileHDF,
-        config_sigs: Optional[Sequence[SignalR]] = None,
-        **scalar_sigs: str,
+        readout_time: PilatusReadoutTime = PilatusReadoutTime.pilatus3,
+        drv_suffix: str = "cam1:",
+        hdf_suffix: str = "HDF1:",
+        name: str = "",
     ):
-        self.drv = driver
-        self.hdf = hdf
+        self.drv = PilatusDriver(prefix + drv_suffix)
+        self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
-            PilatusController(self.drv),
+            PilatusController(self.drv, readout_time=readout_time.value),
             HDFWriter(
                 self.hdf,
                 directory_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
-                **scalar_sigs,
             ),
-            config_sigs=config_sigs or (self.drv.acquire_time,),
+            config_sigs=(self.drv.acquire_time,),
             name=name,
         )
 

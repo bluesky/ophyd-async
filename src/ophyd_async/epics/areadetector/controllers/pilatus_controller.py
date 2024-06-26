@@ -1,9 +1,11 @@
 import asyncio
 from typing import Optional
 
+from ophyd_async.core import DEFAULT_TIMEOUT, wait_for_value
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
+    set_exposure_time_and_acquire_period_if_supplied,
     start_acquiring_driver_and_ensure_status,
 )
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import (
@@ -23,14 +25,13 @@ class PilatusController(DetectorControl):
     def __init__(
         self,
         driver: PilatusDriver,
+        readout_time: float,
     ) -> None:
         self._drv = driver
+        self._readout_time = readout_time
 
     def get_deadtime(self, exposure: float) -> float:
-        # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
-        """The required minimum time difference between ExpPeriod and ExpTime
-        (readout time) is 2.28 ms"""
-        return 2.28e-3
+        return self._readout_time
 
     async def arm(
         self,
@@ -39,13 +40,28 @@ class PilatusController(DetectorControl):
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         if exposure is not None:
-            await self._drv.acquire_time.set(exposure)
+            await set_exposure_time_and_acquire_period_if_supplied(
+                self, self._drv, exposure
+            )
         await asyncio.gather(
             self._drv.trigger_mode.set(self._get_trigger_mode(trigger)),
             self._drv.num_images.set(999_999 if num == 0 else num),
             self._drv.image_mode.set(ImageMode.multiple),
         )
-        return await start_acquiring_driver_and_ensure_status(self._drv)
+
+        # Standard arm the detector and wait for the acquire PV to be True
+        idle_status = await start_acquiring_driver_and_ensure_status(self._drv)
+
+        # The pilatus has an additional PV that goes True when the camserver
+        # is actually ready. Should wait for that too or we risk dropping
+        # a frame
+        await wait_for_value(
+            self._drv.armed_for_triggers,
+            True,
+            timeout=DEFAULT_TIMEOUT,
+        )
+
+        return idle_status
 
     @classmethod
     def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:

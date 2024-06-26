@@ -21,19 +21,19 @@ Async Tests
    ...
    asyncio_mode = "auto"
 
-Sim Backend
------------
+Mock Backend
+------------
 
-Ophyd devices initialized with a sim backend behave in a similar way to mocks, without requiring you to mock out all the dependencies and internals. The `DeviceCollector` can initialize any number of devices, and their signals and sub-devices (recursively), with a sim backend.
+Ophyd devices initialized with a mock backend behave in a similar way to mocks, without requiring you to mock out all the dependencies and internals. The `DeviceCollector` can initialize any number of devices, and their signals and sub-devices (recursively), with a mock backend.
 
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
-   :pyobject: sim_sensor
+   :pyobject: mock_sensor
 
 
-Sim Utility Functions
----------------------
+Mock Utility Functions
+----------------------
 
-Sim signals behave as simply as possible, holding a sensible default value when initialized and retaining any value (in memory) to which they are set. This model breaks down in the case of read-only signals, which cannot be set because there is an expectation of some external device setting them in the real world. There is a utility function, ``set_sim_value``, to mock-set values for sim signals, including read-only ones.
+Mock signals behave as simply as possible, holding a sensible default value when initialized and retaining any value (in memory) to which they are set. This model breaks down in the case of read-only signals, which cannot be set because there is an expectation of some external device setting them in the real world. There is a utility function, ``set_mock_value``, to mock-set values for mock signals, including read-only ones.
 
 In addition this example also utilizes helper functions like ``assert_reading`` and ``assert_value`` to ensure the validity of device readings and values. For more information see: :doc:`API.core<../generated/ophyd_async.core>`
 
@@ -41,7 +41,14 @@ In addition this example also utilizes helper functions like ``assert_reading`` 
    :pyobject: test_sensor_reading_shows_value
 
 
-There is another utility function, ``set_sim_callback``, for hooking in logic when a sim value changes (e.g. because someone puts to it).
+Given that the mock signal holds a ``unittest.mock.Mock`` object you can retrieve this object and assert that the device has been set correctly using ``get_mock_put``. You are also free to use any other behaviour that ``unittest.mock.Mock`` provides, such as in this example which sets the parent of the mock to allow ordering across signals to be asserted:
+
+.. literalinclude:: ../../tests/epics/demo/test_demo.py
+   :pyobject: test_retrieve_mock_and_assert
+
+There are several other test utility functions:
+
+Use ``callback_on_mock_put``, for hooking in logic when a mock value changes (e.g. because someone puts to it). This can be called directly, or used as a context, with the callbacks ending after exit.
 
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_mover_stopped

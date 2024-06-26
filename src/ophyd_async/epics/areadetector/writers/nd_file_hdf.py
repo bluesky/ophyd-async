@@ -1,7 +1,7 @@
 from enum import Enum
 
-from ...signal.signal import epics_signal_rw
-from ..utils import FileWriteMode, ad_r, ad_rw
+from ...signal.signal import epics_signal_r, epics_signal_rw, epics_signal_rw_rbv
+from ..utils import FileWriteMode
 from .nd_plugin import NDPluginBase
 
 
@@ -19,21 +19,22 @@ class Compression(str, Enum):
 class NDFileHDF(NDPluginBase):
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        self.position_mode = ad_rw(bool, prefix + "PositionMode")
-        self.compression = ad_rw(Compression, prefix + "Compression")
-        self.num_extra_dims = ad_rw(int, prefix + "NumExtraDims")
-        self.file_path = ad_rw(str, prefix + "FilePath")
-        self.file_name = ad_rw(str, prefix + "FileName")
-        self.file_path_exists = ad_r(bool, prefix + "FilePathExists")
-        self.file_template = ad_rw(str, prefix + "FileTemplate")
-        self.full_file_name = ad_r(str, prefix + "FullFileName")
-        self.file_write_mode = ad_rw(FileWriteMode, prefix + "FileWriteMode")
-        self.num_capture = ad_rw(int, prefix + "NumCapture")
-        self.num_captured = ad_r(int, prefix + "NumCaptured")
-        self.swmr_mode = ad_rw(bool, prefix + "SWMRMode")
-        self.lazy_open = ad_rw(bool, prefix + "LazyOpen")
-        self.capture = ad_rw(bool, prefix + "Capture")
+        self.position_mode = epics_signal_rw_rbv(bool, prefix + "PositionMode")
+        self.compression = epics_signal_rw_rbv(Compression, prefix + "Compression")
+        self.num_extra_dims = epics_signal_rw_rbv(int, prefix + "NumExtraDims")
+        self.file_path = epics_signal_rw_rbv(str, prefix + "FilePath")
+        self.file_name = epics_signal_rw_rbv(str, prefix + "FileName")
+        self.file_path_exists = epics_signal_r(bool, prefix + "FilePathExists_RBV")
+        self.file_template = epics_signal_rw_rbv(str, prefix + "FileTemplate")
+        self.full_file_name = epics_signal_r(str, prefix + "FullFileName_RBV")
+        self.file_write_mode = epics_signal_rw_rbv(
+            FileWriteMode, prefix + "FileWriteMode"
+        )
+        self.num_capture = epics_signal_rw_rbv(int, prefix + "NumCapture")
+        self.num_captured = epics_signal_r(int, prefix + "NumCaptured_RBV")
+        self.swmr_mode = epics_signal_rw_rbv(bool, prefix + "SWMRMode")
+        self.lazy_open = epics_signal_rw_rbv(bool, prefix + "LazyOpen")
+        self.capture = epics_signal_rw_rbv(bool, prefix + "Capture")
         self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
-        self.array_size0 = ad_r(int, prefix + "ArraySize0")
-        self.array_size1 = ad_r(int, prefix + "ArraySize1")
+        self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
         super().__init__(prefix, name)

@@ -13,7 +13,7 @@ from typing import (
 
 import h5py
 import numpy as np
-from bluesky.protocols import Descriptor, StreamAsset
+from bluesky.protocols import DataKey, StreamAsset
 from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
@@ -23,8 +23,8 @@ from event_model import (
 )
 
 from ophyd_async.core import DirectoryInfo, DirectoryProvider
+from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import SignalR, observe_value
-from ophyd_async.core.sim_signal_backend import SimSignalBackend
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 
 # raw data path
@@ -52,12 +52,12 @@ class DatasetConfig:
 def get_full_file_description(
     datasets: List[DatasetConfig], outer_shape: tuple[int, ...]
 ):
-    full_file_description: Dict[str, Descriptor] = {}
+    full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
         source = f"soft://{d.name}"
         shape = outer_shape + tuple(d.shape)
         dtype = "number" if d.shape == [1] else "array"
-        descriptor = Descriptor(
+        descriptor = DataKey(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
         )
         key = d.name.replace("/", "_")
@@ -158,8 +158,8 @@ class PatternGenerator:
         self.written_images_counter: int = 0
 
         # it automatically initializes to 0
-        self.signal_backend = SimSignalBackend(int)
-        self.sim_signal = SignalR(self.signal_backend)
+        self.signal_backend = MockSignalBackend(int)
+        self.mock_signal = SignalR(self.signal_backend)
         blob = np.array(
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
@@ -219,8 +219,8 @@ class PatternGenerator:
 
     async def open_file(
         self, directory: DirectoryProvider, multiplier: int = 1
-    ) -> Dict[str, Descriptor]:
-        await self.sim_signal.connect()
+    ) -> Dict[str, DataKey]:
+        await self.mock_signal.connect()
 
         self.target_path = self._get_new_path(directory)
 
@@ -314,5 +314,5 @@ class PatternGenerator:
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        async for num_captured in observe_value(self.sim_signal, timeout=timeout):
+        async for num_captured in observe_value(self.mock_signal, timeout=timeout):
             yield num_captured // self.multiplier

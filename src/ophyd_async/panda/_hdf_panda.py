@@ -28,9 +28,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         create_children_from_annotations(self)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
-            prefix=prefix,
             directory_provider=directory_provider,
-            name_provider=lambda: name,
             panda_device=self,
         )
         super().__init__(
@@ -38,11 +36,10 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
             writer=writer,
             config_sigs=config_sigs,
             name=name,
-            writer_timeout=DEFAULT_TIMEOUT,
         )
 
     async def connect(
-        self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
+        self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
     ) -> None:
-        await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
-        await super().connect(sim=sim, timeout=timeout)
+        await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, mock=mock)
+        await super().connect(mock=mock, timeout=timeout)

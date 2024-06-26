@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 from typing import Any, Optional
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -18,7 +18,7 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     TriggerInfo,
     TriggerLogic,
-    set_sim_value,
+    set_mock_value,
 )
 from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
@@ -57,7 +57,7 @@ class DummyController(DetectorControl):
 
 @pytest.fixture
 def controller(RE) -> ADSimController:
-    with DeviceCollector(sim=True):
+    with DeviceCollector(mock=True):
         drv = ADBase("DRV")
 
     return ADSimController(drv)
@@ -65,7 +65,7 @@ def controller(RE) -> ADSimController:
 
 @pytest.fixture
 def writer(RE, tmp_path: Path) -> HDFWriter:
-    with DeviceCollector(sim=True):
+    with DeviceCollector(mock=True):
         hdf = NDFileHDF("HDF")
 
     return HDFWriter(
@@ -76,14 +76,15 @@ def writer(RE, tmp_path: Path) -> HDFWriter:
     )
 
 
+@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: HDFWriter,
     controller: ADSimController,
 ):
-    set_sim_value(writer.hdf.file_path_exists, True)
+    set_mock_value(writer.hdf.file_path_exists, True)
     detector: StandardDetector[Any] = StandardDetector(
-        controller, writer, name="detector", writer_timeout=0.01
+        controller, writer, name="detector"
     )
 
     with pytest.raises(Exception) as exc:
@@ -92,12 +93,13 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
+@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter):
     controller = DummyController()
-    set_sim_value(writer.hdf.file_path_exists, True)
+    set_mock_value(writer.hdf.file_path_exists, True)
 
     detector: StandardDetector[Optional[TriggerInfo]] = StandardDetector(
-        controller, writer, writer_timeout=0.01
+        controller, writer
     )
     trigger_logic = DummyTriggerLogic()
 

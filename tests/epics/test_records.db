@@ -11,6 +11,10 @@ record(bo, "$(P)bool_unnamed") {
 }
 
 record(longout, "$(P)int") {
+  field(LLSV, "MAJOR") # LOLO is alarm
+  field(LSV, "MINOR") # LOW is warning
+  field(HSV, "MINOR") # HIGH is warning
+  field(HHSV, "MAJOR") # HIHI is alarm
   field(HOPR, "100")
   field(HIHI, "98")
   field(HIGH, "96")
@@ -18,6 +22,30 @@ record(longout, "$(P)int") {
   field(DRVL, "10")
   field(LOW, "5")
   field(LOLO, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(longout, "$(P)partialint") {
+  field(LLSV, "MAJOR") # LOLO is alarm
+  field(HHSV, "MAJOR") # HIHI is alarm
+  field(HOPR, "100")
+  field(HIHI, "98")
+  field(DRVH, "90")
+  field(DRVL, "10")
+  field(LOLO, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(longout, "$(P)lessint") {
+  field(HSV, "MINOR") # LOW is warning
+  field(LSV, "MINOR") # HIGH is warning
+  field(HOPR, "100")
+  field(HIGH, "98")
+  field(LOW, "2")
   field(LOPR, "0")
   field(VAL, "42")
   field(PINI, "YES")

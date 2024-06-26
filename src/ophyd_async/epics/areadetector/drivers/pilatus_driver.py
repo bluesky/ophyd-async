@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ..utils import ad_rw
+from ...signal import epics_signal_r, epics_signal_rw_rbv
 from .ad_base import ADBase
 
 
@@ -14,5 +14,8 @@ class PilatusTriggerMode(str, Enum):
 
 class PilatusDriver(ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.trigger_mode = ad_rw(PilatusTriggerMode, prefix + "TriggerMode")
+        self.trigger_mode = epics_signal_rw_rbv(
+            PilatusTriggerMode, prefix + "TriggerMode"
+        )
+        self.armed_for_triggers = epics_signal_r(bool, prefix + "Armed")
         super().__init__(prefix, name)

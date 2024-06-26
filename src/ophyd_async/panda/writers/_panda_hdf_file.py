@@ -9,10 +9,8 @@ from ophyd_async.core import DirectoryInfo
 
 @dataclass
 class _HDFDataset:
-    device_name: str
-    block: str
-    name: str
-    path: str
+    data_key: str
+    internal_path: str
     shape: List[int]
     multiplier: int
 
@@ -29,12 +27,10 @@ class _HDFFile:
             compose_stream_resource(
                 spec="AD_HDF5_SWMR_SLICE",
                 root=str(directory_info.root),
-                data_key=ds.name,
+                data_key=ds.data_key,
                 resource_path=(f"{str(directory_info.root)}/{full_file_name}"),
                 resource_kwargs={
-                    "name": ds.name,
-                    "block": ds.block,
-                    "path": ds.path,
+                    "path": ds.internal_path,
                     "multiplier": ds.multiplier,
                     "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
                 },

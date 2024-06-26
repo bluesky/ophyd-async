@@ -1,6 +1,7 @@
-import asyncio
-from unittest.mock import patch
+from pathlib import Path
+from unittest.mock import ANY
 
+import numpy as np
 import pytest
 
 from ophyd_async.core import (
@@ -8,20 +9,47 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     SignalR,
-    SimSignalBackend,
     StaticDirectoryProvider,
-    set_sim_value,
+    set_mock_value,
 )
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.panda import CommonPandaBlocks
-from ophyd_async.panda.writers._hdf_writer import (
-    Capture,
-    CaptureSignalWrapper,
-    PandaHDFWriter,
-    get_capture_signals,
-    get_signals_marked_for_capture,
-)
+from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
+from ophyd_async.panda.writers._hdf_writer import PandaHDFWriter
 from ophyd_async.panda.writers._panda_hdf_file import _HDFFile
+
+TABLES = [
+    DatasetTable(
+        name=np.array([]),
+        hdf5_type=[],
+    ),
+    DatasetTable(
+        name=np.array(
+            [
+                "x",
+            ]
+        ),
+        hdf5_type=[
+            PandaHdf5DatasetType.UINT_32,
+        ],
+    ),
+    DatasetTable(
+        name=np.array(
+            [
+                "x",
+                "y",
+                "y_min",
+                "y_max",
+            ]
+        ),
+        hdf5_type=[
+            PandaHdf5DatasetType.UINT_32,
+            PandaHdf5DatasetType.FLOAT_64,
+            PandaHdf5DatasetType.FLOAT_64,
+            PandaHdf5DatasetType.FLOAT_64,
+        ],
+    ),
+]
 
 
 @pytest.fixture
@@ -38,165 +66,133 @@ async def panda_t():
             create_children_from_annotations(self)
             super().__init__(name)
 
-        async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
-            await super().connect(sim, timeout)
+        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
+            await super().connect(mock=mock, timeout=timeout)
 
     yield Panda
 
 
 @pytest.fixture
-async def sim_panda(panda_t):
-    async with DeviceCollector(sim=True):
-        sim_panda = panda_t("SIM_PANDA", name="sim_panda")
+async def mock_panda(panda_t):
+    async with DeviceCollector(mock=True):
+        mock_panda = panda_t("mock_PANDA", name="mock_panda")
 
-    set_sim_value(
-        sim_panda.block_a.test_capture,
-        Capture.MinMaxMean,  # type: ignore[attr-defined]
+    set_mock_value(
+        mock_panda.data.datasets,
+        DatasetTable(
+            name=np.array([]),
+            hdf5_type=[],
+        ),
     )
 
-    set_sim_value(
-        sim_panda.block_b.test_capture,
-        Capture.No,  # type: ignore[attr-defined]
-    )
-
-    return sim_panda
+    return mock_panda
 
 
 @pytest.fixture
-async def sim_writer(tmp_path, sim_panda) -> PandaHDFWriter:
+async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     dir_prov = StaticDirectoryProvider(
-        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data.h5"
+        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data"
     )
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
-            prefix="TEST-PANDA",
             directory_provider=dir_prov,
-            name_provider=lambda: "test-panda",
-            panda_device=sim_panda,
+            panda_device=mock_panda,
         )
 
     return writer
 
 
-async def test_get_capture_signals_gets_all_signals(sim_panda):
-    async with DeviceCollector(sim=True):
-        sim_panda.test_seq = Device("seq")
-        sim_panda.test_seq.seq1_capture = SignalR(backend=SimSignalBackend(str))
-        sim_panda.test_seq.seq2_capture = SignalR(backend=SimSignalBackend(str))
-        await asyncio.gather(
-            sim_panda.test_seq.connect(),
-            sim_panda.test_seq.seq1_capture.connect(),
-            sim_panda.test_seq.seq2_capture.connect(),
-        )
-    capture_signals = get_capture_signals(sim_panda)
-    expected_signals = [
-        "block_a.test_capture",
-        "block_b.test_capture",
-        "test_seq.seq1_capture",
-        "test_seq.seq2_capture",
-    ]
-    for signal in expected_signals:
-        assert signal in capture_signals.keys()
+@pytest.mark.parametrize("table", TABLES)
+async def test_open_returns_correct_descriptors(
+    mock_writer: PandaHDFWriter, table: DatasetTable
+):
+    assert hasattr(mock_writer.panda_device, "data")
+    set_mock_value(
+        mock_writer.panda_device.data.datasets,
+        table,
+    )
+    description = await mock_writer.open()  # to make capturing status not time out
+
+    for key, entry, expected_key in zip(
+        description.keys(), description.values(), table["name"]
+    ):
+        assert key == expected_key
+        assert entry == {
+            "source": mock_writer.panda_device.data.hdf_directory.source,
+            "shape": [1],
+            "dtype": "number",
+            "external": "STREAM:",
+        }
 
 
-async def test_get_signals_marked_for_capture(sim_panda):
-    capture_signals = {
-        "block_a.test_capture": sim_panda.block_a.test_capture,
-        "block_b.test_capture": sim_panda.block_b.test_capture,
-    }
-    signals_marked_for_capture = await get_signals_marked_for_capture(capture_signals)
-    assert len(signals_marked_for_capture) == 1
-    assert signals_marked_for_capture["block_a.test"].capture_type == Capture.MinMaxMean
+async def test_open_close_sets_capture(mock_writer: PandaHDFWriter):
+    assert isinstance(await mock_writer.open(), dict)
+    assert await mock_writer.panda_device.data.capture.get_value()
+    await mock_writer.close()
+    assert not await mock_writer.panda_device.data.capture.get_value()
 
 
-async def test_open_returns_correct_descriptors(sim_writer: PandaHDFWriter):
-    assert hasattr(sim_writer.panda_device, "data")
-    cap1 = sim_writer.panda_device.block_a.test_capture  # type: ignore[attr-defined]
-    cap2 = sim_writer.panda_device.block_b.test_capture  # type: ignore[attr-defined]
-    set_sim_value(cap1, Capture.MinMaxMean)
-    set_sim_value(cap2, Capture.Value)
-    description = await sim_writer.open()  # to make capturing status not time out
-    assert len(description) == 4
-    for key, entry in description.items():
-        assert entry.get("shape") == [1]
-        assert entry.get("dtype") == "number"
-        assert isinstance(key, str)
-        assert "source" in entry
-        assert entry.get("external") == "STREAM:"
-    expected_datakeys = [
-        "test-panda-block_a-test-Min",
-        "test-panda-block_a-test-Max",
-        "test-panda-block_a-test-Mean",
-        "test-panda-block_b-test-Value",
-    ]
-    for key in expected_datakeys:
-        assert key in description
-
-
-async def test_open_close_sets_capture(sim_writer: PandaHDFWriter):
-    assert isinstance(await sim_writer.open(), dict)
-    assert await sim_writer.panda_device.data.capture.get_value()
-    await sim_writer.close()
-    assert not await sim_writer.panda_device.data.capture.get_value()
-
-
-async def test_open_sets_file_path_and_name(sim_writer: PandaHDFWriter, tmp_path):
-    await sim_writer.open()
-    path = await sim_writer.panda_device.data.hdf_directory.get_value()
+async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_path):
+    await mock_writer.open()
+    path = await mock_writer.panda_device.data.hdf_directory.get_value()
     assert path == str(tmp_path)
-    name = await sim_writer.panda_device.data.hdf_file_name.get_value()
-    assert name == "sim_panda/data.h5"
+    name = await mock_writer.panda_device.data.hdf_file_name.get_value()
+    assert name == "mock_panda/data.h5"
 
 
-async def test_open_errors_when_multiplier_not_one(sim_writer: PandaHDFWriter):
+async def test_open_errors_when_multiplier_not_one(mock_writer: PandaHDFWriter):
     with pytest.raises(ValueError):
-        await sim_writer.open(2)
+        await mock_writer.open(2)
 
 
-async def test_get_indices_written(sim_writer: PandaHDFWriter):
-    await sim_writer.open()
-    set_sim_value(sim_writer.panda_device.data.num_captured, 4)
-    written = await sim_writer.get_indices_written()
+async def test_get_indices_written(mock_writer: PandaHDFWriter):
+    await mock_writer.open()
+    set_mock_value(mock_writer.panda_device.data.num_captured, 4)
+    written = await mock_writer.get_indices_written()
     assert written == 4
 
 
-async def test_wait_for_index(sim_writer: PandaHDFWriter):
-    await sim_writer.open()
-    set_sim_value(sim_writer.panda_device.data.num_captured, 3)
-    await sim_writer.wait_for_index(3, timeout=1)
-    set_sim_value(sim_writer.panda_device.data.num_captured, 2)
+async def test_wait_for_index(mock_writer: PandaHDFWriter):
+    await mock_writer.open()
+    set_mock_value(mock_writer.panda_device.data.num_captured, 3)
+    await mock_writer.wait_for_index(3, timeout=1)
+    set_mock_value(mock_writer.panda_device.data.num_captured, 2)
     with pytest.raises(TimeoutError):
-        await sim_writer.wait_for_index(3, timeout=0.1)
+        await mock_writer.wait_for_index(3, timeout=0.1)
 
 
-async def test_collect_stream_docs(sim_writer: PandaHDFWriter):
-    # Give the sim writer datasets
-    cap1 = sim_writer.panda_device.block_a.test_capture  # type: ignore[attr-defined]
-    cap2 = sim_writer.panda_device.block_b.test_capture  # type: ignore[attr-defined]
-    set_sim_value(cap1, Capture.MinMaxMean)
-    set_sim_value(cap2, Capture.Value)
-    await sim_writer.open()
+@pytest.mark.parametrize("table", TABLES)
+async def test_collect_stream_docs(
+    mock_writer: PandaHDFWriter,
+    tmp_path: Path,
+    table: DatasetTable,
+):
+    # Give the mock writer datasets
+    set_mock_value(mock_writer.panda_device.data.datasets, table)
 
-    [item async for item in sim_writer.collect_stream_docs(1)]
-    assert type(sim_writer._file) is _HDFFile
-    assert sim_writer._file._last_emitted == 1
-    resource_doc = sim_writer._file._bundles[0].stream_resource_doc
-    assert resource_doc["data_key"] == "test-panda-block_a-test-Min"
-    assert "sim_panda/data.h5" in resource_doc["resource_path"]
+    await mock_writer.open()
 
-
-async def test_numeric_blocks_correctly_formated(sim_writer: PandaHDFWriter):
-    async def get_numeric_signal(_):
-        return {
-            "device.block.1": CaptureSignalWrapper(
-                SignalR(backend=SimSignalBackend(str)),
-                Capture.Value,
-            )
+    [item async for item in mock_writer.collect_stream_docs(1)]
+    assert type(mock_writer._file) is _HDFFile
+    assert mock_writer._file._last_emitted == 1
+    for i in range(len(table["name"])):
+        resource_doc = mock_writer._file._bundles[i].stream_resource_doc
+        name = table["name"][i]
+        assert resource_doc == {
+            "spec": "AD_HDF5_SWMR_SLICE",
+            "path_semantics": "posix",
+            "root": str(tmp_path),
+            "data_key": name,
+            "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
+            "resource_kwargs": {
+                "path": "/" + name,
+                "multiplier": 1,
+                "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+            },
+            "uid": ANY,
         }
-
-    with patch(
-        "ophyd_async.panda.writers._hdf_writer.get_signals_marked_for_capture",
-        get_numeric_signal,
-    ):
-        assert "test-panda-block-1-Capture.Value" in await sim_writer.open()
+        assert resource_doc["data_key"] == name
+        assert "mock_panda/data.h5" in resource_doc["resource_path"]
