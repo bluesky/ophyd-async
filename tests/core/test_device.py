@@ -128,29 +128,59 @@ async def test_device_log_has_correct_name():
 
 
 async def test_device_lazily_connects(RE):
-    async with DeviceCollector(mock=True, connect=False):
-        mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+    class MockSignalBackendFailingFirst(MockSignalBackend):
+        succeed_on_connect = False
 
-    assert not mock_motor._connect_task
+        async def connect(self, timeout=DEFAULT_TIMEOUT):
+            if self.succeed_on_connect:
+                self.succeed_on_connect = False
+                await super().connect(timeout=timeout)
+            else:
+                self.succeed_on_connect = True
+                raise RuntimeError("connect fail")
 
-    # When ready to connect
-    RE(ensure_connected(mock_motor, mock=True))
+    test_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+    test_motor.user_setpoint._backend = MockSignalBackendFailingFirst(int)
+
+    with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
+        await test_motor.connect(mock=True)
 
     assert (
-        mock_motor._connect_task
-        and mock_motor._connect_task.done()
-        and not mock_motor._connect_task.exception()
+        test_motor._connect_task
+        and test_motor._connect_task.done()
+        and test_motor._connect_task.exception()
+    )
+
+    RE(ensure_connected(test_motor, mock=True))
+
+    assert (
+        test_motor._connect_task
+        and test_motor._connect_task.done()
+        and not test_motor._connect_task.exception()
+    )
+
+    # TODO https://github.com/bluesky/ophyd-async/issues/413
+    RE(ensure_connected(test_motor, mock=True, force_reconnect=True))
+
+    assert (
+        test_motor._connect_task
+        and test_motor._connect_task.done()
+        and test_motor._connect_task.exception()
     )
 
 
-async def test_device_mock_and_back_again(RE):
+async def test_device_refuses_two_connects_differing_on_mock_attribute(RE):
     motor = SimMotor("motor")
     assert not motor._connect_task
     await motor.connect(mock=False)
     assert isinstance(motor.units._backend, SoftSignalBackend)
     assert motor._connect_task
-    await motor.connect(mock=True)
-    assert isinstance(motor.units._backend, MockSignalBackend)
+    with pytest.raises(RuntimeError) as exc:
+        await motor.connect(mock=True)
+    assert str(exc.value) == (
+        "`connect(mock=True)` called on a `Device` where the previous connect was "
+        "`mock=False`. Changing mock value between connects is not permitted."
+    )
 
 
 class MotorBundle(Device):
@@ -185,7 +215,7 @@ async def test_device_with_children_lazily_connects(RE):
         )
 
 
-async def test_device_with_device_collector_lazily_connects():
+async def test_device_with_device_collector_refuses_to_connect_if_mock_switch():
     mock_motor = motor.Motor("NONE_EXISTENT")
     with pytest.raises(NotConnected):
         await mock_motor.connect(mock=False, timeout=0.01)
@@ -194,11 +224,11 @@ async def test_device_with_device_collector_lazily_connects():
         and mock_motor._connect_task.done()
         and mock_motor._connect_task.exception()
     )
-    await mock_motor.connect(mock=True, timeout=0.01)
-    assert (
-        mock_motor._connect_task is not None
-        and mock_motor._connect_task.done()
-        and not mock_motor._connect_task.exception()
+    with pytest.raises(RuntimeError) as exc:
+        await mock_motor.connect(mock=True, timeout=0.01)
+    assert str(exc.value) == (
+        "`connect(mock=True)` called on a `Device` where the previous connect was "
+        "`mock=False`. Changing mock value between connects is not permitted."
     )
 
 
