@@ -1,0 +1,963 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ophyd_async.core.detector &#8212; ophyd-async 0.3.4a1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=7400b050"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/core/detector';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.3.4a1';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../../../_static/ophyd_favicon.svg"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">ophyd-async</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">ophyd_async....</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for ophyd_async.core.detector</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module which defines abstract classes to work with detectors&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncGenerator</span><span class="p">,</span>
+    <span class="n">AsyncIterator</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Collectable</span><span class="p">,</span>
+    <span class="n">DataKey</span><span class="p">,</span>
+    <span class="n">Flyable</span><span class="p">,</span>
+    <span class="n">Preparable</span><span class="p">,</span>
+    <span class="n">Reading</span><span class="p">,</span>
+    <span class="n">Stageable</span><span class="p">,</span>
+    <span class="n">StreamAsset</span><span class="p">,</span>
+    <span class="n">Triggerable</span><span class="p">,</span>
+    <span class="n">WritesStreamAssets</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">ophyd_async.protocols</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
+
+<span class="kn">from</span> <span class="nn">.async_status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span>
+<span class="kn">from</span> <span class="nn">.device</span> <span class="kn">import</span> <span class="n">Device</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">WatcherUpdate</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DetectorTrigger">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorTrigger.html#ophyd_async.core.DetectorTrigger">[docs]</a>
+<span class="k">class</span> <span class="nc">DetectorTrigger</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of mechanism for triggering a detector to take frames&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Detector generates internal trigger for given rate</span>
+    <span class="n">internal</span> <span class="o">=</span> <span class="s2">&quot;internal&quot;</span>
+    <span class="c1">#: Expect a series of arbitrary length trigger signals</span>
+    <span class="n">edge_trigger</span> <span class="o">=</span> <span class="s2">&quot;edge_trigger&quot;</span>
+    <span class="c1">#: Expect a series of constant width external gate signals</span>
+    <span class="n">constant_gate</span> <span class="o">=</span> <span class="s2">&quot;constant_gate&quot;</span>
+    <span class="c1">#: Expect a series of variable width external gate signals</span>
+    <span class="n">variable_gate</span> <span class="o">=</span> <span class="s2">&quot;variable_gate&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="TriggerInfo">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.TriggerInfo.html#ophyd_async.core.TriggerInfo">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TriggerInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to setup triggering on a detector&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Number of triggers that will be sent</span>
+    <span class="n">num</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Sort of triggers that will be sent</span>
+    <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span>
+    <span class="c1">#: What is the minimum deadtime between triggers</span>
+    <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="c1">#: What is the maximum high time of the triggers</span>
+    <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="c1">#: What is the maximum timeout on waiting for a frame</span>
+    <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="DetectorControl">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorControl.html#ophyd_async.core.DetectorControl">[docs]</a>
+<span class="k">class</span> <span class="nc">DetectorControl</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Classes implementing this interface should hold the logic for</span>
+<span class="sd">    arming and disarming a detector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DetectorControl.get_deadtime">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorControl.html#ophyd_async.core.DetectorControl.get_deadtime">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;For a given exposure, how long should the time between exposures be&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DetectorControl.arm">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorControl.html#ophyd_async.core.DetectorControl.arm">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arm detector, do all necessary steps to prepare detector for triggers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num: Expected number of frames</span>
+<span class="sd">            trigger: Type of trigger for which to prepare the detector. Defaults to</span>
+<span class="sd">            DetectorTrigger.internal.</span>
+<span class="sd">            exposure: Exposure time with which to set up the detector. Defaults to None</span>
+<span class="sd">            if not applicable or the detector is expected to use its previously-set</span>
+<span class="sd">            exposure time.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AsyncStatus: Status representing the arm operation. This function returning</span>
+<span class="sd">            represents the start of the arm. The returned status completing means</span>
+<span class="sd">            the detector is now armed.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DetectorControl.disarm">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorControl.html#ophyd_async.core.DetectorControl.disarm">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector, return detector to an idle state&quot;&quot;&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DetectorWriter">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter">[docs]</a>
+<span class="k">class</span> <span class="nc">DetectorWriter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Logic for making a detector write data to somewhere persistent</span>
+<span class="sd">    (e.g. an HDF5 file)&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DetectorWriter.open">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter.open">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Open writer and wait for it to be ready for data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            multiplier: Each StreamDatum index corresponds to this many</span>
+<span class="sd">                written exposures</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Output for ``describe()``</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DetectorWriter.observe_indices_written">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter.observe_indices_written">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">observe_indices_written</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield the index of each frame (or equivalent data point) as it is written&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DetectorWriter.get_indices_written">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter.get_indices_written">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of indices written&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DetectorWriter.collect_stream_docs">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter.collect_stream_docs">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">collect_stream_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create Stream docs up to given number written&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DetectorWriter.close">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter.close">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close writer, blocks until I/O is complete&quot;&quot;&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="StandardDetector">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector">[docs]</a>
+<span class="k">class</span> <span class="nc">StandardDetector</span><span class="p">(</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">Stageable</span><span class="p">,</span>
+    <span class="n">AsyncConfigurable</span><span class="p">,</span>
+    <span class="n">AsyncReadable</span><span class="p">,</span>
+    <span class="n">Triggerable</span><span class="p">,</span>
+    <span class="n">Preparable</span><span class="p">,</span>
+    <span class="n">Flyable</span><span class="p">,</span>
+    <span class="n">Collectable</span><span class="p">,</span>
+    <span class="n">WritesStreamAssets</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Useful detector base class for step and fly scanning detectors.</span>
+<span class="sd">    Aggregates controller and writer logic together.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorControl</span><span class="p">,</span>
+        <span class="n">writer</span><span class="p">:</span> <span class="n">DetectorWriter</span><span class="p">,</span>
+        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">AsyncReadable</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            controller: Logic for arming and disarming the detector</span>
+<span class="sd">            writer: Logic for making the detector write persistent data</span>
+<span class="sd">            config_sigs: Signals to read when describe and read</span>
+<span class="sd">            configuration are called. Defaults to ().</span>
+<span class="sd">            name: Device name. Defaults to &quot;&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span> <span class="o">=</span> <span class="n">controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span> <span class="o">=</span> <span class="n">writer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config_sigs</span><span class="p">)</span>
+        <span class="c1"># For prepare</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TriggerInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># For kickoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WatchableAsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">:</span> <span class="nb">float</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intial_frame</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorControl</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">writer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorWriter</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span>
+
+<div class="viewcode-block" id="StandardDetector.stage">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.stage">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Disarm the detector, stop filewriting, and open file for writing.</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_config_sigs</span><span class="p">()</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">open</span><span class="p">()</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_check_config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks configuration signals are named and connected.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;config signal must be named before it is passed to the detector&quot;</span>
+                <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;config signal </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> must be connected before it is &quot;</span>
+                    <span class="o">+</span> <span class="s2">&quot;passed to the detector&quot;</span>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="StandardDetector.unstage">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.unstage">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Stop data writing.</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.read_configuration">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.read_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.describe_configuration">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.describe_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.read">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.read">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="c1"># All data is in StreamResources, not Events, so nothing to output here</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.describe">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.describe">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.trigger">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.trigger">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># set default trigger_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">TriggerInfo</span><span class="p">(</span>
+            <span class="n">num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span> <span class="n">deadtime</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="c1"># Arm the detector and wait for it to finish.</span>
+        <span class="n">indices_written</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
+        <span class="n">written_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">(</span>
+            <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+            <span class="n">trigger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">written_status</span>
+        <span class="n">end_observation</span> <span class="o">=</span> <span class="n">indices_written</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
+            <span class="n">DEFAULT_TIMEOUT</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">end_observation</span><span class="p">:</span>
+                <span class="k">break</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.prepare">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.prepare">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+        <span class="c1"># Just arm detector for the time being</span>
+        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arm detector.</span>
+
+<span class="sd">        Prepare the detector with trigger information. This is determined at and passed</span>
+<span class="sd">        in from the plan level.</span>
+
+<span class="sd">        This currently only prepares detectors for flyscans and stepscans just use the</span>
+<span class="sd">        trigger information determined in trigger.</span>
+
+<span class="sd">        To do: Unify prepare to be use for both fly and step scans.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: TriggerInfo describing how to trigger the detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="n">TriggerInfo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span>
+
+        <span class="n">required</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">required</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="si">}</span><span class="s2"> needs at least </span><span class="si">{</span><span class="n">required</span><span class="si">}</span><span class="s2">s deadtime, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;but trigger logic provides only </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="si">}</span><span class="s2">s&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">(</span>
+            <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+            <span class="n">trigger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span>
+            <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+
+<div class="viewcode-block" id="StandardDetector.kickoff">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.kickoff">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Detector not armed!&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.complete">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.complete">[docs]</a>
+    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">,</span> <span class="s2">&quot;Prepare not run&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">frame_timeout</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">DEFAULT_TIMEOUT</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span>
+            <span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">:</span>
+                <span class="k">break</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.describe_collect">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.describe_collect">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.collect_asset_docs">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.collect_asset_docs">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">collect_asset_docs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
+        <span class="c1"># Collect stream datum documents for all indices written.</span>
+        <span class="c1"># The index is optional, and provided for fly scans, however this needs to be</span>
+        <span class="c1"># retrieved for step scans.</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">doc</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.get_index">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.get_index">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
