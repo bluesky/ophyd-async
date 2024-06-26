@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Literal
 
+from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
 
@@ -19,7 +19,7 @@ class AravisTriggerMode(str, Enum):
     To prevent requiring one Enum class per possible configuration, we set as this Enum
     but read from the underlying signal as a str.
     """
-AravisTriggerSource = Literal["Freerun", "Line1", "Line2", "Line3", "Line4"]
+AravisTriggerSource = SubsetEnum["Freerun", "Line1"]
 
 
 class AravisDriver(ADBase):
@@ -34,5 +34,7 @@ class AravisDriver(ADBase):
         self.trigger_mode = epics_signal_rw_rbv(
             AravisTriggerMode, prefix + "TriggerMode"
         )
-        self.trigger_source = epics_signal_rw_rbv(str, prefix + "TriggerSource")
+        self.trigger_source = epics_signal_rw_rbv(
+            AravisTriggerSource, prefix + "TriggerSource"
+        )
         super().__init__(prefix, name=name)
