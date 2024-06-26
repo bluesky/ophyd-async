@@ -12,17 +12,11 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_mock_value,
 )
-from ophyd_async.epics.areadetector.writers.general_hdffile import (
-    _HDFFile,
-)
-
-# versiontuple,
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
 from ophyd_async.panda.writers._hdf_writer import PandaHDFWriter
-
-# from ophyd_async.panda.writers._panda_hdf_file import _HDFFile
 
 TABLES = [
     DatasetTable(
@@ -128,8 +122,8 @@ async def test_open_returns_correct_descriptors(
         assert key == expected_key
         assert entry == {
             "source": mock_writer.panda_device.data.hdf_directory.source,
-            "shape": [1],
-            "dtype": "number",
+            "shape": None,
+            "dtype": "array",
             "external": "STREAM:",
         }
 
@@ -194,9 +188,12 @@ async def test_collect_stream_docs(
             "data_key": name,
             "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
             "resource_kwargs": {
-                "path": "/" + name,
+                "name": name,
+                "path": ANY,
                 "multiplier": 1,
                 "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                "block": ANY,
+                "shape": None,
             },
             "uid": ANY,
         }

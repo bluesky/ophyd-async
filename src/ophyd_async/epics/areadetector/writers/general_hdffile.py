@@ -18,14 +18,14 @@ from ophyd_async.core import DirectoryInfo
 class _HDFDataset:
     #: Name of the data_key within the Descriptor document
     data_key: str
-    dtype_numpy: Optional[str] = None
+    dtype_numpy: str = None
     swmr: bool = False
     shape: Optional[List[int]] = None
     multiplier: int = 1
     #: Name of the dataset within the HDF file
     dataset: Optional[str] = None
     device_name: Optional[str] = None
-    block: Optional[str] = None
+    block: str = None
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
