@@ -1,0 +1,57 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.areadetector.KinetixDetector
+===============================================
+
+.. currentmodule:: ophyd_async.epics.areadetector
+
+.. autoclass:: KinetixDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~KinetixDetector.children
+      ~KinetixDetector.collect_asset_docs
+      ~KinetixDetector.complete
+      ~KinetixDetector.connect
+      ~KinetixDetector.describe
+      ~KinetixDetector.describe_collect
+      ~KinetixDetector.describe_configuration
+      ~KinetixDetector.get_index
+      ~KinetixDetector.kickoff
+      ~KinetixDetector.prepare
+      ~KinetixDetector.read
+      ~KinetixDetector.read_configuration
+      ~KinetixDetector.set_name
+      ~KinetixDetector.stage
+      ~KinetixDetector.trigger
+      ~KinetixDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~KinetixDetector.controller
+      ~KinetixDetector.hints
+      ~KinetixDetector.log
+      ~KinetixDetector.name
+      ~KinetixDetector.parent
+      ~KinetixDetector.writer
+   
+   

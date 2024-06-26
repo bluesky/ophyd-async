@@ -1,0 +1,33 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.panda.PandaPcapController
+======================================
+
+.. currentmodule:: ophyd_async.panda
+
+.. autoclass:: PandaPcapController
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PandaPcapController.arm
+      ~PandaPcapController.disarm
+      ~PandaPcapController.get_deadtime
+   
+   
+
+   
+   
+   
