@@ -33,7 +33,7 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 @dataclass
 class PatternDataset(_HDFDataset):
     maxshape: tuple[Any, ...] = (None,)
-    fillvalue = Optional[int] = None
+    fillvalue: Optional[int] = None
     dtype: Optional[Any] = None
 
 
