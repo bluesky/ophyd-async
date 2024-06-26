@@ -33,7 +33,10 @@ class Device(HasName):
     parent: Optional["Device"] = None
     # None if connect hasn't started, a Task if it has
     _connect_task: Optional[asyncio.Task] = None
-    _connect_mock_arg: bool = False
+
+    # Used to check if the previous connect was mocked,
+    # if the next mock value differs then we fail
+    _previous_connect_was_mock = None
 
     def __init__(self, name: str = "") -> None:
         self.set_name(name)
@@ -90,11 +93,21 @@ class Device(HasName):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
+
+        if (
+            self._previous_connect_was_mock is not None
+            and self._previous_connect_was_mock != mock
+        ):
+            raise RuntimeError(
+                f"`connect(mock={mock})` called on a `Device` where the previous "
+                f"connect was `mock={self._previous_connect_was_mock}`. Changing mock "
+                "value between connects is not permitted."
+            )
+        self._previous_connect_was_mock = mock
+
         # If previous connect with same args has started and not errored, can use it
-        can_use_previous_connect = (
-            self._connect_task
-            and not (self._connect_task.done() and self._connect_task.exception())
-            and self._connect_mock_arg == mock
+        can_use_previous_connect = self._connect_task and not (
+            self._connect_task.done() and self._connect_task.exception()
         )
         if force_reconnect or not can_use_previous_connect:
             # Kick off a connection
@@ -105,7 +118,6 @@ class Device(HasName):
                 for name, child_device in self.children()
             }
             self._connect_task = asyncio.create_task(wait_for_connection(**coros))
-            self._connect_mock_arg = mock
 
         assert self._connect_task, "Connect task not created, this shouldn't happen"
         # Wait for it to complete

@@ -107,7 +107,6 @@ __all__ = [
     "WatchableAsyncStatus",
     "assert_configuration",
     "assert_emitted",
-    "assert_mock_put_called_with",
     "assert_reading",
     "assert_value",
     "callback_on_mock_put",
