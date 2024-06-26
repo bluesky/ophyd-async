@@ -62,7 +62,7 @@ class Signal(Device, Generic[T]):
         name: str = "",
     ) -> None:
         self._timeout = timeout
-        self._initial_backend = self._backend = backend
+        self._backend = backend
         super().__init__(name)
 
     async def connect(
