@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.device &#8212; ophyd-async 0.3.4a2.dev1+gce3b85de documentation</title>
+    <title>ophyd_async.core.device &#8212; ophyd-async 0.3.5.dev1+gf8009fdd documentation</title>
   
   
   
@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=e86409bd"></script>
+    <script src="../../../_static/documentation_options.js?v=34c4c56b"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -523,7 +523,10 @@ document.write(`
     <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Device&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1"># None if connect hasn&#39;t started, a Task if it has</span>
     <span class="n">_connect_task</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_connect_mock_arg</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Used to check if the previous connect was mocked,</span>
+    <span class="c1"># if the next mock value differs then we fail</span>
+    <span class="n">_previous_connect_was_mock</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -588,11 +591,21 @@ document.write(`
 <span class="sd">        timeout:</span>
 <span class="sd">            Time to wait before failing with a TimeoutError.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span> <span class="o">!=</span> <span class="n">mock</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;`connect(mock=</span><span class="si">{</span><span class="n">mock</span><span class="si">}</span><span class="s2">)` called on a `Device` where the previous &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;connect was `mock=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span><span class="si">}</span><span class="s2">`. Changing mock &quot;</span>
+                <span class="s2">&quot;value between connects is not permitted.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span> <span class="o">=</span> <span class="n">mock</span>
+
         <span class="c1"># If previous connect with same args has started and not errored, can use it</span>
-        <span class="n">can_use_previous_connect</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span>
-            <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span><span class="o">.</span><span class="n">exception</span><span class="p">())</span>
-            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_mock_arg</span> <span class="o">==</span> <span class="n">mock</span>
+        <span class="n">can_use_previous_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">force_reconnect</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">can_use_previous_connect</span><span class="p">:</span>
             <span class="c1"># Kick off a connection</span>
@@ -603,7 +616,6 @@ document.write(`
                 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child_device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
             <span class="p">}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">wait_for_connection</span><span class="p">(</span><span class="o">**</span><span class="n">coros</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_mock_arg</span> <span class="o">=</span> <span class="n">mock</span>
 
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span><span class="p">,</span> <span class="s2">&quot;Connect task not created, this shouldn&#39;t happen&quot;</span>
         <span class="c1"># Wait for it to complete</span>
