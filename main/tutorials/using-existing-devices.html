@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using existing Devices &#8212; ophyd-async 0.3.3.dev3+g9165c5ae documentation</title>
+    <title>Using existing Devices &#8212; ophyd-async 0.3.4.dev1+gd739f0fa documentation</title>
   
   
   
@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
@@ -35,11 +35,11 @@
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
-  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=f59781c7"></script>
+    <script src="../_static/documentation_options.js?v=7c871ef0"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/using-existing-devices';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.15.3';
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
         DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
@@ -112,7 +112,7 @@
   
     <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -121,6 +121,8 @@
     
       <div class="navbar-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="../index.html">
@@ -149,38 +151,38 @@
     <div class="me-auto navbar-header-items__center">
       
         <div class="navbar-item">
-<nav class="navbar-nav">
+<nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item pst-header-nav-item current active">
+<li class="nav-item current active">
   <a class="nav-link nav-internal" href="../tutorials.html">
     Tutorials
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../how-to.html">
     How-to Guides
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../explanations.html">
     Explanations
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../reference.html">
     Reference
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://blueskyproject.io">
     Bluesky Project
   </a>
@@ -199,7 +201,7 @@
 
  <script>
  document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass"></i>
     <span class="search-button__default-text">Search</span>
     <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -213,15 +215,15 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script></div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+        <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
         <li class="nav-item">
           
@@ -232,7 +234,7 @@ document.write(`
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
             <span class="sr-only">GitHub</span></a>
         </li>
         <li class="nav-item">
@@ -244,7 +246,7 @@ document.write(`
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fas fa-cube fa-lg" aria-hidden="true"></i></span>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
             <span class="sr-only">PyPI</span></a>
         </li>
 </ul></div>
@@ -255,7 +257,7 @@ document.write(`
   <div class="version-switcher__container dropdown">
     <button id="pst-version-switcher-button-2"
       type="button"
-      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
       data-bs-toggle="dropdown"
       aria-haspopup="listbox"
       aria-controls="pst-version-switcher-list-2"
@@ -282,7 +284,7 @@ document.write(`
 
  <script>
  document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass"></i>
     <span class="search-button__default-text">Search</span>
     <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -293,7 +295,7 @@ document.write(`
   
 
   
-    <button class="sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -319,38 +321,38 @@ document.write(`
           
           
             <div class="navbar-item">
-<nav class="navbar-nav">
+<nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item pst-header-nav-item current active">
+<li class="nav-item current active">
   <a class="nav-link nav-internal" href="../tutorials.html">
     Tutorials
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../how-to.html">
     How-to Guides
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../explanations.html">
     Explanations
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../reference.html">
     Reference
   </a>
 </li>
 
 
-<li class="nav-item pst-header-nav-item">
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://blueskyproject.io">
     Bluesky Project
   </a>
@@ -370,15 +372,15 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script></div>
         
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+          <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
         <li class="nav-item">
           
@@ -389,7 +391,7 @@ document.write(`
           
           
           
-          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
             <span class="sr-only">GitHub</span></a>
         </li>
         <li class="nav-item">
@@ -401,7 +403,7 @@ document.write(`
           
           
           
-          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fas fa-cube fa-lg" aria-hidden="true"></i></span>
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
             <span class="sr-only">PyPI</span></a>
         </li>
 </ul></div>
@@ -412,7 +414,7 @@ document.write(`
   <div class="version-switcher__container dropdown">
     <button id="pst-version-switcher-button-3"
       type="button"
-      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
       data-bs-toggle="dropdown"
       aria-haspopup="listbox"
       aria-controls="pst-version-switcher-list-3"
@@ -624,14 +626,14 @@ commands).</p>
 can be used in plans. We can move the <code class="docutils literal notranslate"><span class="pre">samp.x</span></code> mover to 100mm using
 <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="(in bluesky v1.13.0a4.dev243+ge2fadddd)"><code class="xref any docutils literal notranslate"><span class="pre">bluesky.plan_stubs.mv</span></code></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">mov</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f241013fc40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f5c24f43c40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>If this is too verbose to write, we registered a shorthand with
 <code class="docutils literal notranslate"><span class="pre">bluesky.utils.register_transform</span></code>: <code class="docutils literal notranslate"><span class="pre">&lt;my_plan(args)</span></code> is translated to
 <code class="docutils literal notranslate"><span class="pre">RE(my_plan(args))</span></code>. The command above can also be run as:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="o">&lt;</span><span class="n">mov</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f241013fb40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f5c24f43b40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>We can get the primary reading of <code class="docutils literal notranslate"><span class="pre">samp.x</span></code>, in this case its readback value,
@@ -642,7 +644,7 @@ using <a class="reference external" href="https://blueskyproject.io/bluesky/main
 </div>
 <p>We can do a relative move of <code class="docutils literal notranslate"><span class="pre">samp.x</span></code> by 10mm, using <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mvr.html#bluesky.plan_stubs.mvr" title="(in bluesky v1.13.0a4.dev243+ge2fadddd)"><code class="xref any docutils literal notranslate"><span class="pre">bluesky.plan_stubs.mvr</span></code></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="o">&lt;</span><span class="n">movr</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
-<span class="gh">Out[4]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f241013d640&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[4]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f5c24f42d40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>Individual Devices will also expose some of the parameters of the underlying
@@ -660,12 +662,12 @@ can do a <a class="reference external" href="https://blueskyproject.io/bluesky/m
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 1     Time: 2024-06-20 12:07:16</span>
-<span class="go">Persistent Unique Scan ID: &#39;1c71cffe-5872-45ee-84b5-220eeaaa712c&#39;</span>
+<span class="go">Transient Scan ID: 1     Time: 2024-06-26 06:36:21</span>
+<span class="go">Persistent Unique Scan ID: &#39;3ca669aa-c947-4298-93ce-400f9f6b36ec&#39;</span>
 
 
 
-<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;1c71cffe-5872-45ee-84b5-220eeaaa712c&#39;,), plan_result=&#39;1c71cffe-5872-45ee-84b5-220eeaaa712c&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;3ca669aa-c947-4298-93ce-400f9f6b36ec&#39;,), plan_result=&#39;3ca669aa-c947-4298-93ce-400f9f6b36ec&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/grid_scan1.png"><img alt="../_images/grid_scan1.png" src="../_images/grid_scan1.png" style="width: 4in;" />
@@ -679,7 +681,7 @@ can do a <a class="reference external" href="https://blueskyproject.io/bluesky/m
 use instances of <a class="reference internal" href="../generated/ophyd_async.epics.demo.EnergyMode.html#ophyd_async.epics.demo.EnergyMode" title="ophyd_async.epics.demo.EnergyMode"><code class="xref any py py-class docutils literal notranslate"><span class="pre">EnergyMode</span></code></a>, we can set it using a
 string value on the commandline:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="o">&lt;</span><span class="n">mov</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="s2">&quot;High Energy&quot;</span><span class="p">)</span>
-<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object SignalW.set.&lt;locals&gt;.do_set at 0x7f241013f340&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, task: &lt;coroutine object SignalW.set.&lt;locals&gt;.do_set at 0x7f5c24f42f40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>The same scan will now give a slightly different output. If we include the v1
@@ -687,12 +689,12 @@ device we can see it gives the same result:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">,</span> <span class="n">det_old</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 2     Time: 2024-06-20 12:07:20</span>
-<span class="go">Persistent Unique Scan ID: &#39;d366ffc9-ad0d-4fa2-8eed-fce016e03c32&#39;</span>
+<span class="go">Transient Scan ID: 2     Time: 2024-06-26 06:36:25</span>
+<span class="go">Persistent Unique Scan ID: &#39;c2d0dc74-4ca8-4689-88fb-f1f921ea8db9&#39;</span>
 
 
 
-<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;d366ffc9-ad0d-4fa2-8eed-fce016e03c32&#39;,), plan_result=&#39;d366ffc9-ad0d-4fa2-8eed-fce016e03c32&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;c2d0dc74-4ca8-4689-88fb-f1f921ea8db9&#39;,), plan_result=&#39;c2d0dc74-4ca8-4689-88fb-f1f921ea8db9&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/grid_scan2.png"><img alt="../_images/grid_scan2.png" src="../_images/grid_scan2.png" style="width: 4in;" />
@@ -795,8 +797,8 @@ device we can see it gives the same result:</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -807,7 +809,7 @@ device we can see it gives the same result:</p>
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.3.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
 </p></div>
       
     </div>
