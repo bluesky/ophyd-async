@@ -24,25 +24,19 @@ class TangoReadableDevice(StandardReadable):
         self.proxy: DeviceProxy = None
         StandardReadable.__init__(self, name=name)
 
-    # # --------------------------------------------------------------------
-    # def __await__(self):
-    #     async def closure():
-    #         self.proxy = await DeviceProxy(self.trl)
-    #         self.register_signals()
-    #
-    #         return self
-    #
-    #     return closure().__await__()
-
-    # --------------------------------------------------------------------
-    async def connect(self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT):
+    async def connect(
+        self,
+        mock: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+    ):
         async def closure():
             self.proxy = await DeviceProxy(self.trl)
             self.register_signals()
             return self
 
         await closure()
-        await super().connect(sim=sim, timeout=timeout)
+        await super().connect(mock=mock, timeout=timeout)
 
     # --------------------------------------------------------------------
     @abstractmethod

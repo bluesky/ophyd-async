@@ -129,7 +129,7 @@ class OmsVME58Motor(TangoReadableDevice, Locatable, Stoppable):
     def set(self, new_position: float, timeout: Optional[float] = None) -> AsyncStatus:
         watchers: List[Callable] = []
         coro = asyncio.wait_for(self._move(new_position, watchers), timeout=timeout)
-        return AsyncStatus(coro, watchers)
+        return AsyncStatus(coro)
 
     # --------------------------------------------------------------------
     async def locate(self) -> Location:

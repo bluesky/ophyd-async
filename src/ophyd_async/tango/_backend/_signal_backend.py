@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Callable, Optional
 
 from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
-from ophyd_async.core.signal import add_timeout
+from ophyd_async.core.signal import _add_timeout
 
 
 # --------------------------------------------------------------------
 # from tango attributes one can get setvalue, so we extend SignalRW and SignalW
 class SignalWithSetpoint:
-    @add_timeout
+    @_add_timeout
     async def get_setpoint(self, cached: Optional[bool] = None) -> T:
         """The last written value to TRL"""
         return await self._backend_or_cache(cached).get_w_value()
