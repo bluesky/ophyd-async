@@ -18,6 +18,9 @@ class TangoReadableDevice(StandardReadable):
 
     new_device = await TangoDevice(<tango_device>)
     """
+    src_dict: dict = {}
+    trl: str = ""
+    proxy: Optional[DeviceProxy] = None
 
     # --------------------------------------------------------------------
     def __init__(self, trl: str, name="") -> None:
@@ -37,13 +40,6 @@ class TangoReadableDevice(StandardReadable):
 
         await closure()
         await super().connect(mock=mock, timeout=timeout)
-
-    # --------------------------------------------------------------------
-    @abstractmethod
-    def register_signals(self):
-        """
-        This method should be used to register signals
-        """
 
     # # --------------------------------------------------------------------
     # @AsyncStatus.wrap

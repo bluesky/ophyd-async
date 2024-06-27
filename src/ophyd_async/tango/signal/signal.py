@@ -5,10 +5,7 @@ from __future__ import annotations
 from typing import Optional, Type
 
 from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
-from ophyd_async.tango._backend import (
-    TangoSignalBackend,
-    TangoTransport,
-)
+from ophyd_async.tango._backend import TangoTransport
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from tango.asyncio import DeviceProxy
 
@@ -20,7 +17,7 @@ def _make_backend(
     read_trl: str,
     write_trl: str,
     device_proxy: Optional[DeviceProxy] = None,
-) -> TangoSignalBackend:
+) -> TangoTransport:
     return TangoTransport(datatype, read_trl, write_trl, device_proxy)
 
 

@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Dict, Optional, Type, Union
 
 import numpy as np
-from bluesky.protocols import Descriptor, Reading
+from bluesky.protocols import Descriptor, Reading, DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -35,15 +35,13 @@ from tango.asyncio_executor import (
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
-__all__ = ("TangoTransport", "TangoSignalBackend")
+__all__ = ["TangoTransport"]
 
 
 # time constant to wait for timeout
 A_BIT = 1e-5
 
 # --------------------------------------------------------------------
-
-
 def ensure_proper_executor(func):
     @functools.wraps(func)
     async def wrapper(self, *args, **kwargs):
@@ -53,20 +51,6 @@ def ensure_proper_executor(func):
         return await func(self, *args, **kwargs)
 
     return wrapper
-
-
-# --------------------------------------------------------------------
-class TangoSignalBackend(SignalBackend[T]):
-    # --------------------------------------------------------------------
-    @abstractmethod
-    async def get_w_value(self) -> T:
-        """The last written value"""
-
-    # --------------------------------------------------------------------
-    @abstractmethod
-    def get_signal_auto(self) -> str:
-        """return signal type, passing to tango attribute/command"""
-
 
 # --------------------------------------------------------------------
 def get_python_type(tango_type) -> tuple[bool, T, str]:
@@ -422,7 +406,7 @@ async def get_tango_trl(
 
 
 # --------------------------------------------------------------------
-class TangoTransport(TangoSignalBackend[T]):
+class TangoTransport(SignalBackend[T]):
     def __init__(
         self,
         datatype: Optional[Type[T]],
@@ -438,13 +422,11 @@ class TangoTransport(TangoSignalBackend[T]):
             write_trl: device_proxy,
         }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
-        # self.source = f"{self.read_trl}"
         self.descriptor: Descriptor = {}  # type: ignore
 
     # --------------------------------------------------------------------
-    @property
-    def source(self) -> str:
-        return f"{self.read_trl}"
+    def source(self, name: str) -> str:
+        return self.read_trl
 
     # --------------------------------------------------------------------
     async def _connect_and_store_config(self, trl):
@@ -471,11 +453,11 @@ class TangoTransport(TangoSignalBackend[T]):
         )
 
     # --------------------------------------------------------------------
-    async def put(self, write_value: Optional[T], wait=True, timeout=None):
-        await self.proxies[self.write_trl].put(write_value, wait, timeout)
+    async def put(self, value: Optional[T], wait=True, timeout=None):
+        await self.proxies[self.write_trl].put(value, wait, timeout)
 
     # --------------------------------------------------------------------
-    async def get_descriptor(self, source: str) -> Descriptor:
+    async def get_datakey(self, source: str) -> DataKey:
         return self.descriptor
 
     # --------------------------------------------------------------------
@@ -487,7 +469,7 @@ class TangoTransport(TangoSignalBackend[T]):
         return await self.proxies[self.write_trl].get()
 
     # --------------------------------------------------------------------
-    async def get_w_value(self) -> T:
+    async def get_setpoint(self) -> T:
         return await self.proxies[self.write_trl].get_w_value()
 
     # --------------------------------------------------------------------
