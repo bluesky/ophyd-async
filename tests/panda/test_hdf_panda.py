@@ -146,7 +146,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
         assert stream_resource["resource_kwargs"] == {
             "path": "/" + dataset_name,
             "multiplier": 1,
-            "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+            "swmr": False,
         }
 
     # test stream datum

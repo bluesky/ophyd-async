@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
     Any,
@@ -32,9 +32,9 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 @dataclass
 class PatternDataset(_HDFDataset):
-    maxshape: tuple[Any, ...]
-    fillvalue: int
     dtype: Any
+    maxshape: tuple[Any, ...]
+    fillvalue: int = field(default_factory=int)
 
 
 def get_full_file_description(

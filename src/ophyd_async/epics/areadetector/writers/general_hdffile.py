@@ -16,13 +16,11 @@ from ophyd_async.core import DirectoryInfo
 
 @dataclass
 class _HDFDataset:
-    #: Name of the data_key within the Descriptor document
     data_key: str
-    dtype_numpy: str
-    swmr: bool = False
-    shape: List[int] = field(default_factory=[])
-    multiplier: int = 1
     dataset: str
+    swmr: bool = False
+    multiplier: int = 1
+    shape: List[int] = field(default_factory=list)
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
@@ -65,12 +63,9 @@ class _HDFFile:
                     resource_path=path,
                     data_key=ds.data_key,
                     resource_kwargs={
-                        "name": ds.data_key,
-                        "block": ds.block,
                         "path": ds.dataset,
-                        "shape": ds.shape,
                         "multiplier": ds.multiplier,
-                        "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                        "swmr": ds.swmr,
                     },
                 )
                 for ds in datasets

@@ -112,12 +112,9 @@ async def test_can_collect(
         assert stream_resource["resource_path"] == str(directory_info.root / "foo.h5")
         assert stream_resource["path_semantics"] == "posix"
         assert stream_resource["resource_kwargs"] == {
-            "block": None,
-            "name": "advimba",
-            "shape": (0, 0),
             "path": "/entry/data/data",
             "multiplier": 1,
-            "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+            "swmr": False,
         }
     else:
         assert (

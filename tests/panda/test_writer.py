@@ -122,8 +122,8 @@ async def test_open_returns_correct_descriptors(
         assert key == expected_key
         assert entry == {
             "source": mock_writer.panda_device.data.hdf_directory.source,
-            "shape": None,
-            "dtype": "array",
+            "shape": [],
+            "dtype": "number",
             "external": "STREAM:",
         }
 
@@ -191,9 +191,7 @@ async def test_collect_stream_docs(
                 "name": name,
                 "path": ANY,
                 "multiplier": 1,
-                "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-                "block": ANY,
-                "shape": None,
+                "swmr": False,
             },
             "uid": ANY,
         }

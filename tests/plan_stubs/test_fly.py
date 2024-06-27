@@ -76,11 +76,7 @@ class DummyWriter(DetectorWriter):
                         root="/",
                         data_key=self._name,
                         resource_path="",
-                        resource_kwargs={
-                            "path": "",
-                            "multiplier": 1,
-                            "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",  # noqa: E501
-                        },
+                        resource_kwargs={"path": "", "multiplier": 1, "swmr": False},
                     )
                 else:
                     self._file = compose_stream_resource(
@@ -90,6 +86,7 @@ class DummyWriter(DetectorWriter):
                         parameters={
                             "path": "",
                             "swmr": False,
+                            "multiplier": 1,
                         },
                         uid=None,
                         validate=True,

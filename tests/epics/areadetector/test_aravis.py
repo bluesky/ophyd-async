@@ -121,12 +121,9 @@ async def test_can_collect(
 
         assert stream_resource["path_semantics"] == "posix"
         assert stream_resource["resource_kwargs"] == {
-            "name": "adaravis",
-            "block": None,
-            "shape": (0, 0),
             "path": "/entry/data/data",
             "multiplier": 1,
-            "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+            "swmr": False,
         }
     else:
         assert (
