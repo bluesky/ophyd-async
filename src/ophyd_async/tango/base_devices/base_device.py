@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import Optional
 
-from ophyd_async.core import DEFAULT_TIMEOUT, AsyncStatus, StandardReadable
+from ophyd_async.core import DEFAULT_TIMEOUT, StandardReadable
 from tango.asyncio import DeviceProxy
 
 __all__ = ("TangoReadableDevice",)
@@ -21,7 +22,7 @@ class TangoReadableDevice(StandardReadable):
     # --------------------------------------------------------------------
     def __init__(self, trl: str, name="") -> None:
         self.trl = trl
-        self.proxy: DeviceProxy = None
+        self.proxy: Optional[DeviceProxy] = None
         StandardReadable.__init__(self, name=name)
 
     async def connect(
@@ -32,7 +33,6 @@ class TangoReadableDevice(StandardReadable):
     ):
         async def closure():
             self.proxy = await DeviceProxy(self.trl)
-            self.register_signals()
             return self
 
         await closure()
@@ -45,16 +45,16 @@ class TangoReadableDevice(StandardReadable):
         This method should be used to register signals
         """
 
-    # --------------------------------------------------------------------
-    @AsyncStatus.wrap
-    async def stage(self) -> None:
-        for sig in self._readables + self._configurables:
-            if hasattr(sig, "is_cachable") and sig.is_cachable():
-                await sig.stage().task
+    # # --------------------------------------------------------------------
+    # @AsyncStatus.wrap
+    # async def stage(self) -> None:
+    #     for sig in self._readables + self._configurables:
+    #         if hasattr(sig, "is_cachable") and sig.is_cachable():
+    #             await sig.stage().task
 
-    # --------------------------------------------------------------------
-    @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        for sig in self._readables + self._configurables:
-            if hasattr(sig, "is_cachable") and sig.is_cachable():
-                await sig.unstage().task
+    # # --------------------------------------------------------------------
+    # @AsyncStatus.wrap
+    # async def unstage(self) -> None:
+    #     for sig in self._readables + self._configurables:
+    #         if hasattr(sig, "is_cachable") and sig.is_cachable():
+    #             await sig.unstage().task
