@@ -32,9 +32,9 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 @dataclass
 class PatternDataset(_HDFDataset):
-    maxshape: tuple[Any, ...] = (None,)
-    fillvalue: Optional[int] = None
-    dtype: Optional[Any] = None
+    maxshape: tuple[Any, ...]
+    fillvalue: int
+    dtype: Any
 
 
 def get_full_file_description(
