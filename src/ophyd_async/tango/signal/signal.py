@@ -9,7 +9,7 @@ from ophyd_async.tango._backend import (
     TangoSignalBackend,
     TangoTransport,
 )
-from ophyd_async.utils import DEFAULT_TIMEOUT
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from tango.asyncio import DeviceProxy
 
 __all__ = ("tango_signal_rw", "tango_signal_r", "tango_signal_w", "tango_signal_x")
