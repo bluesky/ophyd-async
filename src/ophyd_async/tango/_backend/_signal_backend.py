@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Optional
 
-from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
+from ophyd_async.core import T
 from ophyd_async.core.signal import _add_timeout
 
 
@@ -23,33 +23,33 @@ class CachableOrNot:
         return self._backend.is_cachable()
 
 
-# --------------------------------------------------------------------
-class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoint):
-    # --------------------------------------------------------------------
-    @property
-    def source(self) -> Callable[[], str]:
-        return self._backend.source
+# # --------------------------------------------------------------------
+# class TangoSignalW(SignalW[T], CachableOrNot, SignalWithSetpoint):
+#     # --------------------------------------------------------------------
+#     @property
+#     def source(self) -> Callable[[], str]:
+#         return self._backend.source
 
 
-# --------------------------------------------------------------------
-class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoint):
-    # --------------------------------------------------------------------
-    @property
-    def source(self) -> Callable[[], str]:
-        return self._backend.source
+# # --------------------------------------------------------------------
+# class TangoSignalRW(SignalRW[T], CachableOrNot, SignalWithSetpoint):
+#     # --------------------------------------------------------------------
+#     @property
+#     def source(self) -> Callable[[], str]:
+#         return self._backend.source
 
 
-# --------------------------------------------------------------------
-class TangoSignalR(SignalR[T], CachableOrNot):
-    # --------------------------------------------------------------------
-    @property
-    def source(self) -> Callable[[], str]:
-        return self._backend.source
+# # --------------------------------------------------------------------
+# class TangoSignalR(SignalR[T], CachableOrNot):
+#     # --------------------------------------------------------------------
+#     @property
+#     def source(self) -> Callable[[], str]:
+#         return self._backend.source
 
 
-# --------------------------------------------------------------------
-class TangoSignalX(SignalX, CachableOrNot):
-    # --------------------------------------------------------------------
-    @property
-    def source(self) -> Callable[[], str]:
-        return self._backend.source
+# # --------------------------------------------------------------------
+# class TangoSignalX(SignalX, CachableOrNot):
+#     # --------------------------------------------------------------------
+#     @property
+#     def source(self) -> Callable[[], str]:
+#         return self._backend.source
