@@ -62,6 +62,7 @@ class AravisController(DetectorControl):
         supported_trigger_types = (
             DetectorTrigger.constant_gate,
             DetectorTrigger.edge_trigger,
+            DetectorTrigger.internal,
         )
         if trigger not in supported_trigger_types:
             raise ValueError(
