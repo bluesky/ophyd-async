@@ -249,7 +249,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
     typ = get_unique(
         {k: type(v.get("value")) for k, v in values.items()}, "value types"
     )
-    if "NTScalarArray" in typeid and typ == list:
+    if "NTScalarArray" in typeid and typ is list:
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:
             raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
