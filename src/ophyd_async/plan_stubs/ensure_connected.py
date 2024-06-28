@@ -1,3 +1,6 @@
+import asyncio
+from typing import Set
+
 import bluesky.plan_stubs as bps
 
 from ophyd_async.core.device import Device
@@ -10,13 +13,18 @@ def ensure_connected(
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):
-    yield from bps.wait_for(
+    connect_task_singleton: Set[asyncio.Task] = yield from bps.wait_for(
         [
             lambda: wait_for_connection(
                 **{
-                    device.name: device.connect(mock, timeout, force_reconnect)
+                    device.name: device.connect(
+                        mock=mock, timeout=timeout, force_reconnect=force_reconnect
+                    )
                     for device in devices
                 }
             )
-        ]
+        ],
     )
+
+    # raises the exception if the connection failed
+    list(connect_task_singleton)[0].result()
