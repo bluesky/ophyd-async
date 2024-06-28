@@ -76,9 +76,9 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         breached, move to start position minus run-up distance"""
         return AsyncStatus(self._prepare(value))
 
-    def kickoff(): ...
+    def kickoff(self): ...
 
-    def complete(): ...
+    def complete(self): ...
 
     @WatchableAsyncStatus.wrap
     async def set(
@@ -123,7 +123,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     async def stop(self, success=False):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
-        # the move above, so need to pass wait=False
+        # the move above, so need to pass wait=False.
         await self.motor_stop.trigger(wait=False)
 
     async def _prepare(self, value: FlyMotorInfo) -> None:
@@ -134,12 +134,14 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         velocity_max = await self.max_velocity.get_value()
         if self.fly_velocity > velocity_max:
             raise MotorLimitsException(
-                f"Velocity of {self.fly_velocity}mm/s was requested for a motor with vmax of {velocity_max}mm/s"
+                f"Velocity of {self.fly_velocity}mm/s was requested for a motor with "
+                f"vmax of {velocity_max}mm/s"
             )
         await self.velocity.set(self.fly_velocity)
 
-        # Distance required for motor to accelerate to fly_velocity before reaching start_position, and distance required
-        # for motor to decelerate from fly_velocity to zero after end_position
+        # Distance required for motor to accelerate to fly_velocity before reaching
+        # start_position, and distance required for motor to decelerate from
+        # fly_velocity to zero after end_position
         self.run_up_distance = (
             0.5 * (await self.acceleration_time.get_value()) * self.fly_velocity
         )
@@ -150,7 +152,9 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
             or value.end_position + self.run_up_distance > motor_upper_limit
         ):
             raise MotorLimitsException(
-                f"Requested a motor trajectory of {value.start_position}mm to {value.end_position}mm and motor limits are {value.start_position} <= x <= {value.end_position}"
+                f"Requested a motor trajectory of {value.start_position}mm to "
+                f"{value.end_position}mm and motor limits are {value.start_position} "
+                f"<= x <= {value.end_position} "
             )
 
         await self.user_setpoint.set(value.start_position - self.run_up_distance)
