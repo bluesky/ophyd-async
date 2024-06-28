@@ -137,6 +137,8 @@ class TangoProxy:
 class AttributeProxy(TangoProxy):
     support_events = False
     _event_callback = None
+    _poll_callback = None
+    _poll_task = None
     _eid = None
 
     # --------------------------------------------------------------------
@@ -201,15 +203,20 @@ class AttributeProxy(TangoProxy):
 
     # --------------------------------------------------------------------
     def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
-        """add user callback to CHANGE event subscription"""
-        self._event_callback = callback
-        if not self._eid:
-            self._eid = self._proxy.subscribe_event(
-                self._name,
-                EventType.CHANGE_EVENT,
-                self._event_processor,
-                green_mode=False,
-            )
+        # If the attribute supports events, then we can subscribe to them
+        if self.support_events:
+            """add user callback to CHANGE event subscription"""
+            self._event_callback = callback
+            if not self._eid:
+                self._eid = self._proxy.subscribe_event(
+                    self._name,
+                    EventType.CHANGE_EVENT,
+                    self._event_processor,
+                    green_mode=False,
+                )
+        else:
+            self._poll_callback = callback
+            self._poll_task = asyncio.create_task(self.poll())
 
     # --------------------------------------------------------------------
     def unsubscribe_callback(self):
@@ -217,6 +224,7 @@ class AttributeProxy(TangoProxy):
             self._proxy.unsubscribe_event(self._eid, green_mode=False)
             self._eid = None
         self._event_callback = None
+        self._poll_callback = None
 
     # --------------------------------------------------------------------
     def _event_processor(self, event):
@@ -229,6 +237,17 @@ class AttributeProxy(TangoProxy):
             }
 
             self._event_callback(reading, value)
+
+    # --------------------------------------------------------------------
+    async def poll(self):
+        if self._poll_callback:
+            while True:
+                await asyncio.sleep(0.5)
+                reading = await self.get_reading()
+                if self._poll_callback:
+                    self._poll_callback(reading, reading["value"])
+                else:
+                    break
 
 
 # --------------------------------------------------------------------
@@ -480,9 +499,9 @@ class TangoTransport(SignalBackend[T]):
 
     # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
-        assert self.proxies[
-            self.read_trl
-        ].support_events, f"{self.source} does not support events"
+        # assert self.proxies[
+        #     self.read_trl
+        # ].support_events, f"{self.source} does not support events"
 
         if callback:
             assert not self.proxies[
