@@ -11,11 +11,18 @@ __all__ = ("TangoReadableDevice",)
 # --------------------------------------------------------------------
 class TangoReadableDevice(StandardReadable):
     """
-    General class for TangoDevices.
+    General class for TangoDevices. Extends StandardReadable to provide
+    attributes for Tango devices.
 
     Usage: to proper signals mount should be awaited:
-
     new_device = await TangoDevice(<tango_device>)
+
+    attributes:
+        trl:        Tango resource locator, typically of the device server.
+        proxy:      DeviceProxy object for the device. This is created when the device
+                    is connected.
+        src_dict:   Dictionary of the device's attributes. This can be used to account
+                    for variation in attribute names across similar servers.
     """
 
     src_dict: dict = {}
