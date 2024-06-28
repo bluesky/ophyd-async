@@ -23,7 +23,7 @@ def ensure_connected(
                     for device in devices
                 }
             )
-        ],
+        ]
     )
 
     # raises the exception if the connection failed
