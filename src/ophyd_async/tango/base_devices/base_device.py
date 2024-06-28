@@ -11,7 +11,7 @@ __all__ = ("TangoReadableDevice",)
 # --------------------------------------------------------------------
 class TangoReadableDevice(StandardReadable):
     """
-    General class for TangoDevices
+    General class for TangoDevices.
 
     Usage: to proper signals mount should be awaited:
 

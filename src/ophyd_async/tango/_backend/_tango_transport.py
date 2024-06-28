@@ -437,7 +437,7 @@ class TangoTransport(SignalBackend[T]):
             await self.proxies[trl].connect()
             self.trl_configs[trl] = await self.proxies[trl].get_config()
         except CancelledError:
-            raise NotConnected(self.source)
+            raise NotConnected(f"Could not connect to {trl}")
 
     # --------------------------------------------------------------------
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
