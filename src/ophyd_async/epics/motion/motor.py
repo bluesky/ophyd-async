@@ -8,6 +8,7 @@ from ophyd_async.core import (
     HintedSignal,
     StandardReadable,
     WatchableAsyncStatus,
+    wait_for_value,
 )
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.signal import observe_value
@@ -71,14 +72,69 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
-    def prepare(self, value: FlyMotorInfo):
+    # TODO convert resolution to mm?
+    @AsyncStatus.wrap
+    async def prepare(self, value: FlyMotorInfo):
         """Calculate required velocity and run-up distance, then if motor limits aren't
         breached, move to start position minus run-up distance"""
-        return AsyncStatus(self._prepare(value))
+        # Velocity at which motor travels from start_position to end_position, in mm/s
+        self.fly_velocity = abs(
+            (value.start_position - value.end_position) / value.time_for_move
+        )
+        velocity_max = await self.max_velocity.get_value()
+        if self.fly_velocity > velocity_max:
+            raise MotorLimitsException(
+                f"Velocity of {self.fly_velocity}mm/s was requested for a motor with "
+                f"vmax of {velocity_max}mm/s"
+            )
+        await self.velocity.set(self.fly_velocity)
 
-    def kickoff(self): ...
+        # Distance required for motor to accelerate to fly_velocity before reaching
+        # start_position, and distance required for motor to decelerate from
+        # fly_velocity to zero after end_position
+        self.fly_run_up_distance = (
+            0.5 * (await self.acceleration_time.get_value()) * self.fly_velocity
+        )
+        motor_lower_limit = await self.low_limit_travel.get_value()
+        motor_upper_limit = await self.high_limit_travel.get_value()
+        self.fly_acquisition_start_position = value.start_position
+        self.fly_acquisition_end_position = value.end_position
+        fly_prepare_position = value.start_position - self.fly_run_up_distance
+        self.fly_completed_position = value.end_position + self.fly_run_up_distance
+        if (
+            fly_prepare_position < motor_lower_limit
+            or self.fly_completed_position > motor_upper_limit
+        ):
+            raise MotorLimitsException(
+                f"Requested a motor trajectory of {value.start_position}mm to "
+                f"{value.end_position}mm and motor limits are {value.start_position} "
+                f"<= x <= {value.end_position} "
+            )
+        await self.set(fly_prepare_position)
 
-    def complete(self): ...
+    # TODO: Should this and prepare be watchable too?
+    async def kickoff(self):
+        async def has_acquisition_began():
+            # Could make a helper function for this
+            async for value in observe_value(self.user_readback, timeout=60):
+                if (
+                    value >= self.fly_acquisition_start_position
+                ):  # this wont work if motor is moving backwards, need another way for
+                    # this. Get fly direction from input params maybe?
+                    break
+                # TODO: do timeout too
+
+        # This should return a status which completes when motors reach start position
+        await self.set(self.fly_completed_position)
+
+        # Kickoff complete when motor reaches start position
+        return AsyncStatus(has_acquisition_began())
+
+    # This should probably be watchable?
+    @AsyncStatus.wrap
+    async def complete(self):
+        # Complete once motor has stopped moving
+        await wait_for_value(self.motor_done_move, 1, 60)  # todo proper timeout
 
     @WatchableAsyncStatus.wrap
     async def set(
@@ -125,37 +181,3 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False.
         await self.motor_stop.trigger(wait=False)
-
-    async def _prepare(self, value: FlyMotorInfo) -> None:
-        # Velocity at which motor travels from start_position to end_position, in mm/s
-        self.fly_velocity = abs(
-            (value.start_position - value.end_position) / value.time_for_move
-        )
-        velocity_max = await self.max_velocity.get_value()
-        if self.fly_velocity > velocity_max:
-            raise MotorLimitsException(
-                f"Velocity of {self.fly_velocity}mm/s was requested for a motor with "
-                f"vmax of {velocity_max}mm/s"
-            )
-        await self.velocity.set(self.fly_velocity)
-
-        # Distance required for motor to accelerate to fly_velocity before reaching
-        # start_position, and distance required for motor to decelerate from
-        # fly_velocity to zero after end_position
-        self.run_up_distance = (
-            0.5 * (await self.acceleration_time.get_value()) * self.fly_velocity
-        )
-        motor_lower_limit = await self.low_limit_travel.get_value()
-        motor_upper_limit = await self.high_limit_travel.get_value()
-        if (
-            value.start_position - self.run_up_distance < motor_lower_limit
-            or value.end_position + self.run_up_distance > motor_upper_limit
-        ):
-            raise MotorLimitsException(
-                f"Requested a motor trajectory of {value.start_position}mm to "
-                f"{value.end_position}mm and motor limits are {value.start_position} "
-                f"<= x <= {value.end_position} "
-            )
-
-        await self.user_setpoint.set(value.start_position - self.run_up_distance)
-        return await self.set(value.start_position - self.run_up_distance)
