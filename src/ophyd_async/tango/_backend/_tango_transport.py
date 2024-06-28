@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Dict, Optional, Type, Union
 
 import numpy as np
-from bluesky.protocols import Descriptor, Reading, DataKey
+from bluesky.protocols import DataKey, Descriptor, Reading
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -41,6 +41,7 @@ __all__ = ["TangoTransport"]
 # time constant to wait for timeout
 A_BIT = 1e-5
 
+
 # --------------------------------------------------------------------
 def ensure_proper_executor(func):
     @functools.wraps(func)
@@ -51,6 +52,7 @@ def ensure_proper_executor(func):
         return await func(self, *args, **kwargs)
 
     return wrapper
+
 
 # --------------------------------------------------------------------
 def get_python_type(tango_type) -> tuple[bool, T, str]:

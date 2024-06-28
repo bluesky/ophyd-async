@@ -1,7 +1,3 @@
-from ophyd_async.tango._backend._tango_transport import (
-    TangoTransport
-)
+from ophyd_async.tango._backend._tango_transport import TangoTransport
 
-__all__ = (
-    "TangoTransport",
-)
+__all__ = ("TangoTransport",)

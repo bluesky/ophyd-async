@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import Optional
 
 from ophyd_async.core import DEFAULT_TIMEOUT, StandardReadable
@@ -18,6 +17,7 @@ class TangoReadableDevice(StandardReadable):
 
     new_device = await TangoDevice(<tango_device>)
     """
+
     src_dict: dict = {}
     trl: str = ""
     proxy: Optional[DeviceProxy] = None
