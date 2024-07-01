@@ -3,7 +3,7 @@ from time import time
 from typing import Optional
 
 from bluesky.protocols import Flyable, Movable, Preparable, Stoppable
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from ophyd_async.core import (
     ConfigSignal,
@@ -36,27 +36,66 @@ DEFAULT_WATCHER_UPDATE_FREQUENCY = 0.2
 
 
 class FlyMotorInfo(BaseModel):
-    """Minimal set of information required to fly a motor"""
+    """Set of information required to fly a motor:
 
-    # Absolute position of the motor once it finishes accelerating to desired velocity,
-    # in millimetres
-    start_position: float
+    start_position : float
+        Absolute position of the motor once it finishes accelerating to desired
+        velocity, in millimetres
 
-    # Absolute position of the motor once it begins decelerating from desired velocity,
-    # in millimetres
     end_position: float
+        Absolute position of the motor once it begins decelerating from desired
+        velocity, in millimetres
 
-    # Time taken for the motor to get from start_position to end_position, in seconds
     time_for_move: float
+        Time taken for the motor to get from start_position to end_position, in seconds
 
-    # Time taken for the motor 'complete' to finish
-    complete_timeout: float = DEFAULT_MOTOR_FLY_TIMEOUT
+    complete_timeout: float
+        Maximum time for the motor 'complete' to finish before throwing an error
 
-    # Step size of the motor 'complete' to finish, as a decimal percentage, before
-    # providing a watcher update. Must be between 0 and 1
-    watcher_update_frequency: float = Field(
-        default=DEFAULT_WATCHER_UPDATE_FREQUENCY, ge=0, le=1
+    watcher_update_frequency: float
+        Step size of the motor 'complete' to finish, as a decimal percentage, before
+        providing a watcher update. Must be between 0 and 1
+    """
+
+    start_position: float = Field(allow_mutation=False)
+
+    end_position: float = Field(allow_mutation=False)
+
+    time_for_move: float = Field(allow_mutation=False)
+
+    complete_timeout: float = Field(
+        default=DEFAULT_MOTOR_FLY_TIMEOUT, allow_mutation=False
     )
+
+    watcher_update_frequency: float = Field(
+        default=DEFAULT_WATCHER_UPDATE_FREQUENCY, ge=0, le=1, allow_mutation=False
+    )
+
+    # Direction of motion calculated from the start and end positions.
+    # True if positive, false if negative. Setting this has no effect
+    direction: Optional[bool] = Field(allow_mutation=False)
+
+    # Distance required to accelerate from stationary to desired velocity and to
+    # decelerate from  desired velocity to stationary. Setting here has no effect
+    run_up_distance: float = 0
+
+    # start_position with run_up_distance added on. Setting here has no effect
+    prepared_position: float = 0
+
+    # end_position with run_up_distance added on. Setting here has no effect
+    completed_position: float = 0
+
+    @validator("direction")
+    def get_direction_from_positions(cls, values):
+        if values["start_position"] > values["end_position"]:
+            return True
+        elif values["start_position"] < values["end_position"]:
+            return False
+
+        if values["start_position"] == values["end_position"]:
+            raise InvalidFlyMotorException(
+                "Requested to fly a motor using identical start and end positions"
+            )
 
     # Time since kickoff completed. Setting this has no effect
     complete_time_elapsed: float = 0
@@ -103,86 +142,31 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         self.fly_info = value
 
         # Velocity at which motor travels from start_position to end_position, in mm/s
-        fly_velocity = abs(
-            (value.start_position - value.end_position) / value.time_for_move
-        )
-        velocity_max = await self.max_velocity.get_value()
-        if fly_velocity > velocity_max:
-            raise MotorLimitsException(
-                f"Velocity of {fly_velocity}mm/s was requested for a motor with "
-                f"vmax of {velocity_max}mm/s"
-            )
-        await self.velocity.set(fly_velocity)
+        fly_velocity = await self._prepare_velocity()
 
-        # Distance required for motor to accelerate to fly_velocity before reaching
-        # start_position, and distance required for motor to decelerate from
-        # fly_velocity to zero after end_position
-        self.fly_run_up_distance = (
-            await self.acceleration_time.get_value()
-        ) * fly_velocity
-
-        if value.start_position < value.end_position:
-            self.fly_direction = True  # Positive direction
-        elif value.start_position > value.end_position:
-            self.fly_direction = False  # Negative direction
-        else:
-            raise InvalidFlyMotorException(
-                "Requested to fly a motor using identical start and end positions"
-            )
-
-        self.fly_prepared_position = value.start_position
-        fly_prepare_position = (
-            value.start_position - self.fly_run_up_distance
-            if self.fly_direction
-            else value.start_position + self.fly_run_up_distance
-        )
-
-        self.fly_target_position = value.end_position
-
-        self.fly_completed_position = (
-            value.end_position + self.fly_run_up_distance
-            if self.fly_direction
-            else value.end_position - self.fly_run_up_distance
-        )
-
-        motor_lower_limit = await self.low_limit_travel.get_value()
-        motor_upper_limit = await self.high_limit_travel.get_value()
-
-        if (
-            fly_prepare_position < motor_lower_limit
-            or fly_prepare_position > fly_prepare_position
-            or self.fly_completed_position > motor_upper_limit
-            or self.fly_completed_position < motor_upper_limit
-        ):
-            raise MotorLimitsException(
-                f"Motor trajectory for requested fly goes from "
-                f"{self.fly_prepared_position} mm to "
-                f"{self.fly_completed_position}mm and motor limits are "
-                f"{motor_lower_limit} <= x <= {motor_upper_limit} "
-            )
-
-        self.fly_complete_timeout = value.complete_timeout
-
-        await self.set(fly_prepare_position)
+        await self._prepare_motor_path(fly_velocity)
+        await self.set(self.fly_info.prepared_position)
 
     async def kickoff(self):
         """Begin moving motor from prepared position to final position. Mark as
         complete once motor reaches start position"""
+        assert self.fly_info, "Motor must be prepared before attempting to kickoff"
 
         async def has_motor_kicked_off():
-            assert self.fly_info, "Motor must be prepared before attempting to kickoff"
-            if self.fly_direction:
+            assert self.fly_info
+
+            if self.fly_info.direction:
                 async for value in observe_value(self.user_readback, timeout=60):
-                    if value >= self.fly_prepared_position:
+                    if value >= self.fly_info.prepared_position:
                         self.fly_info.complete_time_elapsed = time()
                         break
             else:
                 async for value in observe_value(self.user_readback, timeout=60):
-                    if value <= self.fly_prepared_position:
+                    if value <= self.fly_info.prepared_position:
                         self.fly_info.complete_time_elapsed = time()
                         break
 
-        await self.set(self.fly_completed_position)
+        await self.set(self.fly_info.completed_position)
 
         # Kickoff complete when motor reaches start position
         return AsyncStatus(has_motor_kicked_off())
@@ -195,41 +179,39 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         assert (
             self.fly_info
         ), "Motor must be prepared and kicked off before attempting to complete"
-        # Complete once motor has stopped moving
-        next_update_threshold = self.fly_info.watcher_update_frequency
-        distance_to_travel = self.fly_prepared_position - self.fly_target_position
 
-        # Yield watcher based on move completion, using specified
+        next_update_threshold = self.fly_info.watcher_update_frequency
+        distance_to_travel = (
+            self.fly_info.prepared_position - self.fly_info.end_position
+        )
+
+        # Give update based on move completion, using specified
         # watcher_update_frequency
         async for value in observe_value(
-            self.user_readback, timeout=self.fly_complete_timeout
+            self.user_readback, timeout=self.fly_info.complete_timeout
         ):
+            assert next_update_threshold
             percentage_complete = (
-                abs(value - self.fly_prepared_position) / distance_to_travel
+                abs(value - self.fly_info.prepared_position) / distance_to_travel
             )
-            if percentage_complete >= next_update_threshold:
-                next_update_threshold = (
-                    (percentage_complete // self.fly_info.watcher_update_frequency) + 1
-                ) * self.fly_info.watcher_update_frequency
 
-                # Catch unlikely rounding error
-                if round(next_update_threshold, 2) == round(percentage_complete, 2):
-                    next_update_threshold += self.fly_info.watcher_update_frequency
-                if next_update_threshold > 1:
-                    next_update_threshold = 1
+            if percentage_complete >= next_update_threshold:
+                next_update_threshold = _calculate_next_watcher_threshold(
+                    percentage_complete, self.fly_info.watcher_update_frequency
+                )
 
                 yield WatcherUpdate(
                     name=self.name,
                     current=value,
-                    initial=self.fly_prepared_position,
-                    target=self.fly_target_position,
+                    initial=self.fly_info.prepared_position,
+                    target=self.fly_info.end_position,
                     unit="mm",
                     time_elapsed=self.fly_info.complete_time_elapsed,
                     time_remaining=self.fly_info.time_for_move
                     - self.fly_info.complete_time_elapsed,
                 )
 
-                if value > self.fly_target_position:
+                if value > self.fly_info.end_position:
                     break
 
     @WatchableAsyncStatus.wrap
@@ -277,3 +259,66 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False.
         await self.motor_stop.trigger(wait=False)
+
+    async def _prepare_velocity(self) -> float:
+        assert self.fly_info
+        fly_velocity = abs(
+            (self.fly_info.start_position - self.fly_info.end_position)
+            / self.fly_info.time_for_move
+        )
+        velocity_max = await self.max_velocity.get_value()
+        if fly_velocity > velocity_max:
+            raise MotorLimitsException(
+                f"Velocity of {fly_velocity}mm/s was requested for a motor with "
+                f"vmax of {velocity_max}mm/s"
+            )
+        await self.velocity.set(fly_velocity)
+        return fly_velocity
+
+    async def _prepare_motor_path(self, fly_velocity: float):
+        assert self.fly_info
+        # Distance required for motor to accelerate to fly_velocity before reaching
+        # start_position, and distance required for motor to decelerate from
+        # fly_velocity to zero after end_position
+        run_up_distance = (await self.acceleration_time.get_value()) * fly_velocity
+
+        self.fly_info.prepared_position = (
+            self.fly_info.start_position - run_up_distance
+            if self.fly_info.direction
+            else self.fly_info.start_position + run_up_distance
+        )
+
+        self.fly_info.completed_position = (
+            self.fly_info.end_position + run_up_distance
+            if self.fly_info.direction
+            else self.fly_info.end_position - run_up_distance
+        )
+
+        motor_lower_limit = await self.low_limit_travel.get_value()
+        motor_upper_limit = await self.high_limit_travel.get_value()
+
+        if (
+            self.fly_info.prepared_position < motor_lower_limit
+            or self.fly_info.prepared_position > motor_upper_limit
+            or self.fly_info.completed_position > motor_upper_limit
+            or self.fly_info.completed_position < motor_upper_limit
+        ):
+            raise MotorLimitsException(
+                f"Motor trajectory for requested fly is from "
+                f"{self.fly_info.prepared_position} mm to "
+                f"{self.fly_info.completed_position}mm but motor limits are "
+                f"{motor_lower_limit} <= x <= {motor_upper_limit} "
+            )
+
+
+def _calculate_next_watcher_threshold(percent_complete, frequency):
+    next_update_threshold = ((percent_complete // frequency) + 1) * frequency
+
+    # Catch unlikely rounding error
+    if round(next_update_threshold, 2) == round(percent_complete, 2):
+        next_update_threshold += frequency
+
+    if next_update_threshold > 1:
+        next_update_threshold = 1
+
+    return next_update_threshold
