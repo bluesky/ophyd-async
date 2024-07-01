@@ -129,7 +129,6 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
-    # TODO convert resolution to mm?
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):
         """Calculate required velocity and run-up distance, then if motor limits aren't
