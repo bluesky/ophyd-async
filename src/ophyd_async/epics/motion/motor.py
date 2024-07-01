@@ -3,7 +3,7 @@ from time import time
 from typing import Optional
 
 from bluesky.protocols import Flyable, Movable, Preparable, Stoppable
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from ophyd_async.core import (
     ConfigSignal,
@@ -57,23 +57,13 @@ class FlyMotorInfo(BaseModel):
         providing a watcher update. Must be between 0 and 1
     """
 
-    start_position: float = Field(allow_mutation=False)
+    start_position: float = Field(frozen=True)
 
-    end_position: float = Field(allow_mutation=False)
+    end_position: float = Field(frozen=True)
 
-    time_for_move: float = Field(allow_mutation=False)
+    time_for_move: float = Field(frozen=True, gt=0)
 
-    complete_timeout: float = Field(
-        default=DEFAULT_MOTOR_FLY_TIMEOUT, allow_mutation=False
-    )
-
-    watcher_update_frequency: float = Field(
-        default=DEFAULT_WATCHER_UPDATE_FREQUENCY, ge=0, le=1, allow_mutation=False
-    )
-
-    # Direction of motion calculated from the start and end positions.
-    # True if positive, false if negative. Setting this has no effect
-    direction: Optional[bool] = Field(allow_mutation=False)
+    complete_timeout: float = Field(default=DEFAULT_MOTOR_FLY_TIMEOUT, frozen=True)
 
     # Distance required to accelerate from stationary to desired velocity and to
     # decelerate from  desired velocity to stationary. Setting here has no effect
@@ -85,20 +75,26 @@ class FlyMotorInfo(BaseModel):
     # end_position with run_up_distance added on. Setting here has no effect
     completed_position: float = 0
 
-    @validator("direction")
-    def get_direction_from_positions(cls, values):
-        if values["start_position"] > values["end_position"]:
+    # Time since kickoff completed. Setting this has no effect
+    complete_time_elapsed: float = 0
+
+    # Direction of motion calculated from the start and end positions.
+    # True if positive, false if negative. Setting this has no effect
+    direction: Optional[bool] = Field(frozen=True, default=None, validate_default=True)
+
+    @field_validator("direction")
+    @classmethod
+    def get_direction_from_positions(cls, direction, info: ValidationInfo):
+        info.data["start_position"]
+        if info.data["start_position"] < info.data["end_position"]:
             return True
-        elif values["start_position"] < values["end_position"]:
+        elif info.data["start_position"] > info.data["end_position"]:
             return False
 
-        if values["start_position"] == values["end_position"]:
+        if info.data["start_position"] == info.data["end_position"]:
             raise InvalidFlyMotorException(
                 "Requested to fly a motor using identical start and end positions"
             )
-
-    # Time since kickoff completed. Setting this has no effect
-    complete_time_elapsed: float = 0
 
 
 class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
@@ -180,39 +176,28 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
             self.fly_info
         ), "Motor must be prepared and kicked off before attempting to complete"
 
-        next_update_threshold = self.fly_info.watcher_update_frequency
-        distance_to_travel = (
-            self.fly_info.prepared_position - self.fly_info.end_position
+        units, precision = await asyncio.gather(
+            self.motor_egu.get_value(),
+            self.precision.get_value(),
         )
 
-        # Give update based on move completion, using specified
-        # watcher_update_frequency
         async for value in observe_value(
             self.user_readback, timeout=self.fly_info.complete_timeout
         ):
-            assert next_update_threshold
-            percentage_complete = (
-                abs(value - self.fly_info.prepared_position) / distance_to_travel
+            yield WatcherUpdate(
+                name=self.name,
+                current=value,
+                initial=self.fly_info.prepared_position,
+                target=self.fly_info.end_position,
+                unit=units,
+                precision=precision,
+                time_elapsed=round(time() - self.fly_info.complete_time_elapsed, 2),
+                time_remaining=self.fly_info.time_for_move
+                - self.fly_info.complete_time_elapsed,
             )
 
-            if percentage_complete >= next_update_threshold:
-                next_update_threshold = _calculate_next_watcher_threshold(
-                    percentage_complete, self.fly_info.watcher_update_frequency
-                )
-
-                yield WatcherUpdate(
-                    name=self.name,
-                    current=value,
-                    initial=self.fly_info.prepared_position,
-                    target=self.fly_info.end_position,
-                    unit="mm",
-                    time_elapsed=self.fly_info.complete_time_elapsed,
-                    time_remaining=self.fly_info.time_for_move
-                    - self.fly_info.complete_time_elapsed,
-                )
-
-                if value > self.fly_info.end_position:
-                    break
+            if value >= self.fly_info.end_position:
+                break
 
     @WatchableAsyncStatus.wrap
     async def set(
@@ -298,10 +283,17 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         motor_upper_limit = await self.high_limit_travel.get_value()
 
         if (
-            self.fly_info.prepared_position < motor_lower_limit
-            or self.fly_info.prepared_position > motor_upper_limit
-            or self.fly_info.completed_position > motor_upper_limit
-            or self.fly_info.completed_position < motor_upper_limit
+            self.fly_info.direction
+            and (
+                self.fly_info.prepared_position < motor_lower_limit
+                or self.fly_info.completed_position > motor_upper_limit
+            )
+        ) or (
+            not self.fly_info.direction
+            and (
+                self.fly_info.prepared_position > motor_lower_limit
+                or self.fly_info.completed_position < motor_upper_limit
+            )
         ):
             raise MotorLimitsException(
                 f"Motor trajectory for requested fly is from "
@@ -309,16 +301,3 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
                 f"{self.fly_info.completed_position}mm but motor limits are "
                 f"{motor_lower_limit} <= x <= {motor_upper_limit} "
             )
-
-
-def _calculate_next_watcher_threshold(percent_complete, frequency):
-    next_update_threshold = ((percent_complete // frequency) + 1) * frequency
-
-    # Catch unlikely rounding error
-    if round(next_update_threshold, 2) == round(percent_complete, 2):
-        next_update_threshold += frequency
-
-    if next_update_threshold > 1:
-        next_update_threshold = 1
-
-    return next_update_threshold

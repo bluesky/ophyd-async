@@ -1,7 +1,7 @@
 import asyncio
 import time
 from typing import Dict
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -11,8 +11,16 @@ from ophyd_async.core import (
     set_mock_put_proceeds,
     set_mock_value,
 )
+from ophyd_async.core.async_status import AsyncStatus
+from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.mock_signal_utils import callback_on_mock_put
+from ophyd_async.core.signal import SignalRW, observe_value
 from ophyd_async.epics.motion import motor
+from ophyd_async.epics.motion.motor import (
+    FlyMotorInfo,
+    InvalidFlyMotorException,
+    MotorLimitsException,
+)
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -187,3 +195,120 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
     await v.set(3.0)
     assert (await v.read())["sim_motor-velocity"]["value"] == 3.0
     assert q.empty()
+
+
+def test_fly_motor_info_direction():
+    positive_fly = FlyMotorInfo(start_position=0, end_position=2, time_for_move=1)
+    negative_fly = FlyMotorInfo(start_position=-1, end_position=-3, time_for_move=1)
+    assert positive_fly.direction
+    assert negative_fly.direction is False
+    with pytest.raises(InvalidFlyMotorException):
+        FlyMotorInfo(start_position=0, end_position=0, time_for_move=1)
+
+
+async def test_prepare_velocity_errors(sim_motor: motor.Motor):
+    set_mock_value(sim_motor.max_velocity, 10)
+    with pytest.raises(MotorLimitsException):
+        sim_motor.fly_info = FlyMotorInfo(
+            start_position=-10, end_position=0, time_for_move=0.9
+        )
+        await sim_motor._prepare_velocity()
+
+
+async def test_valid_prepare_velocity(sim_motor: motor.Motor):
+    set_mock_value(sim_motor.max_velocity, 10)
+    sim_motor.fly_info = FlyMotorInfo(
+        start_position=-10, end_position=0, time_for_move=1
+    )
+    await sim_motor._prepare_velocity()
+    assert await sim_motor.velocity.get_value() == 10
+
+
+@pytest.mark.parametrize(
+    "acceleration_time, velocity, start_position, end_position, upper_limit,\
+    lower_limit",
+    [
+        (1, 10, 0, 10, 30, -9.999),  # Goes below lower_limit, +ve direction
+        (1, 10, 0, 10, 19, -10),  # Goes above upper_limit, +ve direction
+        (1, 10, 10, 0, 30, -9.999),  # Goes below lower_limit, -ve direction
+        (1, 10, 10, 0, 30, -10),  # Goes below lower_limit, +ve direction
+    ],
+)
+async def test_prepare_motor_path_errors(
+    sim_motor: motor.Motor,
+    acceleration_time,
+    velocity,
+    start_position,
+    end_position,
+    upper_limit,
+    lower_limit,
+):
+    sim_motor.fly_info = FlyMotorInfo(
+        start_position=start_position,
+        end_position=end_position,
+        time_for_move=1,
+    )
+    set_mock_value(sim_motor.acceleration_time, acceleration_time)
+    set_mock_value(sim_motor.low_limit_travel, lower_limit)
+    set_mock_value(sim_motor.high_limit_travel, upper_limit)
+    with pytest.raises(MotorLimitsException):
+        await sim_motor._prepare_motor_path(velocity)
+
+
+async def test_prepare_motor_path(sim_motor: motor.Motor):
+    set_mock_value(sim_motor.acceleration_time, 1)
+    set_mock_value(sim_motor.low_limit_travel, -10)
+    set_mock_value(sim_motor.high_limit_travel, 20)
+    sim_motor.fly_info = FlyMotorInfo(
+        start_position=0,
+        end_position=10,
+        time_for_move=1,
+    )
+    await sim_motor._prepare_motor_path(10)
+    assert sim_motor.fly_info.prepared_position == -10
+    assert sim_motor.fly_info.completed_position == 20
+
+
+async def test_prepare(sim_motor: motor.Motor):
+    set_mock_value(sim_motor.acceleration_time, 1)
+    set_mock_value(sim_motor.low_limit_travel, -10)
+    set_mock_value(sim_motor.high_limit_travel, 20)
+    set_mock_value(sim_motor.max_velocity, 10)
+    fake_set_signal = SignalRW(MockSignalBackend(float))
+    target_position = 10
+
+    async def wait_for_set(_):
+        async for value in observe_value(fake_set_signal, timeout=1):
+            if value == target_position:
+                break
+
+    sim_motor.set = AsyncMock(side_effect=wait_for_set)
+
+    async def do_set(status: AsyncStatus):
+        assert not status.done
+        await fake_set_signal.set(target_position)
+
+    async def wait_for_status(status: AsyncStatus):
+        await status
+
+    status = sim_motor.prepare(
+        FlyMotorInfo(
+            start_position=0,
+            end_position=target_position,
+            time_for_move=1,
+        )
+    )
+    # Test that prepare is not marked as complete until correct position is reached
+    await asyncio.gather(do_set(status), wait_for_status(status))
+    assert status.done
+
+
+def test_kickoff():
+    # Test that kickoff starts moving the motor, and that it completes once it
+    # reaches start position, and it works ok in both direction
+    pass
+
+
+def test_complete():
+    # Test watchers update correctly, and that status finishes at the correct point
+    pass
