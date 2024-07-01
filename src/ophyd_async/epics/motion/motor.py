@@ -166,6 +166,9 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         await self.set(fly_prepare_position)
 
     async def kickoff(self):
+        """Begin moving motor from prepared position to final position. Mark as
+        complete once motor reaches start position"""
+
         async def has_motor_kicked_off():
             assert self.fly_info, "Motor must be prepared before attempting to kickoff"
             if self.fly_direction:
@@ -186,6 +189,9 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
+        """Send periodic updates of the motor's fly progress. Mark as complete once
+        motor reaches end position."""
+
         assert (
             self.fly_info
         ), "Motor must be prepared and kicked off before attempting to complete"
@@ -209,6 +215,8 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
                 # Catch unlikely rounding error
                 if round(next_update_threshold, 2) == round(percentage_complete, 2):
                     next_update_threshold += self.fly_info.watcher_update_frequency
+                if next_update_threshold > 1:
+                    next_update_threshold = 1
 
                 yield WatcherUpdate(
                     name=self.name,
@@ -220,6 +228,9 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
                     time_remaining=self.fly_info.time_for_move
                     - self.fly_info.complete_time_elapsed,
                 )
+
+                if value > self.fly_target_position:
+                    break
 
     @WatchableAsyncStatus.wrap
     async def set(
