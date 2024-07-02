@@ -111,6 +111,13 @@ class Signal(Device, Generic[T]):
         ), "this assert is for type analysis and will never fail"
         await self._connect_task
 
+    def get_mock_signal_backend(self) -> MockSignalBackend[T]:
+        if not isinstance(self._backend, MockSignalBackend):
+            raise RuntimeError(
+                f"Signal backend is {self._backend}, not a `MockSignalBackend`."
+            )
+        return self._backend
+
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""

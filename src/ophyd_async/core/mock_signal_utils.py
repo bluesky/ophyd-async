@@ -5,26 +5,15 @@ from unittest.mock import Mock
 from ophyd_async.core.signal import Signal
 from ophyd_async.core.utils import T
 
-from .mock_signal_backend import MockSignalBackend
-
-
-def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    assert isinstance(signal._backend, MockSignalBackend), (
-        "Expected to receive a `MockSignalBackend`, instead "
-        f" received {type(signal._backend)}. "
-    )
-    return signal._backend
-
 
 def set_mock_value(signal: Signal[T], value: T):
     """Set the value of a signal that is in mock mode."""
-    backend = _get_mock_signal_backend(signal)
-    backend.set_value(value)
+    signal.get_mock_signal_backend().set_value(value)
 
 
 def set_mock_put_proceeds(signal: Signal, proceeds: bool):
     """Allow or block a put with wait=True from proceeding"""
-    backend = _get_mock_signal_backend(signal)
+    backend = signal.get_mock_signal_backend()
 
     if proceeds:
         backend.put_proceeds.set()
@@ -43,11 +32,11 @@ async def mock_puts_blocked(*signals: Signal):
 
 def get_mock_put(signal: Signal) -> Mock:
     """Get the mock associated with the put call on the signal."""
-    return _get_mock_signal_backend(signal).put_mock
+    return signal.get_mock_signal_backend().put_mock
 
 
 def reset_mock_put_calls(signal: Signal):
-    backend = _get_mock_signal_backend(signal)
+    backend = signal.get_mock_signal_backend()
     backend.put_mock.reset_mock()
 
 
@@ -154,6 +143,6 @@ def callback_on_mock_put(signal: Signal[T], callback: Callable[[T], None]):
     callback:
         The callback to call when the backend is put to during the context.
     """
-    backend = _get_mock_signal_backend(signal)
+    backend = signal.get_mock_signal_backend()
     backend.put_mock.side_effect = callback
     return _unset_side_effect_cm(backend.put_mock)

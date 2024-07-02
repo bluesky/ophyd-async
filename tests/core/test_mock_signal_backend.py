@@ -107,34 +107,26 @@ async def test_put_proceeds_timeout():
 async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
     signal = SignalRW(SoftSignalBackend(int))
 
-    exc_msgs = []
-    with pytest.raises(AssertionError) as exc:
+    error_message = re.compile(
+        r"Signal backend is "
+        r"<ophyd_async.core.soft_signal_backend.SoftSignalBackend "
+        r"object at 0x[0-9a-fA-F]+>, not a `MockSignalBackend`\.",
+    )
+    with pytest.raises(RuntimeError, match=error_message):
         set_mock_value(signal, 10)
-    exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError, match=error_message):
         get_mock_put(signal).assert_called_once_with(10)
-    exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError, match=error_message):
         async with mock_puts_blocked(signal):
             ...
-    exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError, match=error_message):
         with callback_on_mock_put(signal, lambda x: _):
             ...
-    exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError, match=error_message):
         set_mock_put_proceeds(signal, False)
-    exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError, match=error_message):
         for _ in set_mock_values(signal, [10]):
             ...
-    exc_msgs.append(str(exc.value))
-
-    for msg in exc_msgs:
-        assert msg == (
-            "Expected to receive a `MockSignalBackend`, instead "
-            f" received {SoftSignalBackend}. "
-        )
 
 
 async def test_get_mock_put():
