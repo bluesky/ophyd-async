@@ -132,6 +132,17 @@ class TangoProxy:
     def unsubscribe_callback(self):
         """delete CHANGE event subscription"""
 
+    # --------------------------------------------------------------------
+    @abstractmethod
+    def set_polling(
+        self,
+        allow_polling: bool = True,
+        polling_period: float = 0.1,
+        abs_change=None,
+        rel_change=None,
+    ):
+        """Set polling parameters"""
+
 
 # --------------------------------------------------------------------
 class AttributeProxy(TangoProxy):
@@ -140,6 +151,10 @@ class AttributeProxy(TangoProxy):
     _poll_callback = None
     _poll_task = None
     _eid = None
+    _abs_change = None
+    _rel_change = 0.1
+    _polling_period = 0.5
+    _allow_polling = False
 
     # --------------------------------------------------------------------
     async def connect(self) -> None:
@@ -215,8 +230,10 @@ class AttributeProxy(TangoProxy):
                     green_mode=False,
                 )
         else:
-            self._poll_callback = callback
-            self._poll_task = asyncio.create_task(self.poll())
+            if self._allow_polling:
+                self._poll_callback = callback
+                if self._poll_callback is not None:
+                    self._poll_task = asyncio.create_task(self.poll())
 
     # --------------------------------------------------------------------
     def unsubscribe_callback(self):
@@ -240,14 +257,66 @@ class AttributeProxy(TangoProxy):
 
     # --------------------------------------------------------------------
     async def poll(self):
-        if self._poll_callback:
-            while True:
-                await asyncio.sleep(0.5)
-                reading = await self.get_reading()
-                if self._poll_callback:
+        """
+        Poll the attribute and call the callback if the value has changed by more
+        than the absolute or relative change. This function is used when an attribute
+        that does not support events is cached or a callback is passed to it.
+        """
+
+        last_reading = await self.get_reading()
+        flag = 0
+
+        while True:
+            await asyncio.sleep(self._polling_period)
+
+            reading = await self.get_reading()
+
+            if reading is None:
+                continue
+            if reading["value"] is None:
+                continue
+
+            diff = abs(reading["value"] - last_reading["value"])
+
+            if self._abs_change is not None:
+                if diff > self._abs_change:
+                    if self._poll_callback is not None:
+                        self._poll_callback(reading, reading["value"])
+                        flag = 0
+
+            elif self._rel_change is not None:
+                if last_reading["value"] is not None:
+                    if diff > self._rel_change * abs(last_reading["value"]):
+                        if self._poll_callback is not None:
+                            self._poll_callback(reading, reading["value"])
+                            flag = 0
+
+            else:
+                flag += 1
+                if flag >= 4 and self._poll_callback is not None:
                     self._poll_callback(reading, reading["value"])
-                else:
-                    break
+                    flag = 0
+
+            last_reading = reading.copy()
+            if self._poll_callback is None:
+                "Polling stopped. No callback set."
+                break
+
+    # --------------------------------------------------------------------
+    def set_polling(
+        self,
+        allow_polling: bool = False,
+        polling_period: float = 0.5,
+        abs_change=None,
+        rel_change=0.1,
+    ):
+        """
+        Set the polling parameters.
+        """
+        self._allow_polling = allow_polling
+        self._polling_period = polling_period
+        self._abs_change = abs_change
+        self._rel_change = rel_change
 
 
 # --------------------------------------------------------------------
@@ -292,6 +361,16 @@ class CommandProxy(TangoProxy):
     # --------------------------------------------------------------------
     async def get_reading(self) -> Reading:
         return self._last_reading
+
+    # --------------------------------------------------------------------
+    def set_polling(
+        self,
+        allow_polling: bool = False,
+        polling_period: float = 0.5,
+        abs_change=None,
+        rel_change=0.1,
+    ):
+        pass
 
 
 # --------------------------------------------------------------------
@@ -444,6 +523,8 @@ class TangoTransport(SignalBackend[T]):
         }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
         self.descriptor: Descriptor = {}  # type: ignore
+        self.polling = (False, 0.5, None, 0.1)
+        self.support_events = False
 
     # --------------------------------------------------------------------
     def source(self, name: str) -> str:
@@ -455,6 +536,7 @@ class TangoTransport(SignalBackend[T]):
             self.proxies[trl] = await get_tango_trl(trl, self.proxies[trl])
             await self.proxies[trl].connect()
             self.trl_configs[trl] = await self.proxies[trl].get_config()
+            self.proxies[trl].support_events = self.support_events
         except CancelledError:
             raise NotConnected(f"Could not connect to {trl}")
 
@@ -469,6 +551,7 @@ class TangoTransport(SignalBackend[T]):
         else:
             # The same, so only need to connect one
             await self._connect_and_store_config(self.read_trl)
+        self.proxies[self.read_trl].set_polling(*self.polling)
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
         )
@@ -499,9 +582,15 @@ class TangoTransport(SignalBackend[T]):
 
     # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
-        # assert self.proxies[
-        #     self.read_trl
-        # ].support_events, f"{self.source} does not support events"
+        if (
+            self.proxies[self.read_trl].support_events is False
+            and self.polling[0] is False
+        ):
+            raise RuntimeError(
+                f"Cannot set event for {self.read_trl}. "
+                "Use set_polling to enable polling for this signal or use signal as"
+                " non-cached."
+            )
 
         if callback:
             assert not self.proxies[
@@ -519,3 +608,22 @@ class TangoTransport(SignalBackend[T]):
             self.proxies[self.read_trl].unsubscribe_callback()
 
     # --------------------------------------------------------------------
+
+    def set_polling(
+        self,
+        allow_polling: bool = False,
+        polling_period: float = 0.5,
+        abs_change=None,
+        rel_change=0.1,
+    ):
+        self.polling = (allow_polling, polling_period, abs_change, rel_change)
+        if self.proxies[self.read_trl] is not None:
+            self.proxies[self.read_trl].set_polling(
+                allow_polling, polling_period, abs_change, rel_change
+            )
+
+    # --------------------------------------------------------------------
+    def allow_events(self, allow: bool = True):
+        self.support_events = allow
+        if self.proxies[self.read_trl] is not None:
+            self.proxies[self.read_trl].support_events = self.support_events
