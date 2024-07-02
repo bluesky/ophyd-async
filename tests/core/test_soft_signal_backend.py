@@ -31,7 +31,7 @@ def string_d(value):
 
 
 def enum_d(value):
-    return {"dtype": "string", "shape": [], "choices": ["Aaa", "Bbb", "Ccc"]}
+    return {"dtype": "string", "shape": [], "choices": ("Aaa", "Bbb", "Ccc")}
 
 
 def waveform_d(value):
@@ -113,6 +113,14 @@ async def test_soft_signal_backend_get_put_monitor(
         await q.assert_updates(pytest.approx(put_value))
     finally:
         q.close()
+
+
+async def test_soft_signal_backend_enum_value_equivalence():
+    soft_signal = SoftSignalBackend(MyEnum)
+    await soft_signal.connect()
+    assert (await soft_signal.get_value()) is MyEnum.a
+    await soft_signal.put(MyEnum.b)
+    assert (await soft_signal.get_value()) is MyEnum.b
 
 
 async def test_soft_signal_backend_with_numpy_typing():

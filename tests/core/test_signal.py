@@ -29,7 +29,9 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import _SignalCache
+from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
+from ophyd_async.plan_stubs import ensure_connected
 
 
 async def test_signals_equality_raises():
@@ -63,8 +65,9 @@ async def test_signal_can_be_given_backend_on_connect():
 async def test_signal_connect_fails_with_different_backend_on_connection():
     sim_signal = Signal(MockSignalBackend(str))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as exc:
         await sim_signal.connect(mock=True, backend=MockSignalBackend(int))
+    assert str(exc.value) == "Backend at connection different from previous one."
 
     with pytest.raises(ValueError):
         await sim_signal.connect(mock=True, backend=SoftSignalBackend(str))
@@ -76,9 +79,99 @@ async def test_signal_connect_fails_if_different_backend_but_same_by_value():
 
     with pytest.raises(ValueError) as exc:
         await sim_signal.connect(mock=False, backend=MockSignalBackend(str))
-    assert str(exc.value) == "Backend at connection different from initialised one."
+    assert str(exc.value) == "Backend at connection different from previous one."
 
     await sim_signal.connect(mock=False, backend=initial_backend)
+
+
+async def test_signal_connects_to_previous_backend(caplog):
+    caplog.set_level(logging.DEBUG)
+    int_mock_backend = MockSignalBackend(int)
+    original_connect = int_mock_backend.connect
+
+    async def new_connect(timeout=1):
+        await asyncio.sleep(0.1)
+        await original_connect(timeout=timeout)
+
+    int_mock_backend.connect = new_connect
+    signal = Signal(int_mock_backend)
+    assert await time_taken_by(
+        asyncio.gather(signal.connect(), signal.connect())
+    ) == pytest.approx(0.1, rel=1e-2)
+    response = f"Reusing previous connection to {signal.source}"
+    assert response in caplog.text
+
+
+async def test_signal_connects_with_force_reconnect(caplog):
+    caplog.set_level(logging.DEBUG)
+    signal = Signal(MockSignalBackend(int))
+    await signal.connect()
+    assert signal._backend.datatype is int
+    await signal.connect(force_reconnect=True)
+    response = f"Connecting to {signal.source}"
+    assert response in caplog.text
+    assert "Reusing previous connection to" not in caplog.text
+
+
+@pytest.mark.parametrize(
+    "first, second",
+    [(True, False), (True, False)],
+)
+async def test_rejects_reconnect_when_connects_have_diff_mock_status(
+    caplog, first, second
+):
+    caplog.set_level(logging.DEBUG)
+    signal = Signal(MockSignalBackend(int))
+    await signal.connect(mock=first)
+    assert signal._backend.datatype is int
+    with pytest.raises(RuntimeError) as exc:
+        await signal.connect(mock=second)
+
+    assert f"`connect(mock={second})` called on a `Signal` where the previous " in str(
+        exc.value
+    )
+
+    response = f"Connecting to {signal.source}"
+    assert response in caplog.text
+
+
+async def test_signal_lazily_connects(RE):
+    class MockSignalBackendFailingFirst(MockSignalBackend):
+        succeed_on_connect = False
+
+        async def connect(self, timeout=DEFAULT_TIMEOUT):
+            if self.succeed_on_connect:
+                self.succeed_on_connect = False
+                await super().connect(timeout=timeout)
+            else:
+                self.succeed_on_connect = True
+                raise RuntimeError("connect fail")
+
+    signal = SignalRW(MockSignalBackendFailingFirst(int))
+
+    with pytest.raises(RuntimeError, match="connect fail"):
+        await signal.connect(mock=False)
+
+    assert (
+        signal._connect_task
+        and signal._connect_task.done()
+        and signal._connect_task.exception()
+    )
+
+    RE(ensure_connected(signal, mock=False))
+    assert (
+        signal._connect_task
+        and signal._connect_task.done()
+        and not signal._connect_task.exception()
+    )
+
+    # TODO https://github.com/bluesky/ophyd-async/issues/413
+    RE(ensure_connected(signal, mock=False, force_reconnect=True))
+    assert (
+        signal._connect_task
+        and signal._connect_task.done()
+        and signal._connect_task.exception()
+    )
 
 
 async def time_taken_by(coro) -> float:

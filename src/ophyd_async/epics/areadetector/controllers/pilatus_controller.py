@@ -5,6 +5,7 @@ from ophyd_async.core import DEFAULT_TIMEOUT, wait_for_value
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.epics.areadetector.drivers.ad_base import (
+    set_exposure_time_and_acquire_period_if_supplied,
     start_acquiring_driver_and_ensure_status,
 )
 from ophyd_async.epics.areadetector.drivers.pilatus_driver import (
@@ -39,7 +40,9 @@ class PilatusController(DetectorControl):
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         if exposure is not None:
-            await self._drv.acquire_time.set(exposure)
+            await set_exposure_time_and_acquire_period_if_supplied(
+                self, self._drv, exposure
+            )
         await asyncio.gather(
             self._drv.trigger_mode.set(self._get_trigger_mode(trigger)),
             self._drv.num_images.set(999_999 if num == 0 else num),
