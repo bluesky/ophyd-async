@@ -40,7 +40,7 @@ class FlyMotorInfo(BaseModel):
 
     start_position : float
         Absolute position of the motor once it finishes accelerating to desired
-        velocity, in millimetres
+        velocity, in motor EGUs
 
     end_position: float
         Absolute position of the motor once it begins decelerating from desired
