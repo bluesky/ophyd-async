@@ -94,8 +94,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # end_position with run_up_distance added on.
         self._fly_completed_position: Optional[float] = None
 
-        # Time since kickoff completed.
-        self._fly_complete_time_elapsed: float = 0
+        self._fly_status: Optional[WatchableAsyncStatus] = None
 
         super().__init__(name=name)
 
@@ -126,13 +125,14 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
 
         await self.set(fly_prepared_position)
 
+    @AsyncStatus.wrap
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
         assert (
             self._fly_completed_position and self.fly_info
         ), "Motor must be prepared before attempting to kickoff"
 
-        self._fly_status = self.set(
+        self._fly_status = await self.set(
             self._fly_completed_position, timeout=self.fly_info.timeout
         )
 
@@ -217,13 +217,15 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         egu = await self.motor_egu.get_value()
 
         if (
-            fly_prepared_position < motor_lower_limit
-            or self._fly_completed_position > motor_upper_limit
+            not motor_upper_limit >= fly_prepared_position >= motor_lower_limit
+            or not motor_upper_limit
+            >= self._fly_completed_position
+            >= motor_lower_limit
         ):
             raise MotorLimitsException(
                 f"Motor trajectory for requested fly is from "
-                f"{fly_prepared_position} {egu} to "
+                f"{fly_prepared_position}{egu} to "
                 f"{self._fly_completed_position}{egu} but motor limits are "
-                f"{motor_lower_limit} <= x <= {motor_upper_limit} "
+                f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
             )
         return fly_prepared_position
