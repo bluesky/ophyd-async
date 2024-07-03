@@ -1,14 +1,4 @@
 repos:
-
-  # Automatic source code formatting
-  - repo: https://github.com/psf/black
-    rev: 24.1.1
-    hooks:
-      - id: black
-        args: [--safe, --quiet]
-        files: \.pyi?$|SConscript$|^libtbx_config$
-        types: [file]
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
