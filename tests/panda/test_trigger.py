@@ -2,7 +2,11 @@ import pytest
 
 from ophyd_async.core.device import DEFAULT_TIMEOUT, DeviceCollector
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
-from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic
+from ophyd_async.panda import (
+    CommonPandaBlocks,
+    StaticPcompTriggerLogic,
+    StaticSeqTableTriggerLogic,
+)
 
 
 @pytest.fixture
@@ -25,8 +29,16 @@ async def panda():
     yield mock_panda
 
 
-async def test_trigger_logic_has_given_methods(panda):
+async def test_seq_table_trigger_logic_has_given_methods(panda):
     trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
+    assert hasattr(trigger_logic, "prepare")
+    assert hasattr(trigger_logic, "kickoff")
+    assert hasattr(trigger_logic, "complete")
+    assert hasattr(trigger_logic, "stop")
+
+
+async def test_pcomp_trigger_logic_has_given_methods(panda):
+    trigger_logic = StaticPcompTriggerLogic(panda.pcomp[1])
     assert hasattr(trigger_logic, "prepare")
     assert hasattr(trigger_logic, "kickoff")
     assert hasattr(trigger_logic, "complete")
