@@ -189,7 +189,7 @@ async def test_collect_stream_docs(
             "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
             "resource_kwargs": {
                 "name": name,
-                "path": ANY,
+                "path": "/" + name,
                 "multiplier": 1,
                 "swmr": False,
             },

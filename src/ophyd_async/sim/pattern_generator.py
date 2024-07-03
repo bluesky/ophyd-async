@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import field
 from pathlib import Path
 from typing import (
     Any,
@@ -30,21 +30,18 @@ MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 
-@dataclass
-class PatternDataset(_HDFDataset):
-    dtype: Any
-    maxshape: tuple[Any, ...]
-    fillvalue: int = field(default_factory=int)
-
-
 def get_full_file_description(
-    datasets: List[PatternDataset], outer_shape: tuple[int, ...]
+    datasets: List[_HDFDataset],
+    outer_shape: tuple[int, ...],
+    dtype: str = "number",
+    inner_shape: tuple[int, ...] = None,
 ):
+    inner_shape = inner_shape
     full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
         source = f"soft://{d.data_key}"
-        shape = outer_shape + tuple(d.shape)
-        dtype = "number" if d.shape == [1] else "array"
+        shape = outer_shape + inner_shape
+        dtype = dtype
         descriptor = DataKey(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
         )
@@ -76,6 +73,10 @@ class PatternGenerator:
         detector_width: int = 320,
         detector_height: int = 240,
     ) -> None:
+        self.dtype: int
+        self.maxshape: tuple[Any, ...]
+        self.fillvalue: int = field(default_factory=int)
+        self.shape: List[int] = field(default_factory=[])
         self.saturation_exposure_time = saturation_exposure_time
         self.exposure = saturation_exposure_time
         self.x = 0.0
@@ -182,8 +183,8 @@ class PatternGenerator:
         new_path: Path = info.root / info.resource_dir / filename
         return new_path
 
-    def _get_datasets(self) -> List[PatternDataset]:
-        raw_dataset = PatternDataset(
+    def _get_datasets(self) -> List[_HDFDataset]:
+        raw_dataset = _HDFDataset(
             # name=data_name,
             data_key=DATA_PATH,
             dtype=np.uint8,
