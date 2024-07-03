@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, List
+from typing import Iterator, List, Sequence
 from urllib.parse import urlunparse
 
 from event_model import (
@@ -17,8 +17,9 @@ from ophyd_async.core import DirectoryInfo
 class _HDFDataset:
     data_key: str
     dataset: str
-    swmr: bool = False
+    shape: Sequence[int] = field(default_factory=tuple)
     multiplier: int = 1
+    swmr: bool = False
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
