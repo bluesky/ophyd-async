@@ -47,7 +47,7 @@ class FlyMotorInfo(BaseModel):
         velocity, in millimetres
 
     time_for_move: float
-        Time taken for the motor to get from start_position to end_position, in seconds
+        Time taken for the motor to get from start_position to end_position, excluding run up and run down, in seconds
 
     complete_timeout: float
         Maximum time for the motor 'complete' to finish before throwing an error
