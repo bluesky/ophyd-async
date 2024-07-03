@@ -47,10 +47,12 @@ class FlyMotorInfo(BaseModel):
 
     time_for_move: float
         Time taken for the motor to get from start_position to end_position, excluding
-        run-up and run-down, in seconds
+        run-up and run-down, in seconds.
 
-    complete_timeout: float
-        Maximum time for the motor 'complete' to finish before throwing an error
+    timeout: CalculatableTimeout
+        Maximum time for the complete motor move, including run up and run down.
+        Defaults to `time_for_move` + run up and run down times + 10s.
+
     """
 
     start_position: float = Field(frozen=True)
@@ -59,7 +61,7 @@ class FlyMotorInfo(BaseModel):
 
     time_for_move: float = Field(frozen=True, gt=0)
 
-    complete_timeout: float = Field(default=DEFAULT_MOTOR_FLY_TIMEOUT, frozen=True)
+    timeout: CalculatableTimeout = CalculateTimeout
 
 
 class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
@@ -127,10 +129,12 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
         assert (
-            self._fly_completed_position
+            self._fly_completed_position and self.fly_info
         ), "Motor must be prepared before attempting to kickoff"
 
-        self._fly_status = self.set(self._fly_completed_position)
+        self._fly_status = self.set(
+            self._fly_completed_position, timeout=self.fly_info.timeout
+        )
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
