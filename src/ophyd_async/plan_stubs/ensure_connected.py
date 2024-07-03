@@ -26,5 +26,5 @@ def ensure_connected(
         ]
     )
 
-    # raises the exception if the connection failed
-    list(connect_task_singleton)[0].result()
+    if connect_task_singleton[0].exception() is not None:
+        raise connect_task_singleton[0].exception()
