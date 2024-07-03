@@ -146,11 +146,10 @@ class TangoProxy:
 
 # --------------------------------------------------------------------
 class AttributeProxy(TangoProxy):
+    _callback = None
     support_events = False
-    _event_callback = None
-    _poll_callback = None
-    _poll_task = None
     _eid = None
+    _poll_task = None
     _abs_change = None
     _rel_change = 0.1
     _polling_period = 0.5
@@ -214,14 +213,14 @@ class AttributeProxy(TangoProxy):
 
     # --------------------------------------------------------------------
     def has_subscription(self) -> bool:
-        return bool(self._eid)
+        return bool(self._callback)
 
     # --------------------------------------------------------------------
     def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
         # If the attribute supports events, then we can subscribe to them
+        self._callback = callback
         if self.support_events:
             """add user callback to CHANGE event subscription"""
-            self._event_callback = callback
             if not self._eid:
                 self._eid = self._proxy.subscribe_event(
                     self._name,
@@ -229,19 +228,27 @@ class AttributeProxy(TangoProxy):
                     self._event_processor,
                     green_mode=False,
                 )
+        elif self._allow_polling:
+            """start polling if no events supported"""
+            if self._callback is not None:
+                self._poll_task = asyncio.create_task(self.poll())
         else:
-            if self._allow_polling:
-                self._poll_callback = callback
-                if self._poll_callback is not None:
-                    self._poll_task = asyncio.create_task(self.poll())
+            self.unsubscribe_callback()
+            raise RuntimeError(
+                f"Cannot set event for {self._name}. "
+                "Cannot set a callback on an attribute that does not support events and"
+                " for which polling is disabled."
+            )
 
     # --------------------------------------------------------------------
     def unsubscribe_callback(self):
         if self._eid:
             self._proxy.unsubscribe_event(self._eid, green_mode=False)
             self._eid = None
-        self._event_callback = None
-        self._poll_callback = None
+        if self._poll_task:
+            self._poll_task.cancel()
+            self._poll_task = None
+        self._callback = None
 
     # --------------------------------------------------------------------
     def _event_processor(self, event):
@@ -252,8 +259,7 @@ class AttributeProxy(TangoProxy):
                 "timestamp": event.get_date().totime(),
                 "alarm_severity": event.attr_value.quality,
             }
-
-            self._event_callback(reading, value)
+            self._callback(reading, value)
 
     # --------------------------------------------------------------------
     async def poll(self):
@@ -262,44 +268,36 @@ class AttributeProxy(TangoProxy):
         than the absolute or relative change. This function is used when an attribute
         that does not support events is cached or a callback is passed to it.
         """
-
         last_reading = await self.get_reading()
         flag = 0
 
         while True:
             await asyncio.sleep(self._polling_period)
-
             reading = await self.get_reading()
-
-            if reading is None:
+            if reading is None or reading["value"] is None:
                 continue
-            if reading["value"] is None:
-                continue
-
             diff = abs(reading["value"] - last_reading["value"])
 
             if self._abs_change is not None:
                 if diff > self._abs_change:
-                    if self._poll_callback is not None:
-                        self._poll_callback(reading, reading["value"])
+                    if self._callback is not None:
+                        self._callback(reading, reading["value"])
                         flag = 0
 
             elif self._rel_change is not None:
                 if last_reading["value"] is not None:
                     if diff > self._rel_change * abs(last_reading["value"]):
-                        if self._poll_callback is not None:
-                            self._poll_callback(reading, reading["value"])
+                        if self._callback is not None:
+                            self._callback(reading, reading["value"])
                             flag = 0
 
             else:
-                flag += 1
-                if flag >= 4 and self._poll_callback is not None:
-                    self._poll_callback(reading, reading["value"])
-                    flag = 0
+                flag = (flag + 1) % 4
+                if flag == 0 and self._callback is not None:
+                    self._callback(reading, reading["value"])
 
             last_reading = reading.copy()
-            if self._poll_callback is None:
-                "Polling stopped. No callback set."
+            if self._callback is None:
                 break
 
     # --------------------------------------------------------------------
@@ -523,7 +521,7 @@ class TangoTransport(SignalBackend[T]):
         }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
         self.descriptor: Descriptor = {}  # type: ignore
-        self.polling = (False, 0.5, None, 0.1)
+        self.polling = (True, 0.5, None, 0.1)
         self.support_events = False
 
     # --------------------------------------------------------------------
@@ -588,8 +586,8 @@ class TangoTransport(SignalBackend[T]):
         ):
             raise RuntimeError(
                 f"Cannot set event for {self.read_trl}. "
-                "Use set_polling to enable polling for this signal or use signal as"
-                " non-cached."
+                "Cannot set a callback on an attribute that does not support events and"
+                " for which polling is disabled."
             )
 
         if callback:
