@@ -186,7 +186,7 @@ async def test_collect_stream_docs(
         assert resource_doc == {
             "spec": "AD_HDF5_SWMR_SLICE",
             "path_semantics": "posix",
-            "uri": "file://localhost" + str(tmp_path),
+            "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
             "data_key": name,
             "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
             "resource_kwargs": {
