@@ -25,7 +25,7 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
         "_entry_data_data": {
             "source": "soft://_entry_data_data",
             "shape": (1, 240, 320),
-            "dtype": "array",
+            "dtype": "number",
             "external": "STREAM:",
         },
         "_entry_sum": {
