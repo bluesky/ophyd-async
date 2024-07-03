@@ -122,7 +122,9 @@ async def test_open_returns_correct_descriptors(
         assert key == expected_key
         assert entry == {
             "source": mock_writer.panda_device.data.hdf_directory.source,
-            "shape": [],
+            "shape": [
+                1,
+            ],
             "dtype": "number",
             "external": "STREAM:",
         }
@@ -184,7 +186,7 @@ async def test_collect_stream_docs(
         assert resource_doc == {
             "spec": "AD_HDF5_SWMR_SLICE",
             "path_semantics": "posix",
-            "root": str(tmp_path),
+            "uri": "file://localhost" + str(tmp_path),
             "data_key": name,
             "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
             "resource_kwargs": {

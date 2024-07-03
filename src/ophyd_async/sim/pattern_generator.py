@@ -20,10 +20,10 @@ from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
 # raw data path
-DATA_PATH = "_entry_data_data"
+DATA_PATH = "/entry/data/data"
 
 # pixel sum path
-SUM_PATH = "_entry_sum"
+SUM_PATH = "/entry/sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 
@@ -34,13 +34,11 @@ def get_full_file_description(
     datasets: List[_HDFDataset],
     outer_shape: tuple[int, ...],
     dtype: str = "number",
-    inner_shape: tuple[int, ...] = None,
 ):
-    inner_shape = inner_shape
     full_file_description: Dict[str, DataKey] = {}
     for d in datasets:
         source = f"soft://{d.data_key}"
-        shape = outer_shape + inner_shape
+        shape = outer_shape + d.shape
         dtype = dtype
         descriptor = DataKey(
             source=source, shape=shape, dtype=dtype, external="STREAM:"
@@ -73,7 +71,6 @@ class PatternGenerator:
         detector_width: int = 320,
         detector_height: int = 240,
     ) -> None:
-        self.dtype: int
         self.maxshape: tuple[Any, ...]
         self.fillvalue: int = field(default_factory=int)
         self.shape: List[int] = field(default_factory=[])
@@ -159,10 +156,7 @@ class PatternGenerator:
         datasets = self._get_datasets()
         for d in datasets:
             self._handle_for_h5_file.create_dataset(
-                name=d.data_key,
-                shape=d.shape,
-                dtype=d.dtype,
-                maxshape=d.maxshape,
+                name=d.dataset, shape=d.shape, chunks=True
             )
 
         # once datasets written, can switch the model to single writer multiple reader
@@ -185,19 +179,15 @@ class PatternGenerator:
 
     def _get_datasets(self) -> List[_HDFDataset]:
         raw_dataset = _HDFDataset(
-            # name=data_name,
-            data_key=DATA_PATH,
-            dtype=np.uint8,
+            dataset=DATA_PATH,
+            data_key=DATA_PATH.replace("/", "_"),
             shape=(1, self.height, self.width),
-            maxshape=(None, self.height, self.width),
         )
 
         sum_dataset = _HDFDataset(
-            data_key=SUM_PATH,
-            dtype=np.float64,
+            dataset=SUM_PATH,
+            data_key=SUM_PATH.replace("/", "_"),
             shape=(1,),
-            maxshape=(None,),
-            fillvalue=-1,
         )
 
         datasets: List[_HDFDataset] = [raw_dataset, sum_dataset]
@@ -220,8 +210,7 @@ class PatternGenerator:
             # until the first frame comes in
             if not self._hdf_stream_provider:
                 assert self.target_path, "open file has not been called"
-                datasets = self._get_datasets()
-                self._datasets = datasets
+                self._datasets = self._get_datasets()
                 self._hdf_stream_provider = _HDFFile(
                     self._directory_provider(),
                     self.target_path,
