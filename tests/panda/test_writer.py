@@ -187,10 +187,9 @@ async def test_collect_stream_docs(
                 "spec": "AD_HDF5_SWMR_SLICE",
                 "path_semantics": "posix",
                 "data_key": name,
-                "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
-                "root": "/",
+                "resource_path": "mock_panda/data.h5",
+                "root": str(tmp_path),
                 "resource_kwargs": {
-                    "name": name,
                     "path": "/" + name,
                     "multiplier": 1,
                     "swmr": False,
@@ -200,11 +199,11 @@ async def test_collect_stream_docs(
             assert "mock_panda/data.h5" in resource_doc["resource_path"]
         else:
             assert resource_doc == {
-                'uid': ANY,
-                'data_key': name,
-                'mimetype': 'application/x-hdf5',
+                "uid": ANY,
+                "data_key": name,
+                "mimetype": "application/x-hdf5",
                 "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
-                'parameters': {'dataset': f"/{name}", 'swmr': False, 'multiplier': 1}
+                "parameters": {"dataset": f"/{name}", "swmr": False, "multiplier": 1},
             }
             assert "mock_panda/data.h5" in resource_doc["uri"]
 
