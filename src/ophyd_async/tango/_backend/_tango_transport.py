@@ -270,6 +270,9 @@ class AttributeProxy(TangoProxy):
         """
         last_reading = await self.get_reading()
         flag = 0
+        # Initial reading
+        if self._callback is not None:
+            self._callback(last_reading, last_reading["value"])
 
         while True:
             await asyncio.sleep(self._polling_period)
