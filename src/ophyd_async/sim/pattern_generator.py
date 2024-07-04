@@ -1,13 +1,5 @@
-from dataclasses import field
 from pathlib import Path
-from typing import (
-    Any,
-    AsyncGenerator,
-    AsyncIterator,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional
 
 import h5py
 import numpy as np
@@ -71,9 +63,9 @@ class PatternGenerator:
         detector_width: int = 320,
         detector_height: int = 240,
     ) -> None:
-        self.maxshape: tuple[Any, ...]
-        self.fillvalue: int = field(default_factory=int)
-        self.shape: List[int] = field(default_factory=[])
+        self.maxshape: tuple[Any, ...] = (1,)
+        self.fillvalue: int = 1
+        self.shape: List[int] = [1, 1]
         self.saturation_exposure_time = saturation_exposure_time
         self.exposure = saturation_exposure_time
         self.x = 0.0
