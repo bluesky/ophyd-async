@@ -578,10 +578,6 @@ class TangoTransport(SignalBackend[T]):
         return await self.proxies[self.write_trl].get_w_value()
 
     # --------------------------------------------------------------------
-    def is_cachable(self):
-        return self.proxies[self.read_trl].support_events
-
-    # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
         if (
             self.proxies[self.read_trl].support_events is False
@@ -624,7 +620,8 @@ class TangoTransport(SignalBackend[T]):
             )
 
     # --------------------------------------------------------------------
-    def allow_events(self, allow: bool = True):
+    def allow_events(self, allow: Optional[bool] = True):
         self.support_events = allow
         if self.proxies[self.read_trl] is not None:
             self.proxies[self.read_trl].support_events = self.support_events
+            return self.proxies[self.read_trl].support_events
