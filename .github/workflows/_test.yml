@@ -49,7 +49,6 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
           pip-install: ".[dev]"
-
       - name: Run tests
         run: tox -e tests
 
