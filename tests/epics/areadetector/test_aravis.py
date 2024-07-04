@@ -117,7 +117,7 @@ async def test_can_collect(
     if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
         assert stream_resource["spec"] == "AD_HDF5_SWMR_SLICE"
         assert stream_resource["root"] == str(directory_info.root)
-        assert stream_resource["resource_path"] == str(directory_info.root / "foo.h5")
+        assert stream_resource["resource_path"] == "foo.h5"
 
         assert stream_resource["path_semantics"] == "posix"
         assert stream_resource["resource_kwargs"] == {
