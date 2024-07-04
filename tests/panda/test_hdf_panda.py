@@ -1,5 +1,7 @@
 from typing import Dict
+from unittest.mock import ANY
 
+import event_model
 import numpy as np
 import pytest
 from bluesky import plan_stubs as bps
@@ -10,6 +12,7 @@ from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.mock_signal_utils import callback_on_mock_put
 from ophyd_async.core.signal import SignalR, assert_emitted
+from ophyd_async.epics.areadetector.writers.general_hdffile import versiontuple
 from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
 from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
 from ophyd_async.plan_stubs import (
@@ -60,6 +63,7 @@ async def test_hdf_panda_passes_blocks_to_controller(mock_hdf_panda: HDFPanda):
 async def test_hdf_panda_hardware_triggered_flyable(
     RE: RunEngine,
     mock_hdf_panda,
+    tmp_path,
 ):
     docs = {}
 
@@ -141,13 +145,40 @@ async def test_hdf_panda_hardware_triggered_flyable(
     for dataset_name, stream_resource, data_key_name in zip(
         ("x", "y"), docs["stream_resource"], data_key_names
     ):
-        assert stream_resource["data_key"] == data_key_name
-        assert stream_resource["run_start"] == docs["start"][0]["uid"]
-        assert stream_resource["resource_kwargs"] == {
-            "path": "/" + dataset_name,
-            "multiplier": 1,
-            "swmr": False,
-        }
+        def assert_resource_document():
+            if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
+                assert stream_resource == {
+                    "run_start": docs["start"][0]["uid"],
+                    "spec": "AD_HDF5_SWMR_SLICE",
+                    "path_semantics": "posix",
+                    "data_key": data_key_name,
+                    "resource_path": str(tmp_path / "testpanda" / "data.h5"),
+                    "root": "/",
+                    "resource_kwargs": {
+                        "name": dataset_name,
+                        "path": "/" + dataset_name,
+                        "multiplier": 1,
+                        "swmr": False,
+                    },
+                    "uid": ANY,
+                }
+                assert "testpanda.h5" in stream_resource["resource_path"]
+            else:
+                assert stream_resource == {
+                    'run_start': docs["start"][0]["uid"],
+                    'uid': ANY,
+                    'data_key': data_key_name,
+                    'mimetype': 'application/x-hdf5',
+                    "uri": "file://localhost" + str(tmp_path / "testpanda.h5"),
+                    'parameters': {
+                        'dataset': f"/{dataset_name}",
+                        'swmr': False,
+                        'multiplier': 1
+                        }
+                }
+                assert "testpanda.h5" in stream_resource["uri"]
+
+        assert_resource_document()
 
     # test stream datum
     for stream_datum in docs["stream_datum"]:
@@ -163,3 +194,6 @@ async def test_hdf_panda_hardware_triggered_flyable(
         assert stream_datum["stream_resource"] in [
             sd["uid"].split("/")[0] for sd in docs["stream_datum"]
         ]
+
+
+
