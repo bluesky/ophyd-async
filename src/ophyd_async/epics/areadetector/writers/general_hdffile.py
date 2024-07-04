@@ -52,7 +52,7 @@ class _HDFFile:
             return None
 
         if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
-            path = f"{directory_info.root/full_file_name}"
+            path = f"{full_file_name}"
             root = str(directory_info.root)
             bundler_composer = ComposeStreamResource()
 
@@ -63,12 +63,9 @@ class _HDFFile:
                     resource_path=path,
                     data_key=ds.data_key,
                     resource_kwargs={
-                        "name": ds.data_key,
-                        "block": ds.block,
                         "path": ds.dataset,
-                        "shape": ds.shape,
                         "multiplier": ds.multiplier,
-                        "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
+                        "swmr": ds.swmr,
                     },
                 )
                 for ds in datasets
