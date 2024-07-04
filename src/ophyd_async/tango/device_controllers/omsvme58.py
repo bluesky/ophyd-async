@@ -88,7 +88,6 @@ class OmsVME58Motor(TangoReadableDevice, Movable, Stoppable):
             self.slewrate.get_value(),
             self.acceleration.get_value(),
         )
-
         if timeout is CalculateTimeout:
             assert velocity > 0, "Motor has zero velocity"
             timeout = (
@@ -114,7 +113,6 @@ class OmsVME58Motor(TangoReadableDevice, Movable, Stoppable):
         except RuntimeError as exc:
             print(f"RuntimeError: {exc}")
             raise
-
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 
