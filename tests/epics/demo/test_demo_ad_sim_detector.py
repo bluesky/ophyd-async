@@ -7,6 +7,7 @@ from typing import List, cast
 
 import bluesky.plan_stubs as bps
 import bluesky.preprocessors as bpp
+import event_model
 import pytest
 from bluesky import RunEngine
 from bluesky.utils import new_uid
@@ -24,6 +25,7 @@ from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
 from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+from ophyd_async.epics.areadetector.writers.general_hdffile import versiontuple
 from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
 
 
@@ -198,10 +200,16 @@ async def test_two_detectors_step(
     assert descriptor["data_keys"]["testb"]["shape"] == (769, 1025)
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
-    assert sra["root"] == str(info_a.root)
-    assert sra["resource_path"] == str(info_a.resource_dir / file_name_a)
-    assert srb["root"] == str(info_b.root)
-    assert srb["resource_path"] == str(info_b.resource_dir / file_name_b)
+    if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
+        assert sra["root"] == str(info_a.root)
+        assert sra["resource_path"] == str(info_a.root / file_name_a)
+
+        assert srb["root"] == str(info_b.root)
+        assert srb["resource_path"] == str(info_b.root / file_name_b)
+    else:
+        assert srb["uri"] == str("file://localhost") + str(info_b.root / file_name_b)
+        assert sra["uri"] == str("file://localhost") + str(info_a.root / file_name_a)
+
     assert event["data"] == {}
 
 
