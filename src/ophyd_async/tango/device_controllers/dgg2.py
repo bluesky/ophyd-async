@@ -68,53 +68,6 @@ class DGG2Timer(TangoReadableDevice, Triggerable, Preparable):
         TangoReadableDevice.__init__(self, trl, name)
         self._set_success = True
 
-    # # --------------------------------------------------------------------
-    # async def _trigger(self, watchers: List[Callable] or None = None) -> None:
-    #     if watchers is None:
-    #         watchers = []
-    #     self._set_success = True
-    #     start = time.monotonic()
-    #     total_time = await self.sampletime.get_value()
-    #
-    #     def update_watchers(remaining_time: float) -> None:
-    #         for watcher in watchers:
-    #             watcher(
-    #                 name=self.name,
-    #                 current=remaining_time,
-    #                 initial=total_time,
-    #                 target=total_time,
-    #                 time_elapsed=time.monotonic() - start,
-    #             )
-    #
-    #     if self.remainingtime._cache is False:
-    #         self.remainingtime.subscribe_value(update_watchers)
-    #     else:
-    #         update_watchers(total_time)
-    #     try:
-    #         await self.start.trigger()
-    #         if self.remainingtime._cache is None:
-    #             counter = 0
-    #             state = await self._state.get_value()
-    #             while state == DevState.MOVING:
-    #                 # Update the watchers with the current position every 0.5 seconds
-    #                 if counter % 5 == 0:
-    #                     remaining_time = await self.remainingtime.get_value()
-    #                     update_watchers(remaining_time)
-    #                     counter = 0
-    #                 await asyncio.sleep(0.1)
-    #                 state = await self._state.get_value()
-    #                 counter += 1
-    #     except Exception as e:
-    #         raise RuntimeError("Failed to trigger timer") from e
-    #     if not self._set_success:
-    #         raise RuntimeError("Timer was not triggered")
-    #
-    # # --------------------------------------------------------------------
-    # def trigger(self) -> AsyncStatus:
-    #     watchers: List[Callable] = []
-    #     return AsyncStatus(self._trigger(watchers))
-
-    # --------------------------------------------------------------------
     def prepare(self, p_time: float) -> AsyncStatus:
         return self.sampletime.set(p_time)
 
