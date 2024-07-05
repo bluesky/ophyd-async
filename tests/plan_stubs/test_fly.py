@@ -24,7 +24,7 @@ from ophyd_async.core.signal import SignalR
 from ophyd_async.core.utils import WatcherUpdate
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
 from ophyd_async.epics.signal.signal import epics_signal_rw
-from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic
+from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic, StaticPcompTriggerLogic
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
     time_resolved_fly_and_collect_with_static_seq_table,
@@ -160,7 +160,7 @@ async def detectors(RE: RunEngine) -> tuple[MockDetector, MockDetector]:
 
 
 @pytest.fixture
-async def panda():
+async def mock_panda():
     class Panda(CommonPandaBlocks):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
@@ -178,39 +178,47 @@ async def panda():
     assert mock_panda.name == "mock_panda"
     yield mock_panda
 
+class MockFlyer(HardwareTriggeredFlyable):
+    def __init__(
+        self,
+        trigger_logic: TriggerLogic,
+        configuration_signals: Sequence[SignalR] = ...,
+        name: str = "",
+    ):
+        super().__init__(trigger_logic, configuration_signals, name)
+
+    @AsyncStatus.wrap
+    async def kickoff(self) -> None:
+        set_mock_value(self.trigger_logic.seq.active, 1)
+        await super().kickoff()
+
+    @AsyncStatus.wrap
+    async def complete(self) -> None:
+        set_mock_value(self.trigger_logic.seq.active, 0)
+        await self._trigger_logic.complete()
 
 @pytest.fixture
-async def flyer(panda):
-    class MockFlyer(HardwareTriggeredFlyable):
-        def __init__(
-            self,
-            trigger_logic: TriggerLogic,
-            configuration_signals: Sequence[SignalR] = ...,
-            name: str = "",
-        ):
-            super().__init__(trigger_logic, configuration_signals, name)
-
-        @AsyncStatus.wrap
-        async def kickoff(self) -> None:
-            set_mock_value(self.trigger_logic.seq.active, 1)
-            await super().kickoff()
-
-        @AsyncStatus.wrap
-        async def complete(self) -> None:
-            set_mock_value(self.trigger_logic.seq.active, 0)
-            await self._trigger_logic.complete()
-
+async def seq_flyer(mock_panda):
     # Make flyer
-    trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
+    trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
+    flyer = MockFlyer(trigger_logic, [], name="flyer")
+
+    return flyer
+
+@pytest.fixture
+async def pcomp_flyer(mock_panda):
+    # Make flyer
+    trigger_logic = StaticPcompTriggerLogic(mock_panda.pcomp[1])
     flyer = MockFlyer(trigger_logic, [], name="flyer")
 
     return flyer
 
 
+
 async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     RE: RunEngine,
     detectors: tuple[StandardDetector],
-    panda,
+    mock_panda,
 ):
     """Run a dummy scan using a flyer with a prepare plan stub.
 
@@ -235,7 +243,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     exposure = 1
     shutter_time = 0.004
 
-    trigger_logic = StaticSeqTableTriggerLogic(panda.seq[1])
+    trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
 
     def flying_plan():
@@ -308,7 +316,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
 async def test_time_resolved_fly_and_collect_with_static_seq_table(
     RE: RunEngine,
     detectors: tuple[StandardDetector],
-    flyer,
+    seq_flyer,
 ):
     names = []
     docs = []
@@ -326,18 +334,18 @@ async def test_time_resolved_fly_and_collect_with_static_seq_table(
     shutter_time = 0.004
 
     def fly():
-        yield from bps.stage_all(*detector_list, flyer)
+        yield from bps.stage_all(*detector_list, seq_flyer)
         yield from bps.open_run()
         yield from time_resolved_fly_and_collect_with_static_seq_table(
             stream_name="stream1",
-            flyer=flyer,
+            flyer=seq_flyer,
             detectors=detector_list,
             number_of_frames=number_of_frames,
             exposure=exposure,
             shutter_time=shutter_time,
         )
         yield from bps.close_run()
-        yield from bps.unstage_all(flyer, *detector_list)
+        yield from bps.unstage_all(seq_flyer, *detector_list)
 
     # fly scan
     RE(fly())
@@ -356,7 +364,7 @@ async def test_time_resolved_fly_and_collect_with_static_seq_table(
 @pytest.mark.parametrize("detector_list", [[], None])
 async def test_at_least_one_detector_in_fly_plan(
     RE: RunEngine,
-    flyer,
+    seq_flyer,
     detector_list,
 ):
     # Trigger parameters
@@ -369,7 +377,7 @@ async def test_at_least_one_detector_in_fly_plan(
     def fly():
         yield from time_resolved_fly_and_collect_with_static_seq_table(
             stream_name="stream1",
-            flyer=flyer,
+            flyer=seq_flyer,
             detectors=detector_list,
             number_of_frames=number_of_frames,
             exposure=exposure,
@@ -384,7 +392,7 @@ async def test_at_least_one_detector_in_fly_plan(
 @pytest.mark.parametrize("timeout_setting,expected_timeout", [(None, 12), (5.0, 5.0)])
 async def test_trigger_sets_or_defaults_timeout(
     RE: RunEngine,
-    flyer: HardwareTriggeredFlyable,
+    seq_flyer: HardwareTriggeredFlyable,
     detectors: tuple[StandardDetector, ...],
     timeout_setting: float | None,
     expected_timeout: float,
@@ -397,11 +405,11 @@ async def test_trigger_sets_or_defaults_timeout(
     shutter_time = 0.004
 
     def fly():
-        yield from bps.stage_all(*detector_list, flyer)
+        yield from bps.stage_all(*detector_list, seq_flyer)
         yield from bps.open_run()
         yield from time_resolved_fly_and_collect_with_static_seq_table(
             stream_name="stream1",
-            flyer=flyer,
+            flyer=seq_flyer,
             detectors=detector_list,
             number_of_frames=number_of_frames,
             exposure=exposure,
@@ -409,7 +417,7 @@ async def test_trigger_sets_or_defaults_timeout(
             frame_timeout=timeout_setting,
         )
         yield from bps.close_run()
-        yield from bps.unstage_all(flyer, *detector_list)
+        yield from bps.unstage_all(seq_flyer, *detector_list)
 
     RE(fly())
 

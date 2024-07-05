@@ -6,8 +6,46 @@ from bluesky.utils import short_uid
 from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
-from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
-from ophyd_async.panda._trigger import SeqTableInfo
+from ophyd_async.panda import (
+    PcompDirectionOptions,
+    PcompInfo,
+    SeqTable,
+    SeqTableInfo,
+    SeqTableRow,
+    seq_table_from_rows,
+)
+
+
+def prepare_static_pcomp_flyer_and_detectors_with_same_trigger(
+    flyer: HardwareTriggeredFlyable[PcompInfo],
+    detectors: List[StandardDetector],
+    number_of_pulses: int,
+    pulse_width: int,
+    rising_edge_step: int,
+    direction: PcompDirectionOptions,
+):
+    """Prepare a hardware triggered flyable and one or more detectors.
+
+    Prepare a hardware triggered flyable and one or more detectors with the
+    same trigger. This method constructs PcompInfo from required parameters.
+    The info is required to prepare the flyer and detectors.
+
+    This prepares all supplied detectors with the same trigger.
+
+    """
+    trigger_info = PcompInfo(
+        start_postion=0,
+        pulse_width=pulse_width,
+        rising_edge_step=rising_edge_step,
+        number_of_pulses=number_of_pulses,
+        direction=direction,
+    )
+
+    for det in detectors:
+        yield from bps.prepare(det, trigger_info, wait=False, group="prep")
+    yield from bps.prepare(flyer, trigger_info, wait=False, group="prep")
+    yield from bps.wait(group="prep"
+)
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
@@ -75,7 +113,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
 def fly_and_collect(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    flyer: HardwareTriggeredFlyable[SeqTableInfo] | HardwareTriggeredFlyable[PcompInfo],
     detectors: List[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
@@ -112,6 +150,29 @@ def fly_and_collect(
         )
     yield from bps.wait(group=group)
 
+
+def fly_and_collect_with_static_pcomp(
+    stream_name: str,
+    flyer: HardwareTriggeredFlyable[PcompInfo],
+    detectors: List[StandardDetector],
+    number_of_pulses: int,
+    pulse_width: int,
+    rising_edge_step: int,
+    direction: PcompDirectionOptions,
+
+):
+    # Set up scan and prepare trigger
+    yield from prepare_static_pcomp_flyer_and_detectors_with_same_trigger(
+        flyer,
+        detectors,
+        number_of_pulses,
+        pulse_width,
+        rising_edge_step,
+        direction,
+    )
+
+    # Run the fly scan
+    yield from fly_and_collect(stream_name, flyer, detectors)
 
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
