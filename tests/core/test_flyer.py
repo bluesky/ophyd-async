@@ -4,7 +4,6 @@ from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
-import event_model
 import pytest
 from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
@@ -21,7 +20,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.core.signal import observe_value
-from ophyd_async.epics.areadetector.writers.general_hdffile import versiontuple
 from ophyd_async.epics.signal.signal import epics_signal_rw
 
 
@@ -84,27 +82,18 @@ class DummyWriter(DetectorWriter):
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._file:
-                if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
-                    self._file = compose_stream_resource(
-                        spec="AD_HDF5_SWMR_SLICE",
-                        root="/",
-                        data_key=self._name,
-                        resource_path="",
-                        resource_kwargs={"path": "", "multiplier": 1, "swmr": False},
-                    )
-                else:
-                    self._file = compose_stream_resource(
-                        mimetype="application/x-hdf5",
-                        uri="",
-                        data_key=self._name,
-                        parameters={
-                            "path": "",
-                            "dataset": "",
-                            "multiplier": False,
-                        },
-                        uid=None,
-                        validate=True,
-                    )
+                self._file = compose_stream_resource(
+                    mimetype="application/x-hdf5",
+                    uri="",
+                    data_key=self._name,
+                    parameters={
+                        "path": "",
+                        "dataset": "",
+                        "multiplier": False,
+                    },
+                    uid=None,
+                    validate=True,
+                )
                 yield "stream_resource", self._file.stream_resource_doc
 
             if indices_written >= self._last_emitted:

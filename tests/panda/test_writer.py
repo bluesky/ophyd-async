@@ -1,7 +1,6 @@
 from pathlib import Path
 from unittest.mock import ANY
 
-import event_model
 import numpy as np
 import pytest
 
@@ -15,7 +14,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.areadetector.writers.general_hdffile import (
     _HDFFile,
-    versiontuple,
 )
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.panda import CommonPandaBlocks
@@ -182,30 +180,14 @@ async def test_collect_stream_docs(
     await mock_writer.open()
 
     def assert_resource_document(name, resource_doc):
-        if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
-            assert resource_doc == {
-                "spec": "AD_HDF5_SWMR_SLICE",
-                "path_semantics": "posix",
-                "data_key": name,
-                "resource_path": "mock_panda/data.h5",
-                "root": str(tmp_path),
-                "resource_kwargs": {
-                    "path": "/" + name,
-                    "multiplier": 1,
-                    "swmr": False,
-                },
-                "uid": ANY,
-            }
-            assert "mock_panda/data.h5" in resource_doc["resource_path"]
-        else:
-            assert resource_doc == {
-                "uid": ANY,
-                "data_key": name,
-                "mimetype": "application/x-hdf5",
-                "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
-                "parameters": {"dataset": f"/{name}", "swmr": False, "multiplier": 1},
-            }
-            assert "mock_panda/data.h5" in resource_doc["uri"]
+        assert resource_doc == {
+            "uid": ANY,
+            "data_key": name,
+            "mimetype": "application/x-hdf5",
+            "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
+            "parameters": {"dataset": f"/{name}", "swmr": False, "multiplier": 1},
+        }
+        assert "mock_panda/data.h5" in resource_doc["uri"]
 
     [item async for item in mock_writer.collect_stream_docs(1)]
     assert type(mock_writer._file) is _HDFFile
