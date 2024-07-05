@@ -268,40 +268,59 @@ class AttributeProxy(TangoProxy):
         than the absolute or relative change. This function is used when an attribute
         that does not support events is cached or a callback is passed to it.
         """
-        last_reading = await self.get_reading()
-        flag = 0
-        # Initial reading
-        if self._callback is not None:
-            self._callback(last_reading, last_reading["value"])
+        try:
+            last_reading = await self.get_reading()
+            flag = 0
+            # Initial reading
+            if self._callback is not None:
+                self._callback(last_reading, last_reading["value"])
+        except Exception as e:
+            raise RuntimeError(f"Could not poll the attribute") from e
 
-        while True:
-            await asyncio.sleep(self._polling_period)
-            reading = await self.get_reading()
-            if reading is None or reading["value"] is None:
-                continue
-            diff = abs(reading["value"] - last_reading["value"])
+        try:
+            # If the value is a number, we can check for changes
+            if isinstance(last_reading["value"], (int, float)):
+                while True:
+                    await asyncio.sleep(self._polling_period)
+                    reading = await self.get_reading()
+                    if reading is None or reading["value"] is None:
+                        reading = last_reading.copy()
+                        continue
+                    diff = abs(reading["value"] - last_reading["value"])
+                    if self._abs_change is not None and diff >= abs(self._abs_change):
+                            if self._callback is not None:
+                                self._callback(reading, reading["value"])
+                                flag = 0
 
-            if self._abs_change is not None:
-                if diff > self._abs_change:
-                    if self._callback is not None:
-                        self._callback(reading, reading["value"])
-                        flag = 0
+                    elif self._rel_change is not None and diff >= self._rel_change * abs(last_reading["value"]):
+                            if self._callback is not None:
+                                self._callback(reading, reading["value"])
+                                flag = 0
 
-            elif self._rel_change is not None:
-                if last_reading["value"] is not None:
-                    if diff > self._rel_change * abs(last_reading["value"]):
+                    else:
+                        flag = (flag + 1) % 4
+                        if flag == 0 and self._callback is not None:
+                            self._callback(reading, reading["value"])
+
+                    last_reading = reading.copy()
+                    if self._callback is None:
+                        break
+            # If the value is not a number, we can only poll
+            else:
+                while True:
+                    await asyncio.sleep(self._polling_period)
+                    flag = (flag + 1) % 4
+                    if flag == 0:
+                        reading = await self.get_reading()
+                        if reading is None or reading["value"] is None:
+                            continue
+                        last_reading = reading.copy()
                         if self._callback is not None:
                             self._callback(reading, reading["value"])
-                            flag = 0
-
-            else:
-                flag = (flag + 1) % 4
-                if flag == 0 and self._callback is not None:
-                    self._callback(reading, reading["value"])
-
-            last_reading = reading.copy()
-            if self._callback is None:
-                break
+                        else:
+                            break
+        except Exception as e:
+            raise RuntimeError(f"Could not poll the attribute") from e
 
     # --------------------------------------------------------------------
     def set_polling(
