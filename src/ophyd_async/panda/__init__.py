@@ -19,13 +19,19 @@ from ._table import (
     seq_table_from_arrays,
     seq_table_from_rows,
 )
-from ._trigger import StaticPcompTriggerLogic, StaticSeqTableTriggerLogic
+from ._trigger import (
+    PcompInfo,
+    SeqTableInfo,
+    StaticPcompTriggerLogic,
+    StaticSeqTableTriggerLogic,
+)
 from ._utils import phase_sorter
 
 __all__ = [
     "CommonPandaBlocks",
     "HDFPanda",
     "PcompBlock",
+    "PcompInfo",
     "PcompDirectionOptions",
     "PcompRelativeOptions",
     "EnableDisableOptions",
@@ -34,6 +40,7 @@ __all__ = [
     "seq_table_from_arrays",
     "seq_table_from_rows",
     "SeqBlock",
+    "SeqTableInfo",
     "SeqTable",
     "SeqTableRow",
     "SeqTrigger",

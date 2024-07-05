@@ -60,7 +60,6 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
 
     async def prepare(self, value: PcompInfo):
         await self.pcomp.enable.set("ZERO")
-        value.number_of_pulses
         asyncio.gather(
             self.pcomp.start.set(value.start_postion),
             self.pcomp.width.set(value.pulse_width),
@@ -71,12 +70,11 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
 
     async def kickoff(self) -> None:
         await self.pcomp.enable.set("ONE")
-        await self.pcomp.active.set(True)
-        await wait_for_value(self.seq.active, True, timeout=1)
+        await wait_for_value(self.pcomp.active, True, timeout=1)
 
     async def complete(self) -> None:
-        await wait_for_value(self.seq.active, False, timeout=None)
+        await wait_for_value(self.pcomp.active, False, timeout=None)
 
     async def stop(self):
         await self.pcomp.enable.set("ZERO")
-        await wait_for_value(self.seq.active, False, timeout=1)
+        await wait_for_value(self.pcomp.active, False, timeout=1)

@@ -56,7 +56,7 @@ class TimeUnits(str, Enum):
 
 class SeqBlock(Device):
     table: SignalRW[SeqTable]
-    active: SignalRW[bool]
+    active: SignalR[bool]
     repeats: SignalRW[int]
     prescale: SignalRW[float]
     prescale_units: SignalRW[TimeUnits]
