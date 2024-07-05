@@ -275,7 +275,7 @@ class AttributeProxy(TangoProxy):
             if self._callback is not None:
                 self._callback(last_reading, last_reading["value"])
         except Exception as e:
-            raise RuntimeError(f"Could not poll the attribute") from e
+            raise RuntimeError("Could not poll the attribute") from e
 
         try:
             # If the value is a number, we can check for changes
@@ -288,14 +288,17 @@ class AttributeProxy(TangoProxy):
                         continue
                     diff = abs(reading["value"] - last_reading["value"])
                     if self._abs_change is not None and diff >= abs(self._abs_change):
-                            if self._callback is not None:
-                                self._callback(reading, reading["value"])
-                                flag = 0
+                        if self._callback is not None:
+                            self._callback(reading, reading["value"])
+                            flag = 0
 
-                    elif self._rel_change is not None and diff >= self._rel_change * abs(last_reading["value"]):
-                            if self._callback is not None:
-                                self._callback(reading, reading["value"])
-                                flag = 0
+                    elif (
+                        self._rel_change is not None
+                        and diff >= self._rel_change * abs(last_reading["value"])
+                    ):
+                        if self._callback is not None:
+                            self._callback(reading, reading["value"])
+                            flag = 0
 
                     else:
                         flag = (flag + 1) % 4
@@ -320,7 +323,7 @@ class AttributeProxy(TangoProxy):
                         else:
                             break
         except Exception as e:
-            raise RuntimeError(f"Could not poll the attribute") from e
+            raise RuntimeError("Could not poll the attribute") from e
 
     # --------------------------------------------------------------------
     def set_polling(
