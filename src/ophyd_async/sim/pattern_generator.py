@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional
+from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 
 import h5py
 import numpy as np
@@ -70,9 +70,8 @@ class PatternGenerator:
         self.height = detector_height
         self.width = detector_width
         self.written_images_counter: int = 0
-        self.shape: List[int] = [detector_height, detector_width]
-        self.maxshape: tuple[Any, ...] = (None, detector_height, detector_width)
-        self.fillvalue: int = -1
+        self.shape = [detector_height, detector_width]
+        self.maxshape = (None, detector_height, detector_width)
 
         # it automatically initializes to 0
         self.signal_backend = MockSignalBackend(int)

@@ -40,7 +40,6 @@ def test_initialization(pattern_generator: PatternGenerator):
         pattern_generator.height,
         pattern_generator.width,
     )
-    assert pattern_generator.fillvalue == -1
 
 
 @pytest.mark.asyncio
