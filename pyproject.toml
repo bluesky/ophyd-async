@@ -23,6 +23,7 @@ dependencies = [
     "colorlog",
     "pydantic>=2.0",
     "pydantic-numpy",
+    "scanspec",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
