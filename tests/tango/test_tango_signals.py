@@ -45,7 +45,6 @@ BASE_TYPES_SET = (
     ("string", "DevString", str, ("aaa", "bbb", "ccc")),
     ("state", "DevState", DevState, (DevState.ON, DevState.MOVING, DevState.ALARM)),
     ("enum", "DevEnum", TestEnum, (TestEnum.A, TestEnum.B)),
-    # ("encoded", 'DevEncoded', TestEnum, (TestEnum.A, TestEnum.B)),
 )
 
 ATTRIBUTES_SET = []
@@ -218,8 +217,14 @@ def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
 
 
 # --------------------------------------------------------------------
-async def make_backend(typ: Optional[Type], pv: str, connect=True) -> TangoTransport:
+async def make_backend(
+    typ: Optional[Type],
+    pv: str,
+    connect: bool = True,
+    allow_events: Optional[bool] = True,
+) -> TangoTransport:
     backend = TangoTransport(typ, pv, pv)
+    backend.allow_events(allow_events)
     if connect:
         await asyncio.wait_for(backend.connect(), 10)
     return backend
@@ -233,30 +238,23 @@ def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
 # --------------------------------------------------------------------
 class MonitorQueue:
     def __init__(self, backend: SignalBackend):
-        print("Initializing MonitorQueue")
         self.updates: asyncio.Queue[Tuple[Reading, Any]] = asyncio.Queue()
         self.backend = backend
         self.subscription = backend.set_callback(self.add_reading_value)
 
     def add_reading_value(self, reading: Reading, value):
-        print(f"Adding reading value: {value}")
         self.updates.put_nowait((reading, value))
 
     async def assert_updates(self, expected_value):
-        print(f"Asserting updates for expected value: {expected_value}")
         expected_reading = {
             "timestamp": pytest.approx(time.time(), rel=0.1),
             "alarm_severity": 0,
         }
         update_reading, update_value = await self.updates.get()
         get_reading = await self.backend.get_reading()
-        print(f"Update value: {update_value}, Expected value: {expected_value}")
-        print(f"Types: {type(update_value)}, {type(expected_value)}")
         # If update_value is a numpy.ndarray, convert it to a list
         if isinstance(update_value, np.ndarray):
             update_value = update_value.tolist()
-        print(f"Update value: {update_value}, Expected value: {expected_value}")
-        print(f"Types: {type(update_value)}, {type(expected_value)}")
         assert_close(update_value, expected_value)
         assert_close(await self.backend.get_value(), expected_value)
 
@@ -266,13 +264,11 @@ class MonitorQueue:
         get_reading = dict(get_reading)
         get_value = get_reading.pop("value")
 
-        print(f"Update reading: {update_reading}, Get reading: {get_reading}")
         assert update_reading == expected_reading == get_reading
         assert_close(update_value, expected_value)
         assert_close(get_value, expected_value)
 
     def close(self):
-        print("Closing MonitorQueue and removing callback")
         self.backend.set_callback(None)
 
 
@@ -287,7 +283,7 @@ async def assert_monitor_then_put(
 ):
     prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
-    backend = await make_backend(datatype, source)
+    backend = await make_backend(datatype, source, allow_events=True)
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
     try:
@@ -386,3 +382,6 @@ async def test_backend_get_put_monitor_cmd(
     await assert_put_read(echo_device, pv, put_value, descriptor, py_type)
     # # With guessed datatype, check we can set it back to the initial value
     await assert_put_read(echo_device, pv, put_value, descriptor)
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    await asyncio.gather(*tasks)
+    del echo_device
