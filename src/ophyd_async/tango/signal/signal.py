@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
-from typing import Optional, Type
+from typing import Optional, Type, Union
 
 from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.tango._backend import TangoTransport
+from tango import AttrWriteType, CmdArgType
+from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy
 
-__all__ = ("tango_signal_rw", "tango_signal_r", "tango_signal_w", "tango_signal_x")
+__all__ = (
+    "tango_signal_rw",
+    "tango_signal_r",
+    "tango_signal_w",
+    "tango_signal_x",
+    "tango_signal_auto",
+)
 
 
 def _make_backend(
@@ -130,35 +138,31 @@ def tango_signal_x(
 
 
 # --------------------------------------------------------------------
-# def tango_signal_auto(
-#     datatype: Type[T], full_trl: str, device_proxy: Optional[DeviceProxy] = None
-# ) -> Union[TangoSignalW, TangoSignalX, TangoSignalR, TangoSignalRW]:
-#     backend: TangoSignalBackend = TangoTransport(
-#         datatype, full_trl, full_trl, device_proxy
-#     )
+def tango_signal_auto(
+    datatype: Type[T], full_trl: str, device_proxy: Optional[DeviceProxy] = None
+) -> Union[SignalW, SignalX, SignalR, SignalRW]:
+    device_trl, tr_name = full_trl.rsplit("/", 1)
+    syn_proxy = SyncDeviceProxy(device_trl)
+    backend = _make_backend(datatype, full_trl, full_trl, device_proxy)
+    if tr_name in syn_proxy.get_attribute_list():
+        config = syn_proxy.get_attribute_config(tr_name)
+        if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
+            return SignalRW(backend)
+        elif config.writable == AttrWriteType.READ:
+            return SignalR(backend)
+        else:
+            return SignalW(backend)
 
-#     device_trl, tr_name = full_trl.rsplit("/", 1)
-#     device_proxy = SyncDeviceProxy(device_trl)
-#     if tr_name in device_proxy.get_attribute_list():
-#         config = device_proxy.get_attribute_config(tr_name)
-#         if config.writable in [AttrWriteType.READ_WRITE,
-#             AttrWriteType.READ_WITH_WRITE]:
-#             return TangoSignalRW(backend)
-#         elif config.writable == AttrWriteType.READ:
-#             return TangoSignalR(backend)
-#         else:
-#             return TangoSignalW(backend)
+    if tr_name in syn_proxy.get_command_list():
+        config = syn_proxy.get_command_config(tr_name)
+        if config.in_type == CmdArgType.DevVoid:
+            return SignalX(backend)
+        elif config.out_type != CmdArgType.DevVoid:
+            return SignalRW(backend)
+        else:
+            return SignalX(backend)
 
-#     if tr_name in device_proxy.get_command_list():
-#         config = device_proxy.get_command_config(tr_name)
-#         if config.in_type == CmdArgType.DevVoid:
-#             return TangoSignalX(backend)
-#         elif config.out_type != CmdArgType.DevVoid:
-#             return TangoSignalRW(backend)
-#         else:
-#             return TangoSignalX(backend)
+    if tr_name in device_proxy.get_pipe_list():
+        raise NotImplementedError("Pipes are not supported")
 
-#     if tr_name in device_proxy.get_pipe_list():
-#         raise NotImplementedError("Pipes are not supported")
-
-#     raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
+    raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")

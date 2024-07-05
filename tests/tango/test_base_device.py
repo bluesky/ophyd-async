@@ -82,16 +82,12 @@ class TestDevice(Device):
 class TestReadableDevice(TangoReadableDevice):
     __test__ = False
 
-    # --------------------------------------------------------------------
-    def register_signals(self):
-        for name in TESTED_FEATURES:
-            setattr(
-                self, name, tango_signal_auto(None, f"{self.trl}/{name}", self.proxy)
-            )
-
-        self.set_readable_signals(
-            read_uncached=[getattr(self, name) for name in TESTED_FEATURES]
-        )
+    def __init__(self, trl: str, name="") -> None:
+        self.trl = trl
+        for feature in TESTED_FEATURES:
+            with self.add_children_as_readables():
+                setattr(self, feature, tango_signal_auto(None, f"{trl}/{feature}"))
+        TangoReadableDevice.__init__(self, trl, name)
 
 
 # --------------------------------------------------------------------
@@ -200,7 +196,7 @@ async def test_connect(tango_test_device):
     values, description = describe_class(tango_test_device)
 
     async with DeviceCollector():
-        test_device = await TestReadableDevice(tango_test_device)
+        test_device = TestReadableDevice(tango_test_device)
 
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
@@ -211,7 +207,7 @@ async def test_connect(tango_test_device):
 @pytest.mark.asyncio
 async def test_with_bluesky(tango_test_device):
     async with DeviceCollector():
-        ophyd_dev = await TestReadableDevice(tango_test_device)
+        ophyd_dev = TestReadableDevice(tango_test_device)
 
     # now let's do some bluesky stuff
     RE = RunEngine()
