@@ -1,7 +1,6 @@
 from typing import Dict
 from unittest.mock import ANY
 
-import event_model
 import numpy as np
 import pytest
 from bluesky import plan_stubs as bps
@@ -12,7 +11,6 @@ from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.mock_signal_utils import callback_on_mock_put
 from ophyd_async.core.signal import SignalR, assert_emitted
-from ophyd_async.epics.areadetector.writers.general_hdffile import versiontuple
 from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
 from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
 from ophyd_async.plan_stubs import (
@@ -147,36 +145,19 @@ async def test_hdf_panda_hardware_triggered_flyable(
     ):
 
         def assert_resource_document():
-            if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
-                assert stream_resource == {
-                    "run_start": docs["start"][0]["uid"],
-                    "spec": "AD_HDF5_SWMR_SLICE",
-                    "path_semantics": "posix",
-                    "data_key": data_key_name,
-                    "resource_path": "testpanda.h5",
-                    "root": str(tmp_path),
-                    "resource_kwargs": {
-                        "path": "/" + dataset_name,
-                        "multiplier": 1,
-                        "swmr": False,
-                    },
-                    "uid": ANY,
-                }
-                assert "testpanda.h5" in stream_resource["resource_path"]
-            else:
-                assert stream_resource == {
-                    "run_start": docs["start"][0]["uid"],
-                    "uid": ANY,
-                    "data_key": data_key_name,
-                    "mimetype": "application/x-hdf5",
-                    "uri": "file://localhost" + str(tmp_path / "testpanda.h5"),
-                    "parameters": {
-                        "dataset": f"/{dataset_name}",
-                        "swmr": False,
-                        "multiplier": 1,
-                    },
-                }
-                assert "testpanda.h5" in stream_resource["uri"]
+            assert stream_resource == {
+                "run_start": docs["start"][0]["uid"],
+                "uid": ANY,
+                "data_key": data_key_name,
+                "mimetype": "application/x-hdf5",
+                "uri": "file://localhost" + str(tmp_path / "testpanda.h5"),
+                "parameters": {
+                    "dataset": f"/{dataset_name}",
+                    "swmr": False,
+                    "multiplier": 1,
+                },
+            }
+            assert "testpanda.h5" in stream_resource["uri"]
 
         assert_resource_document()
 

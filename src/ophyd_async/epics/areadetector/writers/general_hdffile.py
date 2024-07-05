@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Iterator, List, Sequence
 from urllib.parse import urlunparse
 
-import event_model
 from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
@@ -24,10 +23,6 @@ class _HDFDataset:
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
-
-
-def versiontuple(v):
-    return tuple(map(int, (v.split("."))))
 
 
 class _HDFFile:
@@ -51,54 +46,34 @@ class _HDFFile:
             self._bundles = []
             return None
 
-        if versiontuple(event_model.__version__) < versiontuple("1.21.0"):
-            path = f"{full_file_name}"
-            root = str(directory_info.root)
-            bundler_composer = ComposeStreamResource()
+        bundler_composer = ComposeStreamResource()
 
-            self._bundles: List[ComposeStreamResourceBundle] = [
-                bundler_composer(
-                    spec=SLICE_NAME,
-                    root=root,
-                    resource_path=path,
-                    data_key=ds.data_key,
-                    resource_kwargs={
-                        "path": ds.dataset,
-                        "multiplier": ds.multiplier,
-                        "swmr": ds.swmr,
-                    },
-                )
-                for ds in datasets
-            ]
-        else:
-            bundler_composer = ComposeStreamResource()
-
-            uri = urlunparse(
-                (
-                    "file",
-                    self._hostname,
-                    str((directory_info.root / full_file_name).absolute()),
-                    "",
-                    "",
-                    None,
-                )
+        uri = urlunparse(
+            (
+                "file",
+                self._hostname,
+                str((directory_info.root / full_file_name).absolute()),
+                "",
+                "",
+                None,
             )
+        )
 
-            self._bundles: List[ComposeStreamResourceBundle] = [
-                bundler_composer(
-                    mimetype="application/x-hdf5",
-                    uri=uri,
-                    data_key=ds.data_key,
-                    parameters={
-                        "dataset": ds.dataset,
-                        "swmr": ds.swmr,
-                        "multiplier": ds.multiplier,
-                    },
-                    uid=None,
-                    validate=True,
-                )
-                for ds in datasets
-            ]
+        self._bundles: List[ComposeStreamResourceBundle] = [
+            bundler_composer(
+                mimetype="application/x-hdf5",
+                uri=uri,
+                data_key=ds.data_key,
+                parameters={
+                    "dataset": ds.dataset,
+                    "swmr": ds.swmr,
+                    "multiplier": ds.multiplier,
+                },
+                uid=None,
+                validate=True,
+            )
+            for ds in datasets
+        ]
 
     def stream_resources(self) -> Iterator[StreamResource]:
         for bundle in self._bundles:
