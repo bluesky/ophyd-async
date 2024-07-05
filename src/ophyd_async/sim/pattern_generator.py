@@ -63,9 +63,6 @@ class PatternGenerator:
         detector_width: int = 320,
         detector_height: int = 240,
     ) -> None:
-        self.maxshape: tuple[Any, ...] = (1,)
-        self.fillvalue: int = 1
-        self.shape: List[int] = [1, 1]
         self.saturation_exposure_time = saturation_exposure_time
         self.exposure = saturation_exposure_time
         self.x = 0.0
@@ -73,6 +70,9 @@ class PatternGenerator:
         self.height = detector_height
         self.width = detector_width
         self.written_images_counter: int = 0
+        self.shape: List[int] = [detector_height, detector_width]
+        self.maxshape: tuple[Any, ...] = (None, detector_height, detector_width)
+        self.fillvalue: int = -1
 
         # it automatically initializes to 0
         self.signal_backend = MockSignalBackend(int)

@@ -31,6 +31,16 @@ def test_initialization(pattern_generator: PatternGenerator):
     assert pattern_generator.width == 320
     assert pattern_generator.written_images_counter == 0
     assert isinstance(pattern_generator.STARTING_BLOB, np.ndarray)
+    assert pattern_generator.shape == [
+        pattern_generator.height,
+        pattern_generator.width,
+    ]
+    assert pattern_generator.maxshape == (
+        None,
+        pattern_generator.height,
+        pattern_generator.width,
+    )
+    assert pattern_generator.fillvalue == -1
 
 
 @pytest.mark.asyncio
