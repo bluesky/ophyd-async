@@ -132,7 +132,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
             self._fly_completed_position and self.fly_info
         ), "Motor must be prepared before attempting to kickoff"
 
-        self._fly_status = await self.set(
+        self._fly_status = self.set(
             self._fly_completed_position, timeout=self.fly_info.timeout
         )
 

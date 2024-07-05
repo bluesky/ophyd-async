@@ -1,7 +1,7 @@
 import asyncio
 import time
 from typing import Dict
-from unittest.mock import AsyncMock, Mock, call
+from unittest.mock import AsyncMock, MagicMock, Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -307,7 +307,7 @@ async def test_prepare(sim_motor: motor.Motor):
 
 
 async def test_kickoff(sim_motor: motor.Motor):
-    sim_motor.set = AsyncMock()
+    sim_motor.set = MagicMock()
     with pytest.raises(AssertionError):
         await sim_motor.kickoff()
     sim_motor.fly_info = FlyMotorInfo(
@@ -319,11 +319,13 @@ async def test_kickoff(sim_motor: motor.Motor):
         await sim_motor.kickoff()
     sim_motor._fly_completed_position = 20
     await sim_motor.kickoff()
-    sim_motor.set.assert_awaited_once_with(20, timeout=CalculateTimeout)
+    sim_motor.set.assert_called_once_with(20, timeout=CalculateTimeout)
 
 
-async def test_complete(sim_motor: motor.Motor):
+async def test_complete(sim_motor: motor.Motor) -> None:
     with pytest.raises(AssertionError):
         sim_motor.complete()
-    sim_motor._fly_status = sim_motor.set(0)
-    sim_motor.complete()
+    sim_motor._fly_status = sim_motor.set(20)
+    assert not sim_motor._fly_status.done
+    await sim_motor.complete()
+    assert sim_motor._fly_status.done
