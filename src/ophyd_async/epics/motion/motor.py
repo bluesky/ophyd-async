@@ -188,7 +188,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         await self.motor_stop.trigger(wait=False)
 
     async def _prepare_velocity(
-        self, start_position, end_position, time_for_move
+        self, start_position: float, end_position: float, time_for_move: float
     ) -> float:
         fly_velocity = (start_position - end_position) / time_for_move
         max_speed = await self.max_velocity.get_value()
@@ -208,9 +208,10 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # distance required for motor to decelerate from fly_velocity to stationary
         run_up_distance = (await self.acceleration_time.get_value()) * fly_velocity
 
-        fly_prepared_position = start_position - run_up_distance
-
         self._fly_completed_position = end_position + run_up_distance
+
+        # Prepared position not used after prepare, so no need to store in self
+        fly_prepared_position = start_position - run_up_distance
 
         motor_lower_limit = await self.low_limit_travel.get_value()
         motor_upper_limit = await self.high_limit_travel.get_value()
