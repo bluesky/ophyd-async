@@ -61,7 +61,7 @@ class FlyMotorInfo(BaseModel):
 
     time_for_move: float = Field(frozen=True, gt=0)
 
-    timeout: CalculatableTimeout = CalculateTimeout
+    timeout: CalculatableTimeout = Field(frozen=True, default=CalculateTimeout)
 
 
 class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
@@ -91,9 +91,10 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
 
         self.fly_info: Optional[FlyMotorInfo] = None
 
-        # end_position with run_up_distance added on.
+        # end_position of a fly move, with run_up_distance added on.
         self._fly_completed_position: Optional[float] = None
 
+        # Set on kickoff(), complete when motor reaches self._fly_completed_position
         self._fly_status: Optional[WatchableAsyncStatus] = None
 
         super().__init__(name=name)
@@ -184,7 +185,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     async def stop(self, success=False):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
-        # the move above, so need to pass wait=False.
+        # the move above, so need to pass wait=False
         await self.motor_stop.trigger(wait=False)
 
     async def _prepare_velocity(
