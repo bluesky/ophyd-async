@@ -12,9 +12,9 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
 from .._common_blocks import CommonPandaBlocks
-from ._panda_hdf_file import _HDFDataset, _HDFFile
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -71,7 +71,7 @@ class PandaHDFWriter(DetectorWriter):
                 source=self.panda_device.data.hdf_directory.source,
                 shape=ds.shape,
                 dtype="array" if ds.shape != [1] else "number",
-                dtype_str="<f8", # PandA data should always be written as Float64
+                dtype_str="<f8",  # PandA data should always be written as Float64
                 external="STREAM:",
             )
             for ds in self._datasets

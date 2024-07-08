@@ -16,8 +16,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.signal import observe_value
 
-from ._hdfdataset import _HDFDataset
-from ._hdffile import _HDFFile
+from .general_hdffile import _HDFDataset, _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF
 from .nd_plugin import convert_ad_dtype_to_np
 
@@ -82,11 +81,11 @@ class HDFWriter(DetectorWriter):
         # Add the main data
         self._datasets = [
             _HDFDataset(
-                name,
-                "/entry/data/data",
-                frame_shape,
-                dtype_str,
-                multiplier,
+                data_key=name,
+                dataset="/entry/data/data",
+                shape=frame_shape,
+                dtype_str=dtype_str,
+                multiplier=multiplier,
             )
         ]
         # And all the scalar datasets
@@ -100,8 +99,9 @@ class HDFWriter(DetectorWriter):
                     multiplier,
                 )
             )
+
         describe = {
-            ds.name: DataKey(
+            ds.data_key: DataKey(
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
