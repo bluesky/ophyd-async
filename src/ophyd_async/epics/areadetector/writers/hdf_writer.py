@@ -71,13 +71,21 @@ class HDFWriter(DetectorWriter):
         detector_shape = tuple(await self._shape_provider())
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
+        print(f"{detector_shape = }")
+        frame_shape = detector_shape[:-1] if len(detector_shape) > 0 else []
+        dtype_str = (
+            convert_ad_dtype_to_np(detector_shape[-1])
+            if len(detector_shape) > 0
+            else ""
+        )
+
         # Add the main data
         self._datasets = [
             _HDFDataset(
                 name,
                 "/entry/data/data",
-                detector_shape[:-1],
-                convert_ad_dtype_to_np(detector_shape[-1]),
+                frame_shape,
+                dtype_str,
                 multiplier,
             )
         ]
