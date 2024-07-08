@@ -37,14 +37,6 @@ async def mock_panda():
     return mock_panda
 
 
-async def test_seq_table_trigger_logic_has_given_methods(mock_panda):
-    trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    assert hasattr(trigger_logic, "prepare")
-    assert hasattr(trigger_logic, "kickoff")
-    assert hasattr(trigger_logic, "complete")
-    assert hasattr(trigger_logic, "stop")
-
-
 async def test_seq_table_trigger_logic(mock_panda):
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
     seq_table = SeqTable(
@@ -59,14 +51,6 @@ async def test_seq_table_trigger_logic(mock_panda):
     await trigger_logic.prepare(seq_table_info)
     await asyncio.gather(trigger_logic.kickoff(), set_active(True))
     await asyncio.gather(trigger_logic.complete(), set_active(False))
-
-
-async def test_pcomp_trigger_logic_has_given_methods(mock_panda):
-    trigger_logic = StaticPcompTriggerLogic(mock_panda.pcomp[1])
-    assert hasattr(trigger_logic, "prepare")
-    assert hasattr(trigger_logic, "kickoff")
-    assert hasattr(trigger_logic, "complete")
-    assert hasattr(trigger_logic, "stop")
 
 
 async def test_pcomp_trigger_logic(mock_panda):

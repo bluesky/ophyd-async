@@ -1,5 +1,6 @@
 import asyncio
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -47,11 +48,25 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
 
 
 class PcompInfo(BaseModel):
-    start_postion: int = Field()  # start position in counts
-    pulse_width: int = Field(gt=0)  # width of a single pulse in counts
-    rising_edge_step: int = Field(gt=0)  # step between rising edges of pulses in counts
-    number_of_pulses: int = Field(ge=0)
-    direction: PcompDirectionOptions = Field()  # direction positive or negative
+    start_postion: int = Field(description="start position in counts")
+    pulse_width: int = Field(description="number_of_pulses", gt=0)
+    rising_edge_step: int = Field(
+        description="step between rising edges of pulses in counts", gt=0
+    )  #
+    number_of_pulses: int = Field(
+        description=(
+            "Number of pulses to send before the PCOMP block is disarmed. "
+            "0 means infinite."
+        ),
+        ge=0,
+    )
+    direction: PcompDirectionOptions = Field(
+        description=(
+            "Specifies which direction the motor counts should be "
+            "moving. Pulses won't be sent unless the values are moving in "
+            "this direction."
+        )
+    )
 
     @field_validator("direction", mode="before")
     def convert_enum_to_string(cls, value):
@@ -66,7 +81,7 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
 
     async def prepare(self, value: PcompInfo):
         await self.pcomp.enable.set("ZERO")
-        asyncio.gather(
+        await asyncio.gather(
             self.pcomp.start.set(value.start_postion),
             self.pcomp.width.set(value.pulse_width),
             self.pcomp.step.set(value.rising_edge_step),
@@ -78,8 +93,8 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
         await self.pcomp.enable.set("ONE")
         await wait_for_value(self.pcomp.active, True, timeout=1)
 
-    async def complete(self) -> None:
-        await wait_for_value(self.pcomp.active, False, timeout=None)
+    async def complete(self, timeout: Optional[float] = None) -> None:
+        await wait_for_value(self.pcomp.active, False, timeout=timeout)
 
     async def stop(self):
         await self.pcomp.enable.set("ZERO")
