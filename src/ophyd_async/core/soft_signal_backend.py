@@ -75,13 +75,19 @@ class SoftConverter(Generic[T]):
 
 class SoftArrayConverter(SoftConverter):
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        dtype_str=""
+        dtype_str = ""
         if len(value) > 0:
             dtype_of_elem = type(value[0])
             dtype_str = np.dtype(dtype_of_elem).descr[0][1]
             print(f"{dtype_str = }")
 
-        return {"source": source, "dtype": "array", "dtype_str": dtype_str, "shape": [len(value)], **metadata}
+        return {
+            "source": source,
+            "dtype": "array",
+            "dtype_str": dtype_str,
+            "shape": [len(value)],
+            **metadata,
+        }
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:

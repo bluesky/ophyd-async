@@ -247,9 +247,9 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
         if "float32" in suffix:
             return "<f4"
         if "float" in suffix or "double" in suffix:
-            return "<f8" # Unless specifically float 32, use float 64
+            return "<f8"  # Unless specifically float 32, use float 64
         if "bool" in suffix:
-            return "<i2" # EPICS bool PVs return <i2
+            return "<i2"  # EPICS bool PVs return <i2
         if "int" in suffix:
             int_str = "|" if "8" in suffix else "<"
             int_str += "u" if "uint" in suffix else "i"
@@ -271,7 +271,11 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
     dtype = get_dtype(suffix)
     dtype_str = get_dtype_str(suffix)
 
-    d = {"dtype": dtype, "dtype_str": dtype_str, "shape": [len(value)] if dtype == "array" else []}
+    d = {
+        "dtype": dtype,
+        "dtype_str": dtype_str,
+        "shape": [len(value)] if dtype == "array" else [],
+    }
     if get_internal_dtype(suffix) == "enum":
         if issubclass(type(value), Enum):
             d["choices"] = [e.value for e in type(value)]

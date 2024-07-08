@@ -9,7 +9,8 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_mock_value,
 )
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF, ADBaseDataType
+from ophyd_async.epics.areadetector.writers import ADBaseDataType, HDFWriter, NDFileHDF
+
 
 class DummyShapeProvider(ShapeProvider):
     def __init__(self) -> None:

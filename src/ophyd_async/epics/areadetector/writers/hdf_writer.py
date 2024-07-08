@@ -2,8 +2,6 @@ import asyncio
 from pathlib import Path
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 
-from .nd_plugin import convert_ad_dtype_to_np
-
 from bluesky.protocols import DataKey, Hints, StreamAsset
 
 from ophyd_async.core import (
@@ -21,6 +19,7 @@ from ophyd_async.core.signal import observe_value
 from ._hdfdataset import _HDFDataset
 from ._hdffile import _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF
+from .nd_plugin import convert_ad_dtype_to_np
 
 
 class HDFWriter(DetectorWriter):
@@ -74,7 +73,13 @@ class HDFWriter(DetectorWriter):
         outer_shape = (multiplier,) if multiplier > 1 else ()
         # Add the main data
         self._datasets = [
-            _HDFDataset(name, "/entry/data/data", detector_shape[:-1], convert_ad_dtype_to_np(detector_shape[-1]), multiplier)
+            _HDFDataset(
+                name,
+                "/entry/data/data",
+                detector_shape[:-1],
+                convert_ad_dtype_to_np(detector_shape[-1]),
+                multiplier,
+            )
         ]
         # And all the scalar datasets
         for ds_name, ds_path in self._scalar_datasets_paths.items():
