@@ -35,33 +35,19 @@ DEFAULT_WATCHER_UPDATE_FREQUENCY = 0.2
 
 
 class FlyMotorInfo(BaseModel):
-    """Minimal set of information required to fly a motor:
+    """Minimal set of information required to fly a motor:"""
 
-    start_position : float
-        Absolute position of the motor once it finishes accelerating to desired
-        velocity, in motor EGUs
-
-    end_position: float
-        Absolute position of the motor once it begins decelerating from desired
-        velocity, in millimetres
-
-    time_for_move: float
-        Time taken for the motor to get from start_position to end_position, excluding
-        run-up and run-down, in seconds.
-
-    timeout: CalculatableTimeout
-        Maximum time for the complete motor move, including run up and run down.
-        Defaults to `time_for_move` + run up and run down times + 10s.
-
-    """
-
+    #: Absolute position of the motor once it finishes accelerating to desired
+    #: velocity, in motor EGUs
     start_position: float = Field(frozen=True)
 
+    #: Absolute position of the motor once it begins decelerating from desired
+    #: velocity, in EGUs
     end_position: float = Field(frozen=True)
 
+    #: Time taken for the motor to get from start_position to end_position, excluding
+    #: run-up and run-down, in seconds.
     time_for_move: float = Field(frozen=True, gt=0)
-
-    timeout: CalculatableTimeout = Field(frozen=True, default=CalculateTimeout)
 
 
 class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
@@ -89,13 +75,15 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # Whether set() should complete successfully or not
         self._set_success = True
 
-        self.fly_info: Optional[FlyMotorInfo] = None
-
         # end_position of a fly move, with run_up_distance added on.
         self._fly_completed_position: Optional[float] = None
 
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
         self._fly_status: Optional[WatchableAsyncStatus] = None
+
+        # Maximum time for the complete motor move during a fly, including run up and
+        # run down. Defaults to FlyMotorInfo.time_to_move + run-up + run-down + 10s
+        self._fly_timeout: Optional[CalculatableTimeout] = CalculateTimeout
 
         super().__init__(name=name)
 
@@ -109,19 +97,17 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         """Calculate required velocity and run-up distance, then if motor limits aren't
         breached, move to start position minus run-up distance"""
 
-        self.fly_info = value
-
         # Velocity, at which motor travels from start_position to end_position, in motor
         # egu/s.
         fly_velocity = await self._prepare_velocity(
-            self.fly_info.start_position,
-            self.fly_info.end_position,
-            self.fly_info.time_for_move,
+            value.start_position,
+            value.end_position,
+            value.time_for_move,
         )
 
         # start_position with run_up_distance added on.
         fly_prepared_position = await self._prepare_motor_path(
-            abs(fly_velocity), self.fly_info.start_position, self.fly_info.end_position
+            abs(fly_velocity), value.start_position, value.end_position
         )
 
         await self.set(fly_prepared_position)
@@ -130,11 +116,11 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
         assert (
-            self._fly_completed_position and self.fly_info
+            self._fly_completed_position
         ), "Motor must be prepared before attempting to kickoff"
 
         self._fly_status = self.set(
-            self._fly_completed_position, timeout=self.fly_info.timeout
+            self._fly_completed_position, timeout=self._fly_timeout
         )
 
     def complete(self) -> WatchableAsyncStatus:
@@ -192,8 +178,9 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         self, start_position: float, end_position: float, time_for_move: float
     ) -> float:
         fly_velocity = (start_position - end_position) / time_for_move
-        max_speed = await self.max_velocity.get_value()
-        egu = await self.motor_egu.get_value()
+        max_speed, egu = await asyncio.gather(
+            self.max_velocity.get_value(), self.motor_egu.get_value()
+        )
         if abs(fly_velocity) > max_speed:
             raise MotorLimitsException(
                 f"Motor speed of {abs(fly_velocity)} {egu}/s was requested for a motor "
@@ -214,9 +201,11 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # Prepared position not used after prepare, so no need to store in self
         fly_prepared_position = start_position - run_up_distance
 
-        motor_lower_limit = await self.low_limit_travel.get_value()
-        motor_upper_limit = await self.high_limit_travel.get_value()
-        egu = await self.motor_egu.get_value()
+        motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
+            self.low_limit_travel.get_value(),
+            self.high_limit_travel.get_value(),
+            self.motor_egu.get_value(),
+        )
 
         if (
             not motor_upper_limit >= fly_prepared_position >= motor_lower_limit
