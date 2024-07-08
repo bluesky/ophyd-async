@@ -1,22 +1,25 @@
 from bluesky.protocols import Flyable, Preparable
 
 from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.epics.motion import Motor
-from ophyd_async.epics.pmac import Pmac
+from ophyd_async.epics.pmac import Pmac, PmacCSMotor
 
 
 class PmacTrajectory(Pmac, Flyable, Preparable):
     """Device that moves a PMAC Motor record"""
 
-    def __init__(self, prefix: str, cs: int, motors: list[str, str], name="") -> None:
+    def __init__(
+        self, prefix: str, cs: int, motors: list[PmacCSMotor], name=""
+    ) -> None:
         # Make a dict of which motors are for which cs axis
         self.motors = {}
-        for motor, cs in motors:
-            self.motors[cs] = motor
+        for motor in motors:
+            self.motors[motor.csAxis] = motor
 
         super().__init__(prefix, name=name)
 
-    async def _ramp_up_velocity_pos(self, velocity: float, motor: Motor, end_velocity):
+    async def _ramp_up_velocity_pos(
+        self, velocity: float, motor: PmacCSMotor, end_velocity
+    ):
         # Assuming ramping to or from 0
         accl_time = await motor.acceleration_time.get_value()
         return 0.5 * (velocity + end_velocity) * accl_time
