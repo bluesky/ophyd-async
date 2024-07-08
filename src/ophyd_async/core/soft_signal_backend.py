@@ -76,10 +76,15 @@ class SoftConverter(Generic[T]):
 class SoftArrayConverter(SoftConverter):
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
         dtype_str = ""
-        if len(value) > 0:
-            dtype_of_elem = type(value[0])
-            dtype_str = np.dtype(dtype_of_elem).descr[0][1]
-            print(f"{dtype_str = }")
+        if isinstance(value, list):
+            if len(value) > 0:
+                dtype_str = np.dtype(type(value)).descr[0][1]
+        else:
+            dtype_str = np.dtype(value.dtype).descr[0][1]
+
+        print(f"{dtype_str = }")
+        print(f"{value = }")
+        print(f"{len(value) = }")
 
         return {
             "source": source,
