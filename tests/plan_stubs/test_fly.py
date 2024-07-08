@@ -69,15 +69,16 @@ class DummyWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = compose_stream_resource(
-                    spec="AD_HDF5_SWMR_SLICE",
-                    root="/",
+                    mimetype="application/x-hdf5",
+                    uri="",
                     data_key=self._name,
-                    resource_path="",
-                    resource_kwargs={
+                    parameters={
                         "path": "",
+                        "swmr": False,
                         "multiplier": 1,
-                        "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
                     },
+                    uid=None,
+                    validate=True,
                 )
                 yield "stream_resource", self._file.stream_resource_doc
 

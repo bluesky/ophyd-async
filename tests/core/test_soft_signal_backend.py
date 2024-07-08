@@ -115,6 +115,14 @@ async def test_soft_signal_backend_get_put_monitor(
         q.close()
 
 
+async def test_soft_signal_backend_enum_value_equivalence():
+    soft_signal = SoftSignalBackend(MyEnum)
+    await soft_signal.connect()
+    assert (await soft_signal.get_value()) is MyEnum.a
+    await soft_signal.put(MyEnum.b)
+    assert (await soft_signal.get_value()) is MyEnum.b
+
+
 async def test_soft_signal_backend_with_numpy_typing():
     soft_backend = SoftSignalBackend(npt.NDArray[np.float64])
     await soft_backend.connect()

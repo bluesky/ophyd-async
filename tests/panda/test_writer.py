@@ -12,11 +12,13 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_mock_value,
 )
+from ophyd_async.epics.areadetector.writers.general_hdffile import (
+    _HDFFile,
+)
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
 from ophyd_async.panda.writers._hdf_writer import PandaHDFWriter
-from ophyd_async.panda.writers._panda_hdf_file import _HDFFile
 
 TABLES = [
     DatasetTable(
@@ -122,7 +124,9 @@ async def test_open_returns_correct_descriptors(
         assert key == expected_key
         assert entry == {
             "source": mock_writer.panda_device.data.hdf_directory.source,
-            "shape": [1],
+            "shape": [
+                1,
+            ],
             "dtype": "number",
             "external": "STREAM:",
         }
@@ -175,24 +179,24 @@ async def test_collect_stream_docs(
 
     await mock_writer.open()
 
+    def assert_resource_document(name, resource_doc):
+        assert resource_doc == {
+            "uid": ANY,
+            "data_key": name,
+            "mimetype": "application/x-hdf5",
+            "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
+            "parameters": {"dataset": f"/{name}", "swmr": False, "multiplier": 1},
+        }
+        assert "mock_panda/data.h5" in resource_doc["uri"]
+
     [item async for item in mock_writer.collect_stream_docs(1)]
     assert type(mock_writer._file) is _HDFFile
     assert mock_writer._file._last_emitted == 1
+
     for i in range(len(table["name"])):
         resource_doc = mock_writer._file._bundles[i].stream_resource_doc
         name = table["name"][i]
-        assert resource_doc == {
-            "spec": "AD_HDF5_SWMR_SLICE",
-            "path_semantics": "posix",
-            "root": str(tmp_path),
-            "data_key": name,
-            "resource_path": str(tmp_path / "mock_panda" / "data.h5"),
-            "resource_kwargs": {
-                "path": "/" + name,
-                "multiplier": 1,
-                "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-            },
-            "uid": ANY,
-        }
+
+        assert_resource_document(name=name, resource_doc=resource_doc)
+
         assert resource_doc["data_key"] == name
-        assert "mock_panda/data.h5" in resource_doc["resource_path"]

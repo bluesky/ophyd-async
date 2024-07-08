@@ -62,7 +62,7 @@ class Signal(Device, Generic[T]):
         name: str = "",
     ) -> None:
         self._timeout = timeout
-        self._initial_backend = self._backend = backend
+        self._backend = backend
         super().__init__(name)
 
     async def connect(
@@ -73,19 +73,43 @@ class Signal(Device, Generic[T]):
         backend: Optional[SignalBackend[T]] = None,
     ):
         if backend:
-            if self._initial_backend and backend is not self._initial_backend:
-                raise ValueError(
-                    "Backend at connection different from initialised one."
-                )
+            if self._backend and backend is not self._backend:
+                raise ValueError("Backend at connection different from previous one.")
+
             self._backend = backend
-        if mock and not isinstance(self._backend, MockSignalBackend):
+        if (
+            self._previous_connect_was_mock is not None
+            and self._previous_connect_was_mock != mock
+        ):
+            raise RuntimeError(
+                f"`connect(mock={mock})` called on a `Signal` where the previous "
+                f"connect was `mock={self._previous_connect_was_mock}`. Changing mock "
+                "value between connects is not permitted."
+            )
+        self._previous_connect_was_mock = mock
+
+        if mock and not issubclass(type(self._backend), MockSignalBackend):
             # Using a soft backend, look to the initial value
             self._backend = MockSignalBackend(initial_backend=self._backend)
 
         if self._backend is None:
             raise RuntimeError("`connect` called on signal without backend")
-        self.log.debug(f"Connecting to {self.source}")
-        await self._backend.connect(timeout=timeout)
+
+        can_use_previous_connection: bool = self._connect_task is not None and not (
+            self._connect_task.done() and self._connect_task.exception()
+        )
+
+        if force_reconnect or not can_use_previous_connection:
+            self.log.debug(f"Connecting to {self.source}")
+            self._connect_task = asyncio.create_task(
+                self._backend.connect(timeout=timeout)
+            )
+        else:
+            self.log.debug(f"Reusing previous connection to {self.source}")
+        assert (
+            self._connect_task
+        ), "this assert is for type analysis and will never fail"
+        await self._connect_task
 
     @property
     def source(self) -> str:

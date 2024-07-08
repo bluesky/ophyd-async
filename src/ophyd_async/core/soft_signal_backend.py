@@ -93,10 +93,7 @@ class SoftEnumConverter(SoftConverter):
             self.choices = datatype.choices
 
     def write_value(self, value: Union[Enum, str]) -> str:
-        if isinstance(value, Enum):
-            return value.value
-        else:  # Runtime enum
-            return value
+        return value
 
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
         return {
