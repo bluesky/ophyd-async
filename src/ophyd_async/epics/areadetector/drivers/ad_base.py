@@ -135,5 +135,7 @@ class ADBaseShapeProvider(ShapeProvider):
         shape = await asyncio.gather(
             self._driver.array_size_y.get_value(),
             self._driver.array_size_x.get_value(),
+            self._driver.data_type.get_value(),
         )
+        print(shape)
         return shape

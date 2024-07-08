@@ -4,7 +4,6 @@ from xml.etree import cElementTree as ET
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value
 
-
 class FileWriteMode(str, Enum):
     single = "Single"
     capture = "Capture"
