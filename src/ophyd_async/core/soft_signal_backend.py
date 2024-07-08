@@ -109,7 +109,7 @@ class SoftEnumConverter(SoftConverter):
         return {
             "source": source,
             "dtype": "string",
-            "dtype_str": "<U0",
+            "dtype_str": "|S40",
             "shape": [],
             "choices": self.choices,
             **metadata,

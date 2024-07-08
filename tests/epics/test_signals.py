@@ -279,7 +279,6 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             d["choices"] = list(value.choices)
 
     d.update(_metadata[protocol].get(get_internal_dtype(suffix), {}))
-    print(f"{d = }")
 
     return d
 

@@ -75,7 +75,6 @@ def _data_key_from_value(
     """
     shape = shape or []
     type_code = value.type().aspy("value")
-    print(f"{type_code = }")
 
     dtype = dtype or specifier_to_dtype[type_code]
 
