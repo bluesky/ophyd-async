@@ -3,6 +3,8 @@ from bluesky.protocols import Flyable, Preparable
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.epics.pmac import Pmac, PmacCSMotor
 
+TICK_S = 0.000001
+
 
 class PmacTrajectory(Pmac, Flyable, Preparable):
     """Device that moves a PMAC Motor record"""
@@ -49,12 +51,22 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                         )
                         / (scanSpecStack[0].midpoints["DURATION"][i])
                     )
-                self.profile[axis.lower()].append(scanSpecStack[0].midpoints[axis][i])
-            self.profile[axis.lower()].append(
-                scanSpecStack[0].midpoints[axis][scanSize - 1]
-            )
+                    self.profile[axis.lower()].append(
+                        scanSpecStack[0].midpoints[axis][i]
+                    )
+                else:
+                    self.profile[axis.lower()].append(
+                        int(scanSpecStack[0].midpoints[axis][i] / TICK_S)
+                    )
             if axis != "DURATION":
+                self.profile[axis.lower()].append(
+                    scanSpecStack[0].midpoints[axis][scanSize - 1]
+                )
                 self.profile[axis.lower() + "_velocity"].append(0)
+            else:
+                self.profile[axis.lower()].append(
+                    int(scanSpecStack[0].midpoints[axis][scanSize - 1] / TICK_S)
+                )
 
         # Calculate Starting Position to allow ramp up to velocity
         self.initial_pos = {}
@@ -71,6 +83,7 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         # Send trajectory to brick
         for axis in scanAxes:
             if axis != "DURATION":
+                self.points_to_build.set(scanSize)
                 getattr(self, "use_" + axis.lower()).set(True)
                 getattr(self, axis.lower()).set(self.profile[axis.lower()])
                 getattr(self, axis.lower() + "_vel").set(
@@ -80,9 +93,16 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 self.timeArray.set(self.profile["duration"])
 
         # MOVE TO START
+        for axis in scanAxes:
+            if axis != "DURATION":
+                await self.motors[axis.lower()].set(self.initial_pos[axis])
+
+        # Set No Of Points
+
+        self.build_profile.set(True)
 
     async def kickoff(self):
-        pass
+        self.execute_profile.set(True)
 
     async def complete(self):
         pass
