@@ -9,7 +9,7 @@ from ophyd_async.epics.pmac import PmacCSMotor, PmacTrajectory
 @pytest.fixture
 async def sim_x_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = PmacCSMotor("BLxxI-MO-TABLE-01:X", "1", "x", name="sim_x_motor")
+        sim_motor = PmacCSMotor("BLxxI-MO-TABLE-01:X", 1, "x", name="sim_x_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
@@ -21,7 +21,7 @@ async def sim_x_motor():
 @pytest.fixture
 async def sim_y_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = PmacCSMotor("BLxxI-MO-TABLE-01:Y", "1", "y", name="sim_y_motor")
+        sim_motor = PmacCSMotor("BLxxI-MO-TABLE-01:Y", 1, "y", name="sim_y_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
@@ -42,33 +42,33 @@ async def test_sim_pmac_trajectory(sim_x_motor, sim_y_motor) -> None:
         await traj.prepare(stack)
     assert traj.profile == {
         "duration": [
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
+            400000,
         ],
         "x": [
             3,
