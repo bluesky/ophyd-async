@@ -17,6 +17,7 @@ async def sim_x_motor():
     set_mock_value(sim_motor.precision, 3)
     set_mock_value(sim_motor.velocity, 1)
     set_mock_value(sim_motor.acceleration_time, 1)
+    set_mock_value(sim_motor.max_velocity, 10)
     yield sim_motor
 
 
@@ -31,6 +32,7 @@ async def sim_y_motor():
     set_mock_value(sim_motor.precision, 3)
     set_mock_value(sim_motor.velocity, 1)
     set_mock_value(sim_motor.acceleration_time, 1)
+    set_mock_value(sim_motor.max_velocity, 10)
     yield sim_motor
 
 
@@ -46,7 +48,7 @@ async def test_sim_pmac_trajectory(sim_x_motor, sim_y_motor) -> None:
         await traj.prepare(stack)
     assert traj.profile == {
         "duration": [
-            400000,
+            900000,
             400000,
             400000,
             400000,
@@ -192,5 +194,5 @@ async def test_sim_pmac_trajectory(sim_x_motor, sim_y_motor) -> None:
         ],
     }
 
-    assert traj.initial_pos["x"] == 0.5
-    assert traj.initial_pos["y"] == 10.75
+    assert traj.initial_pos["x"] == 1.75
+    assert traj.initial_pos["y"] == 11.6875

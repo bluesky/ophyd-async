@@ -27,8 +27,11 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         self, velocity: float, motor: PmacCSMotor, end_velocity
     ):
         # Assuming ramping to or from 0
-        accl_time = await motor.acceleration_time.get_value()
-        return 0.5 * (velocity + end_velocity) * accl_time
+        max_velocity_acceleration_time = await motor.acceleration_time.get_value()
+        max_velocity = await motor.max_velocity.get_value()
+        accl_time = max_velocity_acceleration_time * end_velocity / max_velocity
+        disp = 0.5 * (velocity + end_velocity) * accl_time
+        return [disp, accl_time]
 
     @AsyncStatus.wrap
     async def prepare(self, scanSpecStack):
@@ -74,15 +77,16 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
 
         # Calculate Starting Position to allow ramp up to velocity
         self.initial_pos = {}
+        run_up_time = 0
         for axis in scanAxes:
             if axis != "DURATION":
-                self.initial_pos[axis] = self.profile[axis.lower()][
-                    0
-                ] - await self._ramp_up_velocity_pos(
+                run_up_disp, run_up_time = await self._ramp_up_velocity_pos(
                     0,
                     self.motors[axis.lower()],
                     self.profile[axis.lower() + "_velocity"][0],
                 )
+                self.initial_pos[axis] = self.profile[axis.lower()][0] - run_up_disp
+        self.profile["duration"][0] += run_up_time / TICK_S
 
         # Send trajectory to brick
         for axis in scanAxes:
