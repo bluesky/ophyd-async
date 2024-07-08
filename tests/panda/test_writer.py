@@ -124,6 +124,7 @@ async def test_open_returns_correct_descriptors(
             "source": mock_writer.panda_device.data.hdf_directory.source,
             "shape": [1],
             "dtype": "number",
+            "dtype_str": "<f8",
             "external": "STREAM:",
         }
 

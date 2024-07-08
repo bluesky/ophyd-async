@@ -341,6 +341,7 @@ async def test_mock_signal_of_soft_signal_backend_receives_metadata():
     assert await mocked_device.my_signal.describe() == {
         "mocked_device": {
             "dtype": "number",
+            "dtype_str": "<u2",
             "shape": [],
             "source": "mock+soft://mocked_device",
             "units": "mm",

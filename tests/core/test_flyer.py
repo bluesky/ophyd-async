@@ -63,6 +63,7 @@ class DummyWriter(DetectorWriter):
                 source="soft://some-source",
                 shape=self._shape,
                 dtype="number",
+                dtype_str="<u2",
                 external="STREAM:",
             )
         }
