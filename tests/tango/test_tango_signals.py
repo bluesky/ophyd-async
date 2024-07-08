@@ -307,7 +307,6 @@ async def assert_monitor_then_put(
     ATTRIBUTES_SET,
     ids=[x[0] for x in ATTRIBUTES_SET],
 )
-@pytest.mark.asyncio
 async def test_backend_get_put_monitor_attr(
     echo_device: str,
     pv: str,
