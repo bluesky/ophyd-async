@@ -39,6 +39,21 @@ specifier_to_dtype: Dict[str, Dtype] = {
     "s": "string",
 }
 
+specifier_to_np_dtype: Dict[str, str] = {
+    "?": "<i2",  # bool
+    "b": "|i1",  # int8
+    "B": "|u1",  # uint8
+    "h": "<i2",  # int16
+    "H": "<u2",  # uint16
+    "i": "<i4",  # int32
+    "I": "<u4",  # uint32
+    "l": "<i8",  # int64
+    "L": "<u8",  # uint64
+    "f": "<f4",  # float32
+    "d": "<f8",  # float64
+    "s": "|S40",
+}
+
 
 def _data_key_from_value(
     source: str,
@@ -59,12 +74,36 @@ def _data_key_from_value(
         DataKey: A rich DataKey describing the DB record
     """
     shape = shape or []
-    dtype = dtype or specifier_to_dtype[value.type().aspy("value")]
+    type_code = value.type().aspy("value")
+    print(f"{type_code = }")
+
+    dtype = dtype or specifier_to_dtype[type_code]
+
+    try:
+        if isinstance(type_code, tuple):
+            dtype_str = ""
+            if type_code[1] == "enum_t":
+                if dtype == "bool":
+                    dtype_str = "<i2"
+                else:
+                    for item in type_code[2]:
+                        if item[0] == "choices":
+                            dtype_str = specifier_to_np_dtype[item[1][1]]
+        elif not type_code.startswith('a'):
+            dtype_str = specifier_to_np_dtype[type_code]
+        else:
+            # Array type, use typecode of internal element
+            dtype_str = specifier_to_np_dtype[type_code[1]]
+    except KeyError:
+        # Case where we can't determine dtype string from value
+        dtype_str = ""
+
     display_data = getattr(value, "display", None)
 
     d = DataKey(
         source=source,
         dtype=dtype,
+        dtype_str=dtype_str,
         shape=shape,
     )
     if display_data is not None:

@@ -243,9 +243,35 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             return "string"
         return get_internal_dtype(suffix)
 
-    dtype = get_dtype(suffix)
+    def get_dtype_str(suffix: str) -> str:
+        if "float32" in suffix:
+            return "<f4"
+        if "float" in suffix or "double" in suffix:
+            return "<f8" # Unless specifically float 32, use float 64
+        if "bool" in suffix:
+            return "<i2" # EPICS bool PVs return <i2
+        if "int" in suffix:
+            int_str = "|" if "8" in suffix else "<"
+            int_str += "u" if "uint" in suffix else "i"
+            if "8" in suffix:
+                int_str += "1"
+            elif "16" in suffix:
+                int_str += "2"
+            elif "32" in suffix:
+                int_str += "4"
+            elif "64" in suffix:
+                int_str += "8"
+            else:
+                int_str += "4"
+            return int_str
+        if "str" in suffix or "enum" in suffix:
+            return "|S40"
+        return ""
 
-    d = {"dtype": dtype, "shape": [len(value)] if dtype == "array" else []}
+    dtype = get_dtype(suffix)
+    dtype_str = get_dtype_str(suffix)
+
+    d = {"dtype": dtype, "dtype_str": dtype_str, "shape": [len(value)] if dtype == "array" else []}
     if get_internal_dtype(suffix) == "enum":
         if issubclass(type(value), Enum):
             d["choices"] = [e.value for e in type(value)]
@@ -253,6 +279,7 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             d["choices"] = list(value.choices)
 
     d.update(_metadata[protocol].get(get_internal_dtype(suffix), {}))
+    print(f"{d = }")
 
     return d
 
@@ -656,6 +683,7 @@ async def test_pva_ntdarray(ioc: IOC):
             assert {
                 "source": "test-source",
                 "dtype": "array",
+                "dtype_str": "",
                 "shape": [2, 3],
                 "limits": ANY,
             } == await backend.get_datakey("test-source")

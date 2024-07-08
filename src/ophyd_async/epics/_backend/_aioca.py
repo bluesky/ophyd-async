@@ -66,9 +66,13 @@ def _data_key_from_augmented_value(
     scalar = value.element_count == 1
     dtype = dtype or dbr_to_dtype[value.datatype]
 
+    dtype_str = ""
+    dtype_str = np.dtype(dbr.DbrCodeToType[value.datatype].dtype).descr[0][1]
+
     d = DataKey(
         source=source,
         dtype=dtype if scalar else "array",
+        dtype_str=dtype_str,
         # strictly value.element_count >= len(value)
         shape=[] if scalar else [len(value)],
     )
