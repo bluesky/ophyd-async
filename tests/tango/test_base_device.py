@@ -15,9 +15,10 @@ from tango import (
     AttrQuality,
     AttrWriteType,
     CmdArgType,
-    DeviceProxy,
+    # DeviceProxy,
     DevState,
 )
+from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute
 from tango.test_context import MultiDeviceTestContext
@@ -91,15 +92,16 @@ class TestReadableDevice(TangoReadableDevice):
 
 
 # --------------------------------------------------------------------
-def describe_class(fqtrl):
+async def describe_class(fqtrl):
     description = {}
     values = {}
-    dev = DeviceProxy(fqtrl)
+    dev = await DeviceProxy(fqtrl)
 
     for name in TESTED_FEATURES:
         if name in dev.get_attribute_list():
-            attr_conf = dev.get_attribute_config(name)
-            value = dev.read_attribute(name).value
+            attr_conf = await dev.get_attribute_config(name)
+            attr_value = await dev.read_attribute(name)
+            value = attr_value.value
             _, _, descr = get_python_type(attr_conf.data_type)
             max_x = attr_conf.max_dim_x
             max_y = attr_conf.max_dim_y
@@ -114,7 +116,7 @@ def describe_class(fqtrl):
                 shape = [max_y, max_x]
 
         elif name in dev.get_command_list():
-            cmd_conf = dev.get_command_config(name)
+            cmd_conf = await dev.get_command_config(name)
             _, _, descr = get_python_type(
                 cmd_conf.in_type
                 if cmd_conf.in_type != CmdArgType.DevVoid
@@ -193,7 +195,7 @@ def compare_values(expected, received):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
-    values, description = describe_class(tango_test_device)
+    values, description = await describe_class(tango_test_device)
 
     async with DeviceCollector():
         test_device = TestReadableDevice(tango_test_device)
@@ -206,8 +208,12 @@ async def test_connect(tango_test_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_with_bluesky(tango_test_device):
-    async with DeviceCollector():
-        ophyd_dev = TestReadableDevice(tango_test_device)
+    async def connect():
+        async with DeviceCollector():
+            device = TestReadableDevice(tango_test_device)
+            return device
+
+    ophyd_dev = await connect()
 
     # now let's do some bluesky stuff
     RE = RunEngine()

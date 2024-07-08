@@ -12,7 +12,8 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import SignalBackend, T
 from ophyd_async.tango._backend import TangoTransport
-from tango import AttrDataFormat, AttrWriteType, DeviceProxy, DevState
+from tango import AttrDataFormat, AttrWriteType, DevState
+from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
@@ -231,8 +232,9 @@ async def make_backend(
 
 
 # --------------------------------------------------------------------
-def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
-    setattr(DeviceProxy(echo_device), pv, put_value)
+async def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
+    proxy = await DeviceProxy(echo_device)
+    setattr(proxy, pv, put_value)
 
 
 # --------------------------------------------------------------------
@@ -281,7 +283,7 @@ async def assert_monitor_then_put(
     descriptor: dict,
     datatype: Optional[Type[T]] = None,
 ):
-    prepare_device(echo_device, pv, initial_value)
+    await prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
     backend = await make_backend(datatype, source, allow_events=True)
     # Make a monitor queue that will monitor for updates
