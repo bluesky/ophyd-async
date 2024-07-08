@@ -44,8 +44,7 @@ def prepare_static_pcomp_flyer_and_detectors_with_same_trigger(
     for det in detectors:
         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
     yield from bps.prepare(flyer, trigger_info, wait=False, group="prep")
-    yield from bps.wait(group="prep"
-)
+    yield from bps.wait(group="prep")
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
@@ -74,7 +73,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
 
     trigger_info = TriggerInfo(
-        num=number_of_frames * repeats,
+        number=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
         livetime=exposure,
@@ -103,7 +102,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         SeqTableRow(time2=in_micros(shutter_time)),
     )
 
-    table_info = SeqTableInfo(table, repeats)
+    table_info = SeqTableInfo(sequence_table=table, repeats=repeats)
 
     for det in detectors:
         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
@@ -159,7 +158,6 @@ def fly_and_collect_with_static_pcomp(
     pulse_width: int,
     rising_edge_step: int,
     direction: PcompDirectionOptions,
-
 ):
     # Set up scan and prepare trigger
     yield from prepare_static_pcomp_flyer_and_detectors_with_same_trigger(
@@ -173,6 +171,7 @@ def fly_and_collect_with_static_pcomp(
 
     # Run the fly scan
     yield from fly_and_collect(stream_name, flyer, detectors)
+
 
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,

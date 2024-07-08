@@ -1,5 +1,7 @@
 import asyncio
-from dataclasses import dataclass
+from enum import Enum
+
+from pydantic import BaseModel, Field, field_validator
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 from ophyd_async.panda import (
@@ -11,11 +13,10 @@ from ophyd_async.panda import (
 )
 
 
-@dataclass
-class SeqTableInfo:
-    sequence_table: SeqTable
-    repeats: int
-    prescale_as_us: float = 1  # microseconds
+class SeqTableInfo(BaseModel):
+    sequence_table: SeqTable = Field(strict=True)
+    repeats: int = Field(ge=0)
+    prescale_as_us: float = Field(default=1, ge=0)  # microseconds
 
 
 class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
@@ -45,13 +46,18 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
         await wait_for_value(self.seq.active, False, timeout=1)
 
 
-@dataclass
-class PcompInfo:
-    start_postion: int  # start position in counts
-    pulse_width: int  # width of a single pulse in counts
-    rising_edge_step: int  # step between rising edges of pulses in counts
-    number_of_pulses: int
-    direction: PcompDirectionOptions  # direction positive or negative
+class PcompInfo(BaseModel):
+    start_postion: int = Field()  # start position in counts
+    pulse_width: int = Field(gt=0)  # width of a single pulse in counts
+    rising_edge_step: int = Field(gt=0)  # step between rising edges of pulses in counts
+    number_of_pulses: int = Field(ge=0)
+    direction: PcompDirectionOptions = Field()  # direction positive or negative
+
+    @field_validator("direction", mode="before")
+    def convert_enum_to_string(cls, value):
+        if issubclass(type(value), Enum):
+            return value.value
+        return value
 
 
 class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):

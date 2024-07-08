@@ -21,7 +21,8 @@ dependencies = [
     "p4p",
     "pyyaml",
     "colorlog",
-    "pydantic"
+    "pydantic",
+    "pydantic-numpy",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"

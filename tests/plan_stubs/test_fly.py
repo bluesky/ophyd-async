@@ -24,7 +24,11 @@ from ophyd_async.core.signal import SignalR
 from ophyd_async.core.utils import WatcherUpdate
 from ophyd_async.epics.pvi.pvi import fill_pvi_entries
 from ophyd_async.epics.signal.signal import epics_signal_rw
-from ophyd_async.panda import CommonPandaBlocks, StaticSeqTableTriggerLogic, StaticPcompTriggerLogic
+from ophyd_async.panda import (
+    CommonPandaBlocks,
+    StaticPcompTriggerLogic,
+    StaticSeqTableTriggerLogic,
+)
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
     time_resolved_fly_and_collect_with_static_seq_table,
@@ -125,12 +129,12 @@ class MockDetector(StandardDetector):
                 name=self.name,
                 current=index,
                 initial=self._initial_frame,
-                target=self._trigger_info.num,
+                target=self._trigger_info.number,
                 unit="",
                 precision=0,
                 time_elapsed=time.monotonic() - self._fly_start,
             )
-            if index >= self._trigger_info.num:
+            if index >= self._trigger_info.number:
                 break
 
 
@@ -178,6 +182,7 @@ async def mock_panda():
     assert mock_panda.name == "mock_panda"
     yield mock_panda
 
+
 class MockFlyer(HardwareTriggeredFlyable):
     def __init__(
         self,
@@ -197,6 +202,7 @@ class MockFlyer(HardwareTriggeredFlyable):
         set_mock_value(self.trigger_logic.seq.active, 0)
         await self._trigger_logic.complete()
 
+
 @pytest.fixture
 async def seq_flyer(mock_panda):
     # Make flyer
@@ -205,6 +211,7 @@ async def seq_flyer(mock_panda):
 
     return flyer
 
+
 @pytest.fixture
 async def pcomp_flyer(mock_panda):
     # Make flyer
@@ -212,7 +219,6 @@ async def pcomp_flyer(mock_panda):
     flyer = MockFlyer(trigger_logic, [], name="flyer")
 
     return flyer
-
 
 
 async def test_hardware_triggered_flyable_with_static_seq_table_logic(
