@@ -71,6 +71,7 @@ class PandaHDFWriter(DetectorWriter):
                 source=self.panda_device.data.hdf_directory.source,
                 shape=ds.shape,
                 dtype="array" if ds.shape != [1] else "number",
+                dtype_str="<f8", # PandA data should always be written as Float64
                 external="STREAM:",
             )
             for ds in self._datasets
