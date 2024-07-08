@@ -49,6 +49,10 @@ class FlyMotorInfo(BaseModel):
     #: run-up and run-down, in seconds.
     time_for_move: float = Field(frozen=True, gt=0)
 
+    #: Maximum time for the complete motor move, including run up and run down.
+    #: Defaults to `time_for_move` + run up and run down times + 10s.
+    timeout: CalculatableTimeout = Field(frozen=True, default=CalculateTimeout)
+
 
 class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     """Device that moves a motor record"""
@@ -81,8 +85,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
         self._fly_status: Optional[WatchableAsyncStatus] = None
 
-        # Maximum time for the complete motor move during a fly, including run up and
-        # run down. Defaults to FlyMotorInfo.time_to_move + run-up + run-down + 10s
+        # Set during prepare
         self._fly_timeout: Optional[CalculatableTimeout] = CalculateTimeout
 
         super().__init__(name=name)
@@ -96,6 +99,8 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     async def prepare(self, value: FlyMotorInfo):
         """Calculate required velocity and run-up distance, then if motor limits aren't
         breached, move to start position minus run-up distance"""
+
+        self._fly_timeout = value.timeout
 
         # Velocity, at which motor travels from start_position to end_position, in motor
         # egu/s.
