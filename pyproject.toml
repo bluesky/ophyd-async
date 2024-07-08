@@ -51,6 +51,7 @@ dev = [
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
     "pyside6==6.7.0",
+    "pytango",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
