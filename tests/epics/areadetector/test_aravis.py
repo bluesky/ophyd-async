@@ -91,6 +91,7 @@ async def test_decribe_describes_writer_dataset(adaravis: AravisDetector):
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
+            "dtype_str": "|i1",
             "external": "STREAM:",
         }
     }
@@ -139,6 +140,7 @@ async def test_can_decribe_collect(adaravis: AravisDetector):
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
+            "dtype_str": "|i1",
             "external": "STREAM:",
         }
     }
