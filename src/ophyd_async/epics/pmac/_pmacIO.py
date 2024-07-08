@@ -41,3 +41,6 @@ class Pmac(StandardReadable, Flyable, Preparable):
         self.z = epics_signal_rw(npt.NDArray[np.float64], prefix + ":Z:Positions")
         self.use_z = epics_signal_rw(bool, prefix + ":Z:UseAxis")
         self.z_vel = epics_signal_rw(npt.NDArray[np.float64], prefix + ":Z:Velocities")
+        self.points_to_build = epics_signal_rw(int, prefix + ":ProfilePointsToBuild")
+        self.build_profile = epics_signal_rw(bool, prefix + ":ProfileBuild")
+        self.execute_profile = epics_signal_rw(bool, prefix + ":ProfileExecute")
