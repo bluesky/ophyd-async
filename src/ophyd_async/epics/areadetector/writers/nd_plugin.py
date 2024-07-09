@@ -10,17 +10,17 @@ class Callback(str, Enum):
     Disable = "Disable"
 
 
-class ADBaseDataType(int, Enum):
-    Int8 = 0
-    UInt8 = 1
-    Int16 = 2
-    UInt16 = 3
-    Int32 = 4
-    UInt32 = 5
-    Int64 = 6
-    UInt64 = 7
-    Float32 = 8
-    Float64 = 9
+class ADBaseDataType(str, Enum):
+    Int8 = "Int8"
+    UInt8 = "UInt8"
+    Int16 = "Int16"
+    UInt16 = "UInt16"
+    Int32 = "Int32"
+    UInt32 = "UInt32"
+    Int64 = "Int64"
+    UInt64 = "UInt64"
+    Float32 = "Float32"
+    Float64 = "Float64"
 
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:

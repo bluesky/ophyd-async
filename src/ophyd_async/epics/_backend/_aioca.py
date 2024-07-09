@@ -66,7 +66,6 @@ def _data_key_from_augmented_value(
     scalar = value.element_count == 1
     dtype = dtype or dbr_to_dtype[value.datatype]
 
-    dtype_str = ""
     dtype_str = np.dtype(dbr.DbrCodeToType[value.datatype].dtype).descr[0][1]
 
     d = DataKey(

@@ -82,10 +82,6 @@ class SoftArrayConverter(SoftConverter):
         else:
             dtype_str = np.dtype(value.dtype).descr[0][1]
 
-        print(f"{dtype_str = }")
-        print(f"{value = }")
-        print(f"{len(value) = }")
-
         return {
             "source": source,
             "dtype": "array",

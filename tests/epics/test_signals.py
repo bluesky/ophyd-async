@@ -266,7 +266,6 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             return int_str
         if "str" in suffix or "enum" in suffix:
             return "|S40"
-        return ""
 
     dtype = get_dtype(suffix)
     dtype_str = get_dtype_str(suffix)
