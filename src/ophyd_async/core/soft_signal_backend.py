@@ -61,9 +61,9 @@ class SoftConverter(Generic[T]):
         ), f"invalid converter for value of type {type(value)}"
         dk["dtype"] = primitive_dtypes[dtype]
         try:
-            dk["dtype_str"] = np.dtype(dtype).descr[0][1]
+            dk["dtype_numpy"] = np.dtype(dtype).descr[0][1]
         except TypeError:
-            dk["dtype_str"] = ""
+            dk["dtype_numpy"] = ""
         return dk
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
@@ -75,17 +75,17 @@ class SoftConverter(Generic[T]):
 
 class SoftArrayConverter(SoftConverter):
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        dtype_str = ""
+        dtype_numpy = ""
         if isinstance(value, list):
             if len(value) > 0:
-                dtype_str = np.dtype(type(value)).descr[0][1]
+                dtype_numpy = np.dtype(type(value)).descr[0][1]
         else:
-            dtype_str = np.dtype(value.dtype).descr[0][1]
+            dtype_numpy = np.dtype(value.dtype).descr[0][1]
 
         return {
             "source": source,
             "dtype": "array",
-            "dtype_str": dtype_str,
+            "dtype_numpy": dtype_numpy,
             "shape": [len(value)],
             **metadata,
         }
@@ -116,7 +116,7 @@ class SoftEnumConverter(SoftConverter):
         return {
             "source": source,
             "dtype": "string",
-            "dtype_str": "|S40",
+            "dtype_numpy": "|S40",
             "shape": [],
             "choices": self.choices,
             **metadata,

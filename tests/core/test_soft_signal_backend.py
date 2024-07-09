@@ -66,7 +66,7 @@ class MonitorQueue:
 
 
 @pytest.mark.parametrize(
-    "datatype, initial_value, put_value, descriptor, dtype_str",
+    "datatype, initial_value, put_value, descriptor, dtype_numpy",
     [
         (int, 0, 43, integer_d, "<i8"),
         (float, 0.0, 43.5, number_d, "<f8"),
@@ -93,7 +93,7 @@ async def test_soft_signal_backend_get_put_monitor(
     initial_value: T,
     put_value: T,
     descriptor: Callable[[Any], dict],
-    dtype_str: str,
+    dtype_numpy: str,
 ):
     backend = SoftSignalBackend(datatype)
 
@@ -102,9 +102,9 @@ async def test_soft_signal_backend_get_put_monitor(
     try:
         # Check descriptor
         source = "soft://test"
-        # Add expected dtype_str to descriptor
+        # Add expected dtype_numpy to descriptor
         assert dict(
-            source=source, **descriptor(initial_value), dtype_str=dtype_str
+            source=source, **descriptor(initial_value), dtype_numpy=dtype_numpy
         ) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(

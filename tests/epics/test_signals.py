@@ -243,7 +243,7 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             return "string"
         return get_internal_dtype(suffix)
 
-    def get_dtype_str(suffix: str) -> str:
+    def get_dtype_numpy(suffix: str) -> str:
         if "float32" in suffix:
             return "<f4"
         if "float" in suffix or "double" in suffix:
@@ -268,11 +268,11 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             return "|S40"
 
     dtype = get_dtype(suffix)
-    dtype_str = get_dtype_str(suffix)
+    dtype_numpy = get_dtype_numpy(suffix)
 
     d = {
         "dtype": dtype,
-        "dtype_str": dtype_str,
+        "dtype_numpy": dtype_numpy,
         "shape": [len(value)] if dtype == "array" else [],
     }
     if get_internal_dtype(suffix) == "enum":
@@ -685,7 +685,7 @@ async def test_pva_ntdarray(ioc: IOC):
             assert {
                 "source": "test-source",
                 "dtype": "array",
-                "dtype_str": "",
+                "dtype_numpy": "",
                 "shape": [2, 3],
                 "limits": ANY,
             } == await backend.get_datakey("test-source")

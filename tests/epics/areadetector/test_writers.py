@@ -43,7 +43,7 @@ async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
             "source": "mock+ca://HDF:FullFileName_RBV",
             "shape": (10, 10),
             "dtype": "array",
-            "dtype_str": "<u2",
+            "dtype_numpy": "<u2",
             "external": "STREAM:",
         }
     }

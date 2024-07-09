@@ -80,29 +80,29 @@ def _data_key_from_value(
 
     try:
         if isinstance(type_code, tuple):
-            dtype_str = ""
+            dtype_numpy = ""
             if type_code[1] == "enum_t":
                 if dtype == "bool":
-                    dtype_str = "<i2"
+                    dtype_numpy = "<i2"
                 else:
                     for item in type_code[2]:
                         if item[0] == "choices":
-                            dtype_str = specifier_to_np_dtype[item[1][1]]
-        elif not type_code.startswith('a'):
-            dtype_str = specifier_to_np_dtype[type_code]
+                            dtype_numpy = specifier_to_np_dtype[item[1][1]]
+        elif not type_code.startswith("a"):
+            dtype_numpy = specifier_to_np_dtype[type_code]
         else:
             # Array type, use typecode of internal element
-            dtype_str = specifier_to_np_dtype[type_code[1]]
+            dtype_numpy = specifier_to_np_dtype[type_code[1]]
     except KeyError:
         # Case where we can't determine dtype string from value
-        dtype_str = ""
+        dtype_numpy = ""
 
     display_data = getattr(value, "display", None)
 
     d = DataKey(
         source=source,
         dtype=dtype,
-        dtype_str=dtype_str,
+        dtype_numpy=dtype_numpy,
         shape=shape,
     )
     if display_data is not None:

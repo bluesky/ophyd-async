@@ -18,7 +18,7 @@ class _HDFDataset:
     data_key: str
     dataset: str
     shape: Sequence[int] = field(default_factory=tuple)
-    dtype_str: str = ""
+    dtype_numpy: str = ""
     multiplier: int = 1
     swmr: bool = False
 

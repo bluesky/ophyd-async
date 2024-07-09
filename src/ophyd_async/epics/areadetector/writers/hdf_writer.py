@@ -71,7 +71,7 @@ class HDFWriter(DetectorWriter):
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
         frame_shape = detector_shape[:-1] if len(detector_shape) > 0 else []
-        dtype_str = (
+        dtype_numpy = (
             convert_ad_dtype_to_np(detector_shape[-1])
             if len(detector_shape) > 0
             else ""
@@ -83,7 +83,7 @@ class HDFWriter(DetectorWriter):
                 data_key=name,
                 dataset="/entry/data/data",
                 shape=frame_shape,
-                dtype_str=dtype_str,
+                dtype_numpy=dtype_numpy,
                 multiplier=multiplier,
             )
         ]
@@ -104,7 +104,7 @@ class HDFWriter(DetectorWriter):
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
-                dtype_str=ds.dtype_str,
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
             for ds in self._datasets

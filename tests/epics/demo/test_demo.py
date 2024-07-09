@@ -337,19 +337,19 @@ async def test_dynamic_sensor_group_read_and_describe(
     assert description == {
         "mock_sensor_group-sensors-1-value": {
             "dtype": "number",
-            "dtype_str": "<f8",
+            "dtype_numpy": "<f8",
             "shape": [],
             "source": "mock+ca://MOCK:SENSOR:1:Value",
         },
         "mock_sensor_group-sensors-2-value": {
             "dtype": "number",
-            "dtype_str": "<f8",
+            "dtype_numpy": "<f8",
             "shape": [],
             "source": "mock+ca://MOCK:SENSOR:2:Value",
         },
         "mock_sensor_group-sensors-3-value": {
             "dtype": "number",
-            "dtype_str": "<f8",
+            "dtype_numpy": "<f8",
             "shape": [],
             "source": "mock+ca://MOCK:SENSOR:3:Value",
         },
