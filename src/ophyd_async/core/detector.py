@@ -54,7 +54,7 @@ class DetectorTrigger(str, Enum):
 class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
-    #: Number of triggers that will be sent
+    #: Number of triggers that will be sent, 0 means infinite
     number: int = Field(gt=0)
     #: Sort of triggers that will be sent
     trigger: DetectorTrigger = Field()

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
@@ -16,34 +16,22 @@ from ophyd_async.panda import (
 )
 
 
-def prepare_static_pcomp_flyer_and_detectors_with_same_trigger(
+def prepare_static_pcomp_flyer_and_detectors(
     flyer: HardwareTriggeredFlyable[PcompInfo],
     detectors: List[StandardDetector],
-    number_of_pulses: int,
-    pulse_width: int,
-    rising_edge_step: int,
-    direction: PcompDirectionOptions,
+    pcomp_info: PcompInfo,
+    trigger_info: TriggerInfo,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
 
     Prepare a hardware triggered flyable and one or more detectors with the
-    same trigger. This method constructs PcompInfo from required parameters.
-    The info is required to prepare the flyer and detectors.
-
-    This prepares all supplied detectors with the same trigger.
+    same trigger.
 
     """
-    trigger_info = PcompInfo(
-        start_postion=0,
-        pulse_width=pulse_width,
-        rising_edge_step=rising_edge_step,
-        number_of_pulses=number_of_pulses,
-        direction=direction,
-    )
 
     for det in detectors:
         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
-    yield from bps.prepare(flyer, trigger_info, wait=False, group="prep")
+    yield from bps.prepare(flyer, pcomp_info, wait=False, group="prep")
     yield from bps.wait(group="prep")
 
 
@@ -55,7 +43,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
-    frame_timeout: float | None = None,
+    frame_timeout: Optional[float] = None,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
 
@@ -158,15 +146,18 @@ def fly_and_collect_with_static_pcomp(
     pulse_width: int,
     rising_edge_step: int,
     direction: PcompDirectionOptions,
+    trigger_info: TriggerInfo,
 ):
     # Set up scan and prepare trigger
-    yield from prepare_static_pcomp_flyer_and_detectors_with_same_trigger(
-        flyer,
-        detectors,
-        number_of_pulses,
-        pulse_width,
-        rising_edge_step,
-        direction,
+    pcomp_info = PcompInfo(
+        start_postion=0,
+        pulse_width=pulse_width,
+        rising_edge_step=rising_edge_step,
+        number_of_pulses=number_of_pulses,
+        direction=direction,
+    )
+    yield from prepare_static_pcomp_flyer_and_detectors(
+        flyer, detectors, pcomp_info, trigger_info
     )
 
     # Run the fly scan

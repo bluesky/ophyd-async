@@ -29,11 +29,6 @@ class PcompDirectionOptions(str, Enum):
     either = "Either"
 
 
-class PcompRelativeOptions(str, Enum):
-    absolute = "Absolute"
-    relative = "Relative"
-
-
 EnableDisableOptions = SubsetEnum["ZERO", "ONE"]
 
 

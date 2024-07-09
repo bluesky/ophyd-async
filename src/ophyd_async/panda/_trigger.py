@@ -48,7 +48,7 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
 
 class PcompInfo(BaseModel):
     start_postion: int = Field(description="start position in counts")
-    pulse_width: int = Field(description="number_of_pulses", gt=0)
+    pulse_width: int = Field(description="width of a single pulse in counts", gt=0)
     rising_edge_step: int = Field(
         description="step between rising edges of pulses in counts", gt=0
     )  #
