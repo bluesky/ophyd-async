@@ -1,4 +1,3 @@
-from typing import Sequence
 from unittest.mock import patch
 
 import pytest
@@ -16,8 +15,8 @@ class DummyShapeProvider(ShapeProvider):
     def __init__(self) -> None:
         pass
 
-    async def __call__(self) -> Sequence[int]:
-        return (10, 10, int(ADBaseDataType.UInt16))
+    async def __call__(self) -> tuple:
+        return (10, 10, ADBaseDataType.UInt16)
 
 
 @pytest.fixture
