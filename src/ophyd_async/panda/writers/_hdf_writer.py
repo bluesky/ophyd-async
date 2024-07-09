@@ -12,9 +12,9 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
 from .._common_blocks import CommonPandaBlocks
-from ._panda_hdf_file import _HDFDataset, _HDFFile
 
 
 class PandaHDFWriter(DetectorWriter):
