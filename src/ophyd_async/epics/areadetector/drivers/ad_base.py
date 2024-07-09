@@ -1,6 +1,6 @@
 import asyncio
 from enum import Enum
-from typing import FrozenSet, Sequence, Set
+from typing import FrozenSet, Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -131,11 +131,10 @@ class ADBaseShapeProvider(ShapeProvider):
     def __init__(self, driver: ADBase) -> None:
         self._driver = driver
 
-    async def __call__(self) -> Sequence[int]:
+    async def __call__(self) -> tuple:
         shape = await asyncio.gather(
             self._driver.array_size_y.get_value(),
             self._driver.array_size_x.get_value(),
             self._driver.data_type.get_value(),
         )
-        print(shape)
         return shape
