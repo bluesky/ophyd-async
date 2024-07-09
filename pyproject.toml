@@ -63,6 +63,7 @@ dev = [
     "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",
+    "super_state_machine",
     "tox-direct",
     "types-mock",
     "types-pyyaml",
