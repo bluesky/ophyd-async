@@ -27,7 +27,7 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
@@ -64,12 +64,6 @@ class TriggerInfo(BaseModel):
     livetime: float = Field(ge=0)
     #: What is the maximum timeout on waiting for a frame
     frame_timeout: float | None = Field(None, gt=0)
-
-    @field_validator("trigger", mode="before")
-    def convert_enum_to_string(cls, value):
-        if issubclass(type(value), Enum):
-            return value.value
-        return value
 
 
 class DetectorControl(ABC):

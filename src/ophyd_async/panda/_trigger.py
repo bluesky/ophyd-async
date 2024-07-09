@@ -1,8 +1,7 @@
 import asyncio
-from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 from ophyd_async.panda import (
@@ -67,12 +66,6 @@ class PcompInfo(BaseModel):
             "this direction."
         )
     )
-
-    @field_validator("direction", mode="before")
-    def convert_enum_to_string(cls, value):
-        if issubclass(type(value), Enum):
-            return value.value
-        return value
 
 
 class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
