@@ -61,6 +61,7 @@ dev = [
     "pytest-timeout",
     "ruff",
     "sphinx-autobuild",
+    "autodoc-pydantic",
     "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",
