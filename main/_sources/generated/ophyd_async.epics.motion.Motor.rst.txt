@@ -25,9 +25,12 @@ ophyd\_async.epics.motion.Motor
       ~Motor.add_children_as_readables
       ~Motor.add_readables
       ~Motor.children
+      ~Motor.complete
       ~Motor.connect
       ~Motor.describe
       ~Motor.describe_configuration
+      ~Motor.kickoff
+      ~Motor.prepare
       ~Motor.read
       ~Motor.read_configuration
       ~Motor.set
