@@ -8,6 +8,7 @@ import pytest
 from bluesky.protocols import DataKey, StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
+from pydantic import ValidationError
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -150,7 +151,7 @@ async def test_hardware_triggered_flyable(
     trigger_logic = DummyTriggerLogic()
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
     trigger_info = TriggerInfo(
-        num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
 
     def flying_plan():
@@ -234,3 +235,57 @@ async def test_describe_configuration():
 async def test_read_configuration():
     flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
     assert await flyer.read_configuration() == {}
+
+
+@pytest.mark.parametrize(
+    ["kwargs", "error_msg"],
+    [
+        (
+            {
+                "number": 1,
+                "trigger": DetectorTrigger.constant_gate,
+                "deadtime": 2,
+                "livetime": 2,
+                "frame_timeout": "a",
+            },
+            "Input should be a valid number, unable to parse string as a number "
+            "[type=float_parsing, input_value='a', input_type=str]",
+        ),
+        (
+            {
+                "number": 1,
+                "trigger": "constant_gate",
+                "deadtime": 2,
+                "livetime": -1,
+            },
+            "Input should be greater than or equal to 0 "
+            "[type=greater_than_equal, input_value=-1, input_type=int]",
+        ),
+        (
+            {
+                "number": 1,
+                "trigger": DetectorTrigger.internal,
+                "deadtime": 2,
+                "livetime": 1,
+                "frame_timeout": -1,
+            },
+            "Input should be greater than 0 "
+            "[type=greater_than, input_value=-1, input_type=int]",
+        ),
+        (
+            {
+                "number": 1,
+                "trigger": "not_in_enum",
+                "deadtime": 2,
+                "livetime": 1,
+                "frame_timeout": None,
+            },
+            "Input should be 'internal', 'edge_trigger', 'constant_gate' or "
+            "'variable_gate' [type=enum, input_value='not_in_enum', input_type=str]",
+        ),
+    ],
+)
+def test_malformed_trigger_info(kwargs, error_msg):
+    with pytest.raises(ValidationError) as exc:
+        TriggerInfo(**kwargs)
+    assert error_msg in str(exc.value)

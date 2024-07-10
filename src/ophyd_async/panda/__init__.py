@@ -1,7 +1,10 @@
 from ._common_blocks import (
     CommonPandaBlocks,
     DataBlock,
+    EnableDisableOptions,
     PcapBlock,
+    PcompBlock,
+    PcompDirectionOptions,
     PulseBlock,
     SeqBlock,
     TimeUnits,
@@ -15,17 +18,27 @@ from ._table import (
     seq_table_from_arrays,
     seq_table_from_rows,
 )
-from ._trigger import StaticSeqTableTriggerLogic
+from ._trigger import (
+    PcompInfo,
+    SeqTableInfo,
+    StaticPcompTriggerLogic,
+    StaticSeqTableTriggerLogic,
+)
 from ._utils import phase_sorter
 
 __all__ = [
     "CommonPandaBlocks",
     "HDFPanda",
+    "PcompBlock",
+    "PcompInfo",
+    "PcompDirectionOptions",
+    "EnableDisableOptions",
     "PcapBlock",
     "PulseBlock",
     "seq_table_from_arrays",
     "seq_table_from_rows",
     "SeqBlock",
+    "SeqTableInfo",
     "SeqTable",
     "SeqTableRow",
     "SeqTrigger",
@@ -35,4 +48,5 @@ __all__ = [
     "DataBlock",
     "CommonPandABlocks",
     "StaticSeqTableTriggerLogic",
+    "StaticPcompTriggerLogic",
 ]
