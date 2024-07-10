@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.detector &#8212; ophyd-async 0.3.5.dev7+g99dadb7e documentation</title>
+    <title>ophyd_async.core.detector &#8212; ophyd-async 0.3.5.dev8+gbd6085ba documentation</title>
   
   
   
@@ -28,6 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
@@ -38,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=d917835b"></script>
+    <script src="../../../_static/documentation_options.js?v=9ae1f584"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,7 +492,6 @@ document.write(`
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsyncGenerator</span><span class="p">,</span>
@@ -516,6 +516,7 @@ document.write(`
     <span class="n">Triggerable</span><span class="p">,</span>
     <span class="n">WritesStreamAssets</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.protocols</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
 
@@ -542,23 +543,19 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="TriggerInfo">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.TriggerInfo.html#ophyd_async.core.TriggerInfo">[docs]</a>
-<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">TriggerInfo</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">TriggerInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to setup triggering on a detector&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Number of triggers that will be sent</span>
-    <span class="n">num</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Number of triggers that will be sent, 0 means infinite</span>
+    <span class="n">number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="c1">#: Sort of triggers that will be sent</span>
-    <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span>
+    <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">Field</span><span class="p">()</span>
     <span class="c1">#: What is the minimum deadtime between triggers</span>
-    <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="c1">#: What is the maximum high time of the triggers</span>
-    <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="c1">#: What is the maximum timeout on waiting for a frame</span>
-    <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
-
+    <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="DetectorControl">
@@ -789,12 +786,12 @@ document.write(`
     <span class="k">async</span> <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># set default trigger_info</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">TriggerInfo</span><span class="p">(</span>
-            <span class="n">num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span> <span class="n">deadtime</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">0.0</span>
+            <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span> <span class="n">deadtime</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">0.0</span>
         <span class="p">)</span>
         <span class="c1"># Arm the detector and wait for it to finish.</span>
         <span class="n">indices_written</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
         <span class="n">written_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">(</span>
-            <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+            <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
             <span class="n">trigger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">await</span> <span class="n">written_status</span>
@@ -835,7 +832,7 @@ document.write(`
         <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="n">TriggerInfo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span>
 
         <span class="n">required</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">required</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span> <span class="p">(</span>
@@ -843,7 +840,7 @@ document.write(`
             <span class="sa">f</span><span class="s2">&quot;but trigger logic provides only </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="si">}</span><span class="s2">s&quot;</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">(</span>
-            <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+            <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
             <span class="n">trigger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span>
             <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">,</span>
         <span class="p">)</span>
@@ -875,12 +872,12 @@ document.write(`
                 <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
                 <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
-                <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
                 <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
                 <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">num</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">:</span>
                 <span class="k">break</span></div>
 
 

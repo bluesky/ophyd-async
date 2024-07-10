@@ -37,6 +37,9 @@ ophyd\_async.panda
    
       CommonPandaBlocks
       HDFPanda
+      PcompBlock
+      PcompDirectionOptions
+      EnableDisableOptions
       PcapBlock
       PulseBlock
       SeqBlock
@@ -47,6 +50,7 @@ ophyd\_async.panda
       TimeUnits
       DataBlock
       StaticSeqTableTriggerLogic
+      StaticPcompTriggerLogic
    
    
 

@@ -87,7 +87,6 @@ ophyd\_async.core
       StandardDetector
       StandardReadable
       StaticDirectoryProvider
-      TriggerInfo
       TriggerLogic
       WatchableAsyncStatus
    

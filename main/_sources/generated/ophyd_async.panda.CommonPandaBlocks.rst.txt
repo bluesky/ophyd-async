@@ -39,6 +39,7 @@ ophyd\_async.panda.CommonPandaBlocks
       ~CommonPandaBlocks.parent
       ~CommonPandaBlocks.pulse
       ~CommonPandaBlocks.seq
+      ~CommonPandaBlocks.pcomp
       ~CommonPandaBlocks.pcap
       ~CommonPandaBlocks.data
    

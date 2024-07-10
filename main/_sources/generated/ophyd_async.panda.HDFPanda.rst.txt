@@ -54,6 +54,7 @@ ophyd\_async.panda.HDFPanda
       ~HDFPanda.writer
       ~HDFPanda.pulse
       ~HDFPanda.seq
+      ~HDFPanda.pcomp
       ~HDFPanda.pcap
       ~HDFPanda.data
    
