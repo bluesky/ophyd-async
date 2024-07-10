@@ -78,7 +78,7 @@ class SoftArrayConverter(SoftConverter):
         dtype_numpy = ""
         if isinstance(value, list):
             if len(value) > 0:
-                dtype_numpy = np.dtype(type(value)).descr[0][1]
+                dtype_numpy = np.dtype(type(value[0])).descr[0][1]
         else:
             dtype_numpy = np.dtype(value.dtype).descr[0][1]
 
