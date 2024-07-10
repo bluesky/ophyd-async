@@ -46,6 +46,11 @@ class TangoReadableDevice(StandardReadable):
             return self
 
         await closure()
+
+        # If a register_signals method is defined, call it
+        if hasattr(self, "register_signals"):
+            self.register_signals()
+
         await super().connect(mock=mock, timeout=timeout)
 
     # --------------------------------------------------------------------
