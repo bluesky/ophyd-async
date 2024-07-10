@@ -10,7 +10,6 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    TypedDict,
     Union,
     cast,
     get_origin,
@@ -18,6 +17,7 @@ from typing import (
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
+from typing_extensions import TypedDict
 
 from .signal_backend import RuntimeSubsetEnum, SignalBackend
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype

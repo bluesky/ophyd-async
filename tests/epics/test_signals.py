@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from types import GenericAlias
-from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type, TypedDict
+from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type
 from unittest.mock import ANY
 
 import numpy as np
@@ -18,6 +18,7 @@ import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import DataKey, Reading
+from typing_extensions import TypedDict
 
 from ophyd_async.core import SignalBackend, T, load_from_yaml, save_to_yaml
 from ophyd_async.core.signal_backend import SubsetEnum

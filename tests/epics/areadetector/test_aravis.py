@@ -152,4 +152,12 @@ async def test_unsupported_trigger_excepts(adaravis: AravisDetector):
         # str(EnumClass.value) handling changed in Python 3.11
         match=r"AravisController only supports the following trigger types: .* but",
     ):
-        await adaravis.prepare(TriggerInfo(1, DetectorTrigger.variable_gate, 1, 1))
+        await adaravis.prepare(
+            TriggerInfo(
+                number=1,
+                trigger=DetectorTrigger.variable_gate,
+                deadtime=1,
+                livetime=1,
+                frame_timeout=3,
+            )
+        )
