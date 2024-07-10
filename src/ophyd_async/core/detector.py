@@ -3,7 +3,6 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum
 from typing import (
     AsyncGenerator,
@@ -28,6 +27,7 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
+from pydantic import BaseModel, Field
 
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
@@ -51,20 +51,19 @@ class DetectorTrigger(str, Enum):
     variable_gate = "variable_gate"
 
 
-@dataclass(frozen=True)
-class TriggerInfo:
+class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
-    #: Number of triggers that will be sent
-    num: int
+    #: Number of triggers that will be sent, 0 means infinite
+    number: int = Field(gt=0)
     #: Sort of triggers that will be sent
-    trigger: DetectorTrigger
+    trigger: DetectorTrigger = Field()
     #: What is the minimum deadtime between triggers
-    deadtime: float
+    deadtime: float = Field(ge=0)
     #: What is the maximum high time of the triggers
-    livetime: float
+    livetime: float = Field(ge=0)
     #: What is the maximum timeout on waiting for a frame
-    frame_timeout: float | None = None
+    frame_timeout: float | None = Field(None, gt=0)
 
 
 class DetectorControl(ABC):
@@ -243,12 +242,12 @@ class StandardDetector(
     async def trigger(self) -> None:
         # set default trigger_info
         self._trigger_info = TriggerInfo(
-            num=1, trigger=DetectorTrigger.internal, deadtime=0.0, livetime=0.0
+            number=1, trigger=DetectorTrigger.internal, deadtime=0.0, livetime=0.0
         )
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(
-            num=self._trigger_info.num,
+            num=self._trigger_info.number,
             trigger=self._trigger_info.trigger,
         )
         await written_status
@@ -285,7 +284,7 @@ class StandardDetector(
         assert type(value) is TriggerInfo
         self._trigger_info = value
         self._initial_frame = await self.writer.get_indices_written()
-        self._last_frame = self._initial_frame + self._trigger_info.num
+        self._last_frame = self._initial_frame + self._trigger_info.number
 
         required = self.controller.get_deadtime(self._trigger_info.livetime)
         assert required <= self._trigger_info.deadtime, (
@@ -293,7 +292,7 @@ class StandardDetector(
             f"but trigger logic provides only {self._trigger_info.deadtime}s"
         )
         self._arm_status = await self.controller.arm(
-            num=self._trigger_info.num,
+            num=self._trigger_info.number,
             trigger=self._trigger_info.trigger,
             exposure=self._trigger_info.livetime,
         )
@@ -320,12 +319,12 @@ class StandardDetector(
                 name=self.name,
                 current=index,
                 initial=self._initial_frame,
-                target=self._trigger_info.num,
+                target=self._trigger_info.number,
                 unit="",
                 precision=0,
                 time_elapsed=time.monotonic() - self._fly_start,
             )
-            if index >= self._trigger_info.num:
+            if index >= self._trigger_info.number:
                 break
 
     async def describe_collect(self) -> Dict[str, DataKey]:

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
@@ -6,8 +6,33 @@ from bluesky.utils import short_uid
 from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.utils import in_micros
-from ophyd_async.panda._table import SeqTable, SeqTableRow, seq_table_from_rows
-from ophyd_async.panda._trigger import SeqTableInfo
+from ophyd_async.panda import (
+    PcompDirectionOptions,
+    PcompInfo,
+    SeqTable,
+    SeqTableInfo,
+    SeqTableRow,
+    seq_table_from_rows,
+)
+
+
+def prepare_static_pcomp_flyer_and_detectors(
+    flyer: HardwareTriggeredFlyable[PcompInfo],
+    detectors: List[StandardDetector],
+    pcomp_info: PcompInfo,
+    trigger_info: TriggerInfo,
+):
+    """Prepare a hardware triggered flyable and one or more detectors.
+
+    Prepare a hardware triggered flyable and one or more detectors with the
+    same trigger.
+
+    """
+
+    for det in detectors:
+        yield from bps.prepare(det, trigger_info, wait=False, group="prep")
+    yield from bps.prepare(flyer, pcomp_info, wait=False, group="prep")
+    yield from bps.wait(group="prep")
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
@@ -18,7 +43,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
-    frame_timeout: float | None = None,
+    frame_timeout: Optional[float] = None,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
 
@@ -36,7 +61,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
 
     trigger_info = TriggerInfo(
-        num=number_of_frames * repeats,
+        number=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
         livetime=exposure,
@@ -65,7 +90,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         SeqTableRow(time2=in_micros(shutter_time)),
     )
 
-    table_info = SeqTableInfo(table, repeats)
+    table_info = SeqTableInfo(sequence_table=table, repeats=repeats)
 
     for det in detectors:
         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
@@ -75,7 +100,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
 def fly_and_collect(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    flyer: HardwareTriggeredFlyable[SeqTableInfo] | HardwareTriggeredFlyable[PcompInfo],
     detectors: List[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
@@ -111,6 +136,32 @@ def fly_and_collect(
             name=stream_name,
         )
     yield from bps.wait(group=group)
+
+
+def fly_and_collect_with_static_pcomp(
+    stream_name: str,
+    flyer: HardwareTriggeredFlyable[PcompInfo],
+    detectors: List[StandardDetector],
+    number_of_pulses: int,
+    pulse_width: int,
+    rising_edge_step: int,
+    direction: PcompDirectionOptions,
+    trigger_info: TriggerInfo,
+):
+    # Set up scan and prepare trigger
+    pcomp_info = PcompInfo(
+        start_postion=0,
+        pulse_width=pulse_width,
+        rising_edge_step=rising_edge_step,
+        number_of_pulses=number_of_pulses,
+        direction=direction,
+    )
+    yield from prepare_static_pcomp_flyer_and_detectors(
+        flyer, detectors, pcomp_info, trigger_info
+    )
+
+    # Run the fly scan
+    yield from fly_and_collect(stream_name, flyer, detectors)
 
 
 def time_resolved_fly_and_collect_with_static_seq_table(

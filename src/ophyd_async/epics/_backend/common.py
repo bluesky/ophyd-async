@@ -1,6 +1,8 @@
 import inspect
 from enum import Enum
-from typing import Dict, Optional, Tuple, Type, TypedDict
+from typing import Dict, Optional, Tuple, Type
+
+from typing_extensions import TypedDict
 
 from ophyd_async.core.signal_backend import RuntimeSubsetEnum
 

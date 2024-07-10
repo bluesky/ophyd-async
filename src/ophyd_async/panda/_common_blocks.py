@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum
 
 from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW
+from ophyd_async.core.signal_backend import SubsetEnum
 from ophyd_async.panda._table import DatasetTable, SeqTable
 
 
@@ -22,6 +23,25 @@ class PulseBlock(Device):
     width: SignalRW[float]
 
 
+class PcompDirectionOptions(str, Enum):
+    positive = "Positive"
+    negative = "Negative"
+    either = "Either"
+
+
+EnableDisableOptions = SubsetEnum["ZERO", "ONE"]
+
+
+class PcompBlock(Device):
+    active: SignalR[bool]
+    dir: SignalRW[PcompDirectionOptions]
+    enable: SignalRW[EnableDisableOptions]
+    pulses: SignalRW[int]
+    start: SignalRW[int]
+    step: SignalRW[int]
+    width: SignalRW[int]
+
+
 class TimeUnits(str, Enum):
     min = "min"
     s = "s"
@@ -35,7 +55,7 @@ class SeqBlock(Device):
     repeats: SignalRW[int]
     prescale: SignalRW[float]
     prescale_units: SignalRW[TimeUnits]
-    enable: SignalRW[str]
+    enable: SignalRW[EnableDisableOptions]
 
 
 class PcapBlock(Device):
@@ -46,5 +66,6 @@ class PcapBlock(Device):
 class CommonPandaBlocks(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
+    pcomp: DeviceVector[PcompBlock]
     pcap: PcapBlock
     data: DataBlock
