@@ -129,17 +129,17 @@ class PatternGenerator:
         assert self._handle_for_h5_file, "not loaded the file right"
 
         raw_dataset = self._handle_for_h5_file.create_dataset(
-            name=DATA_PATH,
-            shape=(0, self.height, self.width),
+            DATA_PATH,
             dtype=np.uint8,
+            shape=(0, self.height, self.width),
             maxshape=(None, self.height, self.width),
         )
 
         sum_dataset = self._handle_for_h5_file.create_dataset(
-            name=SUM_PATH,
-            shape=(0, self.height, self.width),
+            SUM_PATH,
             dtype=np.float64,
-            maxshape=(None, self.height, self.width),
+            shape=(0,),
+            maxshape=(None,),
         )
 
         datasets = [raw_dataset, sum_dataset]
