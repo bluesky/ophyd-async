@@ -10,7 +10,7 @@ from event_model import (
     StreamResource,
 )
 
-from ophyd_async.core import DirectoryInfo
+from ophyd_async.core import PathInfo
 
 
 @dataclass
@@ -35,7 +35,7 @@ class _HDFFile:
 
     def __init__(
         self,
-        directory_info: DirectoryInfo,
+        path_info: PathInfo,
         full_file_name: Path,
         datasets: List[_HDFDataset],
         hostname: str = "localhost",
@@ -53,7 +53,7 @@ class _HDFFile:
             (
                 "file",
                 self._hostname,
-                str((directory_info.root / full_file_name).absolute()),
+                str((path_info.root / full_file_name).absolute()),
                 "",
                 "",
                 None,

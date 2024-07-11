@@ -5,7 +5,7 @@ from event_model import StreamDatum, StreamResource, compose_stream_resource
 
 from ophyd_async.core import PathInfo
 
-from ._hdfdataset import _HDFDataset
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset
 
 
 class _HDFFile:
