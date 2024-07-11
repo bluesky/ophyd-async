@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
+from typing import AsyncGenerator, AsyncIterator, Dict, Optional
 
 import h5py
 import numpy as np
@@ -20,6 +20,8 @@ SUM_PATH = "/entry/sum"
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
+
+source = f"soft://{_HDFDataset.data_key}"
 
 
 def generate_gaussian_blob(height: int, width: int) -> np.ndarray:
@@ -126,19 +128,21 @@ class PatternGenerator:
 
         assert self._handle_for_h5_file, "not loaded the file right"
 
-        self._handle_for_h5_file.create_dataset(
+        raw_dataset = self._handle_for_h5_file.create_dataset(
             name=DATA_PATH,
             shape=(0, self.height, self.width),
             dtype=np.uint8,
             maxshape=(None, self.height, self.width),
         )
 
-        self._handle_for_h5_file.create_dataset(
+        sum_dataset = self._handle_for_h5_file.create_dataset(
             name=SUM_PATH,
             shape=(0, self.height, self.width),
             dtype=np.float64,
             maxshape=(None, self.height, self.width),
         )
+
+        datasets = [raw_dataset, sum_dataset]
 
         # once datasets written, can switch the model to single writer multiple reader
         self._handle_for_h5_file.swmr_mode = True
@@ -146,8 +150,8 @@ class PatternGenerator:
         outer_shape = (multiplier,) if multiplier > 1 else ()
 
         # cache state to self
-        self._datasets = List[_HDFDataset]
-        full_file_description = self._datasets, outer_shape
+        self._datasets = datasets
+        full_file_description = source, self._datasets, outer_shape
         self.multiplier = multiplier
         self._directory_provider = directory
         return full_file_description
