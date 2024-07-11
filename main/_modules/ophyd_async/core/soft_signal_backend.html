@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core.soft_signal_backend &#8212; ophyd-async 0.3.5.dev9+g567cc4bb documentation</title>
+    <title>ophyd_async.core.soft_signal_backend &#8212; ophyd-async 0.3.5.dev10+g0f67e377 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=617e2eb9"></script>
+    <script src="../../../_static/documentation_options.js?v=d5a2f90a"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -549,6 +549,10 @@ document.write(`
             <span class="n">dtype</span> <span class="ow">in</span> <span class="n">primitive_dtypes</span>
         <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;invalid converter for value of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">dk</span><span class="p">[</span><span class="s2">&quot;dtype&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">primitive_dtypes</span><span class="p">[</span><span class="n">dtype</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dk</span><span class="p">[</span><span class="s2">&quot;dtype_numpy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">descr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">dk</span><span class="p">[</span><span class="s2">&quot;dtype_numpy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">return</span> <span class="n">dk</span>
 
     <span class="k">def</span> <span class="nf">make_initial_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
@@ -560,7 +564,20 @@ document.write(`
 
 <span class="k">class</span> <span class="nc">SoftArrayConverter</span><span class="p">(</span><span class="n">SoftConverter</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)],</span> <span class="o">**</span><span class="n">metadata</span><span class="p">}</span>
+        <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">descr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">descr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+            <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dtype_numpy&quot;</span><span class="p">:</span> <span class="n">dtype_numpy</span><span class="p">,</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)],</span>
+            <span class="o">**</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">make_initial_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -588,6 +605,7 @@ document.write(`
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
             <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dtype_numpy&quot;</span><span class="p">:</span> <span class="s2">&quot;|S40&quot;</span><span class="p">,</span>
             <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[],</span>
             <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">,</span>
             <span class="o">**</span><span class="n">metadata</span><span class="p">,</span>

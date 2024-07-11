@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._providers &#8212; ophyd-async 0.3.5.dev9+g567cc4bb documentation</title>
+    <title>ophyd_async.core._providers &#8212; ophyd-async 0.3.5.dev10+g0f67e377 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=617e2eb9"></script>
+    <script src="../../../_static/documentation_options.js?v=d5a2f90a"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -490,7 +490,7 @@ document.write(`
 <span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Union</span>
 
 
 <div class="viewcode-block" id="DirectoryInfo">
@@ -578,7 +578,7 @@ document.write(`
 <div class="viewcode-block" id="ShapeProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.ShapeProvider.html#ophyd_async.core.ShapeProvider.__call__">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the shape of the data collection&quot;&quot;&quot;</span></div>
 </div>
 
