@@ -1,5 +1,6 @@
 import asyncio
 import atexit
+import inspect
 import logging
 import time
 from dataclasses import dataclass
@@ -19,6 +20,7 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
+from ophyd_async.core.signal_backend import RuntimeSubsetEnum
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
 from .common import LimitPair, Limits, common_meta, get_supported_values
@@ -249,7 +251,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
     typ = get_unique(
         {k: type(v.get("value")) for k, v in values.items()}, "value types"
     )
-    if "NTScalarArray" in typeid and typ == list:
+    if "NTScalarArray" in typeid and typ is list:
         # Waveform of strings, check we wanted this
         if datatype and datatype != Sequence[str]:
             raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
@@ -287,6 +289,14 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
         if (
+            typ is str
+            and inspect.isclass(datatype)
+            and issubclass(datatype, RuntimeSubsetEnum)
+        ):
+            return PvaEnumConverter(
+                get_supported_values(pv, datatype, datatype.choices)
+            )
+        elif (
             datatype
             and not issubclass(typ, datatype)
             and not (

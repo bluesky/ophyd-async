@@ -17,10 +17,12 @@ dependencies = [
     "packaging",
     "pint",
     "bluesky>=1.13.0a3",
-    "event-model<1.21.0",
+    "event_model",
     "p4p",
     "pyyaml",
     "colorlog",
+    "pydantic",
+    "pydantic-numpy",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -59,6 +61,7 @@ dev = [
     "pytest-timeout",
     "ruff",
     "sphinx-autobuild",
+    "autodoc-pydantic",
     "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",

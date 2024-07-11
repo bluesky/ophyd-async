@@ -97,7 +97,7 @@ async def test_signal_connects_to_previous_backend(caplog):
     signal = Signal(int_mock_backend)
     assert await time_taken_by(
         asyncio.gather(signal.connect(), signal.connect())
-    ) == pytest.approx(0.1, rel=1e-2)
+    ) == pytest.approx(0.1, abs=1e-2)
     response = f"Reusing previous connection to {signal.source}"
     assert response in caplog.text
 
@@ -106,7 +106,7 @@ async def test_signal_connects_with_force_reconnect(caplog):
     caplog.set_level(logging.DEBUG)
     signal = Signal(MockSignalBackend(int))
     await signal.connect()
-    assert signal._backend.datatype == int
+    assert signal._backend.datatype is int
     await signal.connect(force_reconnect=True)
     response = f"Connecting to {signal.source}"
     assert response in caplog.text
@@ -123,7 +123,7 @@ async def test_rejects_reconnect_when_connects_have_diff_mock_status(
     caplog.set_level(logging.DEBUG)
     signal = Signal(MockSignalBackend(int))
     await signal.connect(mock=first)
-    assert signal._backend.datatype == int
+    assert signal._backend.datatype is int
     with pytest.raises(RuntimeError) as exc:
         await signal.connect(mock=second)
 

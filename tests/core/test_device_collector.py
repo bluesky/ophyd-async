@@ -2,8 +2,7 @@ import asyncio
 
 import pytest
 from bluesky import plan_stubs as bps
-from bluesky.run_engine import RunEngine
-from super_state_machine.errors import TransitionError
+from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, NotConnected
 from ophyd_async.core.mock_signal_utils import set_mock_value
@@ -61,26 +60,6 @@ def test_sync_device_connector_run_engine_created_connects(RE):
         working_device = WorkingDevice("somename")
 
     assert working_device.connected
-
-
-@pytest.fixture(scope="function")
-def get_loop_and_runengine(request):
-    loop = asyncio.new_event_loop()
-    loop.set_debug(True)
-    RE = RunEngine({}, call_returns_result=True, loop=loop)
-
-    def clean_event_loop():
-        if RE.state not in ("idle", "panicked"):
-            try:
-                RE.halt()
-            except TransitionError:
-                pass
-        loop.call_soon_threadsafe(loop.stop)
-        RE._th.join()
-        loop.close()
-
-    request.addfinalizer(clean_event_loop)
-    return RE
 
 
 def test_async_device_connector_run_engine_same_event_loop():

@@ -27,7 +27,7 @@ async def test_async_status_propagates_exception(failing_coroutine):
     with pytest.raises(ValueError):
         await status
 
-    assert type(status.exception()) == ValueError
+    assert isinstance(status.exception(), ValueError)
 
 
 async def test_async_status_propagates_cancelled_error(normal_coroutine):
@@ -37,7 +37,7 @@ async def test_async_status_propagates_cancelled_error(normal_coroutine):
     status.task.exception = Mock(side_effect=asyncio.CancelledError(""))
     await status
 
-    assert type(status.exception()) == asyncio.CancelledError
+    assert isinstance(status.exception(), asyncio.CancelledError)
 
 
 async def test_async_status_has_no_exception_if_coroutine_successful(normal_coroutine):
