@@ -5,7 +5,7 @@ import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
 
-from ophyd_async.core import PathInfo, PathProvider
+from ophyd_async.core import PathProvider
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import observe_value, soft_signal_r_and_setter
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
@@ -36,67 +36,6 @@ def generate_interesting_pattern(x: float, y: float) -> float:
     return z
 
 
-<<<<<<< HEAD
-=======
-class HdfStreamProvider:
-    def __init__(
-        self,
-        path_info: PathInfo,
-        full_file_name: Path,
-        datasets: List[DatasetConfig],
-    ) -> None:
-        self._last_emitted = 0
-        self._bundles: List[ComposeStreamResourceBundle] = self._compose_bundles(
-            path_info, full_file_name, datasets
-        )
-
-    def _compose_bundles(
-        self,
-        path_info: PathInfo,
-        full_file_name: Path,
-        datasets: List[DatasetConfig],
-    ) -> List[StreamAsset]:
-        bundler_composer = ComposeStreamResource()
-
-        bundles: List[ComposeStreamResourceBundle] = []
-
-        bundles = [
-            bundler_composer(
-                mimetype="application/x-hdf5",
-                uri=f"file://{full_file_name}",
-                data_key=d.name.replace("/", "_"),
-                parameters={
-                    "path": d.path,
-                    "multiplier": d.multiplier,
-                    "timestamps": "/entry/instrument/NDAttributes/NDArrayTimeStamp",
-                },
-            )
-            for d in datasets
-        ]
-        return bundles
-
-    def stream_resources(self) -> Iterator[StreamResource]:
-        for bundle in self._bundles:
-            yield bundle.stream_resource_doc
-
-    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
-        # Indices are relative to resource
-        if indices_written > self._last_emitted:
-            updated_stream_range = StreamRange(
-                start=self._last_emitted,
-                stop=indices_written,
-            )
-            self._last_emitted = indices_written
-            for bundle in self._bundles:
-                yield bundle.compose_stream_datum(indices=updated_stream_range)
-        return None
-
-    def close(self) -> None:
-        for bundle in self._bundles:
-            bundle.close()
-
-
->>>>>>> 588006e6 (Fix panda's  to be absolute path)
 class PatternGenerator:
     def __init__(
         self,

@@ -8,10 +8,8 @@ from p4p.client.thread import Context
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorWriter,
-    Device,
     NameProvider,
     PathProvider,
-    SignalR,
     wait_for_value,
 )
 from ophyd_async.core.signal import observe_value

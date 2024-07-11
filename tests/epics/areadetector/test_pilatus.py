@@ -26,11 +26,11 @@ async def pilatus(
     return adpilatus
 
 
-async def test_deadtime_overridable(static_directory_provider: DirectoryProvider):
+async def test_deadtime_overridable(static_path_provider: PathProvider):
     async with DeviceCollector(mock=True):
         pilatus = PilatusDetector(
             "PILATUS:",
-            static_directory_provider,
+            static_path_provider,
             readout_time=PilatusReadoutTime.pilatus2,
         )
     pilatus_controller = pilatus.controller

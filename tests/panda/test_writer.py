@@ -9,11 +9,11 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     SignalR,
-    SimSignalBackend,
     StaticFilenameProvider,
     StaticPathProvider,
     set_mock_value,
 )
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType

@@ -2,7 +2,7 @@ from typing import get_args
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import PathProvider, StandardDetector, TriggerInfo
+from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.epics.areadetector.controllers.aravis_controller import (
     AravisController,
 )
