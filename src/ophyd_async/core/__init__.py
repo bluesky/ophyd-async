@@ -87,7 +87,6 @@ __all__ = [
     "DetectorWriter",
     "Device",
     "DeviceCollector",
-    "DeviceNameFilenameProvider",
     "DeviceVector",
     "FilenameProvider",
     "HardwareTriggeredFlyable",
