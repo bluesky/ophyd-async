@@ -23,13 +23,12 @@ async def sim_x_motor():
 
 async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     # Test the generated Trajectory profile from a scanspec
+    prefix = "BLxxI-MO-STEP-01"
     async with DeviceCollector(mock=True):
-        prefix = "BLxxI-MO-STEP-01"
-        motors = [sim_x_motor]
-        traj = PmacTrajectory(prefix, "BRICK1.CS3", motors, name="sim_pmac")
-        spec = fly(Line("z", 1, 5, 9), 1)
-        stack = spec.calculate()
-        await traj.prepare(stack)
+        traj = PmacTrajectory(prefix, "BRICK1.CS3", name="sim_pmac")
+    spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
+    stack = spec.calculate()
+    await traj.prepare(stack)
     assert traj.profile == {
         "duration": [
             1050000,
