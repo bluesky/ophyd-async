@@ -9,7 +9,7 @@ from ophyd_async.core import DirectoryProvider
 from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import SignalR, observe_value
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
-from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
 
 # raw data path
 DATA_PATH = "/entry/data/data"
@@ -20,8 +20,6 @@ SUM_PATH = "/entry/sum"
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
-
-source = f"soft://{_HDFDataset.data_key}"
 
 
 def generate_gaussian_blob(height: int, width: int) -> np.ndarray:
@@ -151,7 +149,7 @@ class PatternGenerator:
 
         # cache state to self
         self._datasets = datasets
-        full_file_description = source, self._datasets, outer_shape
+        full_file_description = self._datasets, outer_shape
         self.multiplier = multiplier
         self._directory_provider = directory
         return full_file_description
