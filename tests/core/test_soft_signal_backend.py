@@ -66,23 +66,23 @@ class MonitorQueue:
 
 
 @pytest.mark.parametrize(
-    "datatype, initial_value, put_value, descriptor",
+    "datatype, initial_value, put_value, descriptor, dtype_numpy",
     [
-        (int, 0, 43, integer_d),
-        (float, 0.0, 43.5, number_d),
-        (str, "", "goodbye", string_d),
-        (MyEnum, MyEnum.a, MyEnum.c, enum_d),
-        (npt.NDArray[np.int8], [], [-8, 3, 44], waveform_d),
-        (npt.NDArray[np.uint8], [], [218], waveform_d),
-        (npt.NDArray[np.int16], [], [-855], waveform_d),
-        (npt.NDArray[np.uint16], [], [5666], waveform_d),
-        (npt.NDArray[np.int32], [], [-2], waveform_d),
-        (npt.NDArray[np.uint32], [], [1022233], waveform_d),
-        (npt.NDArray[np.int64], [], [-3], waveform_d),
-        (npt.NDArray[np.uint64], [], [995444], waveform_d),
-        (npt.NDArray[np.float32], [], [1.0], waveform_d),
-        (npt.NDArray[np.float64], [], [0.2], waveform_d),
-        (Sequence[str], [], ["nine", "ten"], waveform_d),
+        (int, 0, 43, integer_d, "<i8"),
+        (float, 0.0, 43.5, number_d, "<f8"),
+        (str, "", "goodbye", string_d, "<U0"),
+        (MyEnum, MyEnum.a, MyEnum.c, enum_d, "|S40"),
+        (npt.NDArray[np.int8], [], [-8, 3, 44], waveform_d, "<f8"),
+        (npt.NDArray[np.uint8], [], [218], waveform_d, "<f8"),
+        (npt.NDArray[np.int16], [], [-855], waveform_d, "<f8"),
+        (npt.NDArray[np.uint16], [], [5666], waveform_d, "<f8"),
+        (npt.NDArray[np.int32], [], [-2], waveform_d, "<f8"),
+        (npt.NDArray[np.uint32], [], [1022233], waveform_d, "<f8"),
+        (npt.NDArray[np.int64], [], [-3], waveform_d, "<f8"),
+        (npt.NDArray[np.uint64], [], [995444], waveform_d, "<f8"),
+        (npt.NDArray[np.float32], [], [1.0], waveform_d, "<f8"),
+        (npt.NDArray[np.float64], [], [0.2], waveform_d, "<f8"),
+        (Sequence[str], [], ["nine", "ten"], waveform_d, ""),
         # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
         # (str, "longstr", ls1, ls2, string_d),
         # (str, "longstr2.VAL$", ls1, ls2, string_d),
@@ -93,6 +93,7 @@ async def test_soft_signal_backend_get_put_monitor(
     initial_value: T,
     put_value: T,
     descriptor: Callable[[Any], dict],
+    dtype_numpy: str,
 ):
     backend = SoftSignalBackend(datatype)
 
@@ -101,8 +102,9 @@ async def test_soft_signal_backend_get_put_monitor(
     try:
         # Check descriptor
         source = "soft://test"
+        # Add expected dtype_numpy to descriptor
         assert dict(
-            source=source, **descriptor(initial_value)
+            source=source, **descriptor(initial_value), dtype_numpy=dtype_numpy
         ) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(

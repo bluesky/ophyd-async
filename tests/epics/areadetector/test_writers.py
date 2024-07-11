@@ -1,4 +1,3 @@
-from typing import Sequence
 from unittest.mock import patch
 
 import pytest
@@ -9,15 +8,15 @@ from ophyd_async.core import (
     StaticDirectoryProvider,
     set_mock_value,
 )
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+from ophyd_async.epics.areadetector.writers import ADBaseDataType, HDFWriter, NDFileHDF
 
 
 class DummyShapeProvider(ShapeProvider):
     def __init__(self) -> None:
         pass
 
-    async def __call__(self) -> Sequence[int]:
-        return (10, 10)
+    async def __call__(self) -> tuple:
+        return (10, 10, ADBaseDataType.UInt16)
 
 
 @pytest.fixture
@@ -43,6 +42,7 @@ async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
             "source": "mock+ca://HDF:FullFileName_RBV",
             "shape": (10, 10),
             "dtype": "array",
+            "dtype_numpy": "<u2",
             "external": "STREAM:",
         }
     }

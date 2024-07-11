@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Protocol, Sequence, Union
+from typing import Optional, Protocol, Union
 
 
 @dataclass
@@ -64,5 +64,5 @@ class NameProvider(Protocol):
 
 class ShapeProvider(Protocol):
     @abstractmethod
-    async def __call__(self) -> Sequence[int]:
+    async def __call__(self) -> tuple:
         """Get the shape of the data collection"""
