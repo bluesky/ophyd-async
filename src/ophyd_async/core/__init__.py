@@ -140,7 +140,6 @@ __all__ = [
     "set_mock_value",
     "set_mock_values",
     "set_signal_values",
-    "soft_signal_r_and_backend",
     "soft_signal_r_and_setter",
     "soft_signal_rw",
     "wait_for_connection",
