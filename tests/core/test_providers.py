@@ -74,7 +74,9 @@ def test_auto_increment_path_provider(static_filename_provider, tmp_path):
 def test_ymd_path_provider(static_filename_provider, tmp_path):
     ymd_path_provider = YMDPathProvider(static_filename_provider, tmp_path)
     current_date = date.today()
-    date_path = f"{current_date.year:04d}/{current_date.month:02d}/{current_date.day:02d}"
+    date_path = (
+        f"{current_date.year:04d}/{current_date.month:02d}/{current_date.day:02d}"
+    )
 
     info_a = ymd_path_provider()
     assert info_a.resource_dir == date_path
