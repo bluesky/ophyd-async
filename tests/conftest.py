@@ -126,3 +126,11 @@ async def failing_coroutine() -> Callable[[], Any]:
 @pytest.fixture
 def static_directory_provider(tmp_path: Path):
     return StaticDirectoryProvider(directory_path=tmp_path)
+
+def pytest_collection_modifyitems(config, items):
+    tango_dir = 'tests/tango'
+    
+    for item in items:
+        if tango_dir in str(item.fspath):
+            item.add_marker(pytest.mark.forked)
+        # Removed the else block to ensure tests outside tango_dir are not automatically skipped

@@ -58,6 +58,7 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-faulthandler",
+    "pytest-forked",
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
