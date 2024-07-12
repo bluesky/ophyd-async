@@ -1,6 +1,3 @@
-import asyncio
-from typing import List
-
 import bluesky.plan_stubs as bps
 
 from ophyd_async.core.device import Device
@@ -13,7 +10,7 @@ def ensure_connected(
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):
-    connect_task_singleton: List[asyncio.Task] = yield from bps.wait_for(
+    (connect_task,) = yield from bps.wait_for(
         [
             lambda: wait_for_connection(
                 **{
@@ -26,5 +23,5 @@ def ensure_connected(
         ]
     )
 
-    if connect_task_singleton and connect_task_singleton[0].exception() is not None:
-        raise connect_task_singleton[0].exception()
+    if connect_task and connect_task.exception() is not None:
+        raise connect_task.exception()
