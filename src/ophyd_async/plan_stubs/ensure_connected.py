@@ -10,13 +10,18 @@ def ensure_connected(
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):
-    yield from bps.wait_for(
+    (connect_task,) = yield from bps.wait_for(
         [
             lambda: wait_for_connection(
                 **{
-                    device.name: device.connect(mock, timeout, force_reconnect)
+                    device.name: device.connect(
+                        mock=mock, timeout=timeout, force_reconnect=force_reconnect
+                    )
                     for device in devices
                 }
             )
         ]
     )
+
+    if connect_task and connect_task.exception() is not None:
+        raise connect_task.exception()
