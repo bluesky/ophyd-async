@@ -21,12 +21,13 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         super().__init__(prefix, cs, name=name)
 
     async def _ramp_up_velocity_pos(
-        self, velocity: float, motor: PmacCSMotor, end_velocity
+        self, velocity: float, motor: PmacCSMotor, end_velocity: float
     ):
         # Assuming ramping to or from 0
         max_velocity_acceleration_time = await motor.acceleration_time.get_value()
         max_velocity = await motor.max_velocity.get_value()
-        accl_time = max_velocity_acceleration_time * end_velocity / max_velocity
+        delta_v = abs(end_velocity - velocity)
+        accl_time = max_velocity_acceleration_time * delta_v / max_velocity
         disp = 0.5 * (velocity + end_velocity) * accl_time
         return [disp, accl_time]
 
@@ -52,10 +53,10 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         # Calc Velocity
 
         for axis in scanAxes:
-            for i in range(scanSize - 1):
+            for i in range(scanSize):
                 if axis != "DURATION":
                     self.profile[axis.cs_axis + "_velocity"].append(
-                        (stack[0].midpoints[axis][i + 1] - stack[0].midpoints[axis][i])
+                        (stack[0].upper[axis][i] - stack[0].lower[axis][i])
                         / (stack[0].midpoints["DURATION"][i])
                     )
                     self.profile[axis.cs_axis].append(stack[0].midpoints[axis][i])
@@ -63,22 +64,14 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                     self.profile[axis.lower()].append(
                         int(stack[0].midpoints[axis][i] / TICK_S)
                     )
-            if axis != "DURATION":
-                self.profile[axis.cs_axis].append(
-                    stack[0].midpoints[axis][scanSize - 1]
-                )
-                self.profile[axis.cs_axis + "_velocity"].append(0)
-            else:
-                self.profile[axis.lower()].append(
-                    int(stack[0].midpoints[axis][scanSize - 1] / TICK_S)
-                )
 
-        # Calculate Starting Position to allow ramp up to velocity
+        # Calculate Starting and end Position to allow ramp up and trail off velocity
         self.initial_pos = {}
         run_up_time = 0
+        final_time = 0
         for axis in scanAxes:
             if axis != "DURATION":
-                run_up_disp, run_up_time = await self._ramp_up_velocity_pos(
+                run_up_disp, run_up_t = await self._ramp_up_velocity_pos(
                     0,
                     axis,
                     self.profile[axis.cs_axis + "_velocity"][0],
@@ -86,13 +79,33 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 self.initial_pos[axis.cs_axis] = (
                     self.profile[axis.cs_axis][0] - run_up_disp
                 )
+                # trail off position and time
+                if (
+                    self.profile[axis.cs_axis + "_velocity"][0]
+                    == self.profile[axis.cs_axis + "_velocity"][-1]
+                ):
+                    final_pos = self.profile[axis.cs_axis][-1] + run_up_disp
+                    final_time = run_up_t
+                else:
+                    ramp_down_disp, ramp_down_time = await self._ramp_up_velocity_pos(
+                        self.profile[axis.cs_axis + "_velocity"][-1],
+                        axis,
+                        0,
+                    )
+                    final_pos = self.profile[axis.cs_axis][-1] + ramp_down_disp
+                    final_time = max(ramp_down_time, final_time)
+                self.profile[axis.cs_axis].append(final_pos)
+                self.profile[axis.cs_axis + "_velocity"].append(0)
+                run_up_time = max(run_up_time, run_up_t)
+
         self.profile["duration"][0] += run_up_time / TICK_S
+        self.profile["duration"].append(int(final_time / TICK_S))
 
         # Send trajectory to brick
         for axis in scanAxes:
             if axis != "DURATION":
                 self.profile_cs_name.set(cs_port)
-                self.points_to_build.set(scanSize)
+                self.points_to_build.set(scanSize + 1)
                 getattr(self, "use_" + axis.cs_axis).set(True)
                 getattr(self, axis.cs_axis).set(self.profile[axis.cs_axis])
                 getattr(self, axis.cs_axis + "_vel").set(
