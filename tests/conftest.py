@@ -129,7 +129,7 @@ def static_directory_provider(tmp_path: Path):
 
 def pytest_collection_modifyitems(config, items):
     tango_dir = 'tests/tango'
-    
+
     for item in items:
         if tango_dir in str(item.fspath):
             item.add_marker(pytest.mark.forked)
