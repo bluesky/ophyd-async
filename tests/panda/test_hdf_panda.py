@@ -160,7 +160,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
                     "multiplier": 1,
                 },
             }
-            assert "testpanda.h5" in stream_resource["uri"]
+            assert "test-panda.h5" in stream_resource["uri"]
 
         assert_resource_document()
 
