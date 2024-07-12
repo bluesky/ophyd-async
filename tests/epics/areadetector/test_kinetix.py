@@ -72,6 +72,7 @@ async def test_decribe_describes_writer_dataset(adkinetix: KinetixDetector):
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
+            "dtype_numpy": "|i1",
             "external": "STREAM:",
         }
     }
@@ -118,6 +119,7 @@ async def test_can_decribe_collect(adkinetix: KinetixDetector):
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
+            "dtype_numpy": "|i1",
             "external": "STREAM:",
         }
     }

@@ -29,7 +29,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core.signal import _SignalCache
-from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -88,18 +88,20 @@ async def test_signal_connects_to_previous_backend(caplog):
     caplog.set_level(logging.DEBUG)
     int_mock_backend = MockSignalBackend(int)
     original_connect = int_mock_backend.connect
+    times_backend_connect_called = 0
 
     async def new_connect(timeout=1):
+        nonlocal times_backend_connect_called
+        times_backend_connect_called += 1
         await asyncio.sleep(0.1)
         await original_connect(timeout=timeout)
 
     int_mock_backend.connect = new_connect
     signal = Signal(int_mock_backend)
-    assert await time_taken_by(
-        asyncio.gather(signal.connect(), signal.connect())
-    ) == pytest.approx(0.1, rel=1e-2)
+    await asyncio.gather(signal.connect(), signal.connect())
     response = f"Reusing previous connection to {signal.source}"
     assert response in caplog.text
+    assert times_backend_connect_called == 1
 
 
 async def test_signal_connects_with_force_reconnect(caplog):
@@ -165,8 +167,8 @@ async def test_signal_lazily_connects(RE):
         and not signal._connect_task.exception()
     )
 
-    # TODO https://github.com/bluesky/ophyd-async/issues/413
-    RE(ensure_connected(signal, mock=False, force_reconnect=True))
+    with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
+        RE(ensure_connected(signal, mock=False, force_reconnect=True))
     assert (
         signal._connect_task
         and signal._connect_task.done()

@@ -34,6 +34,8 @@ else:
 extensions = [
     # for diagrams
     "sphinxcontrib.mermaid",
+    # Used for BaseModel autodoc
+    "sphinxcontrib.autodoc_pydantic",
     # Use this for generating API docs
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
@@ -238,6 +240,10 @@ autodoc_docstring_signature = True
 
 # numpydoc config
 numpydoc_show_class_members = False
+
+# pydantic models
+autodoc_pydantic_model_show_json = True
+autodoc_pydantic_model_show_config_summary = False
 
 # Where to put Ipython savefigs
 ipython_savefig_dir = "../build/savefig"
