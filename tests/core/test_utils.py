@@ -8,9 +8,7 @@ from ophyd_async.core import (
     DeviceCollector,
     MockSignalBackend,
     NotConnected,
-    PathInfo,
     SignalRW,
-    StaticPathProvider,
 )
 from ophyd_async.epics.signal import epics_signal_rw
 
