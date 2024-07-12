@@ -37,31 +37,37 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         scanSize = len(stack[0])
         scanAxes = stack[0].axes()
 
+        cs_ports = set()
         self.profile = {}
         for axis in scanAxes:
             if axis != "DURATION":
-                self.profile[axis.csAxis] = []
-                self.profile[axis.csAxis + "_velocity"] = []
+                await axis.get_cs_info()
+                self.profile[axis.cs_axis] = []
+                self.profile[axis.cs_axis + "_velocity"] = []
+                cs_ports.add(axis.cs_port)
             else:
                 self.profile[axis.lower()] = []
+        cs_port = cs_ports.pop()
 
         # Calc Velocity
 
         for axis in scanAxes:
             for i in range(scanSize - 1):
                 if axis != "DURATION":
-                    self.profile[axis.csAxis + "_velocity"].append(
+                    self.profile[axis.cs_axis + "_velocity"].append(
                         (stack[0].midpoints[axis][i + 1] - stack[0].midpoints[axis][i])
                         / (stack[0].midpoints["DURATION"][i])
                     )
-                    self.profile[axis.csAxis].append(stack[0].midpoints[axis][i])
+                    self.profile[axis.cs_axis].append(stack[0].midpoints[axis][i])
                 else:
                     self.profile[axis.lower()].append(
                         int(stack[0].midpoints[axis][i] / TICK_S)
                     )
             if axis != "DURATION":
-                self.profile[axis.csAxis].append(stack[0].midpoints[axis][scanSize - 1])
-                self.profile[axis.csAxis + "_velocity"].append(0)
+                self.profile[axis.cs_axis].append(
+                    stack[0].midpoints[axis][scanSize - 1]
+                )
+                self.profile[axis.cs_axis + "_velocity"].append(0)
             else:
                 self.profile[axis.lower()].append(
                     int(stack[0].midpoints[axis][scanSize - 1] / TICK_S)
@@ -75,22 +81,22 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 run_up_disp, run_up_time = await self._ramp_up_velocity_pos(
                     0,
                     axis,
-                    self.profile[axis.csAxis + "_velocity"][0],
+                    self.profile[axis.cs_axis + "_velocity"][0],
                 )
-                self.initial_pos[axis.csAxis] = (
-                    self.profile[axis.csAxis][0] - run_up_disp
+                self.initial_pos[axis.cs_axis] = (
+                    self.profile[axis.cs_axis][0] - run_up_disp
                 )
         self.profile["duration"][0] += run_up_time / TICK_S
 
         # Send trajectory to brick
         for axis in scanAxes:
             if axis != "DURATION":
-                self.profile_cs_name.set(self.cs)
+                self.profile_cs_name.set(cs_port)
                 self.points_to_build.set(scanSize)
-                getattr(self, "use_" + axis.csAxis).set(True)
-                getattr(self, axis.csAxis).set(self.profile[axis.csAxis])
-                getattr(self, axis.csAxis + "_vel").set(
-                    self.profile[axis.csAxis + "_velocity"]
+                getattr(self, "use_" + axis.cs_axis).set(True)
+                getattr(self, axis.cs_axis).set(self.profile[axis.cs_axis])
+                getattr(self, axis.cs_axis + "_vel").set(
+                    self.profile[axis.cs_axis + "_velocity"]
                 )
             else:
                 self.timeArray.set(self.profile["duration"])
@@ -98,7 +104,7 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         # MOVE TO START
         for axis in scanAxes:
             if axis != "DURATION":
-                await axis.set(self.initial_pos[axis.csAxis])
+                await axis.set(self.initial_pos[axis.cs_axis])
 
         # Set No Of Points
 
