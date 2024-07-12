@@ -39,19 +39,11 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
             1000000,
             1000000,
             1000000,
+            50000,
         ],
-        "z": [
-            1,
-            1.5,
-            2,
-            2.5,
-            3,
-            3.5,
-            4,
-            4.5,
-            5,
-        ],
+        "z": [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.0125],
         "z_velocity": [
+            0.5,
             0.5,
             0.5,
             0.5,
@@ -64,6 +56,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
         ],
     }
 
+    assert await traj.points_to_build.get_value() == 10
     assert traj.initial_pos["z"] == 0.9875
 
     await traj.kickoff()
