@@ -14,7 +14,7 @@ async def writer(tmp_path) -> SimPatternDetectorWriter:
         driver = PatternGenerator()
     directory = StaticDirectoryProvider(tmp_path)
 
-    return SimPatternDetectorWriter(driver, directory)
+    return SimPatternDetectorWriter(driver, directory, lambda: "NAME")
 
 
 async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWriter):
@@ -22,15 +22,15 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
         descriptor = await writer.open()
 
     assert descriptor == {
-        "_entry_data_data": {
-            "source": "soft://_entry_data_data",
-            "shape": (1, 240, 320),
-            "dtype": "number",
+        "NAME": {
+            "source": "sim://pattern-generator-hdf-file",
+            "shape": (240, 320),
+            "dtype": "array",
             "external": "STREAM:",
         },
-        "_entry_sum": {
-            "source": "soft://_entry_sum",
-            "shape": (1,),
+        "NAME-sum": {
+            "source": "sim://pattern-generator-hdf-file",
+            "shape": (),
             "dtype": "number",
             "external": "STREAM:",
         },
