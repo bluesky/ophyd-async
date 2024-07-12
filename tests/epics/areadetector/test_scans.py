@@ -105,7 +105,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWrit
 
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
     trigger_info = TriggerInfo(
-        num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
 
     def flying_plan():

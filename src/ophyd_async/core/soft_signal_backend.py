@@ -10,7 +10,6 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    TypedDict,
     Union,
     cast,
     get_origin,
@@ -18,6 +17,7 @@ from typing import (
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
+from typing_extensions import TypedDict
 
 from .signal_backend import RuntimeSubsetEnum, SignalBackend
 from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
@@ -60,6 +60,10 @@ class SoftConverter(Generic[T]):
             dtype in primitive_dtypes
         ), f"invalid converter for value of type {type(value)}"
         dk["dtype"] = primitive_dtypes[dtype]
+        try:
+            dk["dtype_numpy"] = np.dtype(dtype).descr[0][1]
+        except TypeError:
+            dk["dtype_numpy"] = ""
         return dk
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
@@ -71,7 +75,20 @@ class SoftConverter(Generic[T]):
 
 class SoftArrayConverter(SoftConverter):
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        return {"source": source, "dtype": "array", "shape": [len(value)], **metadata}
+        dtype_numpy = ""
+        if isinstance(value, list):
+            if len(value) > 0:
+                dtype_numpy = np.dtype(type(value[0])).descr[0][1]
+        else:
+            dtype_numpy = np.dtype(value.dtype).descr[0][1]
+
+        return {
+            "source": source,
+            "dtype": "array",
+            "dtype_numpy": dtype_numpy,
+            "shape": [len(value)],
+            **metadata,
+        }
 
     def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
         if datatype is None:
@@ -99,6 +116,7 @@ class SoftEnumConverter(SoftConverter):
         return {
             "source": source,
             "dtype": "string",
+            "dtype_numpy": "|S40",
             "shape": [],
             "choices": self.choices,
             **metadata,

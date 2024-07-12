@@ -91,6 +91,7 @@ async def test_decribe_describes_writer_dataset(adaravis: AravisDetector):
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
+            "dtype_numpy": "|i1",
             "external": "STREAM:",
         }
     }
@@ -139,6 +140,7 @@ async def test_can_decribe_collect(adaravis: AravisDetector):
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
+            "dtype_numpy": "|i1",
             "external": "STREAM:",
         }
     }
@@ -150,4 +152,12 @@ async def test_unsupported_trigger_excepts(adaravis: AravisDetector):
         # str(EnumClass.value) handling changed in Python 3.11
         match=r"AravisController only supports the following trigger types: .* but",
     ):
-        await adaravis.prepare(TriggerInfo(1, DetectorTrigger.variable_gate, 1, 1))
+        await adaravis.prepare(
+            TriggerInfo(
+                number=1,
+                trigger=DetectorTrigger.variable_gate,
+                deadtime=1,
+                livetime=1,
+                frame_timeout=3,
+            )
+        )

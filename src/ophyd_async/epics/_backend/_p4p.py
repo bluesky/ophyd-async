@@ -1,5 +1,6 @@
 import asyncio
 import atexit
+import inspect
 import logging
 import time
 from dataclasses import dataclass
@@ -19,6 +20,7 @@ from ophyd_async.core import (
     get_unique,
     wait_for_connection,
 )
+from ophyd_async.core.signal_backend import RuntimeSubsetEnum
 from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 
 from .common import LimitPair, Limits, common_meta, get_supported_values
@@ -37,6 +39,21 @@ specifier_to_dtype: Dict[str, Dtype] = {
     "f": "number",  # float32
     "d": "number",  # float64
     "s": "string",
+}
+
+specifier_to_np_dtype: Dict[str, str] = {
+    "?": "<i2",  # bool
+    "b": "|i1",  # int8
+    "B": "|u1",  # uint8
+    "h": "<i2",  # int16
+    "H": "<u2",  # uint16
+    "i": "<i4",  # int32
+    "I": "<u4",  # uint32
+    "l": "<i8",  # int64
+    "L": "<u8",  # uint64
+    "f": "<f4",  # float32
+    "d": "<f8",  # float64
+    "s": "|S40",
 }
 
 
@@ -59,12 +76,35 @@ def _data_key_from_value(
         DataKey: A rich DataKey describing the DB record
     """
     shape = shape or []
-    dtype = dtype or specifier_to_dtype[value.type().aspy("value")]
+    type_code = value.type().aspy("value")
+
+    dtype = dtype or specifier_to_dtype[type_code]
+
+    try:
+        if isinstance(type_code, tuple):
+            dtype_numpy = ""
+            if type_code[1] == "enum_t":
+                if dtype == "bool":
+                    dtype_numpy = "<i2"
+                else:
+                    for item in type_code[2]:
+                        if item[0] == "choices":
+                            dtype_numpy = specifier_to_np_dtype[item[1][1]]
+        elif not type_code.startswith("a"):
+            dtype_numpy = specifier_to_np_dtype[type_code]
+        else:
+            # Array type, use typecode of internal element
+            dtype_numpy = specifier_to_np_dtype[type_code[1]]
+    except KeyError:
+        # Case where we can't determine dtype string from value
+        dtype_numpy = ""
+
     display_data = getattr(value, "display", None)
 
     d = DataKey(
         source=source,
         dtype=dtype,
+        dtype_numpy=dtype_numpy,
         shape=shape,
     )
     if display_data is not None:
@@ -287,6 +327,14 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
         if (
+            typ is str
+            and inspect.isclass(datatype)
+            and issubclass(datatype, RuntimeSubsetEnum)
+        ):
+            return PvaEnumConverter(
+                get_supported_values(pv, datatype, datatype.choices)
+            )
+        elif (
             datatype
             and not issubclass(typ, datatype)
             and not (

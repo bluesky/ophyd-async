@@ -128,6 +128,7 @@ async def test_open_returns_correct_descriptors(
                 1,
             ],
             "dtype": "number",
+            "dtype_numpy": "<f8",
             "external": "STREAM:",
         }
 
