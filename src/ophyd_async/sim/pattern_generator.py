@@ -19,8 +19,6 @@ SUM_PATH = "/entry/sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
 
-SLICE_NAME = "AD_HDF5_SWMR_SLICE"
-
 
 def generate_gaussian_blob(height: int, width: int) -> np.ndarray:
     """Make a Gaussian Blob with float values in range 0..1"""
@@ -127,20 +125,18 @@ class PatternGenerator:
         assert self._handle_for_h5_file, "not loaded the file right"
 
         raw_dataset = self._handle_for_h5_file.create_dataset(
-            DATA_PATH,
-            dtype=np.uint8,
+            name=DATA_PATH,
             shape=(0, self.height, self.width),
+            dtype=np.uint8,
             maxshape=(None, self.height, self.width),
         )
 
         sum_dataset = self._handle_for_h5_file.create_dataset(
-            SUM_PATH,
-            dtype=np.float64,
+            name=SUM_PATH,
             shape=(0,),
+            dtype=np.float64,
             maxshape=(None,),
         )
-
-        datasets = [raw_dataset, sum_dataset]
 
         # once datasets written, can switch the model to single writer multiple reader
         self._handle_for_h5_file.swmr_mode = True
@@ -148,7 +144,7 @@ class PatternGenerator:
         outer_shape = (multiplier,) if multiplier > 1 else ()
 
         # cache state to self
-        self._datasets = datasets
+        self._datasets = [raw_dataset, sum_dataset]
         full_file_description = self._datasets, outer_shape
         self.multiplier = multiplier
         self._directory_provider = directory
