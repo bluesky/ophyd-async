@@ -8,15 +8,14 @@ from ophyd_async.epics.pmac import PmacCSMotor, PmacTrajectory
 @pytest.fixture
 async def sim_x_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = PmacCSMotor(
-            "BLxxI-MO-STAGE-01:X", "BRICK1.CS3", "z", name="sim_x_motor"
-        )
+        sim_motor = PmacCSMotor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
     set_mock_value(sim_motor.acceleration_time, 0.5)
     set_mock_value(sim_motor.max_velocity, 5)
     set_mock_value(sim_motor.velocity, 0.5)
+    set_mock_value(sim_motor.output_link, "@asyn(BRICK1.CS3,9)")
 
     yield sim_motor
 
