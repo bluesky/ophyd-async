@@ -127,8 +127,9 @@ async def failing_coroutine() -> Callable[[], Any]:
 def static_directory_provider(tmp_path: Path):
     return StaticDirectoryProvider(directory_path=tmp_path)
 
+
 def pytest_collection_modifyitems(config, items):
-    tango_dir = 'tests/tango'
+    tango_dir = "tests/tango"
 
     for item in items:
         if tango_dir in str(item.fspath):
