@@ -159,8 +159,8 @@ async def test_device_lazily_connects(RE):
         and not test_motor._connect_task.exception()
     )
 
-    # TODO https://github.com/bluesky/ophyd-async/issues/413
-    RE(ensure_connected(test_motor, mock=True, force_reconnect=True))
+    with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
+        RE(ensure_connected(test_motor, mock=True, force_reconnect=True))
 
     assert (
         test_motor._connect_task
