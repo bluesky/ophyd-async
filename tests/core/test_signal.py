@@ -88,18 +88,20 @@ async def test_signal_connects_to_previous_backend(caplog):
     caplog.set_level(logging.DEBUG)
     int_mock_backend = MockSignalBackend(int)
     original_connect = int_mock_backend.connect
+    times_backend_connect_called = 0
 
     async def new_connect(timeout=1):
+        nonlocal times_backend_connect_called
+        times_backend_connect_called += 1
         await asyncio.sleep(0.1)
         await original_connect(timeout=timeout)
 
     int_mock_backend.connect = new_connect
     signal = Signal(int_mock_backend)
-    assert await time_taken_by(
-        asyncio.gather(signal.connect(), signal.connect())
-    ) == pytest.approx(0.1, abs=1e-2)
+    await asyncio.gather(signal.connect(), signal.connect())
     response = f"Reusing previous connection to {signal.source}"
     assert response in caplog.text
+    assert times_backend_connect_called == 1
 
 
 async def test_signal_connects_with_force_reconnect(caplog):

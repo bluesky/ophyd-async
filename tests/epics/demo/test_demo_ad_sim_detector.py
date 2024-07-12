@@ -243,11 +243,13 @@ async def test_read_and_describe_detector(single_detector: StandardDetector):
         "test-drv-acquire_time": {
             "source": "mock+ca://TEST:DRV:AcquireTime_RBV",
             "dtype": "number",
+            "dtype_numpy": "<f8",
             "shape": [],
         },
         "test-drv-acquire": {
             "source": "mock+ca://TEST:DRV:Acquire_RBV",
             "dtype": "boolean",
+            "dtype_numpy": "|b1",
             "shape": [],
         },
     }
