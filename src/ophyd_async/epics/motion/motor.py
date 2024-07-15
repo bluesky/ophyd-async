@@ -199,7 +199,11 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     ) -> float:
         # Distance required for motor to accelerate from stationary to fly_velocity, and
         # distance required for motor to decelerate from fly_velocity to stationary
-        run_up_distance = (await self.acceleration_time.get_value()) * fly_velocity
+        run_up_distance = (
+            (await self.acceleration_time.get_value())
+            * fly_velocity
+            / await self.max_velocity()
+        )
 
         self._fly_completed_position = end_position + run_up_distance
 
