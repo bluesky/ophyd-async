@@ -238,6 +238,7 @@ async def test_prepare_motor_path_errors(
     upper_limit,
     lower_limit,
 ):
+    set_mock_value(sim_motor.max_velocity, 1)
     set_mock_value(sim_motor.acceleration_time, acceleration_time)
     set_mock_value(sim_motor.low_limit_travel, lower_limit)
     set_mock_value(sim_motor.high_limit_travel, upper_limit)
@@ -247,6 +248,7 @@ async def test_prepare_motor_path_errors(
 
 async def test_prepare_motor_path(sim_motor: motor.Motor):
     set_mock_value(sim_motor.acceleration_time, 1)
+    set_mock_value(sim_motor.max_velocity, 1)
     set_mock_value(sim_motor.low_limit_travel, -10.01)
     set_mock_value(sim_motor.high_limit_travel, 20.01)
     fly_info = FlyMotorInfo(

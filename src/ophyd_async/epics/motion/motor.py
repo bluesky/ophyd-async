@@ -202,7 +202,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         run_up_distance = (
             (await self.acceleration_time.get_value())
             * fly_velocity
-            / await self.max_velocity()
+            / await self.max_velocity.get_value()
         )
 
         self._fly_completed_position = end_position + run_up_distance
