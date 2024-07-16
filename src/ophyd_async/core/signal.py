@@ -569,7 +569,7 @@ async def set_and_wait_for_other_value(
     read_value: S,
     timeout: float = DEFAULT_TIMEOUT,
     set_timeout: Optional[float] = None,
-):
+) -> AsyncStatus:
     """Set a signal and monitor another signal until it has the specified value.
 
     This function sets a set_signal to a specified set_value and waits for
@@ -612,16 +612,21 @@ async def set_and_wait_for_other_value(
             f"{read_signal.name} didn't match {read_value} in {timeout}s"
         ) from e
 
-    await status
+    return status
 
 
 async def set_and_wait_for_value(
     set_signal: SignalRW[T],
     set_value: T,
     timeout: float = DEFAULT_TIMEOUT,
-    set_timeout: Optional[float] = None,
-):
+    status_timeout: Optional[float] = None,
+) -> AsyncStatus:
     """Set a signal and monitor it until it has that value.
+
+    Useful for busy record, or other Signals with pattern:
+      - Set Signal with wait=True and stash the Status
+      - Read the same Signal to check the operation has started
+      - Return the Status so calling code can wait for operation to complete
 
     Parameters
     ----------
@@ -631,8 +636,8 @@ async def set_and_wait_for_value(
         The value to set it to
     timeout:
         How long to wait for the signal to have the value
-    set_timeout:
-        How long to wait for the set to complete
+    status_timeout:
+        How long the returned Status will wait for the set to complete
 
     Notes
     -----
@@ -640,6 +645,6 @@ async def set_and_wait_for_value(
 
         set_and_wait_for_value(device.acquire, 1)
     """
-    await set_and_wait_for_other_value(
-        set_signal, set_value, set_signal, set_value, timeout, set_timeout
+    return await set_and_wait_for_other_value(
+        set_signal, set_value, set_signal, set_value, timeout, status_timeout
     )
