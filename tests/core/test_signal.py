@@ -21,6 +21,7 @@ from ophyd_async.core import (
     assert_configuration,
     assert_reading,
     assert_value,
+    set_and_wait_for_other_value,
     set_and_wait_for_value,
     set_mock_put_proceeds,
     set_mock_value,
@@ -182,7 +183,7 @@ async def time_taken_by(coro) -> float:
     return time.monotonic() - start
 
 
-async def test_set_and_wait_for_value():
+async def test_set_and_wait_for_value_same_set_as_read():
     signal = epics_signal_rw(int, "pva://pv", name="signal")
     await signal.connect(mock=True)
     assert await signal.get_value() == 0
@@ -206,6 +207,32 @@ async def test_set_and_wait_for_value():
         < 0.15
     )
     assert await signal.get_value() == 1
+
+
+async def test_set_and_wait_for_value_different_set_and_read():
+    set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
+    read_signal = epics_signal_r(str, "pva://read", name="read-signal")
+    await set_signal.connect(mock=True)
+    await read_signal.connect(mock=True)
+
+    async def wait_and_set_read():
+        await asyncio.sleep(0.1)
+        set_mock_value(read_signal, "test")
+        await asyncio.sleep(0.01)
+
+    async def check_set_and_wait():
+        st = await set_and_wait_for_other_value(
+            set_signal, 1, read_signal, "test", timeout=100
+        )
+        await st
+        await asyncio.sleep(0.01)
+
+    assert (
+        0.1
+        < await time_taken_by(asyncio.gather(wait_and_set_read(), check_set_and_wait()))
+        < 0.15
+    )
+    assert await set_signal.get_value() == 1
 
 
 async def test_wait_for_value_with_value():
