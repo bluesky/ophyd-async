@@ -15,13 +15,14 @@ class SimPatternDetector(StandardDetector):
         self,
         path: Path,
         config_sigs: Sequence[AsyncReadable] = [],
-        name: str = "sim_pattern_detector",
+        name: str = "",
     ) -> None:
         self.directory_provider: DirectoryProvider = StaticDirectoryProvider(path)
         self.pattern_generator = PatternGenerator()
         writer = SimPatternDetectorWriter(
             pattern_generator=self.pattern_generator,
-            directoryProvider=self.directory_provider,
+            directory_provider=self.directory_provider,
+            name_provider=lambda: self.name,
         )
         controller = SimPatternDetectorControl(
             pattern_generator=self.pattern_generator,
