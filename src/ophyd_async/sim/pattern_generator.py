@@ -6,7 +6,6 @@ import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
 
 from ophyd_async.core import PathProvider
-from ophyd_async.core.mock_signal_backend import MockSignalBackend
 from ophyd_async.core.signal import observe_value, soft_signal_r_and_setter
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
