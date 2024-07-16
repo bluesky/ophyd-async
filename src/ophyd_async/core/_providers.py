@@ -56,7 +56,9 @@ class StaticFilenameProvider(FilenameProvider):
 
 class UUIDFilenameProvider(FilenameProvider):
     def __init__(
-        self, uuid_call_func: Callable = uuid.uuid4, uuid_call_args: Optional[List] = None
+        self,
+        uuid_call_func: Callable = uuid.uuid4,
+        uuid_call_args: Optional[List] = None,
     ):
         self._uuid_call_func = uuid_call_func
         self._uuid_call_args = uuid_call_args or []
