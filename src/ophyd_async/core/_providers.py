@@ -42,7 +42,7 @@ class PathProvider(Protocol):
     _filename_provider: FilenameProvider
 
     @abstractmethod
-    def __call__(self, device_name=None) -> PathInfo:
+    def __call__(self, device_name: Optional[str] = None) -> PathInfo:
         """Get the current directory to write files into"""
 
 
@@ -120,7 +120,7 @@ class StaticPathProvider(PathProvider):
         self._resource_dir = resource_dir
         self._create_dir_depth = create_dir_depth
 
-    def __call__(self, device_name=None) -> PathInfo:
+    def __call__(self, device_name: Optional[str] = None) -> PathInfo:
         filename = self._filename_provider()
 
         return PathInfo(
@@ -156,7 +156,7 @@ class AutoIncrementingPathProvider(PathProvider):
         self._increment = increment
         self._inc_delimeter = inc_delimeter
 
-    def __call__(self, device_name=None) -> PathInfo:
+    def __call__(self, device_name: Optional[str] = None) -> PathInfo:
         filename = self._filename_provider()
 
         padded_counter = f"{self._current_value:0{self._max_digits}}"
@@ -193,7 +193,7 @@ class YMDPathProvider(PathProvider):
         self._create_dir_depth = create_dir_depth
         self._device_name_as_base_dir = device_name_as_base_dir
 
-    def __call__(self, device_name=None) -> PathInfo:
+    def __call__(self, device_name: Optional[str] = None) -> PathInfo:
         sep = os.path.sep
         current_date = date.today().strftime(f"%Y{sep}%m{sep}%d")
         if device_name is None:
