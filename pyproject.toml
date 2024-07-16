@@ -21,7 +21,7 @@ dependencies = [
     "p4p",
     "pyyaml",
     "colorlog",
-    "pydantic",
+    "pydantic>=2.0",
     "pydantic-numpy",
 ]
 dynamic = ["version"]
