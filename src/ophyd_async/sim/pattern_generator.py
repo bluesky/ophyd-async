@@ -183,7 +183,6 @@ class PatternGenerator:
             # until the first frame comes in
             if not self._hdf_stream_provider:
                 assert self.target_path, "open file has not been called"
-                self._datasets = self._get_datasets()
                 self._hdf_stream_provider = _HDFFile(
                     self._path_provider(),
                     self.target_path,
