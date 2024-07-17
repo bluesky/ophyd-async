@@ -5,7 +5,7 @@ import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
 
-from ophyd_async.core import DirectoryProvider
+from ophyd_async.core import PathProvider
 from ophyd_async.core.signal import observe_value, soft_signal_r_and_setter
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
@@ -102,12 +102,12 @@ class PatternGenerator:
         self.y = value
 
     async def open_file(
-        self, directory: DirectoryProvider, name: str, multiplier: int = 1
+        self, path_provider: PathProvider, name: str, multiplier: int = 1
     ) -> Dict[str, DataKey]:
         await self.counter_signal.connect()
 
-        self.target_path = self._get_new_path(directory)
-        self._directory_provider = directory
+        self.target_path = self._get_new_path(path_provider)
+        self._path_provider = path_provider
 
         self._handle_for_h5_file = h5py.File(self.target_path, "w", libver="latest")
 
@@ -129,6 +129,7 @@ class PatternGenerator:
         # once datasets written, can switch the model to single writer multiple reader
         self._handle_for_h5_file.swmr_mode = True
         self.multiplier = multiplier
+
         outer_shape = (multiplier,) if multiplier > 1 else ()
 
         # cache state to self
@@ -159,9 +160,9 @@ class PatternGenerator:
         }
         return describe
 
-    def _get_new_path(self, directory: DirectoryProvider) -> Path:
-        info = directory()
-        filename = f"{info.prefix}pattern{info.suffix}.h5"
+    def _get_new_path(self, path_provider: PathProvider) -> Path:
+        info = path_provider(device_name="pattern")
+        filename = info.filename
         new_path: Path = info.root / info.resource_dir / filename
         return new_path
 
@@ -183,7 +184,7 @@ class PatternGenerator:
             if not self._hdf_stream_provider:
                 assert self.target_path, "open file has not been called"
                 self._hdf_stream_provider = _HDFFile(
-                    self._directory_provider(),
+                    self._path_provider(),
                     self.target_path,
                     self._datasets,
                 )

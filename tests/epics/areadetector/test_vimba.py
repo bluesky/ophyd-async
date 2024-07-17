@@ -4,7 +4,7 @@ from bluesky.run_engine import RunEngine
 from ophyd_async.core import (
     DetectorTrigger,
     DeviceCollector,
-    DirectoryProvider,
+    PathProvider,
     set_mock_value,
 )
 from ophyd_async.epics.areadetector.vimba import VimbaDetector
@@ -13,10 +13,10 @@ from ophyd_async.epics.areadetector.vimba import VimbaDetector
 @pytest.fixture
 async def advimba(
     RE: RunEngine,
-    static_directory_provider: DirectoryProvider,
+    static_path_provider: PathProvider,
 ) -> VimbaDetector:
     async with DeviceCollector(mock=True):
-        advimba = VimbaDetector("VIMBA:", static_directory_provider)
+        advimba = VimbaDetector("VIMBA:", static_path_provider)
 
     return advimba
 
@@ -90,11 +90,9 @@ async def test_decribe_describes_writer_dataset(advimba: VimbaDetector):
     }
 
 
-async def test_can_collect(
-    advimba: VimbaDetector, static_directory_provider: DirectoryProvider
-):
-    directory_info = static_directory_provider()
-    full_file_name = "foo.h5"
+async def test_can_collect(advimba: VimbaDetector, static_path_provider: PathProvider):
+    path_info = static_path_provider()
+    full_file_name = path_info.root / path_info.resource_dir / "foo.h5"
     set_mock_value(advimba.hdf.full_file_name, str(full_file_name))
     set_mock_value(advimba._writer.hdf.file_path_exists, True)
     set_mock_value(advimba._writer.hdf.capture, True)
@@ -105,10 +103,7 @@ async def test_can_collect(
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
     assert stream_resource["data_key"] == "advimba"
-    assert (
-        stream_resource["uri"]
-        == "file://localhost" + str(directory_info.root) + "/foo.h5"
-    )
+    assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,

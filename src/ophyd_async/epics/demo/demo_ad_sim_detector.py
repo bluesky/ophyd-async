@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from ophyd_async.core import DirectoryProvider, SignalR, StandardDetector
+from ophyd_async.core import PathProvider, SignalR, StandardDetector
 
 from ..areadetector.controllers import ADSimController
 from ..areadetector.drivers import ADBase, ADBaseShapeProvider
@@ -15,7 +15,7 @@ class DemoADSimDetector(StandardDetector):
         self,
         drv: ADBase,
         hdf: NDFileHDF,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
     ):
@@ -26,7 +26,7 @@ class DemoADSimDetector(StandardDetector):
             ADSimController(self.drv),
             HDFWriter(
                 self.hdf,
-                directory_provider,
+                path_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
             ),

@@ -2,7 +2,7 @@ from typing import AsyncGenerator, AsyncIterator, Dict
 
 from bluesky.protocols import DataKey
 
-from ophyd_async.core import DirectoryProvider, NameProvider
+from ophyd_async.core import NameProvider, PathProvider
 from ophyd_async.core.detector import DetectorWriter
 from ophyd_async.sim.pattern_generator import PatternGenerator
 
@@ -13,18 +13,16 @@ class SimPatternDetectorWriter(DetectorWriter):
     def __init__(
         self,
         pattern_generator: PatternGenerator,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         name_provider: NameProvider,
     ) -> None:
         self.pattern_generator = pattern_generator
-        self.directory_provider = directory_provider
+        self.path_provider = path_provider
         self.name_provider = name_provider
 
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         return await self.pattern_generator.open_file(
-            self.directory_provider,
-            self.name_provider(),
-            multiplier,
+            self.path_provider, self.name_provider(), multiplier
         )
 
     async def close(self) -> None:
