@@ -60,6 +60,8 @@ ophyd\_async.core
       :nosignatures:
    
       AsyncStatus
+      AutoIncrementFilenameProvider
+      AutoIncrementingPathProvider
       CalculateTimeout
       ConfigSignal
       DetectorControl
@@ -68,14 +70,14 @@ ophyd\_async.core
       Device
       DeviceCollector
       DeviceVector
-      DirectoryInfo
-      DirectoryProvider
+      FilenameProvider
       HardwareTriggeredFlyable
       HintedSignal
       MockSignalBackend
       NameProvider
+      PathInfo
+      PathProvider
       RuntimeSubsetEnum
-      SubsetEnum
       ShapeProvider
       Signal
       SignalBackend
@@ -86,9 +88,13 @@ ophyd\_async.core
       SoftSignalBackend
       StandardDetector
       StandardReadable
-      StaticDirectoryProvider
+      StaticFilenameProvider
+      StaticPathProvider
+      SubsetEnum
       TriggerLogic
+      UUIDFilenameProvider
       WatchableAsyncStatus
+      YMDPathProvider
    
    
 

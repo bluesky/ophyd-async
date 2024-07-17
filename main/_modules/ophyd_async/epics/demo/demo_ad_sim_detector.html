@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.demo.demo_ad_sim_detector &#8212; ophyd-async 0.3.5.dev11+g0269697a documentation</title>
+    <title>ophyd_async.epics.demo.demo_ad_sim_detector &#8212; ophyd-async 0.3.5.dev15+ga6676270 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=d775ec0d"></script>
+    <script src="../../../../_static/documentation_options.js?v=79335745"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -492,7 +492,7 @@ document.write(`
   <h1>Source code for ophyd_async.epics.demo.demo_ad_sim_detector</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DirectoryProvider</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">StandardDetector</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">StandardDetector</span>
 
 <span class="kn">from</span> <span class="nn">..areadetector.controllers</span> <span class="kn">import</span> <span class="n">ADSimController</span>
 <span class="kn">from</span> <span class="nn">..areadetector.drivers</span> <span class="kn">import</span> <span class="n">ADBase</span><span class="p">,</span> <span class="n">ADBaseShapeProvider</span>
@@ -509,7 +509,7 @@ document.write(`
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">drv</span><span class="p">:</span> <span class="n">ADBase</span><span class="p">,</span>
         <span class="n">hdf</span><span class="p">:</span> <span class="n">NDFileHDF</span><span class="p">,</span>
-        <span class="n">directory_provider</span><span class="p">:</span> <span class="n">DirectoryProvider</span><span class="p">,</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="p">):</span>
@@ -520,7 +520,7 @@ document.write(`
             <span class="n">ADSimController</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
             <span class="n">HDFWriter</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="p">,</span>
-                <span class="n">directory_provider</span><span class="p">,</span>
+                <span class="n">path_provider</span><span class="p">,</span>
                 <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">ADBaseShapeProvider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
             <span class="p">),</span>
