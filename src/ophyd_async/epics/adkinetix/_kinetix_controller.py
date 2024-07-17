@@ -6,7 +6,7 @@ from ophyd_async.epics.areadetector.drivers.ad_base import \
     start_acquiring_driver_and_ensure_status
 
 from ..utils import ImageMode, stop_busy_record
-from ._kinetix_io import KinetixDriverIO, KinetixTriggerMode
+from ._kinetix_driver import KinetixDriver, KinetixTriggerMode
 
 KINETIX_TRIGGER_MODE_MAP = {
     DetectorTrigger.internal: KinetixTriggerMode.internal,
@@ -19,7 +19,7 @@ KINETIX_TRIGGER_MODE_MAP = {
 class KinetixController(DetectorControl):
     def __init__(
         self,
-        driver: KinetixDriverIO,
+        driver: KinetixDriver,
     ) -> None:
         self._drv = driver
 

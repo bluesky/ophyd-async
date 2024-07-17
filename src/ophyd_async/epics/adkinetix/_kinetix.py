@@ -5,7 +5,7 @@ from ophyd_async.epics.areadetector.drivers import ADBaseShapeProvider
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
 
 from ._kinetix_controller import KinetixController
-from ._kinetix_io import KinetixDriverIO
+from ._kinetix_driver import KinetixDriver
 
 
 class KinetixDetector(StandardDetector, HasHints):
@@ -25,7 +25,7 @@ class KinetixDetector(StandardDetector, HasHints):
         hdf_suffix="HDF1:",
         name="",
     ):
-        self.drv = KinetixDriverIO(prefix + drv_suffix)
+        self.drv = KinetixDriver(prefix + drv_suffix)
         self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
