@@ -577,7 +577,7 @@ async def set_and_wait_for_other_value(
 
     Parameters
     ----------
-    set_signal:
+    signal:
         The signal to set
     set_value:
         The value to set it to
@@ -598,6 +598,10 @@ async def set_and_wait_for_other_value(
     """
     # Start monitoring before the set to avoid a race condition
     values_gen = observe_value(read_signal)
+
+    # Get the initial value from the monitor to make sure we've created it
+    await anext(values_gen)
+
     status = set_signal.set(set_value, timeout=set_timeout)
 
     async def _wait_for_value():
@@ -616,8 +620,8 @@ async def set_and_wait_for_other_value(
 
 
 async def set_and_wait_for_value(
-    set_signal: SignalRW[T],
-    set_value: T,
+    signal: SignalRW[T],
+    value: T,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: Optional[float] = None,
 ) -> AsyncStatus:
@@ -630,9 +634,9 @@ async def set_and_wait_for_value(
 
     Parameters
     ----------
-    set_signal:
+    signal:
         The signal to set
-    set_value:
+    value:
         The value to set it to
     timeout:
         How long to wait for the signal to have the value
@@ -646,5 +650,5 @@ async def set_and_wait_for_value(
         set_and_wait_for_value(device.acquire, 1)
     """
     return await set_and_wait_for_other_value(
-        set_signal, set_value, set_signal, set_value, timeout, status_timeout
+        signal, value, signal, value, timeout, status_timeout
     )
