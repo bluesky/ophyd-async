@@ -4,7 +4,8 @@ from bluesky.protocols import DataKey
 
 from ophyd_async.core import NameProvider, PathProvider
 from ophyd_async.core.detector import DetectorWriter
-from ophyd_async.sim.pattern_generator import PatternGenerator
+
+from ._pattern_generator import PatternGenerator
 
 
 class SimPatternDetectorWriter(DetectorWriter):

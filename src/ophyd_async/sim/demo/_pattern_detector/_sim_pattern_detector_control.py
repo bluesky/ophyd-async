@@ -4,7 +4,8 @@ from typing import Optional
 from ophyd_async.core import PathProvider
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
-from ophyd_async.sim.pattern_generator import PatternGenerator
+
+from ._pattern_generator import PatternGenerator
 
 
 class SimPatternDetectorControl(DetectorControl):
