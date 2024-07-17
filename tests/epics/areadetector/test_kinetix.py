@@ -7,6 +7,7 @@ from ophyd_async.core import (
     DirectoryProvider,
     set_mock_value,
 )
+from ophyd_async.core.detector import TriggerInfo
 from ophyd_async.epics.areadetector.kinetix import KinetixDetector
 
 
@@ -61,12 +62,15 @@ async def test_can_read(adkinetix: KinetixDetector):
     assert (await adkinetix.read()) == {}
 
 
-async def test_decribe_describes_writer_dataset(adkinetix: KinetixDetector):
+async def test_decribe_describes_writer_dataset(
+    adkinetix: KinetixDetector, count_scan_trigger_info: TriggerInfo
+):
     set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(adkinetix._writer.hdf.capture, True)
 
     assert await adkinetix.describe() == {}
     await adkinetix.stage()
+    await adkinetix.prepare(count_scan_trigger_info)
     assert await adkinetix.describe() == {
         "adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
@@ -79,7 +83,9 @@ async def test_decribe_describes_writer_dataset(adkinetix: KinetixDetector):
 
 
 async def test_can_collect(
-    adkinetix: KinetixDetector, static_directory_provider: DirectoryProvider
+    adkinetix: KinetixDetector,
+    static_directory_provider: DirectoryProvider,
+    count_scan_trigger_info: TriggerInfo,
 ):
     directory_info = static_directory_provider()
     full_file_name = "foo.h5"
@@ -87,6 +93,7 @@ async def test_can_collect(
     set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(adkinetix._writer.hdf.capture, True)
     await adkinetix.stage()
+    await adkinetix.prepare(count_scan_trigger_info)
     docs = [(name, doc) async for name, doc in adkinetix.collect_asset_docs(1)]
     assert len(docs) == 2
     assert docs[0][0] == "stream_resource"
@@ -109,11 +116,14 @@ async def test_can_collect(
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
 
 
-async def test_can_decribe_collect(adkinetix: KinetixDetector):
+async def test_can_decribe_collect(
+    adkinetix: KinetixDetector, count_scan_trigger_info: TriggerInfo
+):
     set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(adkinetix._writer.hdf.capture, True)
     assert (await adkinetix.describe_collect()) == {}
     await adkinetix.stage()
+    await adkinetix.prepare(count_scan_trigger_info)
     assert (await adkinetix.describe_collect()) == {
         "adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",

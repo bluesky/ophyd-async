@@ -10,6 +10,7 @@ import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import StaticDirectoryProvider
+from ophyd_async.core.detector import DetectorTrigger, TriggerInfo
 
 PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
@@ -126,3 +127,14 @@ async def failing_coroutine() -> Callable[[], Any]:
 @pytest.fixture
 def static_directory_provider(tmp_path: Path):
     return StaticDirectoryProvider(directory_path=tmp_path)
+
+
+@pytest.fixture
+def count_scan_trigger_info() -> TriggerInfo:
+    return TriggerInfo(
+        frame_timeout=None,
+        number=1,
+        trigger=DetectorTrigger.internal,
+        deadtime=None,
+        livetime=None,
+    )

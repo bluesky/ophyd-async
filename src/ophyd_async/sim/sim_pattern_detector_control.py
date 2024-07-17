@@ -43,7 +43,7 @@ class SimPatternDetectorControl(DetectorControl):
                 pass
             self.task = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return 0.001
 
     async def _coroutine_for_image_writing(

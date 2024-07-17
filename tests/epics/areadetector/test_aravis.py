@@ -80,12 +80,15 @@ async def test_can_read(adaravis: AravisDetector):
     assert (await adaravis.read()) == {}
 
 
-async def test_decribe_describes_writer_dataset(adaravis: AravisDetector):
+async def test_decribe_describes_writer_dataset(
+    adaravis: AravisDetector, count_scan_trigger_info: TriggerInfo
+):
     set_mock_value(adaravis._writer.hdf.file_path_exists, True)
     set_mock_value(adaravis._writer.hdf.capture, True)
 
     assert await adaravis.describe() == {}
     await adaravis.stage()
+    await adaravis.prepare(count_scan_trigger_info)
     assert await adaravis.describe() == {
         "adaravis": {
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
@@ -98,7 +101,9 @@ async def test_decribe_describes_writer_dataset(adaravis: AravisDetector):
 
 
 async def test_can_collect(
-    adaravis: AravisDetector, static_directory_provider: DirectoryProvider
+    adaravis: AravisDetector,
+    static_directory_provider: DirectoryProvider,
+    count_scan_trigger_info: TriggerInfo,
 ):
     directory_info = static_directory_provider()
     full_file_name = "foo.h5"
@@ -106,6 +111,7 @@ async def test_can_collect(
     set_mock_value(adaravis._writer.hdf.file_path_exists, True)
     set_mock_value(adaravis._writer.hdf.capture, True)
     await adaravis.stage()
+    await adaravis.prepare(count_scan_trigger_info)
     docs = [(name, doc) async for name, doc in adaravis.collect_asset_docs(1)]
     assert len(docs) == 2
     assert docs[0][0] == "stream_resource"
@@ -130,11 +136,14 @@ async def test_can_collect(
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
 
 
-async def test_can_decribe_collect(adaravis: AravisDetector):
+async def test_can_decribe_collect(
+    adaravis: AravisDetector, count_scan_trigger_info: TriggerInfo
+):
     set_mock_value(adaravis._writer.hdf.file_path_exists, True)
     set_mock_value(adaravis._writer.hdf.capture, True)
     assert (await adaravis.describe_collect()) == {}
     await adaravis.stage()
+    await adaravis.prepare(count_scan_trigger_info)
     assert (await adaravis.describe_collect()) == {
         "adaravis": {
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",

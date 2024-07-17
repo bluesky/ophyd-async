@@ -51,7 +51,7 @@ class DummyController(DetectorControl):
 
     async def disarm(self): ...
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return 0.002
 
 

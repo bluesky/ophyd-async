@@ -19,6 +19,7 @@ from ophyd_async.core import (
     callback_on_mock_put,
     set_mock_value,
 )
+from ophyd_async.core.detector import DetectorTrigger, TriggerInfo
 from ophyd_async.core.signal import assert_emitted
 from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
@@ -50,7 +51,6 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 
     yield from bps.stage_all(*dets)
     yield from bps.open_run()
-    yield from bps.declare_stream(*dets, name="primary", collect=False)
     for _ in range(times):
         read_values = {}
         for det in dets:
@@ -61,7 +61,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
 
-        yield from bps.sleep(0.001)
+        yield from bps.sleep(0.1)
         [
             set_mock_value(
                 cast(HDFWriter, det.writer).hdf.num_captured, read_values[det] + 1
@@ -114,18 +114,33 @@ async def two_detectors(tmp_path: Path):
 async def test_two_detectors_fly_different_rate(
     two_detectors: List[DemoADSimDetector], RE: RunEngine
 ):
+    trigger_info = TriggerInfo(
+        number=1,
+        trigger=DetectorTrigger.internal,
+        deadtime=None,
+        livetime=None,
+        frame_timeout=None,
+    )
     docs = defaultdict(list)
 
     @bpp.stage_decorator(two_detectors)
     @bpp.run_decorator()
     def fly_plan():
+        for det in two_detectors:
+            yield from bps.prepare(det, trigger_info, group="prepare")
+        yield from bps.wait("prepare")
         yield from bps.declare_stream(*two_detectors, name="primary")
-        # Make one produce some frames and collect
+
+        yield from bps.sleep(0.01)
+
         set_mock_value(two_detectors[0].hdf.num_captured, 15)
         yield from bps.collect(*two_detectors)
         # It shouldn't make anything as the other one is lagging
         assert "stream_datum" not in docs
         # Make the other one produce some frames
+        for det in two_detectors:
+            yield from bps.trigger(det, wait=False)
+
         set_mock_value(two_detectors[1].hdf.num_captured, 15)
         yield from bps.collect(*two_detectors)
 
