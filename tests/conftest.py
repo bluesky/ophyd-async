@@ -11,7 +11,6 @@ from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import (
     FilenameProvider,
-    StaticDirectoryProvider,
     StaticFilenameProvider,
     StaticPathProvider,
 )
@@ -130,10 +129,6 @@ async def failing_coroutine() -> Callable[[], Any]:
 
 
 @pytest.fixture
-def static_directory_provider(tmp_path: Path):
-    return StaticDirectoryProvider(directory_path=tmp_path)
-
-
 def static_filename_provider():
     return StaticFilenameProvider("ophyd_async_tests")
 
@@ -152,7 +147,6 @@ def static_path_provider(
     static_filename_provider: FilenameProvider,
 ):
     return static_path_provider_factory(static_filename_provider)
-
 
 @pytest.fixture
 def count_scan_trigger_info() -> TriggerInfo:
