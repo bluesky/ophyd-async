@@ -1,0 +1,85 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.panda.PcompDirectionOptions
+========================================
+
+.. currentmodule:: ophyd_async.panda
+
+.. autoclass:: PcompDirectionOptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PcompDirectionOptions.encode
+      ~PcompDirectionOptions.replace
+      ~PcompDirectionOptions.split
+      ~PcompDirectionOptions.rsplit
+      ~PcompDirectionOptions.join
+      ~PcompDirectionOptions.capitalize
+      ~PcompDirectionOptions.casefold
+      ~PcompDirectionOptions.title
+      ~PcompDirectionOptions.center
+      ~PcompDirectionOptions.count
+      ~PcompDirectionOptions.expandtabs
+      ~PcompDirectionOptions.find
+      ~PcompDirectionOptions.partition
+      ~PcompDirectionOptions.index
+      ~PcompDirectionOptions.ljust
+      ~PcompDirectionOptions.lower
+      ~PcompDirectionOptions.lstrip
+      ~PcompDirectionOptions.rfind
+      ~PcompDirectionOptions.rindex
+      ~PcompDirectionOptions.rjust
+      ~PcompDirectionOptions.rstrip
+      ~PcompDirectionOptions.rpartition
+      ~PcompDirectionOptions.splitlines
+      ~PcompDirectionOptions.strip
+      ~PcompDirectionOptions.swapcase
+      ~PcompDirectionOptions.translate
+      ~PcompDirectionOptions.upper
+      ~PcompDirectionOptions.startswith
+      ~PcompDirectionOptions.endswith
+      ~PcompDirectionOptions.removeprefix
+      ~PcompDirectionOptions.removesuffix
+      ~PcompDirectionOptions.isascii
+      ~PcompDirectionOptions.islower
+      ~PcompDirectionOptions.isupper
+      ~PcompDirectionOptions.istitle
+      ~PcompDirectionOptions.isspace
+      ~PcompDirectionOptions.isdecimal
+      ~PcompDirectionOptions.isdigit
+      ~PcompDirectionOptions.isnumeric
+      ~PcompDirectionOptions.isalpha
+      ~PcompDirectionOptions.isalnum
+      ~PcompDirectionOptions.isidentifier
+      ~PcompDirectionOptions.isprintable
+      ~PcompDirectionOptions.zfill
+      ~PcompDirectionOptions.format
+      ~PcompDirectionOptions.format_map
+      ~PcompDirectionOptions.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PcompDirectionOptions.positive
+      ~PcompDirectionOptions.negative
+      ~PcompDirectionOptions.either
+   
+   

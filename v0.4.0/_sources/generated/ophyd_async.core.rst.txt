@@ -1,0 +1,114 @@
+﻿.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.core
+=================
+
+.. automodule:: ophyd_async.core
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      assert_configuration
+      assert_emitted
+      assert_reading
+      assert_value
+      callback_on_mock_put
+      get_dtype
+      get_mock_put
+      get_signal_values
+      get_unique
+      load_device
+      load_from_yaml
+      merge_gathered_dicts
+      mock_puts_blocked
+      observe_value
+      reset_mock_put_calls
+      save_device
+      save_to_yaml
+      set_and_wait_for_value
+      set_mock_put_proceeds
+      set_mock_value
+      set_mock_values
+      set_signal_values
+      soft_signal_r_and_setter
+      soft_signal_rw
+      wait_for_connection
+      wait_for_value
+      walk_rw_signals
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      AsyncStatus
+      AutoIncrementFilenameProvider
+      AutoIncrementingPathProvider
+      CalculateTimeout
+      ConfigSignal
+      DetectorControl
+      DetectorTrigger
+      DetectorWriter
+      Device
+      DeviceCollector
+      DeviceVector
+      FilenameProvider
+      HardwareTriggeredFlyable
+      HintedSignal
+      MockSignalBackend
+      NameProvider
+      PathInfo
+      PathProvider
+      RuntimeSubsetEnum
+      ShapeProvider
+      Signal
+      SignalBackend
+      SignalR
+      SignalRW
+      SignalW
+      SignalX
+      SoftSignalBackend
+      StandardDetector
+      StandardReadable
+      StaticFilenameProvider
+      StaticPathProvider
+      SubsetEnum
+      TriggerLogic
+      UUIDFilenameProvider
+      WatchableAsyncStatus
+      YMDPathProvider
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      NotConnected
+   
+   
+
+
+

@@ -1,0 +1,959 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ophyd_async.core &#8212; ophyd-async 0.4.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=6c02275b"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.core';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.4.0';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../_static/ophyd_favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ophyd_async.core.assert_configuration" href="ophyd_async.core.assert_configuration.html" />
+    <link rel="prev" title="API" href="../reference/api.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">ophyd-async</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../reference/api.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">ophyd_async.core</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_configuration.html">ophyd_async.core.assert_configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_emitted.html">ophyd_async.core.assert_emitted</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_reading.html">ophyd_async.core.assert_reading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_value.html">ophyd_async.core.assert_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.callback_on_mock_put.html">ophyd_async.core.callback_on_mock_put</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_dtype.html">ophyd_async.core.get_dtype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_mock_put.html">ophyd_async.core.get_mock_put</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_signal_values.html">ophyd_async.core.get_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_unique.html">ophyd_async.core.get_unique</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_device.html">ophyd_async.core.load_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_from_yaml.html">ophyd_async.core.load_from_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.merge_gathered_dicts.html">ophyd_async.core.merge_gathered_dicts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.mock_puts_blocked.html">ophyd_async.core.mock_puts_blocked</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.observe_value.html">ophyd_async.core.observe_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.reset_mock_put_calls.html">ophyd_async.core.reset_mock_put_calls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_device.html">ophyd_async.core.save_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_to_yaml.html">ophyd_async.core.save_to_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_value.html">ophyd_async.core.set_and_wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_put_proceeds.html">ophyd_async.core.set_mock_put_proceeds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_value.html">ophyd_async.core.set_mock_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_values.html">ophyd_async.core.set_mock_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_signal_values.html">ophyd_async.core.set_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html">ophyd_async.core.soft_signal_r_and_setter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html">ophyd_async.core.soft_signal_rw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_connection.html">ophyd_async.core.wait_for_connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.walk_rw_signals.html">ophyd_async.core.walk_rw_signals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html">ophyd_async.core.AsyncStatus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AutoIncrementFilenameProvider.html">ophyd_async.core.AutoIncrementFilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AutoIncrementingPathProvider.html">ophyd_async.core.AutoIncrementingPathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.CalculateTimeout.html">ophyd_async.core.CalculateTimeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ConfigSignal.html">ophyd_async.core.ConfigSignal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorControl.html">ophyd_async.core.DetectorControl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorTrigger.html">ophyd_async.core.DetectorTrigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorWriter.html">ophyd_async.core.DetectorWriter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.Device.html">ophyd_async.core.Device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceCollector.html">ophyd_async.core.DeviceCollector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceVector.html">ophyd_async.core.DeviceVector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.FilenameProvider.html">ophyd_async.core.FilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HardwareTriggeredFlyable.html">ophyd_async.core.HardwareTriggeredFlyable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HintedSignal.html">ophyd_async.core.HintedSignal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.MockSignalBackend.html">ophyd_async.core.MockSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NameProvider.html">ophyd_async.core.NameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.PathInfo.html">ophyd_async.core.PathInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.PathProvider.html">ophyd_async.core.PathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.RuntimeSubsetEnum.html">ophyd_async.core.RuntimeSubsetEnum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ShapeProvider.html">ophyd_async.core.ShapeProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.Signal.html">ophyd_async.core.Signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalBackend.html">ophyd_async.core.SignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalR.html">ophyd_async.core.SignalR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalRW.html">ophyd_async.core.SignalRW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalW.html">ophyd_async.core.SignalW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalX.html">ophyd_async.core.SignalX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SoftSignalBackend.html">ophyd_async.core.SoftSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardDetector.html">ophyd_async.core.StandardDetector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardReadable.html">ophyd_async.core.StandardReadable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticFilenameProvider.html">ophyd_async.core.StaticFilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticPathProvider.html">ophyd_async.core.StaticPathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SubsetEnum.html">ophyd_async.core.SubsetEnum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.TriggerLogic.html">ophyd_async.core.TriggerLogic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.UUIDFilenameProvider.html">ophyd_async.core.UUIDFilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.WatchableAsyncStatus.html">ophyd_async.core.WatchableAsyncStatus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.YMDPathProvider.html">ophyd_async.core.YMDPathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NotConnected.html">ophyd_async.core.NotConnected</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.epics.html">ophyd_async.epics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.areadetector.html">ophyd_async.epics.areadetector</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.AravisDetector.html">ophyd_async.epics.areadetector.AravisDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.KinetixDetector.html">ophyd_async.epics.areadetector.KinetixDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.VimbaDetector.html">ophyd_async.epics.areadetector.VimbaDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.SingleTriggerDet.html">ophyd_async.epics.areadetector.SingleTriggerDet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.FileWriteMode.html">ophyd_async.epics.areadetector.FileWriteMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.ImageMode.html">ophyd_async.epics.areadetector.ImageMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.NDAttributeDataType.html">ophyd_async.epics.areadetector.NDAttributeDataType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.NDAttributesXML.html">ophyd_async.epics.areadetector.NDAttributesXML</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.areadetector.PilatusDetector.html">ophyd_async.epics.areadetector.PilatusDetector</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.demo.html">ophyd_async.epics.demo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.start_ioc_subprocess.html">ophyd_async.epics.demo.start_ioc_subprocess</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.EnergyMode.html">ophyd_async.epics.demo.EnergyMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.Mover.html">ophyd_async.epics.demo.Mover</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.SampleStage.html">ophyd_async.epics.demo.SampleStage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.Sensor.html">ophyd_async.epics.demo.Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.SensorGroup.html">ophyd_async.epics.demo.SensorGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.demo_ad_sim_detector.html">ophyd_async.epics.demo.demo_ad_sim_detector</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.motion.html">ophyd_async.epics.motion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motion.Motor.html">ophyd_async.epics.motion.Motor</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.pvi.html">ophyd_async.epics.pvi</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pvi.fill_pvi_entries.html">ophyd_async.epics.pvi.fill_pvi_entries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pvi.create_children_from_annotations.html">ophyd_async.epics.pvi.create_children_from_annotations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pvi.PVIEntry.html">ophyd_async.epics.pvi.PVIEntry</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.signal.html">ophyd_async.epics.signal</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_r.html">ophyd_async.epics.signal.epics_signal_r</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_rw.html">ophyd_async.epics.signal.epics_signal_rw</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_rw_rbv.html">ophyd_async.epics.signal.epics_signal_rw_rbv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_w.html">ophyd_async.epics.signal.epics_signal_w</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_x.html">ophyd_async.epics.signal.epics_signal_x</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.panda.html">ophyd_async.panda</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.seq_table_from_arrays.html">ophyd_async.panda.seq_table_from_arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.seq_table_from_rows.html">ophyd_async.panda.seq_table_from_rows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.phase_sorter.html">ophyd_async.panda.phase_sorter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.CommonPandaBlocks.html">ophyd_async.panda.CommonPandaBlocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.HDFPanda.html">ophyd_async.panda.HDFPanda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PcompBlock.html">ophyd_async.panda.PcompBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PcompDirectionOptions.html">ophyd_async.panda.PcompDirectionOptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.EnableDisableOptions.html">ophyd_async.panda.EnableDisableOptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PcapBlock.html">ophyd_async.panda.PcapBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PulseBlock.html">ophyd_async.panda.PulseBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.SeqBlock.html">ophyd_async.panda.SeqBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.SeqTable.html">ophyd_async.panda.SeqTable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.SeqTableRow.html">ophyd_async.panda.SeqTableRow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.SeqTrigger.html">ophyd_async.panda.SeqTrigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.PandaPcapController.html">ophyd_async.panda.PandaPcapController</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.TimeUnits.html">ophyd_async.panda.TimeUnits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.DataBlock.html">ophyd_async.panda.DataBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.StaticSeqTableTriggerLogic.html">ophyd_async.panda.StaticSeqTableTriggerLogic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.panda.StaticPcompTriggerLogic.html">ophyd_async.panda.StaticPcompTriggerLogic</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../reference.html" class="nav-link">Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../reference/api.html" class="nav-link">API</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">ophyd_async.core</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ophyd async is included on a provisional basis until the v1.0 release and
+may change API on minor release numbers before then</p>
+</div>
+<section id="module-ophyd_async.core">
+<span id="ophyd-async-core"></span><h1>ophyd_async.core<a class="headerlink" href="#module-ophyd_async.core" title="Link to this heading">#</a></h1>
+<p class="rubric">Functions</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.assert_configuration.html#ophyd_async.core.assert_configuration" title="ophyd_async.core.assert_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_configuration</span></code></a></p></td>
+<td><p>Assert readings from Configurable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.assert_emitted.html#ophyd_async.core.assert_emitted" title="ophyd_async.core.assert_emitted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_emitted</span></code></a></p></td>
+<td><p>Assert emitted document generated by running a Bluesky plan</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.assert_reading.html#ophyd_async.core.assert_reading" title="ophyd_async.core.assert_reading"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_reading</span></code></a></p></td>
+<td><p>Assert readings from readable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.assert_value.html#ophyd_async.core.assert_value" title="ophyd_async.core.assert_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_value</span></code></a></p></td>
+<td><p>Assert a signal's value and compare it an expected signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.callback_on_mock_put.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a></p></td>
+<td><p>For setting a callback when a backend is put to.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.get_dtype.html#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
+<td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.get_mock_put.html#ophyd_async.core.get_mock_put" title="ophyd_async.core.get_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mock_put</span></code></a></p></td>
+<td><p>Get the mock associated with the put call on the signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.get_signal_values.html#ophyd_async.core.get_signal_values" title="ophyd_async.core.get_signal_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_signal_values</span></code></a></p></td>
+<td><p>Get signal values in bulk.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.get_unique.html#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
+<td><p>If all values are the same, return that value, otherwise return TypeError</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.load_device.html#ophyd_async.core.load_device" title="ophyd_async.core.load_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_device</span></code></a></p></td>
+<td><p>Plan which loads PVs from a yaml file into a device.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.load_from_yaml.html#ophyd_async.core.load_from_yaml" title="ophyd_async.core.load_from_yaml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_yaml</span></code></a></p></td>
+<td><p>Plan that returns a list of dicts with saved signal values from a yaml file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.merge_gathered_dicts.html#ophyd_async.core.merge_gathered_dicts" title="ophyd_async.core.merge_gathered_dicts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_gathered_dicts</span></code></a></p></td>
+<td><p>Merge dictionaries produced by a sequence of coroutines.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.mock_puts_blocked.html#ophyd_async.core.mock_puts_blocked" title="ophyd_async.core.mock_puts_blocked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mock_puts_blocked</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.observe_value.html#ophyd_async.core.observe_value" title="ophyd_async.core.observe_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe_value</span></code></a></p></td>
+<td><p>Subscribe to the value of a signal so it can be iterated from.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.reset_mock_put_calls.html#ophyd_async.core.reset_mock_put_calls" title="ophyd_async.core.reset_mock_put_calls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_mock_put_calls</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.save_device.html#ophyd_async.core.save_device" title="ophyd_async.core.save_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_device</span></code></a></p></td>
+<td><p>Plan that saves the state of all PV's on a device using a sorter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.save_to_yaml.html#ophyd_async.core.save_to_yaml" title="ophyd_async.core.save_to_yaml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_yaml</span></code></a></p></td>
+<td><p>Plan which serialises a phase or set of phases of SignalRWs to a yaml file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.set_and_wait_for_value.html#ophyd_async.core.set_and_wait_for_value" title="ophyd_async.core.set_and_wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_and_wait_for_value</span></code></a></p></td>
+<td><p>Set a signal and monitor it until it has that value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.set_mock_put_proceeds.html#ophyd_async.core.set_mock_put_proceeds" title="ophyd_async.core.set_mock_put_proceeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mock_put_proceeds</span></code></a></p></td>
+<td><p>Allow or block a put with wait=True from proceeding</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.set_mock_value.html#ophyd_async.core.set_mock_value" title="ophyd_async.core.set_mock_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mock_value</span></code></a></p></td>
+<td><p>Set the value of a signal that is in mock mode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.set_mock_values.html#ophyd_async.core.set_mock_values" title="ophyd_async.core.set_mock_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mock_values</span></code></a></p></td>
+<td><p>Iterator to set a signal to a sequence of values, optionally repeating the sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.set_signal_values.html#ophyd_async.core.set_signal_values" title="ophyd_async.core.set_signal_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_signal_values</span></code></a></p></td>
+<td><p>Maps signals from a yaml file into device signals.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html#ophyd_async.core.soft_signal_r_and_setter" title="ophyd_async.core.soft_signal_r_and_setter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_r_and_setter</span></code></a></p></td>
+<td><p>Returns a tuple of a read-only Signal and a callable through which the signal can be internally modified within the device.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html#ophyd_async.core.soft_signal_rw" title="ophyd_async.core.soft_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_rw</span></code></a></p></td>
+<td><p>Creates a read-writable Signal with a SoftSignalBackend.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.wait_for_connection.html#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
+<td><p>Call many underlying signals, accumulating exceptions and returning them</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.wait_for_value.html#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_value</span></code></a></p></td>
+<td><p>Wait for a signal to have a matching value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.walk_rw_signals.html#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">walk_rw_signals</span></code></a></p></td>
+<td><p>Retrieve all SignalRWs from a device.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.AutoIncrementFilenameProvider.html#ophyd_async.core.AutoIncrementFilenameProvider" title="ophyd_async.core.AutoIncrementFilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AutoIncrementFilenameProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.AutoIncrementingPathProvider.html#ophyd_async.core.AutoIncrementingPathProvider" title="ophyd_async.core.AutoIncrementingPathProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AutoIncrementingPathProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.CalculateTimeout.html#ophyd_async.core.CalculateTimeout" title="ophyd_async.core.CalculateTimeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CalculateTimeout</span></code></a></p></td>
+<td><p>Sentinel class used to implement <code class="docutils literal notranslate"><span class="pre">myfunc(timeout=CalculateTimeout)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.ConfigSignal.html#ophyd_async.core.ConfigSignal" title="ophyd_async.core.ConfigSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.DetectorControl.html#ophyd_async.core.DetectorControl" title="ophyd_async.core.DetectorControl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetectorControl</span></code></a></p></td>
+<td><p>Classes implementing this interface should hold the logic for arming and disarming a detector</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.DetectorTrigger.html#ophyd_async.core.DetectorTrigger" title="ophyd_async.core.DetectorTrigger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetectorTrigger</span></code></a></p></td>
+<td><p>Type of mechanism for triggering a detector to take frames</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a></p></td>
+<td><p>Logic for making a detector write data to somewhere persistent (e.g. an HDF5 file).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.Device.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Device</span></code></a></p></td>
+<td><p>Common base class for all Ophyd Async Devices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.DeviceCollector.html#ophyd_async.core.DeviceCollector" title="ophyd_async.core.DeviceCollector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DeviceCollector</span></code></a></p></td>
+<td><p>Collector of top level Device instances to be used as a context manager</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.DeviceVector.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DeviceVector</span></code></a></p></td>
+<td><p>Defines device components with indices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.FilenameProvider.html#ophyd_async.core.FilenameProvider" title="ophyd_async.core.FilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilenameProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.HardwareTriggeredFlyable.html#ophyd_async.core.HardwareTriggeredFlyable" title="ophyd_async.core.HardwareTriggeredFlyable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HardwareTriggeredFlyable</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.HintedSignal.html#ophyd_async.core.HintedSignal" title="ophyd_async.core.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.MockSignalBackend.html#ophyd_async.core.MockSignalBackend" title="ophyd_async.core.MockSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.NameProvider.html#ophyd_async.core.NameProvider" title="ophyd_async.core.NameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NameProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.PathInfo.html#ophyd_async.core.PathInfo" title="ophyd_async.core.PathInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PathInfo</span></code></a></p></td>
+<td><p>Information about where and how to write a file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.PathProvider.html#ophyd_async.core.PathProvider" title="ophyd_async.core.PathProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PathProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.RuntimeSubsetEnum.html#ophyd_async.core.RuntimeSubsetEnum" title="ophyd_async.core.RuntimeSubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeSubsetEnum</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.ShapeProvider.html#ophyd_async.core.ShapeProvider" title="ophyd_async.core.ShapeProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ShapeProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.Signal.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Signal</span></code></a></p></td>
+<td><p>A Device with the concept of a value, with R, RW, W and X flavours</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend" title="ophyd_async.core.SignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalBackend</span></code></a></p></td>
+<td><p>A read/write/monitor backend for a Signals</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.SignalR.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalR</span></code></a></p></td>
+<td><p>Signal that can be read from and monitored</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.SignalRW.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalRW</span></code></a></p></td>
+<td><p>Signal that can be both read and set</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.SignalW.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalW</span></code></a></p></td>
+<td><p>Signal that can be set</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.SignalX.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalX</span></code></a></p></td>
+<td><p>Signal that puts the default value</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.SoftSignalBackend.html#ophyd_async.core.SoftSignalBackend" title="ophyd_async.core.SoftSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a></p></td>
+<td><p>An backend to a soft Signal, for test signals see <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardDetector</span></code></a></p></td>
+<td><p>Useful detector base class for step and fly scanning detectors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardReadable</span></code></a></p></td>
+<td><p>Device that owns its children and provides useful default behavior.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.StaticFilenameProvider.html#ophyd_async.core.StaticFilenameProvider" title="ophyd_async.core.StaticFilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticFilenameProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.StaticPathProvider.html#ophyd_async.core.StaticPathProvider" title="ophyd_async.core.StaticPathProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticPathProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.SubsetEnum.html#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubsetEnum</span></code></a></p></td>
+<td><p>alias of <a class="reference internal" href="ophyd_async.core.RuntimeSubsetEnum.html#ophyd_async.core.RuntimeSubsetEnum" title="ophyd_async.core.signal_backend.RuntimeSubsetEnum"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeSubsetEnum</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.TriggerLogic.html#ophyd_async.core.TriggerLogic" title="ophyd_async.core.TriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TriggerLogic</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.UUIDFilenameProvider.html#ophyd_async.core.UUIDFilenameProvider" title="ophyd_async.core.UUIDFilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UUIDFilenameProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.WatchableAsyncStatus.html#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a></p></td>
+<td><p>Convert AsyncIterator of WatcherUpdates to bluesky Status interface.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.YMDPathProvider.html#ophyd_async.core.YMDPathProvider" title="ophyd_async.core.YMDPathProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YMDPathProvider</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Exceptions</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.NotConnected.html#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotConnected</span></code></a></p></td>
+<td><p>Exception to be raised if a <a class="reference internal" href="ophyd_async.core.Device.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> is cancelled</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../reference/api.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">API</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="ophyd_async.core.assert_configuration.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ophyd_async.core.assert_configuration</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.4.0/docs/generated/ophyd_async.core.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/generated/ophyd_async.core.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
