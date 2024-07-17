@@ -1,7 +1,7 @@
 import asyncio
 from typing import Optional
 
-from ophyd_async.core import DirectoryProvider
+from ophyd_async.core import PathProvider
 from ophyd_async.core.async_status import AsyncStatus
 from ophyd_async.core.detector import DetectorControl, DetectorTrigger
 from ophyd_async.sim.pattern_generator import PatternGenerator
@@ -11,12 +11,12 @@ class SimPatternDetectorControl(DetectorControl):
     def __init__(
         self,
         pattern_generator: PatternGenerator,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         exposure: float = 0.1,
     ) -> None:
         self.pattern_generator: PatternGenerator = pattern_generator
         self.pattern_generator.set_exposure(exposure)
-        self.directory_provider: DirectoryProvider = directory_provider
+        self.path_provider: PathProvider = path_provider
         self.task: Optional[asyncio.Task] = None
         super().__init__()
 

@@ -223,10 +223,10 @@ async def test_valid_prepare_velocity(sim_motor: motor.Motor):
     "acceleration_time, velocity, start_position, end_position, upper_limit,\
     lower_limit",
     [
-        (1, 10, 0, 10, 30, -9.999),  # Goes below lower_limit, +ve direction
-        (1, 10, 0, 10, 19.99, -10),  # Goes above upper_limit, +ve direction
+        (1, 10, 0, 10, 30, -4.999),  # Goes below lower_limit, +ve direction
+        (1, 10, 0, 10, 14.99, -10),  # Goes above upper_limit, +ve direction
         (1, -10, 10, 0, -30, -9.999),  # Goes below lower_limit, -ve direction
-        (1, -10, 10, 0, 19.99, -10),  # Goes above upper_limit, -ve direction
+        (1, -10, 10, 0, 14.99, -10),  # Goes above upper_limit, -ve direction
     ],
 )
 async def test_prepare_motor_path_errors(
@@ -258,9 +258,9 @@ async def test_prepare_motor_path(sim_motor: motor.Motor):
         await sim_motor._prepare_motor_path(
             10, fly_info.start_position, fly_info.end_position
         )
-        == -10
+        == -5
     )
-    assert sim_motor._fly_completed_position == 20
+    assert sim_motor._fly_completed_position == 15
 
 
 async def test_prepare(sim_motor: motor.Motor):

@@ -21,7 +21,7 @@ dependencies = [
     "p4p",
     "pyyaml",
     "colorlog",
-    "pydantic",
+    "pydantic>=2.0",
     "pydantic-numpy",
 ]
 dynamic = ["version"]
@@ -60,6 +60,7 @@ dev = [
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
+    "sphinx<7.4.0",              # https://github.com/bluesky/ophyd-async/issues/459
     "sphinx-autobuild",
     "autodoc-pydantic",
     "sphinxcontrib-mermaid",
