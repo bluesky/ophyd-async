@@ -1,6 +1,6 @@
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import DirectoryProvider, StandardDetector
+from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.epics.areadetector.controllers.kinetix_controller import (
     KinetixController,
 )
@@ -21,7 +21,7 @@ class KinetixDetector(StandardDetector, HasHints):
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
@@ -33,7 +33,7 @@ class KinetixDetector(StandardDetector, HasHints):
             KinetixController(self.drv),
             HDFWriter(
                 self.hdf,
-                directory_provider,
+                path_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
             ),

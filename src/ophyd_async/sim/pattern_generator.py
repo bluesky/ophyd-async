@@ -1,13 +1,12 @@
 from pathlib import Path
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, List, Optional
+from typing import AsyncGenerator, AsyncIterator, Dict, Optional
 
 import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
 
-from ophyd_async.core import DirectoryProvider
-from ophyd_async.core.mock_signal_backend import MockSignalBackend
-from ophyd_async.core.signal import SignalR, observe_value
+from ophyd_async.core import PathProvider
+from ophyd_async.core.signal import observe_value, soft_signal_r_and_setter
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
@@ -18,26 +17,6 @@ DATA_PATH = "/entry/data/data"
 SUM_PATH = "/entry/sum"
 
 MAX_UINT8_VALUE = np.iinfo(np.uint8).max
-
-SLICE_NAME = "AD_HDF5_SWMR_SLICE"
-
-
-def get_full_file_description(
-    datasets: List[_HDFDataset],
-    outer_shape: tuple[int, ...],
-    dtype: str = "number",
-):
-    full_file_description: Dict[str, DataKey] = {}
-    for d in datasets:
-        source = f"soft://{d.data_key}"
-        shape = outer_shape + d.shape
-        dtype = dtype
-        descriptor = DataKey(
-            source=source, shape=shape, dtype=dtype, external="STREAM:"
-        )
-        key = d.data_key
-        full_file_description[key] = descriptor
-    return full_file_description
 
 
 def generate_gaussian_blob(height: int, width: int) -> np.ndarray:
@@ -59,29 +38,24 @@ def generate_interesting_pattern(x: float, y: float) -> float:
 class PatternGenerator:
     def __init__(
         self,
-        saturation_exposure_time: float = 1,
+        saturation_exposure_time: float = 0.1,
         detector_width: int = 320,
         detector_height: int = 240,
     ) -> None:
-        self.maxshape: tuple[Any, ...] = (1,)
-        self.fillvalue: int = 1
-        self.shape: List[int] = [1, 1]
         self.saturation_exposure_time = saturation_exposure_time
         self.exposure = saturation_exposure_time
         self.x = 0.0
         self.y = 0.0
         self.height = detector_height
         self.width = detector_width
-        self.written_images_counter: int = 0
+        self.image_counter: int = 0
 
         # it automatically initializes to 0
-        self.signal_backend = MockSignalBackend(int)
-        self.mock_signal = SignalR(self.signal_backend)
-        blob = np.array(
+        self.counter_signal, self._set_counter_signal = soft_signal_r_and_setter(int)
+        self._full_intensity_blob = (
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
         )
-        self.STARTING_BLOB = blob
         self._hdf_stream_provider: Optional[_HDFFile] = None
         self._handle_for_h5_file: Optional[h5py.File] = None
         self.target_path: Optional[Path] = None
@@ -90,31 +64,24 @@ class PatternGenerator:
         assert self._handle_for_h5_file, "no file has been opened!"
         # prepare - resize the fixed hdf5 data structure
         # so that the new image can be written
-        new_layer = self.written_images_counter + 1
-        target_dimensions = (new_layer, self.height, self.width)
+        self._handle_for_h5_file[DATA_PATH].resize(
+            (self.image_counter + 1, self.height, self.width)
+        )
+        self._handle_for_h5_file[SUM_PATH].resize((self.image_counter + 1,))
 
         # generate the simulated data
         intensity: float = generate_interesting_pattern(self.x, self.y)
-        detector_data: np.uint8 = np.uint8(
-            self.STARTING_BLOB
+        detector_data = (
+            self._full_intensity_blob
             * intensity
             * self.exposure
             / self.saturation_exposure_time
-        )
-
-        self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
-
-        print(f"writing image {new_layer}")
-        assert self._handle_for_h5_file, "no file has been opened!"
-        self._handle_for_h5_file[DATA_PATH].resize(target_dimensions)
-
-        self._handle_for_h5_file[SUM_PATH].resize((new_layer,))
+        ).astype(np.uint8)
 
         # write data to disc (intermediate step)
-        self._handle_for_h5_file[DATA_PATH][self.written_images_counter] = detector_data
-        self._handle_for_h5_file[SUM_PATH][self.written_images_counter] = np.sum(
-            detector_data
-        )
+        self._handle_for_h5_file[DATA_PATH][self.image_counter] = detector_data
+        sum = np.sum(detector_data)
+        self._handle_for_h5_file[SUM_PATH][self.image_counter] = sum
 
         # save metadata - so that it's discoverable
         self._handle_for_h5_file[DATA_PATH].flush()
@@ -122,8 +89,8 @@ class PatternGenerator:
 
         # counter increment is last
         # as only at this point the new data is visible from the outside
-        self.written_images_counter += 1
-        await self.signal_backend.put(self.written_images_counter)
+        self.image_counter += 1
+        self._set_counter_signal(self.image_counter)
 
     def set_exposure(self, value: float) -> None:
         self.exposure = value
@@ -135,55 +102,69 @@ class PatternGenerator:
         self.y = value
 
     async def open_file(
-        self, directory: DirectoryProvider, multiplier: int = 1
+        self, path_provider: PathProvider, name: str, multiplier: int = 1
     ) -> Dict[str, DataKey]:
-        await self.mock_signal.connect()
+        await self.counter_signal.connect()
 
-        self.target_path = self._get_new_path(directory)
+        self.target_path = self._get_new_path(path_provider)
+        self._path_provider = path_provider
 
         self._handle_for_h5_file = h5py.File(self.target_path, "w", libver="latest")
 
         assert self._handle_for_h5_file, "not loaded the file right"
 
-        datasets = self._get_datasets()
-        for d in datasets:
-            self._handle_for_h5_file.create_dataset(
-                name=d.dataset, shape=d.shape, chunks=True
-            )
+        self._handle_for_h5_file.create_dataset(
+            name=DATA_PATH,
+            shape=(0, self.height, self.width),
+            dtype=np.uint8,
+            maxshape=(None, self.height, self.width),
+        )
+        self._handle_for_h5_file.create_dataset(
+            name=SUM_PATH,
+            shape=(0,),
+            dtype=np.float64,
+            maxshape=(None,),
+        )
 
         # once datasets written, can switch the model to single writer multiple reader
         self._handle_for_h5_file.swmr_mode = True
+        self.multiplier = multiplier
 
         outer_shape = (multiplier,) if multiplier > 1 else ()
-        full_file_description = get_full_file_description(datasets, outer_shape)
 
         # cache state to self
-        self._datasets = datasets
-        self.multiplier = multiplier
-        self._directory_provider = directory
-        return full_file_description
+        # Add the main data
+        self._datasets = [
+            _HDFDataset(
+                data_key=name,
+                dataset=DATA_PATH,
+                shape=(self.height, self.width),
+                multiplier=multiplier,
+            ),
+            _HDFDataset(
+                f"{name}-sum",
+                dataset=SUM_PATH,
+                shape=(),
+                multiplier=multiplier,
+            ),
+        ]
 
-    def _get_new_path(self, directory: DirectoryProvider) -> Path:
-        info = directory()
-        filename = f"{info.prefix}pattern{info.suffix}.h5"
+        describe = {
+            ds.data_key: DataKey(
+                source="sim://pattern-generator-hdf-file",
+                shape=outer_shape + tuple(ds.shape),
+                dtype="array" if ds.shape else "number",
+                external="STREAM:",
+            )
+            for ds in self._datasets
+        }
+        return describe
+
+    def _get_new_path(self, path_provider: PathProvider) -> Path:
+        info = path_provider(device_name="pattern")
+        filename = info.filename
         new_path: Path = info.root / info.resource_dir / filename
         return new_path
-
-    def _get_datasets(self) -> List[_HDFDataset]:
-        raw_dataset = _HDFDataset(
-            dataset=DATA_PATH,
-            data_key=DATA_PATH.replace("/", "_"),
-            shape=(1, self.height, self.width),
-        )
-
-        sum_dataset = _HDFDataset(
-            dataset=SUM_PATH,
-            data_key=SUM_PATH.replace("/", "_"),
-            shape=(1,),
-        )
-
-        datasets: List[_HDFDataset] = [raw_dataset, sum_dataset]
-        return datasets
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -202,9 +183,8 @@ class PatternGenerator:
             # until the first frame comes in
             if not self._hdf_stream_provider:
                 assert self.target_path, "open file has not been called"
-                self._datasets = self._get_datasets()
                 self._hdf_stream_provider = _HDFFile(
-                    self._directory_provider(),
+                    self._path_provider(),
                     self.target_path,
                     self._datasets,
                 )
@@ -223,5 +203,5 @@ class PatternGenerator:
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        async for num_captured in observe_value(self.mock_signal, timeout=timeout):
+        async for num_captured in observe_value(self.counter_signal, timeout=timeout):
             yield num_captured // self.multiplier

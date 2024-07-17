@@ -6,12 +6,15 @@ import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import StaticDirectoryProvider, set_mock_value
+from ophyd_async.core import StaticFilenameProvider, StaticPathProvider, set_mock_value
 from ophyd_async.core.device import Device
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
 from ophyd_async.core.mock_signal_utils import callback_on_mock_put
 from ophyd_async.core.signal import SignalR, assert_emitted
-from ophyd_async.panda import HDFPanda, StaticSeqTableTriggerLogic
+from ophyd_async.panda import (
+    HDFPanda,
+    StaticSeqTableTriggerLogic,
+)
 from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
@@ -23,10 +26,10 @@ async def mock_hdf_panda(tmp_path):
     class CaptureBlock(Device):
         test_capture: SignalR
 
-    directory_provider = StaticDirectoryProvider(str(tmp_path), filename_prefix="test")
-    mock_hdf_panda = HDFPanda(
-        "HDFPANDA:", directory_provider=directory_provider, name="panda"
-    )
+    fp = StaticFilenameProvider("test-panda")
+    dp = StaticPathProvider(fp, tmp_path)
+
+    mock_hdf_panda = HDFPanda("HDFPANDA:", path_provider=dp, name="panda")
     await mock_hdf_panda.connect(mock=True)
 
     def link_function(value, **kwargs):
@@ -150,14 +153,14 @@ async def test_hdf_panda_hardware_triggered_flyable(
                 "uid": ANY,
                 "data_key": data_key_name,
                 "mimetype": "application/x-hdf5",
-                "uri": "file://localhost" + str(tmp_path / "testpanda.h5"),
+                "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
                 "parameters": {
                     "dataset": f"/{dataset_name}",
                     "swmr": False,
                     "multiplier": 1,
                 },
             }
-            assert "testpanda.h5" in stream_resource["uri"]
+            assert "test-panda.h5" in stream_resource["uri"]
 
         assert_resource_document()
 
