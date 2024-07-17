@@ -1,12 +1,11 @@
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import PathProvider, StandardDetector
-from ophyd_async.epics.areadetector.controllers.kinetix_controller import (
-    KinetixController,
-)
 from ophyd_async.epics.areadetector.drivers import ADBaseShapeProvider
-from ophyd_async.epics.areadetector.drivers.kinetix_driver import KinetixDriver
 from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+
+from ._kinetix_controller import KinetixController
+from ._kinetix_io import KinetixDriverIO
 
 
 class KinetixDetector(StandardDetector, HasHints):
@@ -26,7 +25,7 @@ class KinetixDetector(StandardDetector, HasHints):
         hdf_suffix="HDF1:",
         name="",
     ):
-        self.drv = KinetixDriver(prefix + drv_suffix)
+        self.drv = KinetixDriverIO(prefix + drv_suffix)
         self.hdf = NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
