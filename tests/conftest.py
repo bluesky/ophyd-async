@@ -148,6 +148,7 @@ def static_path_provider(
 ):
     return static_path_provider_factory(static_filename_provider)
 
+
 @pytest.fixture
 def count_scan_trigger_info() -> TriggerInfo:
     return TriggerInfo(
