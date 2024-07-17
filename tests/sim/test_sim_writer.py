@@ -12,7 +12,7 @@ async def writer(static_path_provider) -> SimPatternDetectorWriter:
     async with DeviceCollector(mock=True):
         driver = PatternGenerator()
 
-    return SimPatternDetectorWriter(driver, static_path_provider, lambda: "NAME")
+    return SimPatternDetectorWriter(driver, static_path_provider)
 
 
 async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWriter):
