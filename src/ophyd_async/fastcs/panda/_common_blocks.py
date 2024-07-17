@@ -4,7 +4,8 @@ from enum import Enum
 
 from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW
 from ophyd_async.core.signal_backend import SubsetEnum
-from ophyd_async.panda._table import DatasetTable, SeqTable
+
+from ._table import DatasetTable, SeqTable
 
 
 class DataBlock(Device):

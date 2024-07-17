@@ -4,13 +4,10 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from ophyd_async.core import TriggerLogic, wait_for_value
-from ophyd_async.panda import (
-    PcompBlock,
-    PcompDirectionOptions,
-    SeqBlock,
-    SeqTable,
-    TimeUnits,
-)
+
+from ._common_blocks import (PcompBlock, PcompDirectionOptions, SeqBlock,
+                             TimeUnits)
+from ._table import SeqTable
 
 
 class SeqTableInfo(BaseModel):
