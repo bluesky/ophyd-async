@@ -83,9 +83,9 @@ async def test_decribe_describes_writer_dataset(
 
 
 async def test_can_collect(
-
-adkinetix: KinetixDetector, static_path_provider: StaticPathProvider,
-    count_scan_trigger_info: TriggerInfo
+    adkinetix: KinetixDetector,
+    static_path_provider: StaticPathProvider,
+    count_scan_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
     full_file_name = path_info.root / path_info.resource_dir / "foo.h5"

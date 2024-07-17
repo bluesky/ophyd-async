@@ -101,9 +101,9 @@ async def test_decribe_describes_writer_dataset(
 
 
 async def test_can_collect(
-
-    adaravis: AravisDetector, static_path_provider: PathProvider,
-    count_scan_trigger_info: TriggerInfo
+    adaravis: AravisDetector,
+    static_path_provider: PathProvider,
+    count_scan_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
     full_file_name = path_info.root / path_info.resource_dir / "foo.h5"

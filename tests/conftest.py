@@ -8,13 +8,14 @@ from typing import Any, Callable
 
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
-from ophyd_async.core import StaticDirectoryProvider
-from ophyd_async.core.detector import DetectorTrigger, TriggerInfo
+
 from ophyd_async.core import (
     FilenameProvider,
+    StaticDirectoryProvider,
     StaticFilenameProvider,
     StaticPathProvider,
 )
+from ophyd_async.core.detector import DetectorTrigger, TriggerInfo
 
 PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
@@ -132,6 +133,7 @@ async def failing_coroutine() -> Callable[[], Any]:
 def static_directory_provider(tmp_path: Path):
     return StaticDirectoryProvider(directory_path=tmp_path)
 
+
 def static_filename_provider():
     return StaticFilenameProvider("ophyd_async_tests")
 
@@ -150,6 +152,7 @@ def static_path_provider(
     static_filename_provider: FilenameProvider,
 ):
     return static_path_provider_factory(static_filename_provider)
+
 
 @pytest.fixture
 def count_scan_trigger_info() -> TriggerInfo:
