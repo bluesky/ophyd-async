@@ -74,7 +74,7 @@ class DummyWriter(DetectorWriter):
             if not self._file:
                 self._file = compose_stream_resource(
                     mimetype="application/x-hdf5",
-                    uri="",
+                    uri="file://",
                     data_key=self._name,
                     parameters={
                         "path": "",

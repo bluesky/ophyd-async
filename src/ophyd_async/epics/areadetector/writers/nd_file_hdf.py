@@ -37,4 +37,7 @@ class NDFileHDF(NDPluginBase):
         self.capture = epics_signal_rw_rbv(bool, prefix + "Capture")
         self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
         self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
+        self.array_size0 = epics_signal_r(int, prefix + "ArraySize0")
+        self.array_size1 = epics_signal_r(int, prefix + "ArraySize1")
+        self.create_dir_depth = epics_signal_rw(int, prefix + "CreateDirectory")
         super().__init__(prefix, name)

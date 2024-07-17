@@ -1,6 +1,6 @@
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import DirectoryProvider, StandardDetector
+from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.epics.areadetector.controllers.vimba_controller import VimbaController
 from ophyd_async.epics.areadetector.drivers import ADBaseShapeProvider
 from ophyd_async.epics.areadetector.drivers.vimba_driver import VimbaDriver
@@ -18,7 +18,7 @@ class VimbaDetector(StandardDetector, HasHints):
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
@@ -30,7 +30,7 @@ class VimbaDetector(StandardDetector, HasHints):
             VimbaController(self.drv),
             HDFWriter(
                 self.hdf,
-                directory_provider,
+                path_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
             ),

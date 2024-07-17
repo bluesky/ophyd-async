@@ -9,12 +9,11 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     SignalR,
-    StaticDirectoryProvider,
+    StaticFilenameProvider,
+    StaticPathProvider,
     set_mock_value,
 )
-from ophyd_async.epics.areadetector.writers.general_hdffile import (
-    _HDFFile,
-)
+from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFFile
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.panda import CommonPandaBlocks
 from ophyd_async.panda._table import DatasetTable, PandaHdf5DatasetType
@@ -95,12 +94,13 @@ async def mock_panda(panda_t):
 
 @pytest.fixture
 async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
-    dir_prov = StaticDirectoryProvider(
-        directory_path=str(tmp_path), filename_prefix="", filename_suffix="/data"
-    )
+    fp = StaticFilenameProvider("data")
+    dp = StaticPathProvider(fp, tmp_path / mock_panda.name)
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
-            directory_provider=dir_prov,
+            prefix="TEST-PANDA",
+            path_provider=dp,
+            name_provider=lambda: "test-panda",
             panda_device=mock_panda,
         )
 
@@ -143,9 +143,9 @@ async def test_open_close_sets_capture(mock_writer: PandaHDFWriter):
 async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_path):
     await mock_writer.open()
     path = await mock_writer.panda_device.data.hdf_directory.get_value()
-    assert path == str(tmp_path)
+    assert path.startswith(str(tmp_path))
     name = await mock_writer.panda_device.data.hdf_file_name.get_value()
-    assert name == "mock_panda/data.h5"
+    assert name == "data.h5"
 
 
 async def test_open_errors_when_multiplier_not_one(mock_writer: PandaHDFWriter):

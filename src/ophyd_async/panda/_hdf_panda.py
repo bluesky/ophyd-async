@@ -4,7 +4,7 @@ from typing import Sequence
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DirectoryProvider,
+    PathProvider,
     SignalR,
     StandardDetector,
 )
@@ -19,7 +19,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
@@ -28,7 +28,9 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         create_children_from_annotations(self)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
-            directory_provider=directory_provider,
+            prefix=prefix,
+            path_provider=path_provider,
+            name_provider=lambda: name,
             panda_device=self,
         )
         super().__init__(
