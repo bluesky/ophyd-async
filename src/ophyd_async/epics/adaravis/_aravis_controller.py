@@ -1,18 +1,12 @@
 import asyncio
 from typing import Literal, Optional, Tuple
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    set_and_wait_for_value,
-)
-from ophyd_async.epics.areadetector.drivers.aravis_driver import (
-    AravisDriver,
-    AravisTriggerMode,
-    AravisTriggerSource,
-)
+from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
+                              set_and_wait_for_value)
 from ophyd_async.epics.areadetector.utils import ImageMode, stop_busy_record
+
+from ._aravis_driver import (AravisDriver, AravisTriggerMode,
+                             AravisTriggerSource)
 
 # The deadtime of an ADaravis controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
