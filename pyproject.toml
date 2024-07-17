@@ -60,6 +60,7 @@ dev = [
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
+    "sphinx<7.4.0",
     "sphinx-autobuild",
     "autodoc-pydantic",
     "sphinxcontrib-mermaid",
