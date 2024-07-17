@@ -2,19 +2,17 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import StaticDirectoryProvider
 from ophyd_async.core.device import DeviceCollector
 from ophyd_async.sim import PatternGenerator
 from ophyd_async.sim.sim_pattern_detector_writer import SimPatternDetectorWriter
 
 
 @pytest.fixture
-async def writer(tmp_path) -> SimPatternDetectorWriter:
+async def writer(static_path_provider) -> SimPatternDetectorWriter:
     async with DeviceCollector(mock=True):
         driver = PatternGenerator()
-    directory = StaticDirectoryProvider(tmp_path)
 
-    return SimPatternDetectorWriter(driver, directory)
+    return SimPatternDetectorWriter(driver, static_path_provider, lambda: "NAME")
 
 
 async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWriter):
@@ -22,15 +20,15 @@ async def test_correct_descriptor_doc_after_open(writer: SimPatternDetectorWrite
         descriptor = await writer.open()
 
     assert descriptor == {
-        "_entry_data_data": {
-            "source": "soft://_entry_data_data",
-            "shape": (1, 240, 320),
-            "dtype": "number",
+        "NAME": {
+            "source": "sim://pattern-generator-hdf-file",
+            "shape": (240, 320),
+            "dtype": "array",
             "external": "STREAM:",
         },
-        "_entry_sum": {
-            "source": "soft://_entry_sum",
-            "shape": (1,),
+        "NAME-sum": {
+            "source": "sim://pattern-generator-hdf-file",
+            "shape": (),
             "dtype": "number",
             "external": "STREAM:",
         },

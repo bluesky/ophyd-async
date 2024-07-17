@@ -2,7 +2,7 @@ from enum import Enum
 
 from bluesky.protocols import Hints
 
-from ophyd_async.core import DirectoryProvider
+from ophyd_async.core import PathProvider
 from ophyd_async.core.detector import StandardDetector
 from ophyd_async.epics.areadetector.controllers.pilatus_controller import (
     PilatusController,
@@ -36,7 +36,7 @@ class PilatusDetector(StandardDetector):
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         readout_time: PilatusReadoutTime = PilatusReadoutTime.pilatus3,
         drv_suffix: str = "cam1:",
         hdf_suffix: str = "HDF1:",
@@ -49,7 +49,7 @@ class PilatusDetector(StandardDetector):
             PilatusController(self.drv, readout_time=readout_time.value),
             HDFWriter(
                 self.hdf,
-                directory_provider,
+                path_provider,
                 lambda: self.name,
                 ADBaseShapeProvider(self.drv),
             ),
