@@ -5,9 +5,9 @@ from unittest.mock import Mock
 
 from bluesky.protocols import Descriptor, Reading
 
-from ophyd_async.core.signal_backend import SignalBackend
-from ophyd_async.core.soft_signal_backend import SoftSignalBackend
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
+from ._signal_backend import SignalBackend
+from ._soft_signal_backend import SoftSignalBackend
+from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
 class MockSignalBackend(SignalBackend[T]):

@@ -14,7 +14,7 @@ from typing import (
 from bluesky.protocols import DataKey, HasName, Reading
 
 if TYPE_CHECKING:
-    from ophyd_async.core.async_status import AsyncStatus
+    from ._status import AsyncStatus
 
 
 @runtime_checkable

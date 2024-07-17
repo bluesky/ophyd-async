@@ -4,23 +4,14 @@ import inspect
 import time
 from collections import abc
 from enum import Enum
-from typing import (
-    Dict,
-    Generic,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-    cast,
-    get_origin,
-)
+from typing import Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
 from typing_extensions import TypedDict
 
-from .signal_backend import RuntimeSubsetEnum, SignalBackend
-from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
+from ._signal_backend import RuntimeSubsetEnum, SignalBackend
+from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
     str: "string",

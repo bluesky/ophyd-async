@@ -2,10 +2,9 @@ from contextlib import asynccontextmanager, contextmanager
 from typing import Any, Callable, Iterable
 from unittest.mock import Mock
 
-from ophyd_async.core.signal import Signal
-from ophyd_async.core.utils import T
-
-from .mock_signal_backend import MockSignalBackend
+from ._mock_signal_backend import MockSignalBackend
+from ._signal import Signal
+from ._utils import T
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:

@@ -1,17 +1,8 @@
 from abc import abstractmethod
-from typing import (
-    TYPE_CHECKING,
-    ClassVar,
-    Generic,
-    Literal,
-    Optional,
-    Tuple,
-    Type,
-)
+from typing import TYPE_CHECKING, ClassVar, Generic, Literal, Optional, Tuple, Type
 
-from bluesky.protocols import DataKey, Reading
-
-from .utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
+from ._protocol import DataKey, Reading
+from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
 class SignalBackend(Generic[T]):

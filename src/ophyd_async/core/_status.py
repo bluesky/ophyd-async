@@ -4,20 +4,12 @@ import asyncio
 import functools
 import time
 from dataclasses import asdict, replace
-from typing import (
-    AsyncIterator,
-    Awaitable,
-    Callable,
-    Generic,
-    Type,
-    TypeVar,
-    cast,
-)
+from typing import AsyncIterator, Awaitable, Callable, Generic, Type, TypeVar, cast
 
 from bluesky.protocols import Status
 
-from ..protocols import Watcher
-from .utils import Callback, P, T, WatcherUpdate
+from ._protocol import Watcher
+from ._utils import Callback, P, T, WatcherUpdate
 
 AS = TypeVar("AS", bound="AsyncStatus")
 WAS = TypeVar("WAS", bound="WatchableAsyncStatus")

@@ -1,24 +1,14 @@
 import warnings
 from contextlib import contextmanager
-from typing import (
-    Callable,
-    Dict,
-    Generator,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Callable, Dict, Generator, Optional, Sequence, Tuple, Type, Union
 
 from bluesky.protocols import DataKey, HasHints, Hints, Reading
 
-from ophyd_async.protocols import AsyncConfigurable, AsyncReadable, AsyncStageable
-
-from .async_status import AsyncStatus
-from .device import Device, DeviceVector
-from .signal import SignalR
-from .utils import merge_gathered_dicts
+from ._device import Device, DeviceVector
+from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
+from ._signal import SignalR
+from ._status import AsyncStatus
+from ._utils import merge_gathered_dicts
 
 ReadableChild = Union[AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints]
 ReadableChildWrapper = Union[
