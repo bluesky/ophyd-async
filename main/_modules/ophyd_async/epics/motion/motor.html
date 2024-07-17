@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motion.motor &#8212; ophyd-async 0.3.5.dev15+ga6676270 documentation</title>
+    <title>ophyd_async.epics.motion.motor &#8212; ophyd-async 0.4.1.dev1+g8a9b9ac9 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=79335745"></script>
+    <script src="../../../../_static/documentation_options.js?v=7e9173d5"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -708,7 +708,9 @@ document.write(`
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="c1"># Distance required for motor to accelerate from stationary to fly_velocity, and</span>
         <span class="c1"># distance required for motor to decelerate from fly_velocity to stationary</span>
-        <span class="n">run_up_distance</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span> <span class="o">*</span> <span class="n">fly_velocity</span>
+        <span class="n">run_up_distance</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span> <span class="o">*</span> <span class="n">fly_velocity</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_completed_position</span> <span class="o">=</span> <span class="n">end_position</span> <span class="o">+</span> <span class="n">run_up_distance</span>
 
