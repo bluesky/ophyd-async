@@ -2,17 +2,12 @@ import asyncio
 from typing import Optional
 
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
-from ophyd_async.epics.areadetector.drivers.ad_base import (
-    start_acquiring_driver_and_ensure_status,
-)
+from ophyd_async.epics.areadetector.drivers.ad_base import \
+    start_acquiring_driver_and_ensure_status
 
-from ..drivers.vimba_driver import (
-    VimbaDriver,
-    VimbaExposeOutMode,
-    VimbaOnOff,
-    VimbaTriggerSource,
-)
 from ..utils import ImageMode, stop_busy_record
+from ._vimba_driver import (VimbaDriver, VimbaExposeOutMode, VimbaOnOff,
+                            VimbaTriggerSource)
 
 TRIGGER_MODE = {
     DetectorTrigger.internal: VimbaOnOff.off,
