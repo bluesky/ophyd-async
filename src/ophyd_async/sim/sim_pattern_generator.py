@@ -28,6 +28,7 @@ class SimPatternDetector(StandardDetector):
         writer = SimPatternDetectorWriter(
             pattern_generator=self.pattern_generator,
             path_provider=self.path_provider,
+            name_provider=lambda: self.name,
         )
         controller = SimPatternDetectorControl(
             pattern_generator=self.pattern_generator,
