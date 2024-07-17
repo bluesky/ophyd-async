@@ -4,10 +4,11 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DetectorTrigger, Device, DeviceCollector
+from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorTrigger, Device,
+                              DeviceCollector)
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.epics.signal import epics_signal_rw
-from ophyd_async.panda import CommonPandaBlocks, PandaPcapController
+from ophyd_async.fastcs.panda import CommonPandaBlocks, PandaPcapController
 
 
 @pytest.fixture

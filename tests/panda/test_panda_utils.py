@@ -8,13 +8,9 @@ from ophyd_async.core.device import DeviceCollector
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.epics.signal import epics_signal_rw
-from ophyd_async.panda import (
-    CommonPandaBlocks,
-    PcompDirectionOptions,
-    TimeUnits,
-)
-from ophyd_async.panda._common_blocks import DataBlock
-from ophyd_async.panda._utils import phase_sorter
+from ophyd_async.fastcs.panda import (CommonPandaBlocks, DataBlock,
+                                      PcompDirectionOptions, TimeUnits,
+                                      phase_sorter)
 
 
 @pytest.fixture

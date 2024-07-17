@@ -6,11 +6,13 @@ from typing import Dict
 import numpy as np
 import pytest
 
-from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, DeviceVector
+from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
+                              DeviceVector)
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics.pvi import PVIEntry, fill_pvi_entries
 from ophyd_async.epics.pvi.pvi import create_children_from_annotations
-from ophyd_async.panda import PcapBlock, PulseBlock, SeqBlock, SeqTable, SeqTrigger
+from ophyd_async.fastcs.panda import (PcapBlock, PulseBlock, SeqBlock,
+                                      SeqTable, SeqTrigger)
 
 
 class DummyDict:

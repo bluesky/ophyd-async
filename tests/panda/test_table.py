@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from ophyd_async.panda._table import seq_table_from_arrays
+from ophyd_async.fastcs.panda import seq_table_from_arrays
 
 
 def test_from_arrays_inconsistent_lengths():
