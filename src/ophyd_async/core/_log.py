@@ -24,7 +24,6 @@ DEFAULT_LOG_COLORS = {
     "CRITICAL": "red,bg_white",
 }
 
-
 class ColoredFormatterWithDeviceName(colorlog.ColoredFormatter):
     def format(self, record):
         message = super().format(record)
@@ -34,9 +33,7 @@ class ColoredFormatterWithDeviceName(colorlog.ColoredFormatter):
 
 
 def _validate_level(level) -> int:
-    """
-    Return an int for level comparison
-    """
+    """Return an int for level comparison."""
     if isinstance(level, int):
         levelno = level
     elif isinstance(level, str):
@@ -80,10 +77,12 @@ def config_ophyd_async_logging(
     level : str or int
         Python logging level, given as string or corresponding integer.
         Default is 'WARNING'.
+
     Returns
     -------
     handler : logging.Handler
         The handler, which has already been added to the 'ophyd_async' logger.
+
     Examples
     --------
     Log to a file.
@@ -95,6 +94,7 @@ def config_ophyd_async_logging(
         config_ophyd_async_logging(color=False)
     Increase verbosity: show level DEBUG or higher.
         config_ophyd_async_logging(level='DEBUG')
+
     """
     global current_handler
 

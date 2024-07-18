@@ -18,7 +18,6 @@ __all__ = [
     "SensorGroup",
 ]
 
-
 def start_ioc_subprocess() -> str:
     """Start an IOC subprocess with EPICS database for sample stage and sensor
     with the same pv prefix

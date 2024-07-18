@@ -241,7 +241,7 @@ def save_device(
     Therefore, users should consider the order of device loading and write their
     own sorter algorithms accordingly.
 
-    See :func:`ophyd_async.panda.phase_sorter` for a valid implementation of the
+    See :func:`ophyd_async.fastcs.panda.phase_sorter` for a valid implementation of the
     sorter.
 
     Parameters
