@@ -1,8 +1,8 @@
 from enum import Enum
 
 from ophyd_async.core import SubsetEnum
-from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.signal.signal import epics_signal_rw_rbv
+from ophyd_async.epics.adcore import ADBase
+from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
 class AravisTriggerMode(str, Enum):
