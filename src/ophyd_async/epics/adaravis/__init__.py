@@ -1,9 +1,9 @@
 from ._aravis import AravisDetector
 from ._aravis_controller import AravisController
-from ._aravis_driver import AravisDriver
+from ._aravis_io import AravisDriverIO
 
 __all__ = [
     "AravisDetector",
     "AravisController",
-    "AravisDriver",
+    "AravisDriverIO",
 ]

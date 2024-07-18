@@ -5,8 +5,7 @@ from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
                               set_and_wait_for_value)
 from ophyd_async.epics import adcore
 
-from ._aravis_driver import (AravisDriver, AravisTriggerMode,
-                             AravisTriggerSource)
+from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
 
 # The deadtime of an ADaravis controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
@@ -17,7 +16,7 @@ _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
 class AravisController(DetectorControl):
     GPIO_NUMBER = Literal[1, 2, 3, 4]
 
-    def __init__(self, driver: AravisDriver, gpio_number: GPIO_NUMBER) -> None:
+    def __init__(self, driver: AravisDriverIO, gpio_number: GPIO_NUMBER) -> None:
         self._drv = driver
         self.gpio_number = gpio_number
 

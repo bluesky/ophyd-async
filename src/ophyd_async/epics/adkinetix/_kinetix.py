@@ -4,7 +4,7 @@ from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.epics import adcore
 
 from ._kinetix_controller import KinetixController
-from ._kinetix_driver import KinetixDriver
+from ._kinetix_io import KinetixDriverIO
 
 
 class KinetixDetector(StandardDetector, HasHints):
@@ -24,7 +24,7 @@ class KinetixDetector(StandardDetector, HasHints):
         hdf_suffix="HDF1:",
         name="",
     ):
-        self.drv = KinetixDriver(prefix + drv_suffix)
+        self.drv = KinetixDriverIO(prefix + drv_suffix)
         self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
