@@ -34,7 +34,7 @@ async def hdf_writer(RE, static_path_provider: StaticPathProvider) -> HDFWriter:
 
 async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
     set_mock_value(hdf_writer.hdf.file_path_exists, True)
-    with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
+    with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         descriptor = await hdf_writer.open()
 
     assert descriptor == {
