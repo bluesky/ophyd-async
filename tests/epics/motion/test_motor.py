@@ -216,9 +216,7 @@ async def test_valid_prepare_velocity(sim_motor: motor.Motor):
         fly_info.end_position,
         fly_info.time_for_move,
     )
-    assert (
-        await sim_motor.velocity.get_value() == await sim_motor.max_velocity.get_value()
-    )
+    assert await sim_motor.velocity.get_value() == 10
 
 
 @pytest.mark.parametrize(
@@ -296,7 +294,6 @@ async def test_prepare(sim_motor: motor.Motor):
     )
     # Test that prepare is not marked as complete until correct position is reached
     await asyncio.gather(do_set(status), wait_for_status(status))
-    assert await sim_motor.velocity.get_value() == 10
     assert status.done
 
 
