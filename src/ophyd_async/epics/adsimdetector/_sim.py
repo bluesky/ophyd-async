@@ -3,11 +3,11 @@ from typing import Sequence
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
 from ophyd_async.epics import adcore
 
-from ._sim_controller import ADSimController
+from ._sim_controller import SimController
 
 
 class DemoADSimDetector(StandardDetector):
-    _controller: ADSimController
+    _controller: SimController
     _writer: adcore.HDFWriter
 
     def __init__(
@@ -22,7 +22,7 @@ class DemoADSimDetector(StandardDetector):
         self.hdf = hdf
 
         super().__init__(
-            ADSimController(self.drv),
+            SimController(self.drv),
             adcore.HDFWriter(
                 self.hdf,
                 path_provider,

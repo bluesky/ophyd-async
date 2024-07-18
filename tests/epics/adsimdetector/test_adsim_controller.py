@@ -7,15 +7,15 @@ from ophyd_async.epics import adcore, adsimdetector
 
 
 @pytest.fixture
-async def ad(RE) -> adsimdetector.ADSimController:
+async def ad(RE) -> adsimdetector.SimController:
     async with DeviceCollector(mock=True):
         drv = adcore.ADBase("DRIVER:")
-        controller = adsimdetector.ADSimController(drv)
+        controller = adsimdetector.SimController(drv)
 
     return controller
 
 
-async def test_ad_controller(RE, ad: adsimdetector.ADSimController):
+async def test_ad_controller(RE, ad: adsimdetector.SimController):
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         await ad.arm(num=1)
 

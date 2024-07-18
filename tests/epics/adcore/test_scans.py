@@ -46,11 +46,11 @@ class DummyController(DetectorControl):
 
 
 @pytest.fixture
-def controller(RE) -> adsimdetector.ADSimController:
+def controller(RE) -> adsimdetector.SimController:
     with DeviceCollector(mock=True):
         drv = adcore.ADBase("DRV")
 
-    return adsimdetector.ADSimController(drv)
+    return adsimdetector.SimController(drv)
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.HDFWriter:
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: adcore.HDFWriter,
-    controller: adsimdetector.ADSimController,
+    controller: adsimdetector.SimController,
 ):
     set_mock_value(writer.hdf.file_path_exists, True)
     detector: StandardDetector[Any] = StandardDetector(

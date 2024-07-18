@@ -1,4 +1,4 @@
-"""Integration tests for a StandardDetector using a HDFWriter and ADSimController."""
+"""Integration tests for a StandardDetector using a HDFWriter and SimController."""
 
 import time
 from collections import defaultdict
@@ -142,7 +142,7 @@ async def test_two_detectors_step(
 
     RE(count_sim(two_detectors, times=1))
 
-    controller_a = cast(adsimdetector.ADSimController, two_detectors[0].controller)
+    controller_a = cast(adsimdetector.SimController, two_detectors[0].controller)
     writer_a = cast(adcore.HDFWriter, two_detectors[0].writer)
     writer_b = cast(adcore.HDFWriter, two_detectors[1].writer)
 
@@ -268,7 +268,7 @@ async def test_trigger_logic():
     2. The detector.writer.hdf.num_captured is 1
 
     Probably the best thing to do here is mock the detector.controller.driver and
-    detector.writer.hdf. Then, mock out set_and_wait_for_value in the ADSimController
+    detector.writer.hdf. Then, mock out set_and_wait_for_value in the SimController
     so that, as well as setting detector.controller.driver.acquire to True, it sets
     detector.writer.hdf.num_captured to 1, using set_mock_value
     """

@@ -6,7 +6,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
 from ophyd_async.epics import adcore
 
 
-class ADSimController(DetectorControl):
+class SimController(DetectorControl):
     def __init__(
         self, driver: adcore.ADBase, good_states: Set[adcore.DetectorState] = set(adcore.DEFAULT_GOOD_STATES)
     ) -> None:
