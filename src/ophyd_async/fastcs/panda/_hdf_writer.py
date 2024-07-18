@@ -7,8 +7,7 @@ from p4p.client.thread import Context
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorWriter, NameProvider,
                               PathProvider, observe_value, wait_for_value)
-from ophyd_async.epics.areadetector.writers.general_hdffile import (
-    _HDFDataset, _HDFFile)
+from ophyd_async.epics.adcore._general_hdffile import _HDFDataset, _HDFFile
 
 from ._common_blocks import CommonPandaBlocks
 

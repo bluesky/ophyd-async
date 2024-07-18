@@ -7,8 +7,7 @@ from bluesky.protocols import DataKey, StreamAsset
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, PathProvider, observe_value,
                               soft_signal_r_and_setter)
-from ophyd_async.epics.areadetector.writers.general_hdffile import (
-    _HDFDataset, _HDFFile)
+from ophyd_async.epics.adcore._general_hdffile import _HDFDataset, _HDFFile
 
 # raw data path
 DATA_PATH = "/entry/data/data"
