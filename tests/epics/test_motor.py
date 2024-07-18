@@ -189,7 +189,7 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
 
 async def test_prepare_velocity_errors(sim_motor: motor.Motor):
     set_mock_value(sim_motor.max_velocity, 10)
-    with pytest.raises(MotorLimitsException):
+    with pytest.raises(motor.MotorLimitsException):
         fly_info = motor.FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
         await sim_motor._prepare_velocity(
             fly_info.start_position,
@@ -233,7 +233,7 @@ async def test_prepare_motor_path_errors(
     set_mock_value(sim_motor.acceleration_time, acceleration_time)
     set_mock_value(sim_motor.low_limit_travel, lower_limit)
     set_mock_value(sim_motor.high_limit_travel, upper_limit)
-    with pytest.raises(MotorLimitsException):
+    with pytest.raises(motor.MotorLimitsException):
         await sim_motor._prepare_motor_path(velocity, start_position, end_position)
 
 
