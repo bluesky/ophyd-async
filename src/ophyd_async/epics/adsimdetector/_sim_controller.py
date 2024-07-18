@@ -1,20 +1,12 @@
 import asyncio
 from typing import Optional, Set
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-)
+from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
+                              DetectorTrigger)
 
-from ..drivers.ad_base import (
-    DEFAULT_GOOD_STATES,
-    ADBase,
-    DetectorState,
-    ImageMode,
-    start_acquiring_driver_and_ensure_status,
-)
+from ..drivers.ad_base import (DEFAULT_GOOD_STATES, ADBase, DetectorState,
+                               ImageMode,
+                               start_acquiring_driver_and_ensure_status)
 from ..utils import stop_busy_record
 
 
