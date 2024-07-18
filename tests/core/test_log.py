@@ -6,7 +6,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from ophyd_async.core import Device, config_ophyd_async_logging
-from ophyd_async.core._log import _validate_level, current_handler
+# Allow this importing of _log for now to test the internal interface
+from ophyd_async.core._log import (DEFAULT_DATE_FORMAT, DEFAULT_FORMAT,
+                                   ColoredFormatterWithDeviceName,
+                                   _validate_level, current_handler, logger)
 
 
 def test_validate_level():
@@ -24,9 +27,9 @@ def test_validate_level():
 @patch("ophyd_async.core._log.current_handler")
 @patch("ophyd_async.core._log.logging.Logger.addHandler")
 def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handler):
-   config_ophyd_async_logging()
+    config_ophyd_async_logging()
     assert isinstance(current_handler, logging.StreamHandler)
-    assert _log.logger.getEffectiveLevel() <= logging.WARNING
+    assert logger.getEffectiveLevel() <= logging.WARNING
 
 
 @patch("ophyd_async.core._log.current_handler")
@@ -35,9 +38,9 @@ def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handl
 def test_config_ophyd_async_logging_with_file_handler(
     mock_add_handler, mock_file_handler, mock_current_handler
 ):
-   config_ophyd_async_logging(file="file")
+    config_ophyd_async_logging(file="file")
     assert isinstance(current_handler, MagicMock)
-    assert _log.logger.getEffectiveLevel() <= logging.WARNING
+    assert logger.getEffectiveLevel() <= logging.WARNING
 
 
 @patch("ophyd_async.core._log.current_handler")
@@ -59,9 +62,9 @@ def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler)
     with (
         patch("ophyd_async.core._log.logger", fake_logger),
     ):
-       config_ophyd_async_logging()
+        config_ophyd_async_logging()
         fake_logger.removeHandler.assert_not_called()
-       config_ophyd_async_logging()
+        config_ophyd_async_logging()
         fake_logger.removeHandler.assert_called()
 
 
@@ -71,11 +74,11 @@ def test_logger_adapter_ophyd_async_device():
     log_buffer = io.StringIO()
     log_stream = logging.StreamHandler(stream=log_buffer)
     log_stream.setFormatter(
-        _log.ColoredFormatterWithDeviceName(
-            fmt=_log.DEFAULT_FORMAT, datefmt=_log.DEFAULT_DATE_FORMAT, no_color=True
+        ColoredFormatterWithDeviceName(
+            fmt= DEFAULT_FORMAT, datefmt= DEFAULT_DATE_FORMAT, no_color=True
         )
     )
-    _log.logger.addHandler(log_stream)
+    logger.addHandler(log_stream)
 
     device = Device(name="test_device")
     device._log = logging.LoggerAdapter(
