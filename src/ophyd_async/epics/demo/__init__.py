@@ -12,14 +12,13 @@ from pathlib import Path
 import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
-from ophyd_async.core import (ConfigSignal, Device, DeviceVector, HintedSignal,
+from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus,
+                              CalculatableTimeout, CalculateTimeout,
+                              ConfigSignal, Device, DeviceVector, HintedSignal,
                               StandardReadable, WatchableAsyncStatus,
-                              observe_value)
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.utils import (DEFAULT_TIMEOUT, CalculatableTimeout,
-                                    CalculateTimeout, WatcherUpdate)
-
-from ..signal.signal import epics_signal_r, epics_signal_rw, epics_signal_x
+                              WatcherUpdate, observe_value)
+from ophyd_async.epics.signal import (epics_signal_r, epics_signal_rw,
+                                      epics_signal_x)
 
 
 class EnergyMode(str, Enum):
