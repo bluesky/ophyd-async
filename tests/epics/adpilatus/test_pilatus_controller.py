@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector, set_mock_value
-from ophyd_async.epics import adcore, adpilatus, adsimdetector
+from ophyd_async.epics import adcore, adpilatus
 
 
 @pytest.fixture
@@ -20,32 +20,6 @@ async def pilatus(RE, pilatus_driver: adpilatus.PilatusDriver) -> adpilatus.Pila
         controller = adpilatus.PilatusController(pilatus_driver, readout_time=2.28)
 
     return controller
-
-
-@pytest.fixture
-async def ad(RE) -> adsimdetector.ADSimController:
-    async with DeviceCollector(mock=True):
-        drv = adcore.ADBase("DRIVER:")
-        controller = adsimdetector.ADSimController(drv)
-
-    return controller
-
-
-async def test_ad_controller(RE, ad: adsimdetector.ADSimController):
-    with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-        await ad.arm(num=1)
-
-    driver = ad.driver
-    assert await driver.num_images.get_value() == 1
-    assert await driver.image_mode.get_value() == adcore.ImageMode.multiple
-    assert await driver.acquire.get_value() is True
-
-    with patch(
-        "ophyd_async.epics.adcore._utils.wait_for_value", return_value=None
-    ):
-        await ad.disarm()
-
-    assert await driver.acquire.get_value() is False
 
 
 async def test_pilatus_controller(
