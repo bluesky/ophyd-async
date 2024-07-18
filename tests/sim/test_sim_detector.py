@@ -6,10 +6,9 @@ import numpy as np
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core.device import DeviceCollector
-from ophyd_async.core.signal import assert_emitted
-from ophyd_async.epics.motion import motor
-from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
+from ophyd_async.core import DeviceCollector, assert_emitted
+from ophyd_async.epics import motor
+from ophyd_async.sim.demo import SimPatternDetector
 
 
 @pytest.fixture
