@@ -1,7 +1,6 @@
 import bluesky.plan_stubs as bps
 
-from ophyd_async.core.device import Device
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, wait_for_connection
+from ophyd_async.core import DEFAULT_TIMEOUT, Device, wait_for_connection
 
 
 def ensure_connected(
