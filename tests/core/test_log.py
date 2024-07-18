@@ -20,17 +20,17 @@ def test_validate_level():
         _log._validate_level("MYSTERY")
 
 
-@patch("ophyd_async._log.current_handler")
-@patch("ophyd_async._log.logging.Logger.addHandler")
+@patch("ophyd_async.core._log.current_handler")
+@patch("ophyd_async.core._log.logging.Logger.addHandler")
 def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handler):
     _log.config_ophyd_async_logging()
     assert isinstance(_log.current_handler, logging.StreamHandler)
     assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async._log.current_handler")
-@patch("ophyd_async._log.logging.FileHandler")
-@patch("ophyd_async._log.logging.Logger.addHandler")
+@patch("ophyd_async.core._log.current_handler")
+@patch("ophyd_async.core._log.logging.FileHandler")
+@patch("ophyd_async.core._log.logging.Logger.addHandler")
 def test_config_ophyd_async_logging_with_file_handler(
     mock_add_handler, mock_file_handler, mock_current_handler
 ):
@@ -39,7 +39,7 @@ def test_config_ophyd_async_logging_with_file_handler(
     assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async._log.current_handler")
+@patch("ophyd_async.core._log.current_handler")
 def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler):
     # Protect global variable in other pytests
     class FakeLogger:
@@ -56,7 +56,7 @@ def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler)
 
     fake_logger = FakeLogger()
     with (
-        patch("ophyd_async._log.logger", fake_logger),
+        patch("ophyd_async.core._log.logger", fake_logger),
     ):
         _log.config_ophyd_async_logging()
         fake_logger.removeHandler.assert_not_called()
