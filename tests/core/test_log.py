@@ -5,43 +5,41 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ophyd_async import log
-from ophyd_async.core import Device
-from ophyd_async.log import DEFAULT_DATE_FORMAT, DEFAULT_FORMAT
+from ophyd_async.core import Device, _log
 
 
 def test_validate_level():
-    assert log._validate_level("CRITICAL") == 50
-    assert log._validate_level("ERROR") == 40
-    assert log._validate_level("WARNING") == 30
-    assert log._validate_level("INFO") == 20
-    assert log._validate_level("DEBUG") == 10
-    assert log._validate_level("NOTSET") == 0
-    assert log._validate_level(123) == 123
+    assert _log._validate_level("CRITICAL") == 50
+    assert _log._validate_level("ERROR") == 40
+    assert _log._validate_level("WARNING") == 30
+    assert _log._validate_level("INFO") == 20
+    assert _log._validate_level("DEBUG") == 10
+    assert _log._validate_level("NOTSET") == 0
+    assert _log._validate_level(123) == 123
     with pytest.raises(ValueError):
-        log._validate_level("MYSTERY")
+        _log._validate_level("MYSTERY")
 
 
-@patch("ophyd_async.log.current_handler")
-@patch("ophyd_async.log.logging.Logger.addHandler")
+@patch("ophyd_async._log.current_handler")
+@patch("ophyd_async._log.logging.Logger.addHandler")
 def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handler):
-    log.config_ophyd_async_logging()
-    assert isinstance(log.current_handler, logging.StreamHandler)
-    assert log.logger.getEffectiveLevel() <= logging.WARNING
+    _log.config_ophyd_async_logging()
+    assert isinstance(_log.current_handler, logging.StreamHandler)
+    assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async.log.current_handler")
-@patch("ophyd_async.log.logging.FileHandler")
-@patch("ophyd_async.log.logging.Logger.addHandler")
+@patch("ophyd_async._log.current_handler")
+@patch("ophyd_async._log.logging.FileHandler")
+@patch("ophyd_async._log.logging.Logger.addHandler")
 def test_config_ophyd_async_logging_with_file_handler(
     mock_add_handler, mock_file_handler, mock_current_handler
 ):
-    log.config_ophyd_async_logging(file="file")
-    assert isinstance(log.current_handler, MagicMock)
-    assert log.logger.getEffectiveLevel() <= logging.WARNING
+    _log.config_ophyd_async_logging(file="file")
+    assert isinstance(_log.current_handler, MagicMock)
+    assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async.log.current_handler")
+@patch("ophyd_async._log.current_handler")
 def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler):
     # Protect global variable in other pytests
     class FakeLogger:
@@ -58,11 +56,11 @@ def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler)
 
     fake_logger = FakeLogger()
     with (
-        patch("ophyd_async.log.logger", fake_logger),
+        patch("ophyd_async._log.logger", fake_logger),
     ):
-        log.config_ophyd_async_logging()
+        _log.config_ophyd_async_logging()
         fake_logger.removeHandler.assert_not_called()
-        log.config_ophyd_async_logging()
+        _log.config_ophyd_async_logging()
         fake_logger.removeHandler.assert_called()
 
 
@@ -72,17 +70,17 @@ def test_logger_adapter_ophyd_async_device():
     log_buffer = io.StringIO()
     log_stream = logging.StreamHandler(stream=log_buffer)
     log_stream.setFormatter(
-        log.ColoredFormatterWithDeviceName(
-            fmt=DEFAULT_FORMAT, datefmt=DEFAULT_DATE_FORMAT, no_color=True
+        _log.ColoredFormatterWithDeviceName(
+            fmt=_log.DEFAULT_FORMAT, datefmt=_log.DEFAULT_DATE_FORMAT, no_color=True
         )
     )
-    log.logger.addHandler(log_stream)
+    _log.logger.addHandler(log_stream)
 
     device = Device(name="test_device")
-    device.log = logging.LoggerAdapter(
+    device._log = logging.LoggerAdapter(
         logging.getLogger("ophyd_async.devices"),
         {"ophyd_async_device_name": device.name},
     )
-    device.log.warning("here is a warning")
+    device._log.warning("here is a warning")
     assert log_buffer.getvalue().startswith("[test_device]")
     assert log_buffer.getvalue().endswith("here is a warning\n")
