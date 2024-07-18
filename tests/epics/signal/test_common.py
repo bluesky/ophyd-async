@@ -2,7 +2,7 @@ from enum import Enum
 
 import pytest
 
-from ophyd_async.epics._backend.common import get_supported_values
+from ophyd_async.epics.signal import get_supported_values
 
 
 def test_given_a_non_enum_passed_to_get_supported_enum_then_raises():

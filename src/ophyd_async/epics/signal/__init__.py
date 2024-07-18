@@ -1,4 +1,4 @@
-from ._common import get_supported_values
+from ._common import LimitPair, Limits, get_supported_values
 from ._epics_transport import EpicsTransport
 from ._p4p import PvaSignalBackend
 from ._signal import (_make_backend, epics_signal_r, epics_signal_rw,
@@ -6,6 +6,8 @@ from ._signal import (_make_backend, epics_signal_r, epics_signal_rw,
 
 __all__ = [
     "get_supported_values",
+    "LimitPair", 
+    "Limits",
     "EpicsTransport",
     "PvaSignalBackend",
     "_make_backend",
