@@ -6,8 +6,8 @@ from bluesky.protocols import DataKey, Hints, StreamAsset
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorWriter,
                               NameProvider, PathProvider, ShapeProvider,
-                              set_and_wait_for_value, wait_for_value)
-from ophyd_async.core.signal import observe_value
+                              observe_value, set_and_wait_for_value,
+                              wait_for_value)
 
 from ._general_hdffile import _HDFDataset, _HDFFile
 from ._nd_file_hdf import NDFileHDF
