@@ -2,8 +2,7 @@ from enum import Enum
 
 from bluesky.protocols import Hints
 
-from ophyd_async.core import PathProvider
-from ophyd_async.core.detector import StandardDetector
+from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
 
 from ._pilatus_controller import PilatusController
