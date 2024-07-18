@@ -116,6 +116,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         )
 
         await self.set(fly_prepared_position)
+        await self.velocity.set(fly_velocity)
 
     @AsyncStatus.wrap
     async def kickoff(self):
@@ -182,7 +183,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
     async def _prepare_velocity(
         self, start_position: float, end_position: float, time_for_move: float
     ) -> float:
-        fly_velocity = (start_position - end_position) / time_for_move
+        fly_velocity = (end_position - start_position) / time_for_move
         max_speed, egu = await asyncio.gather(
             self.max_velocity.get_value(), self.motor_egu.get_value()
         )
@@ -191,7 +192,8 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
                 f"Motor speed of {abs(fly_velocity)} {egu}/s was requested for a motor "
                 f" with max speed of {max_speed} {egu}/s"
             )
-        await self.velocity.set(abs(fly_velocity))
+        # move to prepare position at maximum velocity
+        await self.velocity.set(abs(max_speed))
         return fly_velocity
 
     async def _prepare_motor_path(
