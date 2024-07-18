@@ -10,7 +10,7 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
                               DeviceVector, NotConnected)
 from ophyd_async.epics.pvi import (create_children_from_annotations,
                                    fill_pvi_entries)
-# from ophyd_async.epics.pvi._pvi import PVIEntry we want this one to test but nowhere else
+from ophyd_async.epics.pvi._pvi import PVIEntry
 from ophyd_async.fastcs.panda import (PcapBlock, PulseBlock, SeqBlock,
                                       SeqTable, SeqTrigger)
 
