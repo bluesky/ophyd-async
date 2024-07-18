@@ -5,9 +5,8 @@ import numpy as np
 import pytest
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
-                              SignalR, StaticFilenameProvider,
+                              HDFFile, SignalR, StaticFilenameProvider,
                               StaticPathProvider, set_mock_value)
-from ophyd_async.core._hdffile import _HDFFile
 from ophyd_async.epics.pvi import (create_children_from_annotations,
                                    fill_pvi_entries)
 from ophyd_async.fastcs.panda import (CommonPandaBlocks, DatasetTable,
@@ -185,7 +184,7 @@ async def test_collect_stream_docs(
         assert "mock_panda/data.h5" in resource_doc["uri"]
 
     [item async for item in mock_writer.collect_stream_docs(1)]
-    assert type(mock_writer._file) is _HDFFile
+    assert type(mock_writer._file) is HDFFile
     assert mock_writer._file._last_emitted == 1
 
     for i in range(len(table["name"])):

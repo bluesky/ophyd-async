@@ -6,11 +6,11 @@ from urllib.parse import urlunparse
 from event_model import (ComposeStreamResource, ComposeStreamResourceBundle,
                          StreamDatum, StreamResource)
 
-from ophyd_async.core import PathInfo
+from ._providers import PathInfo
 
 
 @dataclass
-class _HDFDataset:
+class HDFDataset:
     data_key: str
     dataset: str
     shape: Sequence[int] = field(default_factory=tuple)
@@ -22,7 +22,7 @@ class _HDFDataset:
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 
-class _HDFFile:
+class HDFFile:
     """
     :param directory_info: Contains information about how to construct a StreamResource
     :param full_file_name: Absolute path to the file to be written
@@ -33,7 +33,7 @@ class _HDFFile:
         self,
         path_info: PathInfo,
         full_file_name: Path,
-        datasets: List[_HDFDataset],
+        datasets: List[HDFDataset],
         hostname: str = "localhost",
     ) -> None:
         self._last_emitted = 0

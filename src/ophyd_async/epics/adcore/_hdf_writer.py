@@ -5,10 +5,9 @@ from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from bluesky.protocols import DataKey, Hints, StreamAsset
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorWriter,
-                              NameProvider, PathProvider, ShapeProvider,
-                              observe_value, set_and_wait_for_value,
-                              wait_for_value)
-from ophyd_async.core._hdffile import _HDFDataset, _HDFFile
+                              HDFDataset, HDFFile, NameProvider, PathProvider,
+                              ShapeProvider, observe_value,
+                              set_and_wait_for_value, wait_for_value)
 
 from ._nd_file_hdf import NDFileHDF
 from ._nd_plugin import convert_ad_dtype_to_np
@@ -30,8 +29,8 @@ class HDFWriter(DetectorWriter):
         self._shape_provider = shape_provider
         self._scalar_datasets_paths = scalar_datasets_paths
         self._capture_status: Optional[AsyncStatus] = None
-        self._datasets: List[_HDFDataset] = []
-        self._file: Optional[_HDFFile] = None
+        self._datasets: List[HDFDataset] = []
+        self._file: Optional[HDFFile] = None
         self._multiplier = 1
 
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
@@ -74,7 +73,7 @@ class HDFWriter(DetectorWriter):
 
         # Add the main data
         self._datasets = [
-            _HDFDataset(
+            HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
                 shape=frame_shape,
@@ -85,7 +84,7 @@ class HDFWriter(DetectorWriter):
         # And all the scalar datasets
         for ds_name, ds_path in self._scalar_datasets_paths.items():
             self._datasets.append(
-                _HDFDataset(
+                HDFDataset(
                     f"{name}-{ds_name}",
                     f"/entry/instrument/NDAttributes/{ds_path}",
                     (),
@@ -125,7 +124,7 @@ class HDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 path = Path(await self.hdf.full_file_name.get_value())
-                self._file = _HDFFile(
+                self._file = HDFFile(
                     self._path_provider(),
                     # See https://github.com/bluesky/ophyd-async/issues/122
                     path,

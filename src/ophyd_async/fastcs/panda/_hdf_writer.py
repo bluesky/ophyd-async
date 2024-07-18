@@ -5,9 +5,9 @@ from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from bluesky.protocols import DataKey, StreamAsset
 from p4p.client.thread import Context
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorWriter, NameProvider,
-                              PathProvider, observe_value, wait_for_value)
-from ophyd_async.core._hdffile import _HDFDataset, _HDFFile
+from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorWriter, HDFDataset,
+                              HDFFile, NameProvider, PathProvider,
+                              observe_value, wait_for_value)
 
 from ._common_blocks import CommonPandaBlocks
 
@@ -26,8 +26,8 @@ class PandaHDFWriter(DetectorWriter):
         self._prefix = prefix
         self._path_provider = path_provider
         self._name_provider = name_provider
-        self._datasets: List[_HDFDataset] = []
-        self._file: Optional[_HDFFile] = None
+        self._datasets: List[HDFDataset] = []
+        self._file: Optional[HDFFile] = None
         self._multiplier = 1
 
     # Triggered on PCAP arm
@@ -87,7 +87,7 @@ class PandaHDFWriter(DetectorWriter):
 
         capture_table = await self.panda_device.data.datasets.get_value()
         self._datasets = [
-            _HDFDataset(dataset_name, "/" + dataset_name, [1], multiplier=1)
+            HDFDataset(dataset_name, "/" + dataset_name, [1], multiplier=1)
             for dataset_name in capture_table["name"]
         ]
 
@@ -122,7 +122,7 @@ class PandaHDFWriter(DetectorWriter):
         # TODO: fail if we get dropped frames
         if indices_written:
             if not self._file:
-                self._file = _HDFFile(
+                self._file = HDFFile(
                     self._path_provider(),
                     Path(await self.panda_device.data.hdf_directory.get_value())
                     / Path(await self.panda_device.data.hdf_file_name.get_value()),

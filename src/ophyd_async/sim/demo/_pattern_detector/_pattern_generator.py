@@ -5,9 +5,9 @@ import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, PathProvider, observe_value,
+from ophyd_async.core import (DEFAULT_TIMEOUT, HDFDataset, HDFFile,
+                              PathProvider, observe_value,
                               soft_signal_r_and_setter)
-from ophyd_async.core._hdffile import _HDFDataset, _HDFFile
 
 # raw data path
 DATA_PATH = "/entry/data/data"
@@ -55,7 +55,7 @@ class PatternGenerator:
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
         )
-        self._hdf_stream_provider: Optional[_HDFFile] = None
+        self._hdf_stream_provider: Optional[HDFFile] = None
         self._handle_for_h5_file: Optional[h5py.File] = None
         self.target_path: Optional[Path] = None
 
@@ -134,13 +134,13 @@ class PatternGenerator:
         # cache state to self
         # Add the main data
         self._datasets = [
-            _HDFDataset(
+            HDFDataset(
                 data_key=name,
                 dataset=DATA_PATH,
                 shape=(self.height, self.width),
                 multiplier=multiplier,
             ),
-            _HDFDataset(
+            HDFDataset(
                 f"{name}-sum",
                 dataset=SUM_PATH,
                 shape=(),
@@ -182,7 +182,7 @@ class PatternGenerator:
             # until the first frame comes in
             if not self._hdf_stream_provider:
                 assert self.target_path, "open file has not been called"
-                self._hdf_stream_provider = _HDFFile(
+                self._hdf_stream_provider = HDFFile(
                     self._path_provider(),
                     self.target_path,
                     self._datasets,

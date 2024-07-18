@@ -5,26 +5,27 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ophyd_async.core import Device, _log
+from ophyd_async.core import Device, config_ophyd_async_logging
+from ophyd_async.core._log import _validate_level, current_handler
 
 
 def test_validate_level():
-    assert _log._validate_level("CRITICAL") == 50
-    assert _log._validate_level("ERROR") == 40
-    assert _log._validate_level("WARNING") == 30
-    assert _log._validate_level("INFO") == 20
-    assert _log._validate_level("DEBUG") == 10
-    assert _log._validate_level("NOTSET") == 0
-    assert _log._validate_level(123) == 123
+    assert _validate_level("CRITICAL") == 50
+    assert _validate_level("ERROR") == 40
+    assert _validate_level("WARNING") == 30
+    assert _validate_level("INFO") == 20
+    assert _validate_level("DEBUG") == 10
+    assert _validate_level("NOTSET") == 0
+    assert _validate_level(123) == 123
     with pytest.raises(ValueError):
-        _log._validate_level("MYSTERY")
+        _validate_level("MYSTERY")
 
 
 @patch("ophyd_async.core._log.current_handler")
 @patch("ophyd_async.core._log.logging.Logger.addHandler")
 def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handler):
-    _log.config_ophyd_async_logging()
-    assert isinstance(_log.current_handler, logging.StreamHandler)
+   config_ophyd_async_logging()
+    assert isinstance(current_handler, logging.StreamHandler)
     assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
@@ -34,8 +35,8 @@ def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handl
 def test_config_ophyd_async_logging_with_file_handler(
     mock_add_handler, mock_file_handler, mock_current_handler
 ):
-    _log.config_ophyd_async_logging(file="file")
-    assert isinstance(_log.current_handler, MagicMock)
+   config_ophyd_async_logging(file="file")
+    assert isinstance(current_handler, MagicMock)
     assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
@@ -58,9 +59,9 @@ def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler)
     with (
         patch("ophyd_async.core._log.logger", fake_logger),
     ):
-        _log.config_ophyd_async_logging()
+       config_ophyd_async_logging()
         fake_logger.removeHandler.assert_not_called()
-        _log.config_ophyd_async_logging()
+       config_ophyd_async_logging()
         fake_logger.removeHandler.assert_called()
 
 
