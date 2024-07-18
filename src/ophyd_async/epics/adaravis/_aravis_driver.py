@@ -1,7 +1,7 @@
 from enum import Enum
 
 from ophyd_async.core import SubsetEnum
-from ophyd_async.epics.adcore import ADBase
+from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
@@ -22,7 +22,7 @@ class AravisTriggerMode(str, Enum):
 AravisTriggerSource = SubsetEnum["Freerun", "Line1"]
 
 
-class AravisDriver(ADBase):
+class AravisDriver(adcore.ADBase):
     # If instantiating a new instance, ensure it is supported in the _deadtimes dict
     """Generic Driver supporting the Manta and Mako drivers.
     Fetches deadtime prior to use in a Streaming scan.

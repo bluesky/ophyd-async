@@ -1,7 +1,7 @@
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import PathProvider, StandardDetector
-from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
+from ophyd_async.epics import adcore
 
 from ._kinetix_controller import KinetixController
 from ._kinetix_driver import KinetixDriver
@@ -14,7 +14,7 @@ class KinetixDetector(StandardDetector, HasHints):
     """
 
     _controller: KinetixController
-    _writer: HDFWriter
+    _writer: adcore.HDFWriter
 
     def __init__(
         self,
@@ -25,15 +25,15 @@ class KinetixDetector(StandardDetector, HasHints):
         name="",
     ):
         self.drv = KinetixDriver(prefix + drv_suffix)
-        self.hdf = NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
             KinetixController(self.drv),
-            HDFWriter(
+            adcore.HDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                ADBaseShapeProvider(self.drv),
+                adcore.ADBaseShapeProvider(self.drv),
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,

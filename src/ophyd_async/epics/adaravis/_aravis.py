@@ -3,7 +3,7 @@ from typing import get_args
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import PathProvider, StandardDetector
-from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
+from ophyd_async.epics import adcore
 
 from ._aravis_controller import AravisController
 from ._aravis_driver import AravisDriver
@@ -17,7 +17,7 @@ class AravisDetector(StandardDetector, HasHints):
     """
 
     _controller: AravisController
-    _writer: HDFWriter
+    _writer: adcore.HDFWriter
 
     def __init__(
         self,
@@ -29,15 +29,15 @@ class AravisDetector(StandardDetector, HasHints):
         gpio_number: AravisController.GPIO_NUMBER = 1,
     ):
         self.drv = AravisDriver(prefix + drv_suffix)
-        self.hdf = NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
             AravisController(self.drv, gpio_number=gpio_number),
-            HDFWriter(
+            adcore.HDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                ADBaseShapeProvider(self.drv),
+                adcore.ADBaseShapeProvider(self.drv),
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,

@@ -1,20 +1,19 @@
 from typing import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
-from ophyd_async.epics.adcore import (ADBase, ADBaseShapeProvider, HDFWriter,
-                                      NDFileHDF)
+from ophyd_async.epics import adcore
 
 from ._sim_controller import ADSimController
 
 
 class DemoADSimDetector(StandardDetector):
     _controller: ADSimController
-    _writer: HDFWriter
+    _writer: adcore.HDFWriter
 
     def __init__(
         self,
-        drv: ADBase,
-        hdf: NDFileHDF,
+        drv: adcore.ADBase,
+        hdf: adcore.NDFileHDF,
         path_provider: PathProvider,
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
@@ -24,11 +23,11 @@ class DemoADSimDetector(StandardDetector):
 
         super().__init__(
             ADSimController(self.drv),
-            HDFWriter(
+            adcore.HDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                ADBaseShapeProvider(self.drv),
+                adcore.ADBaseShapeProvider(self.drv),
             ),
             config_sigs=config_sigs,
             name=name,

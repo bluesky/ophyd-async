@@ -3,15 +3,12 @@ from typing import Optional, Set
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
                               DetectorTrigger)
-from ophyd_async.epics.adcore import (DEFAULT_GOOD_STATES, ADBase,
-                                      DetectorState, ImageMode,
-                                      start_acquiring_driver_and_ensure_status,
-                                      stop_busy_record)
+from ophyd_async.epics import adcore
 
 
 class ADSimController(DetectorControl):
     def __init__(
-        self, driver: ADBase, good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES)
+        self, driver: adcore.ADBase, good_states: Set[adcore.DetectorState] = set(adcore.DEFAULT_GOOD_STATES)
     ) -> None:
         self.driver = driver
         self.good_states = good_states
@@ -31,13 +28,13 @@ class ADSimController(DetectorControl):
         frame_timeout = DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         await asyncio.gather(
             self.driver.num_images.set(num),
-            self.driver.image_mode.set(ImageMode.multiple),
+            self.driver.image_mode.set(adcore.ImageMode.multiple),
         )
-        return await start_acquiring_driver_and_ensure_status(
+        return await adcore.start_acquiring_driver_and_ensure_status(
             self.driver, good_states=self.good_states, timeout=frame_timeout
         )
 
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have
         # 2 or they will deadlock
-        await stop_busy_record(self.driver.acquire, False, timeout=1)
+        await adcore.stop_busy_record(self.driver.acquire, False, timeout=1)

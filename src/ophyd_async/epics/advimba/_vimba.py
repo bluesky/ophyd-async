@@ -1,7 +1,7 @@
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import PathProvider, StandardDetector
-from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
+from ophyd_async.epics import adcore
 
 from ._vimba_controller import VimbaController
 from ._vimba_driver import VimbaDriver
@@ -13,7 +13,7 @@ class VimbaDetector(StandardDetector, HasHints):
     """
 
     _controller: VimbaController
-    _writer: HDFWriter
+    _writer: adcore.HDFWriter
 
     def __init__(
         self,
@@ -24,15 +24,15 @@ class VimbaDetector(StandardDetector, HasHints):
         name="",
     ):
         self.drv = VimbaDriver(prefix + drv_suffix)
-        self.hdf = NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
             VimbaController(self.drv),
-            HDFWriter(
+            adcore.HDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                ADBaseShapeProvider(self.drv),
+                adcore.ADBaseShapeProvider(self.drv),
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,

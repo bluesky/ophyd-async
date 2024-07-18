@@ -3,7 +3,7 @@ from enum import Enum
 from bluesky.protocols import Hints
 
 from ophyd_async.core import PathProvider, StandardDetector
-from ophyd_async.epics.adcore import ADBaseShapeProvider, HDFWriter, NDFileHDF
+from ophyd_async.epics import adcore
 
 from ._pilatus_controller import PilatusController
 from ._pilatus_driver import PilatusDriver
@@ -27,7 +27,7 @@ class PilatusDetector(StandardDetector):
     """A Pilatus StandardDetector writing HDF files"""
 
     _controller: PilatusController
-    _writer: HDFWriter
+    _writer: adcore.HDFWriter
 
     def __init__(
         self,
@@ -39,15 +39,15 @@ class PilatusDetector(StandardDetector):
         name: str = "",
     ):
         self.drv = PilatusDriver(prefix + drv_suffix)
-        self.hdf = NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
             PilatusController(self.drv, readout_time=readout_time.value),
-            HDFWriter(
+            adcore.HDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                ADBaseShapeProvider(self.drv),
+                adcore.ADBaseShapeProvider(self.drv),
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,

@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ophyd_async.epics.adcore import ADBase
+from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
@@ -16,7 +16,7 @@ class KinetixReadoutMode(str, Enum):
     dynamic_range = 3
 
 
-class KinetixDriver(ADBase):
+class KinetixDriver(adcore.ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
         self.trigger_mode = epics_signal_rw_rbv(

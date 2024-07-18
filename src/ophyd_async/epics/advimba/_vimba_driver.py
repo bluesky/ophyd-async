@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ophyd_async.epics.adcore import ADBase
+from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
@@ -45,7 +45,7 @@ class VimbaExposeOutMode(str, Enum):
     trigger_width = "TriggerWidth"  # Expose for length of high signal
 
 
-class VimbaDriver(ADBase):
+class VimbaDriver(adcore.ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
         self.convert_format = epics_signal_rw_rbv(

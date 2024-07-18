@@ -3,9 +3,7 @@ from typing import Optional
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
                               DetectorTrigger, wait_for_value)
-from ophyd_async.epics.adcore import (
-    ImageMode, set_exposure_time_and_acquire_period_if_supplied,
-    start_acquiring_driver_and_ensure_status, stop_busy_record)
+from ophyd_async.epics import adcore
 
 from ._pilatus_driver import PilatusDriver, PilatusTriggerMode
 
@@ -35,17 +33,17 @@ class PilatusController(DetectorControl):
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         if exposure is not None:
-            await set_exposure_time_and_acquire_period_if_supplied(
+            await adcore.set_exposure_time_and_acquire_period_if_supplied(
                 self, self._drv, exposure
             )
         await asyncio.gather(
             self._drv.trigger_mode.set(self._get_trigger_mode(trigger)),
             self._drv.num_images.set(999_999 if num == 0 else num),
-            self._drv.image_mode.set(ImageMode.multiple),
+            self._drv.image_mode.set(adcore.ImageMode.multiple),
         )
 
         # Standard arm the detector and wait for the acquire PV to be True
-        idle_status = await start_acquiring_driver_and_ensure_status(self._drv)
+        idle_status = await adcore.start_acquiring_driver_and_ensure_status(self._drv)
 
         # The pilatus has an additional PV that goes True when the camserver
         # is actually ready. Should wait for that too or we risk dropping
@@ -69,4 +67,4 @@ class PilatusController(DetectorControl):
         return cls._supported_trigger_types[trigger]
 
     async def disarm(self):
-        await stop_busy_record(self._drv.acquire, False, timeout=1)
+        await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)

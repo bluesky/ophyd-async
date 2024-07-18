@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ophyd_async.epics.adcore import ADBase
+from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw_rbv
 
 
@@ -12,7 +12,7 @@ class PilatusTriggerMode(str, Enum):
     alignment = "Alignment"
 
 
-class PilatusDriver(ADBase):
+class PilatusDriver(adcore.ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.trigger_mode = epics_signal_rw_rbv(
             PilatusTriggerMode, prefix + "TriggerMode"

@@ -3,7 +3,7 @@ from typing import Literal, Optional, Tuple
 
 from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
                               set_and_wait_for_value)
-from ophyd_async.epics.adcore import ImageMode, stop_busy_record
+from ophyd_async.epics import adcore
 
 from ._aravis_driver import (AravisDriver, AravisTriggerMode,
                              AravisTriggerSource)
@@ -31,9 +31,9 @@ class AravisController(DetectorControl):
         exposure: Optional[float] = None,
     ) -> AsyncStatus:
         if num == 0:
-            image_mode = ImageMode.continuous
+            image_mode = adcore.ImageMode.continuous
         else:
-            image_mode = ImageMode.multiple
+            image_mode = adcore.ImageMode.multiple
         if exposure is not None:
             await self._drv.acquire_time.set(exposure)
 
@@ -70,4 +70,4 @@ class AravisController(DetectorControl):
             return (AravisTriggerMode.on, f"Line{self.gpio_number}")
 
     async def disarm(self):
-        await stop_busy_record(self._drv.acquire, False, timeout=1)
+        await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)
