@@ -6,21 +6,11 @@ from unittest.mock import AsyncMock, MagicMock, Mock, call
 import pytest
 from bluesky.protocols import Reading
 
-from ophyd_async.core import (
-    DeviceCollector,
-    set_mock_put_proceeds,
-    set_mock_value,
-)
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.mock_signal_backend import MockSignalBackend
-from ophyd_async.core.mock_signal_utils import callback_on_mock_put
-from ophyd_async.core.signal import SignalRW, observe_value
-from ophyd_async.core.utils import CalculateTimeout
-from ophyd_async.epics.motion import motor
-from ophyd_async.epics.motion.motor import (
-    FlyMotorInfo,
-    MotorLimitsException,
-)
+from ophyd_async.core import (AsyncStatus, CalculateTimeout, DeviceCollector,
+                              MockSignalBackend, SignalRW,
+                              callback_on_mock_put, observe_value,
+                              set_mock_put_proceeds, set_mock_value)
+from ophyd_async.epics import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
 # all the tasks have a chance to run
@@ -200,7 +190,7 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
 async def test_prepare_velocity_errors(sim_motor: motor.Motor):
     set_mock_value(sim_motor.max_velocity, 10)
     with pytest.raises(MotorLimitsException):
-        fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
+        fly_info = motor.FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
         await sim_motor._prepare_velocity(
             fly_info.start_position,
             fly_info.end_position,
@@ -210,7 +200,7 @@ async def test_prepare_velocity_errors(sim_motor: motor.Motor):
 
 async def test_valid_prepare_velocity(sim_motor: motor.Motor):
     set_mock_value(sim_motor.max_velocity, 10)
-    fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=1)
+    fly_info = motor.FlyMotorInfo(start_position=-10, end_position=0, time_for_move=1)
     await sim_motor._prepare_velocity(
         fly_info.start_position,
         fly_info.end_position,
@@ -251,7 +241,7 @@ async def test_prepare_motor_path(sim_motor: motor.Motor):
     set_mock_value(sim_motor.acceleration_time, 1)
     set_mock_value(sim_motor.low_limit_travel, -10.01)
     set_mock_value(sim_motor.high_limit_travel, 20.01)
-    fly_info = FlyMotorInfo(
+    fly_info = motor.FlyMotorInfo(
         start_position=0,
         end_position=10,
         time_for_move=1,
@@ -288,7 +278,7 @@ async def test_prepare(sim_motor: motor.Motor):
         await status
 
     status = sim_motor.prepare(
-        FlyMotorInfo(
+        motor.FlyMotorInfo(
             start_position=0,
             end_position=target_position,
             time_for_move=1,
