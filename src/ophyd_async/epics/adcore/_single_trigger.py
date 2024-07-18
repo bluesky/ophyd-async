@@ -11,7 +11,7 @@ from ._nd_plugin import NDPluginBase
 from ._utils import ImageMode
 
 
-class SingleTriggerDet(StandardReadable, Triggerable):
+class SingleTriggerDetector(StandardReadable, Triggerable):
     def __init__(
         self,
         drv: ADBase,

@@ -10,7 +10,7 @@ from ophyd_async.epics import adcore
 async def single_trigger_det():
     async with DeviceCollector(mock=True):
         stats = adcore.NDPluginStats("PREFIX:STATS")
-        det = adcore.SingleTriggerDet(
+        det = adcore.SingleTrSingleTriggerDetectoriggerDet(
             drv=adcore.ADBase("PREFIX:DRV"), stats=stats, read_uncached=[stats.unique_id]
         )
 
@@ -26,7 +26,7 @@ async def single_trigger_det():
     yield det
 
 
-async def test_single_trigger_det(single_trigger_det: adcore.SingleTriggerDet, RE: RunEngine):
+async def test_single_trigger_det(single_trigger_det: adcore.SingleTriggerDetector, RE: RunEngine):
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))

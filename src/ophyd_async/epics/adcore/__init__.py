@@ -5,7 +5,7 @@ from ._ad_base import (DEFAULT_GOOD_STATES, ADBase, ADBaseShapeProvider,
 from ._hdf_writer import HDFWriter
 from ._nd_file_hdf import NDFileHDF
 from ._nd_plugin import ADBaseDataType, NDPluginStats
-from ._single_trigger_det import SingleTriggerDet
+from ._single_trigger import SingleTriggerDetector
 from ._utils import (FileWriteMode, ImageMode, NDAttributeDataType,
                      NDAttributesXML, stop_busy_record)
 
@@ -20,7 +20,7 @@ __all__ = [
     "NDFileHDF",
     "ADBaseDataType",
     "NDPluginStats",
-    "SingleTriggerDet",
+    "SingleTriggerDetector",
     "FileWriteMode",
     "ImageMode",
     "NDAttributeDataType",
