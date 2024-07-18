@@ -26,8 +26,11 @@ class AravisDriverIO(adcore.ADBase):
     # If instantiating a new instance, ensure it is supported in the _deadtimes dict
     """Generic Driver supporting the Manta and Mako drivers.
     Fetches deadtime prior to use in a Streaming scan.
+
     Requires driver firmware up to date:
     - Model_RBV must be of the form "^(Mako|Manta) (model)$"
+
+    This mirrors the interface provided by ADAravis/db/aravisCamera.template.
     """
 
     def __init__(self, prefix: str, name: str = "") -> None:

@@ -17,6 +17,7 @@ class KinetixReadoutMode(str, Enum):
 
 
 class KinetixDriverIO(adcore.ADBase):
+    """This mirrors the interface provided by ADKinetix/db/ADKinetix.template."""
     def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
         self.trigger_mode = epics_signal_rw_rbv(
