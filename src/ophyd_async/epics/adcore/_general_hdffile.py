@@ -3,12 +3,8 @@ from pathlib import Path
 from typing import Iterator, List, Sequence
 from urllib.parse import urlunparse
 
-from event_model import (
-    ComposeStreamResource,
-    ComposeStreamResourceBundle,
-    StreamDatum,
-    StreamResource,
-)
+from event_model import (ComposeStreamResource, ComposeStreamResourceBundle,
+                         StreamDatum, StreamResource)
 
 from ophyd_async.core import PathInfo
 

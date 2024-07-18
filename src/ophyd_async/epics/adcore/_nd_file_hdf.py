@@ -1,8 +1,10 @@
 from enum import Enum
 
-from ...signal.signal import epics_signal_r, epics_signal_rw, epics_signal_rw_rbv
-from ..utils import FileWriteMode
-from .nd_plugin import NDPluginBase
+from ophyd_async.epics.signal import (epics_signal_r, epics_signal_rw,
+                                      epics_signal_rw_rbv)
+
+from ._nd_plugin import NDPluginBase
+from ._utils import FileWriteMode
 
 
 class Compression(str, Enum):
