@@ -18,7 +18,7 @@ async def test_adkinetix(
 
 
 async def test_get_deadtime(
-    adkinetix: adkinetix.KinetixDetector,
+    test_adkinetix: adkinetix.KinetixDetector,
 ):
     # Currently Kinetix driver doesn't support getting deadtime.
     assert test_adkinetix._controller.get_deadtime(0) == 0.001
@@ -49,7 +49,7 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
 
 
 async def test_hints_from_hdf_writer(test_adkinetix: adkinetix.KinetixDetector):
-    assert test_adkinetix.hints == {"fields": ["adkinetix"]}
+    assert test_adkinetix.hints == {"fields": ["test_adkinetix"]}
 
 
 async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
@@ -64,7 +64,7 @@ async def test_decribe_describes_writer_dataset(test_adkinetix: adkinetix.Kineti
     assert await test_adkinetix.describe() == {}
     await test_adkinetix.stage()
     assert await test_adkinetix.describe() == {
-        "adkinetix": {
+        "test_adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
@@ -88,7 +88,7 @@ async def test_can_collect(
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "adkinetix"
+    assert stream_resource["data_key"] == "test_adkinetix"
     assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
@@ -108,7 +108,7 @@ async def test_can_decribe_collect(test_adkinetix: adkinetix.KinetixDetector):
     assert (await test_adkinetix.describe_collect()) == {}
     await test_adkinetix.stage()
     assert (await test_adkinetix.describe_collect()) == {
-        "adkinetix": {
+        "test_adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
