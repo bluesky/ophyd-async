@@ -25,7 +25,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     async with DeviceCollector(mock=True):
         drv = adcore.ADBase(f"{prefix}DRV:", name="drv")
         hdf = adcore.NDFileHDF(f"{prefix}HDF:")
-        det = adsimdetector.DemoADSimDetector(
+        det = adsimdetector.SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
 
@@ -104,7 +104,7 @@ async def two_detectors(tmp_path: Path):
 
 
 async def test_two_detectors_fly_different_rate(
-    two_detectors: List[adsimdetector.DemoADSimDetector], RE: RunEngine
+    two_detectors: List[adsimdetector.SimDetector], RE: RunEngine
 ):
     docs = defaultdict(list)
 
@@ -285,7 +285,7 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(
 
     async with DeviceCollector(mock=True):
         hdf = adcore.NDFileHDF("FOO:HDF:")
-        det = adsimdetector.DemoADSimDetector(
+        det = adsimdetector.SimDetector(
             drv,
             hdf,
             dp,

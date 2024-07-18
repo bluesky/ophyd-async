@@ -6,7 +6,7 @@ from ophyd_async.epics import adcore
 from ._sim_controller import SimController
 
 
-class DemoADSimDetector(StandardDetector):
+class SimDetector(StandardDetector):
     _controller: SimController
     _writer: adcore.HDFWriter
 

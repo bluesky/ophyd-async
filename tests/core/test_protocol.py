@@ -16,7 +16,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     async with DeviceCollector(mock=True):
         drv = adcore.ADBase(f"{prefix}DRV:")
         hdf = adcore.NDFileHDF(f"{prefix}HDF:")
-        det = adsimdetector.DemoADSimDetector(
+        det = adsimdetector.SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
 
