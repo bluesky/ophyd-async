@@ -8,20 +8,11 @@ import bluesky.plans as bp
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    DeviceCollector,
-    HardwareTriggeredFlyable,
-    StandardDetector,
-    TriggerInfo,
-    TriggerLogic,
-    set_mock_value,
-)
-from ophyd_async.epics.areadetector.controllers import ADSimController
-from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
+from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
+                              DeviceCollector, HardwareTriggeredFlyable,
+                              StandardDetector, TriggerInfo, TriggerLogic,
+                              set_mock_value)
+from ophyd_async.epics import adcore, adsimdetector
 
 
 class DummyTriggerLogic(TriggerLogic[int]):
@@ -55,19 +46,19 @@ class DummyController(DetectorControl):
 
 
 @pytest.fixture
-def controller(RE) -> ADSimController:
+def controller(RE) -> adsimdetector.ADSimController:
     with DeviceCollector(mock=True):
-        drv = ADBase("DRV")
+        drv = adcore.ADBase("DRV")
 
-    return ADSimController(drv)
+    return adsimdetector.ADSimController(drv)
 
 
 @pytest.fixture
-def writer(RE, static_path_provider, tmp_path: Path) -> HDFWriter:
+def writer(RE, static_path_provider, tmp_path: Path) -> adcore.HDFWriter:
     with DeviceCollector(mock=True):
-        hdf = NDFileHDF("HDF")
+        hdf = adcore.NDFileHDF("HDF")
 
-    return HDFWriter(
+    return adcore.HDFWriter(
         hdf,
         path_provider=static_path_provider,
         name_provider=lambda: "test",
@@ -78,8 +69,8 @@ def writer(RE, static_path_provider, tmp_path: Path) -> HDFWriter:
 @patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
-    writer: HDFWriter,
-    controller: ADSimController,
+    writer: adcore.HDFWriter,
+    controller: adsimdetector.ADSimController,
 ):
     set_mock_value(writer.hdf.file_path_exists, True)
     detector: StandardDetector[Any] = StandardDetector(
@@ -93,7 +84,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
 
 
 @patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
-def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter):
+def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: adcore.HDFWriter):
     controller = DummyController()
     set_mock_value(writer.hdf.file_path_exists, True)
 

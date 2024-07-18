@@ -3,17 +3,15 @@ import pytest
 from bluesky import RunEngine
 
 from ophyd_async.core import DeviceCollector, set_mock_value
-from ophyd_async.epics.areadetector import ImageMode, SingleTriggerDet
-from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.areadetector.writers import NDPluginStats
+from ophyd_async.epics import adcore
 
 
 @pytest.fixture
 async def single_trigger_det():
     async with DeviceCollector(mock=True):
-        stats = NDPluginStats("PREFIX:STATS")
-        det = SingleTriggerDet(
-            drv=ADBase("PREFIX:DRV"), stats=stats, read_uncached=[stats.unique_id]
+        stats = adcore.NDPluginStats("PREFIX:STATS")
+        det = adcore.SingleTriggerDet(
+            drv=adcore.ADBase("PREFIX:DRV"), stats=stats, read_uncached=[stats.unique_id]
         )
 
     assert det.name == "det"
@@ -23,12 +21,12 @@ async def single_trigger_det():
     # in a particular way, rather than values being set by the Ophyd signals
     set_mock_value(det.drv.acquire_time, 0.5)
     set_mock_value(det.drv.array_counter, 1)
-    set_mock_value(det.drv.image_mode, ImageMode.continuous)
+    set_mock_value(det.drv.image_mode, adcore.ImageMode.continuous)
     set_mock_value(stats.unique_id, 3)
     yield det
 
 
-async def test_single_trigger_det(single_trigger_det: SingleTriggerDet, RE: RunEngine):
+async def test_single_trigger_det(single_trigger_det: adcore.SingleTriggerDet, RE: RunEngine):
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
@@ -38,7 +36,7 @@ async def test_single_trigger_det(single_trigger_det: SingleTriggerDet, RE: RunE
 
     drv = single_trigger_det.drv
     assert 1 == await drv.acquire.get_value()
-    assert ImageMode.single == await drv.image_mode.get_value()
+    assert adcore.ImageMode.single == await drv.image_mode.get_value()
     assert True is await drv.wait_for_plugins.get_value()
 
     assert names == ["start", "descriptor", "event", "stop"]

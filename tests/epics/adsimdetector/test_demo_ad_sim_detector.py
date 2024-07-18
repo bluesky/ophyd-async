@@ -11,21 +11,11 @@ import pytest
 from bluesky import RunEngine
 from bluesky.utils import new_uid
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DeviceCollector,
-    StandardDetector,
-    StaticFilenameProvider,
-    StaticPathProvider,
-    callback_on_mock_put,
-    set_mock_value,
-)
-from ophyd_async.core.signal import assert_emitted
-from ophyd_async.epics.areadetector.controllers import ADSimController
-from ophyd_async.epics.areadetector.drivers import ADBase
-from ophyd_async.epics.areadetector.utils import FileWriteMode, ImageMode
-from ophyd_async.epics.areadetector.writers import HDFWriter, NDFileHDF
-from ophyd_async.epics.demo.demo_ad_sim_detector import DemoADSimDetector
+from ophyd_async.core import (AsyncStatus, DeviceCollector, StandardDetector,
+                              StaticFilenameProvider, StaticPathProvider,
+                              assert_emitted, callback_on_mock_put,
+                              set_mock_value)
+from ophyd_async.epics import adcore, adsimdetector
 
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
@@ -33,9 +23,9 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     dp = StaticPathProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
-        drv = ADBase(f"{prefix}DRV:", name="drv")
-        hdf = NDFileHDF(f"{prefix}HDF:")
-        det = DemoADSimDetector(
+        drv = adcore.ADBase(f"{prefix}DRV:", name="drv")
+        hdf = adcore.NDFileHDF(f"{prefix}HDF:")
+        det = adsimdetector.DemoADSimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
 
@@ -57,7 +47,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         read_values = {}
         for det in dets:
             read_values[det] = yield from bps.rd(
-                cast(HDFWriter, det.writer).hdf.num_captured
+                cast(adcore.HDFWriter, det.writer).hdf.num_captured
             )
 
         for det in dets:
@@ -66,7 +56,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         yield from bps.sleep(0.001)
         [
             set_mock_value(
-                cast(HDFWriter, det.writer).hdf.num_captured, read_values[det] + 1
+                cast(adcore.HDFWriter, det.writer).hdf.num_captured, read_values[det] + 1
             )
             for det in dets
         ]
@@ -104,7 +94,7 @@ async def two_detectors(tmp_path: Path):
         writer = det._writer
 
         set_mock_value(controller.driver.acquire_time, 0.8 + i)
-        set_mock_value(controller.driver.image_mode, ImageMode.continuous)
+        set_mock_value(controller.driver.image_mode, adcore.ImageMode.continuous)
         set_mock_value(writer.hdf.num_capture, 1000)
         set_mock_value(writer.hdf.num_captured, 0)
         set_mock_value(writer.hdf.file_path_exists, True)
@@ -114,7 +104,7 @@ async def two_detectors(tmp_path: Path):
 
 
 async def test_two_detectors_fly_different_rate(
-    two_detectors: List[DemoADSimDetector], RE: RunEngine
+    two_detectors: List[adsimdetector.DemoADSimDetector], RE: RunEngine
 ):
     docs = defaultdict(list)
 
@@ -146,25 +136,25 @@ async def test_two_detectors_step(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     [
-        set_mock_value(cast(HDFWriter, det._writer).hdf.file_path_exists, True)
+        set_mock_value(cast(adcore.HDFWriter, det._writer).hdf.file_path_exists, True)
         for det in two_detectors
     ]
 
     RE(count_sim(two_detectors, times=1))
 
-    controller_a = cast(ADSimController, two_detectors[0].controller)
-    writer_a = cast(HDFWriter, two_detectors[0].writer)
-    writer_b = cast(HDFWriter, two_detectors[1].writer)
+    controller_a = cast(adsimdetector.ADSimController, two_detectors[0].controller)
+    writer_a = cast(adcore.HDFWriter, two_detectors[0].writer)
+    writer_b = cast(adcore.HDFWriter, two_detectors[1].writer)
 
     drv = controller_a.driver
     assert 1 == await drv.acquire.get_value()
-    assert ImageMode.multiple == await drv.image_mode.get_value()
+    assert adcore.ImageMode.multiple == await drv.image_mode.get_value()
 
     hdfb = writer_b.hdf
     assert True is await hdfb.lazy_open.get_value()
     assert True is await hdfb.swmr_mode.get_value()
     assert 0 == await hdfb.num_capture.get_value()
-    assert FileWriteMode.stream == await hdfb.file_write_mode.get_value()
+    assert adcore.FileWriteMode.stream == await hdfb.file_write_mode.get_value()
 
     assert names == [
         "start",
@@ -211,12 +201,12 @@ async def test_detector_writes_to_file(
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
-    set_mock_value(cast(HDFWriter, single_detector._writer).hdf.file_path_exists, True)
+    set_mock_value(cast(adcore.HDFWriter, single_detector._writer).hdf.file_path_exists, True)
 
     RE(count_sim([single_detector], times=3))
 
     assert await cast(
-        HDFWriter, single_detector.writer
+        adcore.HDFWriter, single_detector.writer
     ).hdf.file_path.get_value() == str(tmp_path)
 
     descriptor_index = names.index("descriptor")
@@ -278,8 +268,7 @@ async def test_trigger_logic():
     2. The detector.writer.hdf.num_captured is 1
 
     Probably the best thing to do here is mock the detector.controller.driver and
-    detector.writer.hdf. Then, mock out set_and_wait_for_value in
-    ophyd_async.epics.DemoADSimDetector.controllers.standard_controller.ADSimController
+    detector.writer.hdf. Then, mock out set_and_wait_for_value in the ADSimController
     so that, as well as setting detector.controller.driver.acquire to True, it sets
     detector.writer.hdf.num_captured to 1, using set_mock_value
     """
@@ -290,13 +279,13 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(
     RE, static_filename_provider: StaticFilenameProvider, tmp_path: Path
 ):
     dp = StaticPathProvider(static_filename_provider, tmp_path)
-    drv = ADBase("FOO:DRV:")
+    drv = adcore.ADBase("FOO:DRV:")
 
-    some_other_driver = ADBase("TEST")
+    some_other_driver = adcore.ADBase("TEST")
 
     async with DeviceCollector(mock=True):
-        hdf = NDFileHDF("FOO:HDF:")
-        det = DemoADSimDetector(
+        hdf = adcore.NDFileHDF("FOO:HDF:")
+        det = adsimdetector.DemoADSimDetector(
             drv,
             hdf,
             dp,

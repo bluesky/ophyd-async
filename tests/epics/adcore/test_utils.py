@@ -1,13 +1,13 @@
-from ophyd_async.epics.areadetector import NDAttributeDataType, NDAttributesXML
+from ophyd_async.epics import adcore
 
 
 def test_ndattribute_writing_xml():
-    xml = NDAttributesXML()
+    xml = adcore.NDAttributesXML()
     xml.add_epics_pv("Temperature", "LINKAM:TEMP", description="The sample temperature")
     xml.add_param(
         "STATS_SUM",
         "SUM",
-        NDAttributeDataType.DOUBLE,
+        adcore.NDAttributeDataType.DOUBLE,
         description="Sum of pilatus frame",
     )
     actual = str(xml)
