@@ -137,10 +137,10 @@ async def test_two_detectors_fly_different_rate(
         for det in two_detectors:
             yield from bps.prepare(det, trigger_info, wait=True, group="prepare")
         yield from bps.declare_stream(*two_detectors, name="primary")
-       
+
         for det in two_detectors:
             yield from bps.trigger(det, wait=False, group="trigger_cleanup")
-        
+
         # det[0] captures 5 frames, but we do not emit a StreamDatum as det[1] has not
         set_mock_value(two_detectors[0].hdf.num_captured, 5)
 
@@ -151,12 +151,12 @@ async def test_two_detectors_fly_different_rate(
         set_mock_value(two_detectors[0].hdf.num_captured, 10)
         yield from bps.collect(*two_detectors)
         assert_n_stream_datums(0)
-        
+
         # det[1] has caught up to first 7 frames, emit streamDatum for seq_num {1,7}
         set_mock_value(two_detectors[1].hdf.num_captured, 7)
         yield from bps.collect(*two_detectors)
         assert_n_stream_datums(2)
-        
+
         for det in two_detectors:
             set_mock_value(det.hdf.num_captured, 15)
 
