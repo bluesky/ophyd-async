@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motion.motor &#8212; ophyd-async 0.4.1.dev1+g8a9b9ac9 documentation</title>
+    <title>ophyd_async.epics.motion.motor &#8212; ophyd-async 0.4.1.dev2+gef1c9426 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=7e9173d5"></script>
+    <script src="../../../../_static/documentation_options.js?v=c65edae7"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -611,7 +611,8 @@ document.write(`
             <span class="nb">abs</span><span class="p">(</span><span class="n">fly_velocity</span><span class="p">),</span> <span class="n">value</span><span class="o">.</span><span class="n">start_position</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">end_position</span>
         <span class="p">)</span>
 
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">fly_prepared_position</span><span class="p">)</span></div>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">fly_prepared_position</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">fly_velocity</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Motor.kickoff">
@@ -691,7 +692,7 @@ document.write(`
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare_velocity</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">start_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">end_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">time_for_move</span><span class="p">:</span> <span class="nb">float</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="n">fly_velocity</span> <span class="o">=</span> <span class="p">(</span><span class="n">start_position</span> <span class="o">-</span> <span class="n">end_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_for_move</span>
+        <span class="n">fly_velocity</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_position</span> <span class="o">-</span> <span class="n">start_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_for_move</span>
         <span class="n">max_speed</span><span class="p">,</span> <span class="n">egu</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_egu</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="p">)</span>
@@ -700,7 +701,8 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;Motor speed of </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">fly_velocity</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">egu</span><span class="si">}</span><span class="s2">/s was requested for a motor &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot; with max speed of </span><span class="si">{</span><span class="n">max_speed</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">egu</span><span class="si">}</span><span class="s2">/s&quot;</span>
             <span class="p">)</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">fly_velocity</span><span class="p">))</span>
+        <span class="c1"># move to prepare position at maximum velocity</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">fly_velocity</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare_motor_path</span><span class="p">(</span>
