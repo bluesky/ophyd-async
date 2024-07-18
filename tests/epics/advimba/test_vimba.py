@@ -1,13 +1,10 @@
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (
-    DetectorTrigger,
-    DeviceCollector,
-    PathProvider,
-    set_mock_value,
-)
-from ophyd_async.epics import advimba 
+from ophyd_async.core import (DetectorTrigger, DeviceCollector, PathProvider,
+                              set_mock_value)
+from ophyd_async.epics import advimba
+
 
 @pytest.fixture
 async def test_advimba(
@@ -64,7 +61,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
 
 async def test_hints_from_hdf_writer(test_advimba: advimba.VimbaDetector):
-    assert test_advimba.hints == {"fields": ["advimba"]}
+    assert test_advimba.hints == {"fields": ["test_advimba"]}
 
 
 async def test_can_read(test_advimba: advimba.VimbaDetector):
@@ -79,7 +76,7 @@ async def test_decribe_describes_writer_dataset(test_advimba: advimba.VimbaDetec
     assert await test_advimba.describe() == {}
     await test_advimba.stage()
     assert await test_advimba.describe() == {
-        "advimba": {
+        "test_advimba": {
             "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
@@ -101,7 +98,7 @@ async def test_can_collect(test_advimba: advimba.VimbaDetector, static_path_prov
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "advimba"
+    assert stream_resource["data_key"] == "test_advimba"
     assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
@@ -121,7 +118,7 @@ async def test_can_decribe_collect(test_advimba: advimba.VimbaDetector):
     assert (await test_advimba.describe_collect()) == {}
     await test_advimba.stage()
     assert (await test_advimba.describe_collect()) == {
-        "advimba": {
+        "test_advimba": {
             "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
