@@ -1,73 +1,69 @@
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (
-    DetectorTrigger,
-    DeviceCollector,
-    StaticPathProvider,
-    set_mock_value,
-)
-from ophyd_async.epics.areadetector.kinetix import KinetixDetector
+from ophyd_async.core import (DetectorTrigger, DeviceCollector,
+                              StaticPathProvider, set_mock_value)
+from ophyd_async.epics import adkinetix
 
 
 @pytest.fixture
-async def adkinetix(
+async def test_adkinetix(
     RE: RunEngine,
     static_path_provider: StaticPathProvider,
-) -> KinetixDetector:
+) -> adkinetix.KinetixDetector:
     async with DeviceCollector(mock=True):
-        adkinetix = KinetixDetector("KINETIX:", static_path_provider)
+        test_adkinetix = adkinetix.KinetixDetector("KINETIX:", static_path_provider)
 
-    return adkinetix
+    return test_adkinetix
 
 
 async def test_get_deadtime(
-    adkinetix: KinetixDetector,
+    adkinetix: adkinetix.KinetixDetector,
 ):
     # Currently Kinetix driver doesn't support getting deadtime.
-    assert adkinetix._controller.get_deadtime(0) == 0.001
+    assert test_adkinetix._controller.get_deadtime(0) == 0.001
 
 
-async def test_trigger_modes(adkinetix: KinetixDetector):
-    set_mock_value(adkinetix.drv.trigger_mode, "Internal")
+async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
+    set_mock_value(test_adkinetix.drv.trigger_mode, "Internal")
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
-        await adkinetix.controller.arm(num=1, trigger=trig_mode)
+        await test_adkinetix.controller.arm(num=1, trigger=trig_mode)
         # Prevent timeouts
-        set_mock_value(adkinetix.drv.acquire, True)
+        set_mock_value(test_adkinetix.drv.acquire, True)
 
     # Default TriggerSource
-    assert (await adkinetix.drv.trigger_mode.get_value()) == "Internal"
+    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Internal"
 
     await setup_trigger_mode(DetectorTrigger.edge_trigger)
-    assert (await adkinetix.drv.trigger_mode.get_value()) == "Rising Edge"
+    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Rising Edge"
 
     await setup_trigger_mode(DetectorTrigger.constant_gate)
-    assert (await adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
+    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
 
     await setup_trigger_mode(DetectorTrigger.internal)
-    assert (await adkinetix.drv.trigger_mode.get_value()) == "Internal"
+    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Internal"
 
     await setup_trigger_mode(DetectorTrigger.variable_gate)
-    assert (await adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
+    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
 
 
-async def test_hints_from_hdf_writer(adkinetix: KinetixDetector):
-    assert adkinetix.hints == {"fields": ["adkinetix"]}
+async def test_hints_from_hdf_writer(test_adkinetix: adkinetix.KinetixDetector):
+    assert test_adkinetix.hints == {"fields": ["adkinetix"]}
 
 
-async def test_can_read(adkinetix: KinetixDetector):
+async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
     # Standard detector can be used as Readable
-    assert (await adkinetix.read()) == {}
+    assert (await test_adkinetix.read()) == {}
 
 
-async def test_decribe_describes_writer_dataset(adkinetix: KinetixDetector):
-    set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
-    set_mock_value(adkinetix._writer.hdf.capture, True)
+async def test_decribe_describes_writer_dataset(test_adkinetix: adkinetix.KinetixDetector):
+    set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
+    set_mock_value(test_adkinetix._writer.hdf.capture, True)
 
-    assert await adkinetix.describe() == {}
-    await adkinetix.stage()
-    assert await adkinetix.describe() == {
+    assert await test_adkinetix.describe() == {}
+    await test_adkinetix.stage()
+    assert await test_adkinetix.describe() == {
         "adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
@@ -79,15 +75,15 @@ async def test_decribe_describes_writer_dataset(adkinetix: KinetixDetector):
 
 
 async def test_can_collect(
-    adkinetix: KinetixDetector, static_path_provider: StaticPathProvider
+    test_adkinetix: adkinetix.KinetixDetector, static_path_provider: StaticPathProvider
 ):
     path_info = static_path_provider()
     full_file_name = path_info.root / path_info.resource_dir / "foo.h5"
-    set_mock_value(adkinetix.hdf.full_file_name, str(full_file_name))
-    set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
-    set_mock_value(adkinetix._writer.hdf.capture, True)
-    await adkinetix.stage()
-    docs = [(name, doc) async for name, doc in adkinetix.collect_asset_docs(1)]
+    set_mock_value(test_adkinetix.hdf.full_file_name, str(full_file_name))
+    set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
+    set_mock_value(test_adkinetix._writer.hdf.capture, True)
+    await test_adkinetix.stage()
+    docs = [(name, doc) async for name, doc in test_adkinetix.collect_asset_docs(1)]
     assert len(docs) == 2
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
@@ -106,12 +102,12 @@ async def test_can_collect(
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
 
 
-async def test_can_decribe_collect(adkinetix: KinetixDetector):
-    set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
-    set_mock_value(adkinetix._writer.hdf.capture, True)
-    assert (await adkinetix.describe_collect()) == {}
-    await adkinetix.stage()
-    assert (await adkinetix.describe_collect()) == {
+async def test_can_decribe_collect(test_adkinetix: adkinetix.KinetixDetector):
+    set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
+    set_mock_value(test_adkinetix._writer.hdf.capture, True)
+    assert (await test_adkinetix.describe_collect()) == {}
+    await test_adkinetix.stage()
+    assert (await test_adkinetix.describe_collect()) == {
         "adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
             "shape": (0, 0),
