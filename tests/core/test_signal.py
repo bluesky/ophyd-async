@@ -16,7 +16,6 @@ from ophyd_async.core import (DEFAULT_TIMEOUT, ConfigSignal, DeviceCollector,
                               set_and_wait_for_value, set_mock_put_proceeds,
                               set_mock_value, soft_signal_r_and_setter,
                               soft_signal_rw, wait_for_value)
-from ophyd_async.core._signal import _SignalCache
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -359,7 +358,8 @@ async def test_subscription_logs(caplog):
     caplog.set_level(logging.DEBUG)
     mock_signal_rw = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
     await mock_signal_rw.connect(mock=True)
-    cache = _SignalCache(mock_signal_rw._backend, signal=mock_signal_rw)
+    cbs = []
+    mock_signal_rw.subscribe(cbs.append)
     assert "Making subscription" in caplog.text
-    cache.close()
+    mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text
