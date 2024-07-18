@@ -74,7 +74,7 @@ async def test_trigger_mode_set_without_armed_pv(test_adpilatus: adpilatus.Pilat
         await status
 
     with patch(
-        "ophyd_async.epics.areadetector.controllers.pilatus_controller.DEFAULT_TIMEOUT",
+        "ophyd_async.epics.adpilatus._pilatus_controller.DEFAULT_TIMEOUT",
         0.1,
     ):
         with pytest.raises(TimeoutError):

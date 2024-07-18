@@ -41,7 +41,7 @@ async def test_ad_controller(RE, ad: adsimdetector.ADSimController):
     assert await driver.acquire.get_value() is True
 
     with patch(
-        "ophyd_async.epics.areadetector.utils.wait_for_value", return_value=None
+        "ophyd_async.epics.adcore._utils.wait_for_value", return_value=None
     ):
         await ad.disarm()
 
