@@ -9,16 +9,10 @@ from bluesky import plans as bp
 from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (
-    DeviceCollector,
-    NotConnected,
-    assert_emitted,
-    assert_reading,
-    assert_value,
-    callback_on_mock_put,
-    get_mock_put,
-    set_mock_value,
-)
+from ophyd_async.core import (DeviceCollector, NotConnected, assert_emitted,
+                              assert_reading, assert_value,
+                              callback_on_mock_put, get_mock_put,
+                              set_mock_value)
 from ophyd_async.epics import demo
 
 # Long enough for multiple asyncio event loop cycles to run so
@@ -242,7 +236,7 @@ async def test_sensor_disconnected(caplog):
         async with DeviceCollector(timeout=0.1):
             s = demo.Sensor("ca://PRE:", name="sensor")
     logs = caplog.get_records("call")
-    logs = [log for log in logs if "signal" not in log.pathname]
+    logs = [log for log in logs if "_signal" not in log.pathname]
     assert len(logs) == 2
 
     assert logs[0].message == ("signal ca://PRE:Value timed out")
