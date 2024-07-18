@@ -94,7 +94,6 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
     for det in detectors:
         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
-    yield from bps.sleep(0.1)
     yield from bps.prepare(flyer, table_info, wait=False, group="prep")
     yield from bps.wait(group="prep")
 
