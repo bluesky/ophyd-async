@@ -1,10 +1,10 @@
 from typing import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.epics.adcore import (ADBase, ADBaseShapeProvider, HDFWriter,
+                                      NDFileHDF)
 
-from ..areadetector.controllers import ADSimController
-from ..areadetector.drivers import ADBase, ADBaseShapeProvider
-from ..areadetector.writers import HDFWriter, NDFileHDF
+from ._sim_controller import ADSimController
 
 
 class DemoADSimDetector(StandardDetector):
