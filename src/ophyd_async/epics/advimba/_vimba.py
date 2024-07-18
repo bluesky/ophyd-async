@@ -4,7 +4,7 @@ from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.epics import adcore
 
 from ._vimba_controller import VimbaController
-from ._vimba_driver import VimbaDriver
+from ._vimba_io import VimbaDriverIO
 
 
 class VimbaDetector(StandardDetector, HasHints):
@@ -23,7 +23,7 @@ class VimbaDetector(StandardDetector, HasHints):
         hdf_suffix="HDF1:",
         name="",
     ):
-        self.drv = VimbaDriver(prefix + drv_suffix)
+        self.drv = VimbaDriverIO(prefix + drv_suffix)
         self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
 
         super().__init__(
