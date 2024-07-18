@@ -4,19 +4,12 @@ from unittest.mock import Mock
 
 import pytest
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    Device,
-    DeviceCollector,
-    DeviceVector,
-    MockSignalBackend,
-    NotConnected,
-    wait_for_connection,
-)
-from ophyd_async.core.soft_signal_backend import SoftSignalBackend
-from ophyd_async.epics.motion import motor
-from ophyd_async.plan_stubs.ensure_connected import ensure_connected
-from ophyd_async.sim.demo.sim_motor import SimMotor
+from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
+                              DeviceVector, MockSignalBackend, NotConnected,
+                              SoftSignalBackend, wait_for_connection)
+from ophyd_async.epics import motor
+from ophyd_async.plan_stubs import ensure_connected
+from ophyd_async.sim.demo import SimMotor
 
 
 class DummyBaseDevice(Device):

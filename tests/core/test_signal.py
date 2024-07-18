@@ -8,28 +8,15 @@ import numpy
 import pytest
 from bluesky.protocols import Reading
 
-from ophyd_async.core import (
-    ConfigSignal,
-    DeviceCollector,
-    HintedSignal,
-    MockSignalBackend,
-    Signal,
-    SignalR,
-    SignalRW,
-    SoftSignalBackend,
-    StandardReadable,
-    assert_configuration,
-    assert_reading,
-    assert_value,
-    set_and_wait_for_value,
-    set_mock_put_proceeds,
-    set_mock_value,
-    soft_signal_r_and_setter,
-    soft_signal_rw,
-    wait_for_value,
-)
+from ophyd_async.core import (DEFAULT_TIMEOUT, ConfigSignal, DeviceCollector,
+                              HintedSignal, MockSignalBackend, NotConnected,
+                              Signal, SignalR, SignalRW, SoftSignalBackend,
+                              StandardReadable, assert_configuration,
+                              assert_reading, assert_value,
+                              set_and_wait_for_value, set_mock_put_proceeds,
+                              set_mock_value, soft_signal_r_and_setter,
+                              soft_signal_rw, wait_for_value)
 from ophyd_async.core.signal import _SignalCache
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
