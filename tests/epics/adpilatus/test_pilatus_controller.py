@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector, set_mock_value
@@ -7,15 +5,15 @@ from ophyd_async.epics import adcore, adpilatus
 
 
 @pytest.fixture
-async def pilatus_driver(RE) -> adpilatus.PilatusDriver:
+async def pilatus_driver(RE) -> adpilatus.PilatusDriverIO:
     async with DeviceCollector(mock=True):
-        drv = adpilatus.PilatusDriver("DRIVER:")
+        drv = adpilatus.PilatusDriverIO("DRIVER:")
 
     return drv
 
 
 @pytest.fixture
-async def pilatus(RE, pilatus_driver: adpilatus.PilatusDriver) -> adpilatus.PilatusController:
+async def pilatus(RE, pilatus_driver: adpilatus.PilatusDriverIO) -> adpilatus.PilatusController:
     async with DeviceCollector(mock=True):
         controller = adpilatus.PilatusController(pilatus_driver, readout_time=2.28)
 
@@ -25,7 +23,7 @@ async def pilatus(RE, pilatus_driver: adpilatus.PilatusDriver) -> adpilatus.Pila
 async def test_pilatus_controller(
     RE,
     pilatus: adpilatus.PilatusController,
-    pilatus_driver: adpilatus.PilatusDriver,
+    pilatus_driver: adpilatus.PilatusDriverIO,
 ):
     set_mock_value(pilatus_driver.armed_for_triggers, True)
     status = await pilatus.arm(num=1, trigger=DetectorTrigger.constant_gate)
