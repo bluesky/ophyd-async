@@ -52,7 +52,7 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
     assert (await test_adaravis.drv.trigger_source.get_value()) == "Line3"
 
 
-def test_gpio_pin_limited(adaravis: adaravis.AravisDetector):
+def test_gpio_pin_limited(test_adaravis: adaravis.AravisDetector):
     assert test_adaravis.get_external_trigger_gpio() == 1
     test_adaravis.set_external_trigger_gpio(2)
     assert test_adaravis.get_external_trigger_gpio() == 2
@@ -67,7 +67,7 @@ def test_gpio_pin_limited(adaravis: adaravis.AravisDetector):
 
 
 async def test_hints_from_hdf_writer(test_adaravis: adaravis.AravisDetector):
-    assert test_adaravis.hints == {"fields": ["adaravis"]}
+    assert test_adaravis.hints == {"fields": ["test_adaravis"]}
 
 
 async def test_can_read(test_adaravis: adaravis.AravisDetector):
@@ -82,7 +82,7 @@ async def test_decribe_describes_writer_dataset(test_adaravis: adaravis.AravisDe
     assert await test_adaravis.describe() == {}
     await test_adaravis.stage()
     assert await test_adaravis.describe() == {
-        "adaravis": {
+        "test_adaravis": {
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
@@ -106,7 +106,7 @@ async def test_can_collect(
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "adaravis"
+    assert stream_resource["data_key"] == "test_adaravis"
     assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
@@ -126,7 +126,7 @@ async def test_can_decribe_collect(test_adaravis: adaravis.AravisDetector):
     assert (await test_adaravis.describe_collect()) == {}
     await test_adaravis.stage()
     assert (await test_adaravis.describe_collect()) == {
-        "adaravis": {
+        "test_adaravis": {
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
             "shape": (0, 0),
             "dtype": "array",
@@ -136,7 +136,7 @@ async def test_can_decribe_collect(test_adaravis: adaravis.AravisDetector):
     }
 
 
-async def test_unsupported_trigger_excepts(adaravis: adaravis.AravisDetector):
+async def test_unsupported_trigger_excepts(test_adaravis: adaravis.AravisDetector):
     with pytest.raises(
         ValueError,
         # str(EnumClass.value) handling changed in Python 3.11
