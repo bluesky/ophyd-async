@@ -1,5 +1,7 @@
 from ._ad_base import (DEFAULT_GOOD_STATES, ADBase, ADBaseShapeProvider,
-                       DetectorState, start_acquiring_driver_and_ensure_status)
+                       DetectorState,
+                       set_exposure_time_and_acquire_period_if_supplied,
+                       start_acquiring_driver_and_ensure_status)
 from ._hdf_writer import HDFWriter
 from ._nd_file_hdf import NDFileHDF
 from ._nd_plugin import NDPluginStats
@@ -12,6 +14,7 @@ __all__ = [
     "ADBase",
     "ADBaseShapeProvider",
     "DetectorState",
+    "set_exposure_time_and_acquire_period_if_supplied",
     "start_acquiring_driver_and_ensure_status",
     "HDFWriter",
     "NDFileHDF",
