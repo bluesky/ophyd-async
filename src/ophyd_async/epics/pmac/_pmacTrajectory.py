@@ -105,14 +105,13 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         self.profile["duration"][0] += run_up_time / TICK_S
         self.profile["duration"].append(int(final_time / TICK_S))
 
-        # Send trajectory to brick
         for axis in scanAxes:
             if axis != "DURATION":
                 self.profile_cs_name.set(cs_port)
                 self.points_to_build.set(scanSize + 1)
-                getattr(self, "use_" + cs_axes[axis]).set(True)
-                getattr(self, cs_axes[axis]).set(self.profile[cs_axes[axis]])
-                getattr(self, cs_axes[axis] + "_vel").set(
+                self.use_axis[cs_axes[axis]].set(True)
+                self.positions[cs_axes[axis]].set(self.profile[cs_axes[axis]])
+                self.velocities[cs_axes[axis]].set(
                     self.profile[cs_axes[axis] + "_velocity"]
                 )
             else:
@@ -151,5 +150,5 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         split = output_link.split("(")[1].rstrip(")").split(",")
         cs_port = split[0].strip()
         assert "CS" in cs_port, f"{self.name} not in a CS. It is not a compound motor."
-        cs_axis = "abcuvwxyz"[int(split[1].strip()) - 1]
+        cs_axis = "ABCUVWXYZ"[int(split[1].strip()) - 1]
         return cs_port, cs_axis
