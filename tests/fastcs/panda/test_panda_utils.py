@@ -33,7 +33,7 @@ async def mock_panda():
     yield mock_panda
 
 
-@patch("ophyd_async.core.device_save_loader.save_to_yaml")
+@patch("ophyd_async.core._device_save_loader.save_to_yaml")
 async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
     RE(save_device(mock_panda, "path", sorter=phase_sorter))
     mock_save_to_yaml.assert_called_once()

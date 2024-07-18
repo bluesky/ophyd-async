@@ -35,7 +35,7 @@ async def test_panda_controller_not_filled_blocks():
         pass  # Not filled
 
     pandaController = PandaPcapController(pcap=PcapBlock())
-    with patch("ophyd_async.panda._panda_controller.wait_for_value", return_value=None):
+    with patch("ophyd_async.fastcs.panda._panda_controller.wait_for_value", return_value=None):
         with pytest.raises(AttributeError) as exc:
             await pandaController.arm(num=1, trigger=DetectorTrigger.constant_gate)
     assert ("'PcapBlock' object has no attribute 'arm'") in str(exc.value)
@@ -43,7 +43,7 @@ async def test_panda_controller_not_filled_blocks():
 
 async def test_panda_controller_arm_disarm(mock_panda):
     pandaController = PandaPcapController(mock_panda.pcap)
-    with patch("ophyd_async.panda._panda_controller.wait_for_value", return_value=None):
+    with patch("ophyd_async.fastcs.panda._panda_controller.wait_for_value", return_value=None):
         await pandaController.arm(num=1, trigger=DetectorTrigger.constant_gate)
     await pandaController.disarm()
 
