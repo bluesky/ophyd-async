@@ -25,7 +25,7 @@ from ._signal_backend import RuntimeSubsetEnum, SignalBackend, SubsetEnum
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout,
-                     NotConnected, ReadingValueCallback, WatcherUpdate,
+                     NotConnected, ReadingValueCallback, T, WatcherUpdate,
                      get_dtype, get_unique, in_micros, wait_for_connection)
 
 __all__ = [
@@ -111,6 +111,7 @@ __all__ = [
     "CalculateTimeout",
     "NotConnected",
     "ReadingValueCallback",
+    "T",
     "WatcherUpdate",
     "get_dtype",
     "get_unique",
