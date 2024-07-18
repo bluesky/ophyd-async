@@ -6,7 +6,6 @@ from .utils import (
     FileWriteMode,
     ImageMode,
     NDAttributeDataType,
-    NDAttributesXML,
 )
 from .vimba import VimbaDetector
 

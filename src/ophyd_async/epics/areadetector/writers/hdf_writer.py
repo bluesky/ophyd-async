@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Sequence
 from pathlib import Path
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 
@@ -18,7 +19,7 @@ from ophyd_async.core.signal import observe_value
 
 from .general_hdffile import _HDFDataset, _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF
-from .nd_plugin import convert_ad_dtype_to_np
+from .nd_plugin import NDArrayBase, convert_ad_dtype_to_np
 
 
 class HDFWriter(DetectorWriter):
@@ -28,13 +29,15 @@ class HDFWriter(DetectorWriter):
         path_provider: PathProvider,
         name_provider: NameProvider,
         shape_provider: ShapeProvider,
-        **scalar_datasets_paths: str,
+        plugins: Sequence[NDArrayBase],
+        # **scalar_datasets_paths: str,
     ) -> None:
         self.hdf = hdf
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._shape_provider = shape_provider
-        self._scalar_datasets_paths = scalar_datasets_paths
+
+        # self._scalar_datasets_paths = scalar_datasets_paths
         self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
@@ -89,7 +92,7 @@ class HDFWriter(DetectorWriter):
             )
         ]
         # And all the scalar datasets
-        for ds_name, ds_path in self._scalar_datasets_paths.items():
+        for ds_name, ds_path in self.plugins.items():
             self._datasets.append(
                 _HDFDataset(
                     f"{name}-{ds_name}",
