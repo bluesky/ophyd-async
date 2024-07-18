@@ -56,19 +56,19 @@ def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]
 
 
 @dataclass
-class PVIEntry:
+class _PVIEntry:
     """
     A dataclass to represent a single entry in the PVI table.
     This could either be a signal or a sub-table.
     """
 
-    sub_entries: Dict[str, Union[Dict[int, "PVIEntry"], "PVIEntry"]]
+    sub_entries: Dict[str, Union[Dict[int, "_PVIEntry"], "_PVIEntry"]]
     pvi_pv: Optional[str] = None
     device: Optional[Device] = None
     common_device_type: Optional[Type[Device]] = None
 
 
-def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
+def _verify_common_blocks(entry: _PVIEntry, common_device: Type[Device]):
     if not entry.sub_entries:
         return
     common_sub_devices = get_type_hints(common_device)
@@ -187,7 +187,7 @@ def _mock_common_blocks(device: Device, stripped_type: Optional[Type] = None):
         sub_device.parent = device
 
 
-async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
+async def _get_pvi_entries(entry: _PVIEntry, timeout=DEFAULT_TIMEOUT):
     if not entry.pvi_pv or not entry.pvi_pv.endswith(":PVI"):
         raise RuntimeError("Top level entry must be a pvi table")
 
@@ -217,7 +217,7 @@ async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
         else:
             device = getattr(entry.device, sub_name, device_type())
 
-        sub_entry = PVIEntry(
+        sub_entry = _PVIEntry(
             device=device, common_device_type=device_type, sub_entries={}
         )
 
@@ -239,7 +239,7 @@ async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
         _verify_common_blocks(entry, entry.common_device_type)
 
 
-def _set_device_attributes(entry: PVIEntry):
+def _set_device_attributes(entry: _PVIEntry):
     for sub_name, sub_entry in entry.sub_entries.items():
         if isinstance(sub_entry, dict):
             sub_device = DeviceVector()  # type: ignore
@@ -271,7 +271,7 @@ async def fill_pvi_entries(
         _mock_common_blocks(device)
     else:
         # check the pvi table for devices and fill the device with them
-        root_entry = PVIEntry(
+        root_entry = _PVIEntry(
             pvi_pv=root_pv,
             device=device,
             common_device_type=type(device),
