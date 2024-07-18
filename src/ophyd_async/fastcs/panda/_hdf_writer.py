@@ -6,8 +6,7 @@ from bluesky.protocols import DataKey, StreamAsset
 from p4p.client.thread import Context
 
 from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorWriter, NameProvider,
-                              PathProvider, wait_for_value)
-from ophyd_async.core.signal import observe_value
+                              PathProvider, observe_value, wait_for_value)
 from ophyd_async.epics.areadetector.writers.general_hdffile import (
     _HDFDataset, _HDFFile)
 
