@@ -3,7 +3,7 @@ from typing import List, Optional
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
-from ophyd_async.core import (DetectorTrigger, HardwareTriggeredFlyable,
+from ophyd_async.core import (DetectorTrigger, StandardFlyer,
                               StandardDetector, TriggerInfo, in_micros)
 from ophyd_async.fastcs.panda import (PcompDirectionOptions, PcompInfo,
                                       SeqTable, SeqTableInfo, SeqTableRow,
@@ -11,7 +11,7 @@ from ophyd_async.fastcs.panda import (PcompDirectionOptions, PcompInfo,
 
 
 def prepare_static_pcomp_flyer_and_detectors(
-    flyer: HardwareTriggeredFlyable[PcompInfo],
+    flyer: StandardFlyer[PcompInfo],
     detectors: List[StandardDetector],
     pcomp_info: PcompInfo,
     trigger_info: TriggerInfo,
@@ -30,7 +30,7 @@ def prepare_static_pcomp_flyer_and_detectors(
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    flyer: StandardFlyer[SeqTableInfo],
     detectors: List[StandardDetector],
     number_of_frames: int,
     exposure: float,
@@ -94,7 +94,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
 def fly_and_collect(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo] | HardwareTriggeredFlyable[PcompInfo],
+    flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
     detectors: List[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
@@ -134,7 +134,7 @@ def fly_and_collect(
 
 def fly_and_collect_with_static_pcomp(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[PcompInfo],
+    flyer: StandardFlyer[PcompInfo],
     detectors: List[StandardDetector],
     number_of_pulses: int,
     pulse_width: int,
@@ -160,7 +160,7 @@ def fly_and_collect_with_static_pcomp(
 
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
+    flyer: StandardFlyer[SeqTableInfo],
     detectors: List[StandardDetector],
     number_of_frames: int,
     exposure: float,

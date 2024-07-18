@@ -29,7 +29,7 @@ class TriggerLogic(ABC, Generic[T]):
         """Stop flying and wait everything to be stopped"""
 
 
-class HardwareTriggeredFlyable(
+class StandardFlyer(
     Device,
     Stageable,
     Preparable,

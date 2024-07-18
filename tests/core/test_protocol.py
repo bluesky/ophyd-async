@@ -3,7 +3,7 @@ from pathlib import Path
 from bluesky.utils import new_uid
 
 from ophyd_async.core import (AsyncReadable, DeviceCollector,
-                              HardwareTriggeredFlyable, StaticFilenameProvider,
+                              StandardFlyer, StaticFilenameProvider,
                               StaticPathProvider)
 from ophyd_async.epics import adcore, adsimdetector
 from ophyd_async.sim.demo import SimMotor
@@ -28,4 +28,4 @@ async def test_readable():
         det = await make_detector("test", "test det", Path("/tmp"))
     assert isinstance(SimMotor, AsyncReadable)
     assert isinstance(det, AsyncReadable)
-    assert not isinstance(HardwareTriggeredFlyable, AsyncReadable)
+    assert not isinstance(StandardFlyer, AsyncReadable)

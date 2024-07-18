@@ -4,7 +4,7 @@ from ._device import Device, DeviceCollector, DeviceVector
 from ._device_save_loader import (all_at_once, get_signal_values, load_device,
                                   load_from_yaml, save_device, save_to_yaml,
                                   set_signal_values, walk_rw_signals)
-from ._flyer import HardwareTriggeredFlyable, TriggerLogic
+from ._flyer import StandardFlyer, TriggerLogic
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (callback_on_mock_put, get_mock_put,
@@ -49,7 +49,7 @@ __all__ = [
     "set_signal_values",
     "walk_rw_signals",
 
-    "HardwareTriggeredFlyable",
+    "StandardFlyer",
     "TriggerLogic",
     
     "HDFDataset",
