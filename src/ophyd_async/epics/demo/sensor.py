@@ -1,7 +1,6 @@
 from enum import Enum
 
-from ophyd_async.core import (ConfigSignal, DeviceVector, HintedSignal,
-                              StandardReadable)
+from ophyd_async.core import ConfigSignal, DeviceVector, HintedSignal, StandardReadable
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 

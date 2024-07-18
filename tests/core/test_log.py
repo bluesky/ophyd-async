@@ -6,10 +6,16 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from ophyd_async.core import Device, config_ophyd_async_logging
+
 # Allow this importing of _log for now to test the internal interface
-from ophyd_async.core._log import (DEFAULT_DATE_FORMAT, DEFAULT_FORMAT,
-                                   ColoredFormatterWithDeviceName,
-                                   _validate_level, current_handler, logger)
+from ophyd_async.core._log import (
+    DEFAULT_DATE_FORMAT,
+    DEFAULT_FORMAT,
+    ColoredFormatterWithDeviceName,
+    _validate_level,
+    current_handler,
+    logger,
+)
 
 
 def test_validate_level():
@@ -75,7 +81,7 @@ def test_logger_adapter_ophyd_async_device():
     log_stream = logging.StreamHandler(stream=log_buffer)
     log_stream.setFormatter(
         ColoredFormatterWithDeviceName(
-            fmt= DEFAULT_FORMAT, datefmt= DEFAULT_DATE_FORMAT, no_color=True
+            fmt=DEFAULT_FORMAT, datefmt=DEFAULT_DATE_FORMAT, no_color=True
         )
     )
     logger.addHandler(log_stream)

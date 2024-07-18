@@ -11,7 +11,9 @@ async def single_trigger_det():
     async with DeviceCollector(mock=True):
         stats = adcore.NDPluginStats("PREFIX:STATS")
         det = adcore.SingleTriggerDetector(
-            drv=adcore.ADBase("PREFIX:DRV"), stats=stats, read_uncached=[stats.unique_id]
+            drv=adcore.ADBase("PREFIX:DRV"),
+            stats=stats,
+            read_uncached=[stats.unique_id],
         )
 
     assert det.name == "det"
@@ -26,7 +28,9 @@ async def single_trigger_det():
     yield det
 
 
-async def test_single_trigger_det(single_trigger_det: adcore.SingleTriggerDetector, RE: RunEngine):
+async def test_single_trigger_det(
+    single_trigger_det: adcore.SingleTriggerDetector, RE: RunEngine
+):
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))

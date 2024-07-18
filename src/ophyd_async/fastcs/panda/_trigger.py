@@ -5,8 +5,7 @@ from pydantic import BaseModel, Field
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 
-from ._common_blocks import (PcompBlock, PcompDirectionOptions, SeqBlock,
-                             TimeUnits)
+from ._common_blocks import PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
 from ._table import SeqTable
 
 

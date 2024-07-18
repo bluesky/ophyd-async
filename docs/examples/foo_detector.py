@@ -3,8 +3,13 @@ from typing import Optional
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
-                              DirectoryProvider, StandardDetector)
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+    DirectoryProvider,
+    StandardDetector,
+)
 from ophyd_async.epics import adcore
 
 

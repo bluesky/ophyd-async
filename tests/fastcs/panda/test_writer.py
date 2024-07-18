@@ -4,13 +4,23 @@ from unittest.mock import ANY
 import numpy as np
 import pytest
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
-                              HDFFile, SignalR, StaticFilenameProvider,
-                              StaticPathProvider, set_mock_value)
-from ophyd_async.epics.pvi import (create_children_from_annotations,
-                                   fill_pvi_entries)
-from ophyd_async.fastcs.panda import (CommonPandaBlocks, DatasetTable,
-                                      PandaHdf5DatasetType, PandaHDFWriter)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    Device,
+    DeviceCollector,
+    HDFFile,
+    SignalR,
+    StaticFilenameProvider,
+    StaticPathProvider,
+    set_mock_value,
+)
+from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.fastcs.panda import (
+    CommonPandaBlocks,
+    DatasetTable,
+    PandaHdf5DatasetType,
+    PandaHDFWriter,
+)
 
 TABLES = [
     DatasetTable(

@@ -5,10 +5,19 @@ from unittest.mock import MagicMock
 import pytest
 from bluesky.protocols import HasHints
 
-from ophyd_async.core import (AsyncConfigurable, AsyncReadable, AsyncStageable,
-                              ConfigSignal, Device, DeviceVector, HintedSignal,
-                              MockSignalBackend, SignalR, StandardReadable,
-                              soft_signal_r_and_setter)
+from ophyd_async.core import (
+    AsyncConfigurable,
+    AsyncReadable,
+    AsyncStageable,
+    ConfigSignal,
+    Device,
+    DeviceVector,
+    HintedSignal,
+    MockSignalBackend,
+    SignalR,
+    StandardReadable,
+    soft_signal_r_and_setter,
+)
 
 
 def test_standard_readable_hints():

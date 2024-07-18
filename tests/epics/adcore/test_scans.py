@@ -8,10 +8,17 @@ import bluesky.plans as bp
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
-                              DeviceCollector, StandardFlyer,
-                              StandardDetector, TriggerInfo, TriggerLogic,
-                              set_mock_value)
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+    DeviceCollector,
+    StandardDetector,
+    StandardFlyer,
+    TriggerInfo,
+    TriggerLogic,
+    set_mock_value,
+)
 from ophyd_async.epics import adcore, adsimdetector
 
 
@@ -84,7 +91,9 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
 
 
 @patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.1)
-def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: adcore.HDFWriter):
+def test_hdf_writer_fails_on_timeout_with_flyscan(
+    RE: RunEngine, writer: adcore.HDFWriter
+):
     controller = DummyController()
     set_mock_value(writer.hdf.file_path_exists, True)
 

@@ -6,10 +6,17 @@ from unittest.mock import AsyncMock, MagicMock, Mock, call
 import pytest
 from bluesky.protocols import Reading
 
-from ophyd_async.core import (AsyncStatus, CalculateTimeout, DeviceCollector,
-                              MockSignalBackend, SignalRW,
-                              callback_on_mock_put, observe_value,
-                              set_mock_put_proceeds, set_mock_value)
+from ophyd_async.core import (
+    AsyncStatus,
+    CalculateTimeout,
+    DeviceCollector,
+    MockSignalBackend,
+    SignalRW,
+    callback_on_mock_put,
+    observe_value,
+    set_mock_put_proceeds,
+    set_mock_value,
+)
 from ophyd_async.epics import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
@@ -190,7 +197,9 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
 async def test_prepare_velocity_errors(sim_motor: motor.Motor):
     set_mock_value(sim_motor.max_velocity, 10)
     with pytest.raises(motor.MotorLimitsException):
-        fly_info = motor.FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
+        fly_info = motor.FlyMotorInfo(
+            start_position=-10, end_position=0, time_for_move=0.9
+        )
         await sim_motor._prepare_velocity(
             fly_info.start_position,
             fly_info.end_position,

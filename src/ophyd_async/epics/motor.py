@@ -4,13 +4,19 @@ from typing import Optional
 from bluesky.protocols import Flyable, Movable, Preparable, Stoppable
 from pydantic import BaseModel, Field
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus,
-                              CalculatableTimeout, CalculateTimeout,
-                              ConfigSignal, HintedSignal, StandardReadable,
-                              WatchableAsyncStatus, WatcherUpdate,
-                              observe_value)
-from ophyd_async.epics.signal import (epics_signal_r, epics_signal_rw,
-                                      epics_signal_x)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    CalculatableTimeout,
+    CalculateTimeout,
+    ConfigSignal,
+    HintedSignal,
+    StandardReadable,
+    WatchableAsyncStatus,
+    WatcherUpdate,
+    observe_value,
+)
+from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw, epics_signal_x
 
 
 class MotorLimitsException(Exception):

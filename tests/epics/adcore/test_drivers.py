@@ -3,8 +3,12 @@ from unittest.mock import Mock
 
 import pytest
 
-from ophyd_async.core import (DetectorControl, DeviceCollector, get_mock_put,
-                              set_mock_value)
+from ophyd_async.core import (
+    DetectorControl,
+    DeviceCollector,
+    get_mock_put,
+    set_mock_value,
+)
 from ophyd_async.epics import adcore
 
 TEST_DEADTIME = 0.1
@@ -30,7 +34,9 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_
 ):
     put_exposure = get_mock_put(driver.acquire_time)
     put_acquire_period = get_mock_put(driver.acquire_period)
-    await adcore.set_exposure_time_and_acquire_period_if_supplied(controller, driver, None)
+    await adcore.set_exposure_time_and_acquire_period_if_supplied(
+        controller, driver, None
+    )
     put_exposure.assert_not_called()
     put_acquire_period.assert_not_called()
 
@@ -50,7 +56,9 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
     expected_exposure: float,
     expected_acquire_period: float,
 ):
-    await adcore.set_exposure_time_and_acquire_period_if_supplied(controller, driver, exposure)
+    await adcore.set_exposure_time_and_acquire_period_if_supplied(
+        controller, driver, exposure
+    )
     actual_exposure = await driver.acquire_time.get_value()
     actual_acquire_period = await driver.acquire_period.get_value()
     assert expected_exposure == actual_exposure
@@ -61,7 +69,9 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
     driver: adcore.ADBase,
 ):
     set_mock_value(driver.detector_state, adcore.DetectorState.Error)
-    acquiring = await adcore.start_acquiring_driver_and_ensure_status(driver, timeout=0.01)
+    acquiring = await adcore.start_acquiring_driver_and_ensure_status(
+        driver, timeout=0.01
+    )
     with pytest.raises(ValueError):
         await acquiring
 
@@ -80,7 +90,9 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
         await asyncio.sleep(0)
         set_mock_value(driver.detector_state, adcore.DetectorState.Disconnected)
 
-    acquiring = await adcore.start_acquiring_driver_and_ensure_status(driver, timeout=0.1)
+    acquiring = await adcore.start_acquiring_driver_and_ensure_status(
+        driver, timeout=0.1
+    )
     await wait_then_fail()
 
     with pytest.raises(ValueError):

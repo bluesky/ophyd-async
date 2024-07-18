@@ -4,8 +4,13 @@ from unittest.mock import patch
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (DetectorTrigger, DeviceCollector, PathProvider,
-                              TriggerInfo, set_mock_value)
+from ophyd_async.core import (
+    DetectorTrigger,
+    DeviceCollector,
+    PathProvider,
+    TriggerInfo,
+    set_mock_value,
+)
 from ophyd_async.epics import adpilatus
 
 
@@ -65,7 +70,9 @@ async def test_trigger_mode_set(
     await _trigger(test_adpilatus, expected_trigger_mode, trigger_and_complete)
 
 
-async def test_trigger_mode_set_without_armed_pv(test_adpilatus: adpilatus.PilatusDetector):
+async def test_trigger_mode_set_without_armed_pv(
+    test_adpilatus: adpilatus.PilatusDetector,
+):
     async def trigger_and_complete():
         status = await test_adpilatus.controller.arm(
             num=1,
@@ -78,7 +85,11 @@ async def test_trigger_mode_set_without_armed_pv(test_adpilatus: adpilatus.Pilat
         0.1,
     ):
         with pytest.raises(TimeoutError):
-            await _trigger(test_adpilatus, adpilatus.PilatusTriggerMode.internal, trigger_and_complete)
+            await _trigger(
+                test_adpilatus,
+                adpilatus.PilatusTriggerMode.internal,
+                trigger_and_complete,
+            )
 
 
 async def _trigger(
@@ -87,7 +98,9 @@ async def _trigger(
     trigger_and_complete: Callable[[], Awaitable],
 ):
     # Default TriggerMode
-    assert (await test_adpilatus.drv.trigger_mode.get_value()) == adpilatus.PilatusTriggerMode.internal
+    assert (
+        await test_adpilatus.drv.trigger_mode.get_value()
+    ) == adpilatus.PilatusTriggerMode.internal
 
     await trigger_and_complete()
 
@@ -115,7 +128,9 @@ async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDete
         )
 
 
-async def test_exposure_time_and_acquire_period_set(test_adpilatus: adpilatus.PilatusDetector):
+async def test_exposure_time_and_acquire_period_set(
+    test_adpilatus: adpilatus.PilatusDetector,
+):
     set_mock_value(test_adpilatus.drv.armed_for_triggers, True)
     await test_adpilatus.prepare(
         TriggerInfo(

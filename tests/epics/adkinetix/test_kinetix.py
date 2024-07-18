@@ -1,8 +1,12 @@
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (DetectorTrigger, DeviceCollector,
-                              StaticPathProvider, set_mock_value)
+from ophyd_async.core import (
+    DetectorTrigger,
+    DeviceCollector,
+    StaticPathProvider,
+    set_mock_value,
+)
 from ophyd_async.epics import adkinetix
 
 
@@ -57,7 +61,9 @@ async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
     assert (await test_adkinetix.read()) == {}
 
 
-async def test_decribe_describes_writer_dataset(test_adkinetix: adkinetix.KinetixDetector):
+async def test_decribe_describes_writer_dataset(
+    test_adkinetix: adkinetix.KinetixDetector,
+):
     set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(test_adkinetix._writer.hdf.capture, True)
 

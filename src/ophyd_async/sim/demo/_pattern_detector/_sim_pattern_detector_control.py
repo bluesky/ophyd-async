@@ -1,8 +1,7 @@
 import asyncio
 from typing import Optional
 
-from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
-                              PathProvider)
+from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger, PathProvider
 
 from ._pattern_generator import PatternGenerator
 

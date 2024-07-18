@@ -1,14 +1,36 @@
 import re
 from dataclasses import dataclass
 from inspect import isclass
-from typing import (Any, Callable, Dict, FrozenSet, Literal, Optional, Tuple,
-                    Type, TypeVar, Union, get_args, get_origin, get_type_hints)
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    FrozenSet,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceVector, Signal,
-                              SoftSignalBackend)
-from ophyd_async.epics.signal import (PvaSignalBackend, epics_signal_r,
-                                      epics_signal_rw, epics_signal_w,
-                                      epics_signal_x)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    Device,
+    DeviceVector,
+    Signal,
+    SoftSignalBackend,
+)
+from ophyd_async.epics.signal import (
+    PvaSignalBackend,
+    epics_signal_r,
+    epics_signal_rw,
+    epics_signal_w,
+    epics_signal_x,
+)
 
 T = TypeVar("T")
 Access = FrozenSet[

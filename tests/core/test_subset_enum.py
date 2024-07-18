@@ -5,9 +5,9 @@ from p4p.nt import NTEnum
 
 from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.signal import epics_signal_rw
+
 # I think we want to allow these as calling these is only needed for tests?
-from ophyd_async.epics.signal._aioca import \
-    make_converter as aioca_make_converter
+from ophyd_async.epics.signal._aioca import make_converter as aioca_make_converter
 from ophyd_async.epics.signal._p4p import make_converter as p4p_make_converter
 
 

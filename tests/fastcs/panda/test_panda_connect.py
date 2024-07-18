@@ -6,14 +6,22 @@ from typing import Dict
 import numpy as np
 import pytest
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
-                              DeviceVector, NotConnected)
-from ophyd_async.epics.pvi import (create_children_from_annotations,
-                                   fill_pvi_entries)
-from ophyd_async.epics.pvi._pvi import \
-    _PVIEntry  # Allow as edge case for typing
-from ophyd_async.fastcs.panda import (PcapBlock, PulseBlock, SeqBlock,
-                                      SeqTable, SeqTrigger)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    Device,
+    DeviceCollector,
+    DeviceVector,
+    NotConnected,
+)
+from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.epics.pvi._pvi import _PVIEntry  # Allow as edge case for typing
+from ophyd_async.fastcs.panda import (
+    PcapBlock,
+    PulseBlock,
+    SeqBlock,
+    SeqTable,
+    SeqTrigger,
+)
 
 
 class DummyDict:

@@ -4,8 +4,7 @@ from typing import Optional
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
 from ophyd_async.epics import adcore
 
-from ._vimba_io import (VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff,
-                        VimbaTriggerSource)
+from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff, VimbaTriggerSource
 
 TRIGGER_MODE = {
     DetectorTrigger.internal: VimbaOnOff.off,

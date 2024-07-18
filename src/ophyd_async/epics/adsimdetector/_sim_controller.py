@@ -1,14 +1,20 @@
 import asyncio
 from typing import Optional, Set
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, AsyncStatus, DetectorControl,
-                              DetectorTrigger)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+)
 from ophyd_async.epics import adcore
 
 
 class SimController(DetectorControl):
     def __init__(
-        self, driver: adcore.ADBase, good_states: Set[adcore.DetectorState] = set(adcore.DEFAULT_GOOD_STATES)
+        self,
+        driver: adcore.ADBase,
+        good_states: Set[adcore.DetectorState] = set(adcore.DEFAULT_GOOD_STATES),
     ) -> None:
         self.driver = driver
         self.good_states = good_states

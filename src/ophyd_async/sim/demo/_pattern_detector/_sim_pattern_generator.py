@@ -1,9 +1,14 @@
 from pathlib import Path
 from typing import Sequence
 
-from ophyd_async.core import (AsyncReadable, FilenameProvider, PathProvider,
-                              StandardDetector, StaticFilenameProvider,
-                              StaticPathProvider)
+from ophyd_async.core import (
+    AsyncReadable,
+    FilenameProvider,
+    PathProvider,
+    StandardDetector,
+    StaticFilenameProvider,
+    StaticPathProvider,
+)
 
 from ._pattern_generator import PatternGenerator
 from ._sim_pattern_detector_control import SimPatternDetectorControl

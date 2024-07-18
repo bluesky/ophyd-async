@@ -9,16 +9,21 @@ from typing import Any, Callable
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
-from ophyd_async.core import (FilenameProvider, StaticFilenameProvider,
-                              StaticPathProvider)
+from ophyd_async.core import (
+    FilenameProvider,
+    StaticFilenameProvider,
+    StaticPathProvider,
+)
 
 PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
     Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
 )
-INCOMPLETE_RECORD = str(Path(__file__).parent / "fastcs" /"panda" / "db" / "incomplete_panda.db")
+INCOMPLETE_RECORD = str(
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_panda.db"
+)
 EXTRA_BLOCKS_RECORD = str(
-    Path(__file__).parent / "fastcs" /"panda" / "db" / "extra_blocks_panda.db"
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
 )
 
 # Prevent pytest from catching exceptions when debugging in vscode so that break on

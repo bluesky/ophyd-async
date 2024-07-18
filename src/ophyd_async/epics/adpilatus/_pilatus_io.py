@@ -14,6 +14,7 @@ class PilatusTriggerMode(str, Enum):
 
 class PilatusDriverIO(adcore.ADBase):
     """This mirrors the interface provided by ADPilatus/db/pilatus.template."""
+
     def __init__(self, prefix: str, name: str = "") -> None:
         self.trigger_mode = epics_signal_rw_rbv(
             PilatusTriggerMode, prefix + "TriggerMode"

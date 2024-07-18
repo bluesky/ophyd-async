@@ -2,8 +2,14 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, Device, DeviceCollector,
-                              MockSignalBackend, NotConnected, SignalRW)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    Device,
+    DeviceCollector,
+    MockSignalBackend,
+    NotConnected,
+    SignalRW,
+)
 from ophyd_async.epics.signal import epics_signal_rw
 
 

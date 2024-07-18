@@ -11,10 +11,16 @@ import pytest
 from bluesky import RunEngine
 from bluesky.utils import new_uid
 
-from ophyd_async.core import (AsyncStatus, DeviceCollector, StandardDetector,
-                              StaticFilenameProvider, StaticPathProvider,
-                              assert_emitted, callback_on_mock_put,
-                              set_mock_value)
+from ophyd_async.core import (
+    AsyncStatus,
+    DeviceCollector,
+    StandardDetector,
+    StaticFilenameProvider,
+    StaticPathProvider,
+    assert_emitted,
+    callback_on_mock_put,
+    set_mock_value,
+)
 from ophyd_async.epics import adcore, adsimdetector
 
 
@@ -56,7 +62,8 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         yield from bps.sleep(0.001)
         [
             set_mock_value(
-                cast(adcore.HDFWriter, det.writer).hdf.num_captured, read_values[det] + 1
+                cast(adcore.HDFWriter, det.writer).hdf.num_captured,
+                read_values[det] + 1,
             )
             for det in dets
         ]
@@ -201,7 +208,9 @@ async def test_detector_writes_to_file(
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
-    set_mock_value(cast(adcore.HDFWriter, single_detector._writer).hdf.file_path_exists, True)
+    set_mock_value(
+        cast(adcore.HDFWriter, single_detector._writer).hdf.file_path_exists, True
+    )
 
     RE(count_sim([single_detector], times=3))
 

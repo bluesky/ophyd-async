@@ -5,9 +5,14 @@ import h5py
 import numpy as np
 from bluesky.protocols import DataKey, StreamAsset
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, HDFDataset, HDFFile,
-                              PathProvider, observe_value,
-                              soft_signal_r_and_setter)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    HDFDataset,
+    HDFFile,
+    PathProvider,
+    observe_value,
+    soft_signal_r_and_setter,
+)
 
 # raw data path
 DATA_PATH = "/entry/data/data"

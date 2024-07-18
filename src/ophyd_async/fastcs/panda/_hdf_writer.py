@@ -5,9 +5,16 @@ from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from bluesky.protocols import DataKey, StreamAsset
 from p4p.client.thread import Context
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorWriter, HDFDataset,
-                              HDFFile, NameProvider, PathProvider,
-                              observe_value, wait_for_value)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    DetectorWriter,
+    HDFDataset,
+    HDFFile,
+    NameProvider,
+    PathProvider,
+    observe_value,
+    wait_for_value,
+)
 
 from ._common_blocks import CommonPandaBlocks
 

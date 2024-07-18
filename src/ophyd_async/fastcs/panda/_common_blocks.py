@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from ophyd_async.core import (Device, DeviceVector, SignalR, SignalRW,
-                              SubsetEnum)
+from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW, SubsetEnum
 
 from ._table import DatasetTable, SeqTable
 

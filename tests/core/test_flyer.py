@@ -10,10 +10,17 @@ from bluesky.run_engine import RunEngine
 from event_model import ComposeStreamResourceBundle, compose_stream_resource
 from pydantic import ValidationError
 
-from ophyd_async.core import (DEFAULT_TIMEOUT, DetectorControl,
-                              DetectorTrigger, DetectorWriter,
-                              StandardFlyer, StandardDetector,
-                              TriggerInfo, TriggerLogic, observe_value)
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    DetectorControl,
+    DetectorTrigger,
+    DetectorWriter,
+    StandardDetector,
+    StandardFlyer,
+    TriggerInfo,
+    TriggerLogic,
+    observe_value,
+)
 from ophyd_async.epics.signal import epics_signal_rw
 
 

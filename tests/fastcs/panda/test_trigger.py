@@ -6,9 +6,14 @@ from pydantic import ValidationError
 
 from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, set_mock_value
 from ophyd_async.epics.pvi import fill_pvi_entries
-from ophyd_async.fastcs.panda import (CommonPandaBlocks, PcompInfo, SeqTable,
-                                      SeqTableInfo, StaticPcompTriggerLogic,
-                                      StaticSeqTableTriggerLogic)
+from ophyd_async.fastcs.panda import (
+    CommonPandaBlocks,
+    PcompInfo,
+    SeqTable,
+    SeqTableInfo,
+    StaticPcompTriggerLogic,
+    StaticSeqTableTriggerLogic,
+)
 
 
 @pytest.fixture

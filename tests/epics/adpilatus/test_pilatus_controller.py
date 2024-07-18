@@ -13,7 +13,9 @@ async def pilatus_driver(RE) -> adpilatus.PilatusDriverIO:
 
 
 @pytest.fixture
-async def pilatus(RE, pilatus_driver: adpilatus.PilatusDriverIO) -> adpilatus.PilatusController:
+async def pilatus(
+    RE, pilatus_driver: adpilatus.PilatusDriverIO
+) -> adpilatus.PilatusController:
     async with DeviceCollector(mock=True):
         controller = adpilatus.PilatusController(pilatus_driver, readout_time=2.28)
 
@@ -32,7 +34,8 @@ async def test_pilatus_controller(
     assert await pilatus_driver.num_images.get_value() == 1
     assert await pilatus_driver.image_mode.get_value() == adcore.ImageMode.multiple
     assert (
-        await pilatus_driver.trigger_mode.get_value() == adpilatus.PilatusTriggerMode.ext_enable
+        await pilatus_driver.trigger_mode.get_value()
+        == adpilatus.PilatusTriggerMode.ext_enable
     )
     assert await pilatus_driver.acquire.get_value() is True
 

@@ -24,9 +24,7 @@ async def test_ad_controller(RE, ad: adsimdetector.SimController):
     assert await driver.image_mode.get_value() == adcore.ImageMode.multiple
     assert await driver.acquire.get_value() is True
 
-    with patch(
-        "ophyd_async.epics.adcore._utils.wait_for_value", return_value=None
-    ):
+    with patch("ophyd_async.epics.adcore._utils.wait_for_value", return_value=None):
         await ad.disarm()
 
     assert await driver.acquire.get_value() is False

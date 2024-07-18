@@ -1,8 +1,12 @@
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (DetectorTrigger, DeviceCollector, PathProvider,
-                              set_mock_value)
+from ophyd_async.core import (
+    DetectorTrigger,
+    DeviceCollector,
+    PathProvider,
+    set_mock_value,
+)
 from ophyd_async.epics import advimba
 
 
@@ -86,7 +90,9 @@ async def test_decribe_describes_writer_dataset(test_advimba: advimba.VimbaDetec
     }
 
 
-async def test_can_collect(test_advimba: advimba.VimbaDetector, static_path_provider: PathProvider):
+async def test_can_collect(
+    test_advimba: advimba.VimbaDetector, static_path_provider: PathProvider
+):
     path_info = static_path_provider()
     full_file_name = path_info.root / path_info.resource_dir / "foo.h5"
     set_mock_value(test_advimba.hdf.full_file_name, str(full_file_name))

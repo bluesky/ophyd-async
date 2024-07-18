@@ -4,9 +4,12 @@ from datetime import date
 
 import pytest
 
-from ophyd_async.core import (AutoIncrementFilenameProvider,
-                              AutoIncrementingPathProvider,
-                              UUIDFilenameProvider, YMDPathProvider)
+from ophyd_async.core import (
+    AutoIncrementFilenameProvider,
+    AutoIncrementingPathProvider,
+    UUIDFilenameProvider,
+    YMDPathProvider,
+)
 
 
 def test_auto_increment_filename_provider(static_path_provider_factory):

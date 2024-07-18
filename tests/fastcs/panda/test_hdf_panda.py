@@ -6,15 +6,25 @@ import pytest
 from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import (Device, StandardFlyer, SignalR,
-                              StaticFilenameProvider, StaticPathProvider,
-                              assert_emitted, callback_on_mock_put,
-                              set_mock_value)
-from ophyd_async.fastcs.panda import (DatasetTable, HDFPanda,
-                                      PandaHdf5DatasetType,
-                                      StaticSeqTableTriggerLogic)
-from ophyd_async.plan_stubs import \
-    prepare_static_seq_table_flyer_and_detectors_with_same_trigger
+from ophyd_async.core import (
+    Device,
+    SignalR,
+    StandardFlyer,
+    StaticFilenameProvider,
+    StaticPathProvider,
+    assert_emitted,
+    callback_on_mock_put,
+    set_mock_value,
+)
+from ophyd_async.fastcs.panda import (
+    DatasetTable,
+    HDFPanda,
+    PandaHdf5DatasetType,
+    StaticSeqTableTriggerLogic,
+)
+from ophyd_async.plan_stubs import (
+    prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
+)
 
 
 @pytest.fixture
