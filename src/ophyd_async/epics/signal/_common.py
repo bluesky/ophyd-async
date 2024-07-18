@@ -4,7 +4,7 @@ from typing import Dict, Optional, Tuple, Type
 
 from typing_extensions import TypedDict
 
-from ophyd_async.core.signal_backend import RuntimeSubsetEnum
+from ophyd_async.core import RuntimeSubsetEnum
 
 common_meta = {
     "units",
