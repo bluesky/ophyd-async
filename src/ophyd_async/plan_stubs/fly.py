@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
@@ -95,8 +95,9 @@ def prepare_static_pcomp_flyer_and_detectors(
 
 def fly_and_collect(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[PcompInfo],
-    detectors: List[StandardDetector],
+    leader_flyer: HardwareTriggeredFlyable,
+    detectors: Sequence[StandardDetector],
+    follower_flyers: Sequence[HardwareTriggeredFlyable] = (),
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
 
@@ -106,16 +107,17 @@ def fly_and_collect(
 
     """
     yield from bps.declare_stream(*detectors, name=stream_name, collect=True)
-    yield from bps.kickoff(flyer, wait=True)
-    for detector in detectors:
-        yield from bps.kickoff(detector)
+    # Kickoff the followers and detectors first
+    for device in tuple(follower_flyers) + tuple(detectors):
+        yield from bps.kickoff(device, wait=True)
+    # Then kickoff the leader
+    yield from bps.kickoff(leader_flyer, wait=True)
 
     # collect_while_completing
     group = short_uid(label="complete")
 
-    yield from bps.complete(flyer, wait=False, group=group)
-    for detector in detectors:
-        yield from bps.complete(detector, wait=False, group=group)
+    for device in (leader_flyer,) + tuple(follower_flyers) + tuple(detectors):
+        yield from bps.complete(device, wait=False, group=group)
 
     done = False
     while not done:

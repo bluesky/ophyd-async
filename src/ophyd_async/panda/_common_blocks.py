@@ -7,12 +7,19 @@ from ophyd_async.core.signal_backend import SubsetEnum
 from ophyd_async.panda._table import DatasetTable
 
 
+class CaptureMode(str, Enum):
+    first_n = "FIRST_N"
+    last_n = "LAST_N"
+    forever = "FOREVER"
+
+
 class DataBlock(Device):
     # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
     hdf_file_name: SignalRW[str]
     num_capture: SignalRW[int]
     num_captured: SignalR[int]
+    capture_mode: SignalRW[CaptureMode]
     capture: SignalRW[bool]
     flush_period: SignalRW[float]
     datasets: SignalR[DatasetTable]

@@ -79,6 +79,7 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
         )
 
     async def kickoff(self) -> None:
+        await asyncio.sleep(0.5)
         await self.pcomp.enable.set("ONE")
         await wait_for_value(self.pcomp.active, True, timeout=1)
 

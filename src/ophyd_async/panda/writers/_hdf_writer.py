@@ -15,7 +15,7 @@ from ophyd_async.core import (
 from ophyd_async.core.signal import observe_value
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
-from .._common_blocks import CommonPandaBlocks
+from .._common_blocks import CaptureMode, CommonPandaBlocks
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -53,9 +53,7 @@ class PandaHDFWriter(DetectorWriter):
             self.panda_device.data.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
-            self.panda_device.data.num_capture.set(0),
-            # TODO: Set create_dir_depth once available
-            # https://github.com/bluesky/ophyd-async/issues/317
+            self.panda_device.data.capture_mode.set(CaptureMode.forever),
         )
 
         # Wait for it to start, stashing the status that tells us when it finishes
