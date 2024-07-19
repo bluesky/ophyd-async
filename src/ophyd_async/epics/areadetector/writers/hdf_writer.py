@@ -2,6 +2,7 @@ import asyncio
 from collections.abc import Sequence
 from pathlib import Path
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
+from xml.etree import ElementTree as ET
 
 from bluesky.protocols import DataKey, Hints, StreamAsset
 
@@ -29,15 +30,14 @@ class HDFWriter(DetectorWriter):
         path_provider: PathProvider,
         name_provider: NameProvider,
         shape_provider: ShapeProvider,
-        plugins: Sequence[NDArrayBase],
-        # **scalar_datasets_paths: str,
+        plugins: Sequence[NDArrayBase] | None = None,
     ) -> None:
         self.hdf = hdf
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._shape_provider = shape_provider
 
-        # self._scalar_datasets_paths = scalar_datasets_paths
+        self._plugins = plugins or []
         self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[_HDFDataset] = []
         self._file: Optional[_HDFFile] = None
@@ -92,16 +92,19 @@ class HDFWriter(DetectorWriter):
             )
         ]
         # And all the scalar datasets
-        for ds_name, ds_path in self.plugins.items():
-            self._datasets.append(
-                _HDFDataset(
-                    f"{name}-{ds_name}",
-                    f"/entry/instrument/NDAttributes/{ds_path}",
-                    (),
-                    "",
-                    multiplier,
+        for plugin in self._plugins:
+            tree = ET.parse((await plugin.nd_attributes_file.get_value()))
+            root = tree.getroot()
+            for child in root:
+                self._datasets.append(
+                    _HDFDataset(
+                        f"{child.tag}-{child.attrib}",
+                        "/entry/instrument/NDAttributes/",
+                        (),
+                        "",
+                        multiplier,
+                    )
                 )
-            )
 
         describe = {
             ds.data_key: DataKey(
@@ -151,8 +154,8 @@ class HDFWriter(DetectorWriter):
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
-        await self.hdf.capture.set(0, wait=False)
-        await wait_for_value(self.hdf.capture, 0, DEFAULT_TIMEOUT)
+        await self.hdf.capture.set(False, wait=False)
+        await wait_for_value(self.hdf.capture, False, DEFAULT_TIMEOUT)
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status
