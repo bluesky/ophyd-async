@@ -121,17 +121,20 @@ async def test_unsupported_trigger_excepts(pilatus: PilatusDetector):
         )
 
 
-async def test_exposure_time_and_acquire_period_set(pilatus: PilatusDetector, tmp_path):
+async def test_exposure_time_and_acquire_period_set(pilatus: PilatusDetector):
+    async def dummy_open(multiplier: int = 0):
+        return {}
+
+    pilatus.writer.open = dummy_open
     set_mock_value(pilatus.drv.armed_for_triggers, True)
-    with pytest.raises(Exception) as exc:
-        await pilatus.prepare(
-            TriggerInfo(
-                number=1,
-                trigger=DetectorTrigger.internal,
-                deadtime=1.0,
-                livetime=1.0,
-            )
+    await pilatus.prepare(
+        TriggerInfo(
+            frame_timeout=None,
+            number=1,
+            trigger=DetectorTrigger.internal,
+            deadtime=1.0,
+            livetime=1.0,
         )
-    assert str(exc.value) in f"File path {tmp_path} for hdf plugin does not exist"
+    )
     assert (await pilatus.drv.acquire_time.get_value()) == 1.0
     assert (await pilatus.drv.acquire_period.get_value()) == 1.0 + 950e-6

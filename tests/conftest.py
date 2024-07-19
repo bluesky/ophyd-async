@@ -150,7 +150,7 @@ def static_path_provider(
 
 
 @pytest.fixture
-def count_scan_trigger_info() -> TriggerInfo:
+def one_shot_trigger_info() -> TriggerInfo:
     return TriggerInfo(
         frame_timeout=None,
         number=1,

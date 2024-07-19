@@ -63,14 +63,14 @@ async def test_can_read(adkinetix: KinetixDetector):
 
 
 async def test_decribe_describes_writer_dataset(
-    adkinetix: KinetixDetector, count_scan_trigger_info: TriggerInfo
+    adkinetix: KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(adkinetix._writer.hdf.capture, True)
 
     assert await adkinetix.describe() == {}
     await adkinetix.stage()
-    await adkinetix.prepare(count_scan_trigger_info)
+    await adkinetix.prepare(one_shot_trigger_info)
     assert await adkinetix.describe() == {
         "adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
@@ -85,7 +85,7 @@ async def test_decribe_describes_writer_dataset(
 async def test_can_collect(
     adkinetix: KinetixDetector,
     static_path_provider: StaticPathProvider,
-    count_scan_trigger_info: TriggerInfo,
+    one_shot_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
     full_file_name = path_info.root / path_info.resource_dir / "foo.h5"
@@ -93,7 +93,7 @@ async def test_can_collect(
     set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(adkinetix._writer.hdf.capture, True)
     await adkinetix.stage()
-    await adkinetix.prepare(count_scan_trigger_info)
+    await adkinetix.prepare(one_shot_trigger_info)
     docs = [(name, doc) async for name, doc in adkinetix.collect_asset_docs(1)]
     assert len(docs) == 2
     assert docs[0][0] == "stream_resource"
@@ -114,13 +114,13 @@ async def test_can_collect(
 
 
 async def test_can_decribe_collect(
-    adkinetix: KinetixDetector, count_scan_trigger_info: TriggerInfo
+    adkinetix: KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(adkinetix._writer.hdf.capture, True)
     assert (await adkinetix.describe_collect()) == {}
     await adkinetix.stage()
-    await adkinetix.prepare(count_scan_trigger_info)
+    await adkinetix.prepare(one_shot_trigger_info)
     assert (await adkinetix.describe_collect()) == {
         "adkinetix": {
             "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",

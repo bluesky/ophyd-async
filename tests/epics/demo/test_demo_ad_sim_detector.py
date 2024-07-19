@@ -125,11 +125,18 @@ async def test_two_detectors_fly_different_rate(
     )
     docs = defaultdict(list)
 
-    def assert_n_stream_datums(n: int):
+    def assert_n_stream_datums(
+        n: int, start: int | None = None, stop: int | None = None
+    ):
         if n == 0:
             assert "stream_datum" not in docs
         else:
             assert len(docs["stream_datum"]) == n
+            # check both detectors have the correct start/stop
+            for detector_index in {n - 1, n - 2}:
+                seq_nums = docs["stream_datum"][detector_index]["seq_nums"]
+                assert seq_nums["start"] == start
+                assert seq_nums["stop"] == stop
 
     @bpp.stage_decorator(two_detectors)
     @bpp.run_decorator()
@@ -155,14 +162,14 @@ async def test_two_detectors_fly_different_rate(
         # det[1] has caught up to first 7 frames, emit streamDatum for seq_num {1,7}
         set_mock_value(two_detectors[1].hdf.num_captured, 7)
         yield from bps.collect(*two_detectors)
-        assert_n_stream_datums(2)
+        assert_n_stream_datums(2, 1, 8)
 
         for det in two_detectors:
             set_mock_value(det.hdf.num_captured, 15)
 
         # emits stream datum for seq_num {8, 15}
         yield from bps.collect(*two_detectors)
-        assert_n_stream_datums(4)
+        assert_n_stream_datums(4, 8, 16)
 
         # Trigger has complete as all expected frames written
         yield from bps.wait("trigger_cleanup")

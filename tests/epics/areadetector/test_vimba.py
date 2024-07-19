@@ -75,14 +75,14 @@ async def test_can_read(advimba: VimbaDetector):
 
 
 async def test_decribe_describes_writer_dataset(
-    advimba: VimbaDetector, count_scan_trigger_info: TriggerInfo
+    advimba: VimbaDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(advimba._writer.hdf.file_path_exists, True)
     set_mock_value(advimba._writer.hdf.capture, True)
 
     assert await advimba.describe() == {}
     await advimba.stage()
-    await advimba.prepare(count_scan_trigger_info)
+    await advimba.prepare(one_shot_trigger_info)
     assert await advimba.describe() == {
         "advimba": {
             "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
@@ -97,7 +97,7 @@ async def test_decribe_describes_writer_dataset(
 async def test_can_collect(
     advimba: VimbaDetector,
     static_path_provider: PathProvider,
-    count_scan_trigger_info: TriggerInfo,
+    one_shot_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
     full_file_name = path_info.root / path_info.resource_dir / "foo.h5"
@@ -105,7 +105,7 @@ async def test_can_collect(
     set_mock_value(advimba._writer.hdf.file_path_exists, True)
     set_mock_value(advimba._writer.hdf.capture, True)
     await advimba.stage()
-    await advimba.prepare(count_scan_trigger_info)
+    await advimba.prepare(one_shot_trigger_info)
     docs = [(name, doc) async for name, doc in advimba.collect_asset_docs(1)]
     assert len(docs) == 2
     assert docs[0][0] == "stream_resource"
@@ -126,12 +126,12 @@ async def test_can_collect(
 
 
 async def test_can_decribe_collect(
-    advimba: VimbaDetector, count_scan_trigger_info: TriggerInfo
+    advimba: VimbaDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(advimba._writer.hdf.file_path_exists, True)
     set_mock_value(advimba._writer.hdf.capture, True)
     assert (await advimba.describe_collect()) == {}
-    await advimba.prepare(count_scan_trigger_info)
+    await advimba.prepare(one_shot_trigger_info)
     assert (await advimba.describe_collect()) == {
         "advimba": {
             "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
