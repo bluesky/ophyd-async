@@ -14,7 +14,7 @@ from ophyd_async.core import (
 from ophyd_async.core.signal import observe_value
 from ophyd_async.epics.areadetector.writers.general_hdffile import _HDFDataset, _HDFFile
 
-from .._common_blocks import CommonPandaBlocks
+from .._common_blocks import CommonPandaBlocks, CaptureMode
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -48,7 +48,7 @@ class PandaHDFWriter(DetectorWriter):
             self.panda_device.data.hdf_file_name.set(
                 f"{info.prefix}{self.panda_device.name}{info.suffix}.h5",
             ),
-            self.panda_device.data.num_capture.set(0),
+            self.panda_device.data.capture_mode.set(CaptureMode.forever),
         )
 
         # Wait for it to start, stashing the status that tells us when it finishes
