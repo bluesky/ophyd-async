@@ -20,7 +20,7 @@ from ophyd_async.core.signal import observe_value
 
 from .general_hdffile import _HDFDataset, _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF
-from .nd_plugin import NDArrayBase, convert_ad_dtype_to_np
+from .nd_plugin import ADBaseDataType, NDArrayBase, convert_ad_dtype_to_np
 
 
 class HDFWriter(DetectorWriter):
@@ -98,10 +98,12 @@ class HDFWriter(DetectorWriter):
             for child in root:
                 self._datasets.append(
                     _HDFDataset(
-                        f"{child.tag}-{child.attrib}",
-                        "/entry/instrument/NDAttributes/",
+                        f"{name}-{child.attrib['name']}",
+                        f"/entry/instrument/NDAttributes/{child.attrib['source']}",
                         (),
-                        "",
+                        convert_ad_dtype_to_np(
+                            ADBaseDataType((child.attrib.get("datatype", None)))
+                        ),
                         multiplier,
                     )
                 )

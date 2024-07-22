@@ -10,7 +10,8 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics.areadetector.writers import ADBaseDataType, HDFWriter, NDFileHDF
-from ophyd_async.epics.areadetector.writers.nd_plugin import NDPluginStats
+from ophyd_async.epics.areadetector.writers.nd_plugin import NDArrayBase, NDPluginStats
+from ophyd_async.plan_stubs.nd_attributes import setup_ndstats_sum
 
 
 class DummyShapeProvider(ShapeProvider):
@@ -107,12 +108,28 @@ async def test_stats_describe_when_plugin_configured(
             "dtype_numpy": "<u2",
             "external": "STREAM:",
         },
-        "Attribute-{'name': 'StatsTotal', 'type': 'PARAM', 'source': 'TOTAL', 'addr': '0', 'datatype': 'DOUBLE', 'description': 'Sum of each detector frame'}": {  # noqa: E501
+        "test-StatsTotal": {
             "source": "mock+ca://HDF:FullFileName_RBV",
             "shape": (),
             "dtype": "number",
-            "dtype_numpy": "",
+            "dtype_numpy": "d",
             "external": "STREAM:",
         },
     }
     await hdf_writer_with_stats.close()
+
+
+async def test_stats_describe_when_plugin_configured_in_memory(RE):
+    ndArrayBase = NDArrayBase("KINETIX:")
+    stats = NDPluginStats("KINETIX:")
+    await ndArrayBase.connect(mock=True)
+    await stats.connect(mock=True)
+    RE(setup_ndstats_sum(ndArrayBase, stats))
+    xml = await ndArrayBase.nd_attributes_file.get_value()
+    for element in xml:
+        assert str(element.tag) == "Attribute"
+        assert (
+            str(element.attrib)
+            == "{'name': '-sum', 'type': 'PARAM', 'source': 'NDPluginStatsTotal', "
+            + "'addr': '0', 'datatype': 'DBR_LONG', 'description': 'Sum of the array'}"
+        )

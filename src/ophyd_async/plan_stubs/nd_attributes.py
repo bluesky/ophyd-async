@@ -45,15 +45,15 @@ def setup_ndattributes(
     yield from bps.mv(device.nd_attributes_file, xml_text)
 
 
-async def setup_ndstats_sum(device: NDArrayBase, stats: NDPluginStats):
-    await stats.statistics.connect()
-    await stats.statistics.set(True, wait=True)
-    setup_ndattributes(
-        device,
-        NDAttributeParam(
-            name=f"{stats.parent.name}-sum",
-            param="NDPluginStatsTotal",
-            datatype=NDAttributeDataType.INT,
-            description="Sum of the array",
-        ),
+def setup_ndstats_sum(device: NDArrayBase, stats: NDPluginStats):
+    yield from (
+        setup_ndattributes(
+            device,
+            NDAttributeParam(
+                name=f"{stats.name}-sum",
+                param="NDPluginStatsTotal",
+                datatype=NDAttributeDataType.INT,
+                description="Sum of the array",
+            ),
+        )
     )
