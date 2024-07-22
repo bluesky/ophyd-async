@@ -5,52 +5,37 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ophyd_async.core import Device, config_ophyd_async_logging
+from ophyd_async.core import Device, _log, config_ophyd_async_logging
 
 # Allow this importing of _log for now to test the internal interface
-from ophyd_async.core._log import (
-    DEFAULT_DATE_FORMAT,
-    DEFAULT_FORMAT,
-    ColoredFormatterWithDeviceName,
-    _validate_level,
-    current_handler,
-    logger,
-)
+# But this needs resolving.
 
 
 def test_validate_level():
-    assert _validate_level("CRITICAL") == 50
-    assert _validate_level("ERROR") == 40
-    assert _validate_level("WARNING") == 30
-    assert _validate_level("INFO") == 20
-    assert _validate_level("DEBUG") == 10
-    assert _validate_level("NOTSET") == 0
-    assert _validate_level(123) == 123
+    assert _log._validate_level("CRITICAL") == 50
+    assert _log._validate_level("ERROR") == 40
+    assert _log._validate_level("WARNING") == 30
+    assert _log._validate_level("INFO") == 20
+    assert _log._validate_level("DEBUG") == 10
+    assert _log._validate_level("NOTSET") == 0
+    assert _log._validate_level(123) == 123
     with pytest.raises(ValueError):
-        _validate_level("MYSTERY")
+        _log._validate_level("MYSTERY")
 
 
-@patch("ophyd_async.core._log.current_handler")
-@patch("ophyd_async.core._log.logging.Logger.addHandler")
-def test_default_config_ophyd_async_logging(mock_add_handler, mock_current_handler):
+def test_default_config_ophyd_async_logging():
     config_ophyd_async_logging()
-    assert isinstance(current_handler, logging.StreamHandler)
-    assert logger.getEffectiveLevel() <= logging.WARNING
+    assert isinstance(_log.current_handler, logging.StreamHandler)
+    assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async.core._log.current_handler")
-@patch("ophyd_async.core._log.logging.FileHandler")
-@patch("ophyd_async.core._log.logging.Logger.addHandler")
-def test_config_ophyd_async_logging_with_file_handler(
-    mock_add_handler, mock_file_handler, mock_current_handler
-):
+def test_config_ophyd_async_logging_with_file_handler():
     config_ophyd_async_logging(file="file")
-    assert isinstance(current_handler, MagicMock)
-    assert logger.getEffectiveLevel() <= logging.WARNING
+    assert isinstance(_log.current_handler, logging.StreamHandler)
+    assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-@patch("ophyd_async.core._log.current_handler")
-def test_config_ophyd_async_logging_removes_extra_handlers(mock_current_handler):
+def test_config_ophyd_async_logging_removes_extra_handlers():
     # Protect global variable in other pytests
     class FakeLogger:
         def __init__(self):
@@ -80,11 +65,11 @@ def test_logger_adapter_ophyd_async_device():
     log_buffer = io.StringIO()
     log_stream = logging.StreamHandler(stream=log_buffer)
     log_stream.setFormatter(
-        ColoredFormatterWithDeviceName(
-            fmt=DEFAULT_FORMAT, datefmt=DEFAULT_DATE_FORMAT, no_color=True
+        _log.ColoredFormatterWithDeviceName(
+            fmt=_log.DEFAULT_FORMAT, datefmt=_log.DEFAULT_DATE_FORMAT, no_color=True
         )
     )
-    logger.addHandler(log_stream)
+    _log.logger.addHandler(log_stream)
 
     device = Device(name="test_device")
     device._log = logging.LoggerAdapter(
