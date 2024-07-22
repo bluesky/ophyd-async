@@ -1,14 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, Sequence, TypeVar
+from typing import Dict, Generic, Sequence
 
 from bluesky.protocols import DataKey, Flyable, Preparable, Reading, Stageable
 
 from ._device import Device
 from ._signal import SignalR
 from ._status import AsyncStatus
-from ._utils import merge_gathered_dicts
-
-T = TypeVar("T")
+from ._utils import T, merge_gathered_dicts
 
 
 class TriggerLogic(ABC, Generic[T]):

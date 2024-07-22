@@ -24,6 +24,7 @@ DEFAULT_LOG_COLORS = {
     "CRITICAL": "red,bg_white",
 }
 
+
 class ColoredFormatterWithDeviceName(colorlog.ColoredFormatter):
     def format(self, record):
         message = super().format(record)

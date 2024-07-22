@@ -10,7 +10,6 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    TypeVar,
     Union,
     get_args,
     get_origin,
@@ -23,6 +22,7 @@ from ophyd_async.core import (
     DeviceVector,
     Signal,
     SoftSignalBackend,
+    T,
 )
 from ophyd_async.epics.signal import (
     PvaSignalBackend,
@@ -32,7 +32,6 @@ from ophyd_async.epics.signal import (
     epics_signal_x,
 )
 
-T = TypeVar("T")
 Access = FrozenSet[
     Union[Literal["r"], Literal["w"], Literal["rw"], Literal["x"], Literal["d"]]
 ]

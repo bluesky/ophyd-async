@@ -13,7 +13,6 @@ from typing import (
     List,
     Optional,
     Sequence,
-    TypeVar,
 )
 
 from bluesky.protocols import (
@@ -32,9 +31,7 @@ from pydantic import BaseModel, Field
 from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
-
-T = TypeVar("T")
+from ._utils import DEFAULT_TIMEOUT, T, WatcherUpdate, merge_gathered_dicts
 
 
 class DetectorTrigger(str, Enum):
