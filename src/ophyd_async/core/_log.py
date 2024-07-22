@@ -87,13 +87,20 @@ def config_ophyd_async_logging(
     Examples
     --------
     Log to a file.
+    
         config_ophyd_async_logging(file='/tmp/what_is_happening.txt')
+    
     Include the date along with the time. (The log messages will always include
     microseconds, which are configured separately, not as part of 'datefmt'.)
+
         config_ophyd_async_logging(datefmt="%Y-%m-%d %H:%M:%S")
+
     Turn off ANSI color codes.
+
         config_ophyd_async_logging(color=False)
+
     Increase verbosity: show level DEBUG or higher.
+
         config_ophyd_async_logging(level='DEBUG')
 
     """
