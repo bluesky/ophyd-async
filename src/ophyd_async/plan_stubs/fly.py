@@ -1,18 +1,13 @@
-from typing import List, Optional
+from typing import List
 
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
-from ophyd_async.core.detector import DetectorTrigger, StandardDetector, TriggerInfo
+from ophyd_async.core.detector import StandardDetector, TriggerInfo
 from ophyd_async.core.flyer import HardwareTriggeredFlyable
-from ophyd_async.core.utils import in_micros
 from ophyd_async.panda import (
     PcompDirectionOptions,
     PcompInfo,
-    SeqTable,
-    SeqTableInfo,
-    SeqTableRow,
-    seq_table_from_rows,
 )
 
 
@@ -35,72 +30,72 @@ def prepare_static_pcomp_flyer_and_detectors(
     yield from bps.wait(group="prep")
 
 
-def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
-    detectors: List[StandardDetector],
-    number_of_frames: int,
-    exposure: float,
-    shutter_time: float,
-    repeats: int = 1,
-    period: float = 0.0,
-    frame_timeout: Optional[float] = None,
-):
-    """Prepare a hardware triggered flyable and one or more detectors.
+# def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
+#     flyer: HardwareTriggeredFlyable[SeqTableInfo],
+#     detectors: List[StandardDetector],
+#     number_of_frames: int,
+#     exposure: float,
+#     shutter_time: float,
+#     repeats: int = 1,
+#     period: float = 0.0,
+#     frame_timeout: Optional[float] = None,
+# ):
+#     """Prepare a hardware triggered flyable and one or more detectors.
 
-    Prepare a hardware triggered flyable and one or more detectors with the
-    same trigger. This method constructs TriggerInfo and a static sequence
-    table from required parameters. The table is required to prepare the flyer,
-    and the TriggerInfo is required to prepare the detector(s).
+#     Prepare a hardware triggered flyable and one or more detectors with the
+#     same trigger. This method constructs TriggerInfo and a static sequence
+#     table from required parameters. The table is required to prepare the flyer,
+#     and the TriggerInfo is required to prepare the detector(s).
 
-    This prepares all supplied detectors with the same trigger.
+#     This prepares all supplied detectors with the same trigger.
 
-    """
-    if not detectors:
-        raise ValueError("No detectors provided. There must be at least one.")
+#     """
+#     if not detectors:
+#         raise ValueError("No detectors provided. There must be at least one.")
 
-    deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
+#     deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
 
-    trigger_info = TriggerInfo(
-        number=number_of_frames * repeats,
-        trigger=DetectorTrigger.constant_gate,
-        deadtime=deadtime,
-        livetime=exposure,
-        frame_timeout=frame_timeout,
-    )
-    trigger_time = number_of_frames * (exposure + deadtime)
-    pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
+#     trigger_info = TriggerInfo(
+#         number=number_of_frames * repeats,
+#         trigger=DetectorTrigger.constant_gate,
+#         deadtime=deadtime,
+#         livetime=exposure,
+#         frame_timeout=frame_timeout,
+#     )
+#     trigger_time = number_of_frames * (exposure + deadtime)
+#     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
 
-    table: SeqTable = seq_table_from_rows(
-        # Wait for pre-delay then open shutter
-        SeqTableRow(
-            time1=in_micros(pre_delay),
-            time2=in_micros(shutter_time),
-            outa2=True,
-        ),
-        # Keeping shutter open, do N triggers
-        SeqTableRow(
-            repeats=number_of_frames,
-            time1=in_micros(exposure),
-            outa1=True,
-            outb1=True,
-            time2=in_micros(deadtime),
-            outa2=True,
-        ),
-        # Add the shutter close
-        SeqTableRow(time2=in_micros(shutter_time)),
-    )
+#     table: SeqTable = seq_table_from_rows(
+#         # Wait for pre-delay then open shutter
+#         SeqTableRow(
+#             time1=in_micros(pre_delay),
+#             time2=in_micros(shutter_time),
+#             outa2=True,
+#         ),
+#         # Keeping shutter open, do N triggers
+#         SeqTableRow(
+#             repeats=number_of_frames,
+#             time1=in_micros(exposure),
+#             outa1=True,
+#             outb1=True,
+#             time2=in_micros(deadtime),
+#             outa2=True,
+#         ),
+#         # Add the shutter close
+#         SeqTableRow(time2=in_micros(shutter_time)),
+#     )
 
-    table_info = SeqTableInfo(sequence_table=table, repeats=repeats)
+#     table_info = SeqTableInfo(sequence_table=table, repeats=repeats)
 
-    for det in detectors:
-        yield from bps.prepare(det, trigger_info, wait=False, group="prep")
-    yield from bps.prepare(flyer, table_info, wait=False, group="prep")
-    yield from bps.wait(group="prep")
+#     for det in detectors:
+#         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
+#     yield from bps.prepare(flyer, table_info, wait=False, group="prep")
+#     yield from bps.wait(group="prep")
 
 
 def fly_and_collect(
     stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo] | HardwareTriggeredFlyable[PcompInfo],
+    flyer: HardwareTriggeredFlyable[PcompInfo],
     detectors: List[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
@@ -164,41 +159,41 @@ def fly_and_collect_with_static_pcomp(
     yield from fly_and_collect(stream_name, flyer, detectors)
 
 
-def time_resolved_fly_and_collect_with_static_seq_table(
-    stream_name: str,
-    flyer: HardwareTriggeredFlyable[SeqTableInfo],
-    detectors: List[StandardDetector],
-    number_of_frames: int,
-    exposure: float,
-    shutter_time: float,
-    repeats: int = 1,
-    period: float = 0.0,
-    frame_timeout: float | None = None,
-):
-    """Run a scan wth a flyer and multiple detectors.
+# def time_resolved_fly_and_collect_with_static_seq_table(
+#     stream_name: str,
+#     flyer: HardwareTriggeredFlyable[SeqTableInfo],
+#     detectors: List[StandardDetector],
+#     number_of_frames: int,
+#     exposure: float,
+#     shutter_time: float,
+#     repeats: int = 1,
+#     period: float = 0.0,
+#     frame_timeout: float | None = None,
+# ):
+#     """Run a scan wth a flyer and multiple detectors.
 
-    The stub demonstrates the standard basic flow for a flyscan:
+#     The stub demonstrates the standard basic flow for a flyscan:
 
-    - Prepare the flyer and detectors with a trigger
-    - Fly and collect:
-       - Declare the stream and kickoff the scan
-       - Collect while completing
+#     - Prepare the flyer and detectors with a trigger
+#     - Fly and collect:
+#        - Declare the stream and kickoff the scan
+#        - Collect while completing
 
-    This needs to be used in a plan that instantates detectors and a flyer,
-    stages/unstages the devices, and opens and closes the run.
+#     This needs to be used in a plan that instantates detectors and a flyer,
+#     stages/unstages the devices, and opens and closes the run.
 
-    """
+#     """
 
-    # Set up scan and prepare trigger
-    yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
-        flyer,
-        detectors,
-        number_of_frames=number_of_frames,
-        exposure=exposure,
-        shutter_time=shutter_time,
-        repeats=repeats,
-        period=period,
-        frame_timeout=frame_timeout,
-    )
-    # Run the fly scan
-    yield from fly_and_collect(stream_name, flyer, detectors)
+#     # Set up scan and prepare trigger
+#     yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
+#         flyer,
+#         detectors,
+#         number_of_frames=number_of_frames,
+#         exposure=exposure,
+#         shutter_time=shutter_time,
+#         repeats=repeats,
+#         period=period,
+#         frame_timeout=frame_timeout,
+#     )
+#     # Run the fly scan
+#     yield from fly_and_collect(stream_name, flyer, detectors)

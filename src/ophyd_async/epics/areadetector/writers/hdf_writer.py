@@ -18,7 +18,6 @@ from ophyd_async.core.signal import observe_value
 
 from .general_hdffile import _HDFDataset, _HDFFile
 from .nd_file_hdf import FileWriteMode, NDFileHDF
-from .nd_plugin import convert_ad_dtype_to_np
 
 
 class HDFWriter(DetectorWriter):
@@ -72,11 +71,7 @@ class HDFWriter(DetectorWriter):
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
         frame_shape = detector_shape[:-1] if len(detector_shape) > 0 else []
-        dtype_numpy = (
-            convert_ad_dtype_to_np(detector_shape[-1])
-            if len(detector_shape) > 0
-            else ""
-        )
+        dtype_numpy = "|u1"
 
         # Add the main data
         self._datasets = [

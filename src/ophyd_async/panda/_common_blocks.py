@@ -4,7 +4,7 @@ from enum import Enum
 
 from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW
 from ophyd_async.core.signal_backend import SubsetEnum
-from ophyd_async.panda._table import DatasetTable, SeqTable
+from ophyd_async.panda._table import DatasetTable
 
 
 class DataBlock(Device):
@@ -49,13 +49,13 @@ class TimeUnits(str, Enum):
     us = "us"
 
 
-class SeqBlock(Device):
-    table: SignalRW[SeqTable]
-    active: SignalRW[bool]
-    repeats: SignalRW[int]
-    prescale: SignalRW[float]
-    prescale_units: SignalRW[TimeUnits]
-    enable: SignalRW[EnableDisableOptions]
+# class SeqBlock(Device):
+#     table: SignalRW[SeqTable]
+#     active: SignalRW[bool]
+#     repeats: SignalRW[int]
+#     prescale: SignalRW[float]
+#     prescale_units: SignalRW[TimeUnits]
+#     enable: SignalRW[EnableDisableOptions]
 
 
 class PcapBlock(Device):
@@ -65,7 +65,6 @@ class PcapBlock(Device):
 
 class CommonPandaBlocks(Device):
     pulse: DeviceVector[PulseBlock]
-    seq: DeviceVector[SeqBlock]
     pcomp: DeviceVector[PcompBlock]
     pcap: PcapBlock
     data: DataBlock

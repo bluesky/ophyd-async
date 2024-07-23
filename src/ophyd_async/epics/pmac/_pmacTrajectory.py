@@ -3,7 +3,8 @@ import time
 import numpy as np
 import numpy.typing as npt
 from bluesky.protocols import Flyable, Preparable
-from scanspec.specs import Frames, Path
+from pydantic import BaseModel, Field
+from scanspec.specs import Line, Path, fly
 
 from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
 from ophyd_async.core.signal import observe_value
@@ -14,13 +15,32 @@ from ophyd_async.epics.pmac import Pmac
 TICK_S = 0.000001
 
 
+class FlyTrajectoryInfo(BaseModel):
+    """Minimal set of information required to fly a trajectory:"""
+
+    #: Absolute position of the motor once it finishes accelerating to desired
+    #: velocity, in motor EGUs
+    start_position: float = Field(frozen=True)
+
+    #: Absolute position of the motor once it begins decelerating from desired
+    #: velocity, in EGUs
+    end_position: float = Field(frozen=True)
+
+    num_positions: int = Field(frozen=True)
+
+    #: Time taken for the motor to get from start_position to end_position, excluding
+    #: run-up and run-down, in seconds.
+    time_per_position: float = Field(frozen=True, gt=0)
+
+
 class PmacTrajectory(Pmac, Flyable, Preparable):
     """Device that moves a PMAC Motor record"""
 
-    def __init__(self, prefix: str, cs: int, name="") -> None:
+    def __init__(self, prefix: str, cs: int, motor: Motor, name="") -> None:
         # Make a dict of which motors are for which cs axis
         self._fly_start: float
         self.cs = cs
+        self.motor = motor
         super().__init__(prefix, cs, name=name)
 
     async def _ramp_up_velocity_pos(
@@ -35,8 +55,19 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         return [disp, accl_time]
 
     @AsyncStatus.wrap
-    async def prepare(self, stack: list[Frames[Motor]]):
+    async def prepare(self, value: FlyTrajectoryInfo):
         # Which Axes are in use?
+
+        spec = fly(
+            Line(
+                self.motor,
+                value.start_position,
+                value.end_position,
+                value.num_positions,
+            ),
+            value.time_per_position,
+        )
+        stack = spec.calculate()
         path = Path(stack)
         chunk = path.consume()
         scan_size = len(chunk)
