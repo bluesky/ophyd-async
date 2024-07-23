@@ -1,0 +1,92 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.ADBaseDataType
+========================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: ADBaseDataType
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ADBaseDataType.encode
+      ~ADBaseDataType.replace
+      ~ADBaseDataType.split
+      ~ADBaseDataType.rsplit
+      ~ADBaseDataType.join
+      ~ADBaseDataType.capitalize
+      ~ADBaseDataType.casefold
+      ~ADBaseDataType.title
+      ~ADBaseDataType.center
+      ~ADBaseDataType.count
+      ~ADBaseDataType.expandtabs
+      ~ADBaseDataType.find
+      ~ADBaseDataType.partition
+      ~ADBaseDataType.index
+      ~ADBaseDataType.ljust
+      ~ADBaseDataType.lower
+      ~ADBaseDataType.lstrip
+      ~ADBaseDataType.rfind
+      ~ADBaseDataType.rindex
+      ~ADBaseDataType.rjust
+      ~ADBaseDataType.rstrip
+      ~ADBaseDataType.rpartition
+      ~ADBaseDataType.splitlines
+      ~ADBaseDataType.strip
+      ~ADBaseDataType.swapcase
+      ~ADBaseDataType.translate
+      ~ADBaseDataType.upper
+      ~ADBaseDataType.startswith
+      ~ADBaseDataType.endswith
+      ~ADBaseDataType.removeprefix
+      ~ADBaseDataType.removesuffix
+      ~ADBaseDataType.isascii
+      ~ADBaseDataType.islower
+      ~ADBaseDataType.isupper
+      ~ADBaseDataType.istitle
+      ~ADBaseDataType.isspace
+      ~ADBaseDataType.isdecimal
+      ~ADBaseDataType.isdigit
+      ~ADBaseDataType.isnumeric
+      ~ADBaseDataType.isalpha
+      ~ADBaseDataType.isalnum
+      ~ADBaseDataType.isidentifier
+      ~ADBaseDataType.isprintable
+      ~ADBaseDataType.zfill
+      ~ADBaseDataType.format
+      ~ADBaseDataType.format_map
+      ~ADBaseDataType.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ADBaseDataType.Int8
+      ~ADBaseDataType.UInt8
+      ~ADBaseDataType.Int16
+      ~ADBaseDataType.UInt16
+      ~ADBaseDataType.Int32
+      ~ADBaseDataType.UInt32
+      ~ADBaseDataType.Int64
+      ~ADBaseDataType.UInt64
+      ~ADBaseDataType.Float32
+      ~ADBaseDataType.Float64
+   
+   

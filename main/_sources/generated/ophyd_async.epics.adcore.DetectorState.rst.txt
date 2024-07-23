@@ -1,0 +1,93 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.DetectorState
+=======================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: DetectorState
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~DetectorState.encode
+      ~DetectorState.replace
+      ~DetectorState.split
+      ~DetectorState.rsplit
+      ~DetectorState.join
+      ~DetectorState.capitalize
+      ~DetectorState.casefold
+      ~DetectorState.title
+      ~DetectorState.center
+      ~DetectorState.count
+      ~DetectorState.expandtabs
+      ~DetectorState.find
+      ~DetectorState.partition
+      ~DetectorState.index
+      ~DetectorState.ljust
+      ~DetectorState.lower
+      ~DetectorState.lstrip
+      ~DetectorState.rfind
+      ~DetectorState.rindex
+      ~DetectorState.rjust
+      ~DetectorState.rstrip
+      ~DetectorState.rpartition
+      ~DetectorState.splitlines
+      ~DetectorState.strip
+      ~DetectorState.swapcase
+      ~DetectorState.translate
+      ~DetectorState.upper
+      ~DetectorState.startswith
+      ~DetectorState.endswith
+      ~DetectorState.removeprefix
+      ~DetectorState.removesuffix
+      ~DetectorState.isascii
+      ~DetectorState.islower
+      ~DetectorState.isupper
+      ~DetectorState.istitle
+      ~DetectorState.isspace
+      ~DetectorState.isdecimal
+      ~DetectorState.isdigit
+      ~DetectorState.isnumeric
+      ~DetectorState.isalpha
+      ~DetectorState.isalnum
+      ~DetectorState.isidentifier
+      ~DetectorState.isprintable
+      ~DetectorState.zfill
+      ~DetectorState.format
+      ~DetectorState.format_map
+      ~DetectorState.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DetectorState.Idle
+      ~DetectorState.Acquire
+      ~DetectorState.Readout
+      ~DetectorState.Correct
+      ~DetectorState.Saving
+      ~DetectorState.Aborting
+      ~DetectorState.Error
+      ~DetectorState.Waiting
+      ~DetectorState.Initializing
+      ~DetectorState.Disconnected
+      ~DetectorState.Aborted
+   
+   

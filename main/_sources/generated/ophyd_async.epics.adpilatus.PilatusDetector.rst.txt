@@ -1,0 +1,57 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adpilatus.PilatusDetector
+============================================
+
+.. currentmodule:: ophyd_async.epics.adpilatus
+
+.. autoclass:: PilatusDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PilatusDetector.children
+      ~PilatusDetector.collect_asset_docs
+      ~PilatusDetector.complete
+      ~PilatusDetector.connect
+      ~PilatusDetector.describe
+      ~PilatusDetector.describe_collect
+      ~PilatusDetector.describe_configuration
+      ~PilatusDetector.get_index
+      ~PilatusDetector.kickoff
+      ~PilatusDetector.prepare
+      ~PilatusDetector.read
+      ~PilatusDetector.read_configuration
+      ~PilatusDetector.set_name
+      ~PilatusDetector.stage
+      ~PilatusDetector.trigger
+      ~PilatusDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PilatusDetector.controller
+      ~PilatusDetector.hints
+      ~PilatusDetector.log
+      ~PilatusDetector.name
+      ~PilatusDetector.parent
+      ~PilatusDetector.writer
+   
+   

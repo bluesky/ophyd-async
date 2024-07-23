@@ -14,14 +14,6 @@ ophyd\_async.epics.demo
 
    
    
-   .. rubric:: Functions
-
-   .. autosummary::
-      :toctree:
-      :nosignatures:
-   
-      start_ioc_subprocess
-   
    
 
    
@@ -33,9 +25,9 @@ ophyd\_async.epics.demo
       :template: custom-class-template.rst
       :nosignatures:
    
-      EnergyMode
       Mover
       SampleStage
+      EnergyMode
       Sensor
       SensorGroup
    
@@ -46,11 +38,4 @@ ophyd\_async.epics.demo
    
 
 
-
-.. autosummary::
-   :toctree:
-   :template: custom-module-template.rst
-   :recursive:
-
-   ophyd_async.epics.demo.demo_ad_sim_detector
 

@@ -27,15 +27,6 @@ ophyd\_async.epics.pvi
 
    
    
-   .. rubric:: Classes
-
-   .. autosummary::
-      :toctree:
-      :template: custom-class-template.rst
-      :nosignatures:
-   
-      PVIEntry
-   
    
 
    

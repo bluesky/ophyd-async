@@ -1,0 +1,56 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.motor.Motor
+==============================
+
+.. currentmodule:: ophyd_async.epics.motor
+
+.. autoclass:: Motor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Motor.add_children_as_readables
+      ~Motor.add_readables
+      ~Motor.children
+      ~Motor.complete
+      ~Motor.connect
+      ~Motor.describe
+      ~Motor.describe_configuration
+      ~Motor.kickoff
+      ~Motor.prepare
+      ~Motor.read
+      ~Motor.read_configuration
+      ~Motor.set
+      ~Motor.set_name
+      ~Motor.set_readable_signals
+      ~Motor.stage
+      ~Motor.stop
+      ~Motor.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Motor.hints
+      ~Motor.log
+      ~Motor.name
+      ~Motor.parent
+   
+   

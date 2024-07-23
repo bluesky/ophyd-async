@@ -1,0 +1,41 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.ADBaseIO
+==================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: ADBaseIO
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ADBaseIO.children
+      ~ADBaseIO.connect
+      ~ADBaseIO.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ADBaseIO.log
+      ~ADBaseIO.name
+      ~ADBaseIO.parent
+   
+   

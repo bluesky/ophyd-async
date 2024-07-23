@@ -20,6 +20,7 @@ ophyd\_async.epics.signal
       :toctree:
       :nosignatures:
    
+      get_supported_values
       epics_signal_r
       epics_signal_rw
       epics_signal_rw_rbv
@@ -29,6 +30,17 @@ ophyd\_async.epics.signal
    
 
    
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      LimitPair
+      Limits
+      PvaSignalBackend
    
    
 

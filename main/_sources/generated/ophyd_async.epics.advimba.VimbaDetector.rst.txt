@@ -1,0 +1,57 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.advimba.VimbaDetector
+========================================
+
+.. currentmodule:: ophyd_async.epics.advimba
+
+.. autoclass:: VimbaDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~VimbaDetector.children
+      ~VimbaDetector.collect_asset_docs
+      ~VimbaDetector.complete
+      ~VimbaDetector.connect
+      ~VimbaDetector.describe
+      ~VimbaDetector.describe_collect
+      ~VimbaDetector.describe_configuration
+      ~VimbaDetector.get_index
+      ~VimbaDetector.kickoff
+      ~VimbaDetector.prepare
+      ~VimbaDetector.read
+      ~VimbaDetector.read_configuration
+      ~VimbaDetector.set_name
+      ~VimbaDetector.stage
+      ~VimbaDetector.trigger
+      ~VimbaDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~VimbaDetector.controller
+      ~VimbaDetector.hints
+      ~VimbaDetector.log
+      ~VimbaDetector.name
+      ~VimbaDetector.parent
+      ~VimbaDetector.writer
+   
+   

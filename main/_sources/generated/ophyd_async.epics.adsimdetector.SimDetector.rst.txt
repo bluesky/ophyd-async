@@ -1,0 +1,56 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adsimdetector.SimDetector
+============================================
+
+.. currentmodule:: ophyd_async.epics.adsimdetector
+
+.. autoclass:: SimDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SimDetector.children
+      ~SimDetector.collect_asset_docs
+      ~SimDetector.complete
+      ~SimDetector.connect
+      ~SimDetector.describe
+      ~SimDetector.describe_collect
+      ~SimDetector.describe_configuration
+      ~SimDetector.get_index
+      ~SimDetector.kickoff
+      ~SimDetector.prepare
+      ~SimDetector.read
+      ~SimDetector.read_configuration
+      ~SimDetector.set_name
+      ~SimDetector.stage
+      ~SimDetector.trigger
+      ~SimDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SimDetector.controller
+      ~SimDetector.log
+      ~SimDetector.name
+      ~SimDetector.parent
+      ~SimDetector.writer
+   
+   

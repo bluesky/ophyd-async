@@ -1,0 +1,34 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.fastcs.panda.StaticPcompTriggerLogic
+=================================================
+
+.. currentmodule:: ophyd_async.fastcs.panda
+
+.. autoclass:: StaticPcompTriggerLogic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~StaticPcompTriggerLogic.complete
+      ~StaticPcompTriggerLogic.kickoff
+      ~StaticPcompTriggerLogic.prepare
+      ~StaticPcompTriggerLogic.stop
+   
+   
+
+   
+   
+   

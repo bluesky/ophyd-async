@@ -1,0 +1,6 @@
+ophyd\_async.core.config\_ophyd\_async\_logging
+===============================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: config_ophyd_async_logging

@@ -20,33 +20,35 @@ ophyd\_async.core
       :toctree:
       :nosignatures:
    
+      all_at_once
+      get_signal_values
+      load_device
+      load_from_yaml
+      save_device
+      save_to_yaml
+      set_signal_values
+      walk_rw_signals
+      config_ophyd_async_logging
+      callback_on_mock_put
+      get_mock_put
+      mock_puts_blocked
+      reset_mock_put_calls
+      set_mock_put_proceeds
+      set_mock_value
+      set_mock_values
       assert_configuration
       assert_emitted
       assert_reading
       assert_value
-      callback_on_mock_put
-      get_dtype
-      get_mock_put
-      get_signal_values
-      get_unique
-      load_device
-      load_from_yaml
-      merge_gathered_dicts
-      mock_puts_blocked
       observe_value
-      reset_mock_put_calls
-      save_device
-      save_to_yaml
       set_and_wait_for_value
-      set_mock_put_proceeds
-      set_mock_value
-      set_mock_values
-      set_signal_values
       soft_signal_r_and_setter
       soft_signal_rw
-      wait_for_connection
       wait_for_value
-      walk_rw_signals
+      get_dtype
+      get_unique
+      in_micros
+      wait_for_connection
    
    
 
@@ -59,42 +61,49 @@ ophyd\_async.core
       :template: custom-class-template.rst
       :nosignatures:
    
-      AsyncStatus
-      AutoIncrementFilenameProvider
-      AutoIncrementingPathProvider
-      CalculateTimeout
-      ConfigSignal
       DetectorControl
       DetectorTrigger
       DetectorWriter
+      StandardDetector
       Device
       DeviceCollector
       DeviceVector
-      FilenameProvider
-      HardwareTriggeredFlyable
-      HintedSignal
+      StandardFlyer
+      TriggerLogic
+      HDFDataset
+      HDFFile
       MockSignalBackend
+      AsyncConfigurable
+      AsyncReadable
+      AsyncStageable
+      AutoIncrementFilenameProvider
+      AutoIncrementingPathProvider
+      FilenameProvider
       NameProvider
       PathInfo
       PathProvider
-      RuntimeSubsetEnum
       ShapeProvider
+      StaticFilenameProvider
+      StaticPathProvider
+      UUIDFilenameProvider
+      YMDPathProvider
+      ConfigSignal
+      HintedSignal
+      StandardReadable
       Signal
-      SignalBackend
       SignalR
       SignalRW
       SignalW
       SignalX
-      SoftSignalBackend
-      StandardDetector
-      StandardReadable
-      StaticFilenameProvider
-      StaticPathProvider
+      RuntimeSubsetEnum
+      SignalBackend
       SubsetEnum
-      TriggerLogic
-      UUIDFilenameProvider
+      SignalMetadata
+      SoftSignalBackend
+      AsyncStatus
       WatchableAsyncStatus
-      YMDPathProvider
+      CalculateTimeout
+      WatcherUpdate
    
    
 

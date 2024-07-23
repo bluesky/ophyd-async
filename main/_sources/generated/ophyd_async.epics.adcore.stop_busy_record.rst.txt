@@ -1,0 +1,6 @@
+ophyd\_async.epics.adcore.stop\_busy\_record
+============================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autofunction:: stop_busy_record

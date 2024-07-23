@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.4.1.dev3+gaf9c780f documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.4.1.dev4+g9c999135 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=76e400b9"></script>
+    <script src="../_static/documentation_options.js?v=c8564415"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -516,21 +516,21 @@ may change API on minor release numbers before then</p>
 <p><a class="reference internal" href="../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> is an abstract class to assist in creating Device classes for hardware that writes its own data e.g. an AreaDetector implementation, or a PandA writing motor encoder positions to file.
 The <a class="reference internal" href="../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> is a simple compound device, with 2 standard components:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a> to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">HDFWriter</span></code>)</p></li>
+<li><p><a class="reference internal" href="../generated/ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a> to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">ADHDFWriter</span></code>)</p></li>
 <li><p><a class="reference internal" href="../generated/ophyd_async.core.DetectorControl.html#ophyd_async.core.DetectorControl" title="ophyd_async.core.DetectorControl"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorControl</span></code></a> with logic for arming and disarming the detector. This will be unique to the StandardDetector implementation.</p></li>
 </ul>
 <section id="writing-an-areadetector-standarddetector">
 <h2>Writing an AreaDetector StandardDetector<a class="headerlink" href="#writing-an-areadetector-standarddetector" title="Link to this heading">#</a></h2>
 <p>For an AreaDetector implementation of the StandardDetector, two entity objects which are subdevices of the <a class="reference internal" href="../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> are used to map to AreaDetector plugins:</p>
 <ul class="simple">
-<li><p>An NDPluginFile instance (for <code class="xref py py-class docutils literal notranslate"><span class="pre">HDFWriter</span></code> an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">NDFileHDF</span></code>)</p></li>
-<li><p>An <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBase</span></code> instance mapping to NDArray for the “driver” of the detector implementation</p></li>
+<li><p>An NDPluginFile instance (for <code class="xref py py-class docutils literal notranslate"><span class="pre">ADHDFWriter</span></code> an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">NDFileHDFIO</span></code>)</p></li>
+<li><p>An <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBaseIO</span></code> instance mapping to NDArray for the “driver” of the detector implementation</p></li>
 </ul>
-<p>Define a <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDriver</span></code> if the NDArray requires fields in addition to those on <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBase</span></code> to be exposed. It should extend <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBase</span></code>.
+<p>Define a <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDriver</span></code> if the NDArray requires fields in addition to those on <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBaseIO</span></code> to be exposed. It should extend <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBaseIO</span></code>.
 Enumeration fields should be named to prevent namespace collision, i.e. for a Signal named “TriggerSource” use the enum “FooTriggerSource”</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FooDriver</span><span class="p">(</span><span class="n">ADBase</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FooDriver</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_mode</span> <span class="o">=</span> <span class="n">ad_rw</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;TriggerMode&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_mode</span> <span class="o">=</span> <span class="n">epics_signal_rw_rbv</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;TriggerMode&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -552,15 +552,15 @@ Enumeration fields should be named to prevent namespace collision, i.e. for a Si
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">num</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ImageMode</span><span class="o">.</span><span class="n">multiple</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ImageMode</span><span class="o">.</span><span class="n">multiple</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FOO</span><span class="si">{</span><span class="n">trigger</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">start_acquiring_driver_and_ensure_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">adcore</span><span class="o">.</span><span class="n">start_acquiring_driver_and_ensure_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">stop_busy_record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">adcore</span><span class="o">.</span><span class="n">stop_busy_record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><code class="xref py py-class docutils literal notranslate"><span class="pre">FooDetector</span></code> ties the Driver, Controller and data persistence layer together. The example <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDetector</span></code> writes h5 files using the standard NDPlugin. It additionally supports the <code class="xref py py-class docutils literal notranslate"><span class="pre">HasHints</span></code> protocol which is optional but recommended.</p>
@@ -568,27 +568,27 @@ Enumeration fields should be named to prevent namespace collision, i.e. for a Si
 If the <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDriver</span></code> signals that should be read as configuration, they should be added to the “config_sigs” passed to the super.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FooDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
     <span class="n">_controller</span><span class="p">:</span> <span class="n">FooController</span>
-    <span class="n">_writer</span><span class="p">:</span> <span class="n">HDFWriter</span>
+    <span class="n">_writer</span><span class="p">:</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFWriter</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">directory_provider</span><span class="p">:</span> <span class="n">DirectoryProvider</span><span class="p">,</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">drv_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
         <span class="n">hdf_suffix</span><span class="o">=</span><span class="s2">&quot;HDF1:&quot;</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># Must be children to pick up connect</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drv</span> <span class="o">=</span> <span class="n">FooDriver</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">drv_suffix</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">NDFileHDF</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">hdf_suffix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDFileHDFIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">hdf_suffix</span><span class="p">)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">FooController</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
-            <span class="n">HDFWriter</span><span class="p">(</span>
+            <span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFWriter</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="p">,</span>
-                <span class="n">directory_provider</span><span class="p">,</span>
+                <span class="n">path_provider</span><span class="p">,</span>
                 <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">ADBaseShapeProvider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
+                <span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseShapeProvider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>
             <span class="p">),</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="p">,),</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -646,8 +646,8 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">_HDFDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_HDFFile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">HDFFile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># Triggered on PCAP arm</span>
@@ -707,7 +707,7 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
 
         <span class="n">capture_table</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">_HDFDataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">HDFDataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
         <span class="p">]</span>
 
@@ -742,7 +742,7 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
         <span class="c1"># TODO: fail if we get dropped frames</span>
         <span class="k">if</span> <span class="n">indices_written</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="n">_HDFFile</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="n">HDFFile</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(),</span>
                     <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
                     <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">get_value</span><span class="p">()),</span>

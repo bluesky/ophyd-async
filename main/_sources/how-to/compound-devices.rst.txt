@@ -11,7 +11,7 @@ Assembly
 
 Compound assemblies can be used to group Devices into larger logical Devices:
 
-.. literalinclude:: ../../src/ophyd_async/epics/demo/__init__.py
+.. literalinclude:: ../../src/ophyd_async/epics/demo/_mover.py
    :pyobject: SampleStage
 
 This applies prefixes on construction:
@@ -35,7 +35,7 @@ Grouping by Index
 
 Sometimes, it makes sense to group devices by number, say an array of sensors:
 
-.. literalinclude:: ../../src/ophyd_async/epics/demo/__init__.py
+.. literalinclude:: ../../src/ophyd_async/epics/demo/_sensor.py
    :pyobject: SensorGroup
 
 :class:`~ophyd-async.core.DeviceVector` allows writing maintainable, arbitrary-length device groups instead of fixed classes for each possible grouping. A :class:`~ophyd-async.core.DeviceVector` can be accessed via indices, for example: ``my_sensor_group.sensors[2]``. Here ``sensors`` is a dictionary with integer indices rather than a list so that the most semantically sensible indices may be used, the sensor group above may be 1-indexed, for example, because the sensors' datasheet calls them "sensor 1", "sensor 2" etc. 

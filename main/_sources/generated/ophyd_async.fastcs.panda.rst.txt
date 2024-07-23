@@ -1,0 +1,65 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.fastcs.panda
+=========================
+
+.. automodule:: ophyd_async.fastcs.panda
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      seq_table_from_arrays
+      seq_table_from_rows
+      phase_sorter
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      CommonPandaBlocks
+      DataBlock
+      EnableDisableOptions
+      PcapBlock
+      PcompBlock
+      PcompDirectionOptions
+      PulseBlock
+      SeqBlock
+      TimeUnits
+      HDFPanda
+      PandaHDFWriter
+      PandaPcapController
+      DatasetTable
+      PandaHdf5DatasetType
+      SeqTable
+      SeqTableRow
+      SeqTrigger
+      StaticPcompTriggerLogic
+      StaticSeqTableTriggerLogic
+   
+   
+
+   
+   
+   
+
+
+
