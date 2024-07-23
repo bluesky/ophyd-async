@@ -11,7 +11,7 @@ from ophyd_async.core import (
     StandardReadable,
 )
 
-from ._ad_base import ADBase
+from ._core_io import ADBase
 from ._nd_plugin import NDPluginBase
 from ._utils import ImageMode
 

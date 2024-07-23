@@ -18,7 +18,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._nd_file_hdf import NDFileHDF
+from ._core_io import NDFileHDF
 from ._nd_plugin import convert_ad_dtype_to_np
 from ._utils import FileWriteMode
 
