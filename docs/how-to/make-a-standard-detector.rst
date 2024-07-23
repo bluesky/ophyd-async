@@ -17,7 +17,7 @@ Writing an AreaDetector StandardDetector
 
 For an AreaDetector implementation of the StandardDetector, two entity objects which are subdevices of the `StandardDetector` are used to map to AreaDetector plugins:
 
-- An NDPluginFile instance (for :py:class:`ADHDFWriter` an instance of :py:class:`NDFileHDF`)
+- An NDPluginFile instance (for :py:class:`ADHDFWriter` an instance of :py:class:`NDFileHDFIO`)
 - An :py:class:`ADBase` instance mapping to NDArray for the "driver" of the detector implementation
 
 

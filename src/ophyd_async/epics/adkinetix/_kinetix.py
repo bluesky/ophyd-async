@@ -25,7 +25,7 @@ class KinetixDetector(StandardDetector, HasHints):
         name="",
     ):
         self.drv = KinetixDriverIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             KinetixController(self.drv),

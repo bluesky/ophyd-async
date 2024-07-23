@@ -24,7 +24,7 @@ async def hdf_writer(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADHDFWriter:
     async with DeviceCollector(mock=True):
-        hdf = adcore.NDFileHDF("HDF:")
+        hdf = adcore.NDFileHDFIO("HDF:")
 
     return adcore.ADHDFWriter(
         hdf,

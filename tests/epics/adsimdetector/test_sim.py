@@ -30,7 +30,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
 
     async with DeviceCollector(mock=True):
         drv = adcore.ADBase(f"{prefix}DRV:", name="drv")
-        hdf = adcore.NDFileHDF(f"{prefix}HDF:")
+        hdf = adcore.NDFileHDFIO(f"{prefix}HDF:")
         det = adsimdetector.SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
         )
@@ -293,7 +293,7 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(
     some_other_driver = adcore.ADBase("TEST")
 
     async with DeviceCollector(mock=True):
-        hdf = adcore.NDFileHDF("FOO:HDF:")
+        hdf = adcore.NDFileHDFIO("FOO:HDF:")
         det = adsimdetector.SimDetector(
             drv,
             hdf,

@@ -63,7 +63,7 @@ def controller(RE) -> adsimdetector.SimController:
 @pytest.fixture
 def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
     with DeviceCollector(mock=True):
-        hdf = adcore.NDFileHDF("HDF")
+        hdf = adcore.NDFileHDFIO("HDF")
 
     return adcore.ADHDFWriter(
         hdf,

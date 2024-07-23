@@ -16,6 +16,7 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
     [DetectorState.Idle, DetectorState.Aborted]
 )
 
+
 async def set_exposure_time_and_acquire_period_if_supplied(
     controller: DetectorControl,
     driver: ADBase,

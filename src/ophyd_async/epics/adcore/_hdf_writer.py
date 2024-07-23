@@ -18,7 +18,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._core_io import NDFileHDF
+from ._core_io import NDFileHDFIO
 from ._nd_plugin import convert_ad_dtype_to_np
 from ._utils import FileWriteMode
 
@@ -26,7 +26,7 @@ from ._utils import FileWriteMode
 class ADHDFWriter(DetectorWriter):
     def __init__(
         self,
-        hdf: NDFileHDF,
+        hdf: NDFileHDFIO,
         path_provider: PathProvider,
         name_provider: NameProvider,
         shape_provider: ShapeProvider,

@@ -39,7 +39,7 @@ class PilatusDetector(StandardDetector):
         name: str = "",
     ):
         self.drv = PilatusDriverIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             PilatusController(self.drv, readout_time=readout_time.value),

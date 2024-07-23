@@ -13,7 +13,7 @@ class SimDetector(StandardDetector):
     def __init__(
         self,
         drv: adcore.ADBase,
-        hdf: adcore.NDFileHDF,
+        hdf: adcore.NDFileHDFIO,
         path_provider: PathProvider,
         name: str = "",
         config_sigs: Sequence[SignalR] = (),

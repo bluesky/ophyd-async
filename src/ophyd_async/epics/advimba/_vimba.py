@@ -24,7 +24,7 @@ class VimbaDetector(StandardDetector, HasHints):
         name="",
     ):
         self.drv = VimbaDriverIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             VimbaController(self.drv),

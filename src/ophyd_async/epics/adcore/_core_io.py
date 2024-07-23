@@ -68,7 +68,7 @@ class Compression(str, Enum):
     jpeg = "JPEG"
 
 
-class NDFileHDF(NDPluginBase):
+class NDFileHDFIO(NDPluginBase):
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
         self.position_mode = epics_signal_rw_rbv(bool, prefix + "PositionMode")

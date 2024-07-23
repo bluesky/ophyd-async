@@ -29,7 +29,7 @@ class AravisDetector(StandardDetector, HasHints):
         gpio_number: AravisController.GPIO_NUMBER = 1,
     ):
         self.drv = AravisDriverIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             AravisController(self.drv, gpio_number=gpio_number),

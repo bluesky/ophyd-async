@@ -61,7 +61,7 @@ class FooDetector(StandardDetector, HasHints):
     ):
         # Must be children to pick up connect
         self.drv = FooDriver(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             FooController(self.drv),
