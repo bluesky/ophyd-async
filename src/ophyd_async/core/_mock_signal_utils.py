@@ -8,11 +8,12 @@ from ._utils import T
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    assert isinstance(signal._backend, MockSignalBackend), (
+    backend = signal.get_backend()
+    assert isinstance(backend, MockSignalBackend), (
         "Expected to receive a `MockSignalBackend`, instead "
-        f" received {type(signal._backend)}. "
+        f" received {type(backend)}. "
     )
-    return signal._backend
+    return backend
 
 
 def set_mock_value(signal: Signal[T], value: T):

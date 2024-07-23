@@ -110,6 +110,9 @@ class Signal(Device, Generic[T]):
         ), "this assert is for type analysis and will never fail"
         await self._connect_task
 
+    def get_backend(self) -> SignalBackend:
+        return self._backend
+
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
