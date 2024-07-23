@@ -94,7 +94,7 @@ async def test_can_collect(
     test_advimba: advimba.VimbaDetector, static_path_provider: PathProvider
 ):
     path_info = static_path_provider()
-    full_file_name = path_info.root / path_info.resource_dir / "foo.h5"
+    full_file_name = path_info.resource_path / "foo.h5"
     set_mock_value(test_advimba.hdf.full_file_name, str(full_file_name))
     set_mock_value(test_advimba._writer.hdf.file_path_exists, True)
     set_mock_value(test_advimba._writer.hdf.capture, True)
