@@ -32,8 +32,7 @@ ophyd\_async.core.PathInfo
    .. autosummary::
    
       ~PathInfo.create_dir_depth
-      ~PathInfo.root
-      ~PathInfo.resource_dir
+      ~PathInfo.directory_path
       ~PathInfo.filename
    
    

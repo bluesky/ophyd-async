@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.PathInfo &#8212; ophyd-async 0.5.1.dev2+g52f734a2 documentation</title>
+    <title>ophyd_async.core.PathInfo &#8212; ophyd-async 0.5.1.dev3+g955414ab documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=7a8be2d6"></script>
+    <script src="../_static/documentation_options.js?v=cc53a828"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -710,19 +710,13 @@ may change API on minor release numbers before then</p>
 <h1>ophyd_async.core.PathInfo<a class="headerlink" href="#ophyd-async-core-pathinfo" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.PathInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">PathInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_dir_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_providers.html#PathInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.PathInfo" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">PathInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_dir_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_providers.html#PathInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.PathInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Information about where and how to write a file.</p>
-<p>The bluesky event model splits the URI for a resource into two segments to aid in
-different applications mounting filesystems at different mount points.
-The portion of this path which is relevant only for the writer is the ‘root’,
-while the path from an agreed upon mutual mounting is the resource_path.
-The resource_dir is used with the filename to construct the resource_path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>root</strong> – Path of a root directory, relevant only for the file writer</p></li>
-<li><p><strong>resource_dir</strong> – Directory into which files should be written, relative to root</p></li>
+<li><p><strong>directory_path</strong> – Directory into which files should be written</p></li>
 <li><p><strong>filename</strong> – Base filename to use generated by FilenameProvider, w/o extension</p></li>
 <li><p><strong>create_dir_depth</strong> – Optional depth of directories to create if they do not
 exist</p></li>
@@ -741,26 +735,18 @@ exist</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.PathInfo.create_dir_depth" title="ophyd_async.core.PathInfo.create_dir_depth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dir_depth</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.PathInfo.root" title="ophyd_async.core.PathInfo.root"><code class="xref py py-obj docutils literal notranslate"><span class="pre">root</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.PathInfo.directory_path" title="ophyd_async.core.PathInfo.directory_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">directory_path</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.PathInfo.resource_dir" title="ophyd_async.core.PathInfo.resource_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resource_dir</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.PathInfo.filename" title="ophyd_async.core.PathInfo.filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filename</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.PathInfo.filename" title="ophyd_async.core.PathInfo.filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filename</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.core.PathInfo.root">
-<span class="sig-name descname"><span class="pre">root</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></em><a class="headerlink" href="#ophyd_async.core.PathInfo.root" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.core.PathInfo.resource_dir">
-<span class="sig-name descname"><span class="pre">resource_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></em><a class="headerlink" href="#ophyd_async.core.PathInfo.resource_dir" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.core.PathInfo.directory_path">
+<span class="sig-name descname"><span class="pre">directory_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></em><a class="headerlink" href="#ophyd_async.core.PathInfo.directory_path" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -824,8 +810,7 @@ exist</p></li>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.PathInfo"><code class="docutils literal notranslate"><span class="pre">PathInfo</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.PathInfo.root"><code class="docutils literal notranslate"><span class="pre">PathInfo.root</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.PathInfo.resource_dir"><code class="docutils literal notranslate"><span class="pre">PathInfo.resource_dir</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.PathInfo.directory_path"><code class="docutils literal notranslate"><span class="pre">PathInfo.directory_path</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.PathInfo.filename"><code class="docutils literal notranslate"><span class="pre">PathInfo.filename</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.PathInfo.create_dir_depth"><code class="docutils literal notranslate"><span class="pre">PathInfo.create_dir_depth</span></code></a></li>
 </ul>
