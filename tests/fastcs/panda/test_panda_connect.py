@@ -14,7 +14,7 @@ from ophyd_async.core import (
     NotConnected,
 )
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
-from ophyd_async.epics.pvi._pvi import _PVIEntry  # Allow as edge case for typing
+from ophyd_async.epics.pvi._pvi import _PVIEntry  # noqa
 from ophyd_async.fastcs.panda import (
     PcapBlock,
     PulseBlock,
