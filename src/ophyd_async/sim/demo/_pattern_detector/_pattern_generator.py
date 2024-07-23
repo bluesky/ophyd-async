@@ -166,7 +166,7 @@ class PatternGenerator:
 
     def _get_new_path(self, path_provider: PathProvider) -> Path:
         info = path_provider(device_name="pattern")
-        new_path: Path = info.resource_path / info.filename
+        new_path: Path = info.directory_path / info.filename
         return new_path
 
     async def collect_stream_docs(

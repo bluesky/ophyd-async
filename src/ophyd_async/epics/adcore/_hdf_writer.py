@@ -44,7 +44,7 @@ class ADHDFWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None
         info = self._path_provider(device_name=self.hdf.name)
-        file_path = info.resource_path
+        file_path = info.directory_path
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
