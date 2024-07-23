@@ -1,0 +1,87 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adpilatus.PilatusTriggerMode
+===============================================
+
+.. currentmodule:: ophyd_async.epics.adpilatus
+
+.. autoclass:: PilatusTriggerMode
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PilatusTriggerMode.encode
+      ~PilatusTriggerMode.replace
+      ~PilatusTriggerMode.split
+      ~PilatusTriggerMode.rsplit
+      ~PilatusTriggerMode.join
+      ~PilatusTriggerMode.capitalize
+      ~PilatusTriggerMode.casefold
+      ~PilatusTriggerMode.title
+      ~PilatusTriggerMode.center
+      ~PilatusTriggerMode.count
+      ~PilatusTriggerMode.expandtabs
+      ~PilatusTriggerMode.find
+      ~PilatusTriggerMode.partition
+      ~PilatusTriggerMode.index
+      ~PilatusTriggerMode.ljust
+      ~PilatusTriggerMode.lower
+      ~PilatusTriggerMode.lstrip
+      ~PilatusTriggerMode.rfind
+      ~PilatusTriggerMode.rindex
+      ~PilatusTriggerMode.rjust
+      ~PilatusTriggerMode.rstrip
+      ~PilatusTriggerMode.rpartition
+      ~PilatusTriggerMode.splitlines
+      ~PilatusTriggerMode.strip
+      ~PilatusTriggerMode.swapcase
+      ~PilatusTriggerMode.translate
+      ~PilatusTriggerMode.upper
+      ~PilatusTriggerMode.startswith
+      ~PilatusTriggerMode.endswith
+      ~PilatusTriggerMode.removeprefix
+      ~PilatusTriggerMode.removesuffix
+      ~PilatusTriggerMode.isascii
+      ~PilatusTriggerMode.islower
+      ~PilatusTriggerMode.isupper
+      ~PilatusTriggerMode.istitle
+      ~PilatusTriggerMode.isspace
+      ~PilatusTriggerMode.isdecimal
+      ~PilatusTriggerMode.isdigit
+      ~PilatusTriggerMode.isnumeric
+      ~PilatusTriggerMode.isalpha
+      ~PilatusTriggerMode.isalnum
+      ~PilatusTriggerMode.isidentifier
+      ~PilatusTriggerMode.isprintable
+      ~PilatusTriggerMode.zfill
+      ~PilatusTriggerMode.format
+      ~PilatusTriggerMode.format_map
+      ~PilatusTriggerMode.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PilatusTriggerMode.internal
+      ~PilatusTriggerMode.ext_enable
+      ~PilatusTriggerMode.ext_trigger
+      ~PilatusTriggerMode.mult_trigger
+      ~PilatusTriggerMode.alignment
+   
+   

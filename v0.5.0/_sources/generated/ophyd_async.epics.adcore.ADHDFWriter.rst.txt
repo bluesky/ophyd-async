@@ -1,0 +1,41 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.ADHDFWriter
+=====================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: ADHDFWriter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ADHDFWriter.close
+      ~ADHDFWriter.collect_stream_docs
+      ~ADHDFWriter.get_indices_written
+      ~ADHDFWriter.observe_indices_written
+      ~ADHDFWriter.open
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ADHDFWriter.hints
+   
+   

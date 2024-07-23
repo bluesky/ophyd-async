@@ -1,0 +1,45 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.signal.PvaSignalBackend
+==========================================
+
+.. currentmodule:: ophyd_async.epics.signal
+
+.. autoclass:: PvaSignalBackend
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PvaSignalBackend.connect
+      ~PvaSignalBackend.get_datakey
+      ~PvaSignalBackend.get_reading
+      ~PvaSignalBackend.get_setpoint
+      ~PvaSignalBackend.get_value
+      ~PvaSignalBackend.put
+      ~PvaSignalBackend.set_callback
+      ~PvaSignalBackend.source
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PvaSignalBackend.ctxt
+      ~PvaSignalBackend.datatype
+   
+   

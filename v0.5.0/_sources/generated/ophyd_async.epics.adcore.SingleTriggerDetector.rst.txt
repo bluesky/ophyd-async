@@ -1,0 +1,52 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.SingleTriggerDetector
+===============================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: SingleTriggerDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SingleTriggerDetector.add_children_as_readables
+      ~SingleTriggerDetector.add_readables
+      ~SingleTriggerDetector.children
+      ~SingleTriggerDetector.connect
+      ~SingleTriggerDetector.describe
+      ~SingleTriggerDetector.describe_configuration
+      ~SingleTriggerDetector.read
+      ~SingleTriggerDetector.read_configuration
+      ~SingleTriggerDetector.set_name
+      ~SingleTriggerDetector.set_readable_signals
+      ~SingleTriggerDetector.stage
+      ~SingleTriggerDetector.trigger
+      ~SingleTriggerDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SingleTriggerDetector.hints
+      ~SingleTriggerDetector.log
+      ~SingleTriggerDetector.name
+      ~SingleTriggerDetector.parent
+   
+   

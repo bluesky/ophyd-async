@@ -1,0 +1,84 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.fastcs.panda.PandaHdf5DatasetType
+==============================================
+
+.. currentmodule:: ophyd_async.fastcs.panda
+
+.. autoclass:: PandaHdf5DatasetType
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PandaHdf5DatasetType.encode
+      ~PandaHdf5DatasetType.replace
+      ~PandaHdf5DatasetType.split
+      ~PandaHdf5DatasetType.rsplit
+      ~PandaHdf5DatasetType.join
+      ~PandaHdf5DatasetType.capitalize
+      ~PandaHdf5DatasetType.casefold
+      ~PandaHdf5DatasetType.title
+      ~PandaHdf5DatasetType.center
+      ~PandaHdf5DatasetType.count
+      ~PandaHdf5DatasetType.expandtabs
+      ~PandaHdf5DatasetType.find
+      ~PandaHdf5DatasetType.partition
+      ~PandaHdf5DatasetType.index
+      ~PandaHdf5DatasetType.ljust
+      ~PandaHdf5DatasetType.lower
+      ~PandaHdf5DatasetType.lstrip
+      ~PandaHdf5DatasetType.rfind
+      ~PandaHdf5DatasetType.rindex
+      ~PandaHdf5DatasetType.rjust
+      ~PandaHdf5DatasetType.rstrip
+      ~PandaHdf5DatasetType.rpartition
+      ~PandaHdf5DatasetType.splitlines
+      ~PandaHdf5DatasetType.strip
+      ~PandaHdf5DatasetType.swapcase
+      ~PandaHdf5DatasetType.translate
+      ~PandaHdf5DatasetType.upper
+      ~PandaHdf5DatasetType.startswith
+      ~PandaHdf5DatasetType.endswith
+      ~PandaHdf5DatasetType.removeprefix
+      ~PandaHdf5DatasetType.removesuffix
+      ~PandaHdf5DatasetType.isascii
+      ~PandaHdf5DatasetType.islower
+      ~PandaHdf5DatasetType.isupper
+      ~PandaHdf5DatasetType.istitle
+      ~PandaHdf5DatasetType.isspace
+      ~PandaHdf5DatasetType.isdecimal
+      ~PandaHdf5DatasetType.isdigit
+      ~PandaHdf5DatasetType.isnumeric
+      ~PandaHdf5DatasetType.isalpha
+      ~PandaHdf5DatasetType.isalnum
+      ~PandaHdf5DatasetType.isidentifier
+      ~PandaHdf5DatasetType.isprintable
+      ~PandaHdf5DatasetType.zfill
+      ~PandaHdf5DatasetType.format
+      ~PandaHdf5DatasetType.format_map
+      ~PandaHdf5DatasetType.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PandaHdf5DatasetType.FLOAT_64
+      ~PandaHdf5DatasetType.UINT_32
+   
+   

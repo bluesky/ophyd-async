@@ -1,0 +1,6 @@
+ophyd\_async.core.callback\_on\_mock\_put
+=========================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: callback_on_mock_put

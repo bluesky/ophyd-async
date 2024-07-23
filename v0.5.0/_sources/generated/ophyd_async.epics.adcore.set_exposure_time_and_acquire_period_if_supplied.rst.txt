@@ -1,0 +1,6 @@
+ophyd\_async.epics.adcore.set\_exposure\_time\_and\_acquire\_period\_if\_supplied
+=================================================================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autofunction:: set_exposure_time_and_acquire_period_if_supplied

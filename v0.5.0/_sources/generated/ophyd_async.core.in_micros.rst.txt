@@ -1,0 +1,6 @@
+ophyd\_async.core.in\_micros
+============================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: in_micros

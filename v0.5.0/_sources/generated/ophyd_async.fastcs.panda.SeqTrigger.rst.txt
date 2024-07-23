@@ -1,0 +1,95 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.fastcs.panda.SeqTrigger
+====================================
+
+.. currentmodule:: ophyd_async.fastcs.panda
+
+.. autoclass:: SeqTrigger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SeqTrigger.encode
+      ~SeqTrigger.replace
+      ~SeqTrigger.split
+      ~SeqTrigger.rsplit
+      ~SeqTrigger.join
+      ~SeqTrigger.capitalize
+      ~SeqTrigger.casefold
+      ~SeqTrigger.title
+      ~SeqTrigger.center
+      ~SeqTrigger.count
+      ~SeqTrigger.expandtabs
+      ~SeqTrigger.find
+      ~SeqTrigger.partition
+      ~SeqTrigger.index
+      ~SeqTrigger.ljust
+      ~SeqTrigger.lower
+      ~SeqTrigger.lstrip
+      ~SeqTrigger.rfind
+      ~SeqTrigger.rindex
+      ~SeqTrigger.rjust
+      ~SeqTrigger.rstrip
+      ~SeqTrigger.rpartition
+      ~SeqTrigger.splitlines
+      ~SeqTrigger.strip
+      ~SeqTrigger.swapcase
+      ~SeqTrigger.translate
+      ~SeqTrigger.upper
+      ~SeqTrigger.startswith
+      ~SeqTrigger.endswith
+      ~SeqTrigger.removeprefix
+      ~SeqTrigger.removesuffix
+      ~SeqTrigger.isascii
+      ~SeqTrigger.islower
+      ~SeqTrigger.isupper
+      ~SeqTrigger.istitle
+      ~SeqTrigger.isspace
+      ~SeqTrigger.isdecimal
+      ~SeqTrigger.isdigit
+      ~SeqTrigger.isnumeric
+      ~SeqTrigger.isalpha
+      ~SeqTrigger.isalnum
+      ~SeqTrigger.isidentifier
+      ~SeqTrigger.isprintable
+      ~SeqTrigger.zfill
+      ~SeqTrigger.format
+      ~SeqTrigger.format_map
+      ~SeqTrigger.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SeqTrigger.IMMEDIATE
+      ~SeqTrigger.BITA_0
+      ~SeqTrigger.BITA_1
+      ~SeqTrigger.BITB_0
+      ~SeqTrigger.BITB_1
+      ~SeqTrigger.BITC_0
+      ~SeqTrigger.BITC_1
+      ~SeqTrigger.POSA_GT
+      ~SeqTrigger.POSA_LT
+      ~SeqTrigger.POSB_GT
+      ~SeqTrigger.POSB_LT
+      ~SeqTrigger.POSC_GT
+      ~SeqTrigger.POSC_LT
+   
+   

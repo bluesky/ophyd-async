@@ -1,0 +1,41 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adpilatus.PilatusDriverIO
+============================================
+
+.. currentmodule:: ophyd_async.epics.adpilatus
+
+.. autoclass:: PilatusDriverIO
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PilatusDriverIO.children
+      ~PilatusDriverIO.connect
+      ~PilatusDriverIO.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PilatusDriverIO.log
+      ~PilatusDriverIO.name
+      ~PilatusDriverIO.parent
+   
+   

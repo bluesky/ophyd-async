@@ -1,0 +1,85 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.ImageMode
+===================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: ImageMode
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ImageMode.encode
+      ~ImageMode.replace
+      ~ImageMode.split
+      ~ImageMode.rsplit
+      ~ImageMode.join
+      ~ImageMode.capitalize
+      ~ImageMode.casefold
+      ~ImageMode.title
+      ~ImageMode.center
+      ~ImageMode.count
+      ~ImageMode.expandtabs
+      ~ImageMode.find
+      ~ImageMode.partition
+      ~ImageMode.index
+      ~ImageMode.ljust
+      ~ImageMode.lower
+      ~ImageMode.lstrip
+      ~ImageMode.rfind
+      ~ImageMode.rindex
+      ~ImageMode.rjust
+      ~ImageMode.rstrip
+      ~ImageMode.rpartition
+      ~ImageMode.splitlines
+      ~ImageMode.strip
+      ~ImageMode.swapcase
+      ~ImageMode.translate
+      ~ImageMode.upper
+      ~ImageMode.startswith
+      ~ImageMode.endswith
+      ~ImageMode.removeprefix
+      ~ImageMode.removesuffix
+      ~ImageMode.isascii
+      ~ImageMode.islower
+      ~ImageMode.isupper
+      ~ImageMode.istitle
+      ~ImageMode.isspace
+      ~ImageMode.isdecimal
+      ~ImageMode.isdigit
+      ~ImageMode.isnumeric
+      ~ImageMode.isalpha
+      ~ImageMode.isalnum
+      ~ImageMode.isidentifier
+      ~ImageMode.isprintable
+      ~ImageMode.zfill
+      ~ImageMode.format
+      ~ImageMode.format_map
+      ~ImageMode.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ImageMode.single
+      ~ImageMode.multiple
+      ~ImageMode.continuous
+   
+   
