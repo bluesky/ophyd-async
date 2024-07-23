@@ -5,6 +5,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DetectorControl,
+    ShapeProvider,
     set_and_wait_for_value,
 )
 
@@ -15,6 +16,18 @@ from ._core_io import ADBaseIO, DetectorState
 DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
     [DetectorState.Idle, DetectorState.Aborted]
 )
+
+class ADBaseShapeProvider(ShapeProvider):
+    def __init__(self, driver: ADBaseIO) -> None:
+        self._driver = driver
+
+    async def __call__(self) -> tuple:
+        shape = await asyncio.gather(
+            self._driver.array_size_y.get_value(),
+            self._driver.array_size_x.get_value(),
+            self._driver.data_type.get_value(),
+        )
+        return shape
 
 
 async def set_exposure_time_and_acquire_period_if_supplied(

@@ -1,7 +1,6 @@
-import asyncio
+
 from enum import Enum
 
-from ophyd_async.core import ShapeProvider
 from ophyd_async.epics.signal import (
     epics_signal_r,
     epics_signal_rw,
@@ -42,19 +41,6 @@ class ADBaseIO(NDArrayBase):
             DetectorState, prefix + "DetectorState_RBV"
         )
         super().__init__(prefix, name=name)
-
-
-class ADBaseShapeProvider(ShapeProvider):
-    def __init__(self, driver: ADBaseIO) -> None:
-        self._driver = driver
-
-    async def __call__(self) -> tuple:
-        shape = await asyncio.gather(
-            self._driver.array_size_y.get_value(),
-            self._driver.array_size_x.get_value(),
-            self._driver.data_type.get_value(),
-        )
-        return shape
 
 
 class Compression(str, Enum):
