@@ -7,8 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .mover import Mover, SampleStage
-from .sensor import EnergyMode, Sensor, SensorGroup
+from ._mover import Mover, SampleStage
+from ._sensor import EnergyMode, Sensor, SensorGroup
 
 __all__ = [
     "Mover",
