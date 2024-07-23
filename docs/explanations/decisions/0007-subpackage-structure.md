@@ -44,7 +44,7 @@ Epics modules consist of 2 sorts of classes:
 
 There should be an additional level of packages that correspond to the epics support module, and contain classes that map to the EPICS database and logic classes e.g.:
 
-- `epics.signal`: containing `epics_signal_rw`, `EpicsTransport`, `CaSignalBackend`, etc.
+- `epics.signal`: containing `epics_signal_rw`, `CaSignalBackend`, etc.
 - `epics.adcore`: containing `ADDriverIO`, `NDFileHdfIO`, `ADHdfWriter` etc. 
 - `epics.adpilatus`: containing `ADPilatusIO`, `PilatusControl` etc.
 
@@ -85,10 +85,10 @@ There will be some planstubs for shared setup that may reach across modules like
 ### sim
 
 There will be 2 subpackages:
-- `sim.demo` for demo devices like `SimPatternDetector` and `SimMotor` used in tutorials.
+- `sim.demo` for demo devices like `PatternDetector` and `SimMotor` used in tutorials.
 - `sim.testing` for devices that will support tests in `ophyd-async` and `bluesky`. Some test fixtures could be moved here
 
-There should probably be one file per Device, in an underscore prefixed file reimported into the public namespace, e.g. `demo/_sim_motor.py` and `demo/_sim_pattern_detector.py`.
+There should probably be one file per Device, in an underscore prefixed file reimported into the public namespace, e.g. `demo/_sim_motor.py` and `demo/_pattern_detector.py`.
 
 ## Consequences
 
