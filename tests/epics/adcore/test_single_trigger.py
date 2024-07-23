@@ -9,7 +9,7 @@ from ophyd_async.epics import adcore
 @pytest.fixture
 async def single_trigger_det():
     async with DeviceCollector(mock=True):
-        stats = adcore.NDPluginStats("PREFIX:STATS")
+        stats = adcore.NDPluginStatsIO("PREFIX:STATS")
         det = adcore.SingleTriggerDetector(
             drv=adcore.ADBase("PREFIX:DRV"),
             stats=stats,

@@ -67,5 +67,5 @@ class NDPluginBase(NDArrayBase):
         super().__init__(prefix, name)
 
 
-class NDPluginStats(NDPluginBase):
+class NDPluginStatsIO(NDPluginBase):
     pass

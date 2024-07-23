@@ -5,7 +5,7 @@ from ._core_logic import (
     start_acquiring_driver_and_ensure_status,
 )
 from ._hdf_writer import ADHDFWriter
-from ._nd_plugin import ADBaseDataType, NDPluginStats
+from ._nd_plugin import ADBaseDataType, NDPluginStatsIO
 from ._single_trigger import SingleTriggerDetector
 from ._utils import (
     FileWriteMode,
@@ -25,7 +25,7 @@ __all__ = [
     "start_acquiring_driver_and_ensure_status",
     "ADHDFWriter",
     "ADBaseDataType",
-    "NDPluginStats",
+    "NDPluginStatsIO",
     "SingleTriggerDetector",
     "FileWriteMode",
     "ImageMode",
