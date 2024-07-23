@@ -6,10 +6,9 @@ import numpy as np
 import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core.device import DeviceCollector
-from ophyd_async.core.signal import assert_emitted
-from ophyd_async.epics.motion import motor
-from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
+from ophyd_async.core import DeviceCollector, assert_emitted
+from ophyd_async.epics import motor
+from ophyd_async.sim.demo import PatternDetector
 
 
 @pytest.fixture
@@ -20,7 +19,7 @@ async def sim_motor():
 
 
 async def test_sim_pattern_detector_initialization(
-    sim_pattern_detector: SimPatternDetector,
+    sim_pattern_detector: PatternDetector,
 ):
     assert (
         sim_pattern_detector.pattern_generator
@@ -28,14 +27,14 @@ async def test_sim_pattern_detector_initialization(
 
 
 async def test_detector_creates_controller_and_writer(
-    sim_pattern_detector: SimPatternDetector,
+    sim_pattern_detector: PatternDetector,
 ):
     assert sim_pattern_detector.writer
     assert sim_pattern_detector.controller
 
 
 async def test_writes_pattern_to_file(
-    sim_pattern_detector: SimPatternDetector,
+    sim_pattern_detector: PatternDetector,
     RE: RunEngine,
 ):
     # assert that the file contains data in expected dimensions
