@@ -31,7 +31,7 @@ def _transport_pv(pv: str) -> Tuple[_EpicsTransport, str]:
     return transport, pv
 
 
-def epics_signal_backend(
+def _epics_signal_backend(
     datatype: Optional[Type[T]], read_pv: str, write_pv: str
 ) -> SignalBackend[T]:
     """Create an epics signal backend."""
@@ -55,7 +55,7 @@ def epics_signal_rw(
     write_pv:
         If given, use this PV to write to, otherwise use read_pv
     """
-    backend = epics_signal_backend(datatype, read_pv, write_pv or read_pv)
+    backend = _epics_signal_backend(datatype, read_pv, write_pv or read_pv)
     return SignalRW(backend, name=name)
 
 
@@ -86,7 +86,7 @@ def epics_signal_r(datatype: Type[T], read_pv: str, name: str = "") -> SignalR[T
     read_pv:
         The PV to read and monitor
     """
-    backend = epics_signal_backend(datatype, read_pv, read_pv)
+    backend = _epics_signal_backend(datatype, read_pv, read_pv)
     return SignalR(backend, name=name)
 
 
@@ -100,7 +100,7 @@ def epics_signal_w(datatype: Type[T], write_pv: str, name: str = "") -> SignalW[
     write_pv:
         The PV to write to
     """
-    backend = epics_signal_backend(datatype, write_pv, write_pv)
+    backend = _epics_signal_backend(datatype, write_pv, write_pv)
     return SignalW(backend, name=name)
 
 
@@ -112,5 +112,5 @@ def epics_signal_x(write_pv: str, name: str = "") -> SignalX:
     write_pv:
         The PV to write its initial value to on trigger
     """
-    backend: SignalBackend = epics_signal_backend(None, write_pv, write_pv)
+    backend: SignalBackend = _epics_signal_backend(None, write_pv, write_pv)
     return SignalX(backend, name=name)
