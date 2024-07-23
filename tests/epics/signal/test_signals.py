@@ -38,7 +38,7 @@ from ophyd_async.epics.signal import (
     epics_signal_w,
     epics_signal_x,
 )
-from ophyd_async.epics.signal._epics_transport import EpicsTransport
+from ophyd_async.epics.signal._epics_transport import _EpicsTransport  # noqa
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
@@ -55,7 +55,7 @@ class IOC:
         # Calculate the pv
         pv = f"{PV_PREFIX}:{self.protocol}:{suff}"
         # Make and connect the backend
-        cls = EpicsTransport[self.protocol].value
+        cls = _EpicsTransport[self.protocol].value
         backend = cls(typ, pv, pv)
         if connect:
             await asyncio.wait_for(backend.connect(), 10)

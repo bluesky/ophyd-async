@@ -22,7 +22,7 @@ except ImportError as pva_error:
             raise NotImplementedError("PVA support not available") from pva_error
 
 
-class EpicsTransport(Enum):
+class _EpicsTransport(Enum):
     """The sorts of transport EPICS support"""
 
     #: Use Channel Access (using aioca library)

@@ -14,17 +14,17 @@ from ophyd_async.core import (
     get_unique,
 )
 
-from ._epics_transport import EpicsTransport
+from ._epics_transport import _EpicsTransport
 
-_default_epics_transport = EpicsTransport.ca
+_default_epics_transport = _EpicsTransport.ca
 
 
-def _transport_pv(pv: str) -> Tuple[EpicsTransport, str]:
+def _transport_pv(pv: str) -> Tuple[_EpicsTransport, str]:
     split = pv.split("://", 1)
     if len(split) > 1:
         # We got something like pva://mydevice, so use specified comms mode
         transport_str, pv = split
-        transport = EpicsTransport[transport_str]
+        transport = _EpicsTransport[transport_str]
     else:
         # No comms mode specified, use the default
         transport = _default_epics_transport
