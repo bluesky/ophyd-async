@@ -11,7 +11,7 @@ async def single_trigger_det():
     async with DeviceCollector(mock=True):
         stats = adcore.NDPluginStatsIO("PREFIX:STATS")
         det = adcore.SingleTriggerDetector(
-            drv=adcore.ADBase("PREFIX:DRV"),
+            drv=adcore.ADBaseIO("PREFIX:DRV"),
             stats=stats,
             read_uncached=[stats.unique_id],
         )

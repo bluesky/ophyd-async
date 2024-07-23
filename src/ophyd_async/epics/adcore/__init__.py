@@ -1,4 +1,4 @@
-from ._core_io import ADBase, ADBaseShapeProvider, DetectorState, NDFileHDFIO
+from ._core_io import ADBaseIO, ADBaseShapeProvider, DetectorState, NDFileHDFIO
 from ._core_logic import (
     DEFAULT_GOOD_STATES,
     set_exposure_time_and_acquire_period_if_supplied,
@@ -16,7 +16,7 @@ from ._utils import (
 )
 
 __all__ = [
-    "ADBase",
+    "ADBaseIO",
     "ADBaseShapeProvider",
     "DetectorState",
     "NDFileHDFIO",

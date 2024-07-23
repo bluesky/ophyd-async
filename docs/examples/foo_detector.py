@@ -14,7 +14,7 @@ from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
-class FooDriver(adcore.ADBase):
+class FooDriver(adcore.ADBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.trigger_mode = epics_signal_rw_rbv(str, prefix + "TriggerMode")
         super().__init__(prefix, name)

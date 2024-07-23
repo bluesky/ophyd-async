@@ -55,7 +55,7 @@ class DummyController(DetectorControl):
 @pytest.fixture
 def controller(RE) -> adsimdetector.SimController:
     with DeviceCollector(mock=True):
-        drv = adcore.ADBase("DRV")
+        drv = adcore.ADBaseIO("DRV")
 
     return adsimdetector.SimController(drv)
 

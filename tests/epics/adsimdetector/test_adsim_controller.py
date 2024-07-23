@@ -9,7 +9,7 @@ from ophyd_async.epics import adcore, adsimdetector
 @pytest.fixture
 async def ad(RE) -> adsimdetector.SimController:
     async with DeviceCollector(mock=True):
-        drv = adcore.ADBase("DRIVER:")
+        drv = adcore.ADBaseIO("DRIVER:")
         controller = adsimdetector.SimController(drv)
 
     return controller

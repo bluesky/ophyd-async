@@ -18,10 +18,10 @@ Writing an AreaDetector StandardDetector
 For an AreaDetector implementation of the StandardDetector, two entity objects which are subdevices of the `StandardDetector` are used to map to AreaDetector plugins:
 
 - An NDPluginFile instance (for :py:class:`ADHDFWriter` an instance of :py:class:`NDFileHDFIO`)
-- An :py:class:`ADBase` instance mapping to NDArray for the "driver" of the detector implementation
+- An :py:class:`ADBaseIO` instance mapping to NDArray for the "driver" of the detector implementation
 
 
-Define a :py:class:`FooDriver` if the NDArray requires fields in addition to those on :py:class:`ADBase` to be exposed. It should extend :py:class:`ADBase`.
+Define a :py:class:`FooDriver` if the NDArray requires fields in addition to those on :py:class:`ADBaseIO` to be exposed. It should extend :py:class:`ADBaseIO`.
 Enumeration fields should be named to prevent namespace collision, i.e. for a Signal named "TriggerSource" use the enum "FooTriggerSource"
 
 .. literalinclude:: ../examples/foo_detector.py

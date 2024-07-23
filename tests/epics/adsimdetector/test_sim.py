@@ -29,7 +29,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     dp = StaticPathProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
-        drv = adcore.ADBase(f"{prefix}DRV:", name="drv")
+        drv = adcore.ADBaseIO(f"{prefix}DRV:", name="drv")
         hdf = adcore.NDFileHDFIO(f"{prefix}HDF:")
         det = adsimdetector.SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
@@ -288,9 +288,9 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(
     RE, static_filename_provider: StaticFilenameProvider, tmp_path: Path
 ):
     dp = StaticPathProvider(static_filename_provider, tmp_path)
-    drv = adcore.ADBase("FOO:DRV:")
+    drv = adcore.ADBaseIO("FOO:DRV:")
 
-    some_other_driver = adcore.ADBase("TEST")
+    some_other_driver = adcore.ADBaseIO("TEST")
 
     async with DeviceCollector(mock=True):
         hdf = adcore.NDFileHDFIO("FOO:HDF:")

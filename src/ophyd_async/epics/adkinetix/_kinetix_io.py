@@ -16,7 +16,7 @@ class KinetixReadoutMode(str, Enum):
     dynamic_range = 3
 
 
-class KinetixDriverIO(adcore.ADBase):
+class KinetixDriverIO(adcore.ADBaseIO):
     """This mirrors the interface provided by ADKinetix/db/ADKinetix.template."""
 
     def __init__(self, prefix: str, name: str = "") -> None:

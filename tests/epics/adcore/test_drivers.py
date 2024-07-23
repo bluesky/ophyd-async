@@ -15,14 +15,14 @@ TEST_DEADTIME = 0.1
 
 
 @pytest.fixture
-def driver(RE) -> adcore.ADBase:
+def driver(RE) -> adcore.ADBaseIO:
     with DeviceCollector(mock=True):
-        driver = adcore.ADBase("DRV:", name="drv")
+        driver = adcore.ADBaseIO("DRV:", name="drv")
     return driver
 
 
 @pytest.fixture
-async def controller(RE, driver: adcore.ADBase) -> Mock:
+async def controller(RE, driver: adcore.ADBaseIO) -> Mock:
     controller = Mock(spec=DetectorControl)
     controller.get_deadtime.return_value = TEST_DEADTIME
     return controller
@@ -30,7 +30,7 @@ async def controller(RE, driver: adcore.ADBase) -> Mock:
 
 async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_exposure_supplied(  # noqa: E501
     controller: DetectorControl,
-    driver: adcore.ADBase,
+    driver: adcore.ADBaseIO,
 ):
     put_exposure = get_mock_put(driver.acquire_time)
     put_acquire_period = get_mock_put(driver.acquire_period)
@@ -51,7 +51,7 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_
 )
 async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
     controller: DetectorControl,
-    driver: adcore.ADBase,
+    driver: adcore.ADBaseIO,
     exposure: float,
     expected_exposure: float,
     expected_acquire_period: float,
@@ -66,7 +66,7 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
 
 
 async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
-    driver: adcore.ADBase,
+    driver: adcore.ADBaseIO,
 ):
     set_mock_value(driver.detector_state, adcore.DetectorState.Error)
     acquiring = await adcore.start_acquiring_driver_and_ensure_status(
@@ -77,7 +77,7 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
 
 
 async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
-    driver: adcore.ADBase,
+    driver: adcore.ADBaseIO,
 ):
     """This test ensures a failing status is captured halfway through acquisition.
 

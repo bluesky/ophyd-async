@@ -45,7 +45,7 @@ class VimbaExposeOutMode(str, Enum):
     trigger_width = "TriggerWidth"  # Expose for length of high signal
 
 
-class VimbaDriverIO(adcore.ADBase):
+class VimbaDriverIO(adcore.ADBaseIO):
     """This mirrors the interface provided by ADVimba/db/vimba.template."""
 
     def __init__(self, prefix: str, name: str = "") -> None:

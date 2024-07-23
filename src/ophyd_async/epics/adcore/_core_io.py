@@ -31,7 +31,7 @@ class DetectorState(str, Enum):
     Aborted = "Aborted"
 
 
-class ADBase(NDArrayBase):
+class ADBaseIO(NDArrayBase):
     def __init__(self, prefix: str, name: str = "") -> None:
         # Define some signals
         self.acquire_time = epics_signal_rw_rbv(float, prefix + "AcquireTime")
@@ -45,7 +45,7 @@ class ADBase(NDArrayBase):
 
 
 class ADBaseShapeProvider(ShapeProvider):
-    def __init__(self, driver: ADBase) -> None:
+    def __init__(self, driver: ADBaseIO) -> None:
         self._driver = driver
 
     async def __call__(self) -> tuple:

@@ -18,7 +18,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     dp = StaticPathProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
-        drv = adcore.ADBase(f"{prefix}DRV:")
+        drv = adcore.ADBaseIO(f"{prefix}DRV:")
         hdf = adcore.NDFileHDFIO(f"{prefix}HDF:")
         det = adsimdetector.SimDetector(
             drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name

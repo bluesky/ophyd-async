@@ -22,7 +22,7 @@ class AravisTriggerMode(str, Enum):
 AravisTriggerSource = SubsetEnum["Freerun", "Line1"]
 
 
-class AravisDriverIO(adcore.ADBase):
+class AravisDriverIO(adcore.ADBaseIO):
     # If instantiating a new instance, ensure it is supported in the _deadtimes dict
     """Generic Driver supporting the Manta and Mako drivers.
     Fetches deadtime prior to use in a Streaming scan.

@@ -12,7 +12,7 @@ class PilatusTriggerMode(str, Enum):
     alignment = "Alignment"
 
 
-class PilatusDriverIO(adcore.ADBase):
+class PilatusDriverIO(adcore.ADBaseIO):
     """This mirrors the interface provided by ADPilatus/db/pilatus.template."""
 
     def __init__(self, prefix: str, name: str = "") -> None:

@@ -12,7 +12,7 @@ class SimDetector(StandardDetector):
 
     def __init__(
         self,
-        drv: adcore.ADBase,
+        drv: adcore.ADBaseIO,
         hdf: adcore.NDFileHDFIO,
         path_provider: PathProvider,
         name: str = "",

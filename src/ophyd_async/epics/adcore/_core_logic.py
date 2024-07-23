@@ -8,7 +8,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 
-from ._core_io import ADBase, DetectorState
+from ._core_io import ADBaseIO, DetectorState
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
@@ -19,7 +19,7 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
 
 async def set_exposure_time_and_acquire_period_if_supplied(
     controller: DetectorControl,
-    driver: ADBase,
+    driver: ADBaseIO,
     exposure: float | None = None,
     timeout: float = DEFAULT_TIMEOUT,
 ) -> None:
@@ -33,7 +33,7 @@ async def set_exposure_time_and_acquire_period_if_supplied(
     controller:
         Controller that can supply a deadtime.
     driver:
-        The driver to start acquiring. Must subclass ADBase.
+        The driver to start acquiring. Must subclass ADBaseIO.
     exposure:
         Desired exposure time, this is a noop if it is None.
     timeout:
@@ -48,7 +48,7 @@ async def set_exposure_time_and_acquire_period_if_supplied(
 
 
 async def start_acquiring_driver_and_ensure_status(
-    driver: ADBase,
+    driver: ADBaseIO,
     good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES),
     timeout: float = DEFAULT_TIMEOUT,
 ) -> AsyncStatus:
@@ -62,7 +62,7 @@ async def start_acquiring_driver_and_ensure_status(
     Parameters
     ----------
     driver:
-        The driver to start acquiring. Must subclass ADBase.
+        The driver to start acquiring. Must subclass ADBaseIO.
     good_states:
         set of states defined in DetectorState enum which are considered good states.
     timeout:
