@@ -176,15 +176,11 @@ async def test_two_detectors_step(
     info_a = writer_a._path_provider(device_name=writer_a.hdf.name)
     info_b = writer_b._path_provider(device_name=writer_b.hdf.name)
 
-    assert await writer_a.hdf.file_path.get_value() == str(
-        info_a.root / info_a.resource_dir
-    )
+    assert await writer_a.hdf.file_path.get_value() == info_a.directory_path
     file_name_a = await writer_a.hdf.file_name.get_value()
     assert file_name_a == info_a.filename
 
-    assert await writer_b.hdf.file_path.get_value() == str(
-        info_b.root / info_b.resource_dir
-    )
+    assert await writer_b.hdf.file_path.get_value() == info_b.directory_path
     file_name_b = await writer_b.hdf.file_name.get_value()
     assert file_name_b == info_b.filename
 
@@ -195,8 +191,12 @@ async def test_two_detectors_step(
     assert descriptor["data_keys"]["testb"]["shape"] == (769, 1025)
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
-    assert srb["uri"] == str("file://localhost") + str(info_b.root / file_name_b)
-    assert sra["uri"] == str("file://localhost") + str(info_a.root / file_name_a)
+    assert srb["uri"] == str("file://localhost") + str(
+        info_b.directory_path / file_name_b
+    )
+    assert sra["uri"] == str("file://localhost") + str(
+        info_a.directory_path / file_name_a
+    )
 
     assert event["data"] == {}
 
@@ -214,9 +214,10 @@ async def test_detector_writes_to_file(
 
     RE(count_sim([single_detector], times=3))
 
-    assert await cast(
-        adcore.ADHDFWriter, single_detector.writer
-    ).hdf.file_path.get_value() == str(tmp_path)
+    assert (
+        await cast(adcore.ADHDFWriter, single_detector.writer).hdf.file_path.get_value()
+        == tmp_path
+    )
 
     descriptor_index = names.index("descriptor")
 
