@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>4. Repository Structure &#8212; ophyd-async 0.4.1.dev3+gaf9c780f documentation</title>
+    <title>7. Sub-package Structure &#8212; ophyd-async 0.4.1.dev3+gaf9c780f documentation</title>
   
   
   
@@ -46,7 +46,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/decisions/0004-repository-structure';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/decisions/0007-subpackage-structure';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="5. Respect black line length" href="0005-respect-black-line-length.html" />
-    <link rel="prev" title="3. Ophyd Async migration" href="0003-ophyd-async-migration.html" />
+    <link rel="next" title="Design Goals" href="../design-goals.html" />
+    <link rel="prev" title="6. Procedural Device Definitions" href="0006-procedural-device-definitions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -447,10 +447,10 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="0001-record-architecture-decisions.html">1. Record architecture decisions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0002-switched-to-python-copier-template.html">2. Adopt python-copier-template for project structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0003-ophyd-async-migration.html">3. Ophyd Async migration</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">4. Repository Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0004-repository-structure.html">4. Repository Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0005-respect-black-line-length.html">5. Respect black line length</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0006-procedural-device-definitions.html">6. Procedural Device Definitions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="0007-subpackage-structure.html">7. Sub-package Structure</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">7. Sub-package Structure</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../design-goals.html">Design Goals</a></li>
@@ -499,7 +499,7 @@ document.write(`
     
     <li class="breadcrumb-item"><a href="../decisions.html" class="nav-link">Architectural Decision Records</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">4....</li>
+    <li class="breadcrumb-item active" aria-current="page">7....</li>
   </ul>
 </nav>
 </div>
@@ -516,101 +516,98 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="repository-structure">
-<h1>4. Repository Structure<a class="headerlink" href="#repository-structure" title="Link to this heading">#</a></h1>
-<p>Date: 2023-09-07</p>
+  <section id="sub-package-structure">
+<h1>7. Sub-package Structure<a class="headerlink" href="#sub-package-structure" title="Link to this heading">#</a></h1>
+<p>Date: 2024-04-22</p>
 <section id="status">
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading">#</a></h2>
-<p>Pending</p>
+<p>Accepted</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading">#</a></h2>
-<p>This repository will be a fusion between three existing code bases; Ophyd v2, ophyd-epics-devices
-and ophyd-tango-devices.</p>
-<p>Ophyd Async has been derived from a folder originally kept in the Ophyd repository.
-Initially the structure of this folder was very simple, however it has since become quite bloated.
-In the transition to moving the v2/ folder into this repository (ophyd-async), we have decided to
-structure the library in a more cohesive way, especially as this repository is now going to contain
-implementation of Ophyd Async devices for EPICS and Tango control systems.</p>
+<p><a class="reference internal" href="0004-repository-structure.html"><span class="doc std std-doc">4. Repository Structure</span></a> proposed a top level repository structure. This builds upon it, suggesting a top level structure divided into:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ophyd_async.core</span></code>: Core classes like <code class="docutils literal notranslate"><span class="pre">Device</span></code>, <code class="docutils literal notranslate"><span class="pre">Signal</span></code> and <code class="docutils literal notranslate"><span class="pre">AsyncStatus</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code>: Epics specific signals and devices</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code>: Tango specific signals and devices</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code>: FastCS (EPICS or Tango) devices like PandA</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ophyd_async.planstubs</span></code>: Plan stubs for various flyscan functionality</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code>: Simulated devices for demos and tests</p></li>
+</ul>
+<p>This ADR proposes a public sub-package structure. The internal private structure should be flat, but can change according to the number of classes in a public package.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading">#</a></h2>
-<p>This repository will be created using the python3-pip-skeleton for the Bluesky organisation.</p>
-<p>Then, <a class="reference external" href="https://github.com/newren/git-filter-repo">git-filter-repo</a> to select commits relevant
-to the following paths in the master branch of the Ophyd repository:</p>
+<section id="core">
+<h3>core<a class="headerlink" href="#core" title="Link to this heading">#</a></h3>
+<p>There will be a flat public namespace under core, with contents reimported from an underscore prefixed python files, e.g.:</p>
 <ul class="simple">
-<li><p>.git_blame_ignore_revs</p></li>
-<li><p>.gitignore</p></li>
-<li><p>.mailmap</p></li>
-<li><p>.pre-commit-config.yaml</p></li>
-<li><p>.codecov.yml</p></li>
-<li><p>LICENSE</p></li>
-<li><p>other_licenses/</p></li>
-<li><p>docs/ (all folders except user_v1)</p></li>
-<li><p><em>.</em> (glob pattern in root directory)</p></li>
-<li><p>ophyd/v2</p></li>
-<li><p>scripts/</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_status.py</span></code> for <code class="docutils literal notranslate"><span class="pre">AsyncStatus</span></code>, <code class="docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_protocol.py</span></code> for <code class="docutils literal notranslate"><span class="pre">AsyncReadable</span></code>, <code class="docutils literal notranslate"><span class="pre">AsyncStageable</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_device.py</span></code> for <code class="docutils literal notranslate"><span class="pre">Device</span></code>, <code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_signal.py</span></code> for <code class="docutils literal notranslate"><span class="pre">Signal</span></code>, <code class="docutils literal notranslate"><span class="pre">SignalBackend</span></code>, <code class="docutils literal notranslate"><span class="pre">observe_signal</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_mock.py</span></code> for <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code>, <code class="docutils literal notranslate"><span class="pre">get_mock_put</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_readable.py</span></code> for <code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code>, <code class="docutils literal notranslate"><span class="pre">ConfigSignal</span></code>, <code class="docutils literal notranslate"><span class="pre">HintedSignal</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_detector.py</span></code> for <code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code>, <code class="docutils literal notranslate"><span class="pre">DetectorWriter</span></code>, <code class="docutils literal notranslate"><span class="pre">DetectorControl</span></code>, <code class="docutils literal notranslate"><span class="pre">TriggerInfo</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_flyer.py</span></code> for <code class="docutils literal notranslate"><span class="pre">StandardFlyer</span></code>, <code class="docutils literal notranslate"><span class="pre">FlyerControl</span></code>, etc.</p></li>
 </ul>
-<p>These commits will be merged into the Ophyd Async repository. The same process should apply to
-ophyd-epics-devices and ophyd-tango-devices, except keeping all git history in these cases.</p>
-<p>During this process, the folder structure should incrementally be changed to</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ophyd-async
-├── docs (skeleton)
-├── LICENCE.txt
-├── src
-│   └── ophyd_async
-│       ├── core
-│       │   ├── __init__.py
-│       │   ├── _device
-│       │   │   ├── __init__.py
-│       │   │   ├── _backend
-│       │   │   │   ├── __init__.py
-│       │   │   │   ├── signal_backend.py
-│       │   │   │   └── sim.py
-│       │   │   ├── _signal
-│       │   │   │   ├── __init__.py
-│       │   │   │   └── signal.py
-│       │   │   ├── device_collector.py
-│       │   │   ├── device_vector.py
-│       │   │   └── ...
-│       │   ├── async_status.py
-│       │   └── utils.py
-│       ├── epics
-│       │   ├── _backend
-│       │   │   ├── __init__.py
-│       │   │   ├── _p4p.py
-│       │   │   └── _aioca.py
-│       │   ├── areadetector
-│       │   │   ├── __init__.py
-│       │   │   ├── ad_driver.py
-│       │   │   └── ...
-│       │   ├── signal
-│       │   │   └── ...
-│       │   ├── motion
-│       │   │   ├── __init__.py
-│       │   │   └── motor.py
-│       │   └── demo
-│       │       └── ...
-│       └── panda
-│           └── ...
-├── tests
-│   ├── core
-│   │   └── ...
-│   └── epics
-└── ...
+<p>There are some renames that will be required, e.g. <code class="docutils literal notranslate"><span class="pre">HardwareTriggeredFlyable</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">StandardFlyer</span></code></p>
+</section>
+<section id="epics">
+<h3>epics<a class="headerlink" href="#epics" title="Link to this heading">#</a></h3>
+<p>Epics modules consist of 2 sorts of classes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">IO</span></code> classes, which are <code class="docutils literal notranslate"><span class="pre">Device</span></code> subclasses containing <code class="docutils literal notranslate"><span class="pre">Signals</span></code> that map as closely as possible to the EPICS template hierarchy. Their name matches the EPICS template with the suffix <code class="docutils literal notranslate"><span class="pre">IO</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Control</span></code> and <code class="docutils literal notranslate"><span class="pre">Writer</span></code> classes that plug into <code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code> and <code class="docutils literal notranslate"><span class="pre">StandardFlyer</span></code> telling them which logic to use during various bluesky verbs.</p></li>
+</ul>
+<p>There should be an additional level of packages that correspond to the epics support module, and contain classes that map to the EPICS database and logic classes e.g.:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">epics.signal</span></code>: containing <code class="docutils literal notranslate"><span class="pre">epics_signal_rw</span></code>, <code class="docutils literal notranslate"><span class="pre">CaSignalBackend</span></code>, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">epics.adcore</span></code>: containing <code class="docutils literal notranslate"><span class="pre">ADDriverIO</span></code>, <code class="docutils literal notranslate"><span class="pre">NDFileHdfIO</span></code>, <code class="docutils literal notranslate"><span class="pre">ADHdfWriter</span></code> etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">epics.adpilatus</span></code>: containing <code class="docutils literal notranslate"><span class="pre">ADPilatusIO</span></code>, <code class="docutils literal notranslate"><span class="pre">PilatusControl</span></code> etc.</p></li>
+</ul>
+<p>The name of the module is the EPICS module lowercased with dashes and other special characters converted to underscores.</p>
+<p>They can be imported from modules:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ophyd_async.epics</span> <span class="kn">import</span> <span class="n">adcore</span><span class="p">,</span> <span class="n">adpilatus</span>
+
+<span class="n">drv</span> <span class="o">=</span> <span class="n">adpilatus</span><span class="o">.</span><span class="n">ADPilatusIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;DRV:&quot;</span><span class="p">)</span>
+<span class="n">hdf</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDFileHDFIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;HDF:&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <code class="code highlight bash docutils literal highlight-bash">__init__.py</code> files of each submodule (core, epics, panda and eventually tango) will
-be modified such that end users experience little disruption to how they use Ophyd Async.
-For such users, <code class="code highlight python docutils literal highlight-python"><span class="kn">from</span> <span class="nn">ophyd.v2.core</span> <span class="kn">import</span> <span class="o">...</span></code> can be replaced with
-<code class="code highlight python docutils literal highlight-python"><span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="o">...</span></code>.</p>
+<p>The structure is left to an individual module’s size. For instance <code class="docutils literal notranslate"><span class="pre">motor</span></code> will probably be a single <code class="docutils literal notranslate"><span class="pre">motor.py</span></code>, while <code class="docutils literal notranslate"><span class="pre">ADCore</span></code> will likely be an <code class="docutils literal notranslate"><span class="pre">ADCore/</span></code> directory with <code class="docutils literal notranslate"><span class="pre">_io.py</span></code>, <code class="docutils literal notranslate"><span class="pre">_writer.py</span></code>, <code class="docutils literal notranslate"><span class="pre">_control.py</span></code>.</p>
+<p>Detector modules should include a reference <code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code> subclass, but without making any site specific decisions about PV naming.</p>
+</section>
+<section id="tango">
+<h3>tango<a class="headerlink" href="#tango" title="Link to this heading">#</a></h3>
+<p>This has not been created at the time of writing, but it is envisioned that it will follow the EPICS structure where it makes sense.</p>
+</section>
+<section id="fastcs">
+<h3>fastcs<a class="headerlink" href="#fastcs" title="Link to this heading">#</a></h3>
+<p>There will be one subpackage for each FastCS Device. At the time of writing there are none of these, but PandA and Odin will shortly be converted to FastCS, so it makes sense to make:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fastcs.panda</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fastcs.odin</span></code></p></li>
+</ul>
+<p>in preparation.</p>
+<p>For PandA its namespace should contain <code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks</span></code>, <code class="docutils literal notranslate"><span class="pre">SeqBlock</span></code>, <code class="docutils literal notranslate"><span class="pre">PandaHdfWriter</span></code>, <code class="docutils literal notranslate"><span class="pre">PandaPcapController</span></code>, etc. These should be included in files like <code class="docutils literal notranslate"><span class="pre">_control.py</span></code>, <code class="docutils literal notranslate"><span class="pre">_writer.py</span></code>, <code class="docutils literal notranslate"><span class="pre">_block.py</span></code>, <code class="docutils literal notranslate"><span class="pre">_table.py</span></code> and imported into the <code class="docutils literal notranslate"><span class="pre">panda</span></code> namespace.</p>
+</section>
+<section id="planstubs">
+<h3>planstubs<a class="headerlink" href="#planstubs" title="Link to this heading">#</a></h3>
+<p>There will be some planstubs for shared setup that may reach across modules like <code class="docutils literal notranslate"><span class="pre">epics</span></code> and <code class="docutils literal notranslate"><span class="pre">fastcs/panda</span></code>, these should live in a <code class="docutils literal notranslate"><span class="pre">planstubs/</span></code> package.</p>
+</section>
+<section id="sim">
+<h3>sim<a class="headerlink" href="#sim" title="Link to this heading">#</a></h3>
+<p>There will be 2 subpackages:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sim.demo</span></code> for demo devices like <code class="docutils literal notranslate"><span class="pre">PatternDetector</span></code> and <code class="docutils literal notranslate"><span class="pre">SimMotor</span></code> used in tutorials.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sim.testing</span></code> for devices that will support tests in <code class="docutils literal notranslate"><span class="pre">ophyd-async</span></code> and <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>. Some test fixtures could be moved here</p></li>
+</ul>
+<p>There should probably be one file per Device, in an underscore prefixed file reimported into the public namespace, e.g. <code class="docutils literal notranslate"><span class="pre">demo/_sim_motor.py</span></code> and <code class="docutils literal notranslate"><span class="pre">demo/_pattern_detector.py</span></code>.</p>
+</section>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading">#</a></h2>
-<p>The git history of all three repositories being merged will be preserved, and their
-code bases neatly subdivided.</p>
-<p>Merge conflicts dealt with for ophyd-epics-devices and ophyd-tango-devices will be
-clearly stated in the commit messages regarding their resolutions.</p>
+<p>The public import paths are fixed, but the underlying implementation can move from modules to packages without change to the public interface.</p>
 </section>
 </section>
 
@@ -625,20 +622,20 @@ clearly stated in the commit messages regarding their resolutions.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="0003-ophyd-async-migration.html"
+       href="0006-procedural-device-definitions.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">3. Ophyd Async migration</p>
+        <p class="prev-next-title">6. Procedural Device Definitions</p>
       </div>
     </a>
     <a class="right-next"
-       href="0005-respect-black-line-length.html"
+       href="../design-goals.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">5. Respect black line length</p>
+        <p class="prev-next-title">Design Goals</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -662,7 +659,15 @@ clearly stated in the commit messages regarding their resolutions.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#status">Status</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#context">Context</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision">Decision</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision">Decision</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#core">core</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#epics">epics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tango">tango</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fastcs">fastcs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#planstubs">planstubs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sim">sim</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#consequences">Consequences</a></li>
 </ul>
   </nav></div>
@@ -671,7 +676,7 @@ clearly stated in the commit messages regarding their resolutions.</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/decisions/0004-repository-structure.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/decisions/0007-subpackage-structure.md">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -686,7 +691,7 @@ clearly stated in the commit messages regarding their resolutions.</p>
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../../_sources/explanations/decisions/0004-repository-structure.rst.txt">
+    <a href="../../_sources/explanations/decisions/0007-subpackage-structure.md.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>
