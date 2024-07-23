@@ -26,22 +26,6 @@ class ADBaseDataType(str, Enum):
     Float64 = "Float64"
 
 
-def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
-    ad_dtype_to_np_dtype = {
-        ADBaseDataType.Int8: "|i1",
-        ADBaseDataType.UInt8: "|u1",
-        ADBaseDataType.Int16: "<i2",
-        ADBaseDataType.UInt16: "<u2",
-        ADBaseDataType.Int32: "<i4",
-        ADBaseDataType.UInt32: "<u4",
-        ADBaseDataType.Int64: "<i8",
-        ADBaseDataType.UInt64: "<u8",
-        ADBaseDataType.Float32: "<f4",
-        ADBaseDataType.Float64: "<f8",
-    }
-    return ad_dtype_to_np_dtype[ad_dtype]
-
-
 class NDArrayBase(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.unique_id = epics_signal_r(int, prefix + "UniqueId_RBV")
