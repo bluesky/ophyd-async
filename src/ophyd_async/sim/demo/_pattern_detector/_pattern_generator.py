@@ -166,8 +166,7 @@ class PatternGenerator:
 
     def _get_new_path(self, path_provider: PathProvider) -> Path:
         info = path_provider(device_name="pattern")
-        filename = info.filename
-        new_path: Path = info.root / info.resource_dir / filename
+        new_path: Path = info.resource_path / info.filename
         return new_path
 
     async def collect_stream_docs(
@@ -188,7 +187,6 @@ class PatternGenerator:
             if not self._hdf_stream_provider:
                 assert self.target_path, "open file has not been called"
                 self._hdf_stream_provider = HDFFile(
-                    self._path_provider(),
                     self.target_path,
                     self._datasets,
                 )

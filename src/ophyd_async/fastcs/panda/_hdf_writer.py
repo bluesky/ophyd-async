@@ -48,9 +48,7 @@ class PandaHDFWriter(DetectorWriter):
         info = self._path_provider(device_name=self.panda_device.name)
         # Set the initial values
         await asyncio.gather(
-            self.panda_device.data.hdf_directory.set(
-                str(info.root / info.resource_dir)
-            ),
+            self.panda_device.data.hdf_directory.set(info.resource_path),
             self.panda_device.data.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
@@ -130,7 +128,6 @@ class PandaHDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = HDFFile(
-                    self._path_provider(),
                     Path(await self.panda_device.data.hdf_directory.get_value())
                     / Path(await self.panda_device.data.hdf_file_name.get_value()),
                     self._datasets,
