@@ -10,8 +10,6 @@ from event_model import (
     StreamResource,
 )
 
-from ._providers import PathInfo
-
 
 @dataclass
 class HDFDataset:
@@ -28,14 +26,12 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 class HDFFile:
     """
-    :param directory_info: Contains information about how to construct a StreamResource
     :param full_file_name: Absolute path to the file to be written
     :param datasets: Datasets to write into the file
     """
 
     def __init__(
         self,
-        path_info: PathInfo,
         full_file_name: Path,
         datasets: List[HDFDataset],
         hostname: str = "localhost",
@@ -53,7 +49,7 @@ class HDFFile:
             (
                 "file",
                 self._hostname,
-                str((path_info.root / full_file_name).absolute()),
+                str(full_file_name.absolute()),
                 "",
                 "",
                 None,

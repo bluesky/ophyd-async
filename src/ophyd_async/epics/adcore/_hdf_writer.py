@@ -44,7 +44,7 @@ class ADHDFWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None
         info = self._path_provider(device_name=self.hdf.name)
-        file_path = str(info.root / info.resource_dir)
+        file_path = info.directory_path
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
@@ -133,7 +133,6 @@ class ADHDFWriter(DetectorWriter):
             if not self._file:
                 path = Path(await self.hdf.full_file_name.get_value())
                 self._file = HDFFile(
-                    self._path_provider(),
                     # See https://github.com/bluesky/ophyd-async/issues/122
                     path,
                     self._datasets,
