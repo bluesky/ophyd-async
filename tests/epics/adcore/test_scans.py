@@ -61,11 +61,11 @@ def controller(RE) -> adsimdetector.SimController:
 
 
 @pytest.fixture
-def writer(RE, static_path_provider, tmp_path: Path) -> adcore.HDFWriter:
+def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
     with DeviceCollector(mock=True):
         hdf = adcore.NDFileHDF("HDF")
 
-    return adcore.HDFWriter(
+    return adcore.ADHDFWriter(
         hdf,
         path_provider=static_path_provider,
         name_provider=lambda: "test",
@@ -76,7 +76,7 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.HDFWriter:
 @patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
-    writer: adcore.HDFWriter,
+    writer: adcore.ADHDFWriter,
     controller: adsimdetector.SimController,
 ):
     set_mock_value(writer.hdf.file_path_exists, True)
@@ -92,7 +92,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
 
 @patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.1)
 def test_hdf_writer_fails_on_timeout_with_flyscan(
-    RE: RunEngine, writer: adcore.HDFWriter
+    RE: RunEngine, writer: adcore.ADHDFWriter
 ):
     controller = DummyController()
     set_mock_value(writer.hdf.file_path_exists, True)

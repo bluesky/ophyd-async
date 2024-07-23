@@ -1,4 +1,4 @@
-"""Integration tests for a StandardDetector using a HDFWriter and SimController."""
+"""Integration tests for a StandardDetector using a ADHDFWriter and SimController."""
 
 import time
 from collections import defaultdict
@@ -53,7 +53,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         read_values = {}
         for det in dets:
             read_values[det] = yield from bps.rd(
-                cast(adcore.HDFWriter, det.writer).hdf.num_captured
+                cast(adcore.ADHDFWriter, det.writer).hdf.num_captured
             )
 
         for det in dets:
@@ -62,7 +62,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         yield from bps.sleep(0.001)
         [
             set_mock_value(
-                cast(adcore.HDFWriter, det.writer).hdf.num_captured,
+                cast(adcore.ADHDFWriter, det.writer).hdf.num_captured,
                 read_values[det] + 1,
             )
             for det in dets
@@ -143,15 +143,15 @@ async def test_two_detectors_step(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     [
-        set_mock_value(cast(adcore.HDFWriter, det._writer).hdf.file_path_exists, True)
+        set_mock_value(cast(adcore.ADHDFWriter, det._writer).hdf.file_path_exists, True)
         for det in two_detectors
     ]
 
     RE(count_sim(two_detectors, times=1))
 
     controller_a = cast(adsimdetector.SimController, two_detectors[0].controller)
-    writer_a = cast(adcore.HDFWriter, two_detectors[0].writer)
-    writer_b = cast(adcore.HDFWriter, two_detectors[1].writer)
+    writer_a = cast(adcore.ADHDFWriter, two_detectors[0].writer)
+    writer_b = cast(adcore.ADHDFWriter, two_detectors[1].writer)
 
     drv = controller_a.driver
     assert 1 == await drv.acquire.get_value()
@@ -209,13 +209,13 @@ async def test_detector_writes_to_file(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     set_mock_value(
-        cast(adcore.HDFWriter, single_detector._writer).hdf.file_path_exists, True
+        cast(adcore.ADHDFWriter, single_detector._writer).hdf.file_path_exists, True
     )
 
     RE(count_sim([single_detector], times=3))
 
     assert await cast(
-        adcore.HDFWriter, single_detector.writer
+        adcore.ADHDFWriter, single_detector.writer
     ).hdf.file_path.get_value() == str(tmp_path)
 
     descriptor_index = names.index("descriptor")

@@ -8,7 +8,7 @@ from ophyd_async.core import (
     StaticPathProvider,
     set_mock_value,
 )
-from ophyd_async.epics.adcore import ADBaseDataType, HDFWriter, NDFileHDF
+from ophyd_async.epics import adcore
 
 
 class DummyShapeProvider(ShapeProvider):
@@ -16,15 +16,17 @@ class DummyShapeProvider(ShapeProvider):
         pass
 
     async def __call__(self) -> tuple:
-        return (10, 10, ADBaseDataType.UInt16)
+        return (10, 10, adcore.ADBaseDataType.UInt16)
 
 
 @pytest.fixture
-async def hdf_writer(RE, static_path_provider: StaticPathProvider) -> HDFWriter:
+async def hdf_writer(
+    RE, static_path_provider: StaticPathProvider
+) -> adcore.ADHDFWriter:
     async with DeviceCollector(mock=True):
-        hdf = NDFileHDF("HDF:")
+        hdf = adcore.NDFileHDF("HDF:")
 
-    return HDFWriter(
+    return adcore.ADHDFWriter(
         hdf,
         static_path_provider,
         name_provider=lambda: "test",
@@ -32,7 +34,7 @@ async def hdf_writer(RE, static_path_provider: StaticPathProvider) -> HDFWriter:
     )
 
 
-async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
+async def test_correct_descriptor_doc_after_open(hdf_writer: adcore.ADHDFWriter):
     set_mock_value(hdf_writer.hdf.file_path_exists, True)
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         descriptor = await hdf_writer.open()
@@ -50,7 +52,7 @@ async def test_correct_descriptor_doc_after_open(hdf_writer: HDFWriter):
     await hdf_writer.close()
 
 
-async def test_collect_stream_docs(hdf_writer: HDFWriter):
+async def test_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._file is None
 
     [item async for item in hdf_writer.collect_stream_docs(1)]

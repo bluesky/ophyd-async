@@ -23,7 +23,7 @@ from ._nd_plugin import convert_ad_dtype_to_np
 from ._utils import FileWriteMode
 
 
-class HDFWriter(DetectorWriter):
+class ADHDFWriter(DetectorWriter):
     def __init__(
         self,
         hdf: NDFileHDF,

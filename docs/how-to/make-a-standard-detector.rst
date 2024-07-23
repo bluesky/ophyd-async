@@ -9,7 +9,7 @@ Make a StandardDetector
 `StandardDetector` is an abstract class to assist in creating Device classes for hardware that writes its own data e.g. an AreaDetector implementation, or a PandA writing motor encoder positions to file.
 The `StandardDetector` is a simple compound device, with 2 standard components: 
 
-- `DetectorWriter` to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of :py:class:`HDFWriter`)
+- `DetectorWriter` to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of :py:class:`ADHDFWriter`)
 - `DetectorControl` with logic for arming and disarming the detector. This will be unique to the StandardDetector implementation.
 
 Writing an AreaDetector StandardDetector
@@ -17,7 +17,7 @@ Writing an AreaDetector StandardDetector
 
 For an AreaDetector implementation of the StandardDetector, two entity objects which are subdevices of the `StandardDetector` are used to map to AreaDetector plugins:
 
-- An NDPluginFile instance (for :py:class:`HDFWriter` an instance of :py:class:`NDFileHDF`)
+- An NDPluginFile instance (for :py:class:`ADHDFWriter` an instance of :py:class:`NDFileHDF`)
 - An :py:class:`ADBase` instance mapping to NDArray for the "driver" of the detector implementation
 
 

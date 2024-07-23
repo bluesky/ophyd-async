@@ -3,8 +3,13 @@ from typing import Optional
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
-                              PathProvider, StandardDetector)
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+    PathProvider,
+    StandardDetector,
+)
 from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_rw_rbv
 
@@ -44,7 +49,7 @@ class FooController(DetectorControl):
 
 class FooDetector(StandardDetector, HasHints):
     _controller: FooController
-    _writer: adcore.HDFWriter
+    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -60,7 +65,7 @@ class FooDetector(StandardDetector, HasHints):
 
         super().__init__(
             FooController(self.drv),
-            adcore.HDFWriter(
+            adcore.ADHDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,

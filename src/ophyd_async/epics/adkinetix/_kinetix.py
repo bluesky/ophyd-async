@@ -14,7 +14,7 @@ class KinetixDetector(StandardDetector, HasHints):
     """
 
     _controller: KinetixController
-    _writer: adcore.HDFWriter
+    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -29,7 +29,7 @@ class KinetixDetector(StandardDetector, HasHints):
 
         super().__init__(
             KinetixController(self.drv),
-            adcore.HDFWriter(
+            adcore.ADHDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,

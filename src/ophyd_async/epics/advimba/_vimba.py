@@ -13,7 +13,7 @@ class VimbaDetector(StandardDetector, HasHints):
     """
 
     _controller: VimbaController
-    _writer: adcore.HDFWriter
+    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -28,7 +28,7 @@ class VimbaDetector(StandardDetector, HasHints):
 
         super().__init__(
             VimbaController(self.drv),
-            adcore.HDFWriter(
+            adcore.ADHDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,

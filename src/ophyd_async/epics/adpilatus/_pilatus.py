@@ -27,7 +27,7 @@ class PilatusDetector(StandardDetector):
     """A Pilatus StandardDetector writing HDF files"""
 
     _controller: PilatusController
-    _writer: adcore.HDFWriter
+    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -43,7 +43,7 @@ class PilatusDetector(StandardDetector):
 
         super().__init__(
             PilatusController(self.drv, readout_time=readout_time.value),
-            adcore.HDFWriter(
+            adcore.ADHDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,

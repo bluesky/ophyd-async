@@ -8,7 +8,7 @@ from ._sim_controller import SimController
 
 class SimDetector(StandardDetector):
     _controller: SimController
-    _writer: adcore.HDFWriter
+    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -23,7 +23,7 @@ class SimDetector(StandardDetector):
 
         super().__init__(
             SimController(self.drv),
-            adcore.HDFWriter(
+            adcore.ADHDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,

@@ -17,7 +17,7 @@ class AravisDetector(StandardDetector, HasHints):
     """
 
     _controller: AravisController
-    _writer: adcore.HDFWriter
+    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -33,7 +33,7 @@ class AravisDetector(StandardDetector, HasHints):
 
         super().__init__(
             AravisController(self.drv, gpio_number=gpio_number),
-            adcore.HDFWriter(
+            adcore.ADHDFWriter(
                 self.hdf,
                 path_provider,
                 lambda: self.name,
