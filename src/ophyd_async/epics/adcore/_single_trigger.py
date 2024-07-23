@@ -11,8 +11,7 @@ from ophyd_async.core import (
     StandardReadable,
 )
 
-from ._core_io import ADBaseIO
-from ._nd_plugin import NDPluginBase
+from ._core_io import ADBaseIO, NDPluginBaseIO
 from ._utils import ImageMode
 
 
@@ -22,7 +21,7 @@ class SingleTriggerDetector(StandardReadable, Triggerable):
         drv: ADBaseIO,
         read_uncached: Sequence[SignalR] = (),
         name="",
-        **plugins: NDPluginBase,
+        **plugins: NDPluginBaseIO,
     ) -> None:
         self.drv = drv
         self.__dict__.update(plugins)

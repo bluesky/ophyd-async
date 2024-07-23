@@ -44,7 +44,7 @@ class NDArrayBaseIO(Device):
         super().__init__(name=name)
 
 
-class NDPluginBase(NDArrayBaseIO):
+class NDPluginBaseIO(NDArrayBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
         self.enable_callback = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks")
@@ -54,7 +54,7 @@ class NDPluginBase(NDArrayBaseIO):
         super().__init__(prefix, name)
 
 
-class NDPluginStatsIO(NDPluginBase):
+class NDPluginStatsIO(NDPluginBaseIO):
     pass
 
 
@@ -101,7 +101,7 @@ class Compression(str, Enum):
     jpeg = "JPEG"
 
 
-class NDFileHDFIO(NDPluginBase):
+class NDFileHDFIO(NDPluginBaseIO):
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
         self.position_mode = epics_signal_rw_rbv(bool, prefix + "PositionMode")
