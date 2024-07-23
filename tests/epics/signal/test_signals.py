@@ -31,7 +31,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.signal import (
     LimitPair,
     Limits,
-    _make_backend,
+    epics_signal_backend,
     epics_signal_r,
     epics_signal_rw,
     epics_signal_rw_rbv,
@@ -726,7 +726,7 @@ def test_make_backend_fails_for_different_transports():
     write_pv = "pva://test"
 
     with pytest.raises(TypeError) as err:
-        _make_backend(str, read_pv, write_pv)
+        epics_signal_backend(str, read_pv, write_pv)
         assert err.args[0] == f"Differing transports: {read_pv} has EpicsTransport.ca,"
         +" {write_pv} has EpicsTransport.pva"
 
