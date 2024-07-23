@@ -17,6 +17,7 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
     [DetectorState.Idle, DetectorState.Aborted]
 )
 
+
 class ADBaseShapeProvider(ShapeProvider):
     def __init__(self, driver: ADBaseIO) -> None:
         self._driver = driver

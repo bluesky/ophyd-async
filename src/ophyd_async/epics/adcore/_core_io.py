@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 from ophyd_async.core import Device

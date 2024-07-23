@@ -19,8 +19,7 @@ from ophyd_async.core import (
 )
 
 from ._core_io import NDFileHDFIO
-from ._nd_plugin import convert_ad_dtype_to_np
-from ._utils import FileWriteMode
+from ._utils import FileWriteMode, convert_ad_dtype_to_np
 
 
 class ADHDFWriter(DetectorWriter):

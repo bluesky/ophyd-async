@@ -4,7 +4,7 @@ from xml.etree import cElementTree as ET
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value
 
-from ._nd_plugin import ADBaseDataType
+from ._core_io import ADBaseDataType
 
 
 class FileWriteMode(str, Enum):
