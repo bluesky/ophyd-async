@@ -66,9 +66,9 @@ def test_auto_increment_path_provider(static_filename_provider, tmp_path):
 
     for i in range(3):
         info = auto_inc_path_provider()
-        assert os.path.basename(info.resource_dir) == "00000"
+        assert os.path.basename(info.resource_path) == "00000"
     info = auto_inc_path_provider()
-    assert os.path.basename(info.resource_dir) == "00002"
+    assert os.path.basename(info.resource_path) == "00002"
 
 
 def test_ymd_path_provider(static_filename_provider, tmp_path):
@@ -79,7 +79,7 @@ def test_ymd_path_provider(static_filename_provider, tmp_path):
     )
 
     info_a = ymd_path_provider()
-    assert info_a.resource_dir == date_path
+    assert info_a.resource_path == tmp_path / date_path
 
     info_b = ymd_path_provider(device_name="test_device")
-    assert info_b.resource_dir == os.path.join("test_device", date_path)
+    assert info_b.resource_path == tmp_path / "test_device" / date_path
