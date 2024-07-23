@@ -5,20 +5,21 @@ from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, NotConnected
+from ophyd_async.core.mock_signal_utils import set_mock_value
 from ophyd_async.epics.motion import motor
 
 
 class FailingDevice(Device):
-    async def connect(self, sim: bool = False, timeout=DEFAULT_TIMEOUT):
+    async def connect(self, mock: bool = False, timeout=DEFAULT_TIMEOUT):
         raise AttributeError()
 
 
 class WorkingDevice(Device):
     connected = False
 
-    async def connect(self, sim: bool = True, timeout=DEFAULT_TIMEOUT):
+    async def connect(self, mock: bool = True, timeout=DEFAULT_TIMEOUT):
         self.connected = True
-        return await super().connect(sim=True)
+        return await super().connect(mock=True)
 
     async def set(self, new_position: float): ...
 
@@ -61,47 +62,28 @@ def test_sync_device_connector_run_engine_created_connects(RE):
     assert working_device.connected
 
 
-@pytest.fixture(scope="function")
-def get_loop_and_runengine(request):
-    loop = asyncio.new_event_loop()
-    loop.set_debug(True)
-    RE = RunEngine({}, call_returns_result=True, loop=loop)
-
-    def clean_event_loop():
-        if RE.state not in ("idle", "panicked"):
-            try:
-                RE.halt()
-            except TransitionError:
-                pass
-        loop.call_soon_threadsafe(loop.stop)
-        RE._th.join()
-        loop.close()
-
-    request.addfinalizer(clean_event_loop)
-    return RE
-
-
 def test_async_device_connector_run_engine_same_event_loop():
     async def set_up_device():
-        async with DeviceCollector(sim=True):
-            sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
-        return sim_motor
+        async with DeviceCollector(mock=True):
+            mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+        set_mock_value(mock_motor.velocity, 1)
+        return mock_motor
 
     loop = asyncio.new_event_loop()
     checking_loop = asyncio.new_event_loop()
 
     try:
-        sim_motor = loop.run_until_complete(set_up_device())
+        mock_motor = loop.run_until_complete(set_up_device())
         RE = RunEngine(call_returns_result=True, loop=loop)
 
         def my_plan():
-            yield from bps.mov(sim_motor, 3.14)
+            yield from bps.mov(mock_motor, 3.14)
 
         RE(my_plan())
 
         assert (
-            checking_loop.run_until_complete(sim_motor.user_setpoint.read())[
-                "sim_motor-user_setpoint"
+            checking_loop.run_until_complete(mock_motor.user_setpoint.read())[
+                "mock_motor-user_setpoint"
             ]["value"]
             == 3.14
         )
@@ -121,33 +103,33 @@ def test_async_device_connector_run_engine_same_event_loop():
 
 @pytest.mark.skip(
     reason=(
-        "SimSignalBackend currently allows a different event-"
+        "MockSignalBackend currently allows a different event-"
         "loop to set the value, unlike real signals."
     )
 )
 def test_async_device_connector_run_engine_different_event_loop():
     async def set_up_device():
-        async with DeviceCollector(sim=True):
-            sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
-        return sim_motor
+        async with DeviceCollector(mock=True):
+            mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
+        return mock_motor
 
     device_connector_loop = asyncio.new_event_loop()
     run_engine_loop = asyncio.new_event_loop()
     assert run_engine_loop is not device_connector_loop
 
-    sim_motor = device_connector_loop.run_until_complete(set_up_device())
+    mock_motor = device_connector_loop.run_until_complete(set_up_device())
 
     RE = RunEngine(loop=run_engine_loop)
 
     def my_plan():
-        yield from bps.mov(sim_motor, 3.14)
+        yield from bps.mov(mock_motor, 3.14)
 
     RE(my_plan())
 
     # The set should fail since the run engine is on a different event loop
     assert (
-        device_connector_loop.run_until_complete(sim_motor.user_setpoint.read())[
-            "sim_motor-user_setpoint"
+        device_connector_loop.run_until_complete(mock_motor.user_setpoint.read())[
+            "mock_motor-user_setpoint"
         ]["value"]
         != 3.14
     )

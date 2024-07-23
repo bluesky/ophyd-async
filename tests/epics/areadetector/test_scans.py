@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 from typing import Any, Optional
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -15,10 +15,9 @@ from ophyd_async.core import (
     DeviceCollector,
     HardwareTriggeredFlyable,
     StandardDetector,
-    StaticDirectoryProvider,
     TriggerInfo,
     TriggerLogic,
-    set_sim_value,
+    set_mock_value,
 )
 from ophyd_async.epics.areadetector.controllers import ADSimController
 from ophyd_async.epics.areadetector.drivers import ADBase
@@ -57,33 +56,34 @@ class DummyController(DetectorControl):
 
 @pytest.fixture
 def controller(RE) -> ADSimController:
-    with DeviceCollector(sim=True):
+    with DeviceCollector(mock=True):
         drv = ADBase("DRV")
 
     return ADSimController(drv)
 
 
 @pytest.fixture
-def writer(RE, tmp_path: Path) -> HDFWriter:
-    with DeviceCollector(sim=True):
+def writer(RE, static_path_provider, tmp_path: Path) -> HDFWriter:
+    with DeviceCollector(mock=True):
         hdf = NDFileHDF("HDF")
 
     return HDFWriter(
         hdf,
-        directory_provider=StaticDirectoryProvider(tmp_path),
+        path_provider=static_path_provider,
         name_provider=lambda: "test",
         shape_provider=AsyncMock(),
     )
 
 
+@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: HDFWriter,
     controller: ADSimController,
 ):
-    set_sim_value(writer.hdf.file_path_exists, True)
+    set_mock_value(writer.hdf.file_path_exists, True)
     detector: StandardDetector[Any] = StandardDetector(
-        controller, writer, name="detector", writer_timeout=0.01
+        controller, writer, name="detector"
     )
 
     with pytest.raises(Exception) as exc:
@@ -92,18 +92,19 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
+@patch("ophyd_async.core.detector.DEFAULT_TIMEOUT", 0.1)
 def test_hdf_writer_fails_on_timeout_with_flyscan(RE: RunEngine, writer: HDFWriter):
     controller = DummyController()
-    set_sim_value(writer.hdf.file_path_exists, True)
+    set_mock_value(writer.hdf.file_path_exists, True)
 
     detector: StandardDetector[Optional[TriggerInfo]] = StandardDetector(
-        controller, writer, writer_timeout=0.01
+        controller, writer
     )
     trigger_logic = DummyTriggerLogic()
 
     flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
     trigger_info = TriggerInfo(
-        num=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
 
     def flying_plan():

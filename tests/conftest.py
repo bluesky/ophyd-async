@@ -9,7 +9,11 @@ from typing import Any, Callable
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
-from ophyd_async.core import StaticDirectoryProvider
+from ophyd_async.core import (
+    FilenameProvider,
+    StaticFilenameProvider,
+    StaticPathProvider,
+)
 
 PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
@@ -31,6 +35,23 @@ if os.getenv("PYTEST_RAISE", "0") == "1":
     @pytest.hookimpl(tryfirst=True)
     def pytest_internalerror(excinfo):
         raise excinfo.value
+
+
+# Autouse fixture that will set all EPICS networking env vars to use lo interface
+# to avoid false failures caused by things like firewalls blocking EPICS traffic.
+@pytest.fixture(scope="session", autouse=True)
+def configure_epics_environment():
+    os.environ["EPICS_CAS_INTF_ADDR_LIST"] = "127.0.0.1"
+    os.environ["EPICS_CAS_BEACON_ADDR_LIST"] = "127.0.0.1"
+    os.environ["EPICS_CA_ADDR_LIST"] = "127.0.0.1"
+    os.environ["EPICS_CAS_AUTO_ADDR_LIST"] = "NO"
+    os.environ["EPICS_CA_AUTO_BEACON_ADDR_LIST"] = "NO"
+
+    os.environ["EPICS_PVAS_INTF_ADDR_LIST"] = "127.0.0.1"
+    os.environ["EPICS_PVAS_BEACON_ADDR_LIST"] = "127.0.0.1"
+    os.environ["EPICS_PVA_ADDR_LIST"] = "127.0.0.1"
+    os.environ["EPICS_PVAS_AUTO_BEACON_ADDR_LIST"] = "NO"
+    os.environ["EPICS_PVA_AUTO_ADDR_LIST"] = "NO"
 
 
 @pytest.fixture(scope="function")
@@ -107,5 +128,21 @@ async def failing_coroutine() -> Callable[[], Any]:
 
 
 @pytest.fixture
-def static_directory_provider(tmp_path: Path):
-    return StaticDirectoryProvider(directory_path=tmp_path)
+def static_filename_provider():
+    return StaticFilenameProvider("ophyd_async_tests")
+
+
+@pytest.fixture
+def static_path_provider_factory(tmp_path: Path):
+    def create_static_dir_provider_given_fp(fp: FilenameProvider):
+        return StaticPathProvider(fp, tmp_path)
+
+    return create_static_dir_provider_given_fp
+
+
+@pytest.fixture
+def static_path_provider(
+    static_path_provider_factory: callable,
+    static_filename_provider: FilenameProvider,
+):
+    return static_path_provider_factory(static_filename_provider)

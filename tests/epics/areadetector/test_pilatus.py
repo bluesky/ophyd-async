@@ -1,75 +1,50 @@
+from typing import Awaitable, Callable
+from unittest.mock import patch
+
 import pytest
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
     DeviceCollector,
-    DirectoryProvider,
+    PathProvider,
     TriggerInfo,
-    set_sim_value,
+    set_mock_value,
 )
-from ophyd_async.epics.areadetector.controllers.pilatus_controller import (
-    PilatusController,
-)
-from ophyd_async.epics.areadetector.drivers.pilatus_driver import (
-    PilatusDriver,
-    PilatusTriggerMode,
-)
-from ophyd_async.epics.areadetector.pilatus import PilatusDetector
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
-
-
-@pytest.fixture
-async def pilatus_driver(RE: RunEngine) -> PilatusDriver:
-    async with DeviceCollector(sim=True):
-        driver = PilatusDriver("DRV:")
-
-    return driver
-
-
-@pytest.fixture
-async def pilatus_controller(
-    RE: RunEngine, pilatus_driver: PilatusDriver
-) -> PilatusController:
-    async with DeviceCollector(sim=True):
-        controller = PilatusController(pilatus_driver)
-
-    return controller
-
-
-@pytest.fixture
-async def hdf(RE: RunEngine) -> NDFileHDF:
-    async with DeviceCollector(sim=True):
-        hdf = NDFileHDF("HDF:")
-
-    return hdf
+from ophyd_async.epics.areadetector.drivers.pilatus_driver import PilatusTriggerMode
+from ophyd_async.epics.areadetector.pilatus import PilatusDetector, PilatusReadoutTime
 
 
 @pytest.fixture
 async def pilatus(
     RE: RunEngine,
-    static_directory_provider: DirectoryProvider,
-    pilatus_driver: PilatusDriver,
-    hdf: NDFileHDF,
+    static_path_provider: PathProvider,
 ) -> PilatusDetector:
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
+        adpilatus = PilatusDetector("PILATUS:", static_path_provider)
+
+    return adpilatus
+
+
+async def test_deadtime_overridable(static_path_provider: PathProvider):
+    async with DeviceCollector(mock=True):
         pilatus = PilatusDetector(
             "PILATUS:",
-            "pilatus",
-            static_directory_provider,
-            driver=pilatus_driver,
-            hdf=hdf,
+            static_path_provider,
+            readout_time=PilatusReadoutTime.pilatus2,
         )
-
-    return pilatus
+    pilatus_controller = pilatus.controller
+    # deadtime invariant with exposure time
+    assert pilatus_controller.get_deadtime(0) == 2.28e-3
 
 
 async def test_deadtime_invariant(
-    pilatus_controller: PilatusController,
+    pilatus: PilatusDetector,
 ):
+    pilatus_controller = pilatus.controller
     # deadtime invariant with exposure time
-    assert pilatus_controller.get_deadtime(0) == 2.28e-3
-    assert pilatus_controller.get_deadtime(500) == 2.28e-3
+    assert pilatus_controller.get_deadtime(0) == 0.95e-3
+    assert pilatus_controller.get_deadtime(500) == 0.95e-3
 
 
 @pytest.mark.parametrize(
@@ -86,10 +61,37 @@ async def test_trigger_mode_set(
     expected_trigger_mode: PilatusTriggerMode,
 ):
     async def trigger_and_complete():
-        await pilatus.controller.arm(num=1, trigger=detector_trigger)
-        # Prevent timeouts
-        set_sim_value(pilatus.controller._drv.acquire, True)
+        set_mock_value(pilatus.drv.armed_for_triggers, True)
+        status = await pilatus.controller.arm(
+            num=1,
+            trigger=detector_trigger,
+        )
+        await status
 
+    await _trigger(pilatus, expected_trigger_mode, trigger_and_complete)
+
+
+async def test_trigger_mode_set_without_armed_pv(pilatus: PilatusDetector):
+    async def trigger_and_complete():
+        status = await pilatus.controller.arm(
+            num=1,
+            trigger=DetectorTrigger.internal,
+        )
+        await status
+
+    with patch(
+        "ophyd_async.epics.areadetector.controllers.pilatus_controller.DEFAULT_TIMEOUT",
+        0.1,
+    ):
+        with pytest.raises(TimeoutError):
+            await _trigger(pilatus, PilatusTriggerMode.internal, trigger_and_complete)
+
+
+async def _trigger(
+    pilatus: PilatusDetector,
+    expected_trigger_mode: PilatusTriggerMode,
+    trigger_and_complete: Callable[[], Awaitable],
+):
     # Default TriggerMode
     assert (await pilatus.drv.trigger_mode.get_value()) == PilatusTriggerMode.internal
 
@@ -100,7 +102,7 @@ async def test_trigger_mode_set(
 
 
 async def test_hints_from_hdf_writer(pilatus: PilatusDetector):
-    assert pilatus.hints == {"fields": ["pilatus"]}
+    assert pilatus.hints == {"fields": ["adpilatus"]}
 
 
 async def test_unsupported_trigger_excepts(pilatus: PilatusDetector):
@@ -109,4 +111,22 @@ async def test_unsupported_trigger_excepts(pilatus: PilatusDetector):
         # str(EnumClass.value) handling changed in Python 3.11
         match=r"PilatusController only supports the following trigger types: .* but",
     ):
-        await pilatus.prepare(TriggerInfo(1, DetectorTrigger.edge_trigger, 1, 1))
+        await pilatus.prepare(
+            TriggerInfo(
+                number=1,
+                trigger=DetectorTrigger.edge_trigger,
+                deadtime=1.0,
+                livetime=1.0,
+            )
+        )
+
+
+async def test_exposure_time_and_acquire_period_set(pilatus: PilatusDetector):
+    set_mock_value(pilatus.drv.armed_for_triggers, True)
+    await pilatus.prepare(
+        TriggerInfo(
+            number=1, trigger=DetectorTrigger.internal, deadtime=1.0, livetime=1.0
+        )
+    )
+    assert (await pilatus.drv.acquire_time.get_value()) == 1.0
+    assert (await pilatus.drv.acquire_period.get_value()) == 1.0 + 950e-6

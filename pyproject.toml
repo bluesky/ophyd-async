@@ -13,13 +13,16 @@ classifiers = [
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
     "networkx>=2.0",
-    "numpy",
+    "numpy<2.0.0",
     "packaging",
     "pint",
     "bluesky>=1.13.0a3",
-    "event-model<1.21.0",
+    "event_model",
     "p4p",
     "pyyaml",
+    "colorlog",
+    "pydantic>=2.0",
+    "pydantic-numpy",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -49,7 +52,7 @@ dev = [
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
-    "pyside6==6.6.2",
+    "pyside6==6.7.0",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
@@ -57,9 +60,13 @@ dev = [
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
+    "sphinx<7.4.0",              # https://github.com/bluesky/ophyd-async/issues/459
     "sphinx-autobuild",
+    "autodoc-pydantic",
+    "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",
+    "super_state_machine",
     "tox-direct",
     "types-mock",
     "types-pyyaml",
@@ -84,7 +91,6 @@ write_to = "src/ophyd_async/_version.py"
 addopts = """
     --tb=native -vv --strict-markers --doctest-modules
     --doctest-glob="*.rst" --doctest-glob="*.md" --ignore=docs/examples
-    --cov=src/ophyd_async --cov-report term --cov-report xml:cov.xml
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"
@@ -126,7 +132,7 @@ allowlist_externals =
 commands =
     tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
     type-checking: ruff check src tests {posargs}
-    pre-commit: pre-commit run --all-files {posargs}
+    pre-commit: pre-commit run --all-files --show-diff-on-failure {posargs}
     docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
 """
 

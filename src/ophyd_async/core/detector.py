@@ -3,7 +3,6 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum
 from typing import (
     AsyncGenerator,
@@ -19,7 +18,7 @@ from typing import (
 
 from bluesky.protocols import (
     Collectable,
-    Descriptor,
+    DataKey,
     Flyable,
     Preparable,
     Reading,
@@ -28,13 +27,13 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
+from pydantic import BaseModel, Field
 
 from ophyd_async.protocols import AsyncConfigurable, AsyncReadable
 
-from .async_status import AsyncStatus
+from .async_status import AsyncStatus, WatchableAsyncStatus
 from .device import Device
-from .signal import SignalR
-from .utils import DEFAULT_TIMEOUT, merge_gathered_dicts
+from .utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 T = TypeVar("T")
 
@@ -52,18 +51,19 @@ class DetectorTrigger(str, Enum):
     variable_gate = "variable_gate"
 
 
-@dataclass(frozen=True)
-class TriggerInfo:
+class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
-    #: Number of triggers that will be sent
-    num: int
+    #: Number of triggers that will be sent, 0 means infinite
+    number: int = Field(gt=0)
     #: Sort of triggers that will be sent
-    trigger: DetectorTrigger
+    trigger: DetectorTrigger = Field()
     #: What is the minimum deadtime between triggers
-    deadtime: float
+    deadtime: float = Field(ge=0)
     #: What is the maximum high time of the triggers
-    livetime: float
+    livetime: float = Field(ge=0)
+    #: What is the maximum timeout on waiting for a frame
+    frame_timeout: float | None = Field(None, gt=0)
 
 
 class DetectorControl(ABC):
@@ -110,7 +110,7 @@ class DetectorWriter(ABC):
     (e.g. an HDF5 file)"""
 
     @abstractmethod
-    async def open(self, multiplier: int = 1) -> Dict[str, Descriptor]:
+    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
         Args:
@@ -161,9 +161,8 @@ class StandardDetector(
         self,
         controller: DetectorControl,
         writer: DetectorWriter,
-        config_sigs: Sequence[SignalR] = (),
+        config_sigs: Sequence[AsyncReadable] = (),
         name: str = "",
-        writer_timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
         """
         Constructor
@@ -174,22 +173,17 @@ class StandardDetector(
             config_sigs: Signals to read when describe and read
             configuration are called. Defaults to ().
             name: Device name. Defaults to "".
-            writer_timeout: Timeout for frame writing to start, if the
-            timeout is reached, ophyd-async assumes the detector
-            has a problem and raises an error.
-            Defaults to DEFAULT_TIMEOUT.
         """
         self._controller = controller
         self._writer = writer
-        self._describe: Dict[str, Descriptor] = {}
+        self._describe: Dict[str, DataKey] = {}
         self._config_sigs = list(config_sigs)
-        self._frame_writing_timeout = writer_timeout
         # For prepare
         self._arm_status: Optional[AsyncStatus] = None
         self._trigger_info: Optional[TriggerInfo] = None
         # For kickoff
         self._watchers: List[Callable] = []
-        self._fly_status: Optional[AsyncStatus] = None
+        self._fly_status: Optional[WatchableAsyncStatus] = None
         self._fly_start: float
 
         self._intial_frame: int
@@ -214,7 +208,7 @@ class StandardDetector(
     async def _check_config_sigs(self):
         """Checks configuration signals are named and connected."""
         for signal in self._config_sigs:
-            if signal._name == "":
+            if signal.name == "":
                 raise Exception(
                     "config signal must be named before it is passed to the detector"
                 )
@@ -234,29 +228,33 @@ class StandardDetector(
     async def read_configuration(self) -> Dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
 
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
     async def read(self) -> Dict[str, Reading]:
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         return self._describe
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
+        # set default trigger_info
+        self._trigger_info = TriggerInfo(
+            number=1, trigger=DetectorTrigger.internal, deadtime=0.0, livetime=0.0
+        )
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(
-            num=1,
-            trigger=DetectorTrigger.internal,
+            num=self._trigger_info.number,
+            trigger=self._trigger_info.trigger,
         )
         await written_status
         end_observation = indices_written + 1
 
         async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
+            DEFAULT_TIMEOUT + self._trigger_info.livetime + self._trigger_info.deadtime
         ):
             if index >= end_observation:
                 break
@@ -286,51 +284,50 @@ class StandardDetector(
         assert type(value) is TriggerInfo
         self._trigger_info = value
         self._initial_frame = await self.writer.get_indices_written()
-        self._last_frame = self._initial_frame + self._trigger_info.num
+        self._last_frame = self._initial_frame + self._trigger_info.number
 
         required = self.controller.get_deadtime(self._trigger_info.livetime)
         assert required <= self._trigger_info.deadtime, (
             f"Detector {self.controller} needs at least {required}s deadtime, "
             f"but trigger logic provides only {self._trigger_info.deadtime}s"
         )
-
         self._arm_status = await self.controller.arm(
-            num=self._trigger_info.num,
+            num=self._trigger_info.number,
             trigger=self._trigger_info.trigger,
             exposure=self._trigger_info.livetime,
         )
-
-    @AsyncStatus.wrap
-    async def kickoff(self) -> None:
-        self._fly_status = AsyncStatus(self._fly(), self._watchers)
         self._fly_start = time.monotonic()
 
-    async def _fly(self) -> None:
-        await self._observe_writer_indicies(self._last_frame)
+    @AsyncStatus.wrap
+    async def kickoff(self):
+        if not self._arm_status:
+            raise Exception("Detector not armed!")
 
-    async def _observe_writer_indicies(self, end_observation: int):
+    @WatchableAsyncStatus.wrap
+    async def complete(self):
+        assert self._arm_status, "Prepare not run"
+        assert self._trigger_info
         async for index in self.writer.observe_indices_written(
-            self._frame_writing_timeout
+            self._trigger_info.frame_timeout
+            or (
+                DEFAULT_TIMEOUT
+                + self._trigger_info.livetime
+                + self._trigger_info.deadtime
+            )
         ):
-            for watcher in self._watchers:
-                watcher(
-                    name=self.name,
-                    current=index,
-                    initial=self._initial_frame,
-                    target=end_observation,
-                    unit="",
-                    precision=0,
-                    time_elapsed=time.monotonic() - self._fly_start,
-                )
-            if index >= end_observation:
+            yield WatcherUpdate(
+                name=self.name,
+                current=index,
+                initial=self._initial_frame,
+                target=self._trigger_info.number,
+                unit="",
+                precision=0,
+                time_elapsed=time.monotonic() - self._fly_start,
+            )
+            if index >= self._trigger_info.number:
                 break
 
-    @AsyncStatus.wrap
-    async def complete(self) -> AsyncStatus:
-        assert self._fly_status, "Kickoff not run"
-        return await self._fly_status
-
-    async def describe_collect(self) -> Dict[str, Descriptor]:
+    async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe
 
     async def collect_asset_docs(
@@ -339,7 +336,7 @@ class StandardDetector(
         # Collect stream datum documents for all indices written.
         # The index is optional, and provided for fly scans, however this needs to be
         # retrieved for step scans.
-        if not index:
+        if index is None:
             index = await self.writer.get_indices_written()
         async for doc in self.writer.collect_stream_docs(index):
             yield doc

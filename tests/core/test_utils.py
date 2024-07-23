@@ -1,22 +1,22 @@
+from unittest.mock import patch
+
 import pytest
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
-    DirectoryInfo,
+    MockSignalBackend,
     NotConnected,
     SignalRW,
-    SimSignalBackend,
-    StaticDirectoryProvider,
 )
 from ophyd_async.epics.signal import epics_signal_rw
 
 
-class ValueErrorBackend(SimSignalBackend):
+class ValueErrorBackend(MockSignalBackend):
     def __init__(self, exc_text=""):
         self.exc_text = exc_text
-        super().__init__(int, "VALUE_ERROR_SIGNAL")
+        super().__init__(datatype=int, initial_backend=None)
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         raise ValueError(self.exc_text)
@@ -24,7 +24,7 @@ class ValueErrorBackend(SimSignalBackend):
 
 class WorkingDummyChildDevice(Device):
     def __init__(self, name: str = "working_dummy_child_device") -> None:
-        self.working_signal = SignalRW(backend=SimSignalBackend(int))
+        self.working_signal = SignalRW(backend=MockSignalBackend(datatype=int))
         super().__init__(name=name)
 
 
@@ -123,9 +123,9 @@ async def test_error_handling_connection_timeout(caplog):
     assert str(e.value) == str(ONE_WORKING_ONE_TIMEOUT_OUTPUT)
 
     logs = caplog.get_records("call")
-    assert len(logs) == 1
-    assert "signal ca://A_NON_EXISTENT_SIGNAL timed out" == logs[0].message
-    assert logs[0].levelname == "DEBUG"
+    assert len(logs) == 3
+    assert "signal ca://A_NON_EXISTENT_SIGNAL timed out" == logs[-1].message
+    assert logs[-1].levelname == "DEBUG"
 
 
 async def test_error_handling_value_errors(caplog):
@@ -134,7 +134,7 @@ async def test_error_handling_value_errors(caplog):
     caplog.set_level(10)
 
     dummy_device_two_working_one_timeout_two_value_error = (
-        DummyDeviceTwoWorkingTwoTimeOutTwoValueError()
+        DummyDeviceTwoWorkingTwoTimeOutTwoValueError("dsf")
     )
 
     # This should fail since the error is a ValueError
@@ -147,7 +147,11 @@ async def test_error_handling_value_errors(caplog):
     assert str(e.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
 
     logs = caplog.get_records("call")
-    logs = [log for log in logs if "ophyd_async" in log.pathname]
+    logs = [
+        log
+        for log in logs
+        if "ophyd_async" in log.pathname and "signal" not in log.pathname
+    ]
     assert len(logs) == 4
 
     for i in range(0, 2):
@@ -168,8 +172,8 @@ async def test_error_handling_value_errors(caplog):
 async def test_error_handling_device_collector(caplog):
     caplog.set_level(10)
     with pytest.raises(NotConnected) as e:
+        # flake8: noqa
         async with DeviceCollector(timeout=0.1):
-            # flake8: noqa
             dummy_device_two_working_one_timeout_two_value_error = (
                 DummyDeviceTwoWorkingTwoTimeOutTwoValueError()
             )
@@ -177,14 +181,20 @@ async def test_error_handling_device_collector(caplog):
 
     expected_output = NotConnected(
         {
-            "dummy_device_two_working_one_timeout_two_value_error": TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT,
+            "dummy_device_two_working_one_timeout_two_value_error": (
+                TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
+            ),
             "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
         }
     )
     assert str(expected_output) == str(e.value)
 
     logs = caplog.get_records("call")
-    logs = [log for log in logs if "ophyd_async" in log.pathname]
+    logs = [
+        log
+        for log in logs
+        if "ophyd_async" in log.pathname and "signal" not in log.pathname
+    ]
     assert len(logs) == 5
     assert (
         logs[0].message

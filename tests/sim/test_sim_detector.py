@@ -1,13 +1,20 @@
+from collections import defaultdict
+
+import bluesky.plans as bp
+import h5py
+import numpy as np
 import pytest
+from bluesky import RunEngine
 
 from ophyd_async.core.device import DeviceCollector
+from ophyd_async.core.signal import assert_emitted
 from ophyd_async.epics.motion import motor
 from ophyd_async.sim.sim_pattern_generator import SimPatternDetector
 
 
 @pytest.fixture
 async def sim_motor():
-    async with DeviceCollector(sim=True):
+    async with DeviceCollector(mock=True):
         sim_motor = motor.Motor("test")
     return sim_motor
 
@@ -28,25 +35,21 @@ async def test_detector_creates_controller_and_writer(
 
 
 async def test_writes_pattern_to_file(
-    sim_pattern_detector: SimPatternDetector, sim_motor: motor.Motor, tmp_path
+    sim_pattern_detector: SimPatternDetector,
+    RE: RunEngine,
 ):
-    sim_pattern_detector = SimPatternDetector(
-        config_sigs=[*sim_motor._read_signals], path=tmp_path
-    )
-
-    images_number = 2
-    await sim_pattern_detector.controller.arm(num=images_number)
-    # assert that the file is created and non-empty
-    assert sim_pattern_detector.writer
-
     # assert that the file contains data in expected dimensions
+    docs = defaultdict(list)
 
+    def capture_emitted(name, doc):
+        docs[name].append(doc)
 
-async def test_set_x_and_y(sim_pattern_detector):
-    assert sim_pattern_detector.pattern_generator.x == 0
-    sim_pattern_detector.pattern_generator.set_x(200)
-    assert sim_pattern_detector.pattern_generator.x == 200
-
-
-async def test_initial_blob(sim_pattern_detector: SimPatternDetector):
-    assert sim_pattern_detector.pattern_generator.STARTING_BLOB.any()
+    RE(bp.count([sim_pattern_detector]), capture_emitted)
+    assert_emitted(
+        docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, event=1, stop=1
+    )
+    path = docs["stream_resource"][0]["uri"].split("://localhost")[-1]
+    h5file = h5py.File(path)
+    assert list(h5file["/entry"]) == ["data", "sum"]
+    assert list(h5file["/entry/sum"]) == [44540.0]
+    assert np.sum(h5file["/entry/data/data"]) == 44540.0

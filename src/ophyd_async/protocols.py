@@ -1,7 +1,20 @@
-from abc import abstractmethod
-from typing import Dict, Protocol, runtime_checkable
+from __future__ import annotations
 
-from bluesky.protocols import Descriptor, HasName, Reading
+from abc import abstractmethod
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    Protocol,
+    TypeVar,
+    runtime_checkable,
+)
+
+from bluesky.protocols import DataKey, HasName, Reading
+
+if TYPE_CHECKING:
+    from ophyd_async.core.async_status import AsyncStatus
 
 
 @runtime_checkable
@@ -23,7 +36,7 @@ class AsyncReadable(HasName, Protocol):
         ...
 
     @abstractmethod
-    async def describe(self) -> Dict[str, Descriptor]:
+    async def describe(self) -> Dict[str, DataKey]:
         """Return an OrderedDict with exactly the same keys as the ``read``
         method, here mapped to per-scan metadata about each field.
 
@@ -53,7 +66,7 @@ class AsyncConfigurable(Protocol):
         ...
 
     @abstractmethod
-    async def describe_configuration(self) -> Dict[str, Descriptor]:
+    async def describe_configuration(self) -> Dict[str, DataKey]:
         """Same API as ``describe``, but corresponding to the keys in
         ``read_configuration``.
         """
@@ -71,3 +84,43 @@ class AsyncPausable(Protocol):
     async def resume(self) -> None:
         """Perform device-specific work when the RunEngine resumes after a pause."""
         ...
+
+
+@runtime_checkable
+class AsyncStageable(Protocol):
+    @abstractmethod
+    def stage(self) -> AsyncStatus:
+        """An optional hook for "setting up" the device for acquisition.
+
+        It should return a ``Status`` that is marked done when the device is
+        done staging.
+        """
+        ...
+
+    @abstractmethod
+    def unstage(self) -> AsyncStatus:
+        """A hook for "cleaning up" the device after acquisition.
+
+        It should return a ``Status`` that is marked done when the device is finished
+        unstaging.
+        """
+        ...
+
+
+C = TypeVar("C", contravariant=True)
+
+
+class Watcher(Protocol, Generic[C]):
+    @staticmethod
+    def __call__(
+        *,
+        current: C,
+        initial: C,
+        target: C,
+        name: str | None,
+        unit: str | None,
+        precision: float | None,
+        fraction: float | None,
+        time_elapsed: float | None,
+        time_remaining: float | None,
+    ) -> Any: ...

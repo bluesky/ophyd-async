@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from inspect import isclass
 from typing import (
     Any,
     Callable,
@@ -16,7 +17,7 @@ from typing import (
     get_type_hints,
 )
 
-from ophyd_async.core import Device, DeviceVector, SimSignalBackend
+from ophyd_async.core import Device, DeviceVector, SoftSignalBackend
 from ophyd_async.core.signal import Signal
 from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics._backend._p4p import PvaSignalBackend
@@ -56,13 +57,14 @@ def _split_subscript(tp: T) -> Union[Tuple[Any, Tuple[Any]], Tuple[T, None]]:
     return tp, None
 
 
-def _strip_union(field: Union[Union[T], T]) -> T:
+def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
     if get_origin(field) is Union:
         args = get_args(field)
+        is_optional = type(None) in args
         for arg in args:
             if arg is not type(None):
-                return arg
-    return field
+                return arg, is_optional
+    return field, False
 
 
 def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]]:
@@ -89,12 +91,13 @@ def _verify_common_blocks(entry: PVIEntry, common_device: Type[Device]):
         return
     common_sub_devices = get_type_hints(common_device)
     for sub_name, sub_device in common_sub_devices.items():
-        if sub_name in ("_name", "parent"):
+        if sub_name.startswith("_") or sub_name == "parent":
             continue
         assert entry.sub_entries
-        if sub_name not in entry.sub_entries and get_origin(sub_device) is not Optional:
+        device_t, is_optional = _strip_union(sub_device)
+        if sub_name not in entry.sub_entries and not is_optional:
             raise RuntimeError(
-                f"sub device `{sub_name}:{type(sub_device)}` was not provided by pvi"
+                f"sub device `{sub_name}:{type(sub_device)}` " "was not provided by pvi"
             )
         if isinstance(entry.sub_entries[sub_name], dict):
             for sub_sub_entry in entry.sub_entries[sub_name].values():  # type: ignore
@@ -128,7 +131,7 @@ def _parse_type(
 ):
     if common_device_type:
         # pre-defined type
-        device_cls = _strip_union(common_device_type)
+        device_cls, _ = _strip_union(common_device_type)
         is_device_vector, device_cls = _strip_device_vector(device_cls)
         device_cls, device_args = _split_subscript(device_cls)
         assert issubclass(device_cls, Device)
@@ -153,16 +156,16 @@ def _parse_type(
     return is_device_vector, is_signal, signal_dtype, device_cls
 
 
-def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
+def _mock_common_blocks(device: Device, stripped_type: Optional[Type] = None):
     device_t = stripped_type or type(device)
     sub_devices = (
         (field, field_type)
         for field, field_type in get_type_hints(device_t).items()
-        if field not in ("_name", "parent")
+        if not field.startswith("_") and field != "parent"
     )
 
     for device_name, device_cls in sub_devices:
-        device_cls = _strip_union(device_cls)
+        device_cls, _ = _strip_union(device_cls)
         is_device_vector, device_cls = _strip_device_vector(device_cls)
         device_cls, device_args = _split_subscript(device_cls)
         assert issubclass(device_cls, Device)
@@ -172,24 +175,31 @@ def _sim_common_blocks(device: Device, stripped_type: Optional[Type] = None):
 
         if is_device_vector:
             if is_signal:
-                sub_device_1 = device_cls(SimSignalBackend(signal_dtype))
-                sub_device_2 = device_cls(SimSignalBackend(signal_dtype))
+                sub_device_1 = device_cls(SoftSignalBackend(signal_dtype))
+                sub_device_2 = device_cls(SoftSignalBackend(signal_dtype))
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
             else:
-                sub_device = DeviceVector({1: device_cls(), 2: device_cls()})
+                if hasattr(device, device_name):
+                    sub_device = getattr(device, device_name)
+                else:
+                    sub_device = DeviceVector(
+                        {
+                            1: device_cls(),
+                            2: device_cls(),
+                        }
+                    )
 
                 for sub_device_in_vector in sub_device.values():
-                    _sim_common_blocks(sub_device_in_vector, stripped_type=device_cls)
+                    _mock_common_blocks(sub_device_in_vector, stripped_type=device_cls)
 
             for value in sub_device.values():
                 value.parent = sub_device
         else:
             if is_signal:
-                sub_device = device_cls(SimSignalBackend(signal_dtype))
+                sub_device = device_cls(SoftSignalBackend(signal_dtype))
             else:
-                sub_device = device_cls()
-
-                _sim_common_blocks(sub_device, stripped_type=device_cls)
+                sub_device = getattr(device, device_name, device_cls())
+                _mock_common_blocks(sub_device, stripped_type=device_cls)
 
         setattr(device, device_name, sub_device)
         sub_device.parent = device
@@ -223,7 +233,7 @@ async def _get_pvi_entries(entry: PVIEntry, timeout=DEFAULT_TIMEOUT):
         if is_signal:
             device = _pvi_mapping[frozenset(pva_entries.keys())](signal_dtype, *pvs)
         else:
-            device = device_type()
+            device = getattr(entry.device, sub_name, device_type())
 
         sub_entry = PVIEntry(
             device=device, common_device_type=device_type, sub_entries={}
@@ -267,16 +277,16 @@ def _set_device_attributes(entry: PVIEntry):
 
 
 async def fill_pvi_entries(
-    device: Device, root_pv: str, timeout=DEFAULT_TIMEOUT, sim=False
+    device: Device, root_pv: str, timeout=DEFAULT_TIMEOUT, mock=False
 ):
     """
     Fills a ``device`` with signals from a the ``root_pvi:PVI`` table.
 
     If the device names match with parent devices of ``device`` then types are used.
     """
-    if sim:
-        # set up sim signals for the common annotations
-        _sim_common_blocks(device)
+    if mock:
+        # set up mock signals for the common annotations
+        _mock_common_blocks(device)
     else:
         # check the pvi table for devices and fill the device with them
         root_entry = PVIEntry(
@@ -291,3 +301,38 @@ async def fill_pvi_entries(
     # We call set name now the parent field has been set in all of the
     # introspect-initialized devices. This will recursively set the names.
     device.set_name(device.name)
+
+
+def create_children_from_annotations(
+    device: Device,
+    included_optional_fields: Tuple[str, ...] = (),
+    device_vectors: Optional[Dict[str, int]] = None,
+):
+    """For intializing blocks at __init__ of ``device``."""
+    for name, device_type in get_type_hints(type(device)).items():
+        if name in ("_name", "parent"):
+            continue
+        device_type, is_optional = _strip_union(device_type)
+        if is_optional and name not in included_optional_fields:
+            continue
+        is_device_vector, device_type = _strip_device_vector(device_type)
+        if (
+            (is_device_vector and (not device_vectors or name not in device_vectors))
+            or ((origin := get_origin(device_type)) and issubclass(origin, Signal))
+            or (isclass(device_type) and issubclass(device_type, Signal))
+        ):
+            continue
+
+        if is_device_vector:
+            n_device_vector = DeviceVector(
+                {i: device_type() for i in range(1, device_vectors[name] + 1)}
+            )
+            setattr(device, name, n_device_vector)
+            for sub_device in n_device_vector.values():
+                create_children_from_annotations(
+                    sub_device, device_vectors=device_vectors
+                )
+        else:
+            sub_device = device_type()
+            setattr(device, name, sub_device)
+            create_children_from_annotations(sub_device, device_vectors=device_vectors)

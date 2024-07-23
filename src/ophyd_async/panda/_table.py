@@ -1,9 +1,21 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Sequence, Type, TypedDict, TypeVar
+from typing import Optional, Sequence, Type, TypeVar
 
 import numpy as np
 import numpy.typing as npt
+import pydantic_numpy.typing as pnd
+from typing_extensions import NotRequired, TypedDict
+
+
+class PandaHdf5DatasetType(str, Enum):
+    FLOAT_64 = "float64"
+    UINT_32 = "uint32"
+
+
+class DatasetTable(TypedDict):
+    name: npt.NDArray[np.str_]
+    hdf5_type: Sequence[PandaHdf5DatasetType]
 
 
 class SeqTrigger(str, Enum):
@@ -44,23 +56,23 @@ class SeqTableRow:
 
 
 class SeqTable(TypedDict):
-    repeats: npt.NDArray[np.uint16]
-    trigger: Sequence[SeqTrigger]
-    position: npt.NDArray[np.int32]
-    time1: npt.NDArray[np.uint32]
-    outa1: npt.NDArray[np.bool_]
-    outb1: npt.NDArray[np.bool_]
-    outc1: npt.NDArray[np.bool_]
-    outd1: npt.NDArray[np.bool_]
-    oute1: npt.NDArray[np.bool_]
-    outf1: npt.NDArray[np.bool_]
-    time2: npt.NDArray[np.uint32]
-    outa2: npt.NDArray[np.bool_]
-    outb2: npt.NDArray[np.bool_]
-    outc2: npt.NDArray[np.bool_]
-    outd2: npt.NDArray[np.bool_]
-    oute2: npt.NDArray[np.bool_]
-    outf2: npt.NDArray[np.bool_]
+    repeats: NotRequired[pnd.Np1DArrayUint16]
+    trigger: NotRequired[Sequence[SeqTrigger]]
+    position: NotRequired[pnd.Np1DArrayInt32]
+    time1: NotRequired[pnd.Np1DArrayUint32]
+    outa1: NotRequired[pnd.Np1DArrayBool]
+    outb1: NotRequired[pnd.Np1DArrayBool]
+    outc1: NotRequired[pnd.Np1DArrayBool]
+    outd1: NotRequired[pnd.Np1DArrayBool]
+    oute1: NotRequired[pnd.Np1DArrayBool]
+    outf1: NotRequired[pnd.Np1DArrayBool]
+    time2: NotRequired[pnd.Np1DArrayUint32]
+    outa2: NotRequired[pnd.Np1DArrayBool]
+    outb2: NotRequired[pnd.Np1DArrayBool]
+    outc2: NotRequired[pnd.Np1DArrayBool]
+    outd2: NotRequired[pnd.Np1DArrayBool]
+    oute2: NotRequired[pnd.Np1DArrayBool]
+    outf2: NotRequired[pnd.Np1DArrayBool]
 
 
 def seq_table_from_rows(*rows: SeqTableRow):

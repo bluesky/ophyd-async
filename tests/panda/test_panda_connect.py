@@ -1,4 +1,4 @@
-"""Test file specifying how we want to eventually interact with the panda..."""
+"""Used to test setting up signals for a PandA"""
 
 import copy
 from typing import Dict
@@ -6,18 +6,11 @@ from typing import Dict
 import numpy as np
 import pytest
 
-from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector
+from ophyd_async.core import DEFAULT_TIMEOUT, Device, DeviceCollector, DeviceVector
 from ophyd_async.core.utils import NotConnected
 from ophyd_async.epics.pvi import PVIEntry, fill_pvi_entries
-from ophyd_async.panda import (
-    CommonPandABlocks,
-    PandA,
-    PcapBlock,
-    PulseBlock,
-    SeqBlock,
-    SeqTable,
-    SeqTrigger,
-)
+from ophyd_async.epics.pvi.pvi import create_children_from_annotations
+from ophyd_async.panda import PcapBlock, PulseBlock, SeqBlock, SeqTable, SeqTrigger
 
 
 class DummyDict:
@@ -45,39 +38,47 @@ class MockCtxt:
 
 
 @pytest.fixture
-async def sim_panda():
-    async with DeviceCollector(sim=True):
-        sim_panda = PandA("PANDAQSRV:", "sim_panda")
+async def panda_t():
+    class CommonPandaBlocksNoData(Device):
+        pcap: PcapBlock
+        pulse: DeviceVector[PulseBlock]
+        seq: DeviceVector[SeqBlock]
 
-    assert sim_panda.name == "sim_panda"
-    yield sim_panda
+    class Panda(CommonPandaBlocksNoData):
+        def __init__(self, prefix: str, name: str = ""):
+            self._prefix = prefix
+            create_children_from_annotations(self)
+            super().__init__(name)
 
+        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
+            await fill_pvi_entries(
+                self, self._prefix + "PVI", timeout=timeout, mock=mock
+            )
+            await super().connect(mock=mock, timeout=timeout)
 
-class PandANoDataBlock(CommonPandABlocks):
-    def __init__(self, prefix: str, name: str = "") -> None:
-        self._prefix = prefix
-        assert prefix.endswith(":"), f"PandA prefix '{prefix}' must end in ':'"
-        super().__init__(name)
-
-    async def connect(
-        self, sim: bool = False, timeout: float = DEFAULT_TIMEOUT
-    ) -> None:
-        await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, sim=sim)
-
-        await super().connect(sim)
-
-
-def test_panda_names_correct(sim_panda: PandA):
-    assert sim_panda.seq[1].name == "sim_panda-seq-1"
-    assert sim_panda.pulse[1].name == "sim_panda-pulse-1"
+    yield Panda
 
 
-def test_panda_name_set():
-    panda = PandA(":", "panda")
+@pytest.fixture
+async def mock_panda(panda_t):
+    async with DeviceCollector(mock=True):
+        mock_panda = panda_t("PANDAQSRV:", "mock_panda")
+
+    assert mock_panda.name == "mock_panda"
+    yield mock_panda
+
+
+def test_panda_names_correct(mock_panda):
+    assert mock_panda.seq[1].name == "mock_panda-seq-1"
+    assert mock_panda.pulse[1].name == "mock_panda-pulse-1"
+
+
+def test_panda_name_set(panda_t):
+    panda = panda_t(":", "panda")
     assert panda.name == "panda"
 
 
-async def test_panda_children_connected(sim_panda: PandA):
+async def test_panda_children_connected(mock_panda):
     # try to set and retrieve from simulated values...
     table = SeqTable(
         repeats=np.array([1, 1, 1, 32]).astype(np.uint16),
@@ -103,18 +104,18 @@ async def test_panda_children_connected(sim_panda: PandA):
         oute2=np.array([1, 0, 1, 0]).astype(np.bool_),
         outf2=np.array([1, 0, 0, 0]).astype(np.bool_),
     )
-    await sim_panda.pulse[1].delay.set(20.0)
-    await sim_panda.seq[1].table.set(table)
+    await mock_panda.pulse[1].delay.set(20.0)
+    await mock_panda.seq[1].table.set(table)
 
-    readback_pulse = await sim_panda.pulse[1].delay.get_value()
-    readback_seq = await sim_panda.seq[1].table.get_value()
+    readback_pulse = await mock_panda.pulse[1].delay.get_value()
+    readback_seq = await mock_panda.seq[1].table.get_value()
 
     assert readback_pulse == 20.0
     assert readback_seq == table
 
 
-async def test_panda_with_missing_blocks(panda_pva):
-    panda = PandA("PANDAQSRVI:")
+async def test_panda_with_missing_blocks(panda_pva, panda_t):
+    panda = panda_t("PANDAQSRVI:")
     with pytest.raises(RuntimeError) as exc:
         await panda.connect()
     assert (
@@ -123,8 +124,8 @@ async def test_panda_with_missing_blocks(panda_pva):
     )
 
 
-async def test_panda_with_extra_blocks_and_signals(panda_pva):
-    panda = PandANoDataBlock("PANDAQSRV:")
+async def test_panda_with_extra_blocks_and_signals(panda_pva, panda_t):
+    panda = panda_t("PANDAQSRV:")
     await panda.connect()
     assert panda.extra  # type: ignore
     assert panda.extra[1]  # type: ignore
@@ -132,9 +133,13 @@ async def test_panda_with_extra_blocks_and_signals(panda_pva):
     assert panda.pcap.newsignal  # type: ignore
 
 
-async def test_panda_gets_types_from_common_class(panda_pva):
-    panda = PandANoDataBlock("PANDAQSRV:")
+async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
+    panda = panda_t("PANDAQSRV:")
+    pcap = panda.pcap
     await panda.connect()
+
+    # The pre-initialized blocks are now filled
+    assert pcap is panda.pcap
 
     # sub devices have the correct types
     assert isinstance(panda.pcap, PcapBlock)
@@ -154,8 +159,8 @@ async def test_panda_gets_types_from_common_class(panda_pva):
     assert panda.pcap.newsignal._backend.datatype is None
 
 
-async def test_panda_block_missing_signals(panda_pva):
-    panda = PandA("PANDAQSRVIB:")
+async def test_panda_block_missing_signals(panda_pva, panda_t):
+    panda = panda_t("PANDAQSRVIB:")
 
     with pytest.raises(Exception) as exc:
         await panda.connect()
@@ -166,8 +171,8 @@ async def test_panda_block_missing_signals(panda_pva):
         )
 
 
-async def test_panda_unable_to_connect_to_pvi():
-    panda = PandA("NON-EXISTENT:")
+async def test_panda_unable_to_connect_to_pvi(panda_t):
+    panda = panda_t("NON-EXISTENT:")
 
     with pytest.raises(NotConnected) as exc:
         await panda.connect(timeout=0.01)
