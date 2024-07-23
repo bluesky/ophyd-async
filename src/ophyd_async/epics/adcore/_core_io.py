@@ -29,7 +29,7 @@ class ADBaseDataType(str, Enum):
     Float64 = "Float64"
 
 
-class NDArrayBase(Device):
+class NDArrayBaseIO(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.unique_id = epics_signal_r(int, prefix + "UniqueId_RBV")
         self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile")
@@ -44,7 +44,7 @@ class NDArrayBase(Device):
         super().__init__(name=name)
 
 
-class NDPluginBase(NDArrayBase):
+class NDPluginBase(NDArrayBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
         self.enable_callback = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks")
@@ -77,7 +77,7 @@ class DetectorState(str, Enum):
     Aborted = "Aborted"
 
 
-class ADBaseIO(NDArrayBase):
+class ADBaseIO(NDArrayBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         # Define some signals
         self.acquire_time = epics_signal_rw_rbv(float, prefix + "AcquireTime")
