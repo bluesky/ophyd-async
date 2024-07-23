@@ -3,19 +3,15 @@ from typing import Optional
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import (
-    AsyncStatus,
-    DetectorControl,
-    DetectorTrigger,
-    DirectoryProvider,
-    StandardDetector,
-)
+from ophyd_async.core import (AsyncStatus, DetectorControl, DetectorTrigger,
+                              PathProvider, StandardDetector)
 from ophyd_async.epics import adcore
+from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
 class FooDriver(adcore.ADBase):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.trigger_mode = adcore.ad_rw(str, prefix + "TriggerMode")
+        self.trigger_mode = epics_signal_rw_rbv(str, prefix + "TriggerMode")
         super().__init__(prefix, name)
 
 
@@ -53,7 +49,7 @@ class FooDetector(StandardDetector, HasHints):
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
@@ -66,7 +62,7 @@ class FooDetector(StandardDetector, HasHints):
             FooController(self.drv),
             adcore.HDFWriter(
                 self.hdf,
-                directory_provider,
+                path_provider,
                 lambda: self.name,
                 adcore.ADBaseShapeProvider(self.drv),
             ),
