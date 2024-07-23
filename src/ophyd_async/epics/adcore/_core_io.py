@@ -7,25 +7,12 @@ from ophyd_async.epics.signal import (
     epics_signal_rw_rbv,
 )
 
-from ._utils import FileWriteMode, ImageMode
+from ._utils import ADBaseDataType, FileWriteMode, ImageMode
 
 
 class Callback(str, Enum):
     Enable = "Enable"
     Disable = "Disable"
-
-
-class ADBaseDataType(str, Enum):
-    Int8 = "Int8"
-    UInt8 = "UInt8"
-    Int16 = "Int16"
-    UInt16 = "UInt16"
-    Int32 = "Int32"
-    UInt32 = "UInt32"
-    Int64 = "Int64"
-    UInt64 = "UInt64"
-    Float32 = "Float32"
-    Float64 = "Float64"
 
 
 class NDArrayBaseIO(Device):

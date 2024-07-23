@@ -1,10 +1,4 @@
-from ._core_io import (
-    ADBaseDataType,
-    ADBaseIO,
-    DetectorState,
-    NDFileHDFIO,
-    NDPluginStatsIO,
-)
+from ._core_io import ADBaseIO, DetectorState, NDFileHDFIO, NDPluginStatsIO
 from ._core_logic import (
     DEFAULT_GOOD_STATES,
     ADBaseShapeProvider,
@@ -14,6 +8,7 @@ from ._core_logic import (
 from ._hdf_writer import ADHDFWriter
 from ._single_trigger import SingleTriggerDetector
 from ._utils import (
+    ADBaseDataType,
     FileWriteMode,
     ImageMode,
     NDAttributeDataType,
@@ -22,7 +17,6 @@ from ._utils import (
 )
 
 __all__ = [
-    "ADBaseDataType",
     "ADBaseIO",
     "DetectorState",
     "NDFileHDFIO",
@@ -33,6 +27,7 @@ __all__ = [
     "start_acquiring_driver_and_ensure_status",
     "ADHDFWriter",
     "SingleTriggerDetector",
+    "ADBaseDataType",
     "FileWriteMode",
     "ImageMode",
     "NDAttributeDataType",
