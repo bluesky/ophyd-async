@@ -4,13 +4,13 @@ from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import assert_emitted
-from ophyd_async.sim.demo import SimPatternDetector
+from ophyd_async.sim.demo import PatternDetector
 
 
 # NOTE the async operations with h5py are non-trival
 # because of lack of native support for async operations
 # see https://github.com/h5py/h5py/issues/837
-async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimPatternDetector):
+async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: PatternDetector):
     names = []
     docs = []
 
@@ -36,7 +36,7 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: SimPatternDet
     await sim_pattern_detector.writer.close()
 
 
-async def test_plan(RE: RunEngine, sim_pattern_detector: SimPatternDetector):
+async def test_plan(RE: RunEngine, sim_pattern_detector: PatternDetector):
     docs = defaultdict(list)
     RE(bp.count([sim_pattern_detector]), lambda name, doc: docs[name].append(doc))
     assert_emitted(

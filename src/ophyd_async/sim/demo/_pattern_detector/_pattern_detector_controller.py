@@ -6,7 +6,7 @@ from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger, Path
 from ._pattern_generator import PatternGenerator
 
 
-class SimPatternDetectorControl(DetectorControl):
+class PatternDetectorController(DetectorControl):
     def __init__(
         self,
         pattern_generator: PatternGenerator,

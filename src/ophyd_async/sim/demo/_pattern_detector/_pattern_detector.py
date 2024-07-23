@@ -10,12 +10,12 @@ from ophyd_async.core import (
     StaticPathProvider,
 )
 
+from ._pattern_detector_controller import PatternDetectorController
+from ._pattern_detector_writer import PatternDetectorWriter
 from ._pattern_generator import PatternGenerator
-from ._sim_pattern_detector_control import SimPatternDetectorControl
-from ._sim_pattern_detector_writer import SimPatternDetectorWriter
 
 
-class SimPatternDetector(StandardDetector):
+class PatternDetector(StandardDetector):
     def __init__(
         self,
         path: Path,
@@ -25,12 +25,12 @@ class SimPatternDetector(StandardDetector):
         fp: FilenameProvider = StaticFilenameProvider(name)
         self.path_provider: PathProvider = StaticPathProvider(fp, path)
         self.pattern_generator = PatternGenerator()
-        writer = SimPatternDetectorWriter(
+        writer = PatternDetectorWriter(
             pattern_generator=self.pattern_generator,
             path_provider=self.path_provider,
             name_provider=lambda: self.name,
         )
-        controller = SimPatternDetectorControl(
+        controller = PatternDetectorController(
             pattern_generator=self.pattern_generator,
             path_provider=self.path_provider,
         )

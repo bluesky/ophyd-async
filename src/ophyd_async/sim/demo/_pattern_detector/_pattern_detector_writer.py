@@ -7,7 +7,7 @@ from ophyd_async.core import DetectorWriter, NameProvider, PathProvider
 from ._pattern_generator import PatternGenerator
 
 
-class SimPatternDetectorWriter(DetectorWriter):
+class PatternDetectorWriter(DetectorWriter):
     pattern_generator: PatternGenerator
 
     def __init__(
