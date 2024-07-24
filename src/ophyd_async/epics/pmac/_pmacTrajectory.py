@@ -53,6 +53,7 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 self.profile[axis.lower()] = []
         assert len(cs_ports) == 1, "Motors in more than one CS"
         cs_port = cs_ports.pop()
+        self.scantime = sum(stack[0].midpoints["DURATION"])
 
         # Calc Velocity
 
@@ -102,6 +103,7 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 self.profile[cs_axes[axis] + "_velocity"].append(0)
                 run_up_time = max(run_up_time, run_up_t)
 
+        self.scantime += run_up_time + final_time
         self.profile["duration"][0] += run_up_time / TICK_S
         self.profile["duration"].append(int(final_time / TICK_S))
 
@@ -125,11 +127,11 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         # Set No Of Points
 
         self.build_profile.set(True)
-        self._fly_start = time.monotonic
+        self._fly_start = time.monotonic()
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        await self.execute_profile.set(True)
+        await self.execute_profile.set(1, timeout=self.scantime + 10)
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
