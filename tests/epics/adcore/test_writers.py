@@ -64,7 +64,7 @@ async def stats_sum_enabled_xml(tmp_path: Path) -> Path:
     stats_path = tmp_path / "stats.xml"
     stats_path.write_text("""<?xml version='1.0' encoding='utf-8'?>
 <Attributes>
-    <Attribute name="StatsTotal" type="PARAM" source="TOTAL" addr="0" datatype="DOUBLE"
+    <Attribute name="mydetector-sum" type="PARAM" source="TOTAL" addr="0" datatype="DOUBLE"
                            description="Sum of each detector frame" />
 </Attributes>""")
     return stats_path
@@ -135,7 +135,7 @@ async def test_stats_describe_when_plugin_configured(
             "dtype_numpy": "<u2",
             "external": "STREAM:",
         },
-        "StatsTotal": {
+        "mydetector-sum": {
             "source": "mock+ca://HDF:FullFileName_RBV",
             "shape": (),
             "dtype": "number",
