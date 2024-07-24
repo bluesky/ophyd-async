@@ -28,7 +28,7 @@ class PatternDetectorController(DetectorControl):
         exposure: Optional[float] = 0.01,
     ) -> AsyncStatus:
         if exposure is None:
-            exposure = 0.01
+            exposure = 0.1
         period: float = exposure + self.get_deadtime(exposure)
         task = asyncio.create_task(
             self._coroutine_for_image_writing(exposure, period, num)
