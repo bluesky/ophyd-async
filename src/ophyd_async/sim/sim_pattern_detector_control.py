@@ -15,6 +15,8 @@ class SimPatternDetectorControl(DetectorControl):
         exposure: float = 0.1,
     ) -> None:
         self.pattern_generator: PatternGenerator = pattern_generator
+        if exposure is None:
+            exposure = 0.1
         self.pattern_generator.set_exposure(exposure)
         self.path_provider: PathProvider = path_provider
         self.task: Optional[asyncio.Task] = None
@@ -26,7 +28,8 @@ class SimPatternDetectorControl(DetectorControl):
         trigger: DetectorTrigger = DetectorTrigger.internal,
         exposure: Optional[float] = 0.01,
     ) -> AsyncStatus:
-        assert exposure is not None
+        if exposure is None:
+            exposure = 0.01
         period: float = exposure + self.get_deadtime(exposure)
         task = asyncio.create_task(
             self._coroutine_for_image_writing(exposure, period, num)

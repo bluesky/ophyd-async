@@ -271,14 +271,8 @@ class StandardDetector(
             if index >= end_observation:
                 break
 
-    def prepare(
-        self,
-        value: TriggerInfo,
-    ) -> AsyncStatus:
-        # Just arm detector for the time being
-        return AsyncStatus(self._prepare(value))
-
-    async def _prepare(self, value: TriggerInfo) -> None:
+    @AsyncStatus.wrap
+    async def prepare(self, value: TriggerInfo) -> None:
         """
         Arm detector.
 
@@ -293,30 +287,23 @@ class StandardDetector(
         Args:
             value: TriggerInfo describing how to trigger the detector
         """
-        assert type(value) is TriggerInfo
         self._trigger_info = value
-        if (
-            value.trigger is DetectorTrigger.internal
-            and value.deadtime is None
-            and value.livetime is None
-        ):
-            ...
-        else:
-            self._initial_frame = await self.writer.get_indices_written()
-            self._last_frame = self._initial_frame + self._trigger_info.number
-
-            if self._trigger_info.deadtime is not None:
-                required = self.controller.get_deadtime(self._trigger_info.livetime)
-                assert required <= self._trigger_info.deadtime, (
-                    f"Detector {self.controller} needs at least {required}s deadtime, "
-                    f"but trigger logic provides only {self._trigger_info.deadtime}s"
-                )
-                self._arm_status = await self.controller.arm(
-                    num=self._trigger_info.number,
-                    trigger=self._trigger_info.trigger,
-                    exposure=self._trigger_info.livetime,
-                )
-            self._fly_start = time.monotonic()
+        if (value.trigger != DetectorTrigger.internal):
+            assert value.deadtime
+        if value.deadtime:
+            required = self.controller.get_deadtime(self._trigger_info.livetime)
+            assert required <= value.deadtime, (
+                f"Detector {self.controller} needs at least {required}s deadtime, "
+                f"but trigger logic provides only {value.deadtime}s"
+            )
+        self._initial_frame = await self.writer.get_indices_written()
+        self._last_frame = self._initial_frame + self._trigger_info.number
+        self._arm_status = await self.controller.arm(
+            num=self._trigger_info.number,
+            trigger=self._trigger_info.trigger,
+            exposure=self._trigger_info.livetime,
+        )
+        self._fly_start = time.monotonic()
         self._describe = await self.writer.open(value.multiplier)
 
     @AsyncStatus.wrap
