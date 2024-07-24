@@ -16,7 +16,7 @@ from ophyd_async.core import (
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
 from ophyd_async.epics.adcore._hdf_writer import ADHDFWriter
 from ophyd_async.epics.signal._signal import epics_signal_r
-from ophyd_async.plan_stubs.nd_attributes import setup_ndattributes, setup_ndstats_sum
+from ophyd_async.plan_stubs._nd_attributes import setup_ndattributes, setup_ndstats_sum
 
 
 class DummyShapeProvider(ShapeProvider):
@@ -64,8 +64,8 @@ async def stats_sum_enabled_xml(tmp_path: Path) -> Path:
     stats_path = tmp_path / "stats.xml"
     stats_path.write_text("""<?xml version='1.0' encoding='utf-8'?>
 <Attributes>
-    <Attribute name="mydetector-sum" type="PARAM" source="TOTAL" addr="0" datatype="DOUBLE"
-                           description="Sum of each detector frame" />
+    <Attribute name="mydetector-sum" type="PARAM" source="TOTAL" addr="0"
+ datatype="DOUBLE"                           description="Sum of each detector frame" />
 </Attributes>""")
     return stats_path
 
