@@ -11,31 +11,31 @@ class Pmac(StandardReadable, Flyable, Preparable):
     """Device that moves a PMAC Motor record"""
 
     def __init__(self, prefix: str, cs="", name="") -> None:
-        self.timeArray = epics_signal_rw(
+        self.time_array = epics_signal_rw(
             npt.NDArray[np.float64], prefix + ":ProfileTimeArray"
         )
         cs_letters = "ABCUVWXYZ"
         # 1 indexed CS axes so we can index into them from the compound motor input link
         self.positions = DeviceVector(
             {
-                letter: epics_signal_rw(
+                i + 1: epics_signal_rw(
                     npt.NDArray[np.float64], f"{prefix}:{letter}:Positions"
                 )
-                for letter in cs_letters
+                for i, letter in enumerate(cs_letters)
             }
         )
         self.use_axis = DeviceVector(
             {
-                letter: epics_signal_rw(bool, f"{prefix}:{letter}:UseAxis")
-                for letter in (cs_letters)
+                i + 1: epics_signal_rw(bool, f"{prefix}:{letter}:UseAxis")
+                for i, letter in enumerate(cs_letters)
             }
         )
         self.velocities = DeviceVector(
             {
-                letter: epics_signal_rw(
+                i + 1: epics_signal_rw(
                     npt.NDArray[np.float64], f"{prefix}:{letter}:Velocities"
                 )
-                for letter in cs_letters
+                for i, letter in enumerate(cs_letters)
             }
         )
         self.points_to_build = epics_signal_rw(int, prefix + ":ProfilePointsToBuild")

@@ -29,36 +29,44 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
     stack = spec.calculate()
     await traj.prepare(stack)
-    assert traj.profile == {
-        "duration": [
-            1050000,
-            1000000,
-            1000000,
-            1000000,
-            1000000,
-            1000000,
-            1000000,
-            1000000,
-            1000000,
-            50000,
-        ],
-        "Z": [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.0125],
-        "Z_velocity": [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0,
-        ],
-    }
-
+    assert await traj.positions[9].get_value() == [
+        1,
+        1.5,
+        2,
+        2.5,
+        3,
+        3.5,
+        4,
+        4.5,
+        5,
+        5.0125,
+    ]
+    assert await traj.velocities[9].get_value() == [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0,
+    ]
+    assert await traj.time_array.get_value() == [
+        1050000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        50000,
+    ]
     assert await traj.points_to_build.get_value() == 10
-    assert traj.initial_pos["Z"] == 0.9875
+    assert await sim_x_motor.user_setpoint.get_value() == 0.9875
     assert traj.scantime == 9.1
 
     await traj.kickoff()
