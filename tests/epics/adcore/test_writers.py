@@ -1,4 +1,3 @@
-import random
 from pathlib import Path
 from typing import List
 from unittest.mock import patch
@@ -177,8 +176,7 @@ async def test_nd_attributes_plan_stub(RE, detectors):
             signal=epics_signal_r(str, "LINKAM:TEMP"),
             description="The sample temperature",
         )
-        RE(setup_ndattributes(detector.hdf, pv))
-        RE(setup_ndattributes(detector.hdf, param))
+        RE(setup_ndattributes(detector.hdf, [pv, param]))
         xml = await detector.hdf.nd_attributes_file.get_value()
         assert str(xml[0].tag) == "Attribute"
         assert (
@@ -200,12 +198,11 @@ async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):
     invalidObjects = [0.1, "string", 1, True, False]
     for detector in detectors:
         await detector.connect(mock=True)
-        arg = random.choice(invalidObjects)
         with pytest.raises(ValueError) as e:
-            RE(setup_ndattributes(detector.hdf, arg))
+            RE(setup_ndattributes(detector.hdf, invalidObjects))
         assert (
             str(e.value)
-            == f"Invalid type for ndattributes: {type(arg)}. "
+            == f"Invalid type for ndattributes: {type(invalidObjects[0])}. "
             + "Expected NDAttributePv or NDAttributeParam."
         )
 
