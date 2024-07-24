@@ -3,18 +3,21 @@ from xml.etree import cElementTree as ET
 
 import bluesky.plan_stubs as bps
 
+from ophyd_async.core.device import Device
 from ophyd_async.epics.areadetector.utils import (
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
 )
-from ophyd_async.epics.areadetector.writers.nd_plugin import NDArrayBase, NDPluginStats
+from ophyd_async.epics.areadetector.writers.nd_plugin import NDArrayBase
 
 
 def setup_ndattributes(
     device: NDArrayBase, ndattributes: Sequence[NDAttributePv | NDAttributeParam]
 ):
-    xml_text = ET.Element("Attributes")
+    xml_text = yield from bps.rd(device.nd_attributes_file)
+    if xml_text == "":
+        xml_text = ET.Element("Attributes")
     _dbr_types = {
         None: "DBR_NATIVE",
         NDAttributeDataType.INT: "DBR_LONG",
@@ -42,15 +45,20 @@ def setup_ndattributes(
             datatype=_dbr_types[ndattributes.datatype],
             description=ndattributes.description,
         )
+    else:
+        raise ValueError(
+            f"Invalid type for ndattributes: {type(ndattributes)}. "
+            "Expected NDAttributePv or NDAttributeParam."
+        )
     yield from bps.mv(device.nd_attributes_file, xml_text)
 
 
-def setup_ndstats_sum(device: NDArrayBase, stats: NDPluginStats):
+def setup_ndstats_sum(detector: Device):
     yield from (
         setup_ndattributes(
-            device,
+            detector.hdf,
             NDAttributeParam(
-                name=f"{stats.name}-sum",
+                name=f"{detector.name}-sum",
                 param="NDPluginStatsTotal",
                 datatype=NDAttributeDataType.INT,
                 description="Sum of the array",

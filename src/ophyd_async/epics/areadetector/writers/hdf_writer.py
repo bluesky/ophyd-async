@@ -92,21 +92,25 @@ class HDFWriter(DetectorWriter):
             )
         ]
         # And all the scalar datasets
-        for plugin in self._plugins:
-            tree = ET.parse((await plugin.nd_attributes_file.get_value()))
-            root = tree.getroot()
-            for child in root:
-                self._datasets.append(
-                    _HDFDataset(
-                        f"{name}-{child.attrib['name']}",
-                        f"/entry/instrument/NDAttributes/{child.attrib['source']}",
-                        (),
-                        convert_ad_dtype_to_np(
-                            ADBaseDataType((child.attrib.get("datatype", None)))
-                        ),
-                        multiplier,
+        try:
+            for plugin in self._plugins:
+                tree = ET.parse((await plugin.nd_attributes_file.get_value()))
+                root = tree.getroot()
+                for child in root:
+                    datakey = child.attrib["name"]
+                    self._datasets.append(
+                        _HDFDataset(
+                            datakey,
+                            f"/entry/instrument/NDAttributes/{datakey}",
+                            (),
+                            convert_ad_dtype_to_np(
+                                ADBaseDataType((child.attrib.get("datatype", None)))
+                            ),
+                            multiplier,
+                        )
                     )
-                )
+        except ET.ParseError:
+            raise ValueError("Error parsing XML")
 
         describe = {
             ds.data_key: DataKey(
