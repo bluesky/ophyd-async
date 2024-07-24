@@ -5,7 +5,11 @@ import bluesky.plan_stubs as bps
 
 from ophyd_async.core._device import Device
 from ophyd_async.epics.adcore._core_io import NDArrayBaseIO
-from ophyd_async.epics.adcore._utils import NDAttributeDataType, NDAttributeParam, NDAttributePv
+from ophyd_async.epics.adcore._utils import (
+    NDAttributeDataType,
+    NDAttributeParam,
+    NDAttributePv,
+)
 
 
 def setup_ndattributes(
