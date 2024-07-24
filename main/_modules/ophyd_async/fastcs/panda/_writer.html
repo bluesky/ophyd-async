@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.5.1.dev5+g0212e873 documentation</title>
+    <title>ophyd_async.fastcs.panda._writer &#8212; ophyd-async 0.5.1.dev5+g0212e873 documentation</title>
   
   
   
@@ -47,7 +47,7 @@
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
     <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true});</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/adcore/_hdf_writer';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/fastcs/panda/_writer';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -486,183 +486,171 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.adcore._hdf_writer</h1><div class="highlight"><pre>
+  <h1>Source code for ophyd_async.fastcs.panda._writer</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">Hints</span><span class="p">,</span> <span class="n">StreamAsset</span>
+<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">StreamAsset</span>
+<span class="kn">from</span> <span class="nn">p4p.client.thread</span> <span class="kn">import</span> <span class="n">Context</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-    <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">DetectorWriter</span><span class="p">,</span>
     <span class="n">HDFDataset</span><span class="p">,</span>
     <span class="n">HDFFile</span><span class="p">,</span>
     <span class="n">NameProvider</span><span class="p">,</span>
     <span class="n">PathProvider</span><span class="p">,</span>
-    <span class="n">ShapeProvider</span><span class="p">,</span>
     <span class="n">observe_value</span><span class="p">,</span>
-    <span class="n">set_and_wait_for_value</span><span class="p">,</span>
     <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">._core_io</span> <span class="kn">import</span> <span class="n">NDFileHDFIO</span>
-<span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">FileWriteMode</span><span class="p">,</span> <span class="n">convert_ad_dtype_to_np</span>
+<span class="kn">from</span> <span class="nn">._block</span> <span class="kn">import</span> <span class="n">CommonPandaBlocks</span>
 
 
-<div class="viewcode-block" id="ADHDFWriter">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADHDFWriter.html#ophyd_async.epics.adcore.ADHDFWriter">[docs]</a>
-<span class="k">class</span> <span class="nc">ADHDFWriter</span><span class="p">(</span><span class="n">DetectorWriter</span><span class="p">):</span>
+<div class="viewcode-block" id="PandaHDFWriter">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter">[docs]</a>
+<span class="k">class</span> <span class="nc">PandaHDFWriter</span><span class="p">(</span><span class="n">DetectorWriter</span><span class="p">):</span>
+    <span class="n">_ctxt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Context</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">hdf</span><span class="p">:</span> <span class="n">NDFileHDFIO</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
-        <span class="n">shape_provider</span><span class="p">:</span> <span class="n">ShapeProvider</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">scalar_datasets_paths</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">panda_device</span><span class="p">:</span> <span class="n">CommonPandaBlocks</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">hdf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span> <span class="o">=</span> <span class="n">panda_device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_shape_provider</span> <span class="o">=</span> <span class="n">shape_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scalar_datasets_paths</span> <span class="o">=</span> <span class="n">scalar_datasets_paths</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">HDFFile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="mi">1</span>
 
-<div class="viewcode-block" id="ADHDFWriter.open">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADHDFWriter.html#ophyd_async.epics.adcore.ADHDFWriter.open">[docs]</a>
+    <span class="c1"># Triggered on PCAP arm</span>
+<div class="viewcode-block" id="PandaHDFWriter.open">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.open">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve and get descriptor of all PandA signals marked for capture&quot;&quot;&quot;</span>
+
+        <span class="c1"># Ensure flushes are immediate</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">flush_period</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">file_path</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">directory_path</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Set the initial values</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">num_extra_dims</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">lazy_open</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">swmr_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
-            <span class="c1"># See https://github.com/bluesky/ophyd-async/issues/122</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">file_path</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">file_template</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">.h5&quot;</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">create_dir_depth</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">create_dir_depth</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">file_write_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">FileWriteMode</span><span class="o">.</span><span class="n">stream</span><span class="p">),</span>
-            <span class="c1"># Never use custom xml layout file but use the one defined</span>
-            <span class="c1"># in the source code file NDFileHDF5LayoutXML.cpp</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">xml_file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">directory_path</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="c1"># TODO: Set create_dir_depth once available</span>
+            <span class="c1"># https://github.com/bluesky/ophyd-async/issues/317</span>
         <span class="p">)</span>
 
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">file_path_exists</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;File path </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> for hdf plugin does not exist&quot;</span>
-
-        <span class="c1"># Overwrite num_capture to go forever</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">num_capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="c1"># Wait for it to start, stashing the status that tells us when it finishes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">()</span>
-        <span class="n">detector_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape_provider</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="n">multiplier</span>
-        <span class="n">outer_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">multiplier</span><span class="p">,)</span> <span class="k">if</span> <span class="n">multiplier</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">()</span>
-        <span class="n">frame_shape</span> <span class="o">=</span> <span class="n">detector_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detector_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[]</span>
-        <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span><span class="n">detector_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detector_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-            <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Add the main data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">HDFDataset</span><span class="p">(</span>
-                <span class="n">data_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;/entry/data/data&quot;</span><span class="p">,</span>
-                <span class="n">shape</span><span class="o">=</span><span class="n">frame_shape</span><span class="p">,</span>
-                <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">dtype_numpy</span><span class="p">,</span>
-                <span class="n">multiplier</span><span class="o">=</span><span class="n">multiplier</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">]</span>
-        <span class="c1"># And all the scalar datasets</span>
-        <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scalar_datasets_paths</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">HDFDataset</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">ds_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">ds_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="p">(),</span>
-                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">multiplier</span><span class="p">,</span>
-                <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">multiplier</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;All PandA datasets should be scalar, multiplier should be 1&quot;</span>
             <span class="p">)</span>
 
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">()</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a describe based on the datasets PV</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_datasets</span><span class="p">()</span>
         <span class="n">describe</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">ds</span><span class="o">.</span><span class="n">data_key</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
-                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">full_file_name</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
-                <span class="n">shape</span><span class="o">=</span><span class="n">outer_shape</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span> <span class="k">else</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
-                <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">dtype_numpy</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
+                <span class="n">dtype_numpy</span><span class="o">=</span><span class="s2">&quot;&lt;f8&quot;</span><span class="p">,</span>  <span class="c1"># PandA data should always be written as Float64</span>
                 <span class="n">external</span><span class="o">=</span><span class="s2">&quot;STREAM:&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="n">describe</span></div>
+        <span class="k">return</span> <span class="n">describe</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_update_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load data from the datasets PV on the panda, update internal</span>
+<span class="sd">        representation of datasets that the panda will write.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">capture_table</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">HDFDataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+
+    <span class="c1"># Next few functions are exactly the same as AD writer. Could move as default</span>
+    <span class="c1"># StandardDetector behavior</span>
+<div class="viewcode-block" id="PandaHDFWriter.wait_for_index">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.wait_for_index">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span>
+    <span class="p">):</span>
+        <span class="k">def</span> <span class="nf">matcher</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="n">index</span>
+
+        <span class="n">matcher</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;index_at_least_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">matcher</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ADHDFWriter.observe_indices_written">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADHDFWriter.html#ophyd_async.epics.adcore.ADHDFWriter.observe_indices_written">[docs]</a>
+<div class="viewcode-block" id="PandaHDFWriter.get_indices_written">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.get_indices_written">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_captured</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PandaHDFWriter.observe_indices_written">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.observe_indices_written">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">observe_indices_written</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait until a specific index is ready to be collected&quot;&quot;&quot;</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">num_captured</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">num_captured</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">timeout</span>
+        <span class="p">):</span>
             <span class="k">yield</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span></div>
 
 
-<div class="viewcode-block" id="ADHDFWriter.get_indices_written">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADHDFWriter.html#ophyd_async.epics.adcore.ADHDFWriter.get_indices_written">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="n">num_captured</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">num_captured</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span></div>
-
-
-<div class="viewcode-block" id="ADHDFWriter.collect_stream_docs">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADHDFWriter.html#ophyd_async.epics.adcore.ADHDFWriter.collect_stream_docs">[docs]</a>
+<div class="viewcode-block" id="PandaHDFWriter.collect_stream_docs">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.collect_stream_docs">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">collect_stream_docs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
         <span class="c1"># TODO: fail if we get dropped frames</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">flush_now</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">indices_written</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span>
-                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">full_file_name</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="n">HDFFile</span><span class="p">(</span>
-                    <span class="c1"># See https://github.com/bluesky/ophyd-async/issues/122</span>
-                    <span class="n">path</span><span class="p">,</span>
+                    <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
+                    <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">get_value</span><span class="p">()),</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="c1"># stream resource says &quot;here is a dataset&quot;,</span>
-                <span class="c1"># stream datum says &quot;here are N frames in that stream resource&quot;,</span>
-                <span class="c1"># you get one stream resource and many stream datums per scan</span>
-
                 <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="o">.</span><span class="n">stream_resources</span><span class="p">():</span>
                     <span class="k">yield</span> <span class="s2">&quot;stream_resource&quot;</span><span class="p">,</span> <span class="n">doc</span>
             <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="o">.</span><span class="n">stream_data</span><span class="p">(</span><span class="n">indices_written</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="s2">&quot;stream_datum&quot;</span><span class="p">,</span> <span class="n">doc</span></div>
 
 
-<div class="viewcode-block" id="ADHDFWriter.close">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADHDFWriter.html#ophyd_async.epics.adcore.ADHDFWriter.close">[docs]</a>
+    <span class="c1"># Could put this function as default for StandardDetector</span>
+<div class="viewcode-block" id="PandaHDFWriter.close">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.close">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Already done a caput callback in _capture_status, so can&#39;t do one here</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span><span class="p">:</span>
-            <span class="c1"># We kicked off an open, so wait for it to return</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span></div>
-
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">()]}</span></div>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+            <span class="kc">False</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
+        <span class="p">)</span></div>
+</div>
 
 </pre></div>
 

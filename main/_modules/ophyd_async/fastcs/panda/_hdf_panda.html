@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._hdf_panda &#8212; ophyd-async 0.5.1.dev4+g336959d1 documentation</title>
+    <title>ophyd_async.fastcs.panda._hdf_panda &#8212; ophyd-async 0.5.1.dev5+g0212e873 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=06de1dc6"></script>
+    <script src="../../../../_static/documentation_options.js?v=f82280c9"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -494,9 +494,9 @@ document.write(`
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">StandardDetector</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.pvi</span> <span class="kn">import</span> <span class="n">create_children_from_annotations</span><span class="p">,</span> <span class="n">fill_pvi_entries</span>
 
-<span class="kn">from</span> <span class="nn">._common_blocks</span> <span class="kn">import</span> <span class="n">CommonPandaBlocks</span>
-<span class="kn">from</span> <span class="nn">._hdf_writer</span> <span class="kn">import</span> <span class="n">PandaHDFWriter</span>
-<span class="kn">from</span> <span class="nn">._panda_controller</span> <span class="kn">import</span> <span class="n">PandaPcapController</span>
+<span class="kn">from</span> <span class="nn">._block</span> <span class="kn">import</span> <span class="n">CommonPandaBlocks</span>
+<span class="kn">from</span> <span class="nn">._control</span> <span class="kn">import</span> <span class="n">PandaPcapController</span>
+<span class="kn">from</span> <span class="nn">._writer</span> <span class="kn">import</span> <span class="n">PandaHDFWriter</span>
 
 
 <div class="viewcode-block" id="HDFPanda">

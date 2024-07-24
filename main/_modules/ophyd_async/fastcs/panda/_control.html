@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.signal._common &#8212; ophyd-async 0.5.1.dev5+g0212e873 documentation</title>
+    <title>ophyd_async.fastcs.panda._control &#8212; ophyd-async 0.5.1.dev5+g0212e873 documentation</title>
   
   
   
@@ -47,7 +47,7 @@
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
     <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true});</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/signal/_common';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/fastcs/panda/_control';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -486,79 +486,56 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.signal._common</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">inspect</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span>
+  <h1>Source code for ophyd_async.fastcs.panda._control</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncStatus</span><span class="p">,</span>
+    <span class="n">DetectorControl</span><span class="p">,</span>
+    <span class="n">DetectorTrigger</span><span class="p">,</span>
+    <span class="n">wait_for_value</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">RuntimeSubsetEnum</span>
-
-<span class="n">common_meta</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;units&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;precision&quot;</span><span class="p">,</span>
-<span class="p">}</span>
-
-
-<div class="viewcode-block" id="LimitPair">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.signal.LimitPair.html#ophyd_async.epics.signal.LimitPair">[docs]</a>
-<span class="k">class</span> <span class="nc">LimitPair</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-    <span class="n">high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="n">low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span></div>
+<span class="kn">from</span> <span class="nn">._block</span> <span class="kn">import</span> <span class="n">PcapBlock</span>
 
 
+<div class="viewcode-block" id="PandaPcapController">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaPcapController.html#ophyd_async.fastcs.panda.PandaPcapController">[docs]</a>
+<span class="k">class</span> <span class="nc">PandaPcapController</span><span class="p">(</span><span class="n">DetectorControl</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcap</span> <span class="o">=</span> <span class="n">pcap</span>
 
-<div class="viewcode-block" id="Limits">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.signal.Limits.html#ophyd_async.epics.signal.Limits">[docs]</a>
-<span class="k">class</span> <span class="nc">Limits</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-    <span class="n">alarm</span><span class="p">:</span> <span class="n">LimitPair</span>
-    <span class="n">control</span><span class="p">:</span> <span class="n">LimitPair</span>
-    <span class="n">display</span><span class="p">:</span> <span class="n">LimitPair</span>
-    <span class="n">warning</span><span class="p">:</span> <span class="n">LimitPair</span>
-
-    <span class="k">def</span> <span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alarm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">)</span></div>
-
+<div class="viewcode-block" id="PandaPcapController.get_deadtime">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaPcapController.html#ophyd_async.fastcs.panda.PandaPcapController.get_deadtime">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.000000008</span></div>
 
 
-<div class="viewcode-block" id="get_supported_values">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.signal.get_supported_values.html#ophyd_async.epics.signal.get_supported_values">[docs]</a>
-<span class="k">def</span> <span class="nf">get_supported_values</span><span class="p">(</span>
-    <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
-    <span class="n">pv_choices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">RuntimeSubsetEnum</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">datatype</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pv_choices</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has choices </span><span class="si">{</span><span class="n">pv_choices</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;which is not a superset of </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">or</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
-    <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> is type Enum but </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> does not inherit from String.&quot;</span>
-            <span class="p">)</span>
+<div class="viewcode-block" id="PandaPcapController.arm">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaPcapController.html#ophyd_async.fastcs.panda.PandaPcapController.arm">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">constant_gate</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">trigger</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">constant_gate</span><span class="p">,</span>
+            <span class="n">trigger</span> <span class="o">==</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">variable_gate</span><span class="p">,</span>
+        <span class="p">),</span> <span class="s2">&quot;Only constant_gate and variable_gate triggering is supported on the PandA&quot;</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span></div>
 
-        <span class="n">choices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">datatype</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">pv_choices</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has choices </span><span class="si">{</span><span class="n">pv_choices</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;which do not match </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">, which has </span><span class="si">{</span><span class="n">choices</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">datatype</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="k">else</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">or</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
 
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has choices </span><span class="si">{</span><span class="n">pv_choices</span><span class="si">}</span><span class="s2">. &quot;</span>
-        <span class="s2">&quot;Use an Enum or SubsetEnum to represent this.&quot;</span>
-    <span class="p">)</span></div>
+<div class="viewcode-block" id="PandaPcapController.disarm">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaPcapController.html#ophyd_async.fastcs.panda.PandaPcapController.disarm">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span></div>
+</div>
 
 </pre></div>
 

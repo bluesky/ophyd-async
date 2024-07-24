@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.signal._common &#8212; ophyd-async 0.5.1.dev5+g0212e873 documentation</title>
+    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.5.1.dev5+g0212e873 documentation</title>
   
   
   
@@ -47,7 +47,7 @@
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
     <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true});</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/signal/_common';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/fastcs/panda/_block';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -486,79 +486,101 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.signal._common</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">inspect</span>
+  <h1>Source code for ophyd_async.fastcs.panda._block</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span>
 
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">SubsetEnum</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">RuntimeSubsetEnum</span>
-
-<span class="n">common_meta</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;units&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;precision&quot;</span><span class="p">,</span>
-<span class="p">}</span>
+<span class="kn">from</span> <span class="nn">._table</span> <span class="kn">import</span> <span class="n">DatasetTable</span><span class="p">,</span> <span class="n">SeqTable</span>
 
 
-<div class="viewcode-block" id="LimitPair">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.signal.LimitPair.html#ophyd_async.epics.signal.LimitPair">[docs]</a>
-<span class="k">class</span> <span class="nc">LimitPair</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-    <span class="n">high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="n">low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span></div>
+<div class="viewcode-block" id="DataBlock">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.DataBlock.html#ophyd_async.fastcs.panda.DataBlock">[docs]</a>
+<span class="k">class</span> <span class="nc">DataBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="c1"># In future we may decide to make hdf_* optional</span>
+    <span class="n">hdf_directory</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">hdf_file_name</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">num_capture</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">num_captured</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">capture</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
+    <span class="n">flush_period</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">datasets</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">DatasetTable</span><span class="p">]</span></div>
 
 
 
-<div class="viewcode-block" id="Limits">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.signal.Limits.html#ophyd_async.epics.signal.Limits">[docs]</a>
-<span class="k">class</span> <span class="nc">Limits</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-    <span class="n">alarm</span><span class="p">:</span> <span class="n">LimitPair</span>
-    <span class="n">control</span><span class="p">:</span> <span class="n">LimitPair</span>
-    <span class="n">display</span><span class="p">:</span> <span class="n">LimitPair</span>
-    <span class="n">warning</span><span class="p">:</span> <span class="n">LimitPair</span>
-
-    <span class="k">def</span> <span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alarm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">)</span></div>
+<div class="viewcode-block" id="PulseBlock">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PulseBlock.html#ophyd_async.fastcs.panda.PulseBlock">[docs]</a>
+<span class="k">class</span> <span class="nc">PulseBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="n">delay</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></div>
 
 
 
-<div class="viewcode-block" id="get_supported_values">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.signal.get_supported_values.html#ophyd_async.epics.signal.get_supported_values">[docs]</a>
-<span class="k">def</span> <span class="nf">get_supported_values</span><span class="p">(</span>
-    <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
-    <span class="n">pv_choices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">RuntimeSubsetEnum</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">datatype</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pv_choices</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has choices </span><span class="si">{</span><span class="n">pv_choices</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;which is not a superset of </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">or</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
-    <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> is type Enum but </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> does not inherit from String.&quot;</span>
-            <span class="p">)</span>
+<div class="viewcode-block" id="PcompDirectionOptions">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PcompDirectionOptions.html#ophyd_async.fastcs.panda.PcompDirectionOptions">[docs]</a>
+<span class="k">class</span> <span class="nc">PcompDirectionOptions</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">positive</span> <span class="o">=</span> <span class="s2">&quot;Positive&quot;</span>
+    <span class="n">negative</span> <span class="o">=</span> <span class="s2">&quot;Negative&quot;</span>
+    <span class="n">either</span> <span class="o">=</span> <span class="s2">&quot;Either&quot;</span></div>
 
-        <span class="n">choices</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">datatype</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">pv_choices</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has choices </span><span class="si">{</span><span class="n">pv_choices</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;which do not match </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">, which has </span><span class="si">{</span><span class="n">choices</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">datatype</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="k">else</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">or</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
 
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has choices </span><span class="si">{</span><span class="n">pv_choices</span><span class="si">}</span><span class="s2">. &quot;</span>
-        <span class="s2">&quot;Use an Enum or SubsetEnum to represent this.&quot;</span>
-    <span class="p">)</span></div>
+
+<span class="n">EnableDisableOptions</span> <span class="o">=</span> <span class="n">SubsetEnum</span><span class="p">[</span><span class="s2">&quot;ZERO&quot;</span><span class="p">,</span> <span class="s2">&quot;ONE&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="PcompBlock">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PcompBlock.html#ophyd_async.fastcs.panda.PcompBlock">[docs]</a>
+<span class="k">class</span> <span class="nc">PcompBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
+    <span class="nb">dir</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PcompDirectionOptions</span><span class="p">]</span>
+    <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">EnableDisableOptions</span><span class="p">]</span>
+    <span class="n">pulses</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">step</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="TimeUnits">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.TimeUnits.html#ophyd_async.fastcs.panda.TimeUnits">[docs]</a>
+<span class="k">class</span> <span class="nc">TimeUnits</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="nb">min</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span>
+    <span class="n">ms</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span>
+    <span class="n">us</span> <span class="o">=</span> <span class="s2">&quot;us&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="SeqBlock">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.SeqBlock.html#ophyd_async.fastcs.panda.SeqBlock">[docs]</a>
+<span class="k">class</span> <span class="nc">SeqBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="n">table</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SeqTable</span><span class="p">]</span>
+    <span class="n">active</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
+    <span class="n">repeats</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">prescale</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">prescale_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">TimeUnits</span><span class="p">]</span>
+    <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">EnableDisableOptions</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="PcapBlock">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PcapBlock.html#ophyd_async.fastcs.panda.PcapBlock">[docs]</a>
+<span class="k">class</span> <span class="nc">PcapBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
+    <span class="n">arm</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="CommonPandaBlocks">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.CommonPandaBlocks.html#ophyd_async.fastcs.panda.CommonPandaBlocks">[docs]</a>
+<span class="k">class</span> <span class="nc">CommonPandaBlocks</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+    <span class="n">pulse</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">PulseBlock</span><span class="p">]</span>
+    <span class="n">seq</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">SeqBlock</span><span class="p">]</span>
+    <span class="n">pcomp</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">PcompBlock</span><span class="p">]</span>
+    <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DataBlock</span></div>
 
 </pre></div>
 
