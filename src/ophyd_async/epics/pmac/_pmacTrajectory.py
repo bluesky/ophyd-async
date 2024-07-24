@@ -1,7 +1,9 @@
 import time
 
+import numpy as np
+import numpy.typing as npt
 from bluesky.protocols import Flyable, Preparable
-from scanspec.specs import Frames
+from scanspec.specs import Frames, Path
 
 from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
 from ophyd_async.core.signal import observe_value
@@ -35,92 +37,86 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
     @AsyncStatus.wrap
     async def prepare(self, stack: list[Frames[Motor]]):
         # Which Axes are in use?
-
-        scanSize = len(stack[0])
-        scanAxes = stack[0].axes()
+        path = Path(stack)
+        chunk = path.consume()
+        scan_size = len(chunk)
+        scan_axes = chunk.axes()
 
         cs_ports = set()
-        self.profile = {}
-        cs_axes: dict[Motor, str] = {}
-        for axis in scanAxes:
+        positions: dict[int, npt.NDArray[np.float64]] = {}
+        velocities: dict[int, npt.NDArray[np.float64]] = {}
+        time_array: npt.NDArray[np.float64] = []
+        cs_axes: dict[Motor, int] = {}
+        for axis in scan_axes:
             if axis != "DURATION":
-                cs_port, cs_axis = await self.get_cs_info(axis)
-                self.profile[cs_axis] = []
-                self.profile[cs_axis + "_velocity"] = []
+                cs_port, cs_index = await self.get_cs_info(axis)
+                positions[cs_index] = []
+                velocities[cs_index] = []
                 cs_ports.add(cs_port)
-                cs_axes[axis] = cs_axis
-            else:
-                self.profile[axis.lower()] = []
+                cs_axes[axis] = cs_index
         assert len(cs_ports) == 1, "Motors in more than one CS"
         cs_port = cs_ports.pop()
-        self.scantime = sum(stack[0].midpoints["DURATION"])
+        self.scantime = sum(chunk.midpoints["DURATION"])
 
         # Calc Velocity
 
-        for axis in scanAxes:
-            for i in range(scanSize):
+        for axis in scan_axes:
+            for i in range(scan_size):
                 if axis != "DURATION":
-                    self.profile[cs_axes[axis] + "_velocity"].append(
-                        (stack[0].upper[axis][i] - stack[0].lower[axis][i])
-                        / (stack[0].midpoints["DURATION"][i])
+                    velocities[cs_axes[axis]].append(
+                        (chunk.upper[axis][i] - chunk.lower[axis][i])
+                        / (chunk.midpoints["DURATION"][i])
                     )
-                    self.profile[cs_axes[axis]].append(stack[0].midpoints[axis][i])
+                    positions[cs_axes[axis]].append(chunk.midpoints[axis][i])
                 else:
-                    self.profile[axis.lower()].append(
-                        int(stack[0].midpoints[axis][i] / TICK_S)
-                    )
+                    time_array.append(int(chunk.midpoints[axis][i] / TICK_S))
 
         # Calculate Starting and end Position to allow ramp up and trail off velocity
         self.initial_pos = {}
         run_up_time = 0
         final_time = 0
-        for axis in scanAxes:
+        for axis in scan_axes:
             if axis != "DURATION":
                 run_up_disp, run_up_t = await self._ramp_up_velocity_pos(
                     0,
                     axis,
-                    self.profile[cs_axes[axis] + "_velocity"][0],
+                    velocities[cs_axes[axis]][0],
                 )
                 self.initial_pos[cs_axes[axis]] = (
-                    self.profile[cs_axes[axis]][0] - run_up_disp
+                    positions[cs_axes[axis]][0] - run_up_disp
                 )
                 # trail off position and time
-                if (
-                    self.profile[cs_axes[axis] + "_velocity"][0]
-                    == self.profile[cs_axes[axis] + "_velocity"][-1]
-                ):
-                    final_pos = self.profile[cs_axes[axis]][-1] + run_up_disp
+                if velocities[cs_axes[axis]][0] == velocities[cs_axes[axis]][-1]:
+                    final_pos = positions[cs_axes[axis]][-1] + run_up_disp
                     final_time = run_up_t
                 else:
                     ramp_down_disp, ramp_down_time = await self._ramp_up_velocity_pos(
-                        self.profile[cs_axes[axis] + "_velocity"][-1],
+                        velocities[cs_axes[axis]][-1],
                         axis,
                         0,
                     )
-                    final_pos = self.profile[cs_axes[axis]][-1] + ramp_down_disp
+                    final_pos = positions[cs_axes[axis]][-1] + ramp_down_disp
                     final_time = max(ramp_down_time, final_time)
-                self.profile[cs_axes[axis]].append(final_pos)
-                self.profile[cs_axes[axis] + "_velocity"].append(0)
+                positions[cs_axes[axis]].append(final_pos)
+                velocities[cs_axes[axis]].append(0)
                 run_up_time = max(run_up_time, run_up_t)
 
         self.scantime += run_up_time + final_time
-        self.profile["duration"][0] += run_up_time / TICK_S
-        self.profile["duration"].append(int(final_time / TICK_S))
+        time_array[0] += run_up_time / TICK_S
+        time_array.append(int(final_time / TICK_S))
 
-        for axis in scanAxes:
+        for axis in scan_axes:
             if axis != "DURATION":
                 self.profile_cs_name.set(cs_port)
-                self.points_to_build.set(scanSize + 1)
-                self.use_axis[cs_axes[axis]].set(True)
-                self.positions[cs_axes[axis]].set(self.profile[cs_axes[axis]])
-                self.velocities[cs_axes[axis]].set(
-                    self.profile[cs_axes[axis] + "_velocity"]
-                )
+                self.points_to_build.set(scan_size + 1)
+                self.use_axis[cs_axes[axis] + 1].set(True)
+                self.positions[cs_axes[axis] + 1].set(positions[cs_axes[axis]])
+                self.velocities[cs_axes[axis] + 1].set(velocities[cs_axes[axis]])
             else:
-                self.timeArray.set(self.profile["duration"])
+                self.time_array.set(time_array)
 
         # MOVE TO START
-        for axis in scanAxes:
+        for axis in scan_axes:
             if axis != "DURATION":
                 await axis.set(self.initial_pos[cs_axes[axis]])
 
@@ -146,11 +142,11 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 time_elapsed=time.monotonic() - self._fly_start,
             )
 
-    async def get_cs_info(self, motor: Motor):
+    async def get_cs_info(self, motor: Motor) -> tuple[str, int]:
         output_link = await motor.output_link.get_value()
         # Split "@asyn(PORT,num)" into ["PORT", "num"]
         split = output_link.split("(")[1].rstrip(")").split(",")
         cs_port = split[0].strip()
         assert "CS" in cs_port, f"{self.name} not in a CS. It is not a compound motor."
-        cs_axis = "ABCUVWXYZ"[int(split[1].strip()) - 1]
-        return cs_port, cs_axis
+        cs_index = int(split[1].strip()) - 1
+        return cs_port, cs_index
