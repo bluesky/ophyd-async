@@ -8,7 +8,7 @@ from ._utils import T
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    backend = signal.get_backend()
+    backend = signal._backend  # noqa:SLF001
     assert isinstance(backend, MockSignalBackend), (
         "Expected to receive a `MockSignalBackend`, instead "
         f" received {type(backend)}. "
