@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value
-from ophyd_async.core.signal import SignalR
+from ophyd_async.core._signal import SignalR
 
 
 class ADBaseDataType(str, Enum):
@@ -17,6 +17,7 @@ class ADBaseDataType(str, Enum):
     UInt64 = "UInt64"
     Float32 = "Float32"
     Float64 = "Float64"
+    Double = "DOUBLE"
 
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
@@ -31,6 +32,7 @@ def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
         ADBaseDataType.UInt64: "<u8",
         ADBaseDataType.Float32: "<f4",
         ADBaseDataType.Float64: "<f8",
+        ADBaseDataType.Double: "d",
     }
     return ad_dtype_to_np_dtype[ad_dtype]
 

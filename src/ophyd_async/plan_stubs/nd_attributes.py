@@ -3,17 +3,13 @@ from xml.etree import cElementTree as ET
 
 import bluesky.plan_stubs as bps
 
-from ophyd_async.core.device import Device
-from ophyd_async.epics.areadetector.utils import (
-    NDAttributeDataType,
-    NDAttributeParam,
-    NDAttributePv,
-)
-from ophyd_async.epics.areadetector.writers.nd_plugin import NDArrayBase
+from ophyd_async.core._device import Device
+from ophyd_async.epics.adcore._core_io import NDArrayBaseIO
+from ophyd_async.epics.adcore._utils import NDAttributeDataType, NDAttributeParam, NDAttributePv
 
 
 def setup_ndattributes(
-    device: NDArrayBase, ndattributes: Sequence[NDAttributePv | NDAttributeParam]
+    device: NDArrayBaseIO, ndattributes: Sequence[NDAttributePv | NDAttributeParam]
 ):
     xml_text = yield from bps.rd(device.nd_attributes_file)
     if xml_text == "":

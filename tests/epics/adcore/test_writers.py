@@ -124,7 +124,7 @@ async def test_stats_describe_when_plugin_configured(
         hdf_writer_with_stats._plugins[0].nd_attributes_file,
         str(stats_sum_enabled_xml),
     )
-    with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
+    with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         descriptor = await hdf_writer_with_stats.open()
 
     assert descriptor == {
@@ -220,7 +220,7 @@ async def test_invalid_xml_raises_error(
         str(invalid_xml),
     )
     with pytest.raises(Exception) as e:
-        with patch("ophyd_async.core.signal.wait_for_value", return_value=None):
-            descriptor = await hdf_writer_with_stats.open()
+        with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
+            await hdf_writer_with_stats.open()
     assert str(e.value) == "Error parsing XML"
     await hdf_writer_with_stats.close()
