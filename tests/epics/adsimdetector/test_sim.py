@@ -13,15 +13,18 @@ from bluesky.utils import new_uid
 
 from ophyd_async.core import (
     AsyncStatus,
+    DetectorTrigger,
     DeviceCollector,
     StandardDetector,
     StaticFilenameProvider,
     StaticPathProvider,
+    TriggerInfo,
     assert_emitted,
     callback_on_mock_put,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
+
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
     fp = StaticFilenameProvider(f"test-{new_uid()}")

@@ -284,7 +284,7 @@ class StandardDetector(
             value: TriggerInfo describing how to trigger the detector
         """
         self._trigger_info = value
-        if (value.trigger != DetectorTrigger.internal):
+        if value.trigger != DetectorTrigger.internal:
             assert value.deadtime
         if value.deadtime:
             required = self.controller.get_deadtime(self._trigger_info.livetime)

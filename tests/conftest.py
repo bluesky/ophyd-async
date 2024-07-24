@@ -10,11 +10,12 @@ import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import (
+    DetectorTrigger,
     FilenameProvider,
     StaticFilenameProvider,
     StaticPathProvider,
+    TriggerInfo,
 )
-from ophyd_async.core.detector import DetectorTrigger, TriggerInfo
 
 PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
