@@ -16,7 +16,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._common_blocks import CommonPandaBlocks
+from ._block import CommonPandaBlocks
 
 
 class PandaHDFWriter(DetectorWriter):

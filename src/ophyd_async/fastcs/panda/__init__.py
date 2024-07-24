@@ -1,4 +1,4 @@
-from ._common_blocks import (
+from ._block import (
     CommonPandaBlocks,
     DataBlock,
     EnableDisableOptions,
@@ -9,9 +9,8 @@ from ._common_blocks import (
     SeqBlock,
     TimeUnits,
 )
+from ._control import PandaPcapController
 from ._hdf_panda import HDFPanda
-from ._hdf_writer import PandaHDFWriter
-from ._panda_controller import PandaPcapController
 from ._table import (
     DatasetTable,
     PandaHdf5DatasetType,
@@ -28,6 +27,7 @@ from ._trigger import (
     StaticSeqTableTriggerLogic,
 )
 from ._utils import phase_sorter
+from ._writer import PandaHDFWriter
 
 __all__ = [
     "CommonPandaBlocks",
