@@ -5,9 +5,9 @@ from typing import Sequence
 from ophyd_async.core import DEFAULT_TIMEOUT, PathProvider, SignalR, StandardDetector
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 
-from ._common_blocks import CommonPandaBlocks
-from ._hdf_writer import PandaHDFWriter
-from ._panda_controller import PandaPcapController
+from ._block import CommonPandaBlocks
+from ._control import PandaPcapController
+from ._writer import PandaHDFWriter
 
 
 class HDFPanda(CommonPandaBlocks, StandardDetector):
