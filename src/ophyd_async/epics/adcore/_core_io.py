@@ -22,18 +22,19 @@ class NDArrayBaseIO(Device):
         self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire")
         self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
         self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
-        self.data_type = epics_signal_r(ADBaseDataType, prefix + "NDDataType_RBV")
+        self.nd_data_type = epics_signal_r(ADBaseDataType, prefix + "NDDataType_RBV")
         self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
-
         super().__init__(name=name)
 
 
 class NDPluginBaseIO(NDArrayBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
-        self.enable_callback = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks")
+        self.enable_callbacks = epics_signal_rw_rbv(
+            Callback, prefix + "EnableCallbacks"
+        )
         self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0_RBV")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1_RBV")
@@ -110,5 +111,5 @@ class NDFileHDFIO(NDPluginBaseIO):
         self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1")
-        self.create_dir_depth = epics_signal_rw(int, prefix + "CreateDirectory")
+        self.create_directory = epics_signal_rw(int, prefix + "CreateDirectory")
         super().__init__(prefix, name)

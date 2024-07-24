@@ -29,9 +29,9 @@ async def test_get_deadtime(
 
 
 async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
-    set_mock_value(test_advimba.drv.trig_source, "Freerun")
+    set_mock_value(test_advimba.drv.trigger_source, "Freerun")
     set_mock_value(test_advimba.drv.trigger_mode, "Off")
-    set_mock_value(test_advimba.drv.expose_mode, "Timed")
+    set_mock_value(test_advimba.drv.exposure_mode, "Timed")
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_advimba.controller.arm(num=1, trigger=trig_mode)
@@ -39,29 +39,29 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
         set_mock_value(test_advimba.drv.acquire, True)
 
     # Default TriggerSource
-    assert (await test_advimba.drv.trig_source.get_value()) == "Freerun"
+    assert (await test_advimba.drv.trigger_source.get_value()) == "Freerun"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "Off"
-    assert (await test_advimba.drv.expose_mode.get_value()) == "Timed"
+    assert (await test_advimba.drv.exposure_mode.get_value()) == "Timed"
 
     await setup_trigger_mode(DetectorTrigger.edge_trigger)
-    assert (await test_advimba.drv.trig_source.get_value()) == "Line1"
+    assert (await test_advimba.drv.trigger_source.get_value()) == "Line1"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "On"
-    assert (await test_advimba.drv.expose_mode.get_value()) == "Timed"
+    assert (await test_advimba.drv.exposure_mode.get_value()) == "Timed"
 
     await setup_trigger_mode(DetectorTrigger.constant_gate)
-    assert (await test_advimba.drv.trig_source.get_value()) == "Line1"
+    assert (await test_advimba.drv.trigger_source.get_value()) == "Line1"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "On"
-    assert (await test_advimba.drv.expose_mode.get_value()) == "TriggerWidth"
+    assert (await test_advimba.drv.exposure_mode.get_value()) == "TriggerWidth"
 
     await setup_trigger_mode(DetectorTrigger.internal)
-    assert (await test_advimba.drv.trig_source.get_value()) == "Freerun"
+    assert (await test_advimba.drv.trigger_source.get_value()) == "Freerun"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "Off"
-    assert (await test_advimba.drv.expose_mode.get_value()) == "Timed"
+    assert (await test_advimba.drv.exposure_mode.get_value()) == "Timed"
 
     await setup_trigger_mode(DetectorTrigger.variable_gate)
-    assert (await test_advimba.drv.trig_source.get_value()) == "Line1"
+    assert (await test_advimba.drv.trigger_source.get_value()) == "Line1"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "On"
-    assert (await test_advimba.drv.expose_mode.get_value()) == "TriggerWidth"
+    assert (await test_advimba.drv.exposure_mode.get_value()) == "TriggerWidth"
 
 
 async def test_hints_from_hdf_writer(test_advimba: advimba.VimbaDetector):
