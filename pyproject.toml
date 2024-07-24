@@ -146,4 +146,11 @@ lint.select = [
     "F",    # pyflakes rules - https://beta.ruff.rs/docs/rules/#pyflakes-f
     "W",    # pycodestyle warnings - https://beta.ruff.rs/docs/rules/#warning-w
     "I001", # isort
+    "SLF",  # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# By default, private member access is allowed in tests
+# See https://github.com/DiamondLightSource/python-copier-template/issues/154
+# Remove this line to forbid private member access in tests
+"tests/**/*" = ["SLF001"]
