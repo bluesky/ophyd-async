@@ -16,13 +16,15 @@ from ophyd_async.core import (
 )
 from ophyd_async.core.detector import DetectorTrigger, TriggerInfo
 
-PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
+PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
-    Path(__file__).parent / "panda" / "db" / "incomplete_block_panda.db"
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
 )
-INCOMPLETE_RECORD = str(Path(__file__).parent / "panda" / "db" / "incomplete_panda.db")
+INCOMPLETE_RECORD = str(
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_panda.db"
+)
 EXTRA_BLOCKS_RECORD = str(
-    Path(__file__).parent / "panda" / "db" / "extra_blocks_panda.db"
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
 )
 
 # Prevent pytest from catching exceptions when debugging in vscode so that break on

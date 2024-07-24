@@ -15,13 +15,13 @@ from ophyd_async.core import (
     DetectorControl,
     DetectorTrigger,
     DetectorWriter,
-    HardwareTriggeredFlyable,
+    StandardDetector,
+    StandardFlyer,
     TriggerInfo,
     TriggerLogic,
+    observe_value,
 )
-from ophyd_async.core.detector import StandardDetector
-from ophyd_async.core.signal import observe_value
-from ophyd_async.epics.signal.signal import epics_signal_rw
+from ophyd_async.epics.signal import epics_signal_rw
 
 
 class TriggerState(str, Enum):
@@ -150,7 +150,7 @@ async def test_hardware_triggered_flyable(
     RE.subscribe(append_and_print)
 
     trigger_logic = DummyTriggerLogic()
-    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, [], name="flyer")
     trigger_info = TriggerInfo(
         number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
@@ -228,13 +228,13 @@ async def test_hardware_triggered_flyable(
 
 # To do: Populate configuration signals
 async def test_describe_configuration():
-    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
+    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
     assert await flyer.describe_configuration() == {}
 
 
 # To do: Populate configuration signals
 async def test_read_configuration():
-    flyer = HardwareTriggeredFlyable(DummyTriggerLogic(), [], name="flyer")
+    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
     assert await flyer.read_configuration() == {}
 
 

@@ -10,21 +10,23 @@ from event_model import ComposeStreamResourceBundle, compose_stream_resource
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncReadable,
+    AsyncStatus,
     DetectorControl,
     DetectorWriter,
-    HardwareTriggeredFlyable,
+    DeviceCollector,
+    SignalR,
+    StandardDetector,
+    StandardFlyer,
+    TriggerLogic,
+    WatchableAsyncStatus,
+    WatcherUpdate,
     observe_value,
     set_mock_value,
 )
-from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
-from ophyd_async.core.detector import StandardDetector
-from ophyd_async.core.device import DeviceCollector
-from ophyd_async.core.flyer import TriggerLogic
-from ophyd_async.core.signal import SignalR
-from ophyd_async.core.utils import WatcherUpdate
-from ophyd_async.epics.pvi.pvi import fill_pvi_entries
-from ophyd_async.epics.signal.signal import epics_signal_rw
-from ophyd_async.panda import (
+from ophyd_async.epics.pvi import fill_pvi_entries
+from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
@@ -33,7 +35,6 @@ from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
     time_resolved_fly_and_collect_with_static_seq_table,
 )
-from ophyd_async.protocols import AsyncReadable
 
 
 class DummyWriter(DetectorWriter):
@@ -183,7 +184,7 @@ async def mock_panda():
     yield mock_panda
 
 
-class MockFlyer(HardwareTriggeredFlyable):
+class MockFlyer(StandardFlyer):
     def __init__(
         self,
         trigger_logic: TriggerLogic,
@@ -250,7 +251,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     shutter_time = 0.004
 
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    flyer = HardwareTriggeredFlyable(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, [], name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
@@ -398,7 +399,7 @@ async def test_at_least_one_detector_in_fly_plan(
 @pytest.mark.parametrize("timeout_setting,expected_timeout", [(None, 12), (5.0, 5.0)])
 async def test_trigger_sets_or_defaults_timeout(
     RE: RunEngine,
-    seq_flyer: HardwareTriggeredFlyable,
+    seq_flyer: StandardFlyer,
     detectors: tuple[StandardDetector, ...],
     timeout_setting: float | None,
     expected_timeout: float,
