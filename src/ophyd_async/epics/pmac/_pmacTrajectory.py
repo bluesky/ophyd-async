@@ -120,14 +120,15 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
             if axis != "DURATION":
                 await axis.set(self.initial_pos[cs_axes[axis]])
 
-        # Set No Of Points
+        # Set PMAC to use Velocity Array
+        self.profile_calc_vel.set(False)
 
         self.build_profile.set(True)
         self._fly_start = time.monotonic()
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        await self.execute_profile.set(1, timeout=self.scantime + 10)
+        self.status = self.execute_profile.set(1, timeout=self.scantime + 10)
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
@@ -141,6 +142,8 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 precision=0,
                 time_elapsed=time.monotonic() - self._fly_start,
             )
+            if percent >= 100:
+                break
 
     async def get_cs_info(self, motor: Motor) -> tuple[str, int]:
         output_link = await motor.output_link.get_value()
