@@ -44,3 +44,4 @@ class Pmac(StandardReadable, Flyable, Preparable):
         self.scan_percent = epics_signal_r(float, prefix + ":TscanPercent_RBV")
         cs_names_enum = SubsetEnum[cs]
         self.profile_cs_name = epics_signal_rw(cs_names_enum, prefix + ":ProfileCsName")
+        self.profile_calc_vel = epics_signal_rw(bool, prefix + ":ProfileCalcVel")
