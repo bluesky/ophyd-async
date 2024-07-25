@@ -9,6 +9,8 @@ from ophyd_async.epics.adcore._utils import (
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
+    convert_param_dtype_to_np,
+    convert_pv_dtype_to_np,
 )
 
 
@@ -16,12 +18,7 @@ def setup_ndattributes(
     device: NDArrayBaseIO, ndattributes: Sequence[NDAttributePv | NDAttributeParam]
 ):
     xml_text = ET.Element("Attributes")
-    _dbr_types = {
-        None: "DBR_NATIVE",
-        NDAttributeDataType.INT: "DBR_LONG",
-        NDAttributeDataType.DOUBLE: "DBR_DOUBLE",
-        NDAttributeDataType.STRING: "DBR_STRING",
-    }
+
     for ndattribute in ndattributes:
         if isinstance(ndattribute, NDAttributeParam):
             ET.SubElement(
@@ -31,7 +28,7 @@ def setup_ndattributes(
                 type="PARAM",
                 source=ndattribute.param,
                 addr=str(ndattribute.addr),
-                datatype=_dbr_types[ndattribute.datatype],
+                datatype=convert_param_dtype_to_np(ndattribute.datatype),
                 description=ndattribute.description,
             )
         elif isinstance(ndattribute, NDAttributePv):
@@ -41,7 +38,7 @@ def setup_ndattributes(
                 name=ndattribute.name,
                 type="EPICS_PV",
                 source=ndattribute.signal.source,
-                datatype=_dbr_types[ndattribute.datatype],
+                datatype=convert_pv_dtype_to_np(ndattribute.datatype),
                 description=ndattribute.description,
             )
         else:
