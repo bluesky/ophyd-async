@@ -294,7 +294,7 @@ class StandardDetector(
         self._arm_status = await self.controller.arm(
             num=self._trigger_info.number,
             trigger=self._trigger_info.trigger,
-            exposure=self._trigger_info.livetime,
+            exposure=self._trigger_info.livetime - self._trigger_info.deadtime,
         )
         self._fly_start = time.monotonic()
 
