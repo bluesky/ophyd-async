@@ -52,9 +52,9 @@ async def hdf_writer_with_stats(
     return ADHDFWriter(
         hdf,
         static_path_provider,
-        name_provider=lambda: "test",
-        shape_provider=DummyShapeProvider(),
-        plugins=[stats],
+        lambda: "test",
+        DummyShapeProvider(),
+        stats,
     )
 
 
@@ -134,13 +134,6 @@ async def test_stats_describe_when_plugin_configured(
             "dtype_numpy": "<u2",
             "external": "STREAM:",
         },
-        "mydetector-sum": {
-            "source": "mock+ca://HDF:FullFileName_RBV",
-            "shape": (),
-            "dtype": "number",
-            "dtype_numpy": "d",
-            "external": "STREAM:",
-        },
     }
     await hdf_writer_with_stats.close()
 
@@ -207,17 +200,3 @@ async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):
         )
 
 
-async def test_invalid_xml_raises_error(
-    hdf_writer_with_stats: ADHDFWriter, invalid_xml: Path
-):
-    assert hdf_writer_with_stats._file is None
-    set_mock_value(hdf_writer_with_stats.hdf.file_path_exists, True)
-    set_mock_value(
-        hdf_writer_with_stats._plugins[0].nd_attributes_file,
-        str(invalid_xml),
-    )
-    with pytest.raises(Exception) as e:
-        with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
-            await hdf_writer_with_stats.open()
-    assert str(e.value) == "Error parsing XML"
-    await hdf_writer_with_stats.close()

@@ -32,9 +32,44 @@ def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
         ADBaseDataType.UInt64: "<u8",
         ADBaseDataType.Float32: "<f4",
         ADBaseDataType.Float64: "<f8",
-        ADBaseDataType.Double: "d",
     }
     return ad_dtype_to_np_dtype[ad_dtype]
+
+
+def convert_pv_dtype_to_np(datatype: str) -> str:
+    _pvattribute_to_ad_datatype = {
+        "DBR_SHORT":ADBaseDataType.Int16,
+        "DBR_ENUM":ADBaseDataType.Int16,
+        "DBR_INT": ADBaseDataType.Int32,
+        "DBR_LONG":ADBaseDataType.Int32,
+        "DBR_FLOAT":ADBaseDataType.Float32,
+        "DBR_DOUBLE":ADBaseDataType.Float64
+    }
+    if datatype in ["STRING", "DBR_STRING","DBR_CHAR"]:
+        np_datatype = "s40"
+    elif datatype == "DBR_NATIVE":
+        raise ValueError("Don't support DBR_NATIVE yet")
+    else:
+        try:
+            np_datatype = convert_ad_dtype_to_np(_pvattribute_to_ad_datatype[datatype])
+        except KeyError as e:
+            raise ValueError(f"Invalid dbr type {datatype}")
+    return np_datatype
+
+
+def convert_param_dtype_to_np(datatype: str) -> str:
+    _paramattribute_to_ad_datatype = {
+        "INT":ADBaseDataType.Float32,
+        "DOUBLE": ADBaseDataType.Float64
+    }
+    if datatype in ["STRING"]:
+        np_datatype = "s40"
+    else:
+        try:
+            np_datatype = convert_ad_dtype_to_np(_paramattribute_to_ad_datatype[datatype])
+        except KeyError as e:
+            raise ValueError(f"Invalid datatype {datatype}")
+    return np_datatype
 
 
 class FileWriteMode(str, Enum):

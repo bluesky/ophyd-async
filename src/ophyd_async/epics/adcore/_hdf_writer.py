@@ -1,5 +1,4 @@
 import asyncio
-from collections.abc import Sequence
 from pathlib import Path
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from xml.etree import ElementTree as ET
@@ -21,7 +20,12 @@ from ophyd_async.core import (
 )
 
 from ._core_io import NDArrayBaseIO, NDFileHDFIO
-from ._utils import ADBaseDataType, FileWriteMode, convert_ad_dtype_to_np
+from ._utils import (
+    FileWriteMode,
+    convert_ad_dtype_to_np,
+    convert_param_dtype_to_np,
+    convert_pv_dtype_to_np,
+)
 
 
 class ADHDFWriter(DetectorWriter):
@@ -31,7 +35,7 @@ class ADHDFWriter(DetectorWriter):
         path_provider: PathProvider,
         name_provider: NameProvider,
         shape_provider: ShapeProvider,
-        plugins: Sequence[NDArrayBaseIO] | None = None,
+        *plugins: NDArrayBaseIO,
     ) -> None:
         self.hdf = hdf
         self._path_provider = path_provider
@@ -93,9 +97,12 @@ class ADHDFWriter(DetectorWriter):
             )
         ]
         # And all the scalar datasets
-        try:
-            for plugin in self._plugins:
-                tree = ET.parse((await plugin.nd_attributes_file.get_value()))
+        for plugin in self._plugins:
+            maybe_xml = await plugin.nd_attributes_file.get_value()
+            # This is the check that ADCore does to see if it is an XML string
+            # rather than a filename to parse
+            if "<Attributes>" in maybe_xml:
+                tree = ET.parse(maybe_xml)
                 root = tree.getroot()
                 for child in root:
                     datakey = child.attrib["name"]
@@ -104,14 +111,16 @@ class ADHDFWriter(DetectorWriter):
                             datakey,
                             f"/entry/instrument/NDAttributes/{datakey}",
                             (),
-                            convert_ad_dtype_to_np(
-                                ADBaseDataType((child.attrib.get("datatype", None)))
+                            convert_pv_dtype_to_np(
+                                child.attrib.get("dbrtype", "DBR_NATIVE")
+                            )
+                            if child.attrib.get("type", "EPICS_PV") == "EPICS_PV"
+                            else convert_param_dtype_to_np(
+                                child.attrib.get("datatype", "INT")
                             ),
                             multiplier,
                         )
                     )
-        except ET.ParseError:
-            raise ValueError("Error parsing XML")
 
         describe = {
             ds.data_key: DataKey(
