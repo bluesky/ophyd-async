@@ -198,5 +198,3 @@ async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):
             == f"Invalid type for ndattributes: {type(invalidObjects[0])}. "
             + "Expected NDAttributePv or NDAttributeParam."
         )
-
-
