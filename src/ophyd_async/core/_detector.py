@@ -212,7 +212,7 @@ class StandardDetector(
                 await signal.get_value()
             except NotImplementedError:
                 raise Exception(
-                    f"config signal {signal._name} must be connected before it is "
+                    f"config signal {signal.name} must be connected before it is "
                     + "passed to the detector"
                 )
 

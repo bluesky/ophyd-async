@@ -8,7 +8,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._common_blocks import PcapBlock
+from ._block import PcapBlock
 
 
 class PandaPcapController(DetectorControl):
