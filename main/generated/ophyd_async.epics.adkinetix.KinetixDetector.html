@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adkinetix.KinetixDetector &#8212; ophyd-async 0.5.1.dev6+gc6a9c797 documentation</title>
+    <title>ophyd_async.epics.adkinetix.KinetixDetector &#8212; ophyd-async 0.5.1.dev7+g158f4ef0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=ffae742a"></script>
+    <script src="../_static/documentation_options.js?v=2be92ef4"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -745,7 +745,7 @@ may change API on minor release numbers before then</p>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adkinetix.KinetixDetector.prepare" title="ophyd_async.epics.adkinetix.KinetixDetector.prepare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Arm detector.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adkinetix.KinetixDetector.read" title="ophyd_async.epics.adkinetix.KinetixDetector.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a></p></td>
 <td><p></p></td>
@@ -876,8 +876,18 @@ may change API on minor release numbers before then</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixDetector.prepare">
-<span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixDetector.prepare" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TriggerInfo</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixDetector.prepare" title="Link to this definition">#</a></dt>
+<dd><p>Arm detector.</p>
+<p>Prepare the detector with trigger information. This is determined at and passed
+in from the plan level.</p>
+<p>This currently only prepares detectors for flyscans and stepscans just use the
+trigger information determined in trigger.</p>
+<p>To do: Unify prepare to be use for both fly and step scans.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>value: TriggerInfo describing how to trigger the detector</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixDetector.read">

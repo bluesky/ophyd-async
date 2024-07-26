@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.5.1.dev6+gc6a9c797 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.5.1.dev7+g158f4ef0 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=ffae742a"></script>
+    <script src="../../../_static/documentation_options.js?v=2be92ef4"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -547,11 +547,16 @@ document.write(`
     <span class="c1">#: Sort of triggers that will be sent</span>
     <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">Field</span><span class="p">()</span>
     <span class="c1">#: What is the minimum deadtime between triggers</span>
-    <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="c1">#: What is the maximum high time of the triggers</span>
-    <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="c1">#: What is the maximum timeout on waiting for a frame</span>
     <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1">#: How many triggers make up a single StreamDatum index, to allow multiple frames</span>
+    <span class="c1">#: from a faster detector to be zipped with a single frame from a slow detector</span>
+    <span class="c1">#: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,</span>
+    <span class="c1">#: but publish 2 indices, and describe() will show a shape of (5, h, w)</span>
+    <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
 
 <div class="viewcode-block" id="DetectorControl">
@@ -565,7 +570,7 @@ document.write(`
 <div class="viewcode-block" id="DetectorControl.get_deadtime">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.DetectorControl.html#ophyd_async.core.DetectorControl.get_deadtime">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;For a given exposure, how long should the time between exposures be&quot;&quot;&quot;</span></div>
 
 
@@ -722,10 +727,10 @@ document.write(`
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.stage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Disarm the detector, stop filewriting, and open file for writing.</span>
+        <span class="c1"># Disarm the detector, stop filewriting.</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_config_sigs</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">open</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_check_config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -780,10 +785,15 @@ document.write(`
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.trigger">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># set default trigger_info</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">TriggerInfo</span><span class="p">(</span>
-            <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span> <span class="n">deadtime</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">livetime</span><span class="o">=</span><span class="mf">0.0</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+                <span class="n">TriggerInfo</span><span class="p">(</span>
+                    <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span>
+                    <span class="n">deadtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">livetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
         <span class="c1"># Arm the detector and wait for it to finish.</span>
         <span class="n">indices_written</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
         <span class="n">written_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">(</span>
@@ -794,7 +804,9 @@ document.write(`
         <span class="n">end_observation</span> <span class="o">=</span> <span class="n">indices_written</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
-            <span class="n">DEFAULT_TIMEOUT</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span>
+            <span class="n">DEFAULT_TIMEOUT</span>
+            <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">end_observation</span><span class="p">:</span>
                 <span class="k">break</span></div>
@@ -802,15 +814,8 @@ document.write(`
 
 <div class="viewcode-block" id="StandardDetector.prepare">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.prepare">[docs]</a>
-    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-        <span class="c1"># Just arm detector for the time being</span>
-        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
-
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Arm detector.</span>
 
@@ -825,22 +830,27 @@ document.write(`
 <span class="sd">        Args:</span>
 <span class="sd">            value: TriggerInfo describing how to trigger the detector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="n">TriggerInfo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span>
+            <span class="p">),</span> <span class="s2">&quot;Deadtime must be supplied when in externally triggered mode&quot;</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">required</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="si">}</span><span class="s2"> needs at least </span><span class="si">{</span><span class="n">required</span><span class="si">}</span><span class="s2">s deadtime, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but trigger logic provides only </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="si">}</span><span class="s2">s&quot;</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span>
-
-        <span class="n">required</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">required</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="si">}</span><span class="s2"> needs at least </span><span class="si">{</span><span class="n">required</span><span class="si">}</span><span class="s2">s deadtime, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;but trigger logic provides only </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="si">}</span><span class="s2">s&quot;</span>
-        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">(</span>
             <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
             <span class="n">trigger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span>
             <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">multiplier</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="StandardDetector.kickoff">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardDetector.html#ophyd_async.core.StandardDetector.kickoff">[docs]</a>
@@ -860,8 +870,8 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">frame_timeout</span>
             <span class="ow">or</span> <span class="p">(</span>
                 <span class="n">DEFAULT_TIMEOUT</span>
-                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span>
-                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span>
+                <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="p">):</span>
             <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
