@@ -42,7 +42,7 @@ class ADHDFWriter(DetectorWriter):
         self._name_provider = name_provider
         self._shape_provider = shape_provider
 
-        self._plugins = plugins or []
+        self._plugins = plugins
         self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[HDFDataset] = []
         self._file: Optional[HDFFile] = None
@@ -105,18 +105,20 @@ class ADHDFWriter(DetectorWriter):
                 root = ET.fromstring(maybe_xml)
                 for child in root:
                     datakey = child.attrib["name"]
+                    if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
+                        np_datatye = convert_pv_dtype_to_np(
+                            child.attrib.get("dbrtype", "DBR_NATIVE")
+                        )
+                    else:
+                        np_datatye = convert_param_dtype_to_np(
+                            child.attrib.get("datatype", "INT")
+                        )
                     self._datasets.append(
                         HDFDataset(
                             datakey,
                             f"/entry/instrument/NDAttributes/{datakey}",
                             (),
-                            convert_pv_dtype_to_np(
-                                child.attrib.get("dbrtype", "DBR_NATIVE")
-                            )
-                            if child.attrib.get("type", "EPICS_PV") == "EPICS_PV"
-                            else convert_param_dtype_to_np(
-                                child.attrib.get("datatype", "INT")
-                            ),
+                            np_datatye,
                             multiplier,
                         )
                     )

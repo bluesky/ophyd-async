@@ -36,7 +36,7 @@ def setup_ndattributes(
                 name=ndattribute.name,
                 type="EPICS_PV",
                 source=ndattribute.signal.source,
-                datatype=ndattribute.datatype.value,
+                dbrtype=ndattribute.dbrtype.value,
                 description=ndattribute.description,
             )
         else:

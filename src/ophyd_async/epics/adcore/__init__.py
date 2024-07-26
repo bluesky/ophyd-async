@@ -14,7 +14,7 @@ from ._utils import (
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
-    NDAttributePvDataType,
+    NDAttributePvDbrType,
     stop_busy_record,
 )
 
@@ -36,5 +36,5 @@ __all__ = [
     "NDAttributeParam",
     "NDAttributeDataType",
     "stop_busy_record",
-    "NDAttributePvDataType",
+    "NDAttributePvDbrType",
 ]

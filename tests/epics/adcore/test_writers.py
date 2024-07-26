@@ -85,9 +85,19 @@ async def test_stats_describe_when_plugin_configured(
         hdf_writer_with_stats._plugins[0].nd_attributes_file,
         str("""<?xml version='1.0' encoding='utf-8'?>
 <Attributes>
-    <Attribute name="mydetector-sum" type="PARAM" source="TOTAL" addr="0"
-    datatype="DOUBLE" description="Sum of each detector frame" />
-</Attributes>"""),
+    <Attribute
+        name="mydetector-sum"
+        type="PARAM"
+        source="TOTAL" addr="0"
+        datatype="DOUBLE"
+        description="Sum of each detector frame" />
+    <Attribute
+        name="mydetector-Temperature"
+        type="EPICS_PV"
+        source="ca://LINKAM:TEMP"
+        dbrtype="DBR_FLOAT"/>
+</Attributes>
+"""),
     )
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         descriptor = await hdf_writer_with_stats.open()
@@ -107,8 +117,39 @@ async def test_stats_describe_when_plugin_configured(
             "dtype_numpy": "<f8",
             "external": "STREAM:",
         },
+        "mydetector-Temperature": {
+            "dtype": "number",
+            "dtype_numpy": "<f4",
+            "external": "STREAM:",
+            "shape": (),
+            "source": "mock+ca://HDF:FullFileName_RBV",
+        },
     }
     await hdf_writer_with_stats.close()
+
+
+async def test_stats_describe_raises_error_with_dbr_native(
+    hdf_writer_with_stats: adcore.ADHDFWriter,
+):
+    assert hdf_writer_with_stats._file is None
+    set_mock_value(hdf_writer_with_stats.hdf.file_path_exists, True)
+    set_mock_value(
+        hdf_writer_with_stats._plugins[0].nd_attributes_file,
+        str("""<?xml version='1.0' encoding='utf-8'?>
+<Attributes>
+    <Attribute
+        name="mydetector-Temperature"
+        type="EPICS_PV"
+        source="ca://LINKAM:TEMP"
+        dbrtype="DBR_NATIVE"/>
+</Attributes>
+"""),
+    )
+    with pytest.raises(ValueError) as e:
+        with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
+            await hdf_writer_with_stats.open()
+    await hdf_writer_with_stats.close()
+    assert str(e.value) == "Don't support DBR_NATIVE yet"
 
 
 async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
@@ -143,7 +184,7 @@ async def test_nd_attributes_plan_stub(RE, detectors):
             name="Temperature",
             signal=epics_signal_r(str, "LINKAM:TEMP"),
             description="The sample temperature",
-            datatype=adcore.NDAttributePvDataType.DBR_FLOAT,
+            dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
         )
         RE(setup_ndattributes(detector.hdf, [pv, param]))
         xml = await detector.hdf.nd_attributes_file.get_value()
@@ -152,7 +193,7 @@ async def test_nd_attributes_plan_stub(RE, detectors):
             "name": "Temperature",
             "type": "EPICS_PV",
             "source": "ca://LINKAM:TEMP",
-            "datatype": "DBR_FLOAT",
+            "dbrtype": "DBR_FLOAT",
             "description": "The sample temperature",
         }
 
