@@ -94,7 +94,7 @@ async def test_stats_describe_when_plugin_configured(
     <Attribute
         name="mydetector-Temperature"
         type="EPICS_PV"
-        source="ca://LINKAM:TEMP"
+        source="LINKAM:TEMP"
         dbrtype="DBR_FLOAT"/>
 </Attributes>
 """),
@@ -140,7 +140,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
     <Attribute
         name="mydetector-Temperature"
         type="EPICS_PV"
-        source="ca://LINKAM:TEMP"
+        source="LINKAM:TEMP"
         dbrtype="DBR_NATIVE"/>
 </Attributes>
 """),
