@@ -285,7 +285,9 @@ class StandardDetector(
         """
         self._trigger_info = value
         if value.trigger != DetectorTrigger.internal:
-            assert value.deadtime
+            assert (
+                value.deadtime
+            ), "Deadtime must be supplied when in externally triggered mode"
         if value.deadtime:
             required = self.controller.get_deadtime(self._trigger_info.livetime)
             assert required <= value.deadtime, (
