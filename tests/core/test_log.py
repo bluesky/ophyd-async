@@ -29,8 +29,8 @@ def test_default_config_ophyd_async_logging():
     assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
 
-def test_config_ophyd_async_logging_with_file_handler():
-    config_ophyd_async_logging(file="file")
+def test_config_ophyd_async_logging_with_file_handler(tmp_path):
+    config_ophyd_async_logging(file=tmp_path / "file")
     assert isinstance(_log.current_handler, logging.StreamHandler)
     assert _log.logger.getEffectiveLevel() <= logging.WARNING
 
