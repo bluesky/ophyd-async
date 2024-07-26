@@ -13,10 +13,12 @@ from bluesky.utils import new_uid
 
 from ophyd_async.core import (
     AsyncStatus,
+    DetectorTrigger,
     DeviceCollector,
     StandardDetector,
     StaticFilenameProvider,
     StaticPathProvider,
+    TriggerInfo,
     assert_emitted,
     callback_on_mock_put,
     set_mock_value,
@@ -48,7 +50,6 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
 
     yield from bps.stage_all(*dets)
     yield from bps.open_run()
-    yield from bps.declare_stream(*dets, name="primary", collect=False)
     for _ in range(times):
         read_values = {}
         for det in dets:
@@ -59,7 +60,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
 
-        yield from bps.sleep(0.001)
+        yield from bps.sleep(0.1)
         [
             set_mock_value(
                 cast(adcore.ADHDFWriter, det.writer).hdf.num_captured,
@@ -113,24 +114,67 @@ async def two_detectors(tmp_path: Path):
 async def test_two_detectors_fly_different_rate(
     two_detectors: List[adsimdetector.SimDetector], RE: RunEngine
 ):
+    trigger_info = TriggerInfo(
+        number=15,
+        trigger=DetectorTrigger.internal,
+        deadtime=None,
+        livetime=None,
+        frame_timeout=None,
+    )
     docs = defaultdict(list)
+
+    def assert_n_stream_datums(
+        n: int, start: int | None = None, stop: int | None = None
+    ):
+        if n == 0:
+            assert "stream_datum" not in docs
+        else:
+            assert len(docs["stream_datum"]) == n
+            # check both detectors have the correct start/stop
+            for detector_index in {n - 1, n - 2}:
+                seq_nums = docs["stream_datum"][detector_index]["seq_nums"]
+                assert seq_nums["start"] == start
+                assert seq_nums["stop"] == stop
 
     @bpp.stage_decorator(two_detectors)
     @bpp.run_decorator()
     def fly_plan():
+        for det in two_detectors:
+            yield from bps.prepare(det, trigger_info, wait=True, group="prepare")
         yield from bps.declare_stream(*two_detectors, name="primary")
-        # Make one produce some frames and collect
-        set_mock_value(two_detectors[0].hdf.num_captured, 15)
+
+        for det in two_detectors:
+            yield from bps.trigger(det, wait=False, group="trigger_cleanup")
+
+        # det[0] captures 5 frames, but we do not emit a StreamDatum as det[1] has not
+        set_mock_value(two_detectors[0].hdf.num_captured, 5)
+
         yield from bps.collect(*two_detectors)
-        # It shouldn't make anything as the other one is lagging
-        assert "stream_datum" not in docs
-        # Make the other one produce some frames
-        set_mock_value(two_detectors[1].hdf.num_captured, 15)
+        assert_n_stream_datums(0)
+
+        # det[0] captures 10 frames, but we do not emit a StreamDatum as det[1] has not
+        set_mock_value(two_detectors[0].hdf.num_captured, 10)
         yield from bps.collect(*two_detectors)
+        assert_n_stream_datums(0)
+
+        # det[1] has caught up to first 7 frames, emit streamDatum for seq_num {1,7}
+        set_mock_value(two_detectors[1].hdf.num_captured, 7)
+        yield from bps.collect(*two_detectors)
+        assert_n_stream_datums(2, 1, 8)
+
+        for det in two_detectors:
+            set_mock_value(det.hdf.num_captured, 15)
+
+        # emits stream datum for seq_num {8, 15}
+        yield from bps.collect(*two_detectors)
+        assert_n_stream_datums(4, 8, 16)
+
+        # Trigger has complete as all expected frames written
+        yield from bps.wait("trigger_cleanup")
 
     RE(fly_plan(), lambda name, doc: docs[name].append(doc))
     assert_emitted(
-        docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, stop=1
+        docs, start=1, descriptor=1, stream_resource=2, stream_datum=4, stop=1
     )
 
 
