@@ -55,11 +55,16 @@ class TriggerInfo(BaseModel):
     #: Sort of triggers that will be sent
     trigger: DetectorTrigger = Field()
     #: What is the minimum deadtime between triggers
-    deadtime: float = Field(ge=0)
+    deadtime: float | None = Field(ge=0)
     #: What is the maximum high time of the triggers
-    livetime: float = Field(ge=0)
+    livetime: float | None = Field(ge=0)
     #: What is the maximum timeout on waiting for a frame
     frame_timeout: float | None = Field(None, gt=0)
+    #: How many triggers make up a single StreamDatum index, to allow multiple frames
+    #: from a faster detector to be zipped with a single frame from a slow detector
+    #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
+    #: but publish 2 indices, and describe() will show a shape of (5, h, w)
+    multiplier: int = 1
 
 
 class DetectorControl(ABC):
@@ -69,7 +74,7 @@ class DetectorControl(ABC):
     """
 
     @abstractmethod
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         """For a given exposure, how long should the time between exposures be"""
 
     @abstractmethod
@@ -196,10 +201,10 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        # Disarm the detector, stop filewriting, and open file for writing.
+        # Disarm the detector, stop filewriting.
         await self._check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
-        self._describe = await self.writer.open()
+        self._trigger_info = None
 
     async def _check_config_sigs(self):
         """Checks configuration signals are named and connected."""
@@ -236,10 +241,15 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        # set default trigger_info
-        self._trigger_info = TriggerInfo(
-            number=1, trigger=DetectorTrigger.internal, deadtime=0.0, livetime=0.0
-        )
+        if self._trigger_info is None:
+            await self.prepare(
+                TriggerInfo(
+                    number=1,
+                    trigger=DetectorTrigger.internal,
+                    deadtime=None,
+                    livetime=None,
+                )
+            )
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(
@@ -250,19 +260,15 @@ class StandardDetector(
         end_observation = indices_written + 1
 
         async for index in self.writer.observe_indices_written(
-            DEFAULT_TIMEOUT + self._trigger_info.livetime + self._trigger_info.deadtime
+            DEFAULT_TIMEOUT
+            + (self._trigger_info.livetime or 0)
+            + (self._trigger_info.deadtime or 0)
         ):
             if index >= end_observation:
                 break
 
-    def prepare(
-        self,
-        value: T,
-    ) -> AsyncStatus:
-        # Just arm detector for the time being
-        return AsyncStatus(self._prepare(value))
-
-    async def _prepare(self, value: T) -> None:
+    @AsyncStatus.wrap
+    async def prepare(self, value: TriggerInfo) -> None:
         """
         Arm detector.
 
@@ -277,22 +283,26 @@ class StandardDetector(
         Args:
             value: TriggerInfo describing how to trigger the detector
         """
-        assert type(value) is TriggerInfo
         self._trigger_info = value
+        if value.trigger != DetectorTrigger.internal:
+            assert (
+                value.deadtime
+            ), "Deadtime must be supplied when in externally triggered mode"
+        if value.deadtime:
+            required = self.controller.get_deadtime(self._trigger_info.livetime)
+            assert required <= value.deadtime, (
+                f"Detector {self.controller} needs at least {required}s deadtime, "
+                f"but trigger logic provides only {value.deadtime}s"
+            )
         self._initial_frame = await self.writer.get_indices_written()
         self._last_frame = self._initial_frame + self._trigger_info.number
-
-        required = self.controller.get_deadtime(self._trigger_info.livetime)
-        assert required <= self._trigger_info.deadtime, (
-            f"Detector {self.controller} needs at least {required}s deadtime, "
-            f"but trigger logic provides only {self._trigger_info.deadtime}s"
-        )
         self._arm_status = await self.controller.arm(
             num=self._trigger_info.number,
             trigger=self._trigger_info.trigger,
             exposure=self._trigger_info.livetime,
         )
         self._fly_start = time.monotonic()
+        self._describe = await self.writer.open(value.multiplier)
 
     @AsyncStatus.wrap
     async def kickoff(self):
@@ -307,8 +317,8 @@ class StandardDetector(
             self._trigger_info.frame_timeout
             or (
                 DEFAULT_TIMEOUT
-                + self._trigger_info.livetime
-                + self._trigger_info.deadtime
+                + (self._trigger_info.livetime or 0)
+                + (self._trigger_info.deadtime or 0)
             )
         ):
             yield WatcherUpdate(
