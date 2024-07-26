@@ -42,7 +42,29 @@ class NDPluginBaseIO(NDArrayBaseIO):
 
 
 class NDPluginStatsIO(NDPluginBaseIO):
-    pass
+    """
+    Plugin for computing statistics from an image or region of interest within an image.
+    Each boolean signal enables or disables all signals in the appropriate Enum class.
+    The enum signals may used in the ScalarSignals kwargs of a HDFWriter, and are also
+    read-only signals on the plugin.
+    """
+
+    def __init__(self, prefix: str, name: str = "") -> None:
+        self.total = epics_signal_rw(float, prefix + "TotalArray")
+        self.statistics = epics_signal_rw(bool, prefix + "ComputeStatistics")
+        self.statistics_background_width = epics_signal_rw(int, prefix + "BgdWidth")
+        self.centroid = epics_signal_rw(bool, prefix + "ComputeCentroid")
+        self.centroid_threshold = epics_signal_rw(float, prefix + "CentroidThreshold")
+        self.profiles = epics_signal_rw(bool, prefix + "ComputeProfiles")
+        self.profile_size_x = epics_signal_rw(int, prefix + "ProfileSizeX")
+        self.profile_cursor_x = epics_signal_rw(int, prefix + "CursorX")
+        self.profile_size_y = epics_signal_rw(int, prefix + "ProfileSizeY")
+        self.profile_cursor_y = epics_signal_rw(int, prefix + "CursorY")
+        self.histogram = epics_signal_rw(bool, prefix + "ComputeHistogram")
+        self.histogram_max = epics_signal_rw(float, prefix + "HistMax")
+        self.histogram_min = epics_signal_rw(float, prefix + "HistMin")
+        self.histogram_size = epics_signal_rw(int, prefix + "HistSize")
+        super().__init__(prefix, name)
 
 
 class DetectorState(str, Enum):
