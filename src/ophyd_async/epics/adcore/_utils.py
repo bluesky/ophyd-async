@@ -1,8 +1,9 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
-from xml.etree import cElementTree as ET
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value
+from ophyd_async.core._signal import SignalR
 
 
 class ADBaseDataType(str, Enum):
@@ -16,6 +17,7 @@ class ADBaseDataType(str, Enum):
     UInt64 = "UInt64"
     Float32 = "Float32"
     Float64 = "Float64"
+    Double = "DOUBLE"
 
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
@@ -32,6 +34,45 @@ def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
         ADBaseDataType.Float64: "<f8",
     }
     return ad_dtype_to_np_dtype[ad_dtype]
+
+
+def convert_pv_dtype_to_np(datatype: str) -> str:
+    _pvattribute_to_ad_datatype = {
+        "DBR_SHORT": ADBaseDataType.Int16,
+        "DBR_ENUM": ADBaseDataType.Int16,
+        "DBR_INT": ADBaseDataType.Int32,
+        "DBR_LONG": ADBaseDataType.Int32,
+        "DBR_FLOAT": ADBaseDataType.Float32,
+        "DBR_DOUBLE": ADBaseDataType.Float64,
+    }
+    if datatype in ["DBR_STRING", "DBR_CHAR"]:
+        np_datatype = "s40"
+    elif datatype == "DBR_NATIVE":
+        raise ValueError("Don't support DBR_NATIVE yet")
+    else:
+        try:
+            np_datatype = convert_ad_dtype_to_np(_pvattribute_to_ad_datatype[datatype])
+        except KeyError:
+            raise ValueError(f"Invalid dbr type {datatype}")
+    return np_datatype
+
+
+def convert_param_dtype_to_np(datatype: str) -> str:
+    _paramattribute_to_ad_datatype = {
+        "INT": ADBaseDataType.Int32,
+        "INT64": ADBaseDataType.Int64,
+        "DOUBLE": ADBaseDataType.Float64,
+    }
+    if datatype in ["STRING"]:
+        np_datatype = "s40"
+    else:
+        try:
+            np_datatype = convert_ad_dtype_to_np(
+                _paramattribute_to_ad_datatype[datatype]
+            )
+        except KeyError:
+            raise ValueError(f"Invalid datatype {datatype}")
+    return np_datatype
 
 
 class FileWriteMode(str, Enum):
@@ -52,75 +93,34 @@ class NDAttributeDataType(str, Enum):
     STRING = "STRING"
 
 
-class NDAttributesXML:
-    """Helper to make NDAttributesFile XML for areaDetector"""
+class NDAttributePvDbrType(str, Enum):
+    DBR_SHORT = "DBR_SHORT"
+    DBR_ENUM = "DBR_ENUM"
+    DBR_INT = "DBR_INT"
+    DBR_LONG = "DBR_LONG"
+    DBR_FLOAT = "DBR_FLOAT"
+    DBR_DOUBLE = "DBR_DOUBLE"
+    DBR_STRING = "DBR_STRING"
+    DBR_CHAR = "DBR_CHAR"
 
-    _dbr_types = {
-        None: "DBR_NATIVE",
-        NDAttributeDataType.INT: "DBR_LONG",
-        NDAttributeDataType.DOUBLE: "DBR_DOUBLE",
-        NDAttributeDataType.STRING: "DBR_STRING",
-    }
 
-    def __init__(self):
-        self._root = ET.Element("Attributes")
+@dataclass
+class NDAttributePv:
+    name: str  # name of attribute stamped on array, also scientifically useful name
+    # when appended to device.name
+    signal: SignalR  # caget the pv given by signal.source and attach to each frame
+    dbrtype: NDAttributePvDbrType
+    description: str = ""  # A description that appears in the HDF file as an attribute
 
-    def add_epics_pv(
-        self,
-        name: str,
-        pv: str,
-        datatype: Optional[NDAttributeDataType] = None,
-        description: str = "",
-    ):
-        """Add a PV to the attribute list
 
-        Args:
-            name: The attribute name
-            pv: The pv to get from
-            datatype: An override datatype, otherwise will use native EPICS type
-            description: A description that appears in the HDF file as an attribute
-        """
-        ET.SubElement(
-            self._root,
-            "Attribute",
-            name=name,
-            type="EPICS_PV",
-            source=pv,
-            datatype=self._dbr_types[datatype],
-            description=description,
-        )
-
-    def add_param(
-        self,
-        name: str,
-        param: str,
-        datatype: NDAttributeDataType,
-        addr: int = 0,
-        description: str = "",
-    ):
-        """Add a driver or plugin parameter to the attribute list
-
-        Args:
-            name: The attribute name
-            param: The parameter string as seen in the INP link of the record
-            datatype: The datatype of the parameter
-            description: A description that appears in the HDF file as an attribute
-        """
-        ET.SubElement(
-            self._root,
-            "Attribute",
-            name=name,
-            type="PARAM",
-            source=param,
-            addr=str(addr),
-            datatype=datatype.value,
-            description=description,
-        )
-
-    def __str__(self) -> str:
-        """Output the XML pretty printed"""
-        ET.indent(self._root, space="    ", level=0)
-        return ET.tostring(self._root, xml_declaration=True, encoding="utf-8").decode()
+@dataclass
+class NDAttributeParam:
+    name: str  # name of attribute stamped on array, also scientifically useful name
+    # when appended to device.name
+    param: str  # The parameter string as seen in the INP link of the record
+    datatype: NDAttributeDataType  # The datatype of the parameter
+    addr: int = 0  # The address as seen in the INP link of the record
+    description: str = ""  # A description that appears in the HDF file as an attribute
 
 
 async def stop_busy_record(

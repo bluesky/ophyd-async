@@ -12,7 +12,9 @@ from ._utils import (
     FileWriteMode,
     ImageMode,
     NDAttributeDataType,
-    NDAttributesXML,
+    NDAttributeParam,
+    NDAttributePv,
+    NDAttributePvDbrType,
     stop_busy_record,
 )
 
@@ -30,7 +32,9 @@ __all__ = [
     "ADBaseDataType",
     "FileWriteMode",
     "ImageMode",
+    "NDAttributePv",
+    "NDAttributeParam",
     "NDAttributeDataType",
-    "NDAttributesXML",
     "stop_busy_record",
+    "NDAttributePvDbrType",
 ]
