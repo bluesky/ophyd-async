@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.5.1.dev7+g158f4ef0 documentation</title>
+    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.5.1.dev8+ga794b1b0 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=2be92ef4"></script>
+    <script src="../../../../_static/documentation_options.js?v=7155dabb"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -487,11 +487,12 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.adcore._utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">cElementTree</span> <span class="k">as</span> <span class="n">ET</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">wait_for_value</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core._signal</span> <span class="kn">import</span> <span class="n">SignalR</span>
 
 
 <div class="viewcode-block" id="ADBaseDataType">
@@ -506,7 +507,8 @@ document.write(`
     <span class="n">Int64</span> <span class="o">=</span> <span class="s2">&quot;Int64&quot;</span>
     <span class="n">UInt64</span> <span class="o">=</span> <span class="s2">&quot;UInt64&quot;</span>
     <span class="n">Float32</span> <span class="o">=</span> <span class="s2">&quot;Float32&quot;</span>
-    <span class="n">Float64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span></div>
+    <span class="n">Float64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span>
+    <span class="n">Double</span> <span class="o">=</span> <span class="s2">&quot;DOUBLE&quot;</span></div>
 
 
 
@@ -524,6 +526,45 @@ document.write(`
         <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Float64</span><span class="p">:</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">ad_dtype_to_np_dtype</span><span class="p">[</span><span class="n">ad_dtype</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">convert_pv_dtype_to_np</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">_pvattribute_to_ad_datatype</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;DBR_SHORT&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Int16</span><span class="p">,</span>
+        <span class="s2">&quot;DBR_ENUM&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Int16</span><span class="p">,</span>
+        <span class="s2">&quot;DBR_INT&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Int32</span><span class="p">,</span>
+        <span class="s2">&quot;DBR_LONG&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Int32</span><span class="p">,</span>
+        <span class="s2">&quot;DBR_FLOAT&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Float32</span><span class="p">,</span>
+        <span class="s2">&quot;DBR_DOUBLE&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Float64</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DBR_STRING&quot;</span><span class="p">,</span> <span class="s2">&quot;DBR_CHAR&quot;</span><span class="p">]:</span>
+        <span class="n">np_datatype</span> <span class="o">=</span> <span class="s2">&quot;s40&quot;</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s2">&quot;DBR_NATIVE&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t support DBR_NATIVE yet&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">np_datatype</span> <span class="o">=</span> <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span><span class="n">_pvattribute_to_ad_datatype</span><span class="p">[</span><span class="n">datatype</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid dbr type </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np_datatype</span>
+
+
+<span class="k">def</span> <span class="nf">convert_param_dtype_to_np</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">_paramattribute_to_ad_datatype</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;INT&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Int32</span><span class="p">,</span>
+        <span class="s2">&quot;INT64&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Int64</span><span class="p">,</span>
+        <span class="s2">&quot;DOUBLE&quot;</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">Float64</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;STRING&quot;</span><span class="p">]:</span>
+        <span class="n">np_datatype</span> <span class="o">=</span> <span class="s2">&quot;s40&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">np_datatype</span> <span class="o">=</span> <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span>
+                <span class="n">_paramattribute_to_ad_datatype</span><span class="p">[</span><span class="n">datatype</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid datatype </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np_datatype</span>
 
 
 <div class="viewcode-block" id="FileWriteMode">
@@ -553,83 +594,42 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="NDAttributesXML">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributesXML.html#ophyd_async.epics.adcore.NDAttributesXML">[docs]</a>
-<span class="k">class</span> <span class="nc">NDAttributesXML</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to make NDAttributesFile XML for areaDetector&quot;&quot;&quot;</span>
-
-    <span class="n">_dbr_types</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="kc">None</span><span class="p">:</span> <span class="s2">&quot;DBR_NATIVE&quot;</span><span class="p">,</span>
-        <span class="n">NDAttributeDataType</span><span class="o">.</span><span class="n">INT</span><span class="p">:</span> <span class="s2">&quot;DBR_LONG&quot;</span><span class="p">,</span>
-        <span class="n">NDAttributeDataType</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">:</span> <span class="s2">&quot;DBR_DOUBLE&quot;</span><span class="p">,</span>
-        <span class="n">NDAttributeDataType</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span> <span class="s2">&quot;DBR_STRING&quot;</span><span class="p">,</span>
-    <span class="p">}</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;Attributes&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="NDAttributesXML.add_epics_pv">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributesXML.html#ophyd_async.epics.adcore.NDAttributesXML.add_epics_pv">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_epics_pv</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDAttributeDataType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a PV to the attribute list</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            name: The attribute name</span>
-<span class="sd">            pv: The pv to get from</span>
-<span class="sd">            datatype: An override datatype, otherwise will use native EPICS type</span>
-<span class="sd">            description: A description that appears in the HDF file as an attribute</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="p">,</span>
-            <span class="s2">&quot;Attribute&quot;</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;EPICS_PV&quot;</span><span class="p">,</span>
-            <span class="n">source</span><span class="o">=</span><span class="n">pv</span><span class="p">,</span>
-            <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dbr_types</span><span class="p">[</span><span class="n">datatype</span><span class="p">],</span>
-            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
-        <span class="p">)</span></div>
+<div class="viewcode-block" id="NDAttributePvDbrType">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributePvDbrType.html#ophyd_async.epics.adcore.NDAttributePvDbrType">[docs]</a>
+<span class="k">class</span> <span class="nc">NDAttributePvDbrType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">DBR_SHORT</span> <span class="o">=</span> <span class="s2">&quot;DBR_SHORT&quot;</span>
+    <span class="n">DBR_ENUM</span> <span class="o">=</span> <span class="s2">&quot;DBR_ENUM&quot;</span>
+    <span class="n">DBR_INT</span> <span class="o">=</span> <span class="s2">&quot;DBR_INT&quot;</span>
+    <span class="n">DBR_LONG</span> <span class="o">=</span> <span class="s2">&quot;DBR_LONG&quot;</span>
+    <span class="n">DBR_FLOAT</span> <span class="o">=</span> <span class="s2">&quot;DBR_FLOAT&quot;</span>
+    <span class="n">DBR_DOUBLE</span> <span class="o">=</span> <span class="s2">&quot;DBR_DOUBLE&quot;</span>
+    <span class="n">DBR_STRING</span> <span class="o">=</span> <span class="s2">&quot;DBR_STRING&quot;</span>
+    <span class="n">DBR_CHAR</span> <span class="o">=</span> <span class="s2">&quot;DBR_CHAR&quot;</span></div>
 
 
-<div class="viewcode-block" id="NDAttributesXML.add_param">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributesXML.html#ophyd_async.epics.adcore.NDAttributesXML.add_param">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_param</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">param</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">datatype</span><span class="p">:</span> <span class="n">NDAttributeDataType</span><span class="p">,</span>
-        <span class="n">addr</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a driver or plugin parameter to the attribute list</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            name: The attribute name</span>
-<span class="sd">            param: The parameter string as seen in the INP link of the record</span>
-<span class="sd">            datatype: The datatype of the parameter</span>
-<span class="sd">            description: A description that appears in the HDF file as an attribute</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="p">,</span>
-            <span class="s2">&quot;Attribute&quot;</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;PARAM&quot;</span><span class="p">,</span>
-            <span class="n">source</span><span class="o">=</span><span class="n">param</span><span class="p">,</span>
-            <span class="n">addr</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">addr</span><span class="p">),</span>
-            <span class="n">datatype</span><span class="o">=</span><span class="n">datatype</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
-        <span class="p">)</span></div>
+<div class="viewcode-block" id="NDAttributePv">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributePv.html#ophyd_async.epics.adcore.NDAttributePv">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">NDAttributePv</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># name of attribute stamped on array, also scientifically useful name</span>
+    <span class="c1"># when appended to device.name</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span>  <span class="c1"># caget the pv given by signal.source and attach to each frame</span>
+    <span class="n">dbrtype</span><span class="p">:</span> <span class="n">NDAttributePvDbrType</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># A description that appears in the HDF file as an attribute</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Output the XML pretty printed&quot;&quot;&quot;</span>
-        <span class="n">ET</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="p">,</span> <span class="n">space</span><span class="o">=</span><span class="s2">&quot;    &quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ET</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NDAttributeParam">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributeParam.html#ophyd_async.epics.adcore.NDAttributeParam">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">NDAttributeParam</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># name of attribute stamped on array, also scientifically useful name</span>
+    <span class="c1"># when appended to device.name</span>
+    <span class="n">param</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># The parameter string as seen in the INP link of the record</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="n">NDAttributeDataType</span>  <span class="c1"># The datatype of the parameter</span>
+    <span class="n">addr</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># The address as seen in the INP link of the record</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># A description that appears in the HDF file as an attribute</span></div>
 
 
 

@@ -45,8 +45,10 @@ ophyd\_async.epics.adcore
       ADBaseDataType
       FileWriteMode
       ImageMode
+      NDAttributePv
+      NDAttributeParam
       NDAttributeDataType
-      NDAttributesXML
+      NDAttributePvDbrType
    
    
 

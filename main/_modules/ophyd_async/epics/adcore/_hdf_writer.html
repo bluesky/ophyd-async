@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.5.1.dev7+g158f4ef0 documentation</title>
+    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.5.1.dev8+ga794b1b0 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=2be92ef4"></script>
+    <script src="../../../../_static/documentation_options.js?v=7155dabb"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -490,6 +490,7 @@ document.write(`
 <span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">ET</span>
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">Hints</span><span class="p">,</span> <span class="n">StreamAsset</span>
 
@@ -507,8 +508,13 @@ document.write(`
     <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">._core_io</span> <span class="kn">import</span> <span class="n">NDFileHDFIO</span>
-<span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">FileWriteMode</span><span class="p">,</span> <span class="n">convert_ad_dtype_to_np</span>
+<span class="kn">from</span> <span class="nn">._core_io</span> <span class="kn">import</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span> <span class="n">NDFileHDFIO</span>
+<span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FileWriteMode</span><span class="p">,</span>
+    <span class="n">convert_ad_dtype_to_np</span><span class="p">,</span>
+    <span class="n">convert_param_dtype_to_np</span><span class="p">,</span>
+    <span class="n">convert_pv_dtype_to_np</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="ADHDFWriter">
@@ -520,13 +526,14 @@ document.write(`
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
         <span class="n">shape_provider</span><span class="p">:</span> <span class="n">ShapeProvider</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">scalar_datasets_paths</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">plugins</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">hdf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shape_provider</span> <span class="o">=</span> <span class="n">shape_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scalar_datasets_paths</span> <span class="o">=</span> <span class="n">scalar_datasets_paths</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plugins</span> <span class="o">=</span> <span class="n">plugins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">HDFFile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -583,16 +590,31 @@ document.write(`
             <span class="p">)</span>
         <span class="p">]</span>
         <span class="c1"># And all the scalar datasets</span>
-        <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scalar_datasets_paths</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">HDFDataset</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">ds_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">ds_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="p">(),</span>
-                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">multiplier</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plugins</span><span class="p">:</span>
+            <span class="n">maybe_xml</span> <span class="o">=</span> <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">nd_attributes_file</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+            <span class="c1"># This is the check that ADCore does to see if it is an XML string</span>
+            <span class="c1"># rather than a filename to parse</span>
+            <span class="k">if</span> <span class="s2">&quot;&lt;Attributes&gt;&quot;</span> <span class="ow">in</span> <span class="n">maybe_xml</span><span class="p">:</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">maybe_xml</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="p">:</span>
+                    <span class="n">datakey</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">:</span>
+                        <span class="n">np_datatye</span> <span class="o">=</span> <span class="n">convert_pv_dtype_to_np</span><span class="p">(</span>
+                            <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dbrtype&quot;</span><span class="p">,</span> <span class="s2">&quot;DBR_NATIVE&quot;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">np_datatye</span> <span class="o">=</span> <span class="n">convert_param_dtype_to_np</span><span class="p">(</span>
+                            <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datatype&quot;</span><span class="p">,</span> <span class="s2">&quot;INT&quot;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">HDFDataset</span><span class="p">(</span>
+                            <span class="n">datakey</span><span class="p">,</span>
+                            <span class="sa">f</span><span class="s2">&quot;/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">datakey</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="p">(),</span>
+                            <span class="n">np_datatye</span><span class="p">,</span>
+                            <span class="n">multiplier</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
 
         <span class="n">describe</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">ds</span><span class="o">.</span><span class="n">data_key</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
@@ -653,8 +675,8 @@ document.write(`
 <a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADHDFWriter.html#ophyd_async.epics.adcore.ADHDFWriter.close">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Already done a caput callback in _capture_status, so can&#39;t do one here</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span><span class="p">:</span>
             <span class="c1"># We kicked off an open, so wait for it to return</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span></div>
