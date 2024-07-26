@@ -192,7 +192,7 @@ async def test_nd_attributes_plan_stub(RE, detectors):
         assert xml[0].attrib == {
             "name": "Temperature",
             "type": "EPICS_PV",
-            "source": "ca://LINKAM:TEMP",
+            "source": "LINKAM:TEMP",
             "dbrtype": "DBR_FLOAT",
             "description": "The sample temperature",
         }

@@ -35,7 +35,7 @@ def setup_ndattributes(
                 "Attribute",
                 name=ndattribute.name,
                 type="EPICS_PV",
-                source=ndattribute.signal.source,
+                source=ndattribute.signal.source.split("ca://")[-1],
                 dbrtype=ndattribute.dbrtype.value,
                 description=ndattribute.description,
             )
