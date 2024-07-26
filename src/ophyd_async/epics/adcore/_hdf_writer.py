@@ -1,6 +1,7 @@
 import asyncio
 from pathlib import Path
 from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
+from xml.etree import ElementTree as ET
 
 from bluesky.protocols import DataKey, Hints, StreamAsset
 
@@ -18,8 +19,13 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._core_io import NDFileHDFIO
-from ._utils import FileWriteMode, convert_ad_dtype_to_np
+from ._core_io import NDArrayBaseIO, NDFileHDFIO
+from ._utils import (
+    FileWriteMode,
+    convert_ad_dtype_to_np,
+    convert_param_dtype_to_np,
+    convert_pv_dtype_to_np,
+)
 
 
 class ADHDFWriter(DetectorWriter):
@@ -29,13 +35,14 @@ class ADHDFWriter(DetectorWriter):
         path_provider: PathProvider,
         name_provider: NameProvider,
         shape_provider: ShapeProvider,
-        **scalar_datasets_paths: str,
+        *plugins: NDArrayBaseIO,
     ) -> None:
         self.hdf = hdf
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._shape_provider = shape_provider
-        self._scalar_datasets_paths = scalar_datasets_paths
+
+        self._plugins = plugins
         self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[HDFDataset] = []
         self._file: Optional[HDFFile] = None
@@ -90,16 +97,31 @@ class ADHDFWriter(DetectorWriter):
             )
         ]
         # And all the scalar datasets
-        for ds_name, ds_path in self._scalar_datasets_paths.items():
-            self._datasets.append(
-                HDFDataset(
-                    f"{name}-{ds_name}",
-                    f"/entry/instrument/NDAttributes/{ds_path}",
-                    (),
-                    "",
-                    multiplier,
-                )
-            )
+        for plugin in self._plugins:
+            maybe_xml = await plugin.nd_attributes_file.get_value()
+            # This is the check that ADCore does to see if it is an XML string
+            # rather than a filename to parse
+            if "<Attributes>" in maybe_xml:
+                root = ET.fromstring(maybe_xml)
+                for child in root:
+                    datakey = child.attrib["name"]
+                    if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
+                        np_datatye = convert_pv_dtype_to_np(
+                            child.attrib.get("dbrtype", "DBR_NATIVE")
+                        )
+                    else:
+                        np_datatye = convert_param_dtype_to_np(
+                            child.attrib.get("datatype", "INT")
+                        )
+                    self._datasets.append(
+                        HDFDataset(
+                            datakey,
+                            f"/entry/instrument/NDAttributes/{datakey}",
+                            (),
+                            np_datatye,
+                            multiplier,
+                        )
+                    )
 
         describe = {
             ds.data_key: DataKey(
@@ -148,8 +170,8 @@ class ADHDFWriter(DetectorWriter):
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
-        await self.hdf.capture.set(0, wait=False)
-        await wait_for_value(self.hdf.capture, 0, DEFAULT_TIMEOUT)
+        await self.hdf.capture.set(False, wait=False)
+        await wait_for_value(self.hdf.capture, False, DEFAULT_TIMEOUT)
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status
