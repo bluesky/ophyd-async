@@ -80,12 +80,15 @@ async def test_can_read(test_adaravis: adaravis.AravisDetector):
     assert (await test_adaravis.read()) == {}
 
 
-async def test_decribe_describes_writer_dataset(test_adaravis: adaravis.AravisDetector):
+async def test_decribe_describes_writer_dataset(
+    test_adaravis: adaravis.AravisDetector, one_shot_trigger_info: TriggerInfo
+):
     set_mock_value(test_adaravis._writer.hdf.file_path_exists, True)
     set_mock_value(test_adaravis._writer.hdf.capture, True)
 
     assert await test_adaravis.describe() == {}
     await test_adaravis.stage()
+    await test_adaravis.prepare(one_shot_trigger_info)
     assert await test_adaravis.describe() == {
         "test_adaravis": {
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
@@ -98,7 +101,9 @@ async def test_decribe_describes_writer_dataset(test_adaravis: adaravis.AravisDe
 
 
 async def test_can_collect(
-    test_adaravis: adaravis.AravisDetector, static_path_provider: PathProvider
+    test_adaravis: adaravis.AravisDetector,
+    static_path_provider: PathProvider,
+    one_shot_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
     full_file_name = path_info.directory_path / "foo.h5"
@@ -106,6 +111,7 @@ async def test_can_collect(
     set_mock_value(test_adaravis._writer.hdf.file_path_exists, True)
     set_mock_value(test_adaravis._writer.hdf.capture, True)
     await test_adaravis.stage()
+    await test_adaravis.prepare(one_shot_trigger_info)
     docs = [(name, doc) async for name, doc in test_adaravis.collect_asset_docs(1)]
     assert len(docs) == 2
     assert docs[0][0] == "stream_resource"
@@ -125,11 +131,14 @@ async def test_can_collect(
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
 
 
-async def test_can_decribe_collect(test_adaravis: adaravis.AravisDetector):
+async def test_can_decribe_collect(
+    test_adaravis: adaravis.AravisDetector, one_shot_trigger_info: TriggerInfo
+):
     set_mock_value(test_adaravis._writer.hdf.file_path_exists, True)
     set_mock_value(test_adaravis._writer.hdf.capture, True)
     assert (await test_adaravis.describe_collect()) == {}
     await test_adaravis.stage()
+    await test_adaravis.prepare(one_shot_trigger_info)
     assert (await test_adaravis.describe_collect()) == {
         "test_adaravis": {
             "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
