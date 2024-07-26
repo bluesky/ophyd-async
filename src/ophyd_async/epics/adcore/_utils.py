@@ -110,9 +110,7 @@ class NDAttributePv:
     name: str  # name of attribute stamped on array, also scientifically useful name
     # when appended to device.name
     signal: SignalR  # caget the pv given by signal.source and attach to each frame
-    datatype: Optional[NDAttributePvDataType] = (
-        None  # An override datatype, otherwise will use native EPICS type
-    )
+    datatype: NDAttributePvDataType
     description: str = ""  # A description that appears in the HDF file as an attribute
 
 

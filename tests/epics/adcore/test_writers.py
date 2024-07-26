@@ -1,4 +1,5 @@
 from typing import List
+from unittest.mock import patch
 
 import pytest
 
@@ -9,6 +10,7 @@ from ophyd_async.core import (
     StandardDetector,
     StaticPathProvider,
 )
+from ophyd_async.core._mock_signal_utils import set_mock_value
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
 from ophyd_async.epics.signal._signal import epics_signal_r
 from ophyd_async.plan_stubs._nd_attributes import setup_ndattributes, setup_ndstats_sum
@@ -38,6 +40,23 @@ async def hdf_writer(
 
 
 @pytest.fixture
+async def hdf_writer_with_stats(
+    RE, static_path_provider: StaticPathProvider
+) -> adcore.ADHDFWriter:
+    async with DeviceCollector(mock=True):
+        hdf = adcore.NDFileHDFIO("HDF:")
+        stats = adcore.NDPluginStatsIO("FOO:")
+
+    return adcore.ADHDFWriter(
+        hdf,
+        static_path_provider,
+        lambda: "test",
+        DummyShapeProvider(),
+        stats,
+    )
+
+
+@pytest.fixture
 async def detectors(
     static_path_provider: PathProvider,
 ) -> List[StandardDetector]:
@@ -57,6 +76,41 @@ async def test_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._file
 
 
+async def test_stats_describe_when_plugin_configured(
+    hdf_writer_with_stats: adcore.ADHDFWriter,
+):
+    assert hdf_writer_with_stats._file is None
+    set_mock_value(hdf_writer_with_stats.hdf.file_path_exists, True)
+    set_mock_value(
+        hdf_writer_with_stats._plugins[0].nd_attributes_file,
+        str("""<?xml version='1.0' encoding='utf-8'?>
+<Attributes>
+    <Attribute name="mydetector-sum" type="PARAM" source="TOTAL" addr="0"
+    datatype="DOUBLE" description="Sum of each detector frame" />
+</Attributes>"""),
+    )
+    with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
+        descriptor = await hdf_writer_with_stats.open()
+
+    assert descriptor == {
+        "test": {
+            "source": "mock+ca://HDF:FullFileName_RBV",
+            "shape": (10, 10),
+            "dtype": "array",
+            "dtype_numpy": "<u2",
+            "external": "STREAM:",
+        },
+        "mydetector-sum": {
+            "source": "mock+ca://HDF:FullFileName_RBV",
+            "shape": (),
+            "dtype": "number",
+            "dtype_numpy": "<f8",
+            "external": "STREAM:",
+        },
+    }
+    await hdf_writer_with_stats.close()
+
+
 async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
     for detector in detectors:
         await detector.connect(mock=True)
@@ -65,12 +119,14 @@ async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
         xml = await detector.hdf.nd_attributes_file.get_value()
         for element in xml:
             assert str(element.tag) == "Attribute"
-            assert (
-                str(element.attrib)
-                == f"{{'name': '{detector.name}-sum', 'type': 'PARAM', '"
-                + "source': 'NDPluginStatsTotal', 'addr': '0', 'datatype': '<f4',"
-                + " 'description': 'Sum of the array'}"
-            )
+            assert element.attrib == {
+                "name": f"{detector.name}-sum",
+                "type": "PARAM",
+                "source": "NDPluginStatsTotal",
+                "addr": "0",
+                "datatype": "DOUBLE",
+                "description": "Sum of the array",
+            }
 
 
 async def test_nd_attributes_plan_stub(RE, detectors):
@@ -91,20 +147,24 @@ async def test_nd_attributes_plan_stub(RE, detectors):
         )
         RE(setup_ndattributes(detector.hdf, [pv, param]))
         xml = await detector.hdf.nd_attributes_file.get_value()
-        assert str(xml[0].tag) == "Attribute"
-        assert (
-            str(xml[0].attrib)
-            == "{'name': 'Temperature', 'type': 'EPICS_PV', '"
-            + "source': 'ca://LINKAM:TEMP', 'datatype': '<f4',"
-            + " 'description': 'The sample temperature'}"
-        )
-        assert str(xml[1].tag) == "Attribute"
-        assert (
-            str(xml[1].attrib)
-            == f"{{'name': '{detector.name}-sum', 'type': 'PARAM', '"
-            + "source': 'sum', 'addr': '0', 'datatype': '<f8',"
-            + f" 'description': 'Sum of {detector.name} frame'}}"
-        )
+        assert xml[0].tag == "Attribute"
+        assert xml[0].attrib == {
+            "name": "Temperature",
+            "type": "EPICS_PV",
+            "source": "ca://LINKAM:TEMP",
+            "datatype": "DBR_FLOAT",
+            "description": "The sample temperature",
+        }
+
+        assert xml[1].tag == "Attribute"
+        assert xml[1].attrib == {
+            "name": f"{detector.name}-sum",
+            "type": "PARAM",
+            "source": "sum",
+            "addr": "0",
+            "datatype": "DOUBLE",
+            "description": f"Sum of {detector.name} frame",
+        }
 
 
 async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):

@@ -102,8 +102,7 @@ class ADHDFWriter(DetectorWriter):
             # This is the check that ADCore does to see if it is an XML string
             # rather than a filename to parse
             if "<Attributes>" in maybe_xml:
-                tree = ET.parse(maybe_xml)
-                root = tree.getroot()
+                root = ET.fromstring(maybe_xml)
                 for child in root:
                     datakey = child.attrib["name"]
                     self._datasets.append(

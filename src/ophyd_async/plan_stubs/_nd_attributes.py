@@ -9,8 +9,6 @@ from ophyd_async.epics.adcore._utils import (
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
-    convert_param_dtype_to_np,
-    convert_pv_dtype_to_np,
 )
 
 
@@ -28,7 +26,7 @@ def setup_ndattributes(
                 type="PARAM",
                 source=ndattribute.param,
                 addr=str(ndattribute.addr),
-                datatype=convert_param_dtype_to_np(ndattribute.datatype),
+                datatype=ndattribute.datatype.value,
                 description=ndattribute.description,
             )
         elif isinstance(ndattribute, NDAttributePv):
@@ -38,7 +36,7 @@ def setup_ndattributes(
                 name=ndattribute.name,
                 type="EPICS_PV",
                 source=ndattribute.signal.source,
-                datatype=convert_pv_dtype_to_np(ndattribute.datatype),
+                datatype=ndattribute.datatype.value,
                 description=ndattribute.description,
             )
         else:
@@ -57,7 +55,7 @@ def setup_ndstats_sum(detector: Device):
                 NDAttributeParam(
                     name=f"{detector.name}-sum",
                     param="NDPluginStatsTotal",
-                    datatype=NDAttributeDataType.INT,
+                    datatype=NDAttributeDataType.DOUBLE,
                     description="Sum of the array",
                 )
             ],
