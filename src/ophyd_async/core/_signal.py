@@ -599,21 +599,24 @@ async def set_and_wait_for_other_value(
     values_gen = observe_value(read_signal)
 
     # Get the initial value from the monitor to make sure we've created it
-    await anext(values_gen)
+    current_value = await anext(values_gen)
 
     status = set_signal.set(set_value, timeout=set_timeout)
 
-    async def _wait_for_value():
-        async for value in values_gen:
-            if value == read_value:
-                break
+    # If the value was the same as before no need to wait for it to change
+    if current_value != read_value:
 
-    try:
-        await asyncio.wait_for(_wait_for_value(), timeout)
-    except asyncio.TimeoutError as e:
-        raise TimeoutError(
-            f"{read_signal.name} didn't match {read_value} in {timeout}s"
-        ) from e
+        async def _wait_for_value():
+            async for value in values_gen:
+                if value == read_value:
+                    break
+
+        try:
+            await asyncio.wait_for(_wait_for_value(), timeout)
+        except asyncio.TimeoutError as e:
+            raise TimeoutError(
+                f"{read_signal.name} didn't match {read_value} in {timeout}s"
+            ) from e
 
     return status
 
