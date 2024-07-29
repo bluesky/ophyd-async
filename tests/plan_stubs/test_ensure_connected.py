@@ -1,8 +1,6 @@
 import pytest
 
-from ophyd_async.core import Device, NotConnected
-from ophyd_async.core.mock_signal_backend import MockSignalBackend
-from ophyd_async.core.signal import SignalRW
+from ophyd_async.core import Device, MockSignalBackend, NotConnected, SignalRW
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 

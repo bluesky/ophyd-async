@@ -10,18 +10,22 @@ import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import (
+    DetectorTrigger,
     FilenameProvider,
     StaticFilenameProvider,
     StaticPathProvider,
+    TriggerInfo,
 )
 
-PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
+PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
-    Path(__file__).parent / "panda" / "db" / "incomplete_block_panda.db"
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
 )
-INCOMPLETE_RECORD = str(Path(__file__).parent / "panda" / "db" / "incomplete_panda.db")
+INCOMPLETE_RECORD = str(
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_panda.db"
+)
 EXTRA_BLOCKS_RECORD = str(
-    Path(__file__).parent / "panda" / "db" / "extra_blocks_panda.db"
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
 )
 
 # Prevent pytest from catching exceptions when debugging in vscode so that break on
@@ -146,3 +150,14 @@ def static_path_provider(
     static_filename_provider: FilenameProvider,
 ):
     return static_path_provider_factory(static_filename_provider)
+
+
+@pytest.fixture
+def one_shot_trigger_info() -> TriggerInfo:
+    return TriggerInfo(
+        frame_timeout=None,
+        number=1,
+        trigger=DetectorTrigger.internal,
+        deadtime=None,
+        livetime=None,
+    )

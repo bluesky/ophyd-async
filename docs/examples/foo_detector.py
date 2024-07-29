@@ -3,22 +3,20 @@ from typing import Optional
 
 from bluesky.protocols import HasHints, Hints
 
-from ophyd_async.core import DirectoryProvider
-from ophyd_async.core.async_status import AsyncStatus
-from ophyd_async.core.detector import DetectorControl, DetectorTrigger, StandardDetector
-from ophyd_async.epics.areadetector.drivers.ad_base import (
-    ADBase,
-    ADBaseShapeProvider,
-    start_acquiring_driver_and_ensure_status,
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorControl,
+    DetectorTrigger,
+    PathProvider,
+    StandardDetector,
 )
-from ophyd_async.epics.areadetector.utils import ImageMode, ad_rw, stop_busy_record
-from ophyd_async.epics.areadetector.writers.hdf_writer import HDFWriter
-from ophyd_async.epics.areadetector.writers.nd_file_hdf import NDFileHDF
+from ophyd_async.epics import adcore
+from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
-class FooDriver(ADBase):
+class FooDriver(adcore.ADBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.trigger_mode = ad_rw(str, prefix + "TriggerMode")
+        self.trigger_mode = epics_signal_rw_rbv(str, prefix + "TriggerMode")
         super().__init__(prefix, name)
 
 
@@ -38,40 +36,40 @@ class FooController(DetectorControl):
     ) -> AsyncStatus:
         await asyncio.gather(
             self._drv.num_images.set(num),
-            self._drv.image_mode.set(ImageMode.multiple),
+            self._drv.image_mode.set(adcore.ImageMode.multiple),
             self._drv.trigger_mode.set(f"FOO{trigger}"),
         )
         if exposure is not None:
             await self._drv.acquire_time.set(exposure)
-        return await start_acquiring_driver_and_ensure_status(self._drv)
+        return await adcore.start_acquiring_driver_and_ensure_status(self._drv)
 
     async def disarm(self):
-        await stop_busy_record(self._drv.acquire, False, timeout=1)
+        await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)
 
 
 class FooDetector(StandardDetector, HasHints):
     _controller: FooController
-    _writer: HDFWriter
+    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
         prefix: str,
-        directory_provider: DirectoryProvider,
+        path_provider: PathProvider,
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
     ):
         # Must be children to pick up connect
         self.drv = FooDriver(prefix + drv_suffix)
-        self.hdf = NDFileHDF(prefix + hdf_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             FooController(self.drv),
-            HDFWriter(
+            adcore.ADHDFWriter(
                 self.hdf,
-                directory_provider,
+                path_provider,
                 lambda: self.name,
-                ADBaseShapeProvider(self.drv),
+                adcore.ADBaseShapeProvider(self.drv),
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,

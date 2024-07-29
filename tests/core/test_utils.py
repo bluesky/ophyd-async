@@ -150,7 +150,7 @@ async def test_error_handling_value_errors(caplog):
     logs = [
         log
         for log in logs
-        if "ophyd_async" in log.pathname and "signal" not in log.pathname
+        if "ophyd_async" in log.pathname and "_signal" not in log.pathname
     ]
     assert len(logs) == 4
 
@@ -193,7 +193,7 @@ async def test_error_handling_device_collector(caplog):
     logs = [
         log
         for log in logs
-        if "ophyd_async" in log.pathname and "signal" not in log.pathname
+        if "ophyd_async" in log.pathname and "_signal" not in log.pathname
     ]
     assert len(logs) == 5
     assert (

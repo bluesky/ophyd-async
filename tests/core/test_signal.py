@@ -10,10 +10,12 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     ConfigSignal,
     DeviceCollector,
     HintedSignal,
     MockSignalBackend,
+    NotConnected,
     Signal,
     SignalR,
     SignalRW,
@@ -31,8 +33,6 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_value,
 )
-from ophyd_async.core.signal import _SignalCache
-from ophyd_async.core.utils import DEFAULT_TIMEOUT, NotConnected
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -419,7 +419,8 @@ async def test_subscription_logs(caplog):
     caplog.set_level(logging.DEBUG)
     mock_signal_rw = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
     await mock_signal_rw.connect(mock=True)
-    cache = _SignalCache(mock_signal_rw._backend, signal=mock_signal_rw)
+    cbs = []
+    mock_signal_rw.subscribe(cbs.append)
     assert "Making subscription" in caplog.text
-    cache.close()
+    mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text

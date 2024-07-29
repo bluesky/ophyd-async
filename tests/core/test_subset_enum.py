@@ -4,9 +4,11 @@ from p4p import Value as P4PValue
 from p4p.nt import NTEnum
 
 from ophyd_async.core import SubsetEnum
-from ophyd_async.epics._backend._aioca import make_converter as aioca_make_converter
-from ophyd_async.epics._backend._p4p import make_converter as p4p_make_converter
-from ophyd_async.epics.signal.signal import epics_signal_rw
+from ophyd_async.epics.signal import epics_signal_rw
+
+# Allow these imports from private modules for tests
+from ophyd_async.epics.signal._aioca import make_converter as aioca_make_converter
+from ophyd_async.epics.signal._p4p import make_converter as p4p_make_converter
 
 
 async def test_runtime_enum_behaviour():
