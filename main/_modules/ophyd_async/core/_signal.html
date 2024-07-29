@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.5.1.dev8+ga794b1b0 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.5.1.dev9+gff87963a documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=7155dabb"></script>
+    <script src="../../../_static/documentation_options.js?v=e1d41e28"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -501,6 +501,7 @@ document.write(`
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -521,6 +522,8 @@ document.write(`
 <span class="kn">from</span> <span class="nn">._soft_signal_backend</span> <span class="kn">import</span> <span class="n">SignalMetadata</span><span class="p">,</span> <span class="n">SoftSignalBackend</span>
 <span class="kn">from</span> <span class="nn">._status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">CalculatableTimeout</span><span class="p">,</span> <span class="n">CalculateTimeout</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">T</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_add_timeout</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -1087,7 +1090,9 @@ document.write(`
 <div class="viewcode-block" id="wait_for_value">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.wait_for_value.html#ophyd_async.core.wait_for_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_value</span><span class="p">(</span>
-    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">match</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]],</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
+    <span class="n">match</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]],</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for a signal to have a matching value.</span>
 
@@ -1120,6 +1125,69 @@ document.write(`
 
 
 
+<div class="viewcode-block" id="set_and_wait_for_other_value">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.set_and_wait_for_other_value.html#ophyd_async.core.set_and_wait_for_other_value">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">set_and_wait_for_other_value</span><span class="p">(</span>
+    <span class="n">set_signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
+    <span class="n">set_value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+    <span class="n">read_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">S</span><span class="p">],</span>
+    <span class="n">read_value</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">set_timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a signal and monitor another signal until it has the specified value.</span>
+
+<span class="sd">    This function sets a set_signal to a specified set_value and waits for</span>
+<span class="sd">    a read_signal to have the read_value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal:</span>
+<span class="sd">        The signal to set</span>
+<span class="sd">    set_value:</span>
+<span class="sd">        The value to set it to</span>
+<span class="sd">    read_signal:</span>
+<span class="sd">        The signal to monitor</span>
+<span class="sd">    read_value:</span>
+<span class="sd">        The value to wait for</span>
+<span class="sd">    timeout:</span>
+<span class="sd">        How long to wait for the signal to have the value</span>
+<span class="sd">    set_timeout:</span>
+<span class="sd">        How long to wait for the set to complete</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Example usage::</span>
+
+<span class="sd">        set_and_wait_for_value(device.acquire, 1, device.acquire_rbv, 1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Start monitoring before the set to avoid a race condition</span>
+    <span class="n">values_gen</span> <span class="o">=</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">read_signal</span><span class="p">)</span>
+
+    <span class="c1"># Get the initial value from the monitor to make sure we&#39;ve created it</span>
+    <span class="n">current_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">anext</span><span class="p">(</span><span class="n">values_gen</span><span class="p">)</span>
+
+    <span class="n">status</span> <span class="o">=</span> <span class="n">set_signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">set_value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">set_timeout</span><span class="p">)</span>
+
+    <span class="c1"># If the value was the same as before no need to wait for it to change</span>
+    <span class="k">if</span> <span class="n">current_value</span> <span class="o">!=</span> <span class="n">read_value</span><span class="p">:</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_wait_for_value</span><span class="p">():</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values_gen</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">read_value</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">_wait_for_value</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">read_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t match </span><span class="si">{</span><span class="n">read_value</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+    <span class="k">return</span> <span class="n">status</span></div>
+
+
+
 <div class="viewcode-block" id="set_and_wait_for_value">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.set_and_wait_for_value.html#ophyd_async.core.set_and_wait_for_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">set_and_wait_for_value</span><span class="p">(</span>
@@ -1131,19 +1199,14 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a signal and monitor it until it has that value.</span>
 
 <span class="sd">    Useful for busy record, or other Signals with pattern:</span>
-
-<span class="sd">    - Set Signal with wait=True and stash the Status</span>
-<span class="sd">    - Read the same Signal to check the operation has started</span>
-<span class="sd">    - Return the Status so calling code can wait for operation to complete</span>
-
-<span class="sd">    This function sets a signal to a specified value, optionally with or without a</span>
-<span class="sd">    ca/pv put callback, and waits for the readback value of the signal to match the</span>
-<span class="sd">    value it was set to.</span>
+<span class="sd">      - Set Signal with wait=True and stash the Status</span>
+<span class="sd">      - Read the same Signal to check the operation has started</span>
+<span class="sd">      - Return the Status so calling code can wait for operation to complete</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    signal:</span>
-<span class="sd">        The signal to set and monitor</span>
+<span class="sd">        The signal to set</span>
 <span class="sd">    value:</span>
 <span class="sd">        The value to set it to</span>
 <span class="sd">    timeout:</span>
@@ -1157,9 +1220,9 @@ document.write(`
 
 <span class="sd">        set_and_wait_for_value(device.acquire, 1)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">status</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">status_timeout</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">status</span></div>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
+        <span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">status_timeout</span>
+    <span class="p">)</span></div>
 
 </pre></div>
 

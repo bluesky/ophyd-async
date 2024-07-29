@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.5.1.dev8+ga794b1b0 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.5.1.dev9+gff87963a documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=7155dabb"></script>
+    <script src="../_static/documentation_options.js?v=e1d41e28"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -467,6 +467,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_value.html">ophyd_async.core.assert_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.observe_value.html">ophyd_async.core.observe_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_value.html">ophyd_async.core.set_and_wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_other_value.html">ophyd_async.core.set_and_wait_for_other_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html">ophyd_async.core.soft_signal_r_and_setter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html">ophyd_async.core.soft_signal_rw</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
@@ -774,25 +775,28 @@ may change API on minor release numbers before then</p>
 <tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.set_and_wait_for_value.html#ophyd_async.core.set_and_wait_for_value" title="ophyd_async.core.set_and_wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_and_wait_for_value</span></code></a></p></td>
 <td><p>Set a signal and monitor it until it has that value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html#ophyd_async.core.soft_signal_r_and_setter" title="ophyd_async.core.soft_signal_r_and_setter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_r_and_setter</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.set_and_wait_for_other_value.html#ophyd_async.core.set_and_wait_for_other_value" title="ophyd_async.core.set_and_wait_for_other_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></p></td>
+<td><p>Set a signal and monitor another signal until it has the specified value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html#ophyd_async.core.soft_signal_r_and_setter" title="ophyd_async.core.soft_signal_r_and_setter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_r_and_setter</span></code></a></p></td>
 <td><p>Returns a tuple of a read-only Signal and a callable through which the signal can be internally modified within the device.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html#ophyd_async.core.soft_signal_rw" title="ophyd_async.core.soft_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_rw</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html#ophyd_async.core.soft_signal_rw" title="ophyd_async.core.soft_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_rw</span></code></a></p></td>
 <td><p>Creates a read-writable Signal with a SoftSignalBackend.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.wait_for_value.html#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_value</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.wait_for_value.html#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_value</span></code></a></p></td>
 <td><p>Wait for a signal to have a matching value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.get_dtype.html#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.get_dtype.html#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.get_unique.html#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.get_unique.html#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
 <td><p>If all values are the same, return that value, otherwise return TypeError</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.in_micros.html#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.in_micros.html#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
 <td><p>Converts between a positive number of seconds and an equivalent number of microseconds.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.core.wait_for_connection.html#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.core.wait_for_connection.html#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
 <td><p>Call many underlying signals, accumulating exceptions and returning them</p></td>
 </tr>
 </tbody>

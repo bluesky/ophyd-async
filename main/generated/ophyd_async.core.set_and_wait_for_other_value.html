@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.soft_signal_rw &#8212; ophyd-async 0.5.1.dev9+gff87963a documentation</title>
+    <title>ophyd_async.core.set_and_wait_for_other_value &#8212; ophyd-async 0.5.1.dev9+gff87963a documentation</title>
   
   
   
@@ -46,7 +46,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.core.soft_signal_rw';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.core.set_and_wait_for_other_value';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.core.wait_for_value" href="ophyd_async.core.wait_for_value.html" />
-    <link rel="prev" title="ophyd_async.core.soft_signal_r_and_setter" href="ophyd_async.core.soft_signal_r_and_setter.html" />
+    <link rel="next" title="ophyd_async.core.soft_signal_r_and_setter" href="ophyd_async.core.soft_signal_r_and_setter.html" />
+    <link rel="prev" title="ophyd_async.core.set_and_wait_for_value" href="ophyd_async.core.set_and_wait_for_value.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -467,9 +467,9 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_value.html">ophyd_async.core.assert_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.observe_value.html">ophyd_async.core.observe_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_value.html">ophyd_async.core.set_and_wait_for_value</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_other_value.html">ophyd_async.core.set_and_wait_for_other_value</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.set_and_wait_for_other_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html">ophyd_async.core.soft_signal_r_and_setter</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.soft_signal_rw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html">ophyd_async.core.soft_signal_rw</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_dtype.html">ophyd_async.core.get_dtype</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_unique.html">ophyd_async.core.get_unique</a></li>
@@ -704,13 +704,31 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="ophyd-async-core-soft-signal-rw">
-<h1>ophyd_async.core.soft_signal_rw<a class="headerlink" href="#ophyd-async-core-soft-signal-rw" title="Link to this heading">#</a></h1>
+  <section id="ophyd-async-core-set-and-wait-for-other-value">
+<h1>ophyd_async.core.set_and_wait_for_other_value<a class="headerlink" href="#ophyd-async-core-set-and-wait-for-other-value" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.soft_signal_rw">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">soft_signal_rw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.12)"><span class="pre">Type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.SignalRW.html#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#soft_signal_rw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.soft_signal_rw" title="Link to this definition">#</a></dt>
-<dd><p>Creates a read-writable Signal with a SoftSignalBackend.
-May pass metadata, which are propagated into describe.</p>
+<dt class="sig sig-object py" id="ophyd_async.core.set_and_wait_for_other_value">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_and_wait_for_other_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.SignalRW.html#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.SignalR.html#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><span class="pre">S</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#set_and_wait_for_other_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_and_wait_for_other_value" title="Link to this definition">#</a></dt>
+<dd><p>Set a signal and monitor another signal until it has the specified value.</p>
+<p>This function sets a set_signal to a specified set_value and waits for
+a read_signal to have the read_value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> – The signal to set</p></li>
+<li><p><strong>set_value</strong> – The value to set it to</p></li>
+<li><p><strong>read_signal</strong> – The signal to monitor</p></li>
+<li><p><strong>read_value</strong> – The value to wait for</p></li>
+<li><p><strong>timeout</strong> – How long to wait for the signal to have the value</p></li>
+<li><p><strong>set_timeout</strong> – How long to wait for the set to complete</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">set_and_wait_for_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">acquire_rbv</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -726,20 +744,20 @@ May pass metadata, which are propagated into describe.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.core.soft_signal_r_and_setter.html"
+       href="ophyd_async.core.set_and_wait_for_value.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">ophyd_async.core.soft_signal_r_and_setter</p>
+        <p class="prev-next-title">ophyd_async.core.set_and_wait_for_value</p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.core.wait_for_value.html"
+       href="ophyd_async.core.soft_signal_r_and_setter.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">ophyd_async.core.wait_for_value</p>
+        <p class="prev-next-title">ophyd_async.core.soft_signal_r_and_setter</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -761,7 +779,7 @@ May pass metadata, which are propagated into describe.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.soft_signal_rw"><code class="docutils literal notranslate"><span class="pre">soft_signal_rw()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_and_wait_for_other_value"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value()</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -769,7 +787,7 @@ May pass metadata, which are propagated into describe.</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.core.soft_signal_rw.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.core.set_and_wait_for_other_value.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -784,7 +802,7 @@ May pass metadata, which are propagated into describe.</p>
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/generated/ophyd_async.core.soft_signal_rw.rst.txt">
+    <a href="../_sources/generated/ophyd_async.core.set_and_wait_for_other_value.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

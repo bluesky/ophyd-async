@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.set_and_wait_for_value &#8212; ophyd-async 0.5.1.dev8+ga794b1b0 documentation</title>
+    <title>ophyd_async.core.set_and_wait_for_value &#8212; ophyd-async 0.5.1.dev9+gff87963a documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=7155dabb"></script>
+    <script src="../_static/documentation_options.js?v=e1d41e28"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="icon" href="../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.core.soft_signal_r_and_setter" href="ophyd_async.core.soft_signal_r_and_setter.html" />
+    <link rel="next" title="ophyd_async.core.set_and_wait_for_other_value" href="ophyd_async.core.set_and_wait_for_other_value.html" />
     <link rel="prev" title="ophyd_async.core.observe_value" href="ophyd_async.core.observe_value.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -467,6 +467,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_value.html">ophyd_async.core.assert_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.observe_value.html">ophyd_async.core.observe_value</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.set_and_wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_other_value.html">ophyd_async.core.set_and_wait_for_other_value</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html">ophyd_async.core.soft_signal_r_and_setter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html">ophyd_async.core.soft_signal_rw</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
@@ -709,19 +710,18 @@ document.write(`
 <dt class="sig sig-object py" id="ophyd_async.core.set_and_wait_for_value">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_and_wait_for_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.SignalRW.html#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#set_and_wait_for_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_and_wait_for_value" title="Link to this definition">#</a></dt>
 <dd><p>Set a signal and monitor it until it has that value.</p>
-<p>Useful for busy record, or other Signals with pattern:</p>
-<ul class="simple">
+<dl class="simple">
+<dt>Useful for busy record, or other Signals with pattern:</dt><dd><ul class="simple">
 <li><p>Set Signal with wait=True and stash the Status</p></li>
 <li><p>Read the same Signal to check the operation has started</p></li>
 <li><p>Return the Status so calling code can wait for operation to complete</p></li>
 </ul>
-<p>This function sets a signal to a specified value, optionally with or without a
-ca/pv put callback, and waits for the readback value of the signal to match the
-value it was set to.</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal</strong> – The signal to set and monitor</p></li>
+<li><p><strong>signal</strong> – The signal to set</p></li>
 <li><p><strong>value</strong> – The value to set it to</p></li>
 <li><p><strong>timeout</strong> – How long to wait for the signal to have the value</p></li>
 <li><p><strong>status_timeout</strong> – How long the returned Status will wait for the set to complete</p></li>
@@ -757,11 +757,11 @@ value it was set to.</p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.core.soft_signal_r_and_setter.html"
+       href="ophyd_async.core.set_and_wait_for_other_value.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">ophyd_async.core.soft_signal_r_and_setter</p>
+        <p class="prev-next-title">ophyd_async.core.set_and_wait_for_other_value</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
