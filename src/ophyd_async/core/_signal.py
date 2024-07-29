@@ -12,6 +12,7 @@ from typing import (
     Optional,
     Tuple,
     Type,
+    TypeVar,
     Union,
 )
 
@@ -32,6 +33,8 @@ from ._signal_backend import SignalBackend
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus
 from ._utils import DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout, Callback, T
+
+S = TypeVar("S")
 
 
 def _add_timeout(func):
@@ -524,7 +527,9 @@ class _ValueChecker(Generic[T]):
 
 
 async def wait_for_value(
-    signal: SignalR[T], match: Union[T, Callable[[T], bool]], timeout: Optional[float]
+    signal: SignalR[T],
+    match: Union[T, Callable[[T], bool]],
+    timeout: Optional[float],
 ):
     """Wait for a signal to have a matching value.
 
@@ -556,6 +561,66 @@ async def wait_for_value(
     await checker.wait_for_value(signal, timeout)
 
 
+async def set_and_wait_for_other_value(
+    set_signal: SignalRW[T],
+    set_value: T,
+    read_signal: SignalR[S],
+    read_value: S,
+    timeout: float = DEFAULT_TIMEOUT,
+    set_timeout: Optional[float] = None,
+) -> AsyncStatus:
+    """Set a signal and monitor another signal until it has the specified value.
+
+    This function sets a set_signal to a specified set_value and waits for
+    a read_signal to have the read_value.
+
+    Parameters
+    ----------
+    signal:
+        The signal to set
+    set_value:
+        The value to set it to
+    read_signal:
+        The signal to monitor
+    read_value:
+        The value to wait for
+    timeout:
+        How long to wait for the signal to have the value
+    set_timeout:
+        How long to wait for the set to complete
+
+    Notes
+    -----
+    Example usage::
+
+        set_and_wait_for_value(device.acquire, 1, device.acquire_rbv, 1)
+    """
+    # Start monitoring before the set to avoid a race condition
+    values_gen = observe_value(read_signal)
+
+    # Get the initial value from the monitor to make sure we've created it
+    current_value = await anext(values_gen)
+
+    status = set_signal.set(set_value, timeout=set_timeout)
+
+    # If the value was the same as before no need to wait for it to change
+    if current_value != read_value:
+
+        async def _wait_for_value():
+            async for value in values_gen:
+                if value == read_value:
+                    break
+
+        try:
+            await asyncio.wait_for(_wait_for_value(), timeout)
+        except asyncio.TimeoutError as e:
+            raise TimeoutError(
+                f"{read_signal.name} didn't match {read_value} in {timeout}s"
+            ) from e
+
+    return status
+
+
 async def set_and_wait_for_value(
     signal: SignalRW[T],
     value: T,
@@ -565,19 +630,14 @@ async def set_and_wait_for_value(
     """Set a signal and monitor it until it has that value.
 
     Useful for busy record, or other Signals with pattern:
-
-    - Set Signal with wait=True and stash the Status
-    - Read the same Signal to check the operation has started
-    - Return the Status so calling code can wait for operation to complete
-
-    This function sets a signal to a specified value, optionally with or without a
-    ca/pv put callback, and waits for the readback value of the signal to match the
-    value it was set to.
+      - Set Signal with wait=True and stash the Status
+      - Read the same Signal to check the operation has started
+      - Return the Status so calling code can wait for operation to complete
 
     Parameters
     ----------
     signal:
-        The signal to set and monitor
+        The signal to set
     value:
         The value to set it to
     timeout:
@@ -591,6 +651,6 @@ async def set_and_wait_for_value(
 
         set_and_wait_for_value(device.acquire, 1)
     """
-    status = signal.set(value, timeout=status_timeout)
-    await wait_for_value(signal, value, timeout=timeout)
-    return status
+    return await set_and_wait_for_other_value(
+        signal, value, signal, value, timeout, status_timeout
+    )
