@@ -48,14 +48,20 @@ class PandaHDFWriter(DetectorWriter):
         info = self._path_provider(device_name=self.panda_device.name)
         # Set the initial values
         await asyncio.gather(
+            self.panda_device.data.create_directory.set(info.create_dir_depth),
             self.panda_device.data.hdf_directory.set(info.directory_path),
             self.panda_device.data.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
             self.panda_device.data.num_capture.set(0),
-            # TODO: Set create_dir_depth once available
-            # https://github.com/bluesky/ophyd-async/issues/317
         )
+
+        # Make sure that directory exists or has been created.
+        if not await self.panda_device.data.directory_exists.get_value() == 1:
+            raise OSError(
+                f"Directory {info.directory_path} does not exist or "
+                "is not writable by the PandABlocks-ioc!"
+            )
 
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_device.data.capture.set(True)
