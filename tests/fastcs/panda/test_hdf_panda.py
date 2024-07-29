@@ -41,6 +41,8 @@ async def mock_hdf_panda(tmp_path):
     def link_function(value, **kwargs):
         set_mock_value(mock_hdf_panda.pcap.active, value)
 
+    set_mock_value(mock_hdf_panda.data.directory_exists, 1)
+
     callback_on_mock_put(mock_hdf_panda.pcap.arm, link_function)
 
     set_mock_value(

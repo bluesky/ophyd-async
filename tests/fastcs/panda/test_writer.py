@@ -84,6 +84,9 @@ async def mock_panda(panda_t):
     async with DeviceCollector(mock=True):
         mock_panda = panda_t("mock_PANDA", name="mock_panda")
 
+    # Assume directory exists
+    set_mock_value(mock_panda.data.directory_exists, 1)
+
     set_mock_value(
         mock_panda.data.datasets,
         DatasetTable(
