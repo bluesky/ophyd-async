@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.advimba._vimba_controller &#8212; ophyd-async 0.5.1.dev9+gff87963a documentation</title>
+    <title>ophyd_async.epics.advimba._vimba_controller &#8212; ophyd-async 0.5.1.dev10+g43ada099 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=e1d41e28"></script>
+    <script src="../../../../_static/documentation_options.js?v=29ed1029"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -535,7 +535,7 @@ document.write(`
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TRIGGER_MODE</span><span class="p">[</span><span class="n">trigger</span><span class="p">]),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">expose_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EXPOSE_OUT_MODE</span><span class="p">[</span><span class="n">trigger</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">exposure_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EXPOSE_OUT_MODE</span><span class="p">[</span><span class="n">trigger</span><span class="p">]),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">num</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ImageMode</span><span class="o">.</span><span class="n">multiple</span><span class="p">),</span>
         <span class="p">)</span>
@@ -545,9 +545,9 @@ document.write(`
         <span class="p">]:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trig_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">VimbaTriggerSource</span><span class="o">.</span><span class="n">line1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trigger_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">VimbaTriggerSource</span><span class="o">.</span><span class="n">line1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trig_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">VimbaTriggerSource</span><span class="o">.</span><span class="n">freerun</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trigger_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">VimbaTriggerSource</span><span class="o">.</span><span class="n">freerun</span><span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">adcore</span><span class="o">.</span><span class="n">start_acquiring_driver_and_ensure_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="p">)</span></div>
 
 

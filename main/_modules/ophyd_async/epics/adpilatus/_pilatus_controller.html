@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adpilatus._pilatus_controller &#8212; ophyd-async 0.5.1.dev9+gff87963a documentation</title>
+    <title>ophyd_async.epics.adpilatus._pilatus_controller &#8212; ophyd-async 0.5.1.dev10+g43ada099 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=e1d41e28"></script>
+    <script src="../../../../_static/documentation_options.js?v=29ed1029"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -550,7 +550,7 @@ document.write(`
         <span class="c1"># is actually ready. Should wait for that too or we risk dropping</span>
         <span class="c1"># a frame</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">armed_for_triggers</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">armed</span><span class="p">,</span>
             <span class="kc">True</span><span class="p">,</span>
             <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
         <span class="p">)</span>

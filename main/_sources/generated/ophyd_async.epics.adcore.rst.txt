@@ -37,6 +37,7 @@ ophyd\_async.epics.adcore
    
       ADBaseIO
       DetectorState
+      NDArrayBaseIO
       NDFileHDFIO
       NDPluginStatsIO
       ADBaseShapeProvider
