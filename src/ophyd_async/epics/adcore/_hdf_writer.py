@@ -51,11 +51,15 @@ class ADHDFWriter(DetectorWriter):
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None
         info = self._path_provider(device_name=self.hdf.name)
+
+        # Set the directory creation depth first, since dir creation callback happens
+        # when directory path PV is processed.
+        await self.hdf.create_directory.set(info.create_dir_depth)
+
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
-            self.hdf.create_dir_depth.set(info.create_dir_depth),
             # See https://github.com/bluesky/ophyd-async/issues/122
             self.hdf.file_path.set(info.directory_path),
             self.hdf.file_name.set(info.filename),

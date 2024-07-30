@@ -25,5 +25,7 @@ class KinetixDriverIO(adcore.ADBaseIO):
         self.trigger_mode = epics_signal_rw_rbv(
             KinetixTriggerMode, prefix + "TriggerMode"
         )
-        self.mode = epics_signal_rw_rbv(KinetixReadoutMode, prefix + "ReadoutPortIdx")
+        self.readout_port_idx = epics_signal_rw_rbv(
+            KinetixReadoutMode, prefix + "ReadoutPortIdx"
+        )
         super().__init__(prefix, name)

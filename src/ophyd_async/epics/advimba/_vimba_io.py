@@ -50,15 +50,17 @@ class VimbaDriverIO(adcore.ADBaseIO):
 
     def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
-        self.convert_format = epics_signal_rw_rbv(
+        self.convert_pixel_format = epics_signal_rw_rbv(
             VimbaConvertFormat, prefix + "ConvertPixelFormat"
         )  # Pixel format of data outputted to AD
-        self.trig_source = epics_signal_rw_rbv(
+        self.trigger_source = epics_signal_rw_rbv(
             VimbaTriggerSource, prefix + "TriggerSource"
         )
         self.trigger_mode = epics_signal_rw_rbv(VimbaOnOff, prefix + "TriggerMode")
-        self.overlap = epics_signal_rw_rbv(VimbaOverlap, prefix + "TriggerOverlap")
-        self.expose_mode = epics_signal_rw_rbv(
+        self.trigger_overlap = epics_signal_rw_rbv(
+            VimbaOverlap, prefix + "TriggerOverlap"
+        )
+        self.exposure_mode = epics_signal_rw_rbv(
             VimbaExposeOutMode, prefix + "ExposureMode"
         )
         super().__init__(prefix, name)
