@@ -44,9 +44,6 @@ class NDPluginBaseIO(NDArrayBaseIO):
 class NDPluginStatsIO(NDPluginBaseIO):
     """
     Plugin for computing statistics from an image or region of interest within an image.
-    Each boolean signal enables or disables all signals in the appropriate Enum class.
-    The enum signals may used in the ScalarSignals kwargs of a HDFWriter, and are also
-    read-only signals on the plugin.
     """
 
     def __init__(self, prefix: str, name: str = "") -> None:
