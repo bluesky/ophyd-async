@@ -2,6 +2,7 @@ import asyncio
 from typing import Optional
 
 from pydantic import BaseModel, Field
+from scanspec.specs import Frames, Path
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 
@@ -88,3 +89,55 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
     async def stop(self):
         await self.pcomp.enable.set("ZERO")
         await wait_for_value(self.pcomp.active, False, timeout=1)
+
+
+class PosTrigSeqInfo(BaseModel):
+    prescale_as_us: float = Field(default=1, ge=0)  # microseconds
+    stack: list[Frames[Path]]
+    ...
+
+
+class PosTrigSeqLogic(TriggerLogic[PosTrigSeqInfo]):
+    def __init__(self, seq: SeqBlock) -> None:
+        self.seq = seq
+
+    async def prepare(self, value: SeqTableInfo):
+        await asyncio.gather(
+            self.seq.prescale_units.set(TimeUnits.us),
+            self.seq.enable.set("ZERO"),
+        )
+        await asyncio.gather(
+            self.seq.prescale.set(value.prescale_as_us),
+            self.seq.repeats.set(value.repeats),
+            self.seq.table.set(value.sequence_table),
+        )
+
+    def populate_seq_table() -> None:
+        """
+        Using scanspec this method will populate the
+        SEQ table with chunks of frames.
+
+        Multiple frames can be triggered with one line on SEQ table.
+        When we have a gap in the numpy frames (depicted by gap=True).
+        This depicts a PCOMP point and requires a new line on the SEQ table
+
+        SEQ tables have a row limit of 1024. We need to dynamically populate the SEQ
+        table for an arbitary number of frames and gaps (for arbitary trajectories).
+        We want to take a chunk of frames recieved from scanspec, populate a SEQ table
+        in prepare, then complete.
+
+        While completing we will be checking for the condition that the end of the
+        table has been reached. Then we need to populate the table again with the
+        next chunk of the scanspec frames.This need to repeat until it has completed
+        """
+
+    async def kickoff(self) -> None:
+        await self.seq.enable.set("ONE")
+        await wait_for_value(self.seq.active, True, timeout=1)
+
+    async def complete(self) -> None:
+        await wait_for_value(self.seq.active, False, timeout=None)
+
+    async def stop(self):
+        await self.seq.enable.set("ZERO")
+        await wait_for_value(self.seq.active, False, timeout=1)
