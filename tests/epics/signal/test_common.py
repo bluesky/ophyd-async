@@ -41,6 +41,12 @@ def test_given_no_supplied_enum_then_returns_generated_choices_enum_with_pv_choi
     assert "test" in supported_vals
 
 
+def test_given_no_enum_then_returns_generated_choices_enum_with_string_type():
+    supported_vals = get_supported_values("", str, ("test",))
+    assert len(supported_vals) == 1
+    assert "test" in supported_vals
+
+
 def test_given_a_supplied_enum_that_matches_the_pv_choices_then_enum_type_is_returned():
     class MyEnum(str, Enum):
         TEST_1 = "test_1"
