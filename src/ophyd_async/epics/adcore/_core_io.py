@@ -51,7 +51,7 @@ class NDPluginStatsIO(NDPluginBaseIO):
         self.compute_statistics = epics_signal_rw(bool, prefix + "ComputeStatistics")
         self.bgd_width = epics_signal_rw(int, prefix + "BgdWidth")
         self.total_array = epics_signal_rw(float, prefix + "TotalArray")
-        #Centroid statistics
+        # Centroid statistics
         self.compute_centroid = epics_signal_rw(bool, prefix + "ComputeCentroid")
         self.centroid_threshold = epics_signal_rw(float, prefix + "CentroidThreshold")
         # X and Y Profiles
