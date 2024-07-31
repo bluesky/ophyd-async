@@ -769,7 +769,7 @@ async def test_str_enum_returns_enum(ioc: IOC):
     assert val == "Bbb"
 
 
-async def test_str_datatype_in_CA_signals_mbbo_mbbi(ioc: IOC):
+async def test_str_datatype_in_mbbo(ioc: IOC):
     await ioc.make_backend(MyEnum, "enum")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
     sig = epics_signal_rw(str, pv_name)
