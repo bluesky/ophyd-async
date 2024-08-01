@@ -770,10 +770,16 @@ async def test_str_enum_returns_enum(ioc: IOC):
 
 
 async def test_str_datatype_in_mbbo(ioc: IOC):
-    await ioc.make_backend(MyEnum, "enum")
+    backend = await ioc.make_backend(MyEnum, "enum")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:enum"
     sig = epics_signal_rw(str, pv_name)
+    datakey = await backend.get_datakey(sig.source)
+    assert datakey["choices"] == ["Aaa", "Bbb", "Ccc"]
     await sig.connect()
+    description = await sig.describe()
+    assert description[""]["choices"] == ["Aaa", "Bbb", "Ccc"]
+    datakey = await sig._backend.get_datakey(sig.source)
+    assert datakey["choices"] == ["Aaa", "Bbb", "Ccc"]
     val = await sig.get_value()
     assert val == "Bbb"
 
