@@ -27,7 +27,7 @@ async def test_pilatus_controller(
     pilatus: adpilatus.PilatusController,
     pilatus_driver: adpilatus.PilatusDriverIO,
 ):
-    set_mock_value(pilatus_driver.armed_for_triggers, True)
+    set_mock_value(pilatus_driver.armed, True)
     status = await pilatus.arm(num=1, trigger=DetectorTrigger.constant_gate)
     await status
 

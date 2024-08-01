@@ -54,7 +54,7 @@ class PilatusController(DetectorControl):
         # is actually ready. Should wait for that too or we risk dropping
         # a frame
         await wait_for_value(
-            self._drv.armed_for_triggers,
+            self._drv.armed,
             True,
             timeout=DEFAULT_TIMEOUT,
         )

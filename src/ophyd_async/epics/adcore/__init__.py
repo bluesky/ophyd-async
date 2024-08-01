@@ -1,4 +1,10 @@
-from ._core_io import ADBaseIO, DetectorState, NDFileHDFIO, NDPluginStatsIO
+from ._core_io import (
+    ADBaseIO,
+    DetectorState,
+    NDArrayBaseIO,
+    NDFileHDFIO,
+    NDPluginStatsIO,
+)
 from ._core_logic import (
     DEFAULT_GOOD_STATES,
     ADBaseShapeProvider,
@@ -21,6 +27,7 @@ from ._utils import (
 __all__ = [
     "ADBaseIO",
     "DetectorState",
+    "NDArrayBaseIO",
     "NDFileHDFIO",
     "NDPluginStatsIO",
     "DEFAULT_GOOD_STATES",
