@@ -46,9 +46,13 @@ class PandaHDFWriter(DetectorWriter):
 
         self._file = None
         info = self._path_provider(device_name=self.panda_device.name)
+
+        # Set create dir depth first to guarantee that callback when setting
+        # directory path has correct value
+        await self.panda_device.data.create_directory.set(info.create_dir_depth)
+
         # Set the initial values
         await asyncio.gather(
-            self.panda_device.data.create_directory.set(info.create_dir_depth),
             self.panda_device.data.hdf_directory.set(info.directory_path),
             self.panda_device.data.hdf_file_name.set(
                 f"{info.filename}.h5",
