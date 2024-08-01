@@ -778,8 +778,6 @@ async def test_str_datatype_in_mbbo(ioc: IOC):
     await sig.connect()
     description = await sig.describe()
     assert description[""]["choices"] == ["Aaa", "Bbb", "Ccc"]
-    datakey = await sig._backend.get_datakey(sig.source)
-    assert datakey["choices"] == ["Aaa", "Bbb", "Ccc"]
     val = await sig.get_value()
     assert val == "Bbb"
 
