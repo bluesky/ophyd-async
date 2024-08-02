@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.signal._common &#8212; ophyd-async 0.5.1.dev11+g8273a2e0 documentation</title>
+    <title>ophyd_async.epics.signal._common &#8212; ophyd-async 0.5.1.dev12+g8e532d64 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=b0fa2800"></script>
+    <script src="../../../../_static/documentation_options.js?v=8d1cf9d0"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -552,7 +552,7 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;which do not match </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">, which has </span><span class="si">{</span><span class="n">choices</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">datatype</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="k">else</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">or</span> <span class="s2">&quot;_&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
 
     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
