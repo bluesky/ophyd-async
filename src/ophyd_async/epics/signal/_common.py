@@ -55,7 +55,7 @@ def get_supported_values(
                 f"which do not match {datatype}, which has {choices}."
             )
         return {x: datatype(x) if x else "_" for x in pv_choices}
-    elif datatype is None:
+    elif datatype is None or datatype is str:
         return {x: x or "_" for x in pv_choices}
 
     raise TypeError(
