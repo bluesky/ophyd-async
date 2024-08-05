@@ -13,7 +13,7 @@ classifiers = [
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
     "networkx>=2.0",
-    "numpy<2.0.0",
+    "numpy<3.0.0",
     "packaging",
     "pint",
     "bluesky>=1.13.0a3",
@@ -52,7 +52,7 @@ dev = [
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
-    "pyside6==6.7.0",
+    "pyside6==6.7.2",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
@@ -60,7 +60,7 @@ dev = [
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
-    "sphinx<7.4.0",              # https://github.com/bluesky/ophyd-async/issues/459
+    "sphinx<8.1.0",              # https://github.com/bluesky/ophyd-async/issues/459
     "sphinx-autobuild",
     "autodoc-pydantic",
     "sphinxcontrib-mermaid",
