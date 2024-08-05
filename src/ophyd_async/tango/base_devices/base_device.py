@@ -52,17 +52,3 @@ class TangoReadableDevice(StandardReadable):
             self.register_signals()
 
         await super().connect(mock=mock, timeout=timeout)
-
-    # --------------------------------------------------------------------
-    # @AsyncStatus.wrap
-    # async def stage(self) -> None:
-    #     for sig in self._readables + self._configurables:
-    #         if hasattr(sig, "is_cachable") and sig.is_cachable():
-    #             await sig.stage().task
-    #
-    # # --------------------------------------------------------------------
-    # @AsyncStatus.wrap
-    # async def unstage(self) -> None:
-    #     for sig in self._readables + self._configurables:
-    #         if hasattr(sig, "is_cachable") and sig.is_cachable():
-    #             await sig.unstage().task
