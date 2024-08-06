@@ -401,10 +401,6 @@ def get_dtype_extended(datatype):
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
-        print(
-            f"{datatype.__args__[1].__args__[0]=},"
-            f"{datatype.__args__[1].__args__[0]==Enum}"
-        )
         if datatype.__args__[1].__args__[0] == DevState:
             dtype = CmdArgType.DevState
     return dtype
