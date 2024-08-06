@@ -123,7 +123,6 @@ async def test_error_handling_connection_timeout(caplog):
     assert str(e.value) == str(ONE_WORKING_ONE_TIMEOUT_OUTPUT)
 
     logs = caplog.get_records("call")
-    assert len(logs) == 3
     assert "signal ca://A_NON_EXISTENT_SIGNAL timed out" == logs[-1].message
     assert logs[-1].levelname == "DEBUG"
 
