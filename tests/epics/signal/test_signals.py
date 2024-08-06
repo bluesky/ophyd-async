@@ -899,7 +899,7 @@ async def test_signals_created_for_prec_0_float_can_use_int(ioc: IOC):
         await sig.connect()
 
 
-async def test_signals_created_for_not_prec_0_float_can_use_int(ioc: IOC):
+async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
     if ioc.protocol == "pva":
         pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_1"
         sig = epics_signal_rw(int, pv_name)

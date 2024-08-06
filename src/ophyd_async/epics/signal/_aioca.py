@@ -227,19 +227,22 @@ def make_converter(
         return CaEnumConverter(dbr.DBR_STRING, None, supported_values)
     else:
         value = list(values.values())[0]
-        precision = get_unique({k: v.precision for k, v in values.items()}, "precision")
         # Done the dbr check, so enough to check one of the values
         if (
             datatype
             and not isinstance(value, datatype)
             and not (
-                datatype is int and isinstance(value, float) and (precision == 0)
+                datatype is int
+                and isinstance(value, float)
+                and (
+                    get_unique({k: v.precision for k, v in values.items()}, "precision")
+                    == 0
+                )
             )  # Allow int signals to represent float records when prec is 0
         ):
             raise TypeError(
-                f"{pv} has type {type(value).__name__.replace('ca_', '')}"
-                + f" with precision {precision}, not compatible with "
-                + f"{datatype.__name__}"
+                f"{pv} has type {type(value).__name__.replace('ca_', '')} "
+                + f"not {datatype.__name__}"
             )
         return CaConverter(pv_dbr, None)
 

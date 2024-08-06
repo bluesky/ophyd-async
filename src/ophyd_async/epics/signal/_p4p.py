@@ -327,9 +327,6 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
         )
         return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
     elif "NTScalar" in typeid:
-        precision = get_unique(
-            {k: v["display"]["precision"] for k, v in values.items()}, "precision"
-        )
         if (
             typ is str
             and inspect.isclass(datatype)
@@ -344,14 +341,14 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
             and not (
                 typ is float
                 and datatype is int
-                and precision
+                and get_unique(
+                    {k: v["display"]["precision"] for k, v in values.items()},
+                    "precision",
+                )
                 == 0  # Allow int signals to represent float records when prec is 0
             )
         ):
-            raise TypeError(
-                f"{pv} has type {typ.__name__} with precision {precision}, "
-                + f"not compatible with {datatype.__name__}"
-            )
+            raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
         return PvaTableConverter()
