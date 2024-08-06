@@ -1,3 +1,4 @@
+import os
 from typing import Dict
 from unittest.mock import ANY
 
@@ -41,9 +42,13 @@ async def mock_hdf_panda(tmp_path):
     def link_function(value, **kwargs):
         set_mock_value(mock_hdf_panda.pcap.active, value)
 
-    set_mock_value(mock_hdf_panda.data.directory_exists, 1)
+    # Mimic directory exists check that happens normally in the PandA IOC
+    def check_dir_exits(value, **kwargs):
+        if os.path.exists(value):
+            set_mock_value(mock_hdf_panda.data.directory_exists, 1)
 
     callback_on_mock_put(mock_hdf_panda.pcap.arm, link_function)
+    callback_on_mock_put(mock_hdf_panda.data.hdf_directory, check_dir_exits)
 
     set_mock_value(
         mock_hdf_panda.data.datasets,

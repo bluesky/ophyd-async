@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from unittest.mock import ANY
 
@@ -13,6 +14,9 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     set_mock_value,
+)
+from ophyd_async.core._mock_signal_utils import (
+    callback_on_mock_put,
 )
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
 from ophyd_async.fastcs.panda import (
@@ -84,8 +88,13 @@ async def mock_panda(panda_t):
     async with DeviceCollector(mock=True):
         mock_panda = panda_t("mock_PANDA", name="mock_panda")
 
+    # Mimic directory exists check that happens normally in the PandA IOC
+    def check_dir_exits(value, **kwargs):
+        if os.path.exists(os.path.abspath(os.path.dirname(value))):
+            set_mock_value(mock_panda.data.directory_exists, 1)
+
     # Assume directory exists
-    set_mock_value(mock_panda.data.directory_exists, 1)
+    callback_on_mock_put(mock_panda.data.hdf_directory, check_dir_exits)
 
     set_mock_value(
         mock_panda.data.datasets,
@@ -101,7 +110,7 @@ async def mock_panda(panda_t):
 @pytest.fixture
 async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     fp = StaticFilenameProvider("data")
-    dp = StaticPathProvider(fp, tmp_path / mock_panda.name)
+    dp = StaticPathProvider(fp, tmp_path / mock_panda.name, create_dir_depth=-1)
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
             prefix="TEST-PANDA",
@@ -207,3 +216,20 @@ async def test_collect_stream_docs(
         assert_resource_document(name=name, resource_doc=resource_doc)
 
         assert resource_doc["data_key"] == name
+
+
+async def test_oserror_when_hdf_dir_does_not_exist(tmp_path, mock_panda):
+    fp = StaticFilenameProvider("data")
+    dp = StaticPathProvider(
+        fp, tmp_path / mock_panda.name / "extra" / "dirs", create_dir_depth=-1
+    )
+    async with DeviceCollector(mock=True):
+        writer = PandaHDFWriter(
+            prefix="TEST-PANDA",
+            path_provider=dp,
+            name_provider=lambda: "test-panda",
+            panda_device=mock_panda,
+        )
+
+    with pytest.raises(OSError):
+        await writer.open()
