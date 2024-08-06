@@ -35,8 +35,14 @@ def test_given_supplied_enum_has_choices_not_in_pv_then_raises():
         get_supported_values("", MyEnum, ("test",))
 
 
-def test_given_no_supplied_enum_then_returns_generated_choices_enum_with_pv_choices():
-    supported_vals = get_supported_values("", None, ("test",))
+@pytest.mark.parametrize(
+    "datatype",
+    [None, str],
+)
+def test_given_no_enum_or_string_then_returns_generated_choices_enum_with_pv_choices(
+    datatype,
+):
+    supported_vals = get_supported_values("", datatype, ("test",))
     assert len(supported_vals) == 1
     assert "test" in supported_vals
 
