@@ -53,7 +53,7 @@ class PandaHDFWriter(DetectorWriter):
 
         # Set the initial values
         await asyncio.gather(
-            self.panda_device.data.hdf_directory.set(info.directory_path),
+            self.panda_device.data.hdf_directory.set(str(info.directory_path)),
             self.panda_device.data.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
