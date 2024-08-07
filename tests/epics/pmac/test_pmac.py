@@ -3,7 +3,7 @@ from scanspec.specs import Line, fly
 
 from ophyd_async.core import DeviceCollector, set_mock_value
 from ophyd_async.epics.motion import Motor
-from ophyd_async.epics.pmac import PmacTrajectory
+from ophyd_async.epics.pmac import Pmac, PmacTrajectoryTriggerLogic, PmacTrajInfo
 
 
 @pytest.fixture
@@ -25,11 +25,13 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     # Test the generated Trajectory profile from a scanspec
     prefix = "BLxxI-MO-STEP-01"
     async with DeviceCollector(mock=True):
-        traj = PmacTrajectory(prefix, "BRICK1.CS3", name="sim_pmac")
+        pmac = Pmac(prefix, "BRICK1.CS3", name="sim_pmac")
     spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
     stack = spec.calculate()
-    await traj.prepare(stack)
-    assert await traj.positions[9].get_value() == [
+    info = PmacTrajInfo(stack)
+    trigger_logic = PmacTrajectoryTriggerLogic(pmac)
+    await trigger_logic.prepare(info)
+    assert await trigger_logic.pmac.positions[9].get_value() == [
         1,
         1.5,
         2,
@@ -41,7 +43,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
         5,
         5.0125,
     ]
-    assert await traj.velocities[9].get_value() == [
+    assert await trigger_logic.pmac.velocities[9].get_value() == [
         0.5,
         0.5,
         0.5,
@@ -53,7 +55,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
         0.5,
         0,
     ]
-    assert await traj.time_array.get_value() == [
+    assert await trigger_logic.pmac.time_array.get_value() == [
         1050000,
         1000000,
         1000000,
@@ -65,8 +67,8 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
         1000000,
         50000,
     ]
-    assert await traj.points_to_build.get_value() == 10
+    assert await trigger_logic.pmac.points_to_build.get_value() == 10
     assert await sim_x_motor.user_setpoint.get_value() == 0.9875
-    assert traj.scantime == 9.1
+    assert trigger_logic.pmac.scantime == 9.1
 
-    await traj.kickoff()
+    await trigger_logic.pmac.kickoff()
