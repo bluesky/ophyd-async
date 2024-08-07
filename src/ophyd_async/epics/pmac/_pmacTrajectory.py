@@ -2,9 +2,10 @@ import time
 
 import numpy as np
 import numpy.typing as npt
-from bluesky.protocols import Flyable, Preparable
+from pydantic import BaseModel, Field
 from scanspec.specs import Frames, Path
 
+from ophyd_async.core import TriggerLogic
 from ophyd_async.core.async_status import AsyncStatus, WatchableAsyncStatus
 from ophyd_async.core.signal import observe_value
 from ophyd_async.core.utils import WatcherUpdate
@@ -14,14 +15,17 @@ from ophyd_async.epics.pmac import Pmac
 TICK_S = 0.000001
 
 
-class PmacTrajectory(Pmac, Flyable, Preparable):
+class PmacTrajInfo(BaseModel):
+    stack: list[Frames[Motor]] = Field(strict=True)
+    # pmac: Pmac = Field(strict=True)
+
+
+class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
     """Device that moves a PMAC Motor record"""
 
-    def __init__(self, prefix: str, cs: int, name="") -> None:
+    def __init__(self, pmac: Pmac) -> None:
         # Make a dict of which motors are for which cs axis
-        self._fly_start: float
-        self.cs = cs
-        super().__init__(prefix, cs, name=name)
+        self.pmac = pmac
 
     async def _ramp_up_velocity_pos(
         self, velocity: float, motor: Motor, end_velocity: float
@@ -35,9 +39,9 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
         return [disp, accl_time]
 
     @AsyncStatus.wrap
-    async def prepare(self, stack: list[Frames[Motor]]):
+    async def prepare(self, value: PmacTrajInfo):
         # Which Axes are in use?
-        path = Path(stack)
+        path = Path(value.stack)
         chunk = path.consume()
         scan_size = len(chunk)
         scan_axes = chunk.axes()
@@ -107,13 +111,13 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
 
         for axis in scan_axes:
             if axis != "DURATION":
-                self.profile_cs_name.set(cs_port)
-                self.points_to_build.set(scan_size + 1)
-                self.use_axis[cs_axes[axis] + 1].set(True)
-                self.positions[cs_axes[axis] + 1].set(positions[cs_axes[axis]])
-                self.velocities[cs_axes[axis] + 1].set(velocities[cs_axes[axis]])
+                self.pmac.profile_cs_name.set(cs_port)
+                self.pmac.points_to_build.set(scan_size + 1)
+                self.pmac.use_axis[cs_axes[axis] + 1].set(True)
+                self.pmac.positions[cs_axes[axis] + 1].set(positions[cs_axes[axis]])
+                self.pmac.velocities[cs_axes[axis] + 1].set(velocities[cs_axes[axis]])
             else:
-                self.time_array.set(time_array)
+                self.pmac.time_array.set(time_array)
 
         # MOVE TO START
         for axis in scan_axes:
@@ -121,9 +125,8 @@ class PmacTrajectory(Pmac, Flyable, Preparable):
                 await axis.set(self.initial_pos[cs_axes[axis]])
 
         # Set PMAC to use Velocity Array
-        self.profile_calc_vel.set(False)
-
-        self.build_profile.set(True)
+        self.pmac.profile_calc_vel.set(False)
+        self.pmac.build_profile.set(True)
         self._fly_start = time.monotonic()
 
     @AsyncStatus.wrap
