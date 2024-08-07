@@ -158,7 +158,7 @@ async def test_open_close_sets_capture(mock_writer: PandaHDFWriter):
 async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_path):
     await mock_writer.open()
     path = await mock_writer.panda_device.data.hdf_directory.get_value()
-    assert path == tmp_path / mock_writer.panda_device.name
+    assert path == str(tmp_path / mock_writer.panda_device.name)
     name = await mock_writer.panda_device.data.hdf_file_name.get_value()
     assert name == "data.h5"
 
