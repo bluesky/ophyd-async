@@ -228,22 +228,18 @@ def make_converter(
     else:
         value = list(values.values())[0]
         # Done the dbr check, so enough to check one of the values
-        if (
-            datatype
-            and not isinstance(value, datatype)
-            and not (
-                datatype is int
-                and isinstance(value, float)
-                and (
-                    get_unique({k: v.precision for k, v in values.items()}, "precision")
-                    == 0
-                )
-            )  # Allow int signals to represent float records when prec is 0
-        ):
-            raise TypeError(
-                f"{pv} has type {type(value).__name__.replace('ca_', '')} "
-                + f"not {datatype.__name__}"
+        if datatype and not isinstance(value, datatype):
+            # Allow int signals to represent float records when prec is 0
+            is_prec_zero_float = (
+                isinstance(value, float)
+                and get_unique({k: v.precision for k, v in values.items()}, "precision")
+                == 0
             )
+            if not (datatype is int and is_prec_zero_float):
+                raise TypeError(
+                    f"{pv} has type {type(value).__name__.replace('ca_', '')} "
+                    + f"not {datatype.__name__}"
+                )
         return CaConverter(pv_dbr, None)
 
 
