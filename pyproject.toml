@@ -12,6 +12,7 @@ classifiers = [
 ]
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
+    "h5py",
     "networkx>=2.0",
     "numpy<2.0.0",
     "packaging",
@@ -39,7 +40,6 @@ dev = [
     "flake8",
     "flake8-isort",
     "Flake8-pyproject",
-    "h5py",
     "inflection",
     "ipython",
     "ipywidgets",
