@@ -26,7 +26,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
             prefix=prefix,
             path_provider=path_provider,
             name_provider=lambda: name,
-            panda_device=self,
+            panda_data_block=self.data,
         )
         super().__init__(
             controller=controller,

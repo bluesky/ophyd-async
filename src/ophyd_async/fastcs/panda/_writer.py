@@ -16,7 +16,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._block import CommonPandaBlocks
+from ._block import DataBlock
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -27,9 +27,9 @@ class PandaHDFWriter(DetectorWriter):
         prefix: str,
         path_provider: PathProvider,
         name_provider: NameProvider,
-        panda_device: CommonPandaBlocks,
+        panda_data_block: DataBlock,
     ) -> None:
-        self.panda_device = panda_device
+        self.panda_data_block = panda_data_block
         self._prefix = prefix
         self._path_provider = path_provider
         self._name_provider = name_provider
@@ -42,23 +42,23 @@ class PandaHDFWriter(DetectorWriter):
         """Retrieve and get descriptor of all PandA signals marked for capture"""
 
         # Ensure flushes are immediate
-        await self.panda_device.data.flush_period.set(0)
+        await self.panda_data_block.flush_period.set(0)
 
         self._file = None
-        info = self._path_provider(device_name=self.panda_device.name)
+        info = self._path_provider(device_name=self._name_provider())
         # Set the initial values
         await asyncio.gather(
-            self.panda_device.data.hdf_directory.set(info.directory_path),
-            self.panda_device.data.hdf_file_name.set(
+            self.panda_data_block.hdf_directory.set(info.directory_path),
+            self.panda_data_block.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
-            self.panda_device.data.num_capture.set(0),
+            self.panda_data_block.num_capture.set(0),
             # TODO: Set create_dir_depth once available
             # https://github.com/bluesky/ophyd-async/issues/317
         )
 
         # Wait for it to start, stashing the status that tells us when it finishes
-        await self.panda_device.data.capture.set(True)
+        await self.panda_data_block.capture.set(True)
         if multiplier > 1:
             raise ValueError(
                 "All PandA datasets should be scalar, multiplier should be 1"
@@ -74,7 +74,7 @@ class PandaHDFWriter(DetectorWriter):
         await self._update_datasets()
         describe = {
             ds.data_key: DataKey(
-                source=self.panda_device.data.hdf_directory.source,
+                source=self.panda_data_block.hdf_directory.source,
                 shape=ds.shape,
                 dtype="array" if ds.shape != [1] else "number",
                 dtype_numpy="<f8",  # PandA data should always be written as Float64
@@ -90,7 +90,7 @@ class PandaHDFWriter(DetectorWriter):
         representation of datasets that the panda will write.
         """
 
-        capture_table = await self.panda_device.data.datasets.get_value()
+        capture_table = await self.panda_data_block.datasets.get_value()
         self._datasets = [
             HDFDataset(dataset_name, "/" + dataset_name, [1], multiplier=1)
             for dataset_name in capture_table["name"]
@@ -106,18 +106,18 @@ class PandaHDFWriter(DetectorWriter):
 
         matcher.__name__ = f"index_at_least_{index}"
         await wait_for_value(
-            self.panda_device.data.num_captured, matcher, timeout=timeout
+            self.panda_data_block.num_captured, matcher, timeout=timeout
         )
 
     async def get_indices_written(self) -> int:
-        return await self.panda_device.data.num_captured.get_value()
+        return await self.panda_data_block.num_captured.get_value()
 
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected"""
         async for num_captured in observe_value(
-            self.panda_device.data.num_captured, timeout
+            self.panda_data_block.num_captured, timeout
         ):
             yield num_captured // self._multiplier
 
@@ -128,8 +128,8 @@ class PandaHDFWriter(DetectorWriter):
         if indices_written:
             if not self._file:
                 self._file = HDFFile(
-                    Path(await self.panda_device.data.hdf_directory.get_value())
-                    / Path(await self.panda_device.data.hdf_file_name.get_value()),
+                    Path(await self.panda_data_block.hdf_directory.get_value())
+                    / Path(await self.panda_data_block.hdf_file_name.get_value()),
                     self._datasets,
                 )
                 for doc in self._file.stream_resources():
@@ -139,6 +139,6 @@ class PandaHDFWriter(DetectorWriter):
 
     # Could put this function as default for StandardDetector
     async def close(self):
-        await self.panda_device.data.capture.set(
+        await self.panda_data_block.capture.set(
             False, wait=True, timeout=DEFAULT_TIMEOUT
         )
