@@ -335,14 +335,17 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
             return PvaEnumConverter(
                 get_supported_values(pv, datatype, datatype.choices)
             )
-        elif (
-            datatype
-            and not issubclass(typ, datatype)
-            and not (
-                typ is float and datatype is int
-            )  # Allow float -> int since prec can be 0
-        ):
-            raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
+        elif datatype and not issubclass(typ, datatype):
+            # Allow int signals to represent float records when prec is 0
+            is_prec_zero_float = typ is float and (
+                get_unique(
+                    {k: v["display"]["precision"] for k, v in values.items()},
+                    "precision",
+                )
+                == 0
+            )
+            if not (datatype is int and is_prec_zero_float):
+                raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
         return PvaTableConverter()
