@@ -54,8 +54,8 @@ class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
         for axis in scan_axes:
             if axis != "DURATION":
                 cs_port, cs_index = await self.get_cs_info(axis)
-                positions[cs_index] = []
-                velocities[cs_index] = []
+                positions[cs_index] = np.empty((3 * scan_size,), dtype=np.float64)
+                velocities[cs_index] = np.empty((scan_size,), dtype=np.float64)
                 cs_ports.add(cs_port)
                 cs_axes[axis] = cs_index
         assert len(cs_ports) == 1, "Motors in more than one CS"
@@ -64,17 +64,28 @@ class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
 
         # Calc Velocity
 
-        for axis in scan_axes:
-            for i in range(scan_size):
+        gaps = self._calculate_gaps(chunk)
+        gaps = np.append(gaps, scan_size)
+        start = 0
+        for gap in gaps:
+            for axis in scan_axes:
                 if axis != "DURATION":
-                    velocities[cs_axes[axis]].append(
-                        (chunk.upper[axis][i] - chunk.lower[axis][i])
-                        / (chunk.midpoints["DURATION"][i])
+                    positions[cs_axes[axis]][3 * start : (3 * gap) + 1 : 3] = (
+                        chunk.lower[axis][start : gap + 1]
                     )
-                    positions[cs_axes[axis]].append(chunk.midpoints[axis][i])
-                else:
-                    time_array.append(int(chunk.midpoints[axis][i] / TICK_S))
-
+                    positions[cs_axes[axis]][(3 * start) + 1 : 3 * gap + 2 : 3] = (
+                        chunk.midpoints[axis][start : gap + 1]
+                    )
+                    positions[cs_axes[axis]][(3 * start) + 2 : 3 * gap + 3 : 3] = (
+                        chunk.upper[axis][start : gap + 1]
+                    )
+                    velocities[cs_axes[axis]][start : gap + 1] = (
+                        positions[cs_axes[axis]][(3 * start) + 2 : 3 * gap + 3 : 3]
+                        - positions[cs_axes[axis]][(3 * start) : 3 * gap + 1 : 3]
+                        / chunk.midpoints["DURATION"][start : gap + 1]
+                    )
+            start = gap + 1
+        time_array = chunk.midpoints["DURATION"] / TICK_S
         # Calculate Starting and end Position to allow ramp up and trail off velocity
         self.initial_pos = {}
         run_up_time = 0
@@ -101,20 +112,26 @@ class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
                     )
                     final_pos = positions[cs_axes[axis]][-1] + ramp_down_disp
                     final_time = max(ramp_down_time, final_time)
-                positions[cs_axes[axis]].append(final_pos)
-                velocities[cs_axes[axis]].append(0)
+                positions[cs_axes[axis]] = np.append(
+                    positions[cs_axes[axis]], final_pos
+                )
+                velocities[cs_axes[axis]] = np.append(velocities[cs_axes[axis]], 0)
                 run_up_time = max(run_up_time, run_up_t)
 
         self.scantime += run_up_time + final_time
-        time_array[0] += run_up_time / TICK_S
-        time_array.append(int(final_time / TICK_S))
+        time_array[0] += int(run_up_time / TICK_S)
+        time_array = np.append(time_array, int(final_time / TICK_S))
 
         for axis in scan_axes:
             if axis != "DURATION":
                 self.pmac.profile_cs_name.set(cs_port)
                 self.pmac.points_to_build.set(scan_size + 1)
                 self.pmac.use_axis[cs_axes[axis] + 1].set(True)
-                self.pmac.positions[cs_axes[axis] + 1].set(positions[cs_axes[axis]])
+                self.pmac.positions[cs_axes[axis] + 1].set(
+                    np.append(
+                        positions[cs_axes[axis]][1::3], positions[cs_axes[axis]][-1]
+                    )
+                )
                 self.pmac.velocities[cs_axes[axis] + 1].set(velocities[cs_axes[axis]])
             else:
                 self.pmac.time_array.set(time_array)
@@ -156,3 +173,10 @@ class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
         assert "CS" in cs_port, f"{self.name} not in a CS. It is not a compound motor."
         cs_index = int(split[1].strip()) - 1
         return cs_port, cs_index
+
+    def _calculate_gaps(self, chunk: Frames[Motor]):
+        inds = np.argwhere(chunk.gap)
+        if len(inds) == 0:
+            return len(chunk)
+        else:
+            return inds[0]
