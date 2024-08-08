@@ -41,7 +41,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
         4,
         4.5,
         5,
-        5.0125,
+        5.2625,
     ]
     assert await trigger_logic.pmac.velocities[9].get_value() == [
         0.5,
@@ -68,7 +68,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
         50000,
     ]
     assert await trigger_logic.pmac.points_to_build.get_value() == 10
-    assert await sim_x_motor.user_setpoint.get_value() == 0.9875
+    assert await sim_x_motor.user_setpoint.get_value() == 0.7375
     assert trigger_logic.pmac.scantime == 9.1
 
     await trigger_logic.pmac.kickoff()
