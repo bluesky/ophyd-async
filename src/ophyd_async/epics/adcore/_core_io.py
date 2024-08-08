@@ -22,18 +22,19 @@ class NDArrayBaseIO(Device):
         self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire")
         self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
         self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
-        self.data_type = epics_signal_r(ADBaseDataType, prefix + "NDDataType_RBV")
+        self.nd_data_type = epics_signal_r(ADBaseDataType, prefix + "NDDataType_RBV")
         self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
-
         super().__init__(name=name)
 
 
 class NDPluginBaseIO(NDArrayBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
-        self.enable_callback = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks")
+        self.enable_callbacks = epics_signal_rw_rbv(
+            Callback, prefix + "EnableCallbacks"
+        )
         self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0_RBV")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1_RBV")
@@ -43,26 +44,27 @@ class NDPluginBaseIO(NDArrayBaseIO):
 class NDPluginStatsIO(NDPluginBaseIO):
     """
     Plugin for computing statistics from an image or region of interest within an image.
-    Each boolean signal enables or disables all signals in the appropriate Enum class.
-    The enum signals may used in the ScalarSignals kwargs of a HDFWriter, and are also
-    read-only signals on the plugin.
     """
 
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.total = epics_signal_rw(float, prefix + "TotalArray")
-        self.statistics = epics_signal_rw(bool, prefix + "ComputeStatistics")
-        self.statistics_background_width = epics_signal_rw(int, prefix + "BgdWidth")
-        self.centroid = epics_signal_rw(bool, prefix + "ComputeCentroid")
+        # Basic statistics
+        self.compute_statistics = epics_signal_rw(bool, prefix + "ComputeStatistics")
+        self.bgd_width = epics_signal_rw(int, prefix + "BgdWidth")
+        self.total_array = epics_signal_rw(float, prefix + "TotalArray")
+        # Centroid statistics
+        self.compute_centroid = epics_signal_rw(bool, prefix + "ComputeCentroid")
         self.centroid_threshold = epics_signal_rw(float, prefix + "CentroidThreshold")
-        self.profiles = epics_signal_rw(bool, prefix + "ComputeProfiles")
+        # X and Y Profiles
+        self.compute_profiles = epics_signal_rw(bool, prefix + "ComputeProfiles")
         self.profile_size_x = epics_signal_rw(int, prefix + "ProfileSizeX")
-        self.profile_cursor_x = epics_signal_rw(int, prefix + "CursorX")
         self.profile_size_y = epics_signal_rw(int, prefix + "ProfileSizeY")
-        self.profile_cursor_y = epics_signal_rw(int, prefix + "CursorY")
-        self.histogram = epics_signal_rw(bool, prefix + "ComputeHistogram")
-        self.histogram_max = epics_signal_rw(float, prefix + "HistMax")
-        self.histogram_min = epics_signal_rw(float, prefix + "HistMin")
-        self.histogram_size = epics_signal_rw(int, prefix + "HistSize")
+        self.cursor_x = epics_signal_rw(int, prefix + "CursorX")
+        self.cursor_y = epics_signal_rw(int, prefix + "CursorY")
+        # Array Histogram
+        self.compute_histogram = epics_signal_rw(bool, prefix + "ComputeHistogram")
+        self.hist_size = epics_signal_rw(int, prefix + "HistSize")
+        self.hist_min = epics_signal_rw(float, prefix + "HistMin")
+        self.hist_max = epics_signal_rw(float, prefix + "HistMax")
         super().__init__(prefix, name)
 
 
@@ -132,5 +134,5 @@ class NDFileHDFIO(NDPluginBaseIO):
         self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1")
-        self.create_dir_depth = epics_signal_rw(int, prefix + "CreateDirectory")
+        self.create_directory = epics_signal_rw(int, prefix + "CreateDirectory")
         super().__init__(prefix, name)

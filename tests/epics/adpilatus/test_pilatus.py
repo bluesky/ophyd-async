@@ -60,7 +60,7 @@ async def test_trigger_mode_set(
     expected_trigger_mode: adpilatus.PilatusTriggerMode,
 ):
     async def trigger_and_complete():
-        set_mock_value(test_adpilatus.drv.armed_for_triggers, True)
+        set_mock_value(test_adpilatus.drv.armed, True)
         status = await test_adpilatus.controller.arm(
             num=1,
             trigger=detector_trigger,
@@ -135,7 +135,7 @@ async def test_exposure_time_and_acquire_period_set(
         return {}
 
     test_adpilatus.writer.open = dummy_open
-    set_mock_value(test_adpilatus.drv.armed_for_triggers, True)
+    set_mock_value(test_adpilatus.drv.armed, True)
     await test_adpilatus.prepare(
         TriggerInfo(
             number=1, trigger=DetectorTrigger.internal, deadtime=1.0, livetime=1.0
