@@ -50,6 +50,7 @@ async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
             },
             {
                 "data.capture": False,
+                "data.create_directory": 0,
                 "data.flush_period": 0.0,
                 "data.hdf_directory": "",
                 "data.hdf_file_name": "",
