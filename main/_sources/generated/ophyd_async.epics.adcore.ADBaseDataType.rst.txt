@@ -88,6 +88,5 @@ ophyd\_async.epics.adcore.ADBaseDataType
       ~ADBaseDataType.UInt64
       ~ADBaseDataType.Float32
       ~ADBaseDataType.Float64
-      ~ADBaseDataType.Double
    
    
