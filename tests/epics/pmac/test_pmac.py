@@ -21,6 +21,21 @@ async def sim_x_motor():
     yield sim_motor
 
 
+@pytest.fixture
+async def sim_y_motor():
+    async with DeviceCollector(mock=True):
+        sim_motor = Motor("BLxxI-MO-STAGE-01:Y", name="sim_x_motor")
+
+    set_mock_value(sim_motor.motor_egu, "mm")
+    set_mock_value(sim_motor.precision, 3)
+    set_mock_value(sim_motor.acceleration_time, 0.5)
+    set_mock_value(sim_motor.max_velocity, 5)
+    set_mock_value(sim_motor.velocity, 0.5)
+    set_mock_value(sim_motor.output_link, "@asyn(BRICK1.CS3,8)")
+
+    yield sim_motor
+
+
 async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     # Test the generated Trajectory profile from a scanspec
     prefix = "BLxxI-MO-STEP-01"
@@ -31,44 +46,310 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     info = PmacTrajInfo(stack)
     trigger_logic = PmacTrajectoryTriggerLogic(pmac)
     await trigger_logic.prepare(info)
-    assert await trigger_logic.pmac.positions[9].get_value() == [
-        1,
-        1.5,
-        2,
-        2.5,
-        3,
-        3.5,
-        4,
-        4.5,
-        5,
-        5.2625,
-    ]
-    assert await trigger_logic.pmac.velocities[9].get_value() == [
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-        0,
-    ]
-    assert await trigger_logic.pmac.time_array.get_value() == [
-        1050000,
-        1000000,
-        1000000,
-        1000000,
-        1000000,
-        1000000,
-        1000000,
-        1000000,
-        1000000,
-        50000,
-    ]
-    assert await trigger_logic.pmac.points_to_build.get_value() == 10
-    assert await sim_x_motor.user_setpoint.get_value() == 0.7375
-    assert trigger_logic.pmac.scantime == 9.1
+    assert await trigger_logic.pmac.positions[9].get_value() == pytest.approx(
+        [
+            1,
+            1.25,
+            1.5,
+            1.75,
+            2,
+            2.25,
+            2.5,
+            2.75,
+            3,
+            3.25,
+            3.5,
+            3.75,
+            4,
+            4.25,
+            4.5,
+            4.75,
+            5,
+            5.25,
+            5.2625,
+        ]
+    )
+    assert await trigger_logic.pmac.velocities[9].get_value() == pytest.approx(
+        [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0,
+        ]
+    )
+    assert (
+        await trigger_logic.pmac.time_array.get_value()
+        == [
+            550000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            50000,
+        ]
+    ).all()
+    assert await trigger_logic.pmac.points_to_build.get_value() == 19
+    assert await sim_x_motor.user_setpoint.get_value() == 0.9875
+    assert trigger_logic.scantime == 9.1
 
-    await trigger_logic.pmac.kickoff()
+    await trigger_logic.kickoff()
+
+
+async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor) -> None:
+    # Test the generated Trajectory profile from a scanspec
+    prefix = "BLxxI-MO-STEP-01"
+    async with DeviceCollector(mock=True):
+        pmac = Pmac(prefix, "BRICK1.CS3", name="sim_pmac")
+    spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)
+    stack = spec.calculate()
+    info = PmacTrajInfo(stack)
+    trigger_logic = PmacTrajectoryTriggerLogic(pmac)
+    await trigger_logic.prepare(info)
+    assert await trigger_logic.pmac.positions[9].get_value() == pytest.approx(
+        [
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+            5.55,
+            5.55,
+            5.55,
+            5.5,
+            5.0,
+            4.5,
+            4.0,
+            3.5,
+            3.0,
+            2.5,
+            2.0,
+            1.5,
+            1.0,
+            0.5,
+            0.45,
+            0.45,
+            0.45,
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+            5.55,
+        ]
+    )
+    assert await trigger_logic.pmac.velocities[9].get_value() == pytest.approx(
+        [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -0.0,
+            0.0,
+            -0.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -0.0,
+            0.0,
+            -0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.0,
+        ]
+    )
+    assert await trigger_logic.pmac.positions[8].get_value() == pytest.approx(
+        [
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.05,
+            10.5,
+            10.95,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.05,
+            11.5,
+            11.95,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+        ]
+    )
+    assert await trigger_logic.pmac.velocities[8].get_value() == pytest.approx(
+        [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            3.16227766,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            3.16227766,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+    )
+    assert await trigger_logic.pmac.time_array.get_value() == pytest.approx(
+        [
+            600000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            100000,
+            216227,
+            216227,
+            100000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            100000,
+            216227,
+            216227,
+            100000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            100000,
+        ]
+    )
+    assert await trigger_logic.pmac.points_to_build.get_value() == 39
+    assert await sim_x_motor.user_setpoint.get_value() == 0.95
+    assert trigger_logic.scantime == 15.2
+
+    await trigger_logic.kickoff()
