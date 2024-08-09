@@ -61,7 +61,7 @@ class PandaHDFWriter(DetectorWriter):
         )
 
         # Make sure that directory exists or has been created.
-        if not await self.panda_device.data.directory_exists.get_value() == 1:
+        if not await self.panda_data_block.directory_exists.get_value() == 1:
             raise OSError(
                 f"Directory {info.directory_path} does not exist or "
                 "is not writable by the PandABlocks-ioc!"
