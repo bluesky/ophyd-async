@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._writer &#8212; ophyd-async 0.5.1.dev14+gd1c4e3c2 documentation</title>
+    <title>ophyd_async.fastcs.panda._writer &#8212; ophyd-async 0.5.1.dev15+ge4fb8492 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=1a0c2493"></script>
+    <script src="../../../../_static/documentation_options.js?v=e8df0688"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -505,7 +505,7 @@ document.write(`
     <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">._block</span> <span class="kn">import</span> <span class="n">CommonPandaBlocks</span>
+<span class="kn">from</span> <span class="nn">._block</span> <span class="kn">import</span> <span class="n">DataBlock</span>
 
 
 <div class="viewcode-block" id="PandaHDFWriter">
@@ -518,9 +518,9 @@ document.write(`
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
-        <span class="n">panda_device</span><span class="p">:</span> <span class="n">CommonPandaBlocks</span><span class="p">,</span>
+        <span class="n">panda_data_block</span><span class="p">:</span> <span class="n">DataBlock</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span> <span class="o">=</span> <span class="n">panda_device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span> <span class="o">=</span> <span class="n">panda_data_block</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
@@ -535,23 +535,23 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve and get descriptor of all PandA signals marked for capture&quot;&quot;&quot;</span>
 
         <span class="c1"># Ensure flushes are immediate</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">flush_period</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">flush_period</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">())</span>
         <span class="c1"># Set the initial values</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">directory_path</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">directory_path</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">,</span>
             <span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">num_capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
             <span class="c1"># TODO: Set create_dir_depth once available</span>
             <span class="c1"># https://github.com/bluesky/ophyd-async/issues/317</span>
         <span class="p">)</span>
 
         <span class="c1"># Wait for it to start, stashing the status that tells us when it finishes</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">multiplier</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;All PandA datasets should be scalar, multiplier should be 1&quot;</span>
@@ -568,7 +568,7 @@ document.write(`
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_datasets</span><span class="p">()</span>
         <span class="n">describe</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">ds</span><span class="o">.</span><span class="n">data_key</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
-                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
                 <span class="n">shape</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
                 <span class="n">dtype_numpy</span><span class="o">=</span><span class="s2">&quot;&lt;f8&quot;</span><span class="p">,</span>  <span class="c1"># PandA data should always be written as Float64</span>
@@ -584,7 +584,7 @@ document.write(`
 <span class="sd">        representation of datasets that the panda will write.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">capture_table</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="n">capture_table</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">HDFDataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
@@ -602,14 +602,14 @@ document.write(`
 
         <span class="n">matcher</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;index_at_least_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">matcher</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">matcher</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PandaHDFWriter.get_indices_written">
 <a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.get_indices_written">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_captured</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">num_captured</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PandaHDFWriter.observe_indices_written">
@@ -619,7 +619,7 @@ document.write(`
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait until a specific index is ready to be collected&quot;&quot;&quot;</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">num_captured</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">timeout</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">timeout</span>
         <span class="p">):</span>
             <span class="k">yield</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span></div>
 
@@ -633,8 +633,8 @@ document.write(`
         <span class="k">if</span> <span class="n">indices_written</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="n">HDFFile</span><span class="p">(</span>
-                    <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
-                    <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">get_value</span><span class="p">()),</span>
+                    <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
+                    <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">get_value</span><span class="p">()),</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="o">.</span><span class="n">stream_resources</span><span class="p">():</span>
@@ -647,7 +647,7 @@ document.write(`
 <div class="viewcode-block" id="PandaHDFWriter.close">
 <a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.PandaHDFWriter.html#ophyd_async.fastcs.panda.PandaHDFWriter.close">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_device</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
             <span class="kc">False</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
         <span class="p">)</span></div>
 </div>
