@@ -61,7 +61,7 @@ class ADHDFWriter(DetectorWriter):
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self.hdf.file_path.set(info.directory_path),
+            self.hdf.file_path.set(str(info.directory_path)),
             self.hdf.file_name.set(info.filename),
             self.hdf.file_template.set("%s/%s.h5"),
             self.hdf.file_write_mode.set(FileWriteMode.stream),
