@@ -29,7 +29,7 @@ First some Signals are constructed and stored on the Device. Each one is passed
 its Python type, which could be:
 
 - A primitive (`str`, `int`, `float`)
-- An array (`numpy.typing.NDArray` or ``Sequence[str]``)
+- An array (`numpy.typing.NDArray` ie. ``numpy.typing.NDArray[numpy.uint16]`` or ``Sequence[str]``)
 - An enum (`enum.Enum`) which **must** also extend `str`
     - `str` and ``EnumClass(str, Enum)`` are the only valid ``datatype`` for an enumerated signal.
 
