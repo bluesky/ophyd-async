@@ -22,7 +22,7 @@ class NDArrayBaseIO(Device):
         self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire")
         self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
         self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
-        self.nd_data_type = epics_signal_r(ADBaseDataType, prefix + "NDDataType_RBV")
+        self.data_type = epics_signal_r(ADBaseDataType, prefix + "DataType_RBV")
         self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
