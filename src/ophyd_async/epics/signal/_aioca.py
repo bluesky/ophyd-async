@@ -47,7 +47,7 @@ def _data_key_from_augmented_value(
     value: AugmentedValue,
     *,
     choices: Optional[List[str]] = None,
-    dtype: Optional[str] = None,
+    dtype: Optional[Dtype] = None,
 ) -> DataKey:
     """Use the return value of get with FORMAT_CTRL to construct a DataKey
     describing the signal. See docstring of AugmentedValue for expected
@@ -175,7 +175,7 @@ class CaBoolConverter(CaConverter):
         return bool(value)
 
     def get_datakey(self, value: AugmentedValue) -> DataKey:
-        return _data_key_from_augmented_value(value, dtype="bool")
+        return _data_key_from_augmented_value(value, dtype="boolean")
 
 
 class DisconnectedCaConverter(CaConverter):

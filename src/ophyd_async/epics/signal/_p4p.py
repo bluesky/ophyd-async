@@ -64,7 +64,7 @@ def _data_key_from_value(
     *,
     shape: Optional[list[int]] = None,
     choices: Optional[list[str]] = None,
-    dtype: Optional[str] = None,
+    dtype: Optional[Dtype] = None,
 ) -> DataKey:
     """
     Args:
@@ -85,7 +85,7 @@ def _data_key_from_value(
         if isinstance(type_code, tuple):
             dtype_numpy = ""
             if type_code[1] == "enum_t":
-                if dtype == "bool":
+                if dtype == "boolean":
                     dtype_numpy = "<i2"
                 else:
                     for item in type_code[2]:
@@ -241,7 +241,7 @@ class PvaEmumBoolConverter(PvaConverter):
         return bool(value["value"]["index"])
 
     def get_datakey(self, source: str, value) -> DataKey:
-        return _data_key_from_value(source, value, dtype="bool")
+        return _data_key_from_value(source, value, dtype="boolean")
 
 
 class PvaTableConverter(PvaConverter):
