@@ -4,7 +4,9 @@ from enum import Enum
 import numpy as np
 import numpy.typing as npt
 import pytest
+from test_base_device import TestDevice
 from test_tango_signals import (
+    EchoDevice,
     make_backend,
     prepare_device,
 )
@@ -26,7 +28,33 @@ from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
+    set_global_executor,
 )
+from tango.test_context import MultiDeviceTestContext
+
+
+# --------------------------------------------------------------------
+@pytest.fixture(scope="module")
+def tango_test_device():
+    with MultiDeviceTestContext(
+        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True
+    ) as context:
+        yield context.get_device_access("test/device/1")
+
+
+# --------------------------------------------------------------------
+@pytest.fixture(scope="module")
+def echo_device():
+    with MultiDeviceTestContext(
+        [{"class": EchoDevice, "devices": [{"name": "test/device/1"}]}], process=True
+    ) as context:
+        yield context.get_device_access("test/device/1")
+
+
+# --------------------------------------------------------------------
+@pytest.fixture(autouse=True)
+def reset_tango_asyncio():
+    set_global_executor(None)
 
 
 # --------------------------------------------------------------------
@@ -200,6 +228,7 @@ async def test_attribute_proxy_get(device_proxy, attr):
     assert val is not None
 
 
+# --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize("attr", ["justvalue", "array"])
 async def test_attribute_proxy_put(device_proxy, attr):
