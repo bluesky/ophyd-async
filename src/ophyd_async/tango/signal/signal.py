@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from typing import Optional, Type, Union
 
-from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
-from ophyd_async.core.utils import DEFAULT_TIMEOUT
+from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.tango._backend import TangoTransport
 from tango import AttrWriteType, CmdArgType
 from tango import DeviceProxy as SyncDeviceProxy
