@@ -2,6 +2,7 @@ import asyncio
 import logging
 import re
 import time
+from asyncio import Event
 from unittest.mock import ANY
 
 import numpy
@@ -9,10 +10,12 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     ConfigSignal,
     DeviceCollector,
     HintedSignal,
     MockSignalBackend,
+    NotConnected,
     Signal,
     SignalR,
     SignalRW,
@@ -21,6 +24,8 @@ from ophyd_async.core import (
     assert_configuration,
     assert_reading,
     assert_value,
+    callback_on_mock_put,
+    set_and_wait_for_other_value,
     set_and_wait_for_value,
     set_mock_put_proceeds,
     set_mock_value,
@@ -28,8 +33,6 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_value,
 )
-from ophyd_async.core.signal import _SignalCache
-from ophyd_async.core.utils import DEFAULT_TIMEOUT
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -167,8 +170,8 @@ async def test_signal_lazily_connects(RE):
         and not signal._connect_task.exception()
     )
 
-    # TODO https://github.com/bluesky/ophyd-async/issues/413
-    RE(ensure_connected(signal, mock=False, force_reconnect=True))
+    with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
+        RE(ensure_connected(signal, mock=False, force_reconnect=True))
     assert (
         signal._connect_task
         and signal._connect_task.done()
@@ -182,30 +185,74 @@ async def time_taken_by(coro) -> float:
     return time.monotonic() - start
 
 
-async def test_set_and_wait_for_value():
+async def test_set_and_wait_for_value_same_set_as_read():
     signal = epics_signal_rw(int, "pva://pv", name="signal")
     await signal.connect(mock=True)
     assert await signal.get_value() == 0
     set_mock_put_proceeds(signal, False)
 
+    do_read_set = Event()
+    callback_on_mock_put(signal, lambda *args, **kwargs: do_read_set.set())
+
     async def wait_and_set_proceeds():
-        await asyncio.sleep(0.1)
+        await do_read_set.wait()
         set_mock_put_proceeds(signal, True)
-        await asyncio.sleep(0.01)
 
     async def check_set_and_wait():
-        st = await set_and_wait_for_value(signal, 1, timeout=100)
-        await st
-        await asyncio.sleep(0.01)
+        await (await set_and_wait_for_value(signal, 1, timeout=0.1))
 
-    assert (
-        0.1
-        < await time_taken_by(
-            asyncio.gather(wait_and_set_proceeds(), check_set_and_wait())
-        )
-        < 0.15
-    )
+    await asyncio.gather(wait_and_set_proceeds(), check_set_and_wait())
     assert await signal.get_value() == 1
+
+
+async def test_set_and_wait_for_value_different_set_and_read():
+    set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
+    read_signal = epics_signal_r(str, "pva://read", name="read-signal")
+    await set_signal.connect(mock=True)
+    await read_signal.connect(mock=True)
+
+    do_read_set = Event()
+
+    callback_on_mock_put(set_signal, lambda *args, **kwargs: do_read_set.set())
+
+    async def wait_and_set_read():
+        await do_read_set.wait()
+        set_mock_value(read_signal, "test")
+
+    async def check_set_and_wait():
+        await (
+            await set_and_wait_for_other_value(
+                set_signal, 1, read_signal, "test", timeout=100
+            )
+        )
+
+    await asyncio.gather(wait_and_set_read(), check_set_and_wait())
+    assert await set_signal.get_value() == 1
+
+
+async def test_set_and_wait_for_value_different_set_and_read_times_out():
+    set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
+    read_signal = epics_signal_r(str, "pva://read", name="read-signal")
+    await set_signal.connect(mock=True)
+    await read_signal.connect(mock=True)
+
+    do_read_set = Event()
+
+    callback_on_mock_put(set_signal, lambda *args, **kwargs: do_read_set.set())
+
+    async def wait_and_set_read():
+        await do_read_set.wait()
+        set_mock_value(read_signal, "not_test")
+
+    async def check_set_and_wait():
+        await (
+            await set_and_wait_for_other_value(
+                set_signal, 1, read_signal, "test", timeout=0.1
+            )
+        )
+
+    with pytest.raises(TimeoutError):
+        await asyncio.gather(wait_and_set_read(), check_set_and_wait())
 
 
 async def test_wait_for_value_with_value():
@@ -372,7 +419,8 @@ async def test_subscription_logs(caplog):
     caplog.set_level(logging.DEBUG)
     mock_signal_rw = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
     await mock_signal_rw.connect(mock=True)
-    cache = _SignalCache(mock_signal_rw._backend, signal=mock_signal_rw)
+    cbs = []
+    mock_signal_rw.subscribe(cbs.append)
     assert "Making subscription" in caplog.text
-    cache.close()
+    mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text

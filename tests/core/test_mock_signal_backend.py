@@ -5,9 +5,13 @@ from unittest.mock import ANY, MagicMock, call
 
 import pytest
 
-from ophyd_async.core import MockSignalBackend, SignalRW
-from ophyd_async.core.device import Device, DeviceCollector
-from ophyd_async.core.mock_signal_utils import (
+from ophyd_async.core import (
+    Device,
+    DeviceCollector,
+    MockSignalBackend,
+    SignalRW,
+    SignalW,
+    SoftSignalBackend,
     callback_on_mock_put,
     get_mock_put,
     mock_puts_blocked,
@@ -15,10 +19,10 @@ from ophyd_async.core.mock_signal_utils import (
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
+    soft_signal_r_and_setter,
+    soft_signal_rw,
 )
-from ophyd_async.core.signal import SignalW, soft_signal_r_and_setter, soft_signal_rw
-from ophyd_async.core.soft_signal_backend import SoftSignalBackend
-from ophyd_async.epics.signal.signal import epics_signal_r, epics_signal_rw
+from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
 @pytest.mark.parametrize("connect_mock_mode", [True, False])

@@ -242,7 +242,7 @@ async def test_sensor_disconnected(caplog):
         async with DeviceCollector(timeout=0.1):
             s = demo.Sensor("ca://PRE:", name="sensor")
     logs = caplog.get_records("call")
-    logs = [log for log in logs if "signal" not in log.pathname]
+    logs = [log for log in logs if "_signal" not in log.pathname]
     assert len(logs) == 2
 
     assert logs[0].message == ("signal ca://PRE:Value timed out")

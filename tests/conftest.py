@@ -9,15 +9,23 @@ from typing import Any, Callable
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
 
-from ophyd_async.core import StaticDirectoryProvider
-
-PANDA_RECORD = str(Path(__file__).parent / "panda" / "db" / "panda.db")
-INCOMPLETE_BLOCK_RECORD = str(
-    Path(__file__).parent / "panda" / "db" / "incomplete_block_panda.db"
+from ophyd_async.core import (
+    DetectorTrigger,
+    FilenameProvider,
+    StaticFilenameProvider,
+    StaticPathProvider,
+    TriggerInfo,
 )
-INCOMPLETE_RECORD = str(Path(__file__).parent / "panda" / "db" / "incomplete_panda.db")
+
+PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
+INCOMPLETE_BLOCK_RECORD = str(
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
+)
+INCOMPLETE_RECORD = str(
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_panda.db"
+)
 EXTRA_BLOCKS_RECORD = str(
-    Path(__file__).parent / "panda" / "db" / "extra_blocks_panda.db"
+    Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
 )
 
 # Prevent pytest from catching exceptions when debugging in vscode so that break on
@@ -124,8 +132,35 @@ async def failing_coroutine() -> Callable[[], Any]:
 
 
 @pytest.fixture
-def static_directory_provider(tmp_path: Path):
-    return StaticDirectoryProvider(directory_path=tmp_path)
+def static_filename_provider():
+    return StaticFilenameProvider("ophyd_async_tests")
+
+
+@pytest.fixture
+def static_path_provider_factory(tmp_path: Path):
+    def create_static_dir_provider_given_fp(fp: FilenameProvider):
+        return StaticPathProvider(fp, tmp_path)
+
+    return create_static_dir_provider_given_fp
+
+
+@pytest.fixture
+def static_path_provider(
+    static_path_provider_factory: callable,
+    static_filename_provider: FilenameProvider,
+):
+    return static_path_provider_factory(static_filename_provider)
+
+
+@pytest.fixture
+def one_shot_trigger_info() -> TriggerInfo:
+    return TriggerInfo(
+        frame_timeout=None,
+        number=1,
+        trigger=DetectorTrigger.internal,
+        deadtime=None,
+        livetime=None,
+    )
 
 
 def pytest_collection_modifyitems(config, items):
@@ -134,5 +169,3 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if tango_dir in str(item.fspath):
             item.add_marker(pytest.mark.forked)
-        # Removed the else block to ensure tests outside tango_dir are
-        # not automatically skipped

@@ -9,7 +9,7 @@ Make a StandardDetector
 `StandardDetector` is an abstract class to assist in creating Device classes for hardware that writes its own data e.g. an AreaDetector implementation, or a PandA writing motor encoder positions to file.
 The `StandardDetector` is a simple compound device, with 2 standard components: 
 
-- `DetectorWriter` to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of :py:class:`HDFWriter`)
+- `DetectorWriter` to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of :py:class:`ADHDFWriter`)
 - `DetectorControl` with logic for arming and disarming the detector. This will be unique to the StandardDetector implementation.
 
 Writing an AreaDetector StandardDetector
@@ -17,11 +17,11 @@ Writing an AreaDetector StandardDetector
 
 For an AreaDetector implementation of the StandardDetector, two entity objects which are subdevices of the `StandardDetector` are used to map to AreaDetector plugins:
 
-- An NDPluginFile instance (for :py:class:`HDFWriter` an instance of :py:class:`NDFileHDF`)
-- An :py:class:`ADBase` instance mapping to NDArray for the "driver" of the detector implementation
+- An NDPluginFile instance (for :py:class:`ADHDFWriter` an instance of :py:class:`NDFileHDFIO`)
+- An :py:class:`ADBaseIO` instance mapping to NDArray for the "driver" of the detector implementation
 
 
-Define a :py:class:`FooDriver` if the NDArray requires fields in addition to those on :py:class:`ADBase` to be exposed. It should extend :py:class:`ADBase`.
+Define a :py:class:`FooDriver` if the NDArray requires fields in addition to those on :py:class:`ADBaseIO` to be exposed. It should extend :py:class:`ADBaseIO`.
 Enumeration fields should be named to prevent namespace collision, i.e. for a Signal named "TriggerSource" use the enum "FooTriggerSource"
 
 .. literalinclude:: ../examples/foo_detector.py
@@ -50,15 +50,15 @@ Writing a non-AreaDetector StandardDetector
 A non-AreaDetector `StandardDetector` should implement `DetectorControl` and `DetectorWriter` directly.
 Here we construct a `DetectorControl` that co-ordinates signals on a PandA PositionCapture block - a child device "pcap" of the `StandardDetector` implementation, analogous to the :py:class:`FooDriver`.
 
-.. literalinclude:: ../../src/ophyd_async/panda/_panda_controller.py
+.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_control.py
    :pyobject: PandaPcapController
 
 The PandA may write a number of fields, and the :py:class:`PandaHDFWriter` co-ordinates those, configures the filewriter and describes the data for the RunEngine.
 
-.. literalinclude:: ../../src/ophyd_async/panda/writers/_hdf_writer.py
+.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_writer.py
    :pyobject: PandaHDFWriter
 
 The PandA StandardDetector implementation simply ties the component parts and its child devices together.
 
-.. literalinclude:: ../../src/ophyd_async/panda/_hdf_panda.py
+.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_hdf_panda.py
    :pyobject: HDFPanda
