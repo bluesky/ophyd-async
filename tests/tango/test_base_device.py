@@ -20,7 +20,7 @@ from tango import (
 )
 from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import set_global_executor
-from tango.server import Device, attribute
+from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
 
@@ -43,11 +43,16 @@ class TestDevice(Device):
 
     _array = [[1, 2, 3], [4, 5, 6]]
 
+    _justvalue = 5
+
     _limitedvalue = 3
 
-    @attribute(dtype=int)
+    @attribute(dtype=int, access=AttrWriteType.READ_WRITE, polling_period=100)
     def justvalue(self):
-        return 5
+        return self._justvalue
+
+    def write_justvalue(self, value: int):
+        self._justvalue = value
 
     @attribute(
         dtype=float,
@@ -77,6 +82,11 @@ class TestDevice(Device):
 
     def write_limitedvalue(self, value: float):
         self._limitedvalue = value
+
+    @command
+    def clear(self) -> str:
+        # self.info_stream("Received clear command")
+        return "Received clear command"
 
 
 # --------------------------------------------------------------------
