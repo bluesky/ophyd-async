@@ -22,7 +22,7 @@ class NDArrayBaseIO(Device):
         self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire")
         self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
         self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
-        self.nd_data_type = epics_signal_r(ADBaseDataType, prefix + "NDDataType_RBV")
+        self.data_type = epics_signal_r(ADBaseDataType, prefix + "DataType_RBV")
         self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
@@ -44,26 +44,27 @@ class NDPluginBaseIO(NDArrayBaseIO):
 class NDPluginStatsIO(NDPluginBaseIO):
     """
     Plugin for computing statistics from an image or region of interest within an image.
-    Each boolean signal enables or disables all signals in the appropriate Enum class.
-    The enum signals may used in the ScalarSignals kwargs of a HDFWriter, and are also
-    read-only signals on the plugin.
     """
 
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.total_array = epics_signal_rw(float, prefix + "TotalArray")
+        # Basic statistics
         self.compute_statistics = epics_signal_rw(bool, prefix + "ComputeStatistics")
         self.bgd_width = epics_signal_rw(int, prefix + "BgdWidth")
+        self.total_array = epics_signal_rw(float, prefix + "TotalArray")
+        # Centroid statistics
         self.compute_centroid = epics_signal_rw(bool, prefix + "ComputeCentroid")
         self.centroid_threshold = epics_signal_rw(float, prefix + "CentroidThreshold")
+        # X and Y Profiles
         self.compute_profiles = epics_signal_rw(bool, prefix + "ComputeProfiles")
         self.profile_size_x = epics_signal_rw(int, prefix + "ProfileSizeX")
-        self.cursor_x = epics_signal_rw(int, prefix + "CursorX")
         self.profile_size_y = epics_signal_rw(int, prefix + "ProfileSizeY")
+        self.cursor_x = epics_signal_rw(int, prefix + "CursorX")
         self.cursor_y = epics_signal_rw(int, prefix + "CursorY")
+        # Array Histogram
         self.compute_histogram = epics_signal_rw(bool, prefix + "ComputeHistogram")
-        self.hist_max = epics_signal_rw(float, prefix + "HistMax")
-        self.hist_min = epics_signal_rw(float, prefix + "HistMin")
         self.hist_size = epics_signal_rw(int, prefix + "HistSize")
+        self.hist_min = epics_signal_rw(float, prefix + "HistMin")
+        self.hist_max = epics_signal_rw(float, prefix + "HistMax")
         super().__init__(prefix, name)
 
 
