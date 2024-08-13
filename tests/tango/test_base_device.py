@@ -44,6 +44,8 @@ class TestDevice(Device):
     _array = [[1, 2, 3], [4, 5, 6]]
 
     _justvalue = 5
+    _writeonly = 6
+    _readonly = 7
 
     _limitedvalue = 3
 
@@ -53,6 +55,17 @@ class TestDevice(Device):
 
     def write_justvalue(self, value: int):
         self._justvalue = value
+
+    @attribute(dtype=int, access=AttrWriteType.WRITE, polling_period=100)
+    def writeonly(self):
+        return self._writeonly
+
+    def write_writeonly(self, value: int):
+        self._writeonly = value
+
+    @attribute(dtype=int, access=AttrWriteType.READ, polling_period=100)
+    def readonly(self):
+        return self._readonly
 
     @attribute(
         dtype=float,
