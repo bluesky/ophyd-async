@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Dict
+
+from pydantic_numpy import NpNDArray
 
 from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW, SubsetEnum
 
-from ._table import DatasetTable, SeqTable
+from ._table import DatasetTable
 
 
 class DataBlock(Device):
@@ -52,7 +55,7 @@ class TimeUnits(str, Enum):
 
 
 class SeqBlock(Device):
-    table: SignalRW[SeqTable]
+    table: SignalRW[Dict[str, NpNDArray]]
     active: SignalRW[bool]
     repeats: SignalRW[int]
     prescale: SignalRW[float]

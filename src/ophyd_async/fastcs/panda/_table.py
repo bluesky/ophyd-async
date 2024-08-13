@@ -1,11 +1,10 @@
-from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Sequence, Type, TypeVar
+from typing import NotRequired, Sequence
 
 import numpy as np
 import numpy.typing as npt
-import pydantic_numpy.typing as pnd
-from typing_extensions import NotRequired, TypedDict
+import pydantic_numpy as pnd
+from typing_extensions import TypedDict
 
 
 class PandaHdf5DatasetType(str, Enum):
@@ -34,28 +33,99 @@ class SeqTrigger(str, Enum):
     POSC_LT = "POSC<=POSITION"
 
 
-@dataclass
-class SeqTableRow:
-    repeats: int = 1
-    trigger: SeqTrigger = SeqTrigger.IMMEDIATE
-    position: int = 0
-    time1: int = 0
-    outa1: bool = False
-    outb1: bool = False
-    outc1: bool = False
-    outd1: bool = False
-    oute1: bool = False
-    outf1: bool = False
-    time2: int = 0
-    outa2: bool = False
-    outb2: bool = False
-    outc2: bool = False
-    outd2: bool = False
-    oute2: bool = False
-    outf2: bool = False
+SeqTableRowType = np.dtype(
+    [
+        ("repeats", np.int32),
+        ("trigger", "U14"),  # One of the SeqTrigger values
+        ("position", np.int32),
+        ("time1", np.int32),
+        ("outa1", np.bool_),
+        ("outb1", np.bool_),
+        ("outc1", np.bool_),
+        ("outd1", np.bool_),
+        ("oute1", np.bool_),
+        ("outf1", np.bool_),
+        ("time2", np.int32),
+        ("outa2", np.bool_),
+        ("outb2", np.bool_),
+        ("outc2", np.bool_),
+        ("outd2", np.bool_),
+        ("oute2", np.bool_),
+        ("outf2", np.bool_),
+    ]
+)
 
 
-class SeqTable(TypedDict):
+def seq_table_row(
+    *,
+    repeats: int = 0,
+    trigger: str = "",
+    position: int = 0,
+    time1: int = 0,
+    outa1: bool = False,
+    outb1: bool = False,
+    outc1: bool = False,
+    outd1: bool = False,
+    oute1: bool = False,
+    outf1: bool = False,
+    time2: int = 0,
+    outa2: bool = False,
+    outb2: bool = False,
+    outc2: bool = False,
+    outd2: bool = False,
+    oute2: bool = False,
+    outf2: bool = False,
+) -> pnd.NpNDArray:
+    return np.array(
+        (
+            repeats,
+            trigger,
+            position,
+            time1,
+            outa1,
+            outb1,
+            outc1,
+            outd1,
+            oute1,
+            outf1,
+            time2,
+            outa2,
+            outb2,
+            outc2,
+            outd2,
+            oute2,
+            outf2,
+        ),
+        dtype=SeqTableRowType,
+    )
+
+
+_SEQ_TABLE_ROW_SHAPE = seq_table_row().shape
+_SEQ_TABLE_COLUMN_NAMES = [x[0] for x in SeqTableRowType.names]
+
+
+def create_seq_table(*rows: pnd.NpNDArray) -> pnd.NpNDArray:
+    if not (0 < len(rows) < 4096):
+        raise ValueError(f"Length {len(rows)} not in range.")
+
+    if not all(isinstance(row, np.ndarray) for row in rows):
+        for row in rows:
+            if not isinstance(row, np.void):
+                raise ValueError(
+                    f"Cannot construct a SeqTable, some rows {row} are not arrays {type(row)}."
+                )
+        raise ValueError("Cannot construct a SeqTable, some rows are not arrays.")
+    if not all(row.shape == _SEQ_TABLE_ROW_SHAPE for row in rows):
+        raise ValueError(
+            "Cannot construct a SeqTable, some rows have incorrect shapes."
+        )
+    if not all(row.dtype is SeqTableRowType for row in rows):
+        raise ValueError("Cannot construct a SeqTable, some rows have incorrect types.")
+
+    return np.array(rows)
+
+
+class SeqTablePvaTable(TypedDict):
     repeats: NotRequired[pnd.Np1DArrayUint16]
     trigger: NotRequired[Sequence[SeqTrigger]]
     position: NotRequired[pnd.Np1DArrayInt32]
@@ -75,96 +145,14 @@ class SeqTable(TypedDict):
     outf2: NotRequired[pnd.Np1DArrayBool]
 
 
-def seq_table_from_rows(*rows: SeqTableRow):
-    """
-    Constructs a sequence table from a series of rows.
-    """
-    return seq_table_from_arrays(
-        repeats=np.array([row.repeats for row in rows], dtype=np.uint16),
-        trigger=[row.trigger for row in rows],
-        position=np.array([row.position for row in rows], dtype=np.int32),
-        time1=np.array([row.time1 for row in rows], dtype=np.uint32),
-        outa1=np.array([row.outa1 for row in rows], dtype=np.bool_),
-        outb1=np.array([row.outb1 for row in rows], dtype=np.bool_),
-        outc1=np.array([row.outc1 for row in rows], dtype=np.bool_),
-        outd1=np.array([row.outd1 for row in rows], dtype=np.bool_),
-        oute1=np.array([row.oute1 for row in rows], dtype=np.bool_),
-        outf1=np.array([row.outf1 for row in rows], dtype=np.bool_),
-        time2=np.array([row.time2 for row in rows], dtype=np.uint32),
-        outa2=np.array([row.outa2 for row in rows], dtype=np.bool_),
-        outb2=np.array([row.outb2 for row in rows], dtype=np.bool_),
-        outc2=np.array([row.outc2 for row in rows], dtype=np.bool_),
-        outd2=np.array([row.outd2 for row in rows], dtype=np.bool_),
-        oute2=np.array([row.oute2 for row in rows], dtype=np.bool_),
-        outf2=np.array([row.outf2 for row in rows], dtype=np.bool_),
-    )
-
-
-T = TypeVar("T", bound=np.generic)
-
-
-def seq_table_from_arrays(
-    *,
-    repeats: Optional[npt.NDArray[np.uint16]] = None,
-    trigger: Optional[Sequence[SeqTrigger]] = None,
-    position: Optional[npt.NDArray[np.int32]] = None,
-    time1: Optional[npt.NDArray[np.uint32]] = None,
-    outa1: Optional[npt.NDArray[np.bool_]] = None,
-    outb1: Optional[npt.NDArray[np.bool_]] = None,
-    outc1: Optional[npt.NDArray[np.bool_]] = None,
-    outd1: Optional[npt.NDArray[np.bool_]] = None,
-    oute1: Optional[npt.NDArray[np.bool_]] = None,
-    outf1: Optional[npt.NDArray[np.bool_]] = None,
-    time2: npt.NDArray[np.uint32],
-    outa2: Optional[npt.NDArray[np.bool_]] = None,
-    outb2: Optional[npt.NDArray[np.bool_]] = None,
-    outc2: Optional[npt.NDArray[np.bool_]] = None,
-    outd2: Optional[npt.NDArray[np.bool_]] = None,
-    oute2: Optional[npt.NDArray[np.bool_]] = None,
-    outf2: Optional[npt.NDArray[np.bool_]] = None,
-) -> SeqTable:
-    """
-    Constructs a sequence table from a series of columns as arrays.
-    time2 is the only required argument and must not be None.
-    All other provided arguments must be of equal length to time2.
-    If any other argument is not given, or else given as None or empty,
-    an array of length len(time2) filled with the following is defaulted:
-    repeats: 1
-    trigger: SeqTrigger.IMMEDIATE
-    all others: 0/False as appropriate
-    """
-    assert time2 is not None, "time2 must be provided"
-    length = len(time2)
-    assert 0 < length < 4096, f"Length {length} not in range"
-
-    def or_default(
-        value: Optional[npt.NDArray[T]], dtype: Type[T], default_value: int = 0
-    ) -> npt.NDArray[T]:
-        if value is None or len(value) == 0:
-            return np.full(length, default_value, dtype=dtype)
-        return value
-
-    table = SeqTable(
-        repeats=or_default(repeats, np.uint16, 1),
-        trigger=trigger or [SeqTrigger.IMMEDIATE] * length,
-        position=or_default(position, np.int32),
-        time1=or_default(time1, np.uint32),
-        outa1=or_default(outa1, np.bool_),
-        outb1=or_default(outb1, np.bool_),
-        outc1=or_default(outc1, np.bool_),
-        outd1=or_default(outd1, np.bool_),
-        oute1=or_default(oute1, np.bool_),
-        outf1=or_default(outf1, np.bool_),
-        time2=time2,
-        outa2=or_default(outa2, np.bool_),
-        outb2=or_default(outb2, np.bool_),
-        outc2=or_default(outc2, np.bool_),
-        outd2=or_default(outd2, np.bool_),
-        oute2=or_default(oute2, np.bool_),
-        outf2=or_default(outf2, np.bool_),
-    )
-    for k, v in table.items():
-        size = len(v)  # type: ignore
-        if size != length:
-            raise ValueError(f"{k}: has length {size} not {length}")
-    return table
+def convert_seq_table_to_columnwise_pva_table(
+    seq_table: pnd.NpNDArray,
+) -> SeqTablePvaTable:
+    if seq_table.dtype != SeqTableRowType:
+        raise ValueError(
+            f"Cannot convert a SeqTable to a columnwise dictionary, "
+            f"input is not a SeqTable {seq_table.dtype}."
+        )
+    print(seq_table)
+    transposed = seq_table.transpose(axis=1)
+    return dict(zip(_SEQ_TABLE_COLUMN_NAMES, transposed))

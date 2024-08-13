@@ -1,6 +1,5 @@
 import asyncio
 
-import numpy as np
 import pytest
 from pydantic import ValidationError
 
@@ -9,10 +8,11 @@ from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     PcompInfo,
-    SeqTable,
     SeqTableInfo,
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
+    create_seq_table,
+    seq_table_row,
 )
 
 
@@ -38,8 +38,11 @@ async def mock_panda():
 
 async def test_seq_table_trigger_logic(mock_panda):
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    seq_table = SeqTable(
-        outa1=np.array([1, 2, 3, 4, 5]), outa2=np.array([1, 2, 3, 4, 5])
+    seq_table = create_seq_table(
+        seq_table_row(outa1=True, outa2=True),
+        seq_table_row(outa1=False, outa2=False),
+        seq_table_row(outa1=True, outa2=False),
+        seq_table_row(outa1=False, outa2=True),
     )
     seq_table_info = SeqTableInfo(sequence_table=seq_table, repeats=1)
 
@@ -75,13 +78,22 @@ async def test_pcomp_trigger_logic(mock_panda):
     ["kwargs", "error_msg"],
     [
         (
-            {"sequence_table": {}, "repeats": 0, "prescale_as_us": -1},
+            {
+                "sequence_table": create_seq_table(seq_table_row(outc2=1)),
+                "repeats": 0,
+                "prescale_as_us": -1,
+            },
             "Input should be greater than or equal to 0 "
             "[type=greater_than_equal, input_value=-1, input_type=int]",
         ),
         (
             {
-                "sequence_table": SeqTable(outc2=np.array([1, 0, 1, 0], dtype=bool)),
+                "sequence_table": create_seq_table(
+                    seq_table_row(outc2=True),
+                    seq_table_row(outc2=False),
+                    seq_table_row(outc2=True),
+                    seq_table_row(outc2=False),
+                ),
                 "repeats": -1,
             },
             "Input should be greater than or equal to 0 "
@@ -89,11 +101,12 @@ async def test_pcomp_trigger_logic(mock_panda):
         ),
         (
             {
-                "sequence_table": SeqTable(outc2=1),
+                "sequence_table": 1,
                 "repeats": 1,
             },
-            "Input should be an instance of ndarray "
-            "[type=is_instance_of, input_value=1, input_type=int]",
+            "Value error, Cannot construct a SeqTable, "
+            "input is not an unpacked tuple of `SeqTableRowType`. "
+            "[type=value_error, input_value=1, input_type=int]",
         ),
     ],
 )

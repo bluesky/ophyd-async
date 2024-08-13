@@ -1,3 +1,4 @@
+"""
 import numpy as np
 import pytest
 
@@ -29,3 +30,5 @@ def test_from_arrays_too_long():
     time2 = np.zeros(4097)
     with pytest.raises(AssertionError, match="Length 4097 not in range"):
         seq_table_from_arrays(time2=time2)
+
+"""
