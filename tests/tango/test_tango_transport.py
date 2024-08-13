@@ -23,6 +23,7 @@ from ophyd_async.tango._backend._tango_transport import (
 from tango import (
     CmdArgType,
     DevState,
+    GreenMode,
 )
 from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import (
@@ -30,7 +31,20 @@ from tango.asyncio_executor import (
     get_global_executor,
     set_global_executor,
 )
+from tango.server import Device, command
 from tango.test_context import MultiDeviceTestContext
+
+
+# --------------------------------------------------------------------
+class DeviceAsynch(Device):
+    green_mode = GreenMode.Asyncio
+
+    @command(
+        polling_period=100,
+    )
+    async def slow_command(self) -> str:
+        await asyncio.sleep(0.2)
+        return "Completed slow command"
 
 
 # --------------------------------------------------------------------
@@ -52,6 +66,15 @@ def echo_device():
 
 
 # --------------------------------------------------------------------
+@pytest.fixture(scope="module")
+def tango_test_device_asynch():
+    with MultiDeviceTestContext(
+        [{"class": DeviceAsynch, "devices": [{"name": "test/device/1"}]}], process=True
+    ) as context:
+        yield context.get_device_access("test/device/1")
+
+
+# --------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
     set_global_executor(None)
@@ -61,6 +84,12 @@ def reset_tango_asyncio():
 @pytest.fixture(scope="module")
 async def device_proxy(tango_test_device):
     return await DeviceProxy(tango_test_device)
+
+
+# --------------------------------------------------------------------
+@pytest.fixture(scope="module")
+async def device_proxy_asynch(tango_test_device_asynch):
+    return await DeviceProxy(tango_test_device_asynch)
 
 
 # --------------------------------------------------------------------
@@ -124,10 +153,17 @@ async def test_ensure_proper_executor():
         (CmdArgType.DevEncoded, (False, list[str], "string")),
         (CmdArgType.DevEnum, (False, Enum, "string")),
         # (CmdArgType.DevPipeBlob, (False, list[str], "string")),
+        (float, (False, float, "number")),
     ],
 )
 def test_get_python_type(tango_type, expected):
-    assert get_python_type(tango_type) == expected
+    if tango_type is not float:
+        assert get_python_type(tango_type) == expected
+    else:
+        # get_python_type should raise a TypeError
+        with pytest.raises(TypeError) as exc_info:
+            get_python_type(tango_type)
+        assert str(exc_info.value) == "Unknown TangoType"
 
 
 # --------------------------------------------------------------------
@@ -305,6 +341,12 @@ async def test_attribute_subscribe_callback(echo_device):
     attr_proxy.unsubscribe_callback()
     assert val == new_value
 
+    attr_proxy.set_polling(False)
+    attr_proxy.support_events = False
+    with pytest.raises(RuntimeError) as exc_info:
+        attr_proxy.subscribe_callback(callback)
+    assert "Cannot set a callback" in str(exc_info.value)
+
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
@@ -338,29 +380,76 @@ def test_attribute_set_polling(device_proxy):
 @pytest.mark.asyncio
 async def test_attribute_poll(device_proxy):
     attr_proxy = AttributeProxy(device_proxy, "justvalue")
-    attr_proxy.set_polling(True, 0.1, 1)
-    val = None
 
     def callback(reading, value):
         nonlocal val
         val = value
 
+    def bad_callback():
+        pass
+
+    # Test polling with absolute change
+    val = None
+    attr_proxy.set_polling(True, 0.1, 1, 1.0)
     attr_proxy.subscribe_callback(callback)
     current_value = await attr_proxy.get()
     new_value = current_value + 2
     await attr_proxy.put(new_value)
     polling_period = attr_proxy._polling_period
     await asyncio.sleep(polling_period)
-    attr_proxy.set_polling(False)
     assert val is not None
+    attr_proxy.unsubscribe_callback()
+
+    # Test polling with relative change
+    val = None
+    attr_proxy.set_polling(True, 0.1, 100, 0.1)
+    attr_proxy.subscribe_callback(callback)
+    current_value = await attr_proxy.get()
+    new_value = current_value * 2
+    await attr_proxy.put(new_value)
+    polling_period = attr_proxy._polling_period
+    await asyncio.sleep(polling_period)
+    assert val is not None
+    attr_proxy.unsubscribe_callback()
+
+    # Test polling with small changes. This should not update last_reading
+    attr_proxy.set_polling(True, 0.1, 100, 1.0)
+    attr_proxy.subscribe_callback(callback)
+    await asyncio.sleep(0.2)
+    current_value = await attr_proxy.get()
+    new_value = current_value + 1
+    val = None
+    await attr_proxy.put(new_value)
+    polling_period = attr_proxy._polling_period
+    await asyncio.sleep(polling_period * 2)
+    assert val is None
+    attr_proxy.unsubscribe_callback()
+
+    # Test polling with bad callback
+    attr_proxy.subscribe_callback(bad_callback)
+    await asyncio.sleep(0.2)
+    assert str(attr_proxy._poll_task.exception()) == "Could not poll the attribute"
+    attr_proxy.unsubscribe_callback()
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_command_put(device_proxy):
+async def test_command_proxy_put_wait(device_proxy):
     cmd_proxy = CommandProxy(device_proxy, "clear")
-    await cmd_proxy.put(None, wait=True, timeout=1.0)
-    assert cmd_proxy._last_reading["value"] is not None
+
+    cmd_proxy._last_reading = None
+    await cmd_proxy.put(None, wait=True)
+    assert cmd_proxy._last_reading["value"] == "Received clear command"
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_command_proxy_put_nowait(device_proxy_asynch):
+    cmd_proxy = CommandProxy(device_proxy_asynch, "slow_command")
+
+    cmd_proxy._last_reading = None
+    await cmd_proxy.put(None, wait=False, timeout=0.5)
+    assert cmd_proxy._last_reading["value"] == "Completed slow command"
 
 
 # --------------------------------------------------------------------
