@@ -188,6 +188,7 @@ class AttributeProxy(TangoProxy):
         else:
             rid = self._proxy.write_attribute_asynch(self._name, value)
             if timeout:
+                start_time = time.time()
                 finished = False
                 while not finished:
                     try:
@@ -195,6 +196,8 @@ class AttributeProxy(TangoProxy):
                         finished = True
                     except Exception:
                         await asyncio.sleep(A_BIT)
+                        if time.time() - start_time > timeout:
+                            raise TimeoutError("Timeout while waiting for write reply")
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
@@ -362,6 +365,7 @@ class CommandProxy(TangoProxy):
             val = None
             rid = self._proxy.command_inout_asynch(self._name, value)
             if timeout:
+                start_time = time.time()
                 finished = False
                 while not finished:
                     try:
@@ -369,6 +373,10 @@ class CommandProxy(TangoProxy):
                         finished = True
                     except Exception:
                         await asyncio.sleep(A_BIT)
+                        if time.time() - start_time > timeout:
+                            raise TimeoutError(
+                                "Timeout while waiting for command reply"
+                            )
 
         self._last_reading = {
             "value": val,
