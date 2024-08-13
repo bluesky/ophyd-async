@@ -58,6 +58,20 @@ record(ao, "$(P)float") {
   field(PINI, "YES")
 }
 
+record(ao, "$(P)float_prec_0") {
+  field(PREC, "0")
+  field(EGU, "mm")
+  field(VAL, "3")
+  field(PINI, "YES")
+}
+
+record(ao, "$(P)float_prec_1") {
+  field(PREC, "1")
+  field(EGU, "mm")
+  field(VAL, "3")
+  field(PINI, "YES")
+}
+
 record(stringout, "$(P)str") {
   field(VAL, "hello")
   field(PINI, "YES")
