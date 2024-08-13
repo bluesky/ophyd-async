@@ -186,7 +186,7 @@ class AttributeProxy(TangoProxy):
         if wait:
             await self._proxy.write_attribute(self._name, value)
         else:
-            rid = await self._proxy.write_attribute_asynch(self._name, value)
+            rid = self._proxy.write_attribute_asynch(self._name, value)
             if timeout:
                 finished = False
                 while not finished:
@@ -360,7 +360,7 @@ class CommandProxy(TangoProxy):
             val = await self._proxy.command_inout(self._name, value)
         else:
             val = None
-            rid = await self._proxy.command_inout_asynch(self._name, value)
+            rid = self._proxy.command_inout_asynch(self._name, value)
             if timeout:
                 finished = False
                 while not finished:
