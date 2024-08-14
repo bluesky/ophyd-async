@@ -50,5 +50,7 @@ class TangoReadableDevice(StandardReadable):
         # If a register_signals method is defined, call it
         if hasattr(self, "register_signals"):
             self.register_signals()
+            # set_name must be called again to propagate the new signal names
+            self.set_name(self.name)
 
         await super().connect(mock=mock, timeout=timeout)
