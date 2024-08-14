@@ -2,7 +2,10 @@ import asyncio
 
 import pytest
 from bluesky import plan_stubs as bps
-from bluesky.run_engine import RunEngine, TransitionError
+from bluesky.run_engine import (
+    RunEngine,
+    TransitionError,  # type: ignore
+)
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
