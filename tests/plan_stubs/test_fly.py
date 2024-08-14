@@ -4,9 +4,9 @@ from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky.protocols import DataKey, StreamAsset
+from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, compose_stream_resource
+from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -429,3 +429,25 @@ async def test_trigger_sets_or_defaults_timeout(
 
     for detector in detectors:
         assert detector.writer.observe_indices_written_timeout_log == [expected_timeout]
+
+
+async def test_hdf_writer_fails_on_timeout_with_flyscan(
+    RE: RunEngine,
+    seq_flyer: StandardFlyer,
+    detectors: tuple[StandardDetector, ...],
+):
+    detector_list = list(detectors)
+
+    class SpecificException(Exception): ...
+
+    def fly():
+        yield from bps.stage_all(*detector_list, seq_flyer)
+        # try:
+        yield from bps.open_run()
+        raise SpecificException
+        # finally:
+        #     yield from bps.unstage_all(*detector_list, seq_flyer)
+
+    for _ in range(100):
+        with pytest.raises(SpecificException):
+            RE(fly())
