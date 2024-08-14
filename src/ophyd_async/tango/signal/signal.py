@@ -143,6 +143,11 @@ def tango_signal_auto(
     device_trl, tr_name = full_trl.rsplit("/", 1)
     syn_proxy = SyncDeviceProxy(device_trl)
     backend = _make_backend(datatype, full_trl, full_trl, device_proxy)
+
+    if tr_name not in syn_proxy.get_attribute_list():
+        if tr_name not in syn_proxy.get_command_list():
+            raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
+
     if tr_name in syn_proxy.get_attribute_list():
         config = syn_proxy.get_attribute_config(tr_name)
         if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
@@ -158,8 +163,6 @@ def tango_signal_auto(
             return SignalX(backend)
         elif config.out_type != CmdArgType.DevVoid:
             return SignalRW(backend)
-        else:
-            return SignalX(backend)
 
     if tr_name in device_proxy.get_pipe_list():
         raise NotImplementedError("Pipes are not supported")

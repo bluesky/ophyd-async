@@ -590,6 +590,7 @@ async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
         ("readonly", int),
         ("clear", None),
         ("echo", str),
+        ("nonexistant", int),
     ],
 )
 async def test_tango_signal_auto(
@@ -599,6 +600,16 @@ async def test_tango_signal_auto(
     attr, py_type = attr_type
 
     timeout = 0.1
+    if attr == "nonexistant":
+        with pytest.raises(RuntimeError) as exc_info:
+            signal = tango_signal_auto(
+                datatype=py_type,
+                full_trl=tango_test_device + "/" + attr,
+                device_proxy=proxy,
+            )
+            await signal.connect()
+        assert "Cannot find" in str(exc_info.value)
+        return
     signal = tango_signal_auto(
         datatype=py_type,
         full_trl=tango_test_device + "/" + attr,
