@@ -123,10 +123,12 @@ class TestReadableDevice(TangoReadableDevice):
 
     def __init__(self, trl: str, name="") -> None:
         self.trl = trl
+        TangoReadableDevice.__init__(self, trl, name)
+
+    def register_signals(self):
         for feature in TESTED_FEATURES:
             with self.add_children_as_readables():
-                setattr(self, feature, tango_signal_auto(None, f"{trl}/{feature}"))
-        TangoReadableDevice.__init__(self, trl, name)
+                setattr(self, feature, tango_signal_auto(None, f"{self.trl}/{feature}"))
 
 
 # --------------------------------------------------------------------
