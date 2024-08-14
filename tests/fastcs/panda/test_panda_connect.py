@@ -3,7 +3,6 @@
 import copy
 from typing import Dict
 
-import numpy as np
 import pytest
 
 from ophyd_async.core import (
@@ -19,10 +18,8 @@ from ophyd_async.fastcs.panda import (
     PcapBlock,
     PulseBlock,
     SeqBlock,
-    SeqTablePvaTable,
-    convert_seq_table_to_columnwise_pva_table,
+    SeqTable,
     SeqTrigger,
-    create_seq_table,
     seq_table_row,
 )
 
@@ -94,36 +91,88 @@ def test_panda_name_set(panda_t):
 
 async def test_panda_children_connected(mock_panda):
     # try to set and retrieve from simulated values...
-    table = create_seq_table(
+    table = table = SeqTable(
+    [
         seq_table_row(
-            repeats=np.array([1, 1, 1, 32]).astype(np.uint16),
-            trigger=(
-                SeqTrigger.POSA_GT,
-                SeqTrigger.POSA_LT,
-                SeqTrigger.IMMEDIATE,
-                SeqTrigger.IMMEDIATE,
-            ),
-            position=np.array([3222, -565, 0, 0], dtype=np.int32),
-            time1=np.array([5, 0, 10, 10]).astype(
-                np.uint32
-            ),  # TODO: change below syntax.
-            outa1=np.array([1, 0, 0, 1]).astype(np.bool_),
-            outb1=np.array([0, 0, 1, 1]).astype(np.bool_),
-            outc1=np.array([0, 1, 1, 0]).astype(np.bool_),
-            outd1=np.array([1, 1, 0, 1]).astype(np.bool_),
-            oute1=np.array([1, 0, 1, 0]).astype(np.bool_),
-            outf1=np.array([1, 0, 0, 0]).astype(np.bool_),
-            time2=np.array([0, 10, 10, 11]).astype(np.uint32),
-            outa2=np.array([1, 0, 0, 1]).astype(np.bool_),
-            outb2=np.array([0, 0, 1, 1]).astype(np.bool_),
-            outc2=np.array([0, 1, 1, 0]).astype(np.bool_),
-            outd2=np.array([1, 1, 0, 1]).astype(np.bool_),
-            oute2=np.array([1, 0, 1, 0]).astype(np.bool_),
-            outf2=np.array([1, 0, 0, 0]).astype(np.bool_),
-        )
+            repeats=1,
+            trigger=SeqTrigger.POSA_GT,
+            position=3222,
+            time1=5,
+            outa1=True,
+            outb1=False,
+            outc1=False,
+            outd1=True,
+            oute1=True,
+            outf1=True,
+            time2=0,
+            outa2=True,
+            outb2=False,
+            outc2=False,
+            outd2=True,
+            oute2=True,
+            outf2=True,
+        ),
+        seq_table_row(
+            repeats=1,
+            trigger=SeqTrigger.POSA_LT,
+            position=-565,
+            time1=0,
+            outa1=False,
+            outb1=False,
+            outc1=True,
+            outd1=True,
+            oute1=False,
+            outf1=False,
+            time2=10,
+            outa2=False,
+            outb2=False,
+            outc2=True,
+            outd2=True,
+            oute2=False,
+            outf2=False,
+        ),
+        seq_table_row(
+            repeats=1,
+            trigger=SeqTrigger.IMMEDIATE,
+            position=0,
+            time1=10,
+            outa1=False,
+            outb1=True,
+            outc1=True,
+            outd1=False,
+            oute1=True,
+            outf1=False,
+            time2=10,
+            outa2=False,
+            outb2=True,
+            outc2=True,
+            outd2=False,
+            oute2=True,
+            outf2=False,
+        ),
+        seq_table_row(
+            repeats=32,
+            trigger=SeqTrigger.IMMEDIATE,
+            position=0,
+            time1=10,
+            outa1=True,
+            outb1=True,
+            outc1=False,
+            outd1=True,
+            oute1=False,
+            outf1=False,
+            time2=11,
+            outa2=True,
+            outb2=True,
+            outc2=False,
+            outd2=True,
+            oute2=False,
+            outf2=False,
+        ),
+    ]
     )
     await mock_panda.pulse[1].delay.set(20.0)
-    await mock_panda.seq[1].table.set(convert_seq_table_to_columnwise_pva_table(table))
+    await mock_panda.seq[1].table.set(table)
 
     readback_pulse = await mock_panda.pulse[1].delay.get_value()
     readback_seq = await mock_panda.seq[1].table.get_value()
@@ -171,7 +220,7 @@ async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     assert panda.pcap.active._backend.datatype is bool
 
     # works with custom datatypes
-    assert panda.seq[1].table._backend.datatype is SeqTablePvaTable
+    assert panda.seq[1].table._backend.datatype is SeqTable
 
     # others are given the None datatype
     assert panda.pcap.newsignal._backend.datatype is None

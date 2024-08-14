@@ -7,8 +7,8 @@ from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.signal import epics_signal_rw
 
 # Allow these imports from private modules for tests
-from ophyd_async.epics.signal._aioca import make_converter as aioca_make_converter
-from ophyd_async.epics.signal._p4p import make_converter as p4p_make_converter
+from ophyd_async.epics.signal._aioca import CaConverterFactory
+from ophyd_async.epics.signal._p4p import PvaConverterFactory
 
 
 async def test_runtime_enum_behaviour():
@@ -52,7 +52,7 @@ async def test_ca_runtime_enum_converter():
 
     epics_value = EpicsValue()
     rt_enum = SubsetEnum["A", "B"]
-    converter = aioca_make_converter(
+    converter = CaConverterFactory.make_converter(
         rt_enum, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
     assert converter.choices == {"A": "A", "B": "B", "C": "C"}
@@ -68,7 +68,7 @@ async def test_pva_runtime_enum_converter():
         },
     )
     rt_enum = SubsetEnum["A", "B"]
-    converter = p4p_make_converter(
+    converter = PvaConverterFactory.make_converter(
         rt_enum, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
     assert {"A", "B"}.issubset(set(converter.choices))

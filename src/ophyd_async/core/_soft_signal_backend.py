@@ -4,13 +4,18 @@ import inspect
 import time
 from collections import abc
 from enum import Enum
-from typing import Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
+from typing import Any, Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
 from typing_extensions import TypedDict
 
-from ._signal_backend import RuntimeSubsetEnum, SignalBackend
+from ._signal_backend import (
+    BackendConverterFactory,
+    ProtocolDatatypeAbstraction,
+    RuntimeSubsetEnum,
+    SignalBackend,
+)
 from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
@@ -94,7 +99,7 @@ class SoftArrayConverter(SoftConverter):
 class SoftEnumConverter(SoftConverter):
     choices: Tuple[str, ...]
 
-    def __init__(self, datatype: Union[RuntimeSubsetEnum, Enum]):
+    def __init__(self, datatype: Union[RuntimeSubsetEnum, Type[Enum]]):
         if issubclass(datatype, Enum):
             self.choices = tuple(v.value for v in datatype)
         else:
@@ -122,19 +127,55 @@ class SoftEnumConverter(SoftConverter):
         return cast(T, self.choices[0])
 
 
-def make_converter(datatype):
-    is_array = get_dtype(datatype) is not None
-    is_sequence = get_origin(datatype) == abc.Sequence
-    is_enum = inspect.isclass(datatype) and (
-        issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
-    )
+class SoftProtocolDatatypeAbstractionConverter(SoftConverter):
+    """
+    No conversion is necessary for ProtocolDatatypeAbstraction datatypes in soft
+    signals.
+    """
+    def __init__(self, datatype: Type[ProtocolDatatypeAbstraction]):
+        self.datatype = datatype
 
-    if is_array or is_sequence:
-        return SoftArrayConverter()
-    if is_enum:
-        return SoftEnumConverter(datatype)
+    def reading(self, value: T, timestamp: float, severity: int) -> Reading:
+        return super().reading(value, timestamp, severity)
 
-    return SoftConverter()
+    def value(self, value: Any) -> Any:
+        return value
+
+    def write_value(self, value):
+        return value
+
+    def make_initial_value(self, datatype: Type | None) -> Any:
+        return super().make_initial_value(datatype)
+
+
+class SoftSignalConverterFactory(BackendConverterFactory):
+    _ALLOWED_TYPES = (object,)  # Any type is allowed
+
+    @classmethod
+    def datatype_allowed(cls, datatype: Type) -> bool:
+        return True # Any value allowed in a soft signal
+
+
+    @classmethod
+    def make_converter(cls, datatype):
+        is_array = get_dtype(datatype) is not None
+        is_sequence = get_origin(datatype) == abc.Sequence
+        is_enum = inspect.isclass(datatype) and (
+            issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
+        )
+        is_convertable_abstract_datatype = inspect.isclass(datatype) and issubclass(
+            datatype,
+            ProtocolDatatypeAbstraction
+        )
+
+        if is_array or is_sequence:
+            return SoftArrayConverter()
+        if is_enum:
+            return SoftEnumConverter(datatype)
+        if is_convertable_abstract_datatype:
+            return SoftProtocolDatatypeAbstractionConverter(datatype)
+
+        return SoftConverter()
 
 
 class SoftSignalBackend(SignalBackend[T]):
@@ -154,7 +195,9 @@ class SoftSignalBackend(SignalBackend[T]):
         self.datatype = datatype
         self._initial_value = initial_value
         self._metadata = metadata or {}
-        self.converter: SoftConverter = make_converter(datatype)
+        self.converter: SoftConverter = SoftSignalConverterFactory.make_converter(
+            datatype
+        )
         if self._initial_value is None:
             self._initial_value = self.converter.make_initial_value(self.datatype)
         else:

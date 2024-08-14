@@ -1,10 +1,13 @@
 from enum import Enum
-from typing import NotRequired, Sequence
+from typing import Dict, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
 import pydantic_numpy as pnd
+from pydantic import Field, RootModel, field_validator
 from typing_extensions import TypedDict
+
+from ophyd_async.epics.signal import PvaTableAbstraction
 
 
 class PandaHdf5DatasetType(str, Enum):
@@ -52,6 +55,7 @@ SeqTableRowType = np.dtype(
         ("outd2", np.bool_),
         ("oute2", np.bool_),
         ("outf2", np.bool_),
+
     ]
 )
 
@@ -100,59 +104,61 @@ def seq_table_row(
     )
 
 
-_SEQ_TABLE_ROW_SHAPE = seq_table_row().shape
-_SEQ_TABLE_COLUMN_NAMES = [x[0] for x in SeqTableRowType.names]
 
 
-def create_seq_table(*rows: pnd.NpNDArray) -> pnd.NpNDArray:
-    if not (0 < len(rows) < 4096):
-        raise ValueError(f"Length {len(rows)} not in range.")
+class SeqTable(RootModel, PvaTableAbstraction):
+    root: pnd.NpNDArray = Field(
+        default_factory=lambda: np.array([], dtype=SeqTableRowType),
+    )
 
-    if not all(isinstance(row, np.ndarray) for row in rows):
-        for row in rows:
-            if not isinstance(row, np.void):
-                raise ValueError(
-                    f"Cannot construct a SeqTable, some rows {row} are not arrays {type(row)}."
-                )
-        raise ValueError("Cannot construct a SeqTable, some rows are not arrays.")
-    if not all(row.shape == _SEQ_TABLE_ROW_SHAPE for row in rows):
-        raise ValueError(
-            "Cannot construct a SeqTable, some rows have incorrect shapes."
-        )
-    if not all(row.dtype is SeqTableRowType for row in rows):
-        raise ValueError("Cannot construct a SeqTable, some rows have incorrect types.")
+    def convert_to_protocol_datatype(self) -> Dict[str, npt.ArrayLike]:
+        """Convert root to the column-wise dict representation for backend put"""
 
-    return np.array(rows)
+        if len(self.root) == 0:
+            transposed = {  # list with empty arrays, each with correct dtype
+                name: np.array([], dtype=dtype) for name, dtype in SeqTableRowType.descr
+            }
+        else:
+            transposed_list = list(zip(*list(self.root)))
+            transposed = {
+                name: np.array(col, dtype=dtype)
+                for col, (name, dtype) in zip(transposed_list, SeqTableRowType.descr)
+            }
+        return transposed
 
+    @classmethod
+    def convert_from_protocol_datatype(
+        cls, pva_table: Dict[str, npt.ArrayLike]
+    ) -> "SeqTable":
+        """Convert a pva table to a row-wise SeqTable."""
 
-class SeqTablePvaTable(TypedDict):
-    repeats: NotRequired[pnd.Np1DArrayUint16]
-    trigger: NotRequired[Sequence[SeqTrigger]]
-    position: NotRequired[pnd.Np1DArrayInt32]
-    time1: NotRequired[pnd.Np1DArrayUint32]
-    outa1: NotRequired[pnd.Np1DArrayBool]
-    outb1: NotRequired[pnd.Np1DArrayBool]
-    outc1: NotRequired[pnd.Np1DArrayBool]
-    outd1: NotRequired[pnd.Np1DArrayBool]
-    oute1: NotRequired[pnd.Np1DArrayBool]
-    outf1: NotRequired[pnd.Np1DArrayBool]
-    time2: NotRequired[pnd.Np1DArrayUint32]
-    outa2: NotRequired[pnd.Np1DArrayBool]
-    outb2: NotRequired[pnd.Np1DArrayBool]
-    outc2: NotRequired[pnd.Np1DArrayBool]
-    outd2: NotRequired[pnd.Np1DArrayBool]
-    oute2: NotRequired[pnd.Np1DArrayBool]
-    outf2: NotRequired[pnd.Np1DArrayBool]
+        ordered_columns = [
+            np.array(pva_table[name], dtype=dtype)
+            for name, dtype in SeqTableRowType.descr
+        ]
 
+        transposed = list(zip(*ordered_columns))
+        rows = np.array([tuple(row) for row in transposed], dtype=SeqTableRowType)
+        return cls(rows)
 
-def convert_seq_table_to_columnwise_pva_table(
-    seq_table: pnd.NpNDArray,
-) -> SeqTablePvaTable:
-    if seq_table.dtype != SeqTableRowType:
-        raise ValueError(
-            f"Cannot convert a SeqTable to a columnwise dictionary, "
-            f"input is not a SeqTable {seq_table.dtype}."
-        )
-    print(seq_table)
-    transposed = seq_table.transpose(axis=1)
-    return dict(zip(_SEQ_TABLE_COLUMN_NAMES, transposed))
+    @field_validator("root", mode="before")
+    @classmethod
+    def check_valid_rows(cls, rows: Union[Sequence, np.ndarray]):
+        assert isinstance(
+            rows, (np.ndarray, list)
+        ), "Rows must be a list or numpy array."
+
+        if not (0 <= len(rows) < 4096):
+            raise ValueError(f"Length {len(rows)} not in range.")
+
+        if not all(isinstance(row, (np.ndarray, np.void)) for row in rows):
+            raise ValueError(
+                "Cannot construct a SeqTable, some rows are not arrays."
+            )
+
+        if not all(row.dtype is SeqTableRowType for row in rows):
+            raise ValueError(
+                "Cannot construct a SeqTable, some rows have incorrect types."
+            )
+
+        return np.array(rows, dtype=SeqTableRowType)

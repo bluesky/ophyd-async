@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 from bluesky import RunEngine
 
@@ -10,6 +11,7 @@ from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DataBlock,
     PcompDirectionOptions,
+    SeqTable,
     TimeUnits,
     phase_sorter,
 )
@@ -41,13 +43,22 @@ async def mock_panda():
 async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
     RE(save_device(mock_panda, "path", sorter=phase_sorter))
     mock_save_to_yaml.assert_called_once()
-    assert mock_save_to_yaml.call_args[0] == (
-        [
-            {
-                "phase_1_signal_units": 0,
-                "seq.1.prescale_units": TimeUnits("min"),
-                "seq.2.prescale_units": TimeUnits("min"),
-            },
+
+    def check_equal_with_seq_tables(actual, expected):
+        assert set(actual.keys()) == set(expected.keys())
+        for key, value1 in actual.items():
+            value2 = expected[key]
+            if isinstance(value1, SeqTable):
+                assert np.array_equal(value1.root, value2.root)
+            else:
+                assert value1 == value2
+
+    assert mock_save_to_yaml.call_args[0][0][0] == {
+        "phase_1_signal_units": 0,
+        "seq.1.prescale_units": TimeUnits("min"),
+        "seq.2.prescale_units": TimeUnits("min"),
+    }
+    check_equal_with_seq_tables(mock_save_to_yaml.call_args[0][0][1],
             {
                 "data.capture": False,
                 "data.create_directory": 0,
@@ -73,16 +84,15 @@ async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
                 "pulse.2.delay": 0.0,
                 "pulse.2.width": 0.0,
                 "seq.1.active": False,
-                "seq.1.table": {},
+                "seq.1.table": SeqTable([]),
                 "seq.1.repeats": 0,
                 "seq.1.prescale": 0.0,
                 "seq.1.enable": "ZERO",
-                "seq.2.table": {},
+                "seq.2.table": SeqTable([]),
                 "seq.2.active": False,
                 "seq.2.repeats": 0,
                 "seq.2.prescale": 0.0,
                 "seq.2.enable": "ZERO",
             },
-        ],
-        "path",
     )
+    assert mock_save_to_yaml.call_args[0][1] == "path"

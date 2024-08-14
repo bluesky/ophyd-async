@@ -2,16 +2,15 @@ import asyncio
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from pydantic_numpy import NpNDArray
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 
 from ._block import PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
-from ._table import convert_seq_table_to_columnwise_pva_table
+from ._table import SeqTable
 
 
 class SeqTableInfo(BaseModel):
-    sequence_table: NpNDArray = Field(strict=True)
+    sequence_table: SeqTable = Field(strict=True)
     repeats: int = Field(ge=0)
     prescale_as_us: float = Field(default=1, ge=0)  # microseconds
 
@@ -25,13 +24,10 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
             self.seq.prescale_units.set(TimeUnits.us),
             self.seq.enable.set("ZERO"),
         )
-        seq_table_pva_table = convert_seq_table_to_columnwise_pva_table(
-            value.sequence_table
-        )
         await asyncio.gather(
             self.seq.prescale.set(value.prescale_as_us),
             self.seq.repeats.set(value.repeats),
-            self.seq.table.set(seq_table_pva_table),
+            self.seq.table.set(value.sequence_table),
         )
 
     async def kickoff(self) -> None:

@@ -14,11 +14,9 @@ from ._hdf_panda import HDFPanda
 from ._table import (
     DatasetTable,
     PandaHdf5DatasetType,
-    SeqTablePvaTable,
+    SeqTable,
     SeqTableRowType,
     SeqTrigger,
-    convert_seq_table_to_columnwise_pva_table,
-    create_seq_table,
     seq_table_row,
 )
 from ._trigger import (
@@ -45,9 +43,7 @@ __all__ = [
     "PandaPcapController",
     "DatasetTable",
     "PandaHdf5DatasetType",
-    "create_seq_table",
-    "convert_seq_table_to_columnwise_pva_table",
-    "SeqTablePvaTable",
+    "SeqTable",
     "SeqTableRowType",
     "SeqTrigger",
     "seq_table_row",

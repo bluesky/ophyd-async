@@ -1,8 +1,53 @@
-from abc import abstractmethod
-from typing import TYPE_CHECKING, ClassVar, Generic, Literal, Optional, Tuple, Type
+from abc import ABC, abstractmethod
+from typing import (
+    TYPE_CHECKING,
+    ClassVar,
+    Generic,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+)
 
 from ._protocol import DataKey, Reading
 from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
+
+
+class ProtocolDatatypeAbstraction(ABC, Generic[T]):
+    @abstractmethod
+    def __init__(self):
+        """The abstract datatype must be able to be intialized with no arguments."""
+
+    @abstractmethod
+    def convert_to_protocol_datatype(self) -> T:
+        """
+        Convert the abstract datatype to a form which can be sent
+        over whichever protocol.
+        """
+
+    @classmethod
+    @abstractmethod
+    def convert_from_protocol_datatype(cls, value: T) -> "ProtocolDatatypeAbstraction":
+        """
+        Convert the datatype received from the protocol to a
+        higher level abstract datatype.
+        """
+
+
+class BackendConverterFactory(ABC):
+    """Convert between the signal backend and the signal type"""
+
+    _ALLOWED_TYPES: ClassVar[Tuple[Type]]
+
+    @classmethod
+    @abstractmethod
+    def datatype_allowed(cls, datatype: Type) -> bool:
+        """Check if the datatype is allowed."""
+
+    @classmethod
+    @abstractmethod
+    def make_converter(self, datatype: Type):
+        """Updates the object with callables `to_signal` and `from_signal`."""
 
 
 class SignalBackend(Generic[T]):

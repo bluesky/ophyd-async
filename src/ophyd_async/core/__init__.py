@@ -61,7 +61,13 @@ from ._signal import (
     soft_signal_rw,
     wait_for_value,
 )
-from ._signal_backend import RuntimeSubsetEnum, SignalBackend, SubsetEnum
+from ._signal_backend import (
+    BackendConverterFactory,
+    ProtocolDatatypeAbstraction,
+    RuntimeSubsetEnum,
+    SignalBackend,
+    SubsetEnum,
+)
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
@@ -103,6 +109,7 @@ __all__ = [
     "MockSignalBackend",
     "callback_on_mock_put",
     "get_mock_put",
+    "BackendConverterFactory",
     "mock_puts_blocked",
     "reset_mock_put_calls",
     "set_mock_put_proceeds",
@@ -117,6 +124,7 @@ __all__ = [
     "NameProvider",
     "PathInfo",
     "PathProvider",
+    "ProtocolDatatypeAbstraction",
     "ShapeProvider",
     "StaticFilenameProvider",
     "StaticPathProvider",
