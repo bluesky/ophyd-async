@@ -61,6 +61,7 @@ target/
 
 # likely venv names
 .venv*
+.testvenv*
 venv*
 
 # further build artifacts

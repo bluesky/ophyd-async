@@ -49,9 +49,9 @@ class VimbaController(DetectorControl):
         ]:
             await self._drv.acquire_time.set(exposure)
         if trigger != DetectorTrigger.internal:
-            self._drv.trigger_source.set(VimbaTriggerSource.line1)
+            await self._drv.trigger_source.set(VimbaTriggerSource.line1)
         else:
-            self._drv.trigger_source.set(VimbaTriggerSource.freerun)
+            await self._drv.trigger_source.set(VimbaTriggerSource.freerun)
         return await adcore.start_acquiring_driver_and_ensure_status(self._drv)
 
     async def disarm(self):
