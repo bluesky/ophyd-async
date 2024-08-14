@@ -116,6 +116,10 @@ class TestDevice(Device):
         time.sleep(0.2)
         return "Completed slow command"
 
+    @command
+    def echo(self, value: str) -> str:
+        return value
+
 
 # --------------------------------------------------------------------
 class TestReadableDevice(TangoReadableDevice):

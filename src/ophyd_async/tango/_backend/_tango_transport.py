@@ -228,11 +228,10 @@ class AttributeProxy(TangoProxy):
     @ensure_proper_executor
     async def get_reading(self) -> Reading:
         attr = await self._proxy.read_attribute(self._name)
-        return {
-            "value": attr.value,
-            "timestamp": attr.time.totime(),
-            "alarm_severity": attr.quality,
-        }
+        reading = Reading(
+            value=attr.value, timestamp=attr.time.totime(), alarm_severity=attr.quality
+        )
+        return reading
 
     # --------------------------------------------------------------------
     def has_subscription(self) -> bool:
@@ -375,6 +374,10 @@ class CommandProxy(TangoProxy):
         return self._last_reading["value"]
 
     # --------------------------------------------------------------------
+    async def get_w_value(self) -> T:
+        return self._last_reading["value"]
+
+    # --------------------------------------------------------------------
     @ensure_proper_executor
     async def put(
         self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
@@ -431,7 +434,12 @@ class CommandProxy(TangoProxy):
 
     # --------------------------------------------------------------------
     async def get_reading(self) -> Reading:
-        return self._last_reading
+        reading = Reading(
+            value=self._last_reading["value"],
+            timestamp=self._last_reading["timestamp"],
+            alarm_severity=self._last_reading["alarm_severity"],
+        )
+        return reading
 
     # --------------------------------------------------------------------
     def set_polling(

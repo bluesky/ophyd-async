@@ -584,7 +584,13 @@ async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
 @pytest.mark.parametrize("use_proxy", [True, False])
 @pytest.mark.parametrize(
     "attr_type",
-    [("justvalue", int), ("writeonly", int), ("readonly", int), ("clear", None)],
+    [
+        ("justvalue", int),
+        ("writeonly", int),
+        ("readonly", int),
+        ("clear", None),
+        ("echo", str),
+    ],
 )
 async def test_tango_signal_auto(
     tango_test_device: str, attr_type: tuple[str, Type[T]], use_proxy: bool
@@ -601,12 +607,21 @@ async def test_tango_signal_auto(
     await signal.connect()
 
     if isinstance(signal, SignalRW):
-        reading = await signal.read()
-        assert_close(reading[""]["value"], 5)
-        await signal.set(8, timeout=timeout)
+        datatype = signal._backend.datatype
+        if datatype is int:
+            new_value = choice([1, 2, 3, 4, 5])
+        elif datatype is float:
+            new_value = choice([1.1, 2.2, 3.3, 4.4, 5.5])
+        elif datatype is str:
+            new_value = choice(["aaa", "bbb", "ccc"])
+        elif datatype is np.ndarray:
+            new_value = np.array([choice([1, 2, 3, 4, 5]), choice([1, 2, 3, 4, 5])])
+        else:
+            new_value = None
+        await signal.set(new_value, timeout=timeout)
         location = await signal.locate()
-        assert_close(location["setpoint"], 8)
-        assert_close(location["readback"], 8)
+        assert_close(location["setpoint"], new_value)
+        assert_close(location["readback"], new_value)
         return
 
     if isinstance(signal, SignalR):
