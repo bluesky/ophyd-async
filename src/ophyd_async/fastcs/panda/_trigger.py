@@ -2,7 +2,7 @@ import asyncio
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from scanspec.specs import Frames, Path
+from scanspec.specs import Spec
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 
@@ -92,27 +92,15 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
 
 
 class PosTrigSeqInfo(BaseModel):
-    prescale_as_us: float = Field(default=1, ge=0)  # microseconds
-    stack: list[Frames[Path]]
-    ...
+    spec: Spec[str]
+    prescale_as_us: float = Field(default=1, ge=0)
 
 
 class PosTrigSeqLogic(TriggerLogic[PosTrigSeqInfo]):
     def __init__(self, seq: SeqBlock) -> None:
         self.seq = seq
 
-    async def prepare(self, value: SeqTableInfo):
-        await asyncio.gather(
-            self.seq.prescale_units.set(TimeUnits.us),
-            self.seq.enable.set("ZERO"),
-        )
-        await asyncio.gather(
-            self.seq.prescale.set(value.prescale_as_us),
-            self.seq.repeats.set(value.repeats),
-            self.seq.table.set(value.sequence_table),
-        )
-
-    def populate_seq_table() -> None:
+    def populate_seq_table(self, value: PosTrigSeqInfo) -> SeqTable:
         """
         Using scanspec this method will populate the
         SEQ table with chunks of frames.
@@ -128,8 +116,40 @@ class PosTrigSeqLogic(TriggerLogic[PosTrigSeqInfo]):
 
         While completing we will be checking for the condition that the end of the
         table has been reached. Then we need to populate the table again with the
-        next chunk of the scanspec frames.This need to repeat until it has completed
+        next chunk of the scanspec frames.This need to repeat until it has completed.
         """
+
+        # frames = value.spec.calculate()
+
+    async def prepare(self, value: PosTrigSeqInfo):
+        await asyncio.gather(
+            self.seq.prescale_units.set(TimeUnits.us),
+            self.seq.enable.set("ZERO"),
+        )
+
+        # table: SeqTable = seq_table_from_rows(
+        #     SeqTableRow(
+        #         time1=in_micros(pre_delay),
+        #         time2=in_micros(shutter_time),
+        #         outa2=True,
+        #     ),
+        #     # Keeping shutter open, do N triggers
+        #     SeqTableRow(
+        #         repeats=number_of_frames,
+        #         time1=in_micros(exposure),
+        #         outa1=True,
+        #         outb1=True,
+        #         time2=in_micros(deadtime),
+        #         outa2=True,
+        #     ),
+        #     # Add the shutter close
+        #     SeqTableRow(time2=in_micros(shutter_time)),
+        # # )
+        # await asyncio.gather(
+        #     self.seq.prescale.set(value.prescale_as_us),
+        #     self.seq.repeats.set(1),
+        #     self.seq.table.set(table),
+        # )
 
     async def kickoff(self) -> None:
         await self.seq.enable.set("ONE")
