@@ -11,6 +11,7 @@ from bluesky.protocols import DataKey, Descriptor, Reading
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncStatus,
     NotConnected,
     ReadingValueCallback,
     SignalBackend,
@@ -24,6 +25,7 @@ from tango import (
     AttributeInfoEx,
     CmdArgType,
     CommandInfo,
+    DevFailed,
     DevState,
     EventType,
 )
@@ -182,22 +184,40 @@ class AttributeProxy(TangoProxy):
     @ensure_proper_executor
     async def put(
         self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
-    ) -> None:
+    ) -> None or AsyncStatus:
         if wait:
-            await self._proxy.write_attribute(self._name, value)
+            try:
+                # val = await self._proxy.command_inout(self._name, value)
+                async def _write():
+                    return await self._proxy.write_attribute(self._name, value)
+
+                task = asyncio.create_task(_write())
+                await asyncio.wait_for(task, timeout)
+            except asyncio.TimeoutError:
+                raise TimeoutError(f"{self._name} attr put failed: Timeout")
+            except Exception as e:
+                raise RuntimeError(f"{self._name} attr put failed: {e}")
+
         else:
-            rid = self._proxy.write_attribute_asynch(self._name, value)
-            if timeout:
-                start_time = time.time()
-                finished = False
-                while not finished:
+            rid = await self._proxy.write_attribute_asynch(self._name, value)
+
+            async def wait_for_reply(rd, to):
+                start_time = time.time() if to else None
+                while True:
                     try:
-                        _ = await self._proxy.write_attribute_reply(rid)
-                        finished = True
-                    except Exception:
-                        await asyncio.sleep(A_BIT)
-                        if time.time() - start_time > timeout:
-                            raise TimeoutError("Timeout while waiting for write reply")
+                        await self._proxy.write_attribute_reply(rd)
+                        break
+                    except DevFailed as fail:
+                        if fail.args[0].reason == "API_AsynReplyNotArrived":
+                            await asyncio.sleep(A_BIT)
+                            if to and time.time() - start_time > to:
+                                raise TimeoutError(
+                                    f"{self._name} attr put failed:" f" Timeout"
+                                )
+                    except Exception as exc:
+                        raise RuntimeError(f"{self._name} attr put failed: {exc}")
+
+            return AsyncStatus(wait_for_reply(rid, timeout))
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
@@ -358,31 +378,51 @@ class CommandProxy(TangoProxy):
     @ensure_proper_executor
     async def put(
         self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
-    ) -> None:
+    ) -> None or AsyncStatus:
         if wait:
-            val = await self._proxy.command_inout(self._name, value)
-        else:
-            val = None
-            rid = self._proxy.command_inout_asynch(self._name, value)
-            if timeout:
-                start_time = time.time()
-                finished = False
-                while not finished:
-                    try:
-                        val = await self._proxy.command_inout_reply(rid)
-                        finished = True
-                    except Exception:
-                        await asyncio.sleep(A_BIT)
-                        if time.time() - start_time > timeout:
-                            raise TimeoutError(
-                                "Timeout while waiting for command reply"
-                            )
+            try:
+                # val = await self._proxy.command_inout(self._name, value)
+                async def _put():
+                    return await self._proxy.command_inout(self._name, value)
 
-        self._last_reading = {
-            "value": val,
-            "timestamp": time.time(),
-            "alarm_severity": 0,
-        }
+                task = asyncio.create_task(_put())
+                val = await asyncio.wait_for(task, timeout)
+                self._last_reading = {
+                    "value": val,
+                    "timestamp": time.time(),
+                    "alarm_severity": 0,
+                }
+            except asyncio.TimeoutError:
+                raise TimeoutError(f"{self._name} command failed: Timeout")
+            except Exception as e:
+                raise RuntimeError(f"{self._name} command failed: {e}")
+
+        else:
+            rid = self._proxy.command_inout_asynch(self._name, value)
+
+            async def wait_for_reply(rd, to):
+                reply_value = None
+                start_time = time.time() if to else None
+                while True:
+                    try:
+                        reply_value = self._proxy.command_inout_reply(rd)
+                        self._last_reading = {
+                            "value": reply_value,
+                            "timestamp": time.time(),
+                            "alarm_severity": 0,
+                        }
+                        break
+                    except DevFailed as fail:
+                        if fail.args[0].reason == "API_AsynReplyNotArrived":
+                            await asyncio.sleep(A_BIT)
+                            if to and time.time() - start_time > to:
+                                raise TimeoutError(
+                                    "Timeout while waiting for command reply"
+                                )
+                    except Exception as exc:
+                        raise RuntimeError(f"{self._name} command failed: {exc}")
+
+            return AsyncStatus(wait_for_reply(rid, timeout))
 
     # --------------------------------------------------------------------
     @ensure_proper_executor
@@ -552,6 +592,7 @@ class TangoTransport(SignalBackend[T]):
         self.descriptor: Descriptor = {}  # type: ignore
         self.polling = (True, 0.5, None, 0.1)
         self.support_events = False
+        self.status = None
 
     # --------------------------------------------------------------------
     def source(self, name: str) -> str:
@@ -585,7 +626,9 @@ class TangoTransport(SignalBackend[T]):
 
     # --------------------------------------------------------------------
     async def put(self, value: Optional[T], wait=True, timeout=None):
-        await self.proxies[self.write_trl].put(value, wait, timeout)
+        self.status = None
+        put_status = await self.proxies[self.write_trl].put(value, wait, timeout)
+        self.status = put_status
 
     # --------------------------------------------------------------------
     async def get_datakey(self, source: str) -> DataKey:

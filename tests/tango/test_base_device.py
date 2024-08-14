@@ -38,6 +38,7 @@ class TestEnum(IntEnum):
 TESTED_FEATURES = ["array", "limitedvalue", "justvalue"]
 
 
+# --------------------------------------------------------------------
 class TestDevice(Device):
     __test__ = False
 
@@ -46,6 +47,7 @@ class TestDevice(Device):
     _justvalue = 5
     _writeonly = 6
     _readonly = 7
+    _slow_attribute = 1.0
 
     _limitedvalue = 3
 
@@ -96,10 +98,23 @@ class TestDevice(Device):
     def write_limitedvalue(self, value: float):
         self._limitedvalue = value
 
+    @attribute(dtype=float, access=AttrWriteType.WRITE)
+    def slow_attribute(self) -> float:
+        return self._slow_attribute
+
+    def write_slow_attribute(self, value: float):
+        time.sleep(0.2)
+        self._slow_attribute = value
+
     @command
     def clear(self) -> str:
         # self.info_stream("Received clear command")
         return "Received clear command"
+
+    @command
+    def slow_command(self) -> str:
+        time.sleep(0.2)
+        return "Completed slow command"
 
 
 # --------------------------------------------------------------------

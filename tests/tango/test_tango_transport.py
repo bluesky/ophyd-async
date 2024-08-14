@@ -23,7 +23,6 @@ from ophyd_async.tango._backend._tango_transport import (
 from tango import (
     CmdArgType,
     DevState,
-    GreenMode,
 )
 from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import (
@@ -31,20 +30,7 @@ from tango.asyncio_executor import (
     get_global_executor,
     set_global_executor,
 )
-from tango.server import Device, command
 from tango.test_context import MultiDeviceTestContext
-
-
-# --------------------------------------------------------------------
-class DeviceAsynch(Device):
-    green_mode = GreenMode.Asyncio
-
-    @command(
-        polling_period=100,
-    )
-    async def slow_command(self) -> str:
-        await asyncio.sleep(0.2)
-        return "Completed slow command"
 
 
 # --------------------------------------------------------------------
@@ -61,15 +47,6 @@ def tango_test_device():
 def echo_device():
     with MultiDeviceTestContext(
         [{"class": EchoDevice, "devices": [{"name": "test/device/1"}]}], process=True
-    ) as context:
-        yield context.get_device_access("test/device/1")
-
-
-# --------------------------------------------------------------------
-@pytest.fixture(scope="module")
-def tango_test_device_asynch():
-    with MultiDeviceTestContext(
-        [{"class": DeviceAsynch, "devices": [{"name": "test/device/1"}]}], process=True
     ) as context:
         yield context.get_device_access("test/device/1")
 
@@ -266,17 +243,37 @@ async def test_attribute_proxy_get(device_proxy, attr):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("attr", ["justvalue", "array"])
-async def test_attribute_proxy_put(device_proxy, attr):
+@pytest.mark.parametrize(
+    "attr, wait",
+    [("justvalue", True), ("justvalue", False), ("array", True), ("array", False)],
+)
+async def test_attribute_proxy_put(device_proxy, attr, wait):
     attr_proxy = AttributeProxy(device_proxy, attr)
+
     old_value = await attr_proxy.get()
     new_value = old_value + 1
-    await attr_proxy.put(new_value, wait=True)
+    status = await attr_proxy.put(new_value, wait=wait, timeout=0.1)
+    if status:
+        await status
+    else:
+        if not wait:
+            raise AssertionError("If wait is False, put should return a status object")
     updated_value = await attr_proxy.get()
     if isinstance(new_value, np.ndarray):
         assert np.all(updated_value == new_value)
     else:
         assert updated_value == new_value
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.parametrize("wait", [True, False])
+async def test_attribute_proxy_put_force_timeout(device_proxy, wait):
+    attr_proxy = AttributeProxy(device_proxy, "slow_attribute")
+    with pytest.raises(TimeoutError) as exc_info:
+        status = await attr_proxy.put(3.0, wait=wait, timeout=0.1)
+        await status
+    assert "attr put failed" in str(exc_info.value)
 
 
 # --------------------------------------------------------------------
@@ -441,14 +438,38 @@ async def test_command_proxy_put_wait(device_proxy):
     await cmd_proxy.put(None, wait=True)
     assert cmd_proxy._last_reading["value"] == "Received clear command"
 
+    # Force timeout
+    cmd_proxy = CommandProxy(device_proxy, "slow_command")
+    cmd_proxy._last_reading = None
+    with pytest.raises(TimeoutError) as exc_info:
+        await cmd_proxy.put(None, wait=True, timeout=0.1)
+    assert "command failed" in str(exc_info.value)
+
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_command_proxy_put_nowait(device_proxy_asynch):
-    cmd_proxy = CommandProxy(device_proxy_asynch, "slow_command")
+async def test_command_proxy_put_nowait(device_proxy):
+    cmd_proxy = CommandProxy(device_proxy, "slow_command")
 
+    # Reply before timeout
     cmd_proxy._last_reading = None
-    await cmd_proxy.put(None, wait=False, timeout=0.5)
+    status = await cmd_proxy.put(None, wait=False, timeout=0.5)
+    assert cmd_proxy._last_reading is None
+    await status
+    assert cmd_proxy._last_reading["value"] == "Completed slow command"
+
+    # Timeout
+    cmd_proxy._last_reading = None
+    status = await cmd_proxy.put(None, wait=False, timeout=0.1)
+    with pytest.raises(TimeoutError) as exc_info:
+        await status
+    assert str(exc_info.value) == "Timeout while waiting for command reply"
+
+    # No timeout
+    cmd_proxy._last_reading = None
+    status = await cmd_proxy.put(None, wait=False)
+    assert cmd_proxy._last_reading is None
+    await status
     assert cmd_proxy._last_reading["value"] == "Completed slow command"
 
 
