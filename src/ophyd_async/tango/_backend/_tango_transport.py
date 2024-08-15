@@ -242,6 +242,10 @@ class AttributeProxy(TangoProxy):
     # --------------------------------------------------------------------
     def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
         # If the attribute supports events, then we can subscribe to them
+        # If the callback is not a callable, then we raise an error
+        if callback is not None and not callable(callback):
+            raise RuntimeError("Callback must be a callable")
+
         self._callback = callback
         if self.support_events:
             """add user callback to CHANGE event subscription"""
@@ -680,16 +684,13 @@ class TangoTransport(SignalBackend[T]):
             )
 
         if callback:
-            assert not self.proxies[
-                self.read_trl
-            ].has_subscription(), "Cannot set a callback when one is already set"
             try:
+                assert not self.proxies[self.read_trl].has_subscription()
                 self.proxies[self.read_trl].subscribe_callback(callback)
-            except AssertionError or RuntimeError:
-                raise RuntimeError(
-                    f"Cannot set event for {self.read_trl}. "
-                    f"This signal should be used only as non-cached!"
-                )
+            except AssertionError:
+                raise RuntimeError("Cannot set a callback when one is already set")
+            except RuntimeError as exc:
+                raise RuntimeError(f"Cannot set callback for {self.read_trl}. {exc}")
 
         else:
             self.proxies[self.read_trl].unsubscribe_callback()

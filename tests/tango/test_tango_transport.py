@@ -669,13 +669,35 @@ async def test_set_callback(transport):
         nonlocal val
         val = value
 
+    # Correct usage
     transport.set_callback(callback)
     current_value = await transport.get_value()
     new_value = current_value + 2
     await transport.put(new_value)
     await asyncio.sleep(0.1)
-    transport.set_callback(None)
     assert val == new_value
+
+    # Try to add second callback
+    with pytest.raises(RuntimeError) as exc_info:
+        transport.set_callback(callback)
+    assert "Cannot set a callback when one is already set"
+
+    transport.set_callback(None)
+
+    # Try to add a callback to a non-callable proxy
+    transport.allow_events(False)
+    transport.set_polling(False)
+    with pytest.raises(RuntimeError) as exc_info:
+        transport.set_callback(callback)
+    assert "Cannot set event" in str(exc_info.value)
+
+    # Try to add a non-callable callback
+    transport.allow_events(True)
+    transport.set_callback(None)
+    with pytest.raises(RuntimeError) as exc_info:
+        transport.set_callback(1)
+    print(exc_info.value)
+    assert "Callback must be a callable" in str(exc_info.value)
 
 
 # --------------------------------------------------------------------
@@ -724,3 +746,36 @@ async def test_tango_transport_read_and_write_trl(device_proxy):
     await transport.put(new_value)
     updated_value = await transport.get_value()
     assert updated_value == new_value
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_tango_transport_read_only_trl(device_proxy):
+    trl = device_proxy.dev_name()
+    read_trl = trl + "/" + "readonly"
+
+    # Test with existing proxy
+    transport = TangoTransport(int, read_trl, read_trl, device_proxy)
+    await transport.connect()
+    with pytest.raises(RuntimeError) as exc_info:
+        await transport.put(1)
+    assert "is not writable" in str(exc_info.value)
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_tango_transport_nonexistent_trl(device_proxy):
+    trl = device_proxy.dev_name()
+    nonexistent_trl = trl + "/" + "nonexistent"
+
+    # Test with existing proxy
+    transport = TangoTransport(int, nonexistent_trl, nonexistent_trl, device_proxy)
+    with pytest.raises(RuntimeError) as exc_info:
+        await transport.connect()
+    assert "cannot be found" in str(exc_info.value)
+
+    # Without pre-existing proxy
+    transport = TangoTransport(int, nonexistent_trl, nonexistent_trl, None)
+    with pytest.raises(RuntimeError) as exc_info:
+        await transport.connect()
+    assert "cannot be found" in str(exc_info.value)
