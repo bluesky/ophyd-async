@@ -49,7 +49,25 @@ class TestDevice(Device):
     _readonly = 7
     _slow_attribute = 1.0
 
+    _floatvalue = 1.0
+
+    _label = "Test Device"
+
     _limitedvalue = 3
+
+    @attribute(dtype=str, access=AttrWriteType.READ_WRITE)
+    def label(self):
+        return self._label
+
+    def write_label(self, value: str):
+        self._label = value
+
+    @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
+    def floatvalue(self):
+        return self._floatvalue
+
+    def write_floatvalue(self, value: float):
+        self._floatvalue = value
 
     @attribute(dtype=int, access=AttrWriteType.READ_WRITE, polling_period=100)
     def justvalue(self):

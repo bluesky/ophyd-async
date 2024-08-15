@@ -297,7 +297,7 @@ class AttributeProxy(TangoProxy):
             if self._callback is not None:
                 self._callback(last_reading, last_reading["value"])
         except Exception as e:
-            raise RuntimeError("Could not poll the attribute") from e
+            raise RuntimeError(f"Could not poll the attribute: {e}")
 
         try:
             # If the value is a number, we can check for changes
@@ -306,7 +306,6 @@ class AttributeProxy(TangoProxy):
                     await asyncio.sleep(self._polling_period)
                     reading = await self.get_reading()
                     if reading is None or reading["value"] is None:
-                        reading = last_reading.copy()
                         continue
                     diff = abs(reading["value"] - last_reading["value"])
                     if self._abs_change is not None and diff >= abs(self._abs_change):
@@ -339,13 +338,23 @@ class AttributeProxy(TangoProxy):
                         reading = await self.get_reading()
                         if reading is None or reading["value"] is None:
                             continue
-                        last_reading = reading.copy()
-                        if self._callback is not None:
-                            self._callback(reading, reading["value"])
+                        if isinstance(reading["value"], np.ndarray):
+                            if not np.array_equal(
+                                reading["value"], last_reading["value"]
+                            ):
+                                if self._callback is not None:
+                                    self._callback(reading, reading["value"])
+                                else:
+                                    break
                         else:
-                            break
+                            if reading["value"] != last_reading["value"]:
+                                if self._callback is not None:
+                                    self._callback(reading, reading["value"])
+                                else:
+                                    break
+                        last_reading = reading.copy()
         except Exception as e:
-            raise RuntimeError("Could not poll the attribute") from e
+            raise RuntimeError(f"Could not poll the attribute: {e}")
 
     # --------------------------------------------------------------------
     def set_polling(

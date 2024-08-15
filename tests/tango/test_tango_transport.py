@@ -376,7 +376,7 @@ def test_attribute_set_polling(device_proxy):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_attribute_poll(device_proxy):
-    attr_proxy = AttributeProxy(device_proxy, "justvalue")
+    attr_proxy = AttributeProxy(device_proxy, "floatvalue")
 
     def callback(reading, value):
         nonlocal val
@@ -425,8 +425,33 @@ async def test_attribute_poll(device_proxy):
     # Test polling with bad callback
     attr_proxy.subscribe_callback(bad_callback)
     await asyncio.sleep(0.2)
-    assert str(attr_proxy._poll_task.exception()) == "Could not poll the attribute"
+    assert "Could not poll the attribute" in str(attr_proxy._poll_task.exception())
     attr_proxy.unsubscribe_callback()
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.parametrize("attr", ["array", "label"])
+async def test_attribute_poll_stringsandarrays(device_proxy, attr):
+    attr_proxy = AttributeProxy(device_proxy, attr)
+
+    def callback(reading, value):
+        nonlocal val
+        val = value
+
+    val = None
+    attr_proxy.set_polling(True, 0.1)
+    attr_proxy.subscribe_callback(callback)
+    await asyncio.sleep(0.2)
+    assert val is not None
+    if isinstance(val, np.ndarray):
+        await attr_proxy.put(np.array([[2, 3, 4], [5, 6, 7]]))
+        await asyncio.sleep(0.5)
+        assert np.all(val == np.array([[2, 3, 4], [5, 6, 7]]))
+    if isinstance(val, str):
+        await attr_proxy.put("new label")
+        await asyncio.sleep(0.5)
+        assert val == "new label"
 
 
 # --------------------------------------------------------------------
