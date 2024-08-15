@@ -51,9 +51,24 @@ class TestDevice(Device):
 
     _floatvalue = 1.0
 
+    _readback = 1.0
+    _setpoint = 1.0
+
     _label = "Test Device"
 
     _limitedvalue = 3
+
+    @attribute(dtype=float, access=AttrWriteType.READ)
+    def readback(self):
+        return self._readback
+
+    @attribute(dtype=float, access=AttrWriteType.WRITE)
+    def setpoint(self):
+        return self._setpoint
+
+    def write_setpoint(self, value: float):
+        self._setpoint = value
+        self._readback = value
 
     @attribute(dtype=str, access=AttrWriteType.READ_WRITE)
     def label(self):

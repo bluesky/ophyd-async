@@ -14,6 +14,7 @@ from test_tango_signals import (
 from ophyd_async.tango._backend._tango_transport import (
     AttributeProxy,
     CommandProxy,
+    TangoTransport,
     ensure_proper_executor,
     get_dtype_extended,
     get_python_type,
@@ -674,3 +675,31 @@ async def test_tango_transport_set_polling(transport):
 async def test_tango_transport_allow_events(transport, allow):
     transport.allow_events(allow)
     assert transport.support_events == allow
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_tango_transport_read_and_write_trl(device_proxy):
+    trl = device_proxy.dev_name()
+    read_trl = trl + "/" + "readback"
+    write_trl = trl + "/" + "setpoint"
+
+    # Test with existing proxy
+    transport = TangoTransport(float, read_trl, write_trl, device_proxy)
+    await transport.connect()
+    reading = await transport.get_reading()
+    initial_value = reading["value"]
+    new_value = initial_value + 1.0
+    await transport.put(new_value)
+    updated_value = await transport.get_value()
+    assert updated_value == new_value
+
+    # Without pre-existing proxy
+    transport = TangoTransport(float, read_trl, write_trl, None)
+    await transport.connect()
+    reading = await transport.get_reading()
+    initial_value = reading["value"]
+    new_value = initial_value + 1.0
+    await transport.put(new_value)
+    updated_value = await transport.get_value()
+    assert updated_value == new_value
