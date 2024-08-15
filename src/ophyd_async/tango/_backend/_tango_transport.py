@@ -187,7 +187,7 @@ class AttributeProxy(TangoProxy):
     ) -> None or AsyncStatus:
         if wait:
             try:
-                # val = await self._proxy.command_inout(self._name, value)
+
                 async def _write():
                     return await self._proxy.write_attribute(self._name, value)
 
@@ -195,8 +195,8 @@ class AttributeProxy(TangoProxy):
                 await asyncio.wait_for(task, timeout)
             except asyncio.TimeoutError:
                 raise TimeoutError(f"{self._name} attr put failed: Timeout")
-            except Exception as e:
-                raise RuntimeError(f"{self._name} attr put failed: {e}")
+            except DevFailed as e:
+                raise RuntimeError(f"{self._name} device failure: {e.args[0].desc}")
 
         else:
             rid = await self._proxy.write_attribute_asynch(self._name, value)
@@ -207,15 +207,17 @@ class AttributeProxy(TangoProxy):
                     try:
                         await self._proxy.write_attribute_reply(rd)
                         break
-                    except DevFailed as fail:
-                        if fail.args[0].reason == "API_AsynReplyNotArrived":
+                    except DevFailed as exc:
+                        if exc.args[0].reason == "API_AsynReplyNotArrived":
                             await asyncio.sleep(A_BIT)
                             if to and time.time() - start_time > to:
                                 raise TimeoutError(
                                     f"{self._name} attr put failed:" f" Timeout"
                                 )
-                    except Exception as exc:
-                        raise RuntimeError(f"{self._name} attr put failed: {exc}")
+                        else:
+                            raise RuntimeError(
+                                f"{self._name} device failure:" f" {exc.args[0].desc}"
+                            )
 
             return AsyncStatus(wait_for_reply(rid, timeout))
 
@@ -406,8 +408,8 @@ class CommandProxy(TangoProxy):
                 }
             except asyncio.TimeoutError:
                 raise TimeoutError(f"{self._name} command failed: Timeout")
-            except Exception as e:
-                raise RuntimeError(f"{self._name} command failed: {e}")
+            except DevFailed as e:
+                raise RuntimeError(f"{self._name} device failure: {e.args[0].desc}")
 
         else:
             rid = self._proxy.command_inout_asynch(self._name, value)
@@ -424,15 +426,17 @@ class CommandProxy(TangoProxy):
                             "alarm_severity": 0,
                         }
                         break
-                    except DevFailed as fail:
-                        if fail.args[0].reason == "API_AsynReplyNotArrived":
+                    except DevFailed as e:
+                        if e.args[0].reason == "API_AsynReplyNotArrived":
                             await asyncio.sleep(A_BIT)
                             if to and time.time() - start_time > to:
                                 raise TimeoutError(
                                     "Timeout while waiting for command reply"
                                 )
-                    except Exception as exc:
-                        raise RuntimeError(f"{self._name} command failed: {exc}")
+                        else:
+                            raise RuntimeError(
+                                f"{self._name} device failure:" f" {e.args[0].desc}"
+                            )
 
             return AsyncStatus(wait_for_reply(rid, timeout))
 

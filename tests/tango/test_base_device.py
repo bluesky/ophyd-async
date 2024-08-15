@@ -139,6 +139,13 @@ class TestDevice(Device):
         time.sleep(0.2)
         self._slow_attribute = value
 
+    @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
+    def raise_exception_attr(self) -> float:
+        raise
+
+    def write_raise_exception_attr(self, value: float):
+        raise
+
     @command
     def clear(self) -> str:
         # self.info_stream("Received clear command")
@@ -152,6 +159,10 @@ class TestDevice(Device):
     @command
     def echo(self, value: str) -> str:
         return value
+
+    @command
+    def raise_exception_cmd(self):
+        raise
 
 
 # --------------------------------------------------------------------

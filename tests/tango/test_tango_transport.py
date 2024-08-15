@@ -279,6 +279,17 @@ async def test_attribute_proxy_put_force_timeout(device_proxy, wait):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.parametrize("wait", [True, False])
+async def test_attribute_proxy_put_exceptions(device_proxy, wait):
+    attr_proxy = AttributeProxy(device_proxy, "raise_exception_attr")
+    with pytest.raises(RuntimeError) as exc_info:
+        status = await attr_proxy.put(3.0, wait=wait)
+        await status
+    assert "device failure" in str(exc_info.value)
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "attr, new_value", [("justvalue", 10), ("array", np.array([[2, 3, 4], [5, 6, 7]]))]
 )
@@ -523,6 +534,16 @@ async def test_command_proxy_put_nowait(device_proxy):
     assert cmd_proxy._last_reading is None
     await status
     assert cmd_proxy._last_reading["value"] == "Completed slow command"
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.parametrize("wait", [True, False])
+async def test_command_proxy_put_exceptions(device_proxy, wait):
+    cmd_proxy = CommandProxy(device_proxy, "raise_exception_cmd")
+    with pytest.raises(RuntimeError) as exc_info:
+        await cmd_proxy.put(None, wait=True)
+    assert "device failure" in str(exc_info.value)
 
 
 # --------------------------------------------------------------------
