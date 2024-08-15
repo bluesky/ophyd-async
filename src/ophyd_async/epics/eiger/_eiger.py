@@ -1,8 +1,7 @@
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import DeviceCollector
-
-from ._eiger_io import EigerDriverIO
+from ophyd_async.epics.eiger._eiger_io import EigerDriverIO
 
 RE = RunEngine()
 
