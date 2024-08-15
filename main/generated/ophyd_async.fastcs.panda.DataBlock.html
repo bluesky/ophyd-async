@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.fastcs.panda.DataBlock &#8212; ophyd-async 0.5.1.dev16+gd5da999f documentation</title>
+    <title>ophyd_async.fastcs.panda.DataBlock &#8212; ophyd-async 0.5.1.dev17+g6b5f2b21 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=f27793d0"></script>
+    <script src="../_static/documentation_options.js?v=8fef0c55"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -755,6 +755,12 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock.num_captured" title="ophyd_async.fastcs.panda.DataBlock.num_captured"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_captured</span></code></a></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock.create_directory" title="ophyd_async.fastcs.panda.DataBlock.create_directory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_directory</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock.directory_exists" title="ophyd_async.fastcs.panda.DataBlock.directory_exists"><code class="xref py py-obj docutils literal notranslate"><span class="pre">directory_exists</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock.capture" title="ophyd_async.fastcs.panda.DataBlock.capture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">capture</span></code></a></p></td>
 <td><p></p></td>
 </tr>
@@ -785,6 +791,16 @@ may change API on minor release numbers before then</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.num_captured">
 <span class="sig-name descname"><span class="pre">num_captured</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.SignalR.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.num_captured" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.create_directory">
+<span class="sig-name descname"><span class="pre">create_directory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.SignalRW.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.create_directory" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.directory_exists">
+<span class="sig-name descname"><span class="pre">directory_exists</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.SignalR.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.directory_exists" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -905,6 +921,8 @@ may change API on minor release numbers before then</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.hdf_file_name"><code class="docutils literal notranslate"><span class="pre">DataBlock.hdf_file_name</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.num_capture"><code class="docutils literal notranslate"><span class="pre">DataBlock.num_capture</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.num_captured"><code class="docutils literal notranslate"><span class="pre">DataBlock.num_captured</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.create_directory"><code class="docutils literal notranslate"><span class="pre">DataBlock.create_directory</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.directory_exists"><code class="docutils literal notranslate"><span class="pre">DataBlock.directory_exists</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.capture"><code class="docutils literal notranslate"><span class="pre">DataBlock.capture</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.flush_period"><code class="docutils literal notranslate"><span class="pre">DataBlock.flush_period</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.datasets"><code class="docutils literal notranslate"><span class="pre">DataBlock.datasets</span></code></a></li>

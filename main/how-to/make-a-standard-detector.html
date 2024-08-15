@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.5.1.dev16+gd5da999f documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.5.1.dev17+g6b5f2b21 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=f27793d0"></script>
+    <script src="../_static/documentation_options.js?v=8fef0c55"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -659,16 +659,26 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">())</span>
+
+        <span class="c1"># Set create dir depth first to guarantee that callback when setting</span>
+        <span class="c1"># directory path has correct value</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">create_directory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">create_dir_depth</span><span class="p">)</span>
+
         <span class="c1"># Set the initial values</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">directory_path</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_directory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">directory_path</span><span class="p">)),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">hdf_file_name</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">num_capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-            <span class="c1"># TODO: Set create_dir_depth once available</span>
-            <span class="c1"># https://github.com/bluesky/ophyd-async/issues/317</span>
         <span class="p">)</span>
+
+        <span class="c1"># Make sure that directory exists or has been created.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">directory_exists</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Directory </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">directory_path</span><span class="si">}</span><span class="s2"> does not exist or &quot;</span>
+                <span class="s2">&quot;is not writable by the PandABlocks-ioc!&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Wait for it to start, stashing the status that tells us when it finishes</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>

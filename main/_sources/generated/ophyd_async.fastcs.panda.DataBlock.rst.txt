@@ -41,6 +41,8 @@ ophyd\_async.fastcs.panda.DataBlock
       ~DataBlock.hdf_file_name
       ~DataBlock.num_capture
       ~DataBlock.num_captured
+      ~DataBlock.create_directory
+      ~DataBlock.directory_exists
       ~DataBlock.capture
       ~DataBlock.flush_period
       ~DataBlock.datasets
