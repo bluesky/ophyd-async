@@ -456,6 +456,32 @@ async def test_attribute_poll_stringsandarrays(device_proxy, attr):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+async def test_attribute_poll_exceptions(device_proxy):
+    # Try to poll a non-existent attribute
+    attr_proxy = AttributeProxy(device_proxy, "nonexistent")
+    attr_proxy.set_polling(True, 0.1)
+
+    def callback(reading, value):
+        pass
+
+    attr_proxy.subscribe_callback(callback)
+    await asyncio.sleep(0.2)
+    assert "Could not poll the attribute" in str(attr_proxy._poll_task.exception())
+
+    # Try to poll a command
+    attr_proxy = AttributeProxy(device_proxy, "clear")
+    attr_proxy.set_polling(True, 0.1)
+
+    def callback(reading, value):
+        pass
+
+    attr_proxy.subscribe_callback(callback)
+    await asyncio.sleep(0.2)
+    assert "Could not poll the attribute" in str(attr_proxy._poll_task.exception())
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
 async def test_command_proxy_put_wait(device_proxy):
     cmd_proxy = CommandProxy(device_proxy, "clear")
 
