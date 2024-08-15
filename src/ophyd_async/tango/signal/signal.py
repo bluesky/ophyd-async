@@ -166,5 +166,3 @@ def tango_signal_auto(
 
     if tr_name in device_proxy.get_pipe_list():
         raise NotImplementedError("Pipes are not supported")
-
-    raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
