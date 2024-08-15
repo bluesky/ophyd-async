@@ -13,6 +13,8 @@ class DataBlock(Device):
     hdf_file_name: SignalRW[str]
     num_capture: SignalRW[int]
     num_captured: SignalR[int]
+    create_directory: SignalRW[int]
+    directory_exists: SignalR[bool]
     capture: SignalRW[bool]
     flush_period: SignalRW[float]
     datasets: SignalR[DatasetTable]
