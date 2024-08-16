@@ -20,7 +20,7 @@ dependencies = [
     "colorlog",
     "pydantic>=2.0",
     "pydantic-numpy",
-    "scanspec",
+    "scanspec>=0.7.2",
     "velocity-profile",
 ]
 dynamic = ["version"]
