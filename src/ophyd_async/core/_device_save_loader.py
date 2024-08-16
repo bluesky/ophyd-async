@@ -10,11 +10,22 @@ from bluesky.utils import Msg
 
 from ._device import Device
 from ._signal import SignalRW
+from ._signal_backend import ProtocolDatatypeAbstraction
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.Node:
     return dumper.represent_sequence(
         "tag:yaml.org,2002:seq", array.tolist(), flow_style=True
+    )
+
+
+def protocol_datatype_abstraction_representer(
+    dumper: yaml.Dumper, protocol_datatype_abstraction: ProtocolDatatypeAbstraction
+) -> yaml.Node:
+    """Uses the protocol datatype since it has to be serializable."""
+
+    return dumper.represent_data(
+        protocol_datatype_abstraction.convert_to_protocol_datatype()
     )
 
 
@@ -134,6 +145,11 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
     """
 
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
+    yaml.add_multi_representer(
+        ProtocolDatatypeAbstraction,
+        protocol_datatype_abstraction_representer,
+        Dumper=yaml.Dumper,
+    )
 
     with open(save_path, "w") as file:
         yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)

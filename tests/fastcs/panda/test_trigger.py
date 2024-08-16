@@ -40,10 +40,10 @@ async def test_seq_table_trigger_logic(mock_panda):
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
     seq_table = SeqTable(
         [
-        seq_table_row(outa1=True, outa2=True),
-        seq_table_row(outa1=False, outa2=False),
-        seq_table_row(outa1=True, outa2=False),
-        seq_table_row(outa1=False, outa2=True),
+            seq_table_row(outa1=True, outa2=True),
+            seq_table_row(outa1=False, outa2=False),
+            seq_table_row(outa1=True, outa2=False),
+            seq_table_row(outa1=False, outa2=True),
         ]
     )
     seq_table_info = SeqTableInfo(sequence_table=seq_table, repeats=1)
@@ -92,10 +92,10 @@ async def test_pcomp_trigger_logic(mock_panda):
             {
                 "sequence_table": SeqTable(
                     [
-                    seq_table_row(outc2=True),
-                    seq_table_row(outc2=False),
-                    seq_table_row(outc2=True),
-                    seq_table_row(outc2=False),
+                        seq_table_row(outc2=True),
+                        seq_table_row(outc2=False),
+                        seq_table_row(outc2=True),
+                        seq_table_row(outc2=False),
                     ]
                 ),
                 "repeats": -1,
@@ -109,7 +109,7 @@ async def test_pcomp_trigger_logic(mock_panda):
                 "repeats": 1,
             },
             "Assertion failed, Rows must be a list or numpy array. "
-            "[type=assertion_error, input_value=1, input_type=int]"
+            "[type=assertion_error, input_value=1, input_type=int]",
         ),
     ],
 )

@@ -75,23 +75,23 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
     table = SeqTable(
         [
-        # Wait for pre-delay then open shutter
-        seq_table_row(
-            time1=in_micros(pre_delay),
-            time2=in_micros(shutter_time),
-            outa2=True,
-        ),
-        # Keeping shutter open, do N triggers
-        seq_table_row(
-            repeats=number_of_frames,
-            time1=in_micros(exposure),
-            outa1=True,
-            outb1=True,
-            time2=in_micros(deadtime),
-            outa2=True,
-        ),
-        # Add the shutter close
-        seq_table_row(time2=in_micros(shutter_time)),
+            # Wait for pre-delay then open shutter
+            seq_table_row(
+                time1=in_micros(pre_delay),
+                time2=in_micros(shutter_time),
+                outa2=True,
+            ),
+            # Keeping shutter open, do N triggers
+            seq_table_row(
+                repeats=number_of_frames,
+                time1=in_micros(exposure),
+                outa1=True,
+                outb1=True,
+                time2=in_micros(deadtime),
+                outa2=True,
+            ),
+            # Add the shutter close
+            seq_table_row(time2=in_micros(shutter_time)),
         ]
     )
 

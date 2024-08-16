@@ -132,13 +132,17 @@ class SoftProtocolDatatypeAbstractionConverter(SoftConverter):
     No conversion is necessary for ProtocolDatatypeAbstraction datatypes in soft
     signals.
     """
+
     def __init__(self, datatype: Type[ProtocolDatatypeAbstraction]):
         self.datatype = datatype
 
     def reading(self, value: T, timestamp: float, severity: int) -> Reading:
+        value = self.value(value)
         return super().reading(value, timestamp, severity)
 
     def value(self, value: Any) -> Any:
+        if not issubclass(type(value), ProtocolDatatypeAbstraction):
+            value = self.datatype.convert_from_protocol_datatype(value)
         return value
 
     def write_value(self, value):
@@ -153,8 +157,7 @@ class SoftSignalConverterFactory(BackendConverterFactory):
 
     @classmethod
     def datatype_allowed(cls, datatype: Type) -> bool:
-        return True # Any value allowed in a soft signal
-
+        return True  # Any value allowed in a soft signal
 
     @classmethod
     def make_converter(cls, datatype):
@@ -164,8 +167,7 @@ class SoftSignalConverterFactory(BackendConverterFactory):
             issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
         )
         is_convertable_abstract_datatype = inspect.isclass(datatype) and issubclass(
-            datatype,
-            ProtocolDatatypeAbstraction
+            datatype, ProtocolDatatypeAbstraction
         )
 
         if is_array or is_sequence:
@@ -195,6 +197,7 @@ class SoftSignalBackend(SignalBackend[T]):
         self.datatype = datatype
         self._initial_value = initial_value
         self._metadata = metadata or {}
+        self.converter_factory = SoftSignalConverterFactory
         self.converter: SoftConverter = SoftSignalConverterFactory.make_converter(
             datatype
         )

@@ -195,23 +195,23 @@ class CaConverterFactory(BackendConverterFactory):
         Sequence,
         Enum,
         RuntimeSubsetEnum,
-        np.ndarray
+        np.ndarray,
     )
 
     @classmethod
-    def datatype_allowed(cls, datatype: Type) -> bool:
+    def datatype_allowed(cls, datatype: Optional[Type]) -> bool:
         stripped_origin = get_origin(datatype) or datatype
+        if datatype is None:
+            return True
+
         return inspect.isclass(stripped_origin) and issubclass(
-                stripped_origin, cls._ALLOWED_TYPES
+            stripped_origin, cls._ALLOWED_TYPES
         )
 
     @classmethod
     def make_converter(
         cls, datatype: Optional[Type], values: Dict[str, AugmentedValue]
     ) -> CaConverter:
-        if datatype is not None and not cls.datatype_allowed(datatype):
-            raise TypeError(f"Given datatype {datatype} unsupported in CA.")
-
         pv = list(values)[0]
         pv_dbr = get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
         is_array = bool([v for v in values.values() if v.element_count > 1])
@@ -287,6 +287,8 @@ def _use_pyepics_context_if_imported():
 class CaSignalBackend(SignalBackend[T]):
     def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
         self.datatype = datatype
+        if not CaConverterFactory.datatype_allowed(self.datatype):
+            raise TypeError(f"Given datatype {self.datatype} unsupported in CA.")
         self.read_pv = read_pv
         self.write_pv = write_pv
         self.initial_values: Dict[str, AugmentedValue] = {}

@@ -403,3 +403,26 @@ async def test_subscription_logs(caplog):
     assert "Making subscription" in caplog.text
     mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text
+
+
+async def test_signal_unknown_datatype():
+    class SomeClass:
+        def __init__(self):
+            self.some_attribute = "some_attribute"
+
+        def some_function(self):
+            pass
+
+    # with pytest.raises(ValueError, match="Unknown datatype 'SomeClass'"):
+    err_str = (
+        "Given datatype <class "
+        "'test_signal.test_signal_unknown_datatype.<locals>.SomeClass'>"
+        " unsupported in %s."
+    )
+    with pytest.raises(TypeError, match=err_str % ("PVA",)):
+        epics_signal_rw(SomeClass, "pva://mock_signal", name="mock_signal")
+    with pytest.raises(TypeError, match=err_str % ("CA",)):
+        epics_signal_rw(SomeClass, "ca://mock_signal", name="mock_signal")
+
+    # Any dtype allowed in soft signal
+    soft_signal_rw(SomeClass, SomeClass(), "soft_signal")

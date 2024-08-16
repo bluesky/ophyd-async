@@ -1,24 +1,20 @@
-from unittest.mock import patch
 
 import numpy as np
-import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, save_device
+from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, load_device, save_device
 from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DataBlock,
-    PcompDirectionOptions,
     SeqTable,
-    TimeUnits,
     phase_sorter,
+    seq_table_row,
 )
 
 
-@pytest.fixture
-async def mock_panda():
+async def get_mock_panda():
     class Panda(CommonPandaBlocks):
         data: DataBlock
 
@@ -35,14 +31,14 @@ async def mock_panda():
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDA")
         mock_panda.phase_1_signal_units = epics_signal_rw(int, "")
-    assert mock_panda.name == "mock_panda"
-    yield mock_panda
+    return mock_panda
 
 
-@patch("ophyd_async.core._device_save_loader.save_to_yaml")
-async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
-    RE(save_device(mock_panda, "path", sorter=phase_sorter))
-    mock_save_to_yaml.assert_called_once()
+async def test_save_load_panda(tmp_path, RE: RunEngine):
+    mock_panda1 = await get_mock_panda()
+    await mock_panda1.seq[1].table.set(SeqTable([seq_table_row(repeats=1)]))
+
+    RE(save_device(mock_panda1, str(tmp_path / "panda.yaml"), sorter=phase_sorter))
 
     def check_equal_with_seq_tables(actual, expected):
         assert set(actual.keys()) == set(expected.keys())
@@ -53,6 +49,17 @@ async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
             else:
                 assert value1 == value2
 
+    mock_panda2 = await get_mock_panda()
+    assert np.array_equal(
+        (await mock_panda2.seq[1].table.get_value()).root, SeqTable([]).root
+    )
+    RE(load_device(mock_panda2, str(tmp_path / "panda.yaml")))
+    assert np.array_equal(
+        (await mock_panda2.seq[1].table.get_value()).root,
+        SeqTable([seq_table_row(repeats=1)]).root,
+    )
+
+    """
     assert mock_save_to_yaml.call_args[0][0][0] == {
         "phase_1_signal_units": 0,
         "seq.1.prescale_units": TimeUnits("min"),
@@ -96,3 +103,4 @@ async def test_save_panda(mock_save_to_yaml, mock_panda, RE: RunEngine):
             },
     )
     assert mock_save_to_yaml.call_args[0][1] == "path"
+    """

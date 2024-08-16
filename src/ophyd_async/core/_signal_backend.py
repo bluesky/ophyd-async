@@ -23,6 +23,8 @@ class ProtocolDatatypeAbstraction(ABC, Generic[T]):
         """
         Convert the abstract datatype to a form which can be sent
         over whichever protocol.
+
+        This output will be used when the device is serialized.
         """
 
     @classmethod

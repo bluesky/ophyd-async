@@ -425,6 +425,7 @@ class PvaSignalBackend(SignalBackend[T]):
         self.read_pv = read_pv
         self.write_pv = write_pv
         self.initial_values: Dict[str, Any] = {}
+        self.converter_factory = PvaConverterFactory()
         self.converter: PvaConverter = DisconnectedPvaConverter()
         self.subscription: Optional[Subscription] = None
 

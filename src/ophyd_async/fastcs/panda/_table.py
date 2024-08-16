@@ -55,7 +55,6 @@ SeqTableRowType = np.dtype(
         ("outd2", np.bool_),
         ("oute2", np.bool_),
         ("outf2", np.bool_),
-
     ]
 )
 
@@ -104,8 +103,6 @@ def seq_table_row(
     )
 
 
-
-
 class SeqTable(RootModel, PvaTableAbstraction):
     root: pnd.NpNDArray = Field(
         default_factory=lambda: np.array([], dtype=SeqTableRowType),
@@ -152,9 +149,7 @@ class SeqTable(RootModel, PvaTableAbstraction):
             raise ValueError(f"Length {len(rows)} not in range.")
 
         if not all(isinstance(row, (np.ndarray, np.void)) for row in rows):
-            raise ValueError(
-                "Cannot construct a SeqTable, some rows are not arrays."
-            )
+            raise ValueError("Cannot construct a SeqTable, some rows are not arrays.")
 
         if not all(row.dtype is SeqTableRowType for row in rows):
             raise ValueError(
