@@ -3,7 +3,7 @@ import time
 import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel, Field
-from scanspec.specs import Frames, Path
+from scanspec.specs import Frames, Path, Spec
 from velocity_profile import velocityprofile as vp
 
 from ophyd_async.core import TriggerLogic
@@ -17,8 +17,7 @@ TICK_S = 0.000001
 
 
 class PmacTrajInfo(BaseModel):
-    stack: list[Frames[Motor]] = Field(strict=True)
-    # pmac: Pmac = Field(strict=True)
+    spec: Spec[Motor] = Field()
 
 
 class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
@@ -34,7 +33,7 @@ class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
         for i in range(len("ABCUVWXYZ")):
             self.pmac.use_axis[i + 1].set(False)
 
-        path = Path(value.stack)
+        path = Path(value.spec.calculate())
         chunk = path.consume()
         gaps = self._calculate_gaps(chunk)
         if gaps[0] == 0:
@@ -187,6 +186,9 @@ class PmacTrajectoryTriggerLogic(TriggerLogic[PmacTrajInfo]):
     @AsyncStatus.wrap
     async def kickoff(self):
         self.status = self.pmac.execute_profile.set(1, timeout=self.scantime + 10)
+
+    async def stop(self):
+        await self.pmac.profile_abort.set(1)
 
     @WatchableAsyncStatus.wrap
     async def complete(self):

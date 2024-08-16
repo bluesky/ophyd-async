@@ -1,13 +1,12 @@
 import numpy as np
 import numpy.typing as npt
-from bluesky.protocols import Flyable, Preparable
 
 from ophyd_async.core import DeviceVector, StandardReadable, SubsetEnum
 
 from ..signal.signal import epics_signal_r, epics_signal_rw
 
 
-class Pmac(StandardReadable, Flyable, Preparable):
+class Pmac(StandardReadable):
     """Device that moves a PMAC Motor record"""
 
     def __init__(self, prefix: str, cs="", name="") -> None:
@@ -43,5 +42,6 @@ class Pmac(StandardReadable, Flyable, Preparable):
         self.execute_profile = epics_signal_rw(bool, prefix + ":ProfileExecute")
         self.scan_percent = epics_signal_r(float, prefix + ":TscanPercent_RBV")
         cs_names_enum = SubsetEnum[cs]
+        self.profile_abort = epics_signal_rw(bool, prefix + ":ProfileAbort")
         self.profile_cs_name = epics_signal_rw(cs_names_enum, prefix + ":ProfileCsName")
         self.profile_calc_vel = epics_signal_rw(bool, prefix + ":ProfileCalcVel")
