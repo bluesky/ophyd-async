@@ -118,7 +118,7 @@ class Signal(Device, Generic[T]):
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
         return self._backend.source(self.name)
 
-    __lt__ = __le__ = __eq__ = __ge__ = __gt__ = __ne__ = _fail
+    __lt__ = __le__ = __ge__ = __gt__ = _fail
 
     def __hash__(self):
         # Restore the default implementation so we can use in a set or dict

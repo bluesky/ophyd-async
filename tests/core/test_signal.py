@@ -37,19 +37,17 @@ from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
 
-async def test_signals_equality_raises():
+async def test_signals_comparison():
     s1 = epics_signal_rw(int, "pva://pv1", name="signal")
     s2 = epics_signal_rw(int, "pva://pv2", name="signal")
     await s1.connect(mock=True)
     await s2.connect(mock=True)
 
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "Can't compare two Signals, did you mean await signal.get_value() instead?"
-        ),
-    ):
-        s1 == s2
+    # eq / neq should not raise, this is needed by bluesky plans like trigger_and_read
+    assert s1 == s1
+    assert not (s1 == s2)
+    assert s1 != s2
+
     with pytest.raises(
         TypeError,
         match=re.escape("'>' not supported between instances of 'SignalRW' and 'int'"),
