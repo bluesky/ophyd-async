@@ -20,3 +20,4 @@
   pv_float: 1.234
   pv_int: 1
   pv_str: test_string
+  pv_protocol_device_abstraction: 0

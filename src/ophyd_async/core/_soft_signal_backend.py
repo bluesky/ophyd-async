@@ -128,11 +128,6 @@ class SoftEnumConverter(SoftConverter):
 
 
 class SoftProtocolDatatypeAbstractionConverter(SoftConverter):
-    """
-    No conversion is necessary for ProtocolDatatypeAbstraction datatypes in soft
-    signals.
-    """
-
     def __init__(self, datatype: Type[ProtocolDatatypeAbstraction]):
         self.datatype = datatype
 
@@ -141,7 +136,8 @@ class SoftProtocolDatatypeAbstractionConverter(SoftConverter):
         return super().reading(value, timestamp, severity)
 
     def value(self, value: Any) -> Any:
-        if not issubclass(type(value), ProtocolDatatypeAbstraction):
+        if not isinstance(value, self.datatype):
+            # For the case where we 
             value = self.datatype.convert_from_protocol_datatype(value)
         return value
 
@@ -197,7 +193,6 @@ class SoftSignalBackend(SignalBackend[T]):
         self.datatype = datatype
         self._initial_value = initial_value
         self._metadata = metadata or {}
-        self.converter_factory = SoftSignalConverterFactory
         self.converter: SoftConverter = SoftSignalConverterFactory.make_converter(
             datatype
         )
