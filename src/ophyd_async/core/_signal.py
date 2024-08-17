@@ -45,15 +45,6 @@ def _add_timeout(func):
     return wrapper
 
 
-def _fail(self, other, *args, **kwargs):
-    if isinstance(other, Signal):
-        raise TypeError(
-            "Can't compare two Signals, did you mean await signal.get_value() instead?"
-        )
-    else:
-        return NotImplemented
-
-
 class Signal(Device, Generic[T]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
 
@@ -117,12 +108,6 @@ class Signal(Device, Generic[T]):
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
         return self._backend.source(self.name)
-
-    __lt__ = __le__ = __ge__ = __gt__ = _fail
-
-    def __hash__(self):
-        # Restore the default implementation so we can use in a set or dict
-        return hash(id(self))
 
 
 class _SignalCache(Generic[T]):

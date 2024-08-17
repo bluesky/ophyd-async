@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 import time
 from asyncio import Event
 from unittest.mock import ANY
@@ -35,24 +34,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
-
-
-async def test_signals_comparison():
-    s1 = epics_signal_rw(int, "pva://pv1", name="signal")
-    s2 = epics_signal_rw(int, "pva://pv2", name="signal")
-    await s1.connect(mock=True)
-    await s2.connect(mock=True)
-
-    # eq / neq should not raise, this is needed by bluesky plans like trigger_and_read
-    assert s1 == s1
-    assert not (s1 == s2)
-    assert s1 != s2
-
-    with pytest.raises(
-        TypeError,
-        match=re.escape("'>' not supported between instances of 'SignalRW' and 'int'"),
-    ):
-        s1 > 4
 
 
 async def test_signal_can_be_given_backend_on_connect():
