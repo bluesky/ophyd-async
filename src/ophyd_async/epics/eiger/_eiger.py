@@ -26,6 +26,6 @@ class EigerDetector(StandardDetector):
 
         super().__init__(
             EigerController(self.drv),
-            OdinWriter(path_provider, lambda: "", self.odin),
+            OdinWriter(path_provider, lambda: self.name, self.odin),
             name=name,
         )
