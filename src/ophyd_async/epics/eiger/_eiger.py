@@ -7,8 +7,7 @@ from ._odin_io import Odin, OdinWriter
 
 class EigerDetector(StandardDetector):
     """
-    Ophyd-async implementation of an ADKinetix Detector.
-    https://github.com/NSLS-II/ADKinetix
+    Ophyd-async implementation of an Eiger Detector.
     """
 
     _controller: EigerController

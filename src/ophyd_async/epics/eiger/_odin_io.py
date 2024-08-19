@@ -2,7 +2,8 @@ import asyncio
 from enum import Enum
 from typing import AsyncGenerator, AsyncIterator, Dict
 
-from bluesky.protocols import DataKey, StreamAsset
+from bluesky.protocols import StreamAsset
+from event_model.documents.event_descriptor import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -28,18 +29,7 @@ class Writing(str, Enum):
 class OdinNode(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.writing = epics_signal_r(Writing, f"{prefix}HDF:Writing")
-
-        # Cannot find:
-        # FPClearErrors
-        # FPErrorState_RBV
-        # FPErrorMessage_RBV
-
-        self.connected = epics_signal_r(
-            bool, f"{prefix}Connected"
-        )  # Assuming this is both FPProcessConnected_RBV and FRProcessConnected_RBV
-
-        # Usually assert that FramesTimedOut_RBV and FramesDropped_RBV are 0
-        # , do these exist or do we want to assert something else?
+        self.connected = epics_signal_r(bool, f"{prefix}Connected")
 
         super().__init__(name)
 
@@ -90,27 +80,29 @@ class OdinWriter(DetectorWriter):
         await asyncio.gather(
             self._drv.file_path.set(str(info.directory_path)),
             self._drv.file_name.set(info.filename),
-            self._drv.data_type.set("uint16"),  # TODO: get from eiger
+            self._drv.data_type.set(
+                "uint16"
+            ),  # TODO: Get from eiger https://github.com/bluesky/ophyd-async/issues/529
+            # TODO: Where should I actually be setting this
+            # The arm of the detector controller? This then breaks the seperation
             self._drv.num_to_capture.set(1),
         )
-
-        # await wait_for_value(self._drv.acquisition_id, info.filename, DEFAULT_TIMEOUT)
 
         await self._drv.capture.set(Writing.ON)
 
         return await self._describe()
 
     async def _describe(self) -> Dict[str, DataKey]:
-        """
-        Return a describe based on the datasets PV
-        """
-        # TODO: fill this in properly
+        data_shape = await asyncio.gather(
+            self._drv.image_height.get_value(), self._drv.image_width.get_value()
+        )
+
         return {
             "data": DataKey(
-                source="",
-                shape=[],
-                dtype="number",
-                dtype_numpy="<f8",
+                source=self._drv.file_name.source,
+                shape=data_shape,
+                dtype="array",
+                dtype_numpy="<u2",  # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
                 external="STREAM:",
             )
         }
@@ -125,8 +117,8 @@ class OdinWriter(DetectorWriter):
         return await self._drv.num_captured.get_value()
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
-        # TODO
-        pass
+        # TODO: Correctly return stream https://github.com/bluesky/ophyd-async/issues/530
+        raise NotImplementedError()
 
     async def close(self) -> None:
         await self._drv.capture.set(Writing.OFF)

@@ -39,7 +39,7 @@ class EigerDriverIO(Device):
         self.num_images = epics_signal_rw_rbv(int, f"{prefix}Nimages")
         self.num_triggers = epics_signal_rw_rbv(int, f"{prefix}Ntrigger")
 
-        # Ideally this will be a EigerTriggerMode, see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
+        # TODO: Should be EigerTriggerMode enum, see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
         self.trigger_mode = epics_signal_rw_rbv(str, f"{prefix}TriggerMode")
 
         self.arm = epics_signal_w(int, f"{prefix}Arm")
