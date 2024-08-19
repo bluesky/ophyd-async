@@ -1,9 +1,32 @@
-from bluesky.run_engine import RunEngine
+from ophyd_async.core import PathProvider, StandardDetector
 
-from ophyd_async.core import DeviceCollector
-from ophyd_async.epics.eiger._eiger_io import EigerDriverIO
+from ._eiger_controller import EigerController
+from ._eiger_io import EigerDriverIO
+from ._odin_io import Odin, OdinWriter
 
-RE = RunEngine()
 
-with DeviceCollector():
-    driver = EigerDriverIO("EIGER-455:")
+class EigerDetector(StandardDetector):
+    """
+    Ophyd-async implementation of an ADKinetix Detector.
+    https://github.com/NSLS-II/ADKinetix
+    """
+
+    _controller: EigerController
+    _writer: Odin
+
+    def __init__(
+        self,
+        prefix: str,
+        path_provider: PathProvider,
+        drv_suffix="-EA-EIGER-01:",
+        hdf_suffix="-EA-ODIN-01:",
+        name="",
+    ):
+        self.drv = EigerDriverIO(prefix + drv_suffix)
+        self.odin = Odin(prefix + hdf_suffix + "FP:")
+
+        super().__init__(
+            EigerController(self.drv),
+            OdinWriter(path_provider, lambda: "", self.odin),
+            name=name,
+        )
