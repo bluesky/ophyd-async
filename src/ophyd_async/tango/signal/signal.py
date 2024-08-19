@@ -138,11 +138,15 @@ def tango_signal_x(
 
 # --------------------------------------------------------------------
 def tango_signal_auto(
-    datatype: Type[T], full_trl: str, device_proxy: Optional[DeviceProxy] = None
+    datatype: Type[T],
+    trl: str,
+    device_proxy: Optional[DeviceProxy] = None,
+    timeout: float = DEFAULT_TIMEOUT,
+    name: str = "",
 ) -> Union[SignalW, SignalX, SignalR, SignalRW]:
-    device_trl, tr_name = full_trl.rsplit("/", 1)
+    device_trl, tr_name = trl.rsplit("/", 1)
     syn_proxy = SyncDeviceProxy(device_trl)
-    backend = _make_backend(datatype, full_trl, full_trl, device_proxy)
+    backend = _make_backend(datatype, trl, trl, device_proxy)
 
     if tr_name not in syn_proxy.get_attribute_list():
         if tr_name not in syn_proxy.get_command_list():
@@ -151,18 +155,18 @@ def tango_signal_auto(
     if tr_name in syn_proxy.get_attribute_list():
         config = syn_proxy.get_attribute_config(tr_name)
         if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
-            return SignalRW(backend)
+            return SignalRW(backend, timeout=timeout, name=name)
         elif config.writable == AttrWriteType.READ:
-            return SignalR(backend)
+            return SignalR(backend, timeout=timeout, name=name)
         else:
-            return SignalW(backend)
+            return SignalW(backend, timeout=timeout, name=name)
 
     if tr_name in syn_proxy.get_command_list():
         config = syn_proxy.get_command_config(tr_name)
         if config.in_type == CmdArgType.DevVoid:
-            return SignalX(backend)
+            return SignalX(backend, timeout=timeout, name=name)
         elif config.out_type != CmdArgType.DevVoid:
-            return SignalRW(backend)
+            return SignalRW(backend, timeout=timeout, name=name)
 
     if tr_name in device_proxy.get_pipe_list():
         raise NotImplementedError("Pipes are not supported")
