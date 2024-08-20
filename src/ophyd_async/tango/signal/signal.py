@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from enum import Enum, IntEnum
 from typing import Optional, Type, Union
 
+import numpy.typing as npt
+
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, SignalW, SignalX, T
-from ophyd_async.tango._backend import TangoTransport
-from tango import AttrWriteType, CmdArgType
+from ophyd_async.tango._backend._tango_transport import TangoTransport, get_python_type
+from tango import AttrDataFormat, AttrWriteType, CmdArgType, DevState
 from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy
 
@@ -138,7 +141,8 @@ def tango_signal_x(
 
 # --------------------------------------------------------------------
 def tango_signal_auto(
-    datatype: Type[T],
+    datatype: Optional[Type[T]] = None,
+    *,
     trl: str,
     device_proxy: Optional[DeviceProxy] = None,
     timeout: float = DEFAULT_TIMEOUT,
@@ -146,6 +150,10 @@ def tango_signal_auto(
 ) -> Union[SignalW, SignalX, SignalR, SignalRW]:
     device_trl, tr_name = trl.rsplit("/", 1)
     syn_proxy = SyncDeviceProxy(device_trl)
+
+    if datatype is None:
+        datatype = infer_python_type(trl)
+
     backend = _make_backend(datatype, trl, trl, device_proxy)
 
     if tr_name not in syn_proxy.get_attribute_list():
@@ -170,3 +178,28 @@ def tango_signal_auto(
 
     if tr_name in device_proxy.get_pipe_list():
         raise NotImplementedError("Pipes are not supported")
+
+
+# --------------------------------------------------------------------
+def infer_python_type(trl: str):
+    device_trl, tr_name = trl.rsplit("/", 1)
+    syn_proxy = SyncDeviceProxy(device_trl)
+
+    if tr_name in syn_proxy.get_command_list():
+        config = syn_proxy.get_command_config(tr_name)
+        isarray, py_type, _ = get_python_type(config.in_type)
+    elif tr_name in syn_proxy.get_attribute_list():
+        config = syn_proxy.get_attribute_config(tr_name)
+        isarray, py_type, _ = get_python_type(config.data_type)
+        if py_type is Enum:
+            enum_dict = {label: i for i, label in enumerate(config.enum_labels)}
+            py_type = IntEnum("TangoEnum", enum_dict)
+        if config.data_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
+            isarray = True
+    else:
+        raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
+
+    if py_type is CmdArgType.DevState:
+        py_type = DevState
+
+    return npt.NDArray[py_type] if isarray else py_type
