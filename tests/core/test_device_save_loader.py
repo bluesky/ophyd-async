@@ -8,6 +8,7 @@ import numpy.typing as npt
 import pytest
 import yaml
 from bluesky.run_engine import RunEngine
+from pydantic import BaseModel, Field
 
 from ophyd_async.core import (
     Device,
@@ -22,7 +23,6 @@ from ophyd_async.core import (
     set_signal_values,
     walk_rw_signals,
 )
-from ophyd_async.core._signal_backend import ProtocolDatatypeAbstraction
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
@@ -55,16 +55,8 @@ class MyEnum(str, Enum):
     three = "three"
 
 
-class SomeProtocolDatatypeAbstraction(ProtocolDatatypeAbstraction):
-    def __init__(self, value: int):
-        self.value = value
-
-    def convert_to_protocol_datatype(self) -> int:    
-        return self.value - 1
-    
-    @classmethod
-    def convert_from_protocol_datatype(cls, value: int) -> "SomeProtocolDatatypeAbstraction":
-        return cls(value + 1)
+class SomePvaPydanticModel(BaseModel):
+    some_field: int = Field(default=1)
 
 
 class DummyDeviceGroupAllTypes(Device):
@@ -86,7 +78,9 @@ class DummyDeviceGroupAllTypes(Device):
         self.pv_array_float64 = epics_signal_rw(npt.NDArray[np.float64], "PV14")
         self.pv_array_npstr = epics_signal_rw(npt.NDArray[np.str_], "PV15")
         self.pv_array_str = epics_signal_rw(Sequence[str], "PV16")
-        self.pv_protocol_device_abstraction = epics_signal_rw(SomeProtocolDatatypeAbstraction, "PV17")
+        self.pv_protocol_device_abstraction = epics_signal_rw(
+            SomePvaPydanticModel, "pva://PV17"
+        )
 
 
 @pytest.fixture
@@ -170,7 +164,7 @@ async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
         ["one", "two", "three"],
     )
     await device_all_types.pv_protocol_device_abstraction.set(
-        SomeProtocolDatatypeAbstraction(1)
+        SomePvaPydanticModel(some_field=1)
     )
 
     # Create save plan from utility functions

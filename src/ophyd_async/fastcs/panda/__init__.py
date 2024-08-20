@@ -15,9 +15,7 @@ from ._table import (
     DatasetTable,
     PandaHdf5DatasetType,
     SeqTable,
-    SeqTableRowType,
     SeqTrigger,
-    seq_table_row,
 )
 from ._trigger import (
     PcompInfo,
@@ -44,9 +42,7 @@ __all__ = [
     "DatasetTable",
     "PandaHdf5DatasetType",
     "SeqTable",
-    "SeqTableRowType",
     "SeqTrigger",
-    "seq_table_row",
     "PcompInfo",
     "SeqTableInfo",
     "StaticPcompTriggerLogic",

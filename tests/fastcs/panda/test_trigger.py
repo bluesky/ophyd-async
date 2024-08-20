@@ -12,7 +12,6 @@ from ophyd_async.fastcs.panda import (
     SeqTableInfo,
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
-    seq_table_row,
 )
 
 
@@ -38,13 +37,11 @@ async def mock_panda():
 
 async def test_seq_table_trigger_logic(mock_panda):
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    seq_table = SeqTable(
-        [
-            seq_table_row(outa1=True, outa2=True),
-            seq_table_row(outa1=False, outa2=False),
-            seq_table_row(outa1=True, outa2=False),
-            seq_table_row(outa1=False, outa2=True),
-        ]
+    seq_table = (
+        SeqTable.row(outa1=True, outa2=True)
+        + SeqTable.row(outa1=False, outa2=False)
+        + SeqTable.row(outa1=True, outa2=False)
+        + SeqTable.row(outa1=False, outa2=True)
     )
     seq_table_info = SeqTableInfo(sequence_table=seq_table, repeats=1)
 
@@ -81,7 +78,7 @@ async def test_pcomp_trigger_logic(mock_panda):
     [
         (
             {
-                "sequence_table": SeqTable([seq_table_row(outc2=1)]),
+                "sequence_table_factory": lambda: SeqTable.row(outc2=1),
                 "repeats": 0,
                 "prescale_as_us": -1,
             },
@@ -90,13 +87,11 @@ async def test_pcomp_trigger_logic(mock_panda):
         ),
         (
             {
-                "sequence_table": SeqTable(
-                    [
-                        seq_table_row(outc2=True),
-                        seq_table_row(outc2=False),
-                        seq_table_row(outc2=True),
-                        seq_table_row(outc2=False),
-                    ]
+                "sequence_table_factory": lambda: (
+                    SeqTable.row(outc2=True)
+                    + SeqTable.row(outc2=False)
+                    + SeqTable.row(outc2=True)
+                    + SeqTable.row(outc2=False)
                 ),
                 "repeats": -1,
             },
@@ -105,15 +100,16 @@ async def test_pcomp_trigger_logic(mock_panda):
         ),
         (
             {
-                "sequence_table": 1,
+                "sequence_table_factory": lambda: 1,
                 "repeats": 1,
             },
-            "Assertion failed, Rows must be a list or numpy array. "
-            "[type=assertion_error, input_value=1, input_type=int]",
+            "Input should be a valid dictionary or instance of SeqTable "
+            "[type=model_type, input_value=1, input_type=int]",
         ),
     ],
 )
 def test_malformed_seq_table_info(kwargs, error_msg):
+    kwargs["sequence_table"] = kwargs.pop("sequence_table_factory")()
     with pytest.raises(ValidationError) as exc:
         SeqTableInfo(**kwargs)
     assert error_msg in str(exc.value)

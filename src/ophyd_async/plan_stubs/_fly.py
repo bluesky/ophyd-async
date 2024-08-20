@@ -15,7 +15,6 @@ from ophyd_async.fastcs.panda import (
     PcompInfo,
     SeqTable,
     SeqTableInfo,
-    seq_table_row,
 )
 
 
@@ -73,26 +72,26 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     trigger_time = number_of_frames * (exposure + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
 
-    table = SeqTable(
-        [
-            # Wait for pre-delay then open shutter
-            seq_table_row(
-                time1=in_micros(pre_delay),
-                time2=in_micros(shutter_time),
-                outa2=True,
-            ),
-            # Keeping shutter open, do N triggers
-            seq_table_row(
-                repeats=number_of_frames,
-                time1=in_micros(exposure),
-                outa1=True,
-                outb1=True,
-                time2=in_micros(deadtime),
-                outa2=True,
-            ),
-            # Add the shutter close
-            seq_table_row(time2=in_micros(shutter_time)),
-        ]
+    table = (
+        # Wait for pre-delay then open shutter
+        SeqTable.row(
+            time1=in_micros(pre_delay),
+            time2=in_micros(shutter_time),
+            outa2=True,
+        )
+        +
+        # Keeping shutter open, do N triggers
+        SeqTable.row(
+            repeats=number_of_frames,
+            time1=in_micros(exposure),
+            outa1=True,
+            outb1=True,
+            time2=in_micros(deadtime),
+            outa2=True,
+        )
+        +
+        # Add the shutter close
+        SeqTable.row(time2=in_micros(shutter_time))
     )
 
     table_info = SeqTableInfo(sequence_table=table, repeats=repeats)

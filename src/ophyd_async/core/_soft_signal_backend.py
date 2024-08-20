@@ -8,11 +8,11 @@ from typing import Any, Dict, Generic, Optional, Tuple, Type, Union, cast, get_o
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
+from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 from ._signal_backend import (
     BackendConverterFactory,
-    ProtocolDatatypeAbstraction,
     RuntimeSubsetEnum,
     SignalBackend,
 )
@@ -127,8 +127,10 @@ class SoftEnumConverter(SoftConverter):
         return cast(T, self.choices[0])
 
 
-class SoftProtocolDatatypeAbstractionConverter(SoftConverter):
-    def __init__(self, datatype: Type[ProtocolDatatypeAbstraction]):
+class SoftPydanticModelConverter(SoftConverter):
+    """Necessary for serializing soft signals."""
+
+    def __init__(self, datatype: Type[BaseModel]):
         self.datatype = datatype
 
     def reading(self, value: T, timestamp: float, severity: int) -> Reading:
@@ -136,12 +138,16 @@ class SoftProtocolDatatypeAbstractionConverter(SoftConverter):
         return super().reading(value, timestamp, severity)
 
     def value(self, value: Any) -> Any:
-        if not isinstance(value, self.datatype):
-            # For the case where we 
-            value = self.datatype.convert_from_protocol_datatype(value)
+        if isinstance(value, dict):
+            value = self.datatype(**value)
         return value
 
     def write_value(self, value):
+        if isinstance(value, dict):
+            # If the device is being deserialized
+            return self.datatype(**value).model_dump(mode="python")
+        if isinstance(value, self.datatype):
+            return value.model_dump(mode="python")
         return value
 
     def make_initial_value(self, datatype: Type | None) -> Any:
@@ -162,16 +168,16 @@ class SoftSignalConverterFactory(BackendConverterFactory):
         is_enum = inspect.isclass(datatype) and (
             issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
         )
-        is_convertable_abstract_datatype = inspect.isclass(datatype) and issubclass(
-            datatype, ProtocolDatatypeAbstraction
+        is_pydantic_model = inspect.isclass(datatype) and issubclass(
+            datatype, BaseModel
         )
 
         if is_array or is_sequence:
             return SoftArrayConverter()
         if is_enum:
             return SoftEnumConverter(datatype)
-        if is_convertable_abstract_datatype:
-            return SoftProtocolDatatypeAbstractionConverter(datatype)
+        if is_pydantic_model:
+            return SoftPydanticModelConverter(datatype)
 
         return SoftConverter()
 

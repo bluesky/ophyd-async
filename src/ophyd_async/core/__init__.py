@@ -63,7 +63,6 @@ from ._signal import (
 )
 from ._signal_backend import (
     BackendConverterFactory,
-    ProtocolDatatypeAbstraction,
     RuntimeSubsetEnum,
     SignalBackend,
     SubsetEnum,
@@ -124,7 +123,6 @@ __all__ = [
     "NameProvider",
     "PathInfo",
     "PathProvider",
-    "ProtocolDatatypeAbstraction",
     "ShapeProvider",
     "StaticFilenameProvider",
     "StaticPathProvider",

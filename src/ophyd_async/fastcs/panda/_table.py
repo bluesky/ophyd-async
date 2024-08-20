@@ -1,13 +1,13 @@
 from enum import Enum
-from typing import Dict, Sequence, Union
+from typing import Annotated, Sequence
 
 import numpy as np
 import numpy.typing as npt
-import pydantic_numpy as pnd
-from pydantic import Field, RootModel, field_validator
+from pydantic import Field
+from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from typing_extensions import TypedDict
 
-from ophyd_async.epics.signal import PvaTableAbstraction
+from ophyd_async.epics.signal import PvaTable
 
 
 class PandaHdf5DatasetType(str, Enum):
@@ -36,124 +36,119 @@ class SeqTrigger(str, Enum):
     POSC_LT = "POSC<=POSITION"
 
 
-SeqTableRowType = np.dtype(
-    [
-        ("repeats", np.int32),
-        ("trigger", "U14"),  # One of the SeqTrigger values
-        ("position", np.int32),
-        ("time1", np.int32),
-        ("outa1", np.bool_),
-        ("outb1", np.bool_),
-        ("outc1", np.bool_),
-        ("outd1", np.bool_),
-        ("oute1", np.bool_),
-        ("outf1", np.bool_),
-        ("time2", np.int32),
-        ("outa2", np.bool_),
-        ("outb2", np.bool_),
-        ("outc2", np.bool_),
-        ("outd2", np.bool_),
-        ("oute2", np.bool_),
-        ("outf2", np.bool_),
-    ]
-)
+PydanticNp1DArrayInt32 = Annotated[
+    np.ndarray[tuple[int], np.int32],
+    NpArrayPydanticAnnotation.factory(
+        data_type=np.int32, dimensions=1, strict_data_typing=False
+    ),
+]
+PydanticNp1DArrayBool = Annotated[
+    np.ndarray[tuple[int], np.bool_],
+    NpArrayPydanticAnnotation.factory(
+        data_type=np.bool_, dimensions=1, strict_data_typing=False
+    ),
+]
+
+PydanticNp1DArrayUnicodeString = Annotated[
+    np.ndarray[tuple[int], np.unicode_],
+    NpArrayPydanticAnnotation.factory(
+        data_type=np.unicode_, dimensions=1, strict_data_typing=False
+    ),
+]
 
 
-def seq_table_row(
-    *,
-    repeats: int = 0,
-    trigger: str = "",
-    position: int = 0,
-    time1: int = 0,
-    outa1: bool = False,
-    outb1: bool = False,
-    outc1: bool = False,
-    outd1: bool = False,
-    oute1: bool = False,
-    outf1: bool = False,
-    time2: int = 0,
-    outa2: bool = False,
-    outb2: bool = False,
-    outc2: bool = False,
-    outd2: bool = False,
-    oute2: bool = False,
-    outf2: bool = False,
-) -> pnd.NpNDArray:
-    return np.array(
-        (
-            repeats,
-            trigger,
-            position,
-            time1,
-            outa1,
-            outb1,
-            outc1,
-            outd1,
-            oute1,
-            outf1,
-            time2,
-            outa2,
-            outb2,
-            outc2,
-            outd2,
-            oute2,
-            outf2,
-        ),
-        dtype=SeqTableRowType,
+class SeqTable(PvaTable):
+    repeats: PydanticNp1DArrayInt32 = Field(
+        default_factory=lambda: np.array([], np.int32)
     )
-
-
-class SeqTable(RootModel, PvaTableAbstraction):
-    root: pnd.NpNDArray = Field(
-        default_factory=lambda: np.array([], dtype=SeqTableRowType),
+    trigger: PydanticNp1DArrayUnicodeString = Field(
+        default_factory=lambda: np.array([], dtype=np.dtype("<U32"))
     )
-
-    def convert_to_protocol_datatype(self) -> Dict[str, npt.ArrayLike]:
-        """Convert root to the column-wise dict representation for backend put"""
-
-        if len(self.root) == 0:
-            transposed = {  # list with empty arrays, each with correct dtype
-                name: np.array([], dtype=dtype) for name, dtype in SeqTableRowType.descr
-            }
-        else:
-            transposed_list = list(zip(*list(self.root)))
-            transposed = {
-                name: np.array(col, dtype=dtype)
-                for col, (name, dtype) in zip(transposed_list, SeqTableRowType.descr)
-            }
-        return transposed
+    position: PydanticNp1DArrayInt32 = Field(
+        default_factory=lambda: np.array([], dtype=np.int32)
+    )
+    time1: PydanticNp1DArrayInt32 = Field(
+        default_factory=lambda: np.array([], dtype=np.int32)
+    )
+    outa1: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outb1: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outc1: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outd1: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    oute1: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outf1: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    time2: PydanticNp1DArrayInt32 = Field(
+        default_factory=lambda: np.array([], dtype=np.int32)
+    )
+    outa2: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outb2: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outc2: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outd2: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    oute2: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
+    outf2: PydanticNp1DArrayBool = Field(
+        default_factory=lambda: np.array([], dtype=np.bool_)
+    )
 
     @classmethod
-    def convert_from_protocol_datatype(
-        cls, pva_table: Dict[str, npt.ArrayLike]
+    def row(
+        cls,
+        *,
+        repeats: int = 0,
+        trigger: str = "",
+        position: int = 0,
+        time1: int = 0,
+        outa1: bool = False,
+        outb1: bool = False,
+        outc1: bool = False,
+        outd1: bool = False,
+        oute1: bool = False,
+        outf1: bool = False,
+        time2: int = 0,
+        outa2: bool = False,
+        outb2: bool = False,
+        outc2: bool = False,
+        outd2: bool = False,
+        oute2: bool = False,
+        outf2: bool = False,
     ) -> "SeqTable":
-        """Convert a pva table to a row-wise SeqTable."""
-
-        ordered_columns = [
-            np.array(pva_table[name], dtype=dtype)
-            for name, dtype in SeqTableRowType.descr
-        ]
-
-        transposed = list(zip(*ordered_columns))
-        rows = np.array([tuple(row) for row in transposed], dtype=SeqTableRowType)
-        return cls(rows)
-
-    @field_validator("root", mode="before")
-    @classmethod
-    def check_valid_rows(cls, rows: Union[Sequence, np.ndarray]):
-        assert isinstance(
-            rows, (np.ndarray, list)
-        ), "Rows must be a list or numpy array."
-
-        if not (0 <= len(rows) < 4096):
-            raise ValueError(f"Length {len(rows)} not in range.")
-
-        if not all(isinstance(row, (np.ndarray, np.void)) for row in rows):
-            raise ValueError("Cannot construct a SeqTable, some rows are not arrays.")
-
-        if not all(row.dtype is SeqTableRowType for row in rows):
-            raise ValueError(
-                "Cannot construct a SeqTable, some rows have incorrect types."
-            )
-
-        return np.array(rows, dtype=SeqTableRowType)
+        return PvaTable.row(
+            cls,
+            repeats=repeats,
+            trigger=trigger,
+            position=position,
+            time1=time1,
+            outa1=outa1,
+            outb1=outb1,
+            outc1=outc1,
+            outd1=outd1,
+            oute1=oute1,
+            outf1=outf1,
+            time2=time2,
+            outa2=outa2,
+            outb2=outb2,
+            outc2=outc2,
+            outd2=outd2,
+            oute2=oute2,
+            outf2=outf2,
+        )

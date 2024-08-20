@@ -1,57 +1,86 @@
+from functools import reduce
+
 import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from ophyd_async.fastcs.panda import SeqTable, SeqTableRowType, seq_table_row
+from ophyd_async.fastcs.panda import SeqTable
 
 
-@pytest.mark.parametrize(
-    # factory so that there aren't global errors if seq_table_row() fails
-    "rows_arg_factory",
-    [
-        lambda: None,
-        list,
-        lambda: [seq_table_row(), seq_table_row()],
-        lambda: np.array([seq_table_row(), seq_table_row()]),
-    ],
-)
-def test_seq_table_initialization_allowed_args(rows_arg_factory):
-    rows_arg = rows_arg_factory()
-    seq_table = SeqTable() if rows_arg is None else SeqTable(rows_arg)
-    assert isinstance(seq_table.root, np.ndarray)
-    assert len(seq_table.root) == (0 if rows_arg is None else len(rows_arg))
+def test_seq_table_converts_lists():
+    seq_table_dict_with_lists = {field_name: [] for field_name, _ in SeqTable()}
+    # Validation passes
+    seq_table = SeqTable(**seq_table_dict_with_lists)
+    assert isinstance(seq_table.trigger, np.ndarray)
+    assert seq_table.trigger.dtype == np.dtype("U32")
 
 
 def test_seq_table_validation_errors():
-    with pytest.raises(
-        ValueError, match="Cannot construct a SeqTable, some rows are not arrays."
-    ):
-        SeqTable([seq_table_row().tolist()])
-    with pytest.raises(ValidationError, match="Length 4098 not in range."):
-        SeqTable([seq_table_row() for _ in range(4098)])
-    with pytest.raises(
-        ValidationError,
-        match="Cannot construct a SeqTable, some rows have incorrect types.",
-    ):
-        SeqTable([seq_table_row(), np.array([1, 2, 3]), seq_table_row()])
-    with pytest.raises(
-        ValidationError,
-        match="Cannot construct a SeqTable, some rows have incorrect types.",
-    ):
+    with pytest.raises(ValidationError, match="81 validation errors for SeqTable"):
         SeqTable(
-            [
-                seq_table_row(),
-                np.array(range(len(seq_table_row().tolist()))),
-                seq_table_row(),
-            ]
+            repeats=0,
+            trigger="",
+            position=0,
+            time1=0,
+            outa1=False,
+            outb1=False,
+            outc1=False,
+            outd1=False,
+            oute1=False,
+            outf1=False,
+            time2=0,
+            outa2=False,
+            outb2=False,
+            outc2=False,
+            outd2=False,
+            oute2=False,
+            outf2=False,
         )
+
+    large_seq_table = SeqTable(
+        repeats=np.zeros(4095, dtype=np.int32),
+        trigger=np.array([""] * 4095, dtype="U32"),
+        position=np.zeros(4095, dtype=np.int32),
+        time1=np.zeros(4095, dtype=np.int32),
+        outa1=np.zeros(4095, dtype=np.bool_),
+        outb1=np.zeros(4095, dtype=np.bool_),
+        outc1=np.zeros(4095, dtype=np.bool_),
+        outd1=np.zeros(4095, dtype=np.bool_),
+        oute1=np.zeros(4095, dtype=np.bool_),
+        outf1=np.zeros(4095, dtype=np.bool_),
+        time2=np.zeros(4095, dtype=np.int32),
+        outa2=np.zeros(4095, dtype=np.bool_),
+        outb2=np.zeros(4095, dtype=np.bool_),
+        outc2=np.zeros(4095, dtype=np.bool_),
+        outd2=np.zeros(4095, dtype=np.bool_),
+        oute2=np.zeros(4095, dtype=np.bool_),
+        outf2=np.zeros(4095, dtype=np.bool_),
+    )
+    with pytest.raises(
+        ValidationError,
+        match=(
+            "1 validation error for SeqTable\n  "
+            "Assertion failed, Length 4096 not in range."
+        ),
+    ):
+        large_seq_table + SeqTable.row()
+    with pytest.raises(
+        ValidationError,
+        match="12 validation errors for SeqTable",
+    ):
+        row_one = SeqTable.row()
+        wrong_types = {
+            field_name: field_value.astype(np.unicode_)
+            for field_name, field_value in row_one
+        }
+        SeqTable(**wrong_types)
 
 
 def test_seq_table_pva_conversion():
     expected_pva_dict = {
         "repeats": np.array([1, 2, 3, 4], dtype=np.int32),
         "trigger": np.array(
-            ["Immediate", "Immediate", "BITC=0", "Immediate"], dtype="U14"
+            ["Immediate", "Immediate", "BITC=0", "Immediate"], dtype=np.dtype("U32")
         ),
         "position": np.array([1, 2, 3, 4], dtype=np.int32),
         "time1": np.array([1, 0, 1, 0], dtype=np.int32),
@@ -69,51 +98,102 @@ def test_seq_table_pva_conversion():
         "oute2": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outf2": np.array([1, 0, 1, 0], dtype=np.bool_),
     }
-    expected_numpy_table = np.array(
-        [
-            (1, "Immediate", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-            (2, "Immediate", 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0),
-            (3, "BITC=0", 3, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1),
-            (4, "Immediate", 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0),
-        ],
-        dtype=SeqTableRowType,
-    )
+    expected_row_wise_dict = [
+        {
+            "repeats": 1,
+            "trigger": "Immediate",
+            "position": 1,
+            "time1": 1,
+            "outa1": 1,
+            "outb1": 1,
+            "outc1": 1,
+            "outd1": 1,
+            "oute1": 1,
+            "outf1": 1,
+            "time2": 1,
+            "outa2": 1,
+            "outb2": 1,
+            "outc2": 1,
+            "outd2": 1,
+            "oute2": 1,
+            "outf2": 1,
+        },
+        {
+            "repeats": 2,
+            "trigger": "Immediate",
+            "position": 2,
+            "time1": 0,
+            "outa1": 0,
+            "outb1": 0,
+            "outc1": 0,
+            "outd1": 0,
+            "oute1": 0,
+            "outf1": 0,
+            "time2": 2,
+            "outa2": 0,
+            "outb2": 0,
+            "outc2": 0,
+            "outd2": 0,
+            "oute2": 0,
+            "outf2": 0,
+        },
+        {
+            "repeats": 3,
+            "trigger": "BITC=0",
+            "position": 3,
+            "time1": 1,
+            "outa1": 1,
+            "outb1": 1,
+            "outc1": 1,
+            "outd1": 1,
+            "oute1": 1,
+            "outf1": 1,
+            "time2": 3,
+            "outa2": 1,
+            "outb2": 1,
+            "outc2": 1,
+            "outd2": 1,
+            "oute2": 1,
+            "outf2": 1,
+        },
+        {
+            "repeats": 4,
+            "trigger": "Immediate",
+            "position": 4,
+            "time1": 0,
+            "outa1": 0,
+            "outb1": 0,
+            "outc1": 0,
+            "outd1": 0,
+            "oute1": 0,
+            "outf1": 0,
+            "time2": 4,
+            "outa2": 0,
+            "outb2": 0,
+            "outc2": 0,
+            "outd2": 0,
+            "oute2": 0,
+            "outf2": 0,
+        },
+    ]
 
-    # Can convert from PVA table
-    numpy_table_from_pva_dict = SeqTable.convert_from_protocol_datatype(
-        expected_pva_dict
-    )
-    assert np.array_equal(numpy_table_from_pva_dict.root, expected_numpy_table)
-    assert (
-        numpy_table_from_pva_dict.root.dtype
-        == expected_numpy_table.dtype
-        == SeqTableRowType
-    )
-
-    # Can convert to PVA table
-    pva_dict_from_numpy_table = SeqTable(
-        expected_numpy_table
-    ).convert_to_protocol_datatype()
-    for column1, column2 in zip(
-        pva_dict_from_numpy_table.values(), expected_pva_dict.values()
+    seq_table_from_pva_dict = SeqTable(**expected_pva_dict)
+    for (_, column1), column2 in zip(
+        seq_table_from_pva_dict, expected_pva_dict.values()
     ):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype
 
-    # Idempotency
-    applied_twice_to_numpy_table = SeqTable.convert_from_protocol_datatype(
-        SeqTable(expected_numpy_table).convert_to_protocol_datatype()
+    seq_table_from_rows = reduce(
+        lambda x, y: x + y,
+        [SeqTable.row(**row_kwargs) for row_kwargs in expected_row_wise_dict],
     )
-    assert np.array_equal(applied_twice_to_numpy_table.root, expected_numpy_table)
-    assert (
-        applied_twice_to_numpy_table.root.dtype
-        == expected_numpy_table.dtype
-        == SeqTableRowType
-    )
+    for (_, column1), column2 in zip(seq_table_from_rows, expected_pva_dict.values()):
+        assert np.array_equal(column1, column2)
+        assert column1.dtype == column2.dtype
 
-    applied_twice_to_pva_dict = SeqTable(
-        SeqTable.convert_from_protocol_datatype(expected_pva_dict).root
-    ).convert_to_protocol_datatype()
+    # Idempotency
+    applied_twice_to_pva_dict = SeqTable(**expected_pva_dict).model_dump(mode="python")
     for column1, column2 in zip(
         applied_twice_to_pva_dict.values(), expected_pva_dict.values()
     ):

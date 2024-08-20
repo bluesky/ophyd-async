@@ -1,4 +1,3 @@
-
 import numpy as np
 from bluesky import RunEngine
 
@@ -10,7 +9,6 @@ from ophyd_async.fastcs.panda import (
     DataBlock,
     SeqTable,
     phase_sorter,
-    seq_table_row,
 )
 
 
@@ -36,27 +34,25 @@ async def get_mock_panda():
 
 async def test_save_load_panda(tmp_path, RE: RunEngine):
     mock_panda1 = await get_mock_panda()
-    await mock_panda1.seq[1].table.set(SeqTable([seq_table_row(repeats=1)]))
+    await mock_panda1.seq[1].table.set(SeqTable.row(repeats=1))
 
     RE(save_device(mock_panda1, str(tmp_path / "panda.yaml"), sorter=phase_sorter))
 
     def check_equal_with_seq_tables(actual, expected):
-        assert set(actual.keys()) == set(expected.keys())
-        for key, value1 in actual.items():
-            value2 = expected[key]
-            if isinstance(value1, SeqTable):
-                assert np.array_equal(value1.root, value2.root)
-            else:
-                assert value1 == value2
+        assert actual.model_fields_set == expected.model_fields_set
+        for field_name, field_value1 in actual:
+            field_value2 = getattr(expected, field_name)
+            assert np.array_equal(field_value1, field_value2)
 
     mock_panda2 = await get_mock_panda()
-    assert np.array_equal(
-        (await mock_panda2.seq[1].table.get_value()).root, SeqTable([]).root
+    check_equal_with_seq_tables(
+        (await mock_panda2.seq[1].table.get_value()), SeqTable()
     )
     RE(load_device(mock_panda2, str(tmp_path / "panda.yaml")))
-    assert np.array_equal(
-        (await mock_panda2.seq[1].table.get_value()).root,
-        SeqTable([seq_table_row(repeats=1)]).root,
+
+    check_equal_with_seq_tables(
+        await mock_panda2.seq[1].table.get_value(),
+        SeqTable.row(repeats=1),
     )
 
     """
