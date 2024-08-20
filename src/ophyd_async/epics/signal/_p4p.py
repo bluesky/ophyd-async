@@ -64,7 +64,7 @@ def _data_key_from_value(
     *,
     shape: Optional[list[int]] = None,
     choices: Optional[list[str]] = None,
-    dtype: Optional[str] = None,
+    dtype: Optional[Dtype] = None,
 ) -> DataKey:
     """
     Args:
@@ -85,7 +85,7 @@ def _data_key_from_value(
         if isinstance(type_code, tuple):
             dtype_numpy = ""
             if type_code[1] == "enum_t":
-                if dtype == "bool":
+                if dtype == "boolean":
                     dtype_numpy = "<i2"
                 else:
                     for item in type_code[2]:
@@ -241,7 +241,7 @@ class PvaEmumBoolConverter(PvaConverter):
         return bool(value["value"]["index"])
 
     def get_datakey(self, source: str, value) -> DataKey:
-        return _data_key_from_value(source, value, dtype="bool")
+        return _data_key_from_value(source, value, dtype="boolean")
 
 
 class PvaTableConverter(PvaConverter):
@@ -335,14 +335,17 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
             return PvaEnumConverter(
                 get_supported_values(pv, datatype, datatype.choices)
             )
-        elif (
-            datatype
-            and not issubclass(typ, datatype)
-            and not (
-                typ is float and datatype is int
-            )  # Allow float -> int since prec can be 0
-        ):
-            raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
+        elif datatype and not issubclass(typ, datatype):
+            # Allow int signals to represent float records when prec is 0
+            is_prec_zero_float = typ is float and (
+                get_unique(
+                    {k: v["display"]["precision"] for k, v in values.items()},
+                    "precision",
+                )
+                == 0
+            )
+            if not (datatype is int and is_prec_zero_float):
+                raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
         return PvaTableConverter()

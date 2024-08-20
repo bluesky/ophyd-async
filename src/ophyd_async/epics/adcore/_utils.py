@@ -17,7 +17,6 @@ class ADBaseDataType(str, Enum):
     UInt64 = "UInt64"
     Float32 = "Float32"
     Float64 = "Float64"
-    Double = "DOUBLE"
 
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
