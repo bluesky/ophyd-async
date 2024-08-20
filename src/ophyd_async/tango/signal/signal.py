@@ -33,7 +33,8 @@ def _make_backend(
 
 # --------------------------------------------------------------------
 def tango_signal_rw(
-    datatype: Type[T],
+    datatype: Optional[Type[T]] = None,
+    *,
     read_trl: str,
     write_trl: Optional[str] = None,
     device_proxy: Optional[DeviceProxy] = None,
@@ -63,7 +64,8 @@ def tango_signal_rw(
 
 # --------------------------------------------------------------------
 def tango_signal_r(
-    datatype: Type[T],
+    datatype: Optional[Type[T]] = None,
+    *,
     read_trl: str,
     device_proxy: Optional[DeviceProxy] = None,
     timeout: float = DEFAULT_TIMEOUT,
@@ -90,7 +92,8 @@ def tango_signal_r(
 
 # --------------------------------------------------------------------
 def tango_signal_w(
-    datatype: Type[T],
+    datatype: Optional[Type[T]] = None,
+    *,
     write_trl: str,
     device_proxy: Optional[DeviceProxy] = None,
     timeout: float = DEFAULT_TIMEOUT,
