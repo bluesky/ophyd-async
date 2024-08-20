@@ -213,14 +213,14 @@ MySubsetEnum = SubsetEnum["Aaa", "Bbb", "Ccc"]
 
 _metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
     "ca": {
-        "bool": {"units": ANY, "limits": ANY},
+        "boolean": {"units": ANY, "limits": ANY},
         "integer": {"units": ANY, "limits": ANY},
         "number": {"units": ANY, "limits": ANY, "precision": ANY},
         "enum": {"limits": ANY},
         "string": {"limits": ANY},
     },
     "pva": {
-        "bool": {"limits": ANY},
+        "boolean": {"limits": ANY},
         "integer": {"units": ANY, "precision": ANY, "limits": ANY},
         "number": {"units": ANY, "precision": ANY, "limits": ANY},
         "enum": {"limits": ANY},
@@ -237,7 +237,7 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
         if "int" in suffix:
             return "integer"
         if "bool" in suffix:
-            return "bool"
+            return "boolean"
         if "enum" in suffix:
             return "enum"
         return "string"
