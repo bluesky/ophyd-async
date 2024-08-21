@@ -60,7 +60,7 @@ dev = [
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
-    "scanspec>=0.7.1",
+    "scanspec==0.7.2",
     "sphinx<7.4.0",              # https://github.com/bluesky/ophyd-async/issues/459
     "sphinx-autobuild",
     "autodoc-pydantic",

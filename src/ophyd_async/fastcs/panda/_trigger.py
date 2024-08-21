@@ -1,13 +1,15 @@
 import asyncio
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 from scanspec.specs import Spec
 
 from ophyd_async.core import TriggerLogic, wait_for_value
+from ophyd_async.core._detector import StandardDetector
+from ophyd_async.core._utils import in_micros
 
 from ._block import PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
-from ._table import SeqTable
+from ._table import SeqTable, SeqTableRow, seq_table_from_rows
 
 
 class SeqTableInfo(BaseModel):
@@ -97,7 +99,7 @@ class PosTrigSeqInfo(BaseModel):
 
 
 class PosTrigSeqLogic(TriggerLogic[PosTrigSeqInfo]):
-    def __init__(self, seq: SeqBlock) -> None:
+    def __init__(self, seq: SeqBlock, table: SeqTable) -> None:
         self.seq = seq
 
     def populate_seq_table(self, value: PosTrigSeqInfo) -> SeqTable:
@@ -121,35 +123,54 @@ class PosTrigSeqLogic(TriggerLogic[PosTrigSeqInfo]):
 
         # frames = value.spec.calculate()
 
-    async def prepare(self, value: PosTrigSeqInfo):
+    async def prepare(
+        self,
+        value: PosTrigSeqInfo,
+        detectors: List[StandardDetector],
+        number_of_frames: int,
+        exposure: float,
+        shutter_time: float,
+        period: float = 0.0,
+    ):
         await asyncio.gather(
             self.seq.prescale_units.set(TimeUnits.us),
             self.seq.enable.set("ZERO"),
         )
 
-        # table: SeqTable = seq_table_from_rows(
-        #     SeqTableRow(
-        #         time1=in_micros(pre_delay),
-        #         time2=in_micros(shutter_time),
-        #         outa2=True,
-        #     ),
-        #     # Keeping shutter open, do N triggers
-        #     SeqTableRow(
-        #         repeats=number_of_frames,
-        #         time1=in_micros(exposure),
-        #         outa1=True,
-        #         outb1=True,
-        #         time2=in_micros(deadtime),
-        #         outa2=True,
-        #     ),
-        #     # Add the shutter close
-        #     SeqTableRow(time2=in_micros(shutter_time)),
-        # # )
-        # await asyncio.gather(
-        #     self.seq.prescale.set(value.prescale_as_us),
-        #     self.seq.repeats.set(1),
-        #     self.seq.table.set(table),
-        # )
+        if not detectors:
+            raise ValueError("No detectors provided. There must be at least one.")
+
+        deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
+
+        trigger_time = number_of_frames * (exposure + deadtime)
+        pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
+
+        # trigger: SeqTrigger
+
+        table: SeqTable = seq_table_from_rows(
+            SeqTableRow(
+                time1=in_micros(pre_delay),
+                time2=in_micros(shutter_time),
+                outa2=True,
+            ),
+            # Keeping shutter open, do N triggers
+            SeqTableRow(
+                repeats=number_of_frames,
+                time1=in_micros(exposure),
+                outa1=True,
+                outb1=True,
+                time2=in_micros(deadtime),
+                outa2=True,
+            ),
+            # Add the shutter close
+            SeqTableRow(time2=in_micros(shutter_time)),
+        )
+
+        await asyncio.gather(
+            self.seq.prescale.set(value.prescale_as_us),
+            self.seq.repeats.set(1),
+            self.seq.table.set(table),
+        )
 
     async def kickoff(self) -> None:
         await self.seq.enable.set("ONE")
