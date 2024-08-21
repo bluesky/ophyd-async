@@ -1,12 +1,9 @@
-from typing import Dict
-
 import numpy as np
 from pydantic import BaseModel, ConfigDict, model_validator
-from pydantic_numpy.typing import NpNDArray
 
 
 class PvaTable(BaseModel):
-    """An abstraction of a PVA Table of str to python array."""
+    """An abstraction of a PVA Table of str to numpy array."""
 
     model_config = ConfigDict(validate_assignment=True, strict=False)
 
@@ -24,7 +21,7 @@ class PvaTable(BaseModel):
         return sub_cls(**arrayified_kwargs)
 
     def __add__(self, right: "PvaTable") -> "PvaTable":
-        """Concatinate the arrays in field values."""
+        """Concatenate the arrays in field values."""
 
         assert isinstance(right, type(self)), (
             f"{right} is not a `PvaTable`, or is not the same "
@@ -61,10 +58,3 @@ class PvaTable(BaseModel):
             )
 
         return self
-
-    def convert_to_pva_datatype(self) -> Dict[str, NpNDArray]:
-        return self.model_dump(mode="python")
-
-    @classmethod
-    def convert_from_pva_datatype(cls, pva_table: Dict[str, NpNDArray]):
-        return cls(**pva_table)

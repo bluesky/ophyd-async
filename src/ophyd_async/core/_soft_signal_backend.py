@@ -128,8 +128,6 @@ class SoftEnumConverter(SoftConverter):
 
 
 class SoftPydanticModelConverter(SoftConverter):
-    """Necessary for serializing soft signals."""
-
     def __init__(self, datatype: Type[BaseModel]):
         self.datatype = datatype
 
@@ -143,9 +141,6 @@ class SoftPydanticModelConverter(SoftConverter):
         return value
 
     def write_value(self, value):
-        if isinstance(value, dict):
-            # If the device is being deserialized
-            return self.datatype(**value).model_dump(mode="python")
         if isinstance(value, self.datatype):
             return value.model_dump(mode="python")
         return value

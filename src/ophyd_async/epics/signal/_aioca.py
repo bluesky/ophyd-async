@@ -261,7 +261,9 @@ class CaConverterFactory(BackendConverterFactory):
                 # Allow int signals to represent float records when prec is 0
                 is_prec_zero_float = (
                     isinstance(value, float)
-                    and get_unique({k: v.precision for k, v in values.items()}, "precision")
+                    and get_unique(
+                        {k: v.precision for k, v in values.items()}, "precision"
+                    )
                     == 0
                 )
                 if not (datatype is int and is_prec_zero_float):

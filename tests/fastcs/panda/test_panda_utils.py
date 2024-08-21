@@ -1,4 +1,5 @@
 import numpy as np
+import yaml
 from bluesky import RunEngine
 
 from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, load_device, save_device
@@ -7,7 +8,9 @@ from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DataBlock,
+    PcompDirectionOptions,
     SeqTable,
+    TimeUnits,
     phase_sorter,
 )
 
@@ -55,48 +58,86 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
         SeqTable.row(repeats=1),
     )
 
-    """
-    assert mock_save_to_yaml.call_args[0][0][0] == {
+    # Load the YAML content as a string
+    with open(str(tmp_path / "panda.yaml"), "r") as file:
+        yaml_content = file.read()
+
+    # Parse the YAML content
+    parsed_yaml = yaml.safe_load(yaml_content)
+
+    assert parsed_yaml[0] == {
         "phase_1_signal_units": 0,
         "seq.1.prescale_units": TimeUnits("min"),
         "seq.2.prescale_units": TimeUnits("min"),
     }
-    check_equal_with_seq_tables(mock_save_to_yaml.call_args[0][0][1],
-            {
-                "data.capture": False,
-                "data.create_directory": 0,
-                "data.flush_period": 0.0,
-                "data.hdf_directory": "",
-                "data.hdf_file_name": "",
-                "data.num_capture": 0,
-                "pcap.arm": False,
-                "pcomp.1.dir": PcompDirectionOptions.positive,
-                "pcomp.1.enable": "ZERO",
-                "pcomp.1.pulses": 0,
-                "pcomp.1.start": 0,
-                "pcomp.1.step": 0,
-                "pcomp.1.width": 0,
-                "pcomp.2.dir": PcompDirectionOptions.positive,
-                "pcomp.2.enable": "ZERO",
-                "pcomp.2.pulses": 0,
-                "pcomp.2.start": 0,
-                "pcomp.2.step": 0,
-                "pcomp.2.width": 0,
-                "pulse.1.delay": 0.0,
-                "pulse.1.width": 0.0,
-                "pulse.2.delay": 0.0,
-                "pulse.2.width": 0.0,
-                "seq.1.active": False,
-                "seq.1.table": SeqTable([]),
-                "seq.1.repeats": 0,
-                "seq.1.prescale": 0.0,
-                "seq.1.enable": "ZERO",
-                "seq.2.table": SeqTable([]),
-                "seq.2.active": False,
-                "seq.2.repeats": 0,
-                "seq.2.prescale": 0.0,
-                "seq.2.enable": "ZERO",
-            },
-    )
-    assert mock_save_to_yaml.call_args[0][1] == "path"
-    """
+    assert parsed_yaml[1] == {
+        "data.capture": False,
+        "data.create_directory": 0,
+        "data.flush_period": 0.0,
+        "data.hdf_directory": "",
+        "data.hdf_file_name": "",
+        "data.num_capture": 0,
+        "pcap.arm": False,
+        "pcomp.1.dir": PcompDirectionOptions.positive,
+        "pcomp.1.enable": "ZERO",
+        "pcomp.1.pulses": 0,
+        "pcomp.1.start": 0,
+        "pcomp.1.step": 0,
+        "pcomp.1.width": 0,
+        "pcomp.2.dir": PcompDirectionOptions.positive,
+        "pcomp.2.enable": "ZERO",
+        "pcomp.2.pulses": 0,
+        "pcomp.2.start": 0,
+        "pcomp.2.step": 0,
+        "pcomp.2.width": 0,
+        "pulse.1.delay": 0.0,
+        "pulse.1.width": 0.0,
+        "pulse.2.delay": 0.0,
+        "pulse.2.width": 0.0,
+        "seq.1.active": False,
+        "seq.1.table": {
+            "outa1": [False],
+            "outa2": [False],
+            "outb1": [False],
+            "outb2": [False],
+            "outc1": [False],
+            "outc2": [False],
+            "outd1": [False],
+            "outd2": [False],
+            "oute1": [False],
+            "oute2": [False],
+            "outf1": [False],
+            "outf2": [False],
+            "position": [0],
+            "repeats": [1],
+            "time1": [0],
+            "time2": [0],
+            "trigger": [""],
+        },
+        "seq.1.repeats": 0,
+        "seq.1.prescale": 0.0,
+        "seq.1.enable": "ZERO",
+        "seq.2.table": {
+            "outa1": [],
+            "outa2": [],
+            "outb1": [],
+            "outb2": [],
+            "outc1": [],
+            "outc2": [],
+            "outd1": [],
+            "outd2": [],
+            "oute1": [],
+            "oute2": [],
+            "outf1": [],
+            "outf2": [],
+            "position": [],
+            "repeats": [],
+            "time1": [],
+            "time2": [],
+            "trigger": [],
+        },
+        "seq.2.active": False,
+        "seq.2.repeats": 0,
+        "seq.2.prescale": 0.0,
+        "seq.2.enable": "ZERO",
+    }

@@ -67,7 +67,7 @@ def _data_key_from_value(
     *,
     shape: Optional[list[int]] = None,
     choices: Optional[list[str]] = None,
-    dtype: Optional[str] = None,
+    dtype: Optional[Dtype] = None,
 ) -> DataKey:
     """
     Args:
@@ -256,6 +256,19 @@ class PvaTableConverter(PvaConverter):
         return _data_key_from_value(source, value, dtype="object")
 
 
+class PvaPydanticModelConverter(PvaConverter):
+    def __init__(self, datatype: BaseModel):
+        self.datatype = datatype
+
+    def value(self, value: Value):
+        return self.datatype(**value.todict())
+
+    def write_value(self, value: Union[BaseModel, Dict[str, Any]]):
+        if isinstance(value, self.datatype):
+            return value.model_dump(mode="python")
+        return value
+
+
 class PvaDictConverter(PvaConverter):
     def reading(self, value):
         ts = time.time()
@@ -285,28 +298,6 @@ class PvaDictConverter(PvaConverter):
 class DisconnectedPvaConverter(PvaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
-
-
-class PvaPydanticModelConverter(PvaConverter):
-    def __init__(self, datatype: BaseModel):
-        self.datatype = datatype
-
-    def reading(self, value: Value):
-        ts = time.time()
-        value = self.value(value)
-        return {"value": value, "timestamp": ts, "alarm_severity": 0}
-
-    def value(self, value: Value):
-        return self.datatype(**value.todict())
-
-    def write_value(self, value: Union[BaseModel, Dict[str, Any]]):
-        """
-        A user can put whichever form to the signal.
-        This is required for yaml deserialization.
-        """
-        if isinstance(value, self.datatype):
-            return value.model_dump(mode="python")
-        return value
 
 
 class PvaConverterFactory(BackendConverterFactory):
@@ -398,17 +389,19 @@ class PvaConverterFactory(BackendConverterFactory):
                     == 0
                 )
                 if not (datatype is int and is_prec_zero_float):
-                    raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
+                    raise TypeError(
+                        f"{pv} has type {typ.__name__} not {datatype.__name__}"
+                    )
             return PvaConverter()
         elif "NTTable" in typeid:
-            return PvaTableConverter()
-        elif "structure" in typeid:
             if (
                 datatype
                 and inspect.isclass(datatype)
                 and issubclass(datatype, BaseModel)
             ):
                 return PvaPydanticModelConverter(datatype)
+            return PvaTableConverter()
+        elif "structure" in typeid:
             return PvaDictConverter()
         else:
             raise TypeError(f"{pv}: Unsupported typeid {typeid}")

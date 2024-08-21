@@ -77,7 +77,7 @@ def test_seq_table_validation_errors():
 
 
 def test_seq_table_pva_conversion():
-    expected_pva_dict = {
+    pva_dict = {
         "repeats": np.array([1, 2, 3, 4], dtype=np.int32),
         "trigger": np.array(
             ["Immediate", "Immediate", "BITC=0", "Immediate"], dtype=np.dtype("U32")
@@ -98,7 +98,7 @@ def test_seq_table_pva_conversion():
         "oute2": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outf2": np.array([1, 0, 1, 0], dtype=np.bool_),
     }
-    expected_row_wise_dict = [
+    row_wise_dicts = [
         {
             "repeats": 1,
             "trigger": "Immediate",
@@ -177,25 +177,21 @@ def test_seq_table_pva_conversion():
         },
     ]
 
-    seq_table_from_pva_dict = SeqTable(**expected_pva_dict)
-    for (_, column1), column2 in zip(
-        seq_table_from_pva_dict, expected_pva_dict.values()
-    ):
+    seq_table_from_pva_dict = SeqTable(**pva_dict)
+    for (_, column1), column2 in zip(seq_table_from_pva_dict, pva_dict.values()):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype
 
     seq_table_from_rows = reduce(
         lambda x, y: x + y,
-        [SeqTable.row(**row_kwargs) for row_kwargs in expected_row_wise_dict],
+        [SeqTable.row(**row_kwargs) for row_kwargs in row_wise_dicts],
     )
-    for (_, column1), column2 in zip(seq_table_from_rows, expected_pva_dict.values()):
+    for (_, column1), column2 in zip(seq_table_from_rows, pva_dict.values()):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype
 
     # Idempotency
-    applied_twice_to_pva_dict = SeqTable(**expected_pva_dict).model_dump(mode="python")
-    for column1, column2 in zip(
-        applied_twice_to_pva_dict.values(), expected_pva_dict.values()
-    ):
+    applied_twice_to_pva_dict = SeqTable(**pva_dict).model_dump(mode="python")
+    for column1, column2 in zip(applied_twice_to_pva_dict.values(), pva_dict.values()):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype

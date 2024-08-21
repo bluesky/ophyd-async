@@ -22,8 +22,6 @@ def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.No
 def pydantic_model_abstraction_representer(
     dumper: yaml.Dumper, model: BaseModel
 ) -> yaml.Node:
-    """Uses the protocol datatype since it has to be serializable."""
-
     return dumper.represent_data(model.model_dump(mode="python"))
 
 
