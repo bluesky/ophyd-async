@@ -167,7 +167,7 @@ def tango_signal_auto(
 
 
 # --------------------------------------------------------------------
-def infer_python_type(trl: str) -> Type:
+def infer_python_type(trl: str) -> Type[T]:
     device_trl, tr_name = trl.rsplit("/", 1)
     syn_proxy = SyncDeviceProxy(device_trl)
 
