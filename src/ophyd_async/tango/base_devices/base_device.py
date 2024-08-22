@@ -101,7 +101,7 @@ class TangoReadableDevice(StandardReadable):
                     setattr(self, attr_name, SignalW())
                 elif obj_type is SignalX:
                     setattr(self, attr_name, SignalX())
-                elif obj_type is Signal or None:
+                elif obj_type is Signal or obj_type is None:
                     tango_name = attr_name.lstrip("_")
                     setattr(
                         self,
@@ -109,4 +109,5 @@ class TangoReadableDevice(StandardReadable):
                         infer_signal_frontend(trl=f"{self.trl}/" f"{tango_name}"),
                     )
                 else:
+                    print(obj_type, type(obj_type))
                     raise ValueError(f"Invalid signal type {obj_type}")

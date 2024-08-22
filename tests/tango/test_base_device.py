@@ -2,20 +2,23 @@ import time
 from enum import Enum, IntEnum
 from typing import Type
 
+import bluesky.plan_stubs as bps
+import bluesky.plans as bp
 import numpy as np
 import pytest
 from bluesky import RunEngine
-from bluesky.plans import count
 
 from ophyd_async.core import DeviceCollector, T
 from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
 from ophyd_async.tango._backend._tango_transport import get_python_type
+from ophyd_async.tango.demo._tango.servers import DemoCounter, DemoMover
+from ophyd_async.tango.demo.counter import TangoCounter
+from ophyd_async.tango.demo.mover import TangoMover
 from tango import (
     AttrDataFormat,
     AttrQuality,
     AttrWriteType,
     CmdArgType,
-    # DeviceProxy,
     DevState,
 )
 from tango.asyncio import DeviceProxy
@@ -272,6 +275,22 @@ def tango_test_device():
 
 
 # --------------------------------------------------------------------
+@pytest.fixture(scope="module")
+def demo_test_context():
+    content = (
+        {
+            "class": DemoMover,
+            "devices": [{"name": "demo/motor/1"}],
+        },
+        {
+            "class": DemoCounter,
+            "devices": [{"name": "demo/counter/1"}, {"name": "demo/counter/2"}],
+        },
+    )
+    yield MultiDeviceTestContext(content)
+
+
+# --------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
     set_global_executor(None)
@@ -313,4 +332,33 @@ async def test_with_bluesky(tango_test_device):
     for readable in ophyd_dev._readables:
         readable._backend.allow_events(False)
         readable._backend.set_polling(True, 0.1, 0.1)
-    RE(count([ophyd_dev], 1))
+    RE(bp.count([ophyd_dev], 1))
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_tango_demo(demo_test_context):
+    with demo_test_context:
+        motor1 = TangoMover(
+            trl=demo_test_context.get_device_access("demo/motor/1"), name="motor1"
+        )
+        counter1 = TangoCounter(
+            trl=demo_test_context.get_device_access("demo/counter/1"), name="counter1"
+        )
+        counter2 = TangoCounter(
+            trl=demo_test_context.get_device_access("demo/counter/2"), name="counter2"
+        )
+        await motor1.connect()
+        await counter1.connect()
+        await counter2.connect()
+
+        # Events are not supported by the test context so we disable them
+        motor1.position._backend.allow_events(False)
+        motor1.state._backend.allow_events(False)
+        # Enable polling for the position and state attributes
+        motor1.position._backend.set_polling(True, 0.1, 0.1)
+        motor1.state._backend.set_polling(True, 0.1)
+
+        RE = RunEngine()
+        RE(bps.read(motor1.position))
+        RE(bp.count([counter1, counter2]))
