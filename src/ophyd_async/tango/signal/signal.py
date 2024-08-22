@@ -22,7 +22,7 @@ __all__ = (
 )
 
 
-def _make_backend(
+def make_backend(
     datatype: Optional[Type[T]],
     read_trl: str,
     write_trl: str,
@@ -60,7 +60,7 @@ def tango_signal_rw(
     """
     if datatype is None:
         datatype = infer_python_type(read_trl)
-    backend = _make_backend(datatype, read_trl, write_trl or read_trl, device_proxy)
+    backend = make_backend(datatype, read_trl, write_trl or read_trl, device_proxy)
     return SignalRW(backend, timeout=timeout, name=name)
 
 
@@ -90,7 +90,7 @@ def tango_signal_r(
     """
     if datatype is None:
         datatype = infer_python_type(read_trl)
-    backend = _make_backend(datatype, read_trl, read_trl, device_proxy)
+    backend = make_backend(datatype, read_trl, read_trl, device_proxy)
     return SignalR(backend, timeout=timeout, name=name)
 
 
@@ -120,7 +120,7 @@ def tango_signal_w(
     """
     if datatype is None:
         datatype = infer_python_type(write_trl)
-    backend = _make_backend(datatype, write_trl, write_trl, device_proxy)
+    backend = make_backend(datatype, write_trl, write_trl, device_proxy)
     return SignalW(backend, timeout=timeout, name=name)
 
 
@@ -144,7 +144,7 @@ def tango_signal_x(
     name:
         The name of the Signal
     """
-    backend = _make_backend(None, write_trl, write_trl, device_proxy)
+    backend = make_backend(None, write_trl, write_trl, device_proxy)
     return SignalX(backend, timeout=timeout, name=name)
 
 
@@ -157,13 +157,12 @@ def tango_signal_auto(
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> Union[SignalW, SignalX, SignalR, SignalRW]:
-    device_trl, tr_name = trl.rsplit("/", 1)
-    syn_proxy = SyncDeviceProxy(device_trl)
-
     if datatype is None:
         datatype = infer_python_type(trl)
 
-    backend = _make_backend(datatype, trl, trl, device_proxy)
+    device_trl, tr_name = trl.rsplit("/", 1)
+    syn_proxy = SyncDeviceProxy(device_trl)
+    backend = make_backend(datatype, trl, trl, device_proxy)
 
     if tr_name not in syn_proxy.get_attribute_list():
         if tr_name not in syn_proxy.get_command_list():
