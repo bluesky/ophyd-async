@@ -3,19 +3,11 @@ from collections import defaultdict
 import bluesky.plans as bp
 import h5py
 import numpy as np
-import pytest
 from bluesky import RunEngine
 
-from ophyd_async.core import DeviceCollector, assert_emitted
-from ophyd_async.epics import motor
+from ophyd_async.core import assert_emitted
+from ophyd_async.plan_stubs import ensure_connected
 from ophyd_async.sim.demo import PatternDetector
-
-
-@pytest.fixture
-async def sim_motor():
-    async with DeviceCollector(mock=True):
-        sim_motor = motor.Motor("test")
-    return sim_motor
 
 
 async def test_sim_pattern_detector_initialization(
@@ -43,7 +35,11 @@ async def test_writes_pattern_to_file(
     def capture_emitted(name, doc):
         docs[name].append(doc)
 
-    RE(bp.count([sim_pattern_detector]), capture_emitted)
+    def plan():
+        yield from ensure_connected(sim_pattern_detector, mock=True)
+        yield from bp.count([sim_pattern_detector])
+
+    RE(plan(), capture_emitted)
     assert_emitted(
         docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, event=1, stop=1
     )

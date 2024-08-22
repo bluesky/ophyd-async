@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Callable
 
 import pytest
-import pytest_asyncio
 from bluesky.run_engine import RunEngine, TransitionError
 from pytest import FixtureRequest
 
@@ -63,41 +62,45 @@ def configure_epics_environment():
 _ALLOWED_CORO_TASKS = {"async_finalizer", "async_setup", "async_teardown"}
 
 
-@pytest_asyncio.fixture(autouse=True, scope="function")
-async def assert_no_pending_tasks(request: FixtureRequest):
+@pytest.fixture(autouse=True, scope="function")
+def assert_no_pending_tasks(request: FixtureRequest):
+    """
+    if "RE" in request.fixturenames:
+        # The RE fixture will do the same, as well as some additional loop cleanup
+        return
+    """
+
     # There should be no tasks pending after a test has finished
     fail_count = request.session.testsfailed
 
     def error_and_kill_pending_tasks():
         loop = asyncio.get_event_loop()
-        unfinished_tasks = [
+        unfinished_tasks = {
             task
             for task in asyncio.all_tasks(loop)
             if task.get_coro().__name__ not in _ALLOWED_CORO_TASKS and not task.done()
-        ]
-        if unfinished_tasks:
-            for task in unfinished_tasks:
-                task.cancel()
+        }
+        for task in unfinished_tasks:
+            task.cancel()
 
-            # If the tasks are still pending because the test failed
-            # for other reasons then we don't have to error here
-            if request.session.testsfailed == fail_count:
-                raise RuntimeError(
-                    f"Not all tasks {unfinished_tasks} "
-                    f"closed during test {request.node.name}."
-                )
+        # If the tasks are still pending because the test failed
+        # for other reasons then we don't have to error here
+        if unfinished_tasks and request.session.testsfailed == fail_count:
+            raise RuntimeError(
+                f"Not all tasks {unfinished_tasks} "
+                f"closed during test {request.node.name}."
+            )
 
-    try:
-        yield
-    finally:
-        error_and_kill_pending_tasks()
+    request.addfinalizer(error_and_kill_pending_tasks)
 
 
 @pytest.fixture(scope="function")
 def RE(request: FixtureRequest):
-    loop = asyncio.new_event_loop()
+    loop = asyncio.get_event_loop()
     loop.set_debug(True)
     RE = RunEngine({}, call_returns_result=True, loop=loop)
+
+    fail_count = request.session.testsfailed
 
     def clean_event_loop():
         if RE.state not in ("idle", "panicked"):
@@ -105,9 +108,26 @@ def RE(request: FixtureRequest):
                 RE.halt()
             except TransitionError:
                 pass
+
+        unfinished_tasks = {
+            task
+            for task in asyncio.all_tasks(loop)
+            if task.get_coro().__name__ not in _ALLOWED_CORO_TASKS and not task.done()
+        }
+
+        # Cancelling the tasks is thread unsafe, but we get a new event loop
+        # with each RE test so we don't need to do this
         loop.call_soon_threadsafe(loop.stop)
         RE._th.join()
         loop.close()
+
+        # If the tasks are still pending because the test failed
+        # for other reasons then we don't have to error here
+        if unfinished_tasks and request.session.testsfailed == fail_count:
+            raise RuntimeError(
+                f"Not all tasks {unfinished_tasks} "
+                f"closed during test {request.node.name}."
+            )
 
     request.addfinalizer(clean_event_loop)
     return RE

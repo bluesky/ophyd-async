@@ -14,7 +14,7 @@ class PatternDetectorController(DetectorControl):
         self,
         pattern_generator: PatternGenerator,
         path_provider: PathProvider,
-        exposure: float = Field(default=0.1),
+        exposure: Optional[float] = 0.1,
     ) -> None:
         self.pattern_generator: PatternGenerator = pattern_generator
         self.pattern_generator.set_exposure(exposure)
@@ -46,13 +46,13 @@ class PatternDetectorController(DetectorControl):
             await self.task
 
     async def disarm(self):
-        if self.task:
+        if self.task and not self.task.done():
             self.task.cancel()
             try:
                 await self.task
             except asyncio.CancelledError:
                 pass
-            self.task = None
+        self.task = None
 
     def get_deadtime(self, exposure: float | None) -> float:
         return 0.001

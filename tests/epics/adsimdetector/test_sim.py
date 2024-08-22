@@ -11,6 +11,7 @@ import pytest
 from bluesky import RunEngine
 from bluesky.utils import new_uid
 
+import ophyd_async.plan_stubs as ops
 from ophyd_async.core import (
     AsyncStatus,
     DetectorTrigger,
@@ -322,12 +323,29 @@ async def test_trigger_logic():
     ...
 
 
-async def test_detector_with_unnamed_or_disconnected_config_sigs(
-    RE, static_filename_provider: StaticFilenameProvider, tmp_path: Path
+@pytest.mark.parametrize(
+    "driver_name, error_output",
+    [
+        ("", "config signal must be named before it is passed to the detector"),
+        (
+            "some-name",
+            (
+                "config signal some-name-acquire_time must be connected "
+                "before it is passed to the detector"
+            ),
+        ),
+    ],
+)
+def test_detector_with_unnamed_or_disconnected_config_sigs(
+    RE,
+    static_filename_provider: StaticFilenameProvider,
+    tmp_path: Path,
+    driver_name,
+    error_output,
 ):
     dp = StaticPathProvider(static_filename_provider, tmp_path)
 
-    some_other_driver = adcore.ADBaseIO("TEST")
+    some_other_driver = adcore.ADBaseIO("TEST", name=driver_name)
 
     async with DeviceCollector(mock=True):
         det = adsimdetector.SimDetector(
@@ -347,14 +365,12 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(
         == "config signal must be named before it is passed to the detector"
     )
 
-    some_other_driver.set_name("some-name")
+    def plan():
+        yield from ops.ensure_connected(det, mock=True)
+        yield from count_sim([det], times=1)
 
     with pytest.raises(Exception) as exc:
-        RE(count_sim([det], times=1))
+        RE(plan())
 
     assert isinstance(exc.value.args[0], AsyncStatus)
-    assert (
-        str(exc.value.args[0].exception())
-        == "config signal some-name-acquire_time must be connected before it is "
-        + "passed to the detector"
-    )
+    assert str(exc.value.args[0].exception()) == error_output
