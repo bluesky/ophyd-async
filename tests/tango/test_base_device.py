@@ -175,12 +175,13 @@ class TestReadableDevice(TangoReadableDevice):
 
     def register_signals(self):
         for feature in TESTED_FEATURES:
-            with self.add_children_as_readables():
-                setattr(
-                    self,
-                    feature,
-                    tango_signal_auto(datatype=None, trl=f"{self.trl}/{feature}"),
-                )
+            setattr(
+                self,
+                feature,
+                tango_signal_auto(datatype=None, trl=f"{self.trl}/{feature}"),
+            )
+            attr = getattr(self, feature)
+            self.add_readables([attr])
 
 
 # --------------------------------------------------------------------
@@ -309,4 +310,7 @@ async def test_with_bluesky(tango_test_device):
 
     # now let's do some bluesky stuff
     RE = RunEngine()
+    for readable in ophyd_dev._readables:
+        readable._backend.allow_events(False)
+        readable._backend.set_polling(True, 0.1, 0.1)
     RE(count([ophyd_dev], 1))

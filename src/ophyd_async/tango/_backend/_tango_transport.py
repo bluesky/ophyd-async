@@ -82,7 +82,7 @@ def get_python_type(tango_type) -> tuple[bool, T, str]:
 
 # --------------------------------------------------------------------
 class TangoProxy:
-    support_events = False
+    support_events = True
 
     def __init__(self, device_proxy: DeviceProxy, name: str):
         self._proxy = device_proxy
@@ -149,13 +149,15 @@ class TangoProxy:
 # --------------------------------------------------------------------
 class AttributeProxy(TangoProxy):
     _callback = None
-    support_events = False
+    support_events = True
     _eid = None
     _poll_task = None
     _abs_change = None
     _rel_change = 0.1
-    _polling_period = 0.5
+    _polling_period = 0.1
     _allow_polling = False
+    exception = None
+    _last_reading = {"value": None, "timestamp": 0, "alarm_severity": 0}
 
     # --------------------------------------------------------------------
     async def connect(self) -> None:
@@ -233,6 +235,7 @@ class AttributeProxy(TangoProxy):
         reading = Reading(
             value=attr.value, timestamp=attr.time.totime(), alarm_severity=attr.quality
         )
+        self._last_reading = reading
         return reading
 
     # --------------------------------------------------------------------
@@ -259,7 +262,16 @@ class AttributeProxy(TangoProxy):
         elif self._allow_polling:
             """start polling if no events supported"""
             if self._callback is not None:
-                self._poll_task = asyncio.create_task(self.poll())
+
+                async def _poll():
+                    while True:
+                        try:
+                            await self.poll()
+                        except RuntimeError as e:
+                            self.exception = f"Error in polling: {e}"
+                            await asyncio.sleep(1)
+
+                self._poll_task = asyncio.create_task(_poll())
         else:
             self.unsubscribe_callback()
             raise RuntimeError(
@@ -276,6 +288,12 @@ class AttributeProxy(TangoProxy):
         if self._poll_task:
             self._poll_task.cancel()
             self._poll_task = None
+            if self._callback is not None:
+                # Call the callback with the last reading
+                try:
+                    self._callback(self._last_reading, self._last_reading["value"])
+                except TypeError:
+                    pass
         self._callback = None
 
     # --------------------------------------------------------------------
@@ -381,7 +399,7 @@ class AttributeProxy(TangoProxy):
 
 # --------------------------------------------------------------------
 class CommandProxy(TangoProxy):
-    support_events = False
+    support_events = True
     _last_reading = {"value": None, "timestamp": 0, "alarm_severity": 0}
 
     # --------------------------------------------------------------------
@@ -615,8 +633,8 @@ class TangoTransport(SignalBackend[T]):
         }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
         self.descriptor: Descriptor = {}  # type: ignore
-        self.polling = (True, 0.5, None, 0.1)
-        self.support_events = False
+        self.polling = (False, 0.1, None, 0.1)
+        self.support_events = True
         self.status = None
 
     # --------------------------------------------------------------------
@@ -699,8 +717,8 @@ class TangoTransport(SignalBackend[T]):
 
     def set_polling(
         self,
-        allow_polling: bool = False,
-        polling_period: float = 0.5,
+        allow_polling: bool = True,
+        polling_period: float = 0.1,
         abs_change=None,
         rel_change=0.1,
     ):
