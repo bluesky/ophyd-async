@@ -58,6 +58,8 @@ def tango_signal_rw(
     name:
         The name of the Signal
     """
+    if datatype is None:
+        datatype = infer_python_type(read_trl)
     backend = _make_backend(datatype, read_trl, write_trl or read_trl, device_proxy)
     return SignalRW(backend, timeout=timeout, name=name)
 
@@ -86,6 +88,8 @@ def tango_signal_r(
     name:
         The name of the Signal
     """
+    if datatype is None:
+        datatype = infer_python_type(read_trl)
     backend = _make_backend(datatype, read_trl, read_trl, device_proxy)
     return SignalR(backend, timeout=timeout, name=name)
 
@@ -114,6 +118,8 @@ def tango_signal_w(
     name:
         The name of the Signal
     """
+    if datatype is None:
+        datatype = infer_python_type(write_trl)
     backend = _make_backend(datatype, write_trl, write_trl, device_proxy)
     return SignalW(backend, timeout=timeout, name=name)
 
