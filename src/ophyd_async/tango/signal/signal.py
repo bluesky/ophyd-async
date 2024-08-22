@@ -159,37 +159,15 @@ def tango_signal_auto(
 ) -> Union[SignalW, SignalX, SignalR, SignalRW]:
     if datatype is None:
         datatype = infer_python_type(trl)
-
-    device_trl, tr_name = trl.rsplit("/", 1)
-    syn_proxy = SyncDeviceProxy(device_trl)
     backend = make_backend(datatype, trl, trl, device_proxy)
+    signal = infer_signal_frontend(trl, name, timeout)
+    signal._backend = backend  # noqa: SLF001
 
-    if tr_name not in syn_proxy.get_attribute_list():
-        if tr_name not in syn_proxy.get_command_list():
-            raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
-
-    if tr_name in syn_proxy.get_attribute_list():
-        config = syn_proxy.get_attribute_config(tr_name)
-        if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
-            return SignalRW(backend, timeout=timeout, name=name)
-        elif config.writable == AttrWriteType.READ:
-            return SignalR(backend, timeout=timeout, name=name)
-        else:
-            return SignalW(backend, timeout=timeout, name=name)
-
-    if tr_name in syn_proxy.get_command_list():
-        config = syn_proxy.get_command_config(tr_name)
-        if config.in_type == CmdArgType.DevVoid:
-            return SignalX(backend, timeout=timeout, name=name)
-        elif config.out_type != CmdArgType.DevVoid:
-            return SignalRW(backend, timeout=timeout, name=name)
-
-    if tr_name in device_proxy.get_pipe_list():
-        raise NotImplementedError("Pipes are not supported")
+    return signal
 
 
 # --------------------------------------------------------------------
-def infer_python_type(trl: str):
+def infer_python_type(trl: str) -> Type:
     device_trl, tr_name = trl.rsplit("/", 1)
     syn_proxy = SyncDeviceProxy(device_trl)
 
@@ -211,3 +189,32 @@ def infer_python_type(trl: str):
         py_type = DevState
 
     return npt.NDArray[py_type] if isarray else py_type
+
+
+# --------------------------------------------------------------------
+def infer_signal_frontend(trl, name: str = "", timeout: float = DEFAULT_TIMEOUT):
+    device_trl, tr_name = trl.rsplit("/", 1)
+    proxy = SyncDeviceProxy(device_trl)
+
+    if tr_name in proxy.get_pipe_list():
+        raise NotImplementedError("Pipes are not supported")
+
+    if tr_name not in proxy.get_attribute_list():
+        if tr_name not in proxy.get_command_list():
+            raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
+
+    if tr_name in proxy.get_attribute_list():
+        config = proxy.get_attribute_config(tr_name)
+        if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
+            return SignalRW(name=name, timeout=timeout)
+        elif config.writable == AttrWriteType.READ:
+            return SignalR(name=name, timeout=timeout)
+        else:
+            return SignalW(name=name, timeout=timeout)
+
+    if tr_name in proxy.get_command_list():
+        config = proxy.get_command_config(tr_name)
+        if config.in_type == CmdArgType.DevVoid:
+            return SignalX(name=name, timeout=timeout)
+        elif config.out_type != CmdArgType.DevVoid:
+            return SignalRW(name=name, timeout=timeout)
