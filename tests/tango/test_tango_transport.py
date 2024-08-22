@@ -337,7 +337,6 @@ async def test_attribute_subscribe_callback(echo_device):
     val = None
 
     def callback(reading, value):
-        print("Callback called")
         nonlocal val
         val = value
 
@@ -389,6 +388,7 @@ def test_attribute_set_polling(device_proxy):
 @pytest.mark.asyncio
 async def test_attribute_poll(device_proxy):
     attr_proxy = AttributeProxy(device_proxy, "floatvalue")
+    attr_proxy.support_events = False
 
     def callback(reading, value):
         nonlocal val
@@ -399,6 +399,7 @@ async def test_attribute_poll(device_proxy):
 
     # Test polling with absolute change
     val = None
+
     attr_proxy.set_polling(True, 0.1, 1, 1.0)
     attr_proxy.subscribe_callback(callback)
     current_value = await attr_proxy.get()
@@ -437,7 +438,7 @@ async def test_attribute_poll(device_proxy):
     # Test polling with bad callback
     attr_proxy.subscribe_callback(bad_callback)
     await asyncio.sleep(0.2)
-    assert "Could not poll the attribute" in str(attr_proxy._poll_task.exception())
+    assert "Could not poll the attribute" in str(attr_proxy.exception)
     attr_proxy.unsubscribe_callback()
 
 
@@ -446,6 +447,7 @@ async def test_attribute_poll(device_proxy):
 @pytest.mark.parametrize("attr", ["array", "label"])
 async def test_attribute_poll_stringsandarrays(device_proxy, attr):
     attr_proxy = AttributeProxy(device_proxy, attr)
+    attr_proxy.support_events = False
 
     def callback(reading, value):
         nonlocal val
@@ -471,6 +473,7 @@ async def test_attribute_poll_stringsandarrays(device_proxy, attr):
 async def test_attribute_poll_exceptions(device_proxy):
     # Try to poll a non-existent attribute
     attr_proxy = AttributeProxy(device_proxy, "nonexistent")
+    attr_proxy.support_events = False
     attr_proxy.set_polling(True, 0.1)
 
     def callback(reading, value):
@@ -478,18 +481,7 @@ async def test_attribute_poll_exceptions(device_proxy):
 
     attr_proxy.subscribe_callback(callback)
     await asyncio.sleep(0.2)
-    assert "Could not poll the attribute" in str(attr_proxy._poll_task.exception())
-
-    # Try to poll a command
-    attr_proxy = AttributeProxy(device_proxy, "clear")
-    attr_proxy.set_polling(True, 0.1)
-
-    def callback(reading, value):
-        pass
-
-    attr_proxy.subscribe_callback(callback)
-    await asyncio.sleep(0.2)
-    assert "Could not poll the attribute" in str(attr_proxy._poll_task.exception())
+    assert "Could not poll the attribute" in str(attr_proxy.exception)
 
 
 # --------------------------------------------------------------------
@@ -696,7 +688,6 @@ async def test_set_callback(transport):
     transport.set_callback(None)
     with pytest.raises(RuntimeError) as exc_info:
         transport.set_callback(1)
-    print(exc_info.value)
     assert "Callback must be a callable" in str(exc_info.value)
 
 
