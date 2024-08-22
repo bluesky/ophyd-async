@@ -7,7 +7,9 @@ from pathlib import Path
 from typing import Any, Callable
 
 import pytest
+import pytest_asyncio
 from bluesky.run_engine import RunEngine, TransitionError
+from pytest import FixtureRequest
 
 from ophyd_async.core import (
     DetectorTrigger,
@@ -58,8 +60,41 @@ def configure_epics_environment():
     os.environ["EPICS_PVA_AUTO_ADDR_LIST"] = "NO"
 
 
+_ALLOWED_CORO_TASKS = {"async_finalizer", "async_setup", "async_teardown"}
+
+
+@pytest_asyncio.fixture(autouse=True, scope="function")
+async def assert_no_pending_tasks(request: FixtureRequest):
+    # There should be no tasks pending after a test has finished
+    fail_count = request.session.testsfailed
+
+    def error_and_kill_pending_tasks():
+        loop = asyncio.get_event_loop()
+        unfinished_tasks = [
+            task
+            for task in asyncio.all_tasks(loop)
+            if task.get_coro().__name__ not in _ALLOWED_CORO_TASKS and not task.done()
+        ]
+        if unfinished_tasks:
+            for task in unfinished_tasks:
+                task.cancel()
+
+            # If the tasks are still pending because the test failed
+            # for other reasons then we don't have to error here
+            if request.session.testsfailed == fail_count:
+                raise RuntimeError(
+                    f"Not all tasks {unfinished_tasks} "
+                    f"closed during test {request.node.name}."
+                )
+
+    try:
+        yield
+    finally:
+        error_and_kill_pending_tasks()
+
+
 @pytest.fixture(scope="function")
-def RE(request):
+def RE(request: FixtureRequest):
     loop = asyncio.new_event_loop()
     loop.set_debug(True)
     RE = RunEngine({}, call_returns_result=True, loop=loop)
