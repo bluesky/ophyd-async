@@ -19,6 +19,9 @@ __all__ = (
     "tango_signal_w",
     "tango_signal_x",
     "tango_signal_auto",
+    "infer_signal_frontend",
+    "infer_python_type",
+    "make_backend",
 )
 
 
