@@ -5,7 +5,6 @@ from bluesky.protocols import (
     Flyable,
     Locatable,
     Location,
-    Movable,
     Preparable,
     Stoppable,
 )
