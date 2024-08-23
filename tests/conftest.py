@@ -96,7 +96,7 @@ def assert_no_pending_tasks(request: FixtureRequest):
 
 @pytest.fixture(scope="function")
 def RE(request: FixtureRequest):
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.set_debug(True)
     RE = RunEngine({}, call_returns_result=True, loop=loop)
 
@@ -119,13 +119,16 @@ def RE(request: FixtureRequest):
         # with each RE test so we don't need to do this
         loop.call_soon_threadsafe(loop.stop)
         RE._th.join()
+        for task in unfinished_tasks:
+            task.cancel()
         loop.close()
 
         # If the tasks are still pending because the test failed
         # for other reasons then we don't have to error here
         if unfinished_tasks and request.session.testsfailed == fail_count:
+            import pprint
             raise RuntimeError(
-                f"Not all tasks {unfinished_tasks} "
+                f"Not all tasks \n{pprint.pformat(unfinished_tasks)}\n"
                 f"closed during test {request.node.name}."
             )
 

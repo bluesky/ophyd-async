@@ -1,5 +1,6 @@
 """Integration tests for a StandardDetector using a ADHDFWriter and SimController."""
 
+import asyncio
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -186,22 +187,40 @@ async def test_two_detectors_step(
         for det in two_detectors
     ]
 
-    RE(count_sim(two_detectors, times=1))
-
     controller_a = cast(adsimdetector.SimController, two_detectors[0].controller)
     writer_a = cast(adcore.ADHDFWriter, two_detectors[0].writer)
     writer_b = cast(adcore.ADHDFWriter, two_detectors[1].writer)
+    info_a = writer_a._path_provider(device_name=writer_a.hdf.name)
+    info_b = writer_b._path_provider(device_name=writer_b.hdf.name)
+    file_name_a = None
+    file_name_b = None
 
-    drv = controller_a.driver
-    assert 1 == await drv.acquire.get_value()
-    assert adcore.ImageMode.multiple == await drv.image_mode.get_value()
+    def plan():
+        nonlocal file_name_a, file_name_b
+        yield from count_sim(two_detectors, times=1)
 
-    hdfb = writer_b.hdf
-    assert True is await hdfb.lazy_open.get_value()
-    assert True is await hdfb.swmr_mode.get_value()
-    assert 0 == await hdfb.num_capture.get_value()
-    assert adcore.FileWriteMode.stream == await hdfb.file_write_mode.get_value()
+        drv = controller_a.driver
+        assert False is (yield from bps.rd(drv.acquire))
+        assert adcore.ImageMode.multiple == (yield from bps.rd(drv.image_mode))
 
+        hdfb = writer_b.hdf
+        assert True is (yield from bps.rd(hdfb.lazy_open))
+        assert True is (yield from bps.rd(hdfb.swmr_mode))
+        assert 0 == (yield from bps.rd(hdfb.num_capture))
+        assert adcore.FileWriteMode.stream == (yield from bps.rd(hdfb.file_write_mode))
+
+        assert (
+            (yield from bps.rd(writer_a.hdf.file_path)) ==
+            str(info_a.directory_path)
+        )
+        file_name_a = (yield from bps.rd(writer_a.hdf.file_name))
+        assert file_name_a == info_a.filename
+
+        assert (yield from bps.rd(writer_b.hdf.file_path)) == str(info_b.directory_path)
+        file_name_b = (yield from bps.rd(writer_b.hdf.file_name))
+        assert file_name_b == info_b.filename
+
+    RE(plan())
     assert names == [
         "start",
         "descriptor",
@@ -212,16 +231,6 @@ async def test_two_detectors_step(
         "event",
         "stop",
     ]
-    info_a = writer_a._path_provider(device_name=writer_a.hdf.name)
-    info_b = writer_b._path_provider(device_name=writer_b.hdf.name)
-
-    assert await writer_a.hdf.file_path.get_value() == str(info_a.directory_path)
-    file_name_a = await writer_a.hdf.file_name.get_value()
-    assert file_name_a == info_a.filename
-
-    assert await writer_b.hdf.file_path.get_value() == str(info_b.directory_path)
-    file_name_b = await writer_b.hdf.file_name.get_value()
-    assert file_name_b == info_b.filename
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8
@@ -336,7 +345,7 @@ async def test_trigger_logic():
         ),
     ],
 )
-def test_detector_with_unnamed_or_disconnected_config_sigs(
+async def test_detector_with_unnamed_or_disconnected_config_sigs(
     RE,
     static_filename_provider: StaticFilenameProvider,
     tmp_path: Path,
