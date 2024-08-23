@@ -58,7 +58,7 @@ class FlyMotorInfo(BaseModel):
     timeout: CalculatableTimeout = Field(frozen=True, default=CalculateTimeout)
 
 
-class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable, Locatable):
+class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
     """Device that moves a motor record"""
 
     def __init__(self, prefix: str, name="") -> None:
@@ -202,8 +202,8 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable, Locatable
 
     async def locate(self) -> Location[float]:
         location: Location = {
-            "setpoint": await self.user_setpoint(),
-            "readback": await self.user_readback(),
+            "setpoint": await self.user_setpoint.get_value(),
+            "readback": await self.user_readback.get_value(),
         }
         return location
 

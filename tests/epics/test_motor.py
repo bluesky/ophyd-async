@@ -16,6 +16,7 @@ from ophyd_async.core import (
     observe_value,
     set_mock_put_proceeds,
     set_mock_value,
+    mock_puts_blocked,
 )
 from ophyd_async.epics import motor
 
@@ -317,3 +318,12 @@ async def test_complete(sim_motor: motor.Motor) -> None:
     assert not sim_motor._fly_status.done
     await sim_motor.complete()
     assert sim_motor._fly_status.done
+
+
+async def test_locatable(sim_motor: motor.Motor) -> None:
+    await sim_motor.set(10)
+    assert (await sim_motor.locate())["readback"] == 10
+    async with mock_puts_blocked(sim_motor.user_setpoint):
+        # sim_motor.set(10)
+        assert (await sim_motor.locate())["readback"] == 0
+    assert (await sim_motor.locate())["readback"] == 10
