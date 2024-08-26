@@ -688,10 +688,7 @@ class TangoSignalBackend(SignalBackend[T]):
 
     # --------------------------------------------------------------------
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
-        if (
-            self.proxies[self.read_trl].support_events is False
-            and self.polling[0] is False
-        ):
+        if self.support_events is False and self.polling[0] is False:
             raise RuntimeError(
                 f"Cannot set event for {self.read_trl}. "
                 "Cannot set a callback on an attribute that does not support events and"
@@ -720,14 +717,7 @@ class TangoSignalBackend(SignalBackend[T]):
         rel_change=0.1,
     ):
         self.polling = (allow_polling, polling_period, abs_change, rel_change)
-        if self.proxies[self.read_trl] is not None:
-            self.proxies[self.read_trl].set_polling(
-                allow_polling, polling_period, abs_change, rel_change
-            )
 
     # --------------------------------------------------------------------
     def allow_events(self, allow: Optional[bool] = True):
         self.support_events = allow
-        if self.proxies[self.read_trl] is not None:
-            self.proxies[self.read_trl].support_events = self.support_events
-            return self.proxies[self.read_trl].support_events

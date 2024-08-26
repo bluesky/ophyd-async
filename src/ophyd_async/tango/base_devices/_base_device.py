@@ -38,6 +38,7 @@ class TangoDevice(Device):
 
     trl: str = ""
     proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None
+    _polling: tuple = (False, 0.1, None, 0.1)
 
     def __init__(
         self,
@@ -91,6 +92,9 @@ class TangoDevice(Device):
                         write_trl=read_trl,
                         device_proxy=self.proxy,
                     )
+                    if self._polling[0]:
+                        backend.allow_events(False)
+                        backend.set_polling(*self._polling)
                     signal._backend = backend  # noqa: SLF001
 
     def create_children_from_annotations(self):
@@ -121,3 +125,14 @@ class TangoDevice(Device):
 
 
 # --------------------------------------------------------------------
+def tango_polling(*args):
+    """
+    Class decorator to set polling for Tango devices. This is useful for device servers
+    that do not support event-driven updates.
+    """
+
+    def decorator(cls):
+        cls._polling = (True, *args)
+        return cls
+
+    return decorator

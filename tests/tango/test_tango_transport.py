@@ -685,7 +685,6 @@ async def test_set_callback(transport):
 
     # Try to add a non-callable callback
     transport.allow_events(True)
-    transport.set_callback(None)
     with pytest.raises(RuntimeError) as exc_info:
         transport.set_callback(1)
     assert "Callback must be a callable" in str(exc_info.value)
@@ -694,13 +693,8 @@ async def test_set_callback(transport):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_set_polling(transport):
-    source = transport.source("")
     transport.set_polling(True, 0.1, 1, 0.1)
     assert transport.polling == (True, 0.1, 1, 0.1)
-    assert transport.proxies[source]._allow_polling
-    assert transport.proxies[source]._polling_period == 0.1
-    assert transport.proxies[source]._abs_change == 1
-    assert transport.proxies[source]._rel_change == 0.1
 
 
 # --------------------------------------------------------------------

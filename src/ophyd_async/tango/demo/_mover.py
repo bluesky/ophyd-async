@@ -42,10 +42,8 @@ class TangoMover(TangoReadable, Movable, Stoppable):
         self.add_readables([self.velocity], ConfigSignal)
         self._set_success = True
 
-    def set(self, value: float, timeout: CalculatableTimeout = CalculateTimeout):
-        return WatchableAsyncStatus(self._set(value, timeout))
-
-    async def _set(self, value: float, timeout: CalculatableTimeout = CalculateTimeout):
+    @WatchableAsyncStatus.wrap
+    async def set(self, value: float, timeout: CalculatableTimeout = CalculateTimeout):
         self._set_success = True
         (old_position, velocity) = await asyncio.gather(
             self.position.get_value(), self.velocity.get_value()
@@ -94,15 +92,14 @@ class TangoMover(TangoReadable, Movable, Stoppable):
         self._set_success = success
         return self._stop.trigger()
 
-    def prepare(self, value: TangoMoverConfig) -> AsyncStatus:
-        return AsyncStatus(self._prepare(value))
-
-    async def _prepare(self, value: TangoMoverConfig) -> None:
+    @AsyncStatus.wrap
+    async def prepare(self, value: TangoMoverConfig) -> None:
         config = value.__dataclass_fields__
-        for key, v in config.items():
+        for key in config:
+            v = getattr(value, key)
             if v is not None:
                 if hasattr(self, key):
                     await getattr(self, key).set(v)
 
-    async def get_dataclass(self) -> TangoMoverConfig:
+    def get_dataclass(self) -> TangoMoverConfig:
         return TangoMoverConfig()

@@ -1,3 +1,4 @@
+import asyncio
 import time
 from enum import Enum, IntEnum
 from typing import Type
@@ -186,6 +187,8 @@ class TestTangoReadable(TangoReadable):
                 tango_signal_auto(datatype=None, trl=f"{self.trl}/{feature}"),
             )
             attr = getattr(self, feature)
+            attr._backend.allow_events(False)
+            attr._backend.set_polling(0.1, 0.1, 0.1)
             self.add_readables([attr])
 
 
@@ -331,9 +334,6 @@ async def test_with_bluesky(tango_test_device):
 
     # now let's do some bluesky stuff
     RE = RunEngine()
-    for readable in ophyd_dev._readables:
-        readable._backend.allow_events(False)
-        readable._backend.set_polling(True, 0.1, 0.1)
     RE(bp.count([ophyd_dev], 1))
 
 
@@ -355,5 +355,30 @@ async def test_tango_demo(demo_test_context):
         await counter2.connect()
 
         RE = RunEngine()
+
+        dc = motor1.get_dataclass()
+        dc.velocity = 1.0
+        prepare_status = motor1.prepare(dc)
+        await prepare_status
+        assert all([prepare_status.done, prepare_status.success])
+
+        cc = counter1.get_dataclass()
+        cc.sample_time = 0.1
+        prepare_status1 = counter1.prepare(cc)
+        prepare_status2 = counter2.prepare(cc)
+        await prepare_status1
+        await prepare_status2
+        assert all([prepare_status1.done, prepare_status1.success])
+        assert all([prepare_status2.done, prepare_status2.success])
+
         RE(bps.read(motor1.position))
+        RE(bps.mv(motor1, 0))
         RE(bp.count([counter1, counter2]))
+
+        set_status = motor1.set(1.0)
+        await asyncio.sleep(0.1)
+        stop_status = motor1.stop()
+        await set_status
+        await stop_status
+        assert all([set_status.done, stop_status.done])
+        assert all([set_status.success, stop_status.success])
