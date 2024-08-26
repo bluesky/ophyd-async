@@ -33,10 +33,8 @@ class TangoCounter(TangoReadableDevice):
         self.add_readables([self.counts], HintedSignal.uncached)
         self.add_readables([self.sample_time], ConfigSignal)
 
-    def trigger(self):
-        return AsyncStatus(self._trigger())
-
-    async def _trigger(self):
+    @AsyncStatus.wrap
+    async def trigger(self) -> None:
         sample_time = await self.sample_time.get_value()
         timeout = sample_time + DEFAULT_TIMEOUT
         await self.start.trigger(wait=True, timeout=timeout)
