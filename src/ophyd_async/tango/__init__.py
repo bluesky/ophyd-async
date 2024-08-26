@@ -11,16 +11,23 @@ from ._backend import (
 from .base_devices import (
     TangoDevice,
     TangoReadable,
+    tango_polling,
 )
 from .signal import (
     infer_python_type,
     infer_signal_frontend,
     make_backend,
+    tango_signal_auto,
+    tango_signal_r,
+    tango_signal_rw,
+    tango_signal_w,
+    tango_signal_x,
 )
 
 __all__ = [
     TangoDevice,
     TangoReadable,
+    tango_polling,
     TangoSignalBackend,
     get_python_type,
     get_dtype_extended,
@@ -32,4 +39,9 @@ __all__ = [
     AttributeProxy,
     CommandProxy,
     ensure_proper_executor,
+    tango_signal_auto,
+    tango_signal_r,
+    tango_signal_rw,
+    tango_signal_w,
+    tango_signal_x,
 ]

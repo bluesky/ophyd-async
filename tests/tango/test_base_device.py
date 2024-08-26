@@ -354,13 +354,6 @@ async def test_tango_demo(demo_test_context):
         await counter1.connect()
         await counter2.connect()
 
-        # Events are not supported by the test context so we disable them
-        motor1.position._backend.allow_events(False)
-        motor1.state._backend.allow_events(False)
-        # Enable polling for the position and state attributes
-        motor1.position._backend.set_polling(True, 0.1, 0.1)
-        motor1.state._backend.set_polling(True, 0.1)
-
         RE = RunEngine()
         RE(bps.read(motor1.position))
         RE(bp.count([counter1, counter2]))

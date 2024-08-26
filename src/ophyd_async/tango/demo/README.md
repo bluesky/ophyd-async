@@ -32,7 +32,9 @@ content = (
         ],
     }
 )
+
 tango_context = MultiDeviceTestContext(content)
+
 with tango_context as context:    
     motor1 = TangoMover(trl=context.get_device_access("demo/motor/1"), name="motor1")
     counter1 = TangoCounter(trl=context.get_device_access("demo/counter/1"), name="counter1")
@@ -40,13 +42,6 @@ with tango_context as context:
     await motor1.connect()
     await counter1.connect()
     await counter2.connect()
-    
-    # Events are not supported by the test context so we disable them
-    motor1.position._backend.allow_events(False)
-    motor1.state._backend.allow_events(False)
-    # Enable polling for the position and state attributes
-    motor1.position._backend.set_polling(True, 0.1, 0.1)
-    motor1.state._backend.set_polling(True, 0.1)
     
     RE = RunEngine()
     RE.subscribe(BestEffortCallback())
