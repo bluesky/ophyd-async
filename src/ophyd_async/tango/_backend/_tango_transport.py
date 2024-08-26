@@ -37,7 +37,7 @@ from tango.asyncio_executor import (
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
-__all__ = ["TangoTransport"]
+__all__ = ["TangoSignalBackend"]
 
 
 # time constant to wait for timeout
@@ -616,7 +616,7 @@ async def get_tango_trl(
 
 
 # --------------------------------------------------------------------
-class TangoTransport(SignalBackend[T]):
+class TangoSignalBackend(SignalBackend[T]):
     def __init__(
         self,
         datatype: Optional[Type[T]],

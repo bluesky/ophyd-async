@@ -8,7 +8,10 @@ from typing import Optional, Type, Union
 import numpy.typing as npt
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, SignalW, SignalX, T
-from ophyd_async.tango._backend._tango_transport import TangoTransport, get_python_type
+from ophyd_async.tango._backend._tango_transport import (
+    TangoSignalBackend,
+    get_python_type,
+)
 from tango import AttrDataFormat, AttrWriteType, CmdArgType, DevState
 from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy
@@ -27,8 +30,8 @@ def make_backend(
     read_trl: str,
     write_trl: str,
     device_proxy: Optional[DeviceProxy] = None,
-) -> TangoTransport:
-    return TangoTransport(datatype, read_trl, write_trl, device_proxy)
+) -> TangoSignalBackend:
+    return TangoSignalBackend(datatype, read_trl, write_trl, device_proxy)
 
 
 # --------------------------------------------------------------------

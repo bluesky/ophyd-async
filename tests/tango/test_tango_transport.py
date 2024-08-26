@@ -14,7 +14,7 @@ from test_tango_signals import (
 from ophyd_async.tango._backend._tango_transport import (
     AttributeProxy,
     CommandProxy,
-    TangoTransport,
+    TangoSignalBackend,
     ensure_proper_executor,
     get_dtype_extended,
     get_python_type,
@@ -719,7 +719,7 @@ async def test_tango_transport_read_and_write_trl(device_proxy):
     write_trl = trl + "/" + "setpoint"
 
     # Test with existing proxy
-    transport = TangoTransport(float, read_trl, write_trl, device_proxy)
+    transport = TangoSignalBackend(float, read_trl, write_trl, device_proxy)
     await transport.connect()
     reading = await transport.get_reading()
     initial_value = reading["value"]
@@ -729,7 +729,7 @@ async def test_tango_transport_read_and_write_trl(device_proxy):
     assert updated_value == new_value
 
     # Without pre-existing proxy
-    transport = TangoTransport(float, read_trl, write_trl, None)
+    transport = TangoSignalBackend(float, read_trl, write_trl, None)
     await transport.connect()
     reading = await transport.get_reading()
     initial_value = reading["value"]
@@ -746,7 +746,7 @@ async def test_tango_transport_read_only_trl(device_proxy):
     read_trl = trl + "/" + "readonly"
 
     # Test with existing proxy
-    transport = TangoTransport(int, read_trl, read_trl, device_proxy)
+    transport = TangoSignalBackend(int, read_trl, read_trl, device_proxy)
     await transport.connect()
     with pytest.raises(RuntimeError) as exc_info:
         await transport.put(1)
@@ -760,13 +760,13 @@ async def test_tango_transport_nonexistent_trl(device_proxy):
     nonexistent_trl = trl + "/" + "nonexistent"
 
     # Test with existing proxy
-    transport = TangoTransport(int, nonexistent_trl, nonexistent_trl, device_proxy)
+    transport = TangoSignalBackend(int, nonexistent_trl, nonexistent_trl, device_proxy)
     with pytest.raises(RuntimeError) as exc_info:
         await transport.connect()
     assert "cannot be found" in str(exc_info.value)
 
     # Without pre-existing proxy
-    transport = TangoTransport(int, nonexistent_trl, nonexistent_trl, None)
+    transport = TangoSignalBackend(int, nonexistent_trl, nonexistent_trl, None)
     with pytest.raises(RuntimeError) as exc_info:
         await transport.connect()
     assert "cannot be found" in str(exc_info.value)

@@ -12,7 +12,7 @@ from bluesky.protocols import Reading
 from test_base_device import TestDevice
 
 from ophyd_async.core import SignalBackend, SignalRW, SignalX, T
-from ophyd_async.tango._backend import TangoTransport
+from ophyd_async.tango._backend import TangoSignalBackend
 from ophyd_async.tango.signal import (
     tango_signal_auto,
     tango_signal_r,
@@ -243,8 +243,8 @@ async def make_backend(
     pv: str,
     connect: bool = True,
     allow_events: Optional[bool] = True,
-) -> TangoTransport:
-    backend = TangoTransport(typ, pv, pv)
+) -> TangoSignalBackend:
+    backend = TangoSignalBackend(typ, pv, pv)
     backend.allow_events(allow_events)
     if connect:
         await asyncio.wait_for(backend.connect(), 10)
