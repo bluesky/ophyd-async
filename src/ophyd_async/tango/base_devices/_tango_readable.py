@@ -8,7 +8,7 @@ from ophyd_async.core import (
     HintedSignal,
     StandardReadable,
 )
-from ophyd_async.tango.base_devices.base_device import TangoDevice
+from ophyd_async.tango.base_devices._base_device import TangoDevice
 
 
 def tango_polling(*args):

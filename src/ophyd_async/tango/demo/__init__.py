@@ -1,6 +1,6 @@
+from ._counter import TangoCounter, TangoCounterConfig
+from ._mover import TangoMover, TangoMoverConfig
 from ._tango import DemoCounter, DemoMover
-from .counter import TangoCounter, TangoCounterConfig
-from .mover import TangoMover, TangoMoverConfig
 
 __all__ = [
     "DemoCounter",

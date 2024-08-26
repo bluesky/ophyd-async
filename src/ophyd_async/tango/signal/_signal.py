@@ -8,7 +8,7 @@ from typing import Optional, Type, Union
 import numpy.typing as npt
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, SignalW, SignalX, T
-from ophyd_async.tango._backend._tango_backend import (
+from ophyd_async.tango.signal._tango_transport import (
     TangoSignalBackend,
     get_python_type,
 )

@@ -1,4 +1,9 @@
-from ._backend import (
+from .base_devices import (
+    TangoDevice,
+    TangoReadable,
+    tango_polling,
+)
+from .signal import (
     AttributeProxy,
     CommandProxy,
     TangoSignalBackend,
@@ -7,13 +12,6 @@ from ._backend import (
     get_python_type,
     get_tango_trl,
     get_trl_descriptor,
-)
-from .base_devices import (
-    TangoDevice,
-    TangoReadable,
-    tango_polling,
-)
-from .signal import (
     infer_python_type,
     infer_signal_frontend,
     make_backend,
