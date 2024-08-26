@@ -11,7 +11,7 @@ from test_tango_signals import (
     prepare_device,
 )
 
-from ophyd_async.tango._backend._tango_transport import (
+from ophyd_async.tango import (
     AttributeProxy,
     CommandProxy,
     TangoSignalBackend,

@@ -9,9 +9,7 @@ from ophyd_async.core import (
     Signal,
     SignalX,
 )
-from ophyd_async.tango import (
-    TangoReadableDevice,
-)
+from ophyd_async.tango import TangoReadable
 
 
 @dataclass
@@ -19,7 +17,7 @@ class TangoCounterConfig:
     sample_time: Optional[float] = None
 
 
-class TangoCounter(TangoReadableDevice):
+class TangoCounter(TangoReadable):
     # Enter the name and type of the signals you want to use
     # If type is None or Signal, the type will be inferred from the Tango device
     counts: None

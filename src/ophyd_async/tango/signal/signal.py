@@ -8,21 +8,13 @@ from typing import Optional, Type, Union
 import numpy.typing as npt
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, SignalW, SignalX, T
-from ophyd_async.tango._backend._tango_transport import (
+from ophyd_async.tango._backend._tango_backend import (
     TangoSignalBackend,
     get_python_type,
 )
 from tango import AttrDataFormat, AttrWriteType, CmdArgType, DevState
 from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy
-
-__all__ = (
-    "tango_signal_rw",
-    "tango_signal_r",
-    "tango_signal_w",
-    "tango_signal_x",
-    "tango_signal_auto",
-)
 
 
 def make_backend(

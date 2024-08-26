@@ -37,9 +37,6 @@ from tango.asyncio_executor import (
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
-__all__ = ["TangoSignalBackend"]
-
-
 # time constant to wait for timeout
 A_BIT = 1e-5
 

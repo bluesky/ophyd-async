@@ -9,11 +9,13 @@ import pytest
 from bluesky import RunEngine
 
 from ophyd_async.core import DeviceCollector, T
-from ophyd_async.tango import TangoReadableDevice, tango_signal_auto
-from ophyd_async.tango._backend._tango_transport import get_python_type
-from ophyd_async.tango.demo._tango.servers import DemoCounter, DemoMover
-from ophyd_async.tango.demo.counter import TangoCounter
-from ophyd_async.tango.demo.mover import TangoMover
+from ophyd_async.tango import TangoReadable, get_python_type, tango_signal_auto
+from ophyd_async.tango.demo import (
+    DemoCounter,
+    DemoMover,
+    TangoCounter,
+    TangoMover,
+)
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -169,12 +171,12 @@ class TestDevice(Device):
 
 
 # --------------------------------------------------------------------
-class TestReadableDevice(TangoReadableDevice):
+class TestTangoReadable(TangoReadable):
     __test__ = False
 
     def __init__(self, trl: str, name="") -> None:
         self.trl = trl
-        TangoReadableDevice.__init__(self, trl, name)
+        TangoReadable.__init__(self, trl, name)
 
     def register_signals(self):
         for feature in TESTED_FEATURES:
@@ -310,7 +312,7 @@ async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
 
     async with DeviceCollector():
-        test_device = TestReadableDevice(tango_test_device)
+        test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
@@ -322,7 +324,7 @@ async def test_connect(tango_test_device):
 async def test_with_bluesky(tango_test_device):
     async def connect():
         async with DeviceCollector():
-            device = TestReadableDevice(tango_test_device)
+            device = TestTangoReadable(tango_test_device)
             return device
 
     ophyd_dev = await connect()

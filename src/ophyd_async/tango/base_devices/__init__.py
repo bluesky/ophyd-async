@@ -1,3 +1,4 @@
-from ophyd_async.tango.base_devices.base_device import TangoReadableDevice
+from .base_device import TangoDevice
+from .tango_readable import TangoReadable
 
-__all__ = ("TangoReadableDevice",)
+__all__ = ["TangoDevice", "TangoReadable"]

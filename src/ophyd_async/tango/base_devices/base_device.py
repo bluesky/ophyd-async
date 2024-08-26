@@ -1,54 +1,58 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Optional
+from typing import Optional, Union
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Device,
     Signal,
     SignalR,
     SignalRW,
     SignalW,
     SignalX,
-    StandardReadable,
 )
 from ophyd_async.tango.signal import (
     infer_python_type,
     infer_signal_frontend,
     make_backend,
 )
-from tango.asyncio import DeviceProxy
+from tango import DeviceProxy as SyncDeviceProxy
+from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
-__all__ = ("TangoReadableDevice",)
 
-
-# --------------------------------------------------------------------
-class TangoReadableDevice(StandardReadable):
+class TangoDevice(Device):
     """
-    General class for TangoDevices. Extends StandardReadable to provide
-    attributes for Tango devices.
+    General class for TangoDevices. Extends Device to provide attributes for Tango
+    devices.
 
-    Usage: to proper signals mount should be awaited:
-    new_device = await TangoDevice(<tango_device>)
-
-    attributes:
-        trl:        Tango resource locator, typically of the device server.
-        proxy:      DeviceProxy object for the device. This is created when the device
-                    is connected.
-        src_dict:   Dictionary of the device's attributes. This can be used to account
-                    for variation in attribute names across similar servers.
+    Parameters
+    ----------
+    trl: str
+        Tango resource locator, typically of the device server.
+    device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]]
+        Asynchronous or synchronous DeviceProxy object for the device. If not provided,
+        an asynchronous DeviceProxy object will be created using the trl and awaited
+        when the device is connected.
     """
 
-    src_dict: dict = {}
     trl: str = ""
-    proxy: Optional[DeviceProxy] = None
+    proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None
 
-    # --------------------------------------------------------------------
-    def __init__(self, trl: str, name="") -> None:
-        self.trl = trl
-        self.proxy: Optional[DeviceProxy] = None
+    def __init__(
+        self,
+        trl: Optional[str] = None,
+        device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None,
+        name: str = "",
+    ) -> None:
+        if not trl and not device_proxy:
+            raise ValueError("Either 'trl' or 'device_proxy' must be provided.")
+
+        self.trl = trl if trl else ""
+        self.proxy = device_proxy if device_proxy else AsyncDeviceProxy(trl)
+
         self.create_children_from_annotations()
-        StandardReadable.__init__(self, name=name)
+        super().__init__(name=name)
 
     async def connect(
         self,
@@ -57,10 +61,13 @@ class TangoReadableDevice(StandardReadable):
         force_reconnect: bool = False,
     ):
         async def closure():
-            if self.proxy is None:
-                self.proxy = await DeviceProxy(self.trl)
-            elif isinstance(self.proxy, asyncio.Future):
-                self.proxy = await self.proxy
+            try:
+                if self.proxy is None:
+                    self.proxy = await AsyncDeviceProxy(self.trl)
+                elif isinstance(self.proxy, asyncio.Future):
+                    self.proxy = await self.proxy
+            except Exception as e:
+                raise RuntimeError("Could not connect to device proxy") from e
             return self
 
         await closure()
@@ -111,3 +118,6 @@ class TangoReadableDevice(StandardReadable):
                 else:
                     print(obj_type, type(obj_type))
                     raise ValueError(f"Invalid signal type {obj_type}")
+
+
+# --------------------------------------------------------------------

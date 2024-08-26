@@ -12,8 +12,8 @@ from bluesky.protocols import Reading
 from test_base_device import TestDevice
 
 from ophyd_async.core import SignalBackend, SignalRW, SignalX, T
-from ophyd_async.tango._backend import TangoSignalBackend
-from ophyd_async.tango.signal import (
+from ophyd_async.tango import (
+    TangoSignalBackend,
     tango_signal_auto,
     tango_signal_r,
     tango_signal_rw,
