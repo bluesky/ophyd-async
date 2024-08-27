@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.5.1.dev21+gd7f07488 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.5.1.dev22+g025bc543 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=d5359c4f"></script>
+    <script src="../../../_static/documentation_options.js?v=0eeee258"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -490,7 +490,13 @@ document.write(`
 <span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">,</span> <span class="n">Stoppable</span>
+<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Flyable</span><span class="p">,</span>
+    <span class="n">Locatable</span><span class="p">,</span>
+    <span class="n">Location</span><span class="p">,</span>
+    <span class="n">Preparable</span><span class="p">,</span>
+    <span class="n">Stoppable</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
@@ -548,7 +554,7 @@ document.write(`
 
 <div class="viewcode-block" id="Motor">
 <a class="viewcode-back" href="../../../generated/ophyd_async.epics.motor.Motor.html#ophyd_async.epics.motor.Motor">[docs]</a>
-<span class="k">class</span> <span class="nc">Motor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Motor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Locatable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that moves a motor record&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -707,6 +713,16 @@ document.write(`
         <span class="c1"># move to prepare position at maximum velocity</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">fly_velocity</span>
+
+<div class="viewcode-block" id="Motor.locate">
+<a class="viewcode-back" href="../../../generated/ophyd_async.epics.motor.Motor.html#ophyd_async.epics.motor.Motor.locate">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">locate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Location</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="n">location</span><span class="p">:</span> <span class="n">Location</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;setpoint&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="s2">&quot;readback&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">location</span></div>
+
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_prepare_motor_path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">fly_velocity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">start_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">end_position</span><span class="p">:</span> <span class="nb">float</span>

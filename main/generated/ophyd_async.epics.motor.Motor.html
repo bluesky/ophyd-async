@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.motor.Motor &#8212; ophyd-async 0.5.1.dev21+gd7f07488 documentation</title>
+    <title>ophyd_async.epics.motor.Motor &#8212; ophyd-async 0.5.1.dev22+g025bc543 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=d5359c4f"></script>
+    <script src="../_static/documentation_options.js?v=0eeee258"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -715,7 +715,7 @@ may change API on minor release numbers before then</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.motor.</span></span><span class="sig-name descname"><span class="pre">Motor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/motor.html#Motor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core._readable.StandardReadable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Movable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stoppable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stoppable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Flyable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Preparable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Preparable</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core._readable.StandardReadable"><code class="xref py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Locatable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Locatable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stoppable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stoppable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Flyable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Preparable" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Preparable</span></code></a></p>
 <p>Device that moves a motor record</p>
 <p class="rubric">Methods</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
@@ -744,22 +744,25 @@ may change API on minor release numbers before then</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.kickoff" title="ophyd_async.epics.motor.Motor.kickoff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kickoff</span></code></a></p></td>
 <td><p>Begin moving motor from prepared position to final position.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.prepare" title="ophyd_async.epics.motor.Motor.prepare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.locate" title="ophyd_async.epics.motor.Motor.locate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">locate</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.prepare" title="ophyd_async.epics.motor.Motor.prepare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare</span></code></a></p></td>
 <td><p>Calculate required velocity and run-up distance, then if motor limits aren't breached, move to start position minus run-up distance</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.read" title="ophyd_async.epics.motor.Motor.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.read" title="ophyd_async.epics.motor.Motor.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.read_configuration" title="ophyd_async.epics.motor.Motor.read_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_configuration</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.read_configuration" title="ophyd_async.epics.motor.Motor.read_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_configuration</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.set" title="ophyd_async.epics.motor.Motor.set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.set" title="ophyd_async.epics.motor.Motor.set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.set_name" title="ophyd_async.epics.motor.Motor.set_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_name</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.set_name" title="ophyd_async.epics.motor.Motor.set_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_name</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.set_readable_signals" title="ophyd_async.epics.motor.Motor.set_readable_signals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_readable_signals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.set_readable_signals" title="ophyd_async.epics.motor.Motor.set_readable_signals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_readable_signals</span></code></a></p></td>
 <td><p><dl class="field-list simple">
 <dt class="field-odd">param read<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Signals to make up <code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></p>
@@ -767,13 +770,13 @@ may change API on minor release numbers before then</p>
 </dl>
 </p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.stage" title="ophyd_async.epics.motor.Motor.stage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.stage" title="ophyd_async.epics.motor.Motor.stage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.stop" title="ophyd_async.epics.motor.Motor.stop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.stop" title="ophyd_async.epics.motor.Motor.stop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.unstage" title="ophyd_async.epics.motor.Motor.unstage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unstage</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.motor.Motor.unstage" title="ophyd_async.epics.motor.Motor.unstage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unstage</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -829,6 +832,11 @@ breached, move to start position minus run-up distance</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor.stop">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/motor.html#Motor.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor.stop" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor.locate">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">locate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Location" title="(in bluesky v1.13.0a5.dev76+gf25df0b2)"><span class="pre">Location</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/epics/motor.html#Motor.locate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor.locate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1015,6 +1023,7 @@ specify their behaviour.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.complete"><code class="docutils literal notranslate"><span class="pre">Motor.complete()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.set"><code class="docutils literal notranslate"><span class="pre">Motor.set()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.stop"><code class="docutils literal notranslate"><span class="pre">Motor.stop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.locate"><code class="docutils literal notranslate"><span class="pre">Motor.locate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.add_children_as_readables"><code class="docutils literal notranslate"><span class="pre">Motor.add_children_as_readables()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.add_readables"><code class="docutils literal notranslate"><span class="pre">Motor.add_readables()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.children"><code class="docutils literal notranslate"><span class="pre">Motor.children()</span></code></a></li>

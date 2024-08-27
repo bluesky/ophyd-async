@@ -30,6 +30,7 @@ ophyd\_async.epics.motor.Motor
       ~Motor.describe
       ~Motor.describe_configuration
       ~Motor.kickoff
+      ~Motor.locate
       ~Motor.prepare
       ~Motor.read
       ~Motor.read_configuration
