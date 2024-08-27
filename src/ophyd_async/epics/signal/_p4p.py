@@ -16,7 +16,6 @@ from pydantic import BaseModel
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    BackendConverterFactory,
     NotConnected,
     ReadingValueCallback,
     RuntimeSubsetEnum,
@@ -300,8 +299,83 @@ class DisconnectedPvaConverter(PvaConverter):
         raise NotImplementedError("No PV has been set as connect() has not been called")
 
 
-class PvaConverterFactory(BackendConverterFactory):
-    _ALLOWED_TYPES = (
+def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConverter:
+    pv = list(values)[0]
+    typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
+    typ = get_unique(
+        {k: type(v.get("value")) for k, v in values.items()}, "value types"
+    )
+    if "NTScalarArray" in typeid and typ is list:
+        # Waveform of strings, check we wanted this
+        if datatype and datatype != Sequence[str]:
+            raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
+        return PvaArrayConverter()
+    elif "NTScalarArray" in typeid or "NTNDArray" in typeid:
+        pv_dtype = get_unique(
+            {k: v["value"].dtype for k, v in values.items()}, "dtypes"
+        )
+        # This is an array
+        if datatype:
+            # Check we wanted an array of this type
+            dtype = get_dtype(datatype)
+            if not dtype:
+                raise TypeError(f"{pv} has type [{pv_dtype}] not {datatype.__name__}")
+            if dtype != pv_dtype:
+                raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
+        if "NTNDArray" in typeid:
+            return PvaNDArrayConverter()
+        else:
+            return PvaArrayConverter()
+    elif "NTEnum" in typeid and datatype is bool:
+        # Wanted a bool, but database represents as an enum
+        pv_choices_len = get_unique(
+            {k: len(v["value"]["choices"]) for k, v in values.items()},
+            "number of choices",
+        )
+        if pv_choices_len != 2:
+            raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
+        return PvaEmumBoolConverter()
+    elif "NTEnum" in typeid:
+        # This is an Enum
+        pv_choices = get_unique(
+            {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
+        )
+        return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
+    elif "NTScalar" in typeid:
+        if (
+            typ is str
+            and inspect.isclass(datatype)
+            and issubclass(datatype, RuntimeSubsetEnum)
+        ):
+            return PvaEnumConverter(
+                get_supported_values(pv, datatype, datatype.choices)
+            )
+        elif datatype and not issubclass(typ, datatype):
+            # Allow int signals to represent float records when prec is 0
+            is_prec_zero_float = typ is float and (
+                get_unique(
+                    {k: v["display"]["precision"] for k, v in values.items()},
+                    "precision",
+                )
+                == 0
+            )
+            if not (datatype is int and is_prec_zero_float):
+                raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
+        return PvaConverter()
+    elif "NTTable" in typeid:
+        if datatype and inspect.isclass(datatype) and issubclass(datatype, BaseModel):
+            return PvaPydanticModelConverter(datatype)
+        return PvaTableConverter()
+    elif "structure" in typeid:
+        return PvaDictConverter()
+    else:
+        raise TypeError(f"{pv}: Unsupported typeid {typeid}")
+
+
+class PvaSignalBackend(SignalBackend[T]):
+    _ctxt: Optional[Context] = None
+
+    _ALLOWED_DATATYPES = (
         bool,
         int,
         float,
@@ -320,99 +394,12 @@ class PvaConverterFactory(BackendConverterFactory):
         if datatype is None:
             return True
         return inspect.isclass(stripped_origin) and issubclass(
-            stripped_origin, cls._ALLOWED_TYPES
+            stripped_origin, cls._ALLOWED_DATATYPES
         )
-
-    @classmethod
-    def make_converter(
-        cls, datatype: Optional[Type], values: Dict[str, Any]
-    ) -> PvaConverter:
-        pv = list(values)[0]
-        typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
-        typ = get_unique(
-            {k: type(v.get("value")) for k, v in values.items()}, "value types"
-        )
-        if "NTScalarArray" in typeid and typ is list:
-            # Waveform of strings, check we wanted this
-            if datatype and datatype != Sequence[str]:
-                raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
-            return PvaArrayConverter()
-        elif "NTScalarArray" in typeid or "NTNDArray" in typeid:
-            pv_dtype = get_unique(
-                {k: v["value"].dtype for k, v in values.items()}, "dtypes"
-            )
-            # This is an array
-            if datatype:
-                # Check we wanted an array of this type
-                dtype = get_dtype(datatype)
-                if not dtype:
-                    raise TypeError(
-                        f"{pv} has type [{pv_dtype}] not {datatype.__name__}"
-                    )
-                if dtype != pv_dtype:
-                    raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
-            if "NTNDArray" in typeid:
-                return PvaNDArrayConverter()
-            else:
-                return PvaArrayConverter()
-        elif "NTEnum" in typeid and datatype is bool:
-            # Wanted a bool, but database represents as an enum
-            pv_choices_len = get_unique(
-                {k: len(v["value"]["choices"]) for k, v in values.items()},
-                "number of choices",
-            )
-            if pv_choices_len != 2:
-                raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
-            return PvaEmumBoolConverter()
-        elif "NTEnum" in typeid:
-            # This is an Enum
-            pv_choices = get_unique(
-                {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
-            )
-            return PvaEnumConverter(get_supported_values(pv, datatype, pv_choices))
-        elif "NTScalar" in typeid:
-            if (
-                typ is str
-                and inspect.isclass(datatype)
-                and issubclass(datatype, RuntimeSubsetEnum)
-            ):
-                return PvaEnumConverter(
-                    get_supported_values(pv, datatype, datatype.choices)
-                )
-            elif datatype and not issubclass(typ, datatype):
-                # Allow int signals to represent float records when prec is 0
-                is_prec_zero_float = typ is float and (
-                    get_unique(
-                        {k: v["display"]["precision"] for k, v in values.items()},
-                        "precision",
-                    )
-                    == 0
-                )
-                if not (datatype is int and is_prec_zero_float):
-                    raise TypeError(
-                        f"{pv} has type {typ.__name__} not {datatype.__name__}"
-                    )
-            return PvaConverter()
-        elif "NTTable" in typeid:
-            if (
-                datatype
-                and inspect.isclass(datatype)
-                and issubclass(datatype, BaseModel)
-            ):
-                return PvaPydanticModelConverter(datatype)
-            return PvaTableConverter()
-        elif "structure" in typeid:
-            return PvaDictConverter()
-        else:
-            raise TypeError(f"{pv}: Unsupported typeid {typeid}")
-
-
-class PvaSignalBackend(SignalBackend[T]):
-    _ctxt: Optional[Context] = None
 
     def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
         self.datatype = datatype
-        if not PvaConverterFactory.datatype_allowed(self.datatype):
+        if not PvaSignalBackend.datatype_allowed(self.datatype):
             raise TypeError(f"Given datatype {self.datatype} unsupported in PVA.")
 
         self.read_pv = read_pv
@@ -457,9 +444,7 @@ class PvaSignalBackend(SignalBackend[T]):
         else:
             # The same, so only need to connect one
             await self._store_initial_value(self.read_pv, timeout=timeout)
-        self.converter = PvaConverterFactory.make_converter(
-            self.datatype, self.initial_values
-        )
+        self.converter = make_converter(self.datatype, self.initial_values)
 
     async def put(self, value: Optional[T], wait=True, timeout=None):
         if value is None:

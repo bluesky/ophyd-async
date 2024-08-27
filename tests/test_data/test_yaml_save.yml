@@ -20,5 +20,7 @@
   pv_float: 1.234
   pv_int: 1
   pv_protocol_device_abstraction:
-    some_field: 1
+    some_int_field: 1
+    some_pydantic_numpy_field_float: [1.0, 2.0, 3.0]
+    some_pydantic_numpy_field_int: [1, 2, 3]
   pv_str: test_string

@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     ClassVar,
@@ -13,27 +13,19 @@ from ._protocol import DataKey, Reading
 from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
-class BackendConverterFactory(ABC):
-    """Convert between the signal backend and the signal type"""
-
-    _ALLOWED_TYPES: ClassVar[Tuple[Type]]
-
-    @classmethod
-    @abstractmethod
-    def datatype_allowed(cls, datatype: Type) -> bool:
-        """Check if the datatype is allowed."""
-
-    @classmethod
-    @abstractmethod
-    def make_converter(self, datatype: Type):
-        """Updates the object with callables `to_signal` and `from_signal`."""
-
-
 class SignalBackend(Generic[T]):
     """A read/write/monitor backend for a Signals"""
 
     #: Datatype of the signal value
     datatype: Optional[Type[T]] = None
+
+    _ALLOWED_DATATYPES: ClassVar[Tuple[Type]]
+
+    @classmethod
+    @abstractmethod
+    def datatype_allowed(cls, dtype: type):
+        """Check if a given datatype is acceptable for this signal backend."""
+        pass
 
     #: Like ca://PV_PREFIX:SIGNAL
     @abstractmethod

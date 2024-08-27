@@ -62,7 +62,6 @@ from ._signal import (
     wait_for_value,
 )
 from ._signal_backend import (
-    BackendConverterFactory,
     RuntimeSubsetEnum,
     SignalBackend,
     SubsetEnum,
@@ -108,7 +107,6 @@ __all__ = [
     "MockSignalBackend",
     "callback_on_mock_put",
     "get_mock_put",
-    "BackendConverterFactory",
     "mock_puts_blocked",
     "reset_mock_put_calls",
     "set_mock_put_proceeds",

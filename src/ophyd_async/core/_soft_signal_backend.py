@@ -12,7 +12,6 @@ from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 from ._signal_backend import (
-    BackendConverterFactory,
     RuntimeSubsetEnum,
     SignalBackend,
 )
@@ -149,32 +148,22 @@ class SoftPydanticModelConverter(SoftConverter):
         return super().make_initial_value(datatype)
 
 
-class SoftSignalConverterFactory(BackendConverterFactory):
-    _ALLOWED_TYPES = (object,)  # Any type is allowed
+def make_converter(datatype):
+    is_array = get_dtype(datatype) is not None
+    is_sequence = get_origin(datatype) == abc.Sequence
+    is_enum = inspect.isclass(datatype) and (
+        issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
+    )
+    is_pydantic_model = inspect.isclass(datatype) and issubclass(datatype, BaseModel)
 
-    @classmethod
-    def datatype_allowed(cls, datatype: Type) -> bool:
-        return True  # Any value allowed in a soft signal
+    if is_array or is_sequence:
+        return SoftArrayConverter()
+    if is_enum:
+        return SoftEnumConverter(datatype)
+    if is_pydantic_model:
+        return SoftPydanticModelConverter(datatype)
 
-    @classmethod
-    def make_converter(cls, datatype):
-        is_array = get_dtype(datatype) is not None
-        is_sequence = get_origin(datatype) == abc.Sequence
-        is_enum = inspect.isclass(datatype) and (
-            issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
-        )
-        is_pydantic_model = inspect.isclass(datatype) and issubclass(
-            datatype, BaseModel
-        )
-
-        if is_array or is_sequence:
-            return SoftArrayConverter()
-        if is_enum:
-            return SoftEnumConverter(datatype)
-        if is_pydantic_model:
-            return SoftPydanticModelConverter(datatype)
-
-        return SoftConverter()
+    return SoftConverter()
 
 
 class SoftSignalBackend(SignalBackend[T]):
@@ -185,6 +174,12 @@ class SoftSignalBackend(SignalBackend[T]):
     _timestamp: float
     _severity: int
 
+    _ALLOWED_DATATYPES = (object,)  # Any type is allowed
+
+    @classmethod
+    def datatype_allowed(cls, datatype: Type) -> bool:
+        return True  # Any value allowed in a soft signal
+
     def __init__(
         self,
         datatype: Optional[Type[T]],
@@ -194,9 +189,7 @@ class SoftSignalBackend(SignalBackend[T]):
         self.datatype = datatype
         self._initial_value = initial_value
         self._metadata = metadata or {}
-        self.converter: SoftConverter = SoftSignalConverterFactory.make_converter(
-            datatype
-        )
+        self.converter: SoftConverter = make_converter(datatype)
         if self._initial_value is None:
             self._initial_value = self.converter.make_initial_value(self.datatype)
         else:

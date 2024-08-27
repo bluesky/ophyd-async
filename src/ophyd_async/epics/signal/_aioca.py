@@ -23,7 +23,6 @@ from epicscorelibs.ca import dbr
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    BackendConverterFactory,
     NotConnected,
     ReadingValueCallback,
     RuntimeSubsetEnum,
@@ -186,8 +185,81 @@ class DisconnectedCaConverter(CaConverter):
         raise NotImplementedError("No PV has been set as connect() has not been called")
 
 
-class CaConverterFactory(BackendConverterFactory):
-    _ALLOWED_TYPES = (
+def make_converter(
+    datatype: Optional[Type], values: Dict[str, AugmentedValue]
+) -> CaConverter:
+    pv = list(values)[0]
+    pv_dbr = get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
+    is_array = bool([v for v in values.values() if v.element_count > 1])
+    if is_array and datatype is str and pv_dbr == dbr.DBR_CHAR:
+        # Override waveform of chars to be treated as string
+        return CaLongStrConverter()
+    elif is_array and pv_dbr == dbr.DBR_STRING:
+        # Waveform of strings, check we wanted this
+        if datatype:
+            datatype_dtype = get_dtype(datatype)
+            if not datatype_dtype or not np.can_cast(datatype_dtype, np.str_):
+                raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
+        return CaArrayConverter(pv_dbr, None)
+    elif is_array:
+        pv_dtype = get_unique({k: v.dtype for k, v in values.items()}, "dtypes")
+        # This is an array
+        if datatype:
+            # Check we wanted an array of this type
+            dtype = get_dtype(datatype)
+            if not dtype:
+                raise TypeError(f"{pv} has type [{pv_dtype}] not {datatype.__name__}")
+            if dtype != pv_dtype:
+                raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
+        return CaArrayConverter(pv_dbr, None)
+    elif pv_dbr == dbr.DBR_ENUM and datatype is bool:
+        # Database can't do bools, so are often representated as enums,
+        # CA can do int
+        pv_choices_len = get_unique(
+            {k: len(v.enums) for k, v in values.items()}, "number of choices"
+        )
+        if pv_choices_len != 2:
+            raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
+        return CaBoolConverter(dbr.DBR_SHORT, dbr.DBR_SHORT)
+    elif pv_dbr == dbr.DBR_ENUM:
+        # This is an Enum
+        pv_choices = get_unique(
+            {k: tuple(v.enums) for k, v in values.items()}, "choices"
+        )
+        supported_values = get_supported_values(pv, datatype, pv_choices)
+        return CaEnumConverter(dbr.DBR_STRING, None, supported_values)
+    else:
+        value = list(values.values())[0]
+        # Done the dbr check, so enough to check one of the values
+        if datatype and not isinstance(value, datatype):
+            # Allow int signals to represent float records when prec is 0
+            is_prec_zero_float = (
+                isinstance(value, float)
+                and get_unique({k: v.precision for k, v in values.items()}, "precision")
+                == 0
+            )
+            if not (datatype is int and is_prec_zero_float):
+                raise TypeError(
+                    f"{pv} has type {type(value).__name__.replace('ca_', '')} "
+                    + f"not {datatype.__name__}"
+                )
+    return CaConverter(pv_dbr, None)
+
+
+_tried_pyepics = False
+
+
+def _use_pyepics_context_if_imported():
+    global _tried_pyepics
+    if not _tried_pyepics:
+        ca = sys.modules.get("epics.ca", None)
+        if ca:
+            ca.use_initial_context()
+        _tried_pyepics = True
+
+
+class CaSignalBackend(SignalBackend[T]):
+    _ALLOWED_DATATYPES = (
         bool,
         int,
         float,
@@ -205,91 +277,12 @@ class CaConverterFactory(BackendConverterFactory):
             return True
 
         return inspect.isclass(stripped_origin) and issubclass(
-            stripped_origin, cls._ALLOWED_TYPES
+            stripped_origin, cls._ALLOWED_DATATYPES
         )
 
-    @classmethod
-    def make_converter(
-        cls, datatype: Optional[Type], values: Dict[str, AugmentedValue]
-    ) -> CaConverter:
-        pv = list(values)[0]
-        pv_dbr = get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
-        is_array = bool([v for v in values.values() if v.element_count > 1])
-        if is_array and datatype is str and pv_dbr == dbr.DBR_CHAR:
-            # Override waveform of chars to be treated as string
-            return CaLongStrConverter()
-        elif is_array and pv_dbr == dbr.DBR_STRING:
-            # Waveform of strings, check we wanted this
-            if datatype:
-                datatype_dtype = get_dtype(datatype)
-                if not datatype_dtype or not np.can_cast(datatype_dtype, np.str_):
-                    raise TypeError(f"{pv} has type [str] not {datatype.__name__}")
-            return CaArrayConverter(pv_dbr, None)
-        elif is_array:
-            pv_dtype = get_unique({k: v.dtype for k, v in values.items()}, "dtypes")
-            # This is an array
-            if datatype:
-                # Check we wanted an array of this type
-                dtype = get_dtype(datatype)
-                if not dtype:
-                    raise TypeError(
-                        f"{pv} has type [{pv_dtype}] not {datatype.__name__}"
-                    )
-                if dtype != pv_dtype:
-                    raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
-            return CaArrayConverter(pv_dbr, None)
-        elif pv_dbr == dbr.DBR_ENUM and datatype is bool:
-            # Database can't do bools, so are often representated as enums,
-            # CA can do int
-            pv_choices_len = get_unique(
-                {k: len(v.enums) for k, v in values.items()}, "number of choices"
-            )
-            if pv_choices_len != 2:
-                raise TypeError(f"{pv} has {pv_choices_len} choices, can't map to bool")
-            return CaBoolConverter(dbr.DBR_SHORT, dbr.DBR_SHORT)
-        elif pv_dbr == dbr.DBR_ENUM:
-            # This is an Enum
-            pv_choices = get_unique(
-                {k: tuple(v.enums) for k, v in values.items()}, "choices"
-            )
-            supported_values = get_supported_values(pv, datatype, pv_choices)
-            return CaEnumConverter(dbr.DBR_STRING, None, supported_values)
-        else:
-            value = list(values.values())[0]
-            # Done the dbr check, so enough to check one of the values
-            if datatype and not isinstance(value, datatype):
-                # Allow int signals to represent float records when prec is 0
-                is_prec_zero_float = (
-                    isinstance(value, float)
-                    and get_unique(
-                        {k: v.precision for k, v in values.items()}, "precision"
-                    )
-                    == 0
-                )
-                if not (datatype is int and is_prec_zero_float):
-                    raise TypeError(
-                        f"{pv} has type {type(value).__name__.replace('ca_', '')} "
-                        + f"not {datatype.__name__}"
-                    )
-        return CaConverter(pv_dbr, None)
-
-
-_tried_pyepics = False
-
-
-def _use_pyepics_context_if_imported():
-    global _tried_pyepics
-    if not _tried_pyepics:
-        ca = sys.modules.get("epics.ca", None)
-        if ca:
-            ca.use_initial_context()
-        _tried_pyepics = True
-
-
-class CaSignalBackend(SignalBackend[T]):
     def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
         self.datatype = datatype
-        if not CaConverterFactory.datatype_allowed(self.datatype):
+        if not CaSignalBackend.datatype_allowed(self.datatype):
             raise TypeError(f"Given datatype {self.datatype} unsupported in CA.")
         self.read_pv = read_pv
         self.write_pv = write_pv
@@ -320,9 +313,7 @@ class CaSignalBackend(SignalBackend[T]):
         else:
             # The same, so only need to connect one
             await self._store_initial_value(self.read_pv, timeout=timeout)
-        self.converter = CaConverterFactory.make_converter(
-            self.datatype, self.initial_values
-        )
+        self.converter = make_converter(self.datatype, self.initial_values)
 
     async def put(self, value: Optional[T], wait=True, timeout=None):
         if value is None:

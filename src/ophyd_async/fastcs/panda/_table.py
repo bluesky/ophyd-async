@@ -41,12 +41,14 @@ PydanticNp1DArrayInt32 = Annotated[
     NpArrayPydanticAnnotation.factory(
         data_type=np.int32, dimensions=1, strict_data_typing=False
     ),
+    Field(default_factory=lambda: np.array([], np.int32)),
 ]
 PydanticNp1DArrayBool = Annotated[
     np.ndarray[tuple[int], np.bool_],
     NpArrayPydanticAnnotation.factory(
         data_type=np.bool_, dimensions=1, strict_data_typing=False
     ),
+    Field(default_factory=lambda: np.array([], dtype=np.bool_)),
 ]
 
 PydanticNp1DArrayUnicodeString = Annotated[
@@ -54,61 +56,28 @@ PydanticNp1DArrayUnicodeString = Annotated[
     NpArrayPydanticAnnotation.factory(
         data_type=np.unicode_, dimensions=1, strict_data_typing=False
     ),
+    Field(default_factory=lambda: np.array([], dtype=np.dtype("<U32"))),
 ]
 
 
 class SeqTable(PvaTable):
-    repeats: PydanticNp1DArrayInt32 = Field(
-        default_factory=lambda: np.array([], np.int32)
-    )
-    trigger: PydanticNp1DArrayUnicodeString = Field(
-        default_factory=lambda: np.array([], dtype=np.dtype("<U32"))
-    )
-    position: PydanticNp1DArrayInt32 = Field(
-        default_factory=lambda: np.array([], dtype=np.int32)
-    )
-    time1: PydanticNp1DArrayInt32 = Field(
-        default_factory=lambda: np.array([], dtype=np.int32)
-    )
-    outa1: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outb1: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outc1: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outd1: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    oute1: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outf1: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    time2: PydanticNp1DArrayInt32 = Field(
-        default_factory=lambda: np.array([], dtype=np.int32)
-    )
-    outa2: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outb2: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outc2: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outd2: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    oute2: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
-    outf2: PydanticNp1DArrayBool = Field(
-        default_factory=lambda: np.array([], dtype=np.bool_)
-    )
+    repeats: PydanticNp1DArrayInt32
+    trigger: PydanticNp1DArrayUnicodeString
+    position: PydanticNp1DArrayInt32
+    time1: PydanticNp1DArrayInt32
+    outa1: PydanticNp1DArrayBool
+    outb1: PydanticNp1DArrayBool
+    outc1: PydanticNp1DArrayBool
+    outd1: PydanticNp1DArrayBool
+    oute1: PydanticNp1DArrayBool
+    outf1: PydanticNp1DArrayBool
+    time2: PydanticNp1DArrayInt32
+    outa2: PydanticNp1DArrayBool
+    outb2: PydanticNp1DArrayBool
+    outc2: PydanticNp1DArrayBool
+    outd2: PydanticNp1DArrayBool
+    oute2: PydanticNp1DArrayBool
+    outf2: PydanticNp1DArrayBool
 
     @classmethod
     def row(
