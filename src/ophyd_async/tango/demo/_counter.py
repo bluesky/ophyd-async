@@ -20,7 +20,7 @@ class TangoCounterConfig:
 class TangoCounter(TangoReadable):
     # Enter the name and type of the signals you want to use
     # If type is None or Signal, the type will be inferred from the Tango device
-    counts: None
+    counts: Signal
     sample_time: Signal
     state: Signal
     reset: Signal

@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Optional, Union, get_type_hints
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     Signal,
-    SignalR,
-    SignalRW,
-    SignalW,
-    SignalX,
 )
 from ophyd_async.tango.signal import (
     infer_python_type,
@@ -79,7 +75,8 @@ class TangoDevice(Device):
         await super().connect(mock=mock, timeout=timeout)
 
     def register_signals(self):
-        for name, obj_type in self.__annotations__.items():
+        annots = get_type_hints(self.__class__)
+        for name, obj_type in annots.items():
             if hasattr(self, name):
                 signal = getattr(self, name)
                 if issubclass(type(signal), Signal):
@@ -98,29 +95,17 @@ class TangoDevice(Device):
                     signal._backend = backend  # noqa: SLF001
 
     def create_children_from_annotations(self):
-        for attr_name, obj_type in self.__annotations__.items():
-            if (
-                isinstance(obj_type, type)
-                and issubclass(obj_type, Signal)
-                or obj_type is None
-            ):
-                if obj_type is SignalRW:
-                    setattr(self, attr_name, SignalRW())
-                elif obj_type is SignalR:
-                    setattr(self, attr_name, SignalR())
-                elif obj_type is SignalW:
-                    setattr(self, attr_name, SignalW())
-                elif obj_type is SignalX:
-                    setattr(self, attr_name, SignalX())
-                elif obj_type is Signal or obj_type is None:
+        annots = get_type_hints(self.__class__)
+        for attr_name, obj_type in annots.items():
+            if isinstance(obj_type, type):
+                if obj_type is Signal:
                     tango_name = attr_name.lstrip("_")
+                    trl = f"{self.trl}/{tango_name}"
                     setattr(
-                        self,
-                        attr_name,
-                        infer_signal_frontend(trl=f"{self.trl}/" f"{tango_name}"),
+                        self, attr_name, infer_signal_frontend(trl=trl, name=attr_name)
                     )
-                else:
-                    raise ValueError(f"Invalid signal type {obj_type}")
+                elif issubclass(obj_type, Signal):
+                    setattr(self, attr_name, obj_type(name=attr_name))
 
 
 # --------------------------------------------------------------------
