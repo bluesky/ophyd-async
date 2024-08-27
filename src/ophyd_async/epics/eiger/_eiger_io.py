@@ -1,6 +1,6 @@
 from enum import Enum
 
-from ophyd_async.core import AsyncStatus, Device
+from ophyd_async.core import Device
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw_rbv, epics_signal_w
 
 
@@ -8,22 +8,6 @@ class EigerTriggerMode(str, Enum):
     internal = "ints"
     edge = "exts"
     gate = "exte"
-
-
-class PhotonEnergy(Device):
-    """Changing photon energy takes some time so only do so if the current energy is
-    outside the tolerance."""
-
-    def __init__(self, prefix, tolerance=0.1, name: str = "") -> None:
-        self._photon_energy = epics_signal_rw_rbv(float, f"{prefix}PhotonEnergy")
-        self.tolerance = tolerance
-        super().__init__(name)
-
-    @AsyncStatus.wrap
-    async def set(self, value):
-        current_energy = await self._photon_energy.get_value()
-        if abs(current_energy - value) > self.tolerance:
-            await self._photon_energy.set(value)
 
 
 class EigerDriverIO(Device):
@@ -53,6 +37,6 @@ class EigerDriverIO(Device):
         self.omega_start = epics_signal_rw_rbv(float, f"{prefix}OmegaStart")
         self.omega_increment = epics_signal_rw_rbv(float, f"{prefix}OmegaIncrement")
 
-        self.photon_energy = PhotonEnergy(prefix)
+        self.photon_energy = epics_signal_rw_rbv(float, f"{prefix}PhotonEnergy")
 
         super().__init__(name)

@@ -47,7 +47,7 @@ async def test_when_open_called_then_all_expected_signals_set(
         "uint16", wait=ANY, timeout=ANY
     )
     get_mock_put(driver.num_to_capture).assert_called_once_with(
-        1, wait=ANY, timeout=ANY
+        0, wait=ANY, timeout=ANY
     )
 
     get_mock_put(driver.capture).assert_called_once_with(

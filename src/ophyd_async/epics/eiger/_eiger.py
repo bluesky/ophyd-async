@@ -1,8 +1,15 @@
-from ophyd_async.core import PathProvider, StandardDetector
+from pydantic import Field
+
+from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector
+from ophyd_async.core._detector import TriggerInfo
 
 from ._eiger_controller import EigerController
 from ._eiger_io import EigerDriverIO
 from ._odin_io import Odin, OdinWriter
+
+
+class EigerTriggerInfo(TriggerInfo):
+    energy_ev: float = Field(gt=0)
 
 
 class EigerDetector(StandardDetector):
@@ -29,3 +36,8 @@ class EigerDetector(StandardDetector):
             OdinWriter(path_provider, lambda: self.name, self.odin),
             name=name,
         )
+
+    @AsyncStatus.wrap
+    async def prepare(self, value: EigerTriggerInfo) -> None:
+        await self._controller.set_energy(value.energy_ev)
+        await super().prepare(value)

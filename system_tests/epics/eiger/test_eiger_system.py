@@ -11,13 +11,10 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     StaticPathProvider,
-    TriggerInfo,
 )
-from ophyd_async.epics.eiger import EigerDetector
+from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
 from ophyd_async.epics.signal import epics_signal_rw
 
-EIGER_PREFIX = os.environ["eiger_ioc"] + ":"
-ODIN_PREFIX = os.environ["odin_ioc"] + ":"
 SAVE_PATH = "/tmp"
 
 
@@ -39,14 +36,19 @@ class SetupDevice(Device):
 
 
 @pytest.fixture
+def ioc_prefixes():
+    return os.environ["eiger_ioc"] + ":", os.environ["odin_ioc"] + ":"
+
+
+@pytest.fixture
 def RE():
     return RunEngine()
 
 
 @pytest.fixture
-async def setup_device(RE):
+async def setup_device(RE, ioc_prefixes):
     async with DeviceCollector():
-        device = SetupDevice(EIGER_PREFIX, ODIN_PREFIX + "FP:")
+        device = SetupDevice(ioc_prefixes[0], ioc_prefixes[1] + "FP:")
     await asyncio.gather(
         device.header_detail.set("all"),
         device.compression.set("BSLZ4"),
@@ -58,21 +60,22 @@ async def setup_device(RE):
 
 
 @pytest.fixture
-async def test_eiger(RE) -> EigerDetector:
+async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
     provider = StaticPathProvider(lambda: "test_eiger", Path(SAVE_PATH))
     async with DeviceCollector():
-        test_eiger = EigerDetector("", provider, EIGER_PREFIX, ODIN_PREFIX)
+        test_eiger = EigerDetector("", provider, ioc_prefixes[0], ioc_prefixes[1])
 
     return test_eiger
 
 
 async def test_trigger_saves_file(test_eiger: EigerDetector, setup_device: SetupDevice):
-    single_shot = TriggerInfo(
+    single_shot = EigerTriggerInfo(
         frame_timeout=None,
         number=1,
         trigger=DetectorTrigger.internal,
         deadtime=None,
         livetime=None,
+        energy_ev=10000,
     )
 
     await test_eiger.stage()

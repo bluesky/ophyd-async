@@ -89,3 +89,26 @@ async def test_when_get_deadtime_called_then_returns_expected_deadtime(
 ):
     driver, controller = eiger_driver_and_controller
     assert controller.get_deadtime(0) == 0.0001
+
+
+async def test_given_energy_within_tolerance_when_photon_energy_set_then_pv_unchanged(
+    eiger_driver_and_controller: DriverAndController,
+):
+    driver, controller = eiger_driver_and_controller
+    initial_energy = 10
+    set_mock_value(driver.photon_energy, initial_energy)
+    await controller.set_energy(10.002)
+    get_mock_put(driver.photon_energy).assert_not_called()
+    assert (await driver.photon_energy.get_value()) == initial_energy
+
+
+async def test_given_energy_outside_tolerance_when_photon_energy_set_then_pv_changed(
+    eiger_driver_and_controller: DriverAndController,
+):
+    driver, controller = eiger_driver_and_controller
+    initial_energy = 10
+    new_energy = 15
+    set_mock_value(driver.photon_energy, initial_energy)
+    await controller.set_energy(new_energy)
+    get_mock_put(driver.photon_energy).assert_called_once()
+    assert (await driver.photon_energy.get_value()) == new_energy
