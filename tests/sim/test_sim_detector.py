@@ -1,12 +1,9 @@
-import asyncio
 from collections import defaultdict
-from pprint import pprint
 
 import bluesky.plans as bp
 import h5py
 import numpy as np
 from bluesky import RunEngine
-from bluesky import plan_stubs as bps
 
 from ophyd_async.core import assert_emitted
 from ophyd_async.plan_stubs import ensure_connected

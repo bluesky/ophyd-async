@@ -1,5 +1,6 @@
 import asyncio
 import os
+import pprint
 import subprocess
 import sys
 import time
@@ -87,8 +88,8 @@ def assert_no_pending_tasks(request: FixtureRequest):
         # for other reasons then we don't have to error here
         if unfinished_tasks and request.session.testsfailed == fail_count:
             raise RuntimeError(
-                f"Not all tasks {unfinished_tasks} "
-                f"closed during test {request.node.name}."
+                f"Not all tasks closed during test {request.node.name}:\n"
+                f"{pprint.pformat(unfinished_tasks)}"
             )
 
     request.addfinalizer(error_and_kill_pending_tasks)
@@ -126,10 +127,9 @@ def RE(request: FixtureRequest):
         # If the tasks are still pending because the test failed
         # for other reasons then we don't have to error here
         if unfinished_tasks and request.session.testsfailed == fail_count:
-            import pprint
             raise RuntimeError(
-                f"Not all tasks \n{pprint.pformat(unfinished_tasks)}\n"
-                f"closed during test {request.node.name}."
+                f"Not all tasks closed during test {request.node.name}:\n"
+                f"{pprint.pformat(unfinished_tasks)}"
             )
 
     request.addfinalizer(clean_event_loop)
