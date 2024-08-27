@@ -27,6 +27,7 @@ class EigerController(DetectorControl):
         self._drv = driver
 
     def get_deadtime(self, exposure: float) -> float:
+        # See https://media.dectris.com/filer_public/30/14/3014704e-5f3b-43ba-8ccf-8ef720e60d2a/240202_usermanual_eiger2.pdf
         return 0.0001
 
     async def set_energy(self, energy: float, tolerance: float = 0.1):
