@@ -82,6 +82,7 @@ async def test_trigger_saves_file(test_eiger: EigerDetector, setup_device: Setup
     await asyncio.sleep(0.5)
     await setup_device.trigger.set(1)
     await asyncio.sleep(0.5)  # Need to work out when it's actually finished writing
+    await test_eiger.unstage()
 
     with h5py.File(SAVE_PATH + "/test_eiger_000001.h5") as f:
         assert "data" in f.keys()

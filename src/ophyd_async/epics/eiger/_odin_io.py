@@ -13,11 +13,12 @@ from ophyd_async.core import (
     NameProvider,
     PathProvider,
     observe_value,
+    set_and_wait_for_value,
 )
 from ophyd_async.epics.signal import (
     epics_signal_r,
+    epics_signal_rw,
     epics_signal_rw_rbv,
-    epics_signal_w,
 )
 
 
@@ -38,7 +39,9 @@ class Odin(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nodes = DeviceVector({i: OdinNode(f"{prefix}FP{i}:") for i in range(4)})
 
-        self.capture = epics_signal_w(Writing, f"{prefix}ConfigHdfWrite")
+        self.capture = epics_signal_rw(
+            Writing, f"{prefix}Writing", f"{prefix}ConfigHdfWrite"
+        )
         self.num_captured = epics_signal_r(int, f"{prefix}FramesWritten")
         self.num_to_capture = epics_signal_rw_rbv(int, f"{prefix}ConfigHdfFrames")
 
@@ -83,9 +86,7 @@ class OdinWriter(DetectorWriter):
             self._drv.data_type.set(
                 "uint16"
             ),  # TODO: Get from eiger https://github.com/bluesky/ophyd-async/issues/529
-            # TODO: Where should I actually be setting this
-            # The arm of the detector controller? This then breaks the seperation
-            self._drv.num_to_capture.set(1),
+            self._drv.num_to_capture.set(0),
         )
 
         await self._drv.capture.set(Writing.ON)
@@ -121,4 +122,4 @@ class OdinWriter(DetectorWriter):
         raise NotImplementedError()
 
     async def close(self) -> None:
-        await self._drv.capture.set(Writing.OFF)
+        await set_and_wait_for_value(self._drv.capture, Writing.OFF)
