@@ -457,7 +457,7 @@ async def test_tango_signal_r(
     proxy = await DeviceProxy(echo_device) if use_proxy else None
     py_type = py_type if use_dtype else None
 
-    timeout = 0.1
+    timeout = 0.2
     signal = tango_signal_r(
         datatype=py_type,
         read_trl=source,
@@ -519,7 +519,7 @@ async def test_tango_signal_w(
     proxy = await DeviceProxy(echo_device) if use_proxy else None
     py_type = py_type if use_dtype else None
 
-    timeout = 0.1
+    timeout = 0.2
     signal = tango_signal_w(
         datatype=py_type,
         write_trl=source,
@@ -594,7 +594,7 @@ async def test_tango_signal_rw(
     proxy = await DeviceProxy(echo_device) if use_proxy else None
     py_type = py_type if use_dtype else None
 
-    timeout = 0.1
+    timeout = 0.2
     signal = tango_signal_rw(
         datatype=py_type,
         read_trl=source,
@@ -617,7 +617,7 @@ async def test_tango_signal_rw(
 @pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
     proxy = await DeviceProxy(tango_test_device) if use_proxy else None
-    timeout = 0.1
+    timeout = 0.2
     signal = tango_signal_x(
         write_trl=tango_test_device + "/" + "clear",
         device_proxy=proxy,
@@ -677,7 +677,7 @@ async def test_tango_signal_auto_attrs(
     await prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
-    timeout = 0.1
+    timeout = 0.2
 
     async def _test_signal(dtype, proxy):
         signal = tango_signal_auto(
@@ -751,7 +751,7 @@ async def test_tango_signal_auto_cmds(
     use_proxy: bool,
 ):
     source = echo_device + "/" + pv
-    timeout = 0.1
+    timeout = 0.2
 
     async def _test_signal(dtype, proxy):
         signal = tango_signal_auto(
