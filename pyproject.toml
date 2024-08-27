@@ -32,14 +32,15 @@ requires-python = ">=3.10"
 [project.optional-dependencies]
 ca = ["aioca>=1.6"]
 pva = ["p4p"]
+sim = ["h5py"]
 dev = [
     "ophyd_async[pva]",
+    "ophyd_async[sim]",
     "ophyd_async[ca]",
     "black",
     "flake8",
     "flake8-isort",
     "Flake8-pyproject",
-    "h5py",
     "inflection",
     "ipython",
     "ipywidgets",

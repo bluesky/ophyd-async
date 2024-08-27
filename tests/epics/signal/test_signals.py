@@ -213,14 +213,14 @@ MySubsetEnum = SubsetEnum["Aaa", "Bbb", "Ccc"]
 
 _metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
     "ca": {
-        "bool": {"units": ANY, "limits": ANY},
+        "boolean": {"units": ANY, "limits": ANY},
         "integer": {"units": ANY, "limits": ANY},
         "number": {"units": ANY, "limits": ANY, "precision": ANY},
         "enum": {"limits": ANY},
         "string": {"limits": ANY},
     },
     "pva": {
-        "bool": {"limits": ANY},
+        "boolean": {"limits": ANY},
         "integer": {"units": ANY, "precision": ANY, "limits": ANY},
         "number": {"units": ANY, "precision": ANY, "limits": ANY},
         "enum": {"limits": ANY},
@@ -237,7 +237,7 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
         if "int" in suffix:
             return "integer"
         if "bool" in suffix:
-            return "bool"
+            return "boolean"
         if "enum" in suffix:
             return "enum"
         return "string"
@@ -886,3 +886,18 @@ async def test_signal_not_return_no_limits(ioc: IOC):
     await sig.connect()
     datakey = (await sig.describe())[""]
     assert not hasattr(datakey, "limits")
+
+
+async def test_signals_created_for_prec_0_float_can_use_int(ioc: IOC):
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_0"
+    sig = epics_signal_rw(int, pv_name)
+    await sig.connect()
+
+
+async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_1"
+    sig = epics_signal_rw(int, pv_name)
+    with pytest.raises(
+        TypeError, match=f"{ioc.protocol}:float_prec_1 has type float not int"
+    ):
+        await sig.connect()
