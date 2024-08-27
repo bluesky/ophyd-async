@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import Optional, Union
 
 from ophyd_async.core import (
@@ -50,7 +49,7 @@ class TangoDevice(Device):
             raise ValueError("Either 'trl' or 'device_proxy' must be provided.")
 
         self.trl = trl if trl else ""
-        self.proxy = device_proxy if device_proxy else AsyncDeviceProxy(trl)
+        self.proxy = device_proxy
 
         self.create_children_from_annotations()
         super().__init__(name=name)
@@ -65,11 +64,12 @@ class TangoDevice(Device):
             try:
                 if self.proxy is None:
                     self.proxy = await AsyncDeviceProxy(self.trl)
-                elif isinstance(self.proxy, asyncio.Future):
-                    self.proxy = await self.proxy
             except Exception as e:
                 raise RuntimeError("Could not connect to device proxy") from e
             return self
+
+        if self.trl in ["", None]:
+            self.trl = self.proxy.name()
 
         await closure()
         self.register_signals()
@@ -120,7 +120,6 @@ class TangoDevice(Device):
                         infer_signal_frontend(trl=f"{self.trl}/" f"{tango_name}"),
                     )
                 else:
-                    print(obj_type, type(obj_type))
                     raise ValueError(f"Invalid signal type {obj_type}")
 
 

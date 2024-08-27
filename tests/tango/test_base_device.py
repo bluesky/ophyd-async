@@ -1,7 +1,7 @@
 import asyncio
 import time
 from enum import Enum, IntEnum
-from typing import Type
+from typing import Optional, Type, Union
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 from bluesky import RunEngine
 
+import tango
 from ophyd_async.core import DeviceCollector, T
 from ophyd_async.tango import TangoReadable, get_python_type, tango_signal_auto
 from ophyd_async.tango.demo import (
@@ -24,7 +25,8 @@ from tango import (
     CmdArgType,
     DevState,
 )
-from tango.asyncio import DeviceProxy
+from tango import DeviceProxy as SyncDeviceProxy
+from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
@@ -175,9 +177,14 @@ class TestDevice(Device):
 class TestTangoReadable(TangoReadable):
     __test__ = False
 
-    def __init__(self, trl: str, name="") -> None:
+    def __init__(
+        self,
+        trl: Optional[str] = None,
+        device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None,
+        name: str = "",
+    ) -> None:
         self.trl = trl
-        TangoReadable.__init__(self, trl, name)
+        TangoReadable.__init__(self, trl, device_proxy, name)
 
     def register_signals(self):
         for feature in TESTED_FEATURES:
@@ -196,7 +203,7 @@ class TestTangoReadable(TangoReadable):
 async def describe_class(fqtrl):
     description = {}
     values = {}
-    dev = await DeviceProxy(fqtrl)
+    dev = await AsyncDeviceProxy(fqtrl)
 
     for name in TESTED_FEATURES:
         if name in dev.get_attribute_list():
@@ -314,12 +321,38 @@ def compare_values(expected, received):
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
 
+    with pytest.raises(ValueError) as excinfo:
+        async with DeviceCollector():
+            TestTangoReadable()
+    assert "Either 'trl' or 'device_proxy' must be provided." in str(excinfo.value)
+
     async with DeviceCollector():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
     compare_values(values, await test_device.read())
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.parametrize("proxy", [True, False, None])
+async def test_connect_proxy(tango_test_device, proxy: Optional[bool]):
+    if proxy is None:
+        test_device = TestTangoReadable(trl=tango_test_device)
+        test_device.proxy = None
+        await test_device.connect()
+        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
+    elif proxy:
+        proxy = await AsyncDeviceProxy(tango_test_device)
+        test_device = TestTangoReadable(device_proxy=proxy)
+        await test_device.connect()
+        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
+    else:
+        proxy = SyncDeviceProxy(tango_test_device)
+        test_device = TestTangoReadable(device_proxy=proxy)
+        await test_device.connect()
+        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
 
 
 # --------------------------------------------------------------------
