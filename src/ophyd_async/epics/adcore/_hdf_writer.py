@@ -135,7 +135,7 @@ class ADHDFWriter(DetectorWriter):
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
                 dtype_numpy=ds.dtype_numpy,
-                chunk_size=frames_per_chunk,
+                chunk_size=frames_per_chunk if ds.shape else None,
                 external="STREAM:",
             )
             for ds in self._datasets
