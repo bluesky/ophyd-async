@@ -307,6 +307,14 @@ def test_invalid_type(readable_device_config, name, dtype, value):
             readable_device_config.add_attribute(name, dtype, "invalid_type")
 
 
+@pytest.mark.parametrize("name,dtype,value", test_data)
+def test_add_attribute_default_value(readable_device_config, name, dtype, value):
+    readable_device_config.add_attribute(name, dtype)
+    assert name in readable_device_config.signals[dtype]
+    # Check that the default value is of the correct type
+    assert readable_device_config.signals[dtype][name][1] is None
+
+
 @pytest.mark.asyncio
 async def test_readable_device_prepare(readable_device_config):
     sr = StandardReadable()
@@ -330,3 +338,26 @@ async def test_readable_device_prepare(readable_device_config):
     readable_device_config.add_attribute("d", int, 1)
     with pytest.raises(TypeError):
         await sr.prepare(readable_device_config)
+
+
+def test_get_config():
+    sr = StandardReadable()
+
+    hinted = SignalRW(name="hinted", backend=SoftSignalBackend(datatype=int))
+    configurable = SignalRW(
+        name="configurable", backend=SoftSignalBackend(datatype=int)
+    )
+    normal = SignalRW(name="normal", backend=SoftSignalBackend(datatype=int))
+
+    sr.add_readables([configurable], ConfigSignal)
+    sr.add_readables([hinted], HintedSignal)
+    sr.add_readables([normal])
+
+    config = sr.get_config()
+
+    # Check that configurable is in the config
+    assert config["configurable"][int] is None
+    with pytest.raises(AttributeError):
+        config["hinted"][int]
+    with pytest.raises(AttributeError):
+        config["normal"][int]

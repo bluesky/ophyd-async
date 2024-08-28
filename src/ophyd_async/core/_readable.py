@@ -222,7 +222,8 @@ class StandardReadable(
                     if isinstance(attr, (HintedSignal, ConfigSignal)):
                         attr = attr.signal
                     if attr._backend.datatype == expected_dtype:  # noqa: SLF001
-                        tasks.append(attr.set(val))
+                        if val is not None:
+                            tasks.append(attr.set(val))
                     else:
                         raise TypeError(
                             f"Expected value of type {expected_dtype} for attribute"
@@ -230,6 +231,16 @@ class StandardReadable(
                             f" got {type(attr._backend.datatype)}"  # noqa: SLF001
                         )
         await asyncio.gather(*tasks)
+
+    def get_config(self) -> ReadableDeviceConfig:
+        config = ReadableDeviceConfig()
+        for readable in self._configurables:
+            if isinstance(readable, Union[ConfigSignal, HintedSignal]):
+                readable = readable.signal
+            name = readable.name.split("-")[-1]
+            dtype = readable._backend.datatype  # noqa: SLF001
+            config.add_attribute(name, dtype)
+        return config
 
 
 class ConfigSignal(AsyncConfigurable):

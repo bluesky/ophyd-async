@@ -5,7 +5,6 @@ import numpy as np
 
 
 @dataclass
-@dataclass
 class ReadableDeviceConfig:
     int_signals: Dict[str, Tuple[int, Any]] = field(default_factory=dict)
     float_signals: Dict[str, Tuple[float, Any]] = field(default_factory=dict)
@@ -52,8 +51,7 @@ class ReadableDeviceConfig:
             if signals and self.key in signals:
                 return signals[self.key][1]
             raise AttributeError(
-                f"'{self.parent.__class__.__name__}'"
-                f" object has no attribute"
+                f"'{self.parent.__class__.__name__}' object has no attribute"
                 f" '{self.key}[{dtype.__name__}]'"
             )
 
@@ -61,34 +59,33 @@ class ReadableDeviceConfig:
             signals = self.parent.signals.get(dtype)
             if signals and self.key in signals:
                 expected_type, _ = signals[self.key]
-                if isinstance(value, expected_type):
+                if isinstance(value, expected_type) or value is None:
                     signals[self.key] = (expected_type, value)
                 else:
                     raise TypeError(
-                        f"Expected value of type {expected_type}"
-                        f" for attribute '{self.key}', got {type(value)}"
+                        f"Expected value of type {expected_type} for attribute"
+                        f" '{self.key}', got {type(value)}"
                     )
             else:
                 raise KeyError(
-                    f"Key '{self.key}' not found" f" in {self.parent.attr_map[dtype]}"
+                    f"Key '{self.key}' not found in {self.parent.attr_map[dtype]}"
                 )
 
     def __getattr__(self, key: str) -> "ReadableDeviceConfig.SignalAccessor":
         return self.SignalAccessor(self, key)
 
-    def add_attribute(self, name: str, dtype: Type[Any], value: Any) -> None:
-        if not isinstance(value, dtype):
+    def add_attribute(self, name: str, dtype: Type[Any], value: Any = None) -> None:
+        if value is not None and not isinstance(value, dtype):
             raise TypeError(
-                f"Expected value of type {dtype} for attribute"
-                f" '{name}', got {type(value)}"
+                f"Expected value of type {dtype} for attribute '{name}',"
+                f" got {type(value)}"
             )
         self.signals[dtype][name] = (dtype, value)
 
     def __setattr__(self, key: str, value: Any) -> None:
         if "attr_map" in self.__dict__:
             raise AttributeError(
-                f"Cannot set attribute '{key}'"
-                f" directly. Use 'add_attribute' method."
+                f"Cannot set attribute '{key}' directly. Use 'add_attribute' method."
             )
         else:
             super().__setattr__(key, value)
