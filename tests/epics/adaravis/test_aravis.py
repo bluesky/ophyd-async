@@ -95,7 +95,6 @@ async def test_decribe_describes_writer_dataset(
             "shape": (0, 0),
             "dtype": "array",
             "dtype_numpy": "|i1",
-            "chunk_size": 0,
             "external": "STREAM:",
         }
     }
@@ -124,6 +123,7 @@ async def test_can_collect(
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
+        "chunk_size": 0,
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]
@@ -146,7 +146,6 @@ async def test_can_decribe_collect(
             "shape": (0, 0),
             "dtype": "array",
             "dtype_numpy": "|i1",
-            "chunk_size": 0,
             "external": "STREAM:",
         }
     }
