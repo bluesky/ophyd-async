@@ -66,8 +66,8 @@ class HDFFile:
                     "dataset": ds.dataset,
                     "swmr": ds.swmr,
                     "multiplier": ds.multiplier,
+                    "chunk_size": ds.chunk_size,
                 },
-                chunk_size=ds.chunk_size,
                 uid=None,
                 validate=True,
             )
