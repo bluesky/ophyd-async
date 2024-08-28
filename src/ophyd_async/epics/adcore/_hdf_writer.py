@@ -89,6 +89,9 @@ class ADHDFWriter(DetectorWriter):
             else ""
         )
 
+        # Determine number of frames that will be saved per HDF chunk
+        frames_per_chunk = await self.hdf.num_frames_chunks.get_value()
+
         # Add the main data
         self._datasets = [
             HDFDataset(
@@ -97,6 +100,7 @@ class ADHDFWriter(DetectorWriter):
                 shape=frame_shape,
                 dtype_numpy=dtype_numpy,
                 multiplier=multiplier,
+                chunk_size=frames_per_chunk,
             )
         ]
         # And all the scalar datasets
@@ -126,16 +130,12 @@ class ADHDFWriter(DetectorWriter):
                         )
                     )
 
-        # Determine number of frames that will be saved per HDF chunk
-        frames_per_chunk = await self.hdf.num_frames_chunks.get_value()
-
         describe = {
             ds.data_key: DataKey(
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
                 dtype_numpy=ds.dtype_numpy,
-                chunk_size=frames_per_chunk if ds.shape else None,
                 external="STREAM:",
             )
             for ds in self._datasets

@@ -19,6 +19,7 @@ class HDFDataset:
     dtype_numpy: str = ""
     multiplier: int = 1
     swmr: bool = False
+    chunk_size: int = None
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
@@ -66,6 +67,7 @@ class HDFFile:
                     "swmr": ds.swmr,
                     "multiplier": ds.multiplier,
                 },
+                chunk_size=ds.chunk_size,
                 uid=None,
                 validate=True,
             )
