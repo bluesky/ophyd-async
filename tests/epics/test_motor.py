@@ -13,6 +13,7 @@ from ophyd_async.core import (
     MockSignalBackend,
     SignalRW,
     callback_on_mock_put,
+    mock_puts_blocked,
     observe_value,
     set_mock_put_proceeds,
     set_mock_value,
@@ -317,3 +318,17 @@ async def test_complete(sim_motor: motor.Motor) -> None:
     assert not sim_motor._fly_status.done
     await sim_motor.complete()
     assert sim_motor._fly_status.done
+
+
+async def test_locatable(sim_motor: motor.Motor) -> None:
+    callback_on_mock_put(
+        sim_motor.user_setpoint,
+        lambda x, *_, **__: set_mock_value(sim_motor.user_readback, x),
+    )
+    assert (await sim_motor.locate())["readback"] == 0
+    async with mock_puts_blocked(sim_motor.user_setpoint):
+        move_status = sim_motor.set(10)
+        assert (await sim_motor.locate())["readback"] == 0
+    await move_status
+    assert (await sim_motor.locate())["readback"] == 10
+    assert (await sim_motor.locate())["setpoint"] == 10
