@@ -108,6 +108,7 @@ async def test_stats_describe_when_plugin_configured(
             "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "<u2",
+            "chunk_size": 0,
             "external": "STREAM:",
         },
         "mydetector-sum": {
@@ -115,11 +116,13 @@ async def test_stats_describe_when_plugin_configured(
             "shape": (),
             "dtype": "number",
             "dtype_numpy": "<f8",
+            "chunk_size": None,
             "external": "STREAM:",
         },
         "mydetector-Temperature": {
             "dtype": "number",
             "dtype_numpy": "<f4",
+            "chunk_size": None,
             "external": "STREAM:",
             "shape": (),
             "source": "mock+ca://HDF:FullFileName_RBV",
