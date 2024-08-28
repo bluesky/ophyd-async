@@ -44,6 +44,7 @@ from ._providers import (
     YMDPathProvider,
 )
 from ._readable import ConfigSignal, HintedSignal, StandardReadable
+from ._readable_config import ReadableDeviceConfig
 from ._signal import (
     Signal,
     SignalR,
@@ -158,4 +159,5 @@ __all__ = [
     "get_unique",
     "in_micros",
     "wait_for_connection",
+    "ReadableDeviceConfig",
 ]

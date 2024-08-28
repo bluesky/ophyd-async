@@ -1,3 +1,4 @@
+import asyncio
 import warnings
 from contextlib import contextmanager
 from typing import Callable, Dict, Generator, Optional, Sequence, Tuple, Type, Union
@@ -6,6 +7,7 @@ from bluesky.protocols import DataKey, HasHints, Hints, Reading
 
 from ._device import Device, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
+from ._readable_config import ReadableDeviceConfig
 from ._signal import SignalR
 from ._status import AsyncStatus
 from ._utils import merge_gathered_dicts
@@ -209,6 +211,25 @@ class StandardReadable(
 
             if isinstance(obj, HasHints):
                 self._has_hints += (obj,)
+
+    @AsyncStatus.wrap
+    async def prepare(self, value: ReadableDeviceConfig) -> None:
+        tasks = []
+        for dtype, signals in value.signals.items():
+            for signal_name, (expected_dtype, val) in signals.items():
+                if hasattr(self, signal_name):
+                    attr = getattr(self, signal_name)
+                    if isinstance(attr, (HintedSignal, ConfigSignal)):
+                        attr = attr.signal
+                    if attr._backend.datatype == expected_dtype:  # noqa: SLF001
+                        tasks.append(attr.set(val))
+                    else:
+                        raise TypeError(
+                            f"Expected value of type {expected_dtype} for attribute"
+                            f" '{signal_name}',"
+                            f" got {type(attr._backend.datatype)}"  # noqa: SLF001
+                        )
+        await asyncio.gather(*tasks)
 
 
 class ConfigSignal(AsyncConfigurable):

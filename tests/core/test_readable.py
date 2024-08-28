@@ -2,6 +2,7 @@ from inspect import ismethod
 from typing import List, get_type_hints
 from unittest.mock import MagicMock
 
+import numpy as np
 import pytest
 from bluesky.protocols import HasHints
 
@@ -14,7 +15,10 @@ from ophyd_async.core import (
     DeviceVector,
     HintedSignal,
     MockSignalBackend,
+    ReadableDeviceConfig,
     SignalR,
+    SignalRW,
+    SoftSignalBackend,
     StandardReadable,
     soft_signal_r_and_setter,
 )
@@ -238,3 +242,91 @@ def test_standard_readable_add_children_multi_nested():
     with outer.add_children_as_readables():
         outer.inner = inner
     assert outer
+
+
+@pytest.fixture
+def readable_device_config():
+    return ReadableDeviceConfig()
+
+
+test_data = [
+    ("test_int", int, 42),
+    ("test_float", float, 3.14),
+    ("test_str", str, "hello"),
+    ("test_bool", bool, True),
+    ("test_list", list, [1, 2, 3]),
+    ("test_tuple", tuple, (1, 2, 3)),
+    ("test_dict", dict, {"key": "value"}),
+    ("test_set", set, {1, 2, 3}),
+    ("test_frozenset", frozenset, frozenset([1, 2, 3])),
+    ("test_bytes", bytes, b"hello"),
+    ("test_bytearray", bytearray, bytearray(b"hello")),
+    ("test_complex", complex, 1 + 2j),
+    ("test_nonetype", type(None), None),
+    ("test_ndarray", np.ndarray, np.array([1, 2, 3])),
+]
+
+
+@pytest.mark.parametrize("name,dtype,value", test_data)
+def test_add_attribute(readable_device_config, name, dtype, value):
+    readable_device_config.add_attribute(name, dtype, value)
+    assert name in readable_device_config.signals[dtype]
+    assert readable_device_config.signals[dtype][name] == (dtype, value)
+
+
+@pytest.mark.parametrize("name,dtype,value", test_data)
+def test_get_attribute(readable_device_config, name, dtype, value):
+    readable_device_config.add_attribute(name, dtype, value)
+    if isinstance(value, np.ndarray):
+        assert np.array_equal(readable_device_config[name][dtype], value)
+    else:
+        assert readable_device_config[name][dtype] == value
+
+
+@pytest.mark.parametrize("name,dtype,value", test_data)
+def test_set_attribute(readable_device_config, name, dtype, value):
+    readable_device_config.add_attribute(name, dtype, value)
+    new_value = value if not isinstance(value, (int, float)) else value + 1
+    if dtype is bool:
+        new_value = not value
+    if dtype is np.ndarray:
+        new_value = np.flip(value)
+    readable_device_config[name][dtype] = new_value
+    if isinstance(value, np.ndarray):
+        assert np.array_equal(readable_device_config[name][dtype], new_value)
+    else:
+        assert readable_device_config[name][dtype] == new_value
+
+
+@pytest.mark.parametrize("name,dtype,value", test_data)
+def test_invalid_type(readable_device_config, name, dtype, value):
+    with pytest.raises(TypeError):
+        if dtype is str:
+            readable_device_config.add_attribute(name, dtype, 1)
+        else:
+            readable_device_config.add_attribute(name, dtype, "invalid_type")
+
+
+@pytest.mark.asyncio
+async def test_readable_device_prepare(readable_device_config):
+    sr = StandardReadable()
+    mock = MagicMock()
+    sr.add_readables = mock
+    with sr.add_children_as_readables(ConfigSignal):
+        sr.a = SignalRW(name="a", backend=SoftSignalBackend(datatype=int))
+        sr.b = SignalRW(name="b", backend=SoftSignalBackend(datatype=float))
+        sr.c = SignalRW(name="c", backend=SoftSignalBackend(datatype=str))
+        sr.d = SignalRW(name="d", backend=SoftSignalBackend(datatype=bool))
+
+    readable_device_config.add_attribute("a", int, 42)
+    readable_device_config.add_attribute("b", float, 3.14)
+    readable_device_config.add_attribute("c", str, "hello")
+
+    await sr.prepare(readable_device_config)
+    assert await sr.a.get_value() == 42
+    assert await sr.b.get_value() == 3.14
+    assert await sr.c.get_value() == "hello"
+
+    readable_device_config.add_attribute("d", int, 1)
+    with pytest.raises(TypeError):
+        await sr.prepare(readable_device_config)
