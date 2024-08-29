@@ -109,11 +109,11 @@ class ADHDFWriter(DetectorWriter):
                 for child in root:
                     datakey = child.attrib["name"]
                     if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
-                        np_datatye = convert_pv_dtype_to_np(
+                        np_datatype = convert_pv_dtype_to_np(
                             child.attrib.get("dbrtype", "DBR_NATIVE")
                         )
                     else:
-                        np_datatye = convert_param_dtype_to_np(
+                        np_datatype = convert_param_dtype_to_np(
                             child.attrib.get("datatype", "INT")
                         )
                     self._datasets.append(
@@ -121,7 +121,7 @@ class ADHDFWriter(DetectorWriter):
                             datakey,
                             f"/entry/instrument/NDAttributes/{datakey}",
                             (),
-                            np_datatye,
+                            np_datatype,
                             multiplier,
                         )
                     )
