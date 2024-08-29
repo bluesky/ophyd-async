@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.5.1.dev22+g025bc543 documentation</title>
+    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.5.1.dev23+g0a1b6611 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0eeee258"></script>
+    <script src="../../../../_static/documentation_options.js?v=feba8627"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -602,11 +602,11 @@ document.write(`
                 <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="p">:</span>
                     <span class="n">datakey</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">:</span>
-                        <span class="n">np_datatye</span> <span class="o">=</span> <span class="n">convert_pv_dtype_to_np</span><span class="p">(</span>
+                        <span class="n">np_datatype</span> <span class="o">=</span> <span class="n">convert_pv_dtype_to_np</span><span class="p">(</span>
                             <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dbrtype&quot;</span><span class="p">,</span> <span class="s2">&quot;DBR_NATIVE&quot;</span><span class="p">)</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">np_datatye</span> <span class="o">=</span> <span class="n">convert_param_dtype_to_np</span><span class="p">(</span>
+                        <span class="n">np_datatype</span> <span class="o">=</span> <span class="n">convert_param_dtype_to_np</span><span class="p">(</span>
                             <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datatype&quot;</span><span class="p">,</span> <span class="s2">&quot;INT&quot;</span><span class="p">)</span>
                         <span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -614,7 +614,7 @@ document.write(`
                             <span class="n">datakey</span><span class="p">,</span>
                             <span class="sa">f</span><span class="s2">&quot;/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">datakey</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                             <span class="p">(),</span>
-                            <span class="n">np_datatye</span><span class="p">,</span>
+                            <span class="n">np_datatype</span><span class="p">,</span>
                             <span class="n">multiplier</span><span class="p">,</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
