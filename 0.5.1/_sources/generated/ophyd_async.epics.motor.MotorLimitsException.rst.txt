@@ -1,0 +1,6 @@
+ophyd\_async.epics.motor.MotorLimitsException
+=============================================
+
+.. currentmodule:: ophyd_async.epics.motor
+
+.. autoexception:: MotorLimitsException

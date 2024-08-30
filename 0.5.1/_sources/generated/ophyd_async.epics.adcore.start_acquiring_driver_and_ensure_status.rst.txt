@@ -1,0 +1,6 @@
+ophyd\_async.epics.adcore.start\_acquiring\_driver\_and\_ensure\_status
+=======================================================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autofunction:: start_acquiring_driver_and_ensure_status

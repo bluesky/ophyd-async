@@ -1,0 +1,85 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.NDAttributeDataType
+=============================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: NDAttributeDataType
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~NDAttributeDataType.encode
+      ~NDAttributeDataType.replace
+      ~NDAttributeDataType.split
+      ~NDAttributeDataType.rsplit
+      ~NDAttributeDataType.join
+      ~NDAttributeDataType.capitalize
+      ~NDAttributeDataType.casefold
+      ~NDAttributeDataType.title
+      ~NDAttributeDataType.center
+      ~NDAttributeDataType.count
+      ~NDAttributeDataType.expandtabs
+      ~NDAttributeDataType.find
+      ~NDAttributeDataType.partition
+      ~NDAttributeDataType.index
+      ~NDAttributeDataType.ljust
+      ~NDAttributeDataType.lower
+      ~NDAttributeDataType.lstrip
+      ~NDAttributeDataType.rfind
+      ~NDAttributeDataType.rindex
+      ~NDAttributeDataType.rjust
+      ~NDAttributeDataType.rstrip
+      ~NDAttributeDataType.rpartition
+      ~NDAttributeDataType.splitlines
+      ~NDAttributeDataType.strip
+      ~NDAttributeDataType.swapcase
+      ~NDAttributeDataType.translate
+      ~NDAttributeDataType.upper
+      ~NDAttributeDataType.startswith
+      ~NDAttributeDataType.endswith
+      ~NDAttributeDataType.removeprefix
+      ~NDAttributeDataType.removesuffix
+      ~NDAttributeDataType.isascii
+      ~NDAttributeDataType.islower
+      ~NDAttributeDataType.isupper
+      ~NDAttributeDataType.istitle
+      ~NDAttributeDataType.isspace
+      ~NDAttributeDataType.isdecimal
+      ~NDAttributeDataType.isdigit
+      ~NDAttributeDataType.isnumeric
+      ~NDAttributeDataType.isalpha
+      ~NDAttributeDataType.isalnum
+      ~NDAttributeDataType.isidentifier
+      ~NDAttributeDataType.isprintable
+      ~NDAttributeDataType.zfill
+      ~NDAttributeDataType.format
+      ~NDAttributeDataType.format_map
+      ~NDAttributeDataType.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~NDAttributeDataType.INT
+      ~NDAttributeDataType.DOUBLE
+      ~NDAttributeDataType.STRING
+   
+   

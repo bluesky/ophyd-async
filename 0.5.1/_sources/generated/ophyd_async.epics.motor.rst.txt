@@ -1,0 +1,46 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.motor
+========================
+
+.. automodule:: ophyd_async.epics.motor
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      Motor
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      InvalidFlyMotorException
+      MotorLimitsException
+   
+   
+
+
+

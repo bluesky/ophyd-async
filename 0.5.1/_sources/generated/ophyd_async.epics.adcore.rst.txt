@@ -1,0 +1,61 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore
+=========================
+
+.. automodule:: ophyd_async.epics.adcore
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      set_exposure_time_and_acquire_period_if_supplied
+      start_acquiring_driver_and_ensure_status
+      stop_busy_record
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      ADBaseIO
+      DetectorState
+      NDArrayBaseIO
+      NDFileHDFIO
+      NDPluginStatsIO
+      ADBaseShapeProvider
+      ADHDFWriter
+      SingleTriggerDetector
+      ADBaseDataType
+      FileWriteMode
+      ImageMode
+      NDAttributePv
+      NDAttributeParam
+      NDAttributeDataType
+      NDAttributePvDbrType
+   
+   
+
+   
+   
+   
+
+
+

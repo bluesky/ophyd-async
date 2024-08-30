@@ -1,0 +1,6 @@
+ophyd\_async.core.set\_mock\_value
+==================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: set_mock_value

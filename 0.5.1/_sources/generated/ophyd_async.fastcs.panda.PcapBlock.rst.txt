@@ -1,0 +1,43 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.fastcs.panda.PcapBlock
+===================================
+
+.. currentmodule:: ophyd_async.fastcs.panda
+
+.. autoclass:: PcapBlock
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PcapBlock.children
+      ~PcapBlock.connect
+      ~PcapBlock.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PcapBlock.log
+      ~PcapBlock.name
+      ~PcapBlock.parent
+      ~PcapBlock.active
+      ~PcapBlock.arm
+   
+   

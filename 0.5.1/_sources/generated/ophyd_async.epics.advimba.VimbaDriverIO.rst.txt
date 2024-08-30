@@ -1,0 +1,41 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.advimba.VimbaDriverIO
+========================================
+
+.. currentmodule:: ophyd_async.epics.advimba
+
+.. autoclass:: VimbaDriverIO
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~VimbaDriverIO.children
+      ~VimbaDriverIO.connect
+      ~VimbaDriverIO.set_name
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~VimbaDriverIO.log
+      ~VimbaDriverIO.name
+      ~VimbaDriverIO.parent
+   
+   

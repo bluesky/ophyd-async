@@ -1,0 +1,90 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.adcore.NDAttributePvDbrType
+==============================================
+
+.. currentmodule:: ophyd_async.epics.adcore
+
+.. autoclass:: NDAttributePvDbrType
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~NDAttributePvDbrType.encode
+      ~NDAttributePvDbrType.replace
+      ~NDAttributePvDbrType.split
+      ~NDAttributePvDbrType.rsplit
+      ~NDAttributePvDbrType.join
+      ~NDAttributePvDbrType.capitalize
+      ~NDAttributePvDbrType.casefold
+      ~NDAttributePvDbrType.title
+      ~NDAttributePvDbrType.center
+      ~NDAttributePvDbrType.count
+      ~NDAttributePvDbrType.expandtabs
+      ~NDAttributePvDbrType.find
+      ~NDAttributePvDbrType.partition
+      ~NDAttributePvDbrType.index
+      ~NDAttributePvDbrType.ljust
+      ~NDAttributePvDbrType.lower
+      ~NDAttributePvDbrType.lstrip
+      ~NDAttributePvDbrType.rfind
+      ~NDAttributePvDbrType.rindex
+      ~NDAttributePvDbrType.rjust
+      ~NDAttributePvDbrType.rstrip
+      ~NDAttributePvDbrType.rpartition
+      ~NDAttributePvDbrType.splitlines
+      ~NDAttributePvDbrType.strip
+      ~NDAttributePvDbrType.swapcase
+      ~NDAttributePvDbrType.translate
+      ~NDAttributePvDbrType.upper
+      ~NDAttributePvDbrType.startswith
+      ~NDAttributePvDbrType.endswith
+      ~NDAttributePvDbrType.removeprefix
+      ~NDAttributePvDbrType.removesuffix
+      ~NDAttributePvDbrType.isascii
+      ~NDAttributePvDbrType.islower
+      ~NDAttributePvDbrType.isupper
+      ~NDAttributePvDbrType.istitle
+      ~NDAttributePvDbrType.isspace
+      ~NDAttributePvDbrType.isdecimal
+      ~NDAttributePvDbrType.isdigit
+      ~NDAttributePvDbrType.isnumeric
+      ~NDAttributePvDbrType.isalpha
+      ~NDAttributePvDbrType.isalnum
+      ~NDAttributePvDbrType.isidentifier
+      ~NDAttributePvDbrType.isprintable
+      ~NDAttributePvDbrType.zfill
+      ~NDAttributePvDbrType.format
+      ~NDAttributePvDbrType.format_map
+      ~NDAttributePvDbrType.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~NDAttributePvDbrType.DBR_SHORT
+      ~NDAttributePvDbrType.DBR_ENUM
+      ~NDAttributePvDbrType.DBR_INT
+      ~NDAttributePvDbrType.DBR_LONG
+      ~NDAttributePvDbrType.DBR_FLOAT
+      ~NDAttributePvDbrType.DBR_DOUBLE
+      ~NDAttributePvDbrType.DBR_STRING
+      ~NDAttributePvDbrType.DBR_CHAR
+   
+   
