@@ -26,7 +26,7 @@ class PathInfo:
 
 class FilenameProvider(Protocol):
     @abstractmethod
-    def __call__(self) -> str:
+    def __call__(self, device_name: Optional[str] = None) -> str:
         """Get a filename to use for output data, w/o extension"""
 
 
@@ -42,7 +42,7 @@ class StaticFilenameProvider(FilenameProvider):
     def __init__(self, filename: str):
         self._static_filename = filename
 
-    def __call__(self) -> str:
+    def __call__(self, device_name: Optional[str] = None) -> str:
         return self._static_filename
 
 
@@ -55,7 +55,7 @@ class UUIDFilenameProvider(FilenameProvider):
         self._uuid_call_func = uuid_call_func
         self._uuid_call_args = uuid_call_args or []
 
-    def __call__(self) -> str:
+    def __call__(self, device_name: Optional[str] = None) -> str:
         if (
             self._uuid_call_func in [uuid.uuid3, uuid.uuid5]
             and len(self._uuid_call_args) < 2
@@ -84,7 +84,7 @@ class AutoIncrementFilenameProvider(FilenameProvider):
         self._increment = increment
         self._inc_delimeter = inc_delimeter
 
-    def __call__(self):
+    def __call__(self, device_name: Optional[str] = None) -> str:
         if len(str(self._current_value)) > self._max_digits:
             raise ValueError(
                 f"Auto incrementing filename counter \
@@ -111,7 +111,7 @@ class StaticPathProvider(PathProvider):
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, device_name: Optional[str] = None) -> PathInfo:
-        filename = self._filename_provider()
+        filename = self._filename_provider(device_name)
 
         return PathInfo(
             directory_path=self._directory_path,
@@ -146,7 +146,7 @@ class AutoIncrementingPathProvider(PathProvider):
         self._inc_delimeter = inc_delimeter
 
     def __call__(self, device_name: Optional[str] = None) -> PathInfo:
-        filename = self._filename_provider()
+        filename = self._filename_provider(device_name)
 
         padded_counter = f"{self._current_value:0{self._max_digits}}"
 
@@ -199,7 +199,7 @@ class YMDPathProvider(PathProvider):
                 current_date,
             )
 
-        filename = self._filename_provider()
+        filename = self._filename_provider(device_name)
         return PathInfo(
             directory_path=self._base_directory_path / ymd_dir_path,
             filename=filename,
