@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._providers &#8212; ophyd-async 0.5.1.dev23+g0a1b6611 documentation</title>
+    <title>ophyd_async.core._providers &#8212; ophyd-async 0.5.1.dev24+g3750ede6 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=feba8627"></script>
+    <script src="../../../_static/documentation_options.js?v=c3cfd982"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -522,7 +522,7 @@ document.write(`
 <div class="viewcode-block" id="FilenameProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.FilenameProvider.html#ophyd_async.core.FilenameProvider.__call__">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a filename to use for output data, w/o extension&quot;&quot;&quot;</span></div>
 </div>
 
@@ -531,8 +531,6 @@ document.write(`
 <div class="viewcode-block" id="PathProvider">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.PathProvider.html#ophyd_async.core.PathProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">PathProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-    <span class="n">_filename_provider</span><span class="p">:</span> <span class="n">FilenameProvider</span>
-
 <div class="viewcode-block" id="PathProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.PathProvider.html#ophyd_async.core.PathProvider.__call__">[docs]</a>
     <span class="nd">@abstractmethod</span>
@@ -550,7 +548,7 @@ document.write(`
 
 <div class="viewcode-block" id="StaticFilenameProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StaticFilenameProvider.html#ophyd_async.core.StaticFilenameProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_filename</span></div>
 </div>
 
@@ -569,7 +567,7 @@ document.write(`
 
 <div class="viewcode-block" id="UUIDFilenameProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.UUIDFilenameProvider.html#ophyd_async.core.UUIDFilenameProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_func</span> <span class="ow">in</span> <span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid3</span><span class="p">,</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">]</span>
             <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span>
@@ -604,7 +602,7 @@ document.write(`
 
 <div class="viewcode-block" id="AutoIncrementFilenameProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.AutoIncrementFilenameProvider.html#ophyd_async.core.AutoIncrementFilenameProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span><span class="p">))</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_digits</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Auto incrementing filename counter </span><span class="se">\</span>
@@ -637,7 +635,7 @@ document.write(`
 <div class="viewcode-block" id="StaticPathProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.StaticPathProvider.html#ophyd_async.core.StaticPathProvider.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">(</span><span class="n">device_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">PathInfo</span><span class="p">(</span>
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span><span class="p">,</span>
@@ -678,7 +676,7 @@ document.write(`
 <div class="viewcode-block" id="AutoIncrementingPathProvider.__call__">
 <a class="viewcode-back" href="../../../generated/ophyd_async.core.AutoIncrementingPathProvider.html#ophyd_async.core.AutoIncrementingPathProvider.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">(</span><span class="n">device_name</span><span class="p">)</span>
 
         <span class="n">padded_counter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span><span class="si">:</span><span class="s2">0</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_digits</span><span class="si">}}</span><span class="s2">&quot;</span>
 
@@ -737,7 +735,7 @@ document.write(`
                 <span class="n">current_date</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">(</span><span class="n">device_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PathInfo</span><span class="p">(</span>
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">/</span> <span class="n">ymd_dir_path</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
