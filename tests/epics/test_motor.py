@@ -13,6 +13,7 @@ from ophyd_async.core import (
     MockSignalBackend,
     SignalRW,
     callback_on_mock_put,
+    mock_puts_blocked,
     observe_value,
     set_mock_put_proceeds,
     set_mock_value,
@@ -264,13 +265,21 @@ async def test_prepare_motor_path(sim_motor: motor.Motor):
     assert sim_motor._fly_completed_position == 15
 
 
-async def test_prepare(sim_motor: motor.Motor):
+@pytest.mark.parametrize(
+    "expected_velocity, target_position",
+    [
+        (10, -10),
+        (8, 8),
+    ],
+)
+async def test_prepare(
+    sim_motor: motor.Motor, target_position: float, expected_velocity: float
+):
     set_mock_value(sim_motor.acceleration_time, 1)
     set_mock_value(sim_motor.low_limit_travel, -10)
     set_mock_value(sim_motor.high_limit_travel, 20)
     set_mock_value(sim_motor.max_velocity, 10)
     fake_set_signal = SignalRW(MockSignalBackend(float))
-    target_position = 10
 
     async def wait_for_set(_):
         async for value in observe_value(fake_set_signal, timeout=1):
@@ -295,7 +304,7 @@ async def test_prepare(sim_motor: motor.Motor):
     )
     # Test that prepare is not marked as complete until correct position is reached
     await asyncio.gather(do_set(status), wait_for_status(status))
-    assert await sim_motor.velocity.get_value() == 10
+    assert await sim_motor.velocity.get_value() == expected_velocity
     assert status.done
 
 
@@ -317,3 +326,17 @@ async def test_complete(sim_motor: motor.Motor) -> None:
     assert not sim_motor._fly_status.done
     await sim_motor.complete()
     assert sim_motor._fly_status.done
+
+
+async def test_locatable(sim_motor: motor.Motor) -> None:
+    callback_on_mock_put(
+        sim_motor.user_setpoint,
+        lambda x, *_, **__: set_mock_value(sim_motor.user_readback, x),
+    )
+    assert (await sim_motor.locate())["readback"] == 0
+    async with mock_puts_blocked(sim_motor.user_setpoint):
+        move_status = sim_motor.set(10)
+        assert (await sim_motor.locate())["readback"] == 0
+    await move_status
+    assert (await sim_motor.locate())["readback"] == 10
+    assert (await sim_motor.locate())["setpoint"] == 10
