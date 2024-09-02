@@ -265,13 +265,21 @@ async def test_prepare_motor_path(sim_motor: motor.Motor):
     assert sim_motor._fly_completed_position == 15
 
 
-async def test_prepare(sim_motor: motor.Motor):
+@pytest.mark.parametrize(
+    "expected_velocity, target_position",
+    [
+        (10, -10),
+        (8, 8),
+    ],
+)
+async def test_prepare(
+    sim_motor: motor.Motor, target_position: float, expected_velocity: float
+):
     set_mock_value(sim_motor.acceleration_time, 1)
     set_mock_value(sim_motor.low_limit_travel, -10)
     set_mock_value(sim_motor.high_limit_travel, 20)
     set_mock_value(sim_motor.max_velocity, 10)
     fake_set_signal = SignalRW(MockSignalBackend(float))
-    target_position = 10
 
     async def wait_for_set(_):
         async for value in observe_value(fake_set_signal, timeout=1):
@@ -296,7 +304,7 @@ async def test_prepare(sim_motor: motor.Motor):
     )
     # Test that prepare is not marked as complete until correct position is reached
     await asyncio.gather(do_set(status), wait_for_status(status))
-    assert await sim_motor.velocity.get_value() == 10
+    assert await sim_motor.velocity.get_value() == expected_velocity
     assert status.done
 
 
