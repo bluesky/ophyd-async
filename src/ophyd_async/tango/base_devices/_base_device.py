@@ -108,7 +108,6 @@ class TangoDevice(Device):
                     setattr(self, attr_name, obj_type(name=attr_name))
 
 
-# --------------------------------------------------------------------
 def tango_polling(*args):
     """
     Class decorator to set polling for Tango devices. This is useful for device servers

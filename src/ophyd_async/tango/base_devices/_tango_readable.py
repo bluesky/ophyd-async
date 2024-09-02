@@ -24,7 +24,6 @@ class TangoReadable(TangoDevice, StandardReadable):
                     device is connected.
     """
 
-    # --------------------------------------------------------------------
     _polling: Tuple = (False, 0.1, None, 0.1)
 
     def __init__(

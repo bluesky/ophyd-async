@@ -26,7 +26,6 @@ def make_backend(
     return TangoSignalBackend(datatype, read_trl, write_trl, device_proxy)
 
 
-# --------------------------------------------------------------------
 def tango_signal_rw(
     datatype: Optional[Type[T]] = None,
     *,
@@ -59,7 +58,6 @@ def tango_signal_rw(
     return SignalRW(backend, timeout=timeout, name=name)
 
 
-# --------------------------------------------------------------------
 def tango_signal_r(
     datatype: Optional[Type[T]] = None,
     *,
@@ -89,7 +87,6 @@ def tango_signal_r(
     return SignalR(backend, timeout=timeout, name=name)
 
 
-# --------------------------------------------------------------------
 def tango_signal_w(
     datatype: Optional[Type[T]] = None,
     *,
@@ -119,7 +116,6 @@ def tango_signal_w(
     return SignalW(backend, timeout=timeout, name=name)
 
 
-# --------------------------------------------------------------------
 def tango_signal_x(
     write_trl: str,
     device_proxy: Optional[DeviceProxy] = None,
@@ -143,7 +139,6 @@ def tango_signal_x(
     return SignalX(backend, timeout=timeout, name=name)
 
 
-# --------------------------------------------------------------------
 def tango_signal_auto(
     datatype: Optional[Type[T]] = None,
     *,
@@ -161,7 +156,6 @@ def tango_signal_auto(
     return signal
 
 
-# --------------------------------------------------------------------
 def infer_python_type(trl: str) -> Type[T]:
     device_trl, tr_name = trl.rsplit("/", 1)
     syn_proxy = SyncDeviceProxy(device_trl)
@@ -186,7 +180,6 @@ def infer_python_type(trl: str) -> Type[T]:
     return npt.NDArray[py_type] if isarray else py_type
 
 
-# --------------------------------------------------------------------
 def infer_signal_frontend(trl, name: str = "", timeout: float = DEFAULT_TIMEOUT):
     device_trl, tr_name = trl.rsplit("/", 1)
     proxy = SyncDeviceProxy(device_trl)
