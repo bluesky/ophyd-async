@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.pvi.fill_pvi_entries &#8212; ophyd-async 0.5.2.dev3+g27ad5b91 documentation</title>
+    <title>ophyd_async.core.completed_status &#8212; ophyd-async 0.5.2.dev3+g27ad5b91 documentation</title>
   
   
   
@@ -46,7 +46,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.epics.pvi.fill_pvi_entries';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.core.completed_status';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.epics.pvi.create_children_from_annotations" href="ophyd_async.epics.pvi.create_children_from_annotations.html" />
-    <link rel="prev" title="ophyd_async.epics.pvi" href="ophyd_async.epics.pvi.html" />
+    <link rel="next" title="ophyd_async.core.DetectorControl" href="ophyd_async.core.DetectorControl.html" />
+    <link rel="prev" title="ophyd_async.core.wait_for_connection" href="ophyd_async.core.wait_for_connection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -444,7 +444,7 @@ document.write(`
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../reference/api.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.core.html">ophyd_async.core</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.core.html">ophyd_async.core</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.all_at_once.html">ophyd_async.core.all_at_once</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_signal_values.html">ophyd_async.core.get_signal_values</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_device.html">ophyd_async.core.load_device</a></li>
@@ -475,7 +475,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_unique.html">ophyd_async.core.get_unique</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.in_micros.html">ophyd_async.core.in_micros</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_connection.html">ophyd_async.core.wait_for_connection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.completed_status.html">ophyd_async.core.completed_status</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">ophyd_async.core.completed_status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorControl.html">ophyd_async.core.DetectorControl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorTrigger.html">ophyd_async.core.DetectorTrigger</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorWriter.html">ophyd_async.core.DetectorWriter</a></li>
@@ -522,7 +522,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NotConnected.html">ophyd_async.core.NotConnected</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.epics.html">ophyd_async.epics</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.epics.html">ophyd_async.epics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.adaravis.html">ophyd_async.epics.adaravis</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.AravisDetector.html">ophyd_async.epics.adaravis.AravisDetector</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.AravisController.html">ophyd_async.epics.adaravis.AravisController</a></li>
@@ -595,8 +595,8 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.MotorLimitsException.html">ophyd_async.epics.motor.MotorLimitsException</a></li>
 </ul>
 </details></li>
-<li class="toctree-l3 current active has-children"><a class="reference internal" href="ophyd_async.epics.pvi.html">ophyd_async.epics.pvi</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">ophyd_async.epics.pvi.fill_pvi_entries</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.pvi.html">ophyd_async.epics.pvi</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pvi.fill_pvi_entries.html">ophyd_async.epics.pvi.fill_pvi_entries</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pvi.create_children_from_annotations.html">ophyd_async.epics.pvi.create_children_from_annotations</a></li>
 </ul>
 </details></li>
@@ -693,7 +693,7 @@ document.write(`
     <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
     
     
-    <li class="breadcrumb-item"><a href="ophyd_async.epics.pvi.html" class="nav-link">ophyd_async.epics.pvi</a></li>
+    <li class="breadcrumb-item"><a href="ophyd_async.core.html" class="nav-link">ophyd_async.core</a></li>
     
     <li class="breadcrumb-item active" aria-current="page">ophyd_async....</li>
   </ul>
@@ -712,14 +712,12 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="ophyd-async-epics-pvi-fill-pvi-entries">
-<h1>ophyd_async.epics.pvi.fill_pvi_entries<a class="headerlink" href="#ophyd-async-epics-pvi-fill-pvi-entries" title="Link to this heading">#</a></h1>
+  <section id="ophyd-async-core-completed-status">
+<h1>ophyd_async.core.completed_status<a class="headerlink" href="#ophyd-async-core-completed-status" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.epics.pvi.fill_pvi_entries">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pvi.</span></span><span class="sig-name descname"><span class="pre">fill_pvi_entries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.Device.html#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/pvi/_pvi.html#fill_pvi_entries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pvi.fill_pvi_entries" title="Link to this definition">#</a></dt>
-<dd><p>Fills a <code class="docutils literal notranslate"><span class="pre">device</span></code> with signals from a the <code class="docutils literal notranslate"><span class="pre">root_pvi:PVI</span></code> table.</p>
-<p>If the device names match with parent devices of <code class="docutils literal notranslate"><span class="pre">device</span></code> then types are used.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="ophyd_async.core.completed_status">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">completed_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><span class="pre">Exception</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_status.html#completed_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.completed_status" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 
@@ -734,20 +732,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.epics.pvi.html"
+       href="ophyd_async.core.wait_for_connection.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">ophyd_async.epics.pvi</p>
+        <p class="prev-next-title">ophyd_async.core.wait_for_connection</p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.epics.pvi.create_children_from_annotations.html"
+       href="ophyd_async.core.DetectorControl.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">ophyd_async.epics.pvi.create_children_from_annotations</p>
+        <p class="prev-next-title">ophyd_async.core.DetectorControl</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -769,7 +767,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pvi.fill_pvi_entries"><code class="docutils literal notranslate"><span class="pre">fill_pvi_entries()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.completed_status"><code class="docutils literal notranslate"><span class="pre">completed_status()</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -777,7 +775,7 @@ document.write(`
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.epics.pvi.fill_pvi_entries.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/generated/ophyd_async.core.completed_status.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -792,7 +790,7 @@ document.write(`
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/generated/ophyd_async.epics.pvi.fill_pvi_entries.rst.txt">
+    <a href="../_sources/generated/ophyd_async.core.completed_status.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

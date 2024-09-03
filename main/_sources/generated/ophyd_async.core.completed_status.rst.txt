@@ -1,0 +1,6 @@
+ophyd\_async.core.completed\_status
+===================================
+
+.. currentmodule:: ophyd_async.core
+
+.. autofunction:: completed_status

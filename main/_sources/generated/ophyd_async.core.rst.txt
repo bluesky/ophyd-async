@@ -50,6 +50,7 @@ ophyd\_async.core
       get_unique
       in_micros
       wait_for_connection
+      completed_status
    
    
 
