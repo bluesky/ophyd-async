@@ -22,7 +22,6 @@ from ophyd_async.core import (
 from ._core_io import NDArrayBaseIO, NDFileHDFIO
 from ._utils import (
     FileWriteMode,
-    convert_ad_dtype_to_np,
     convert_param_dtype_to_np,
     convert_pv_dtype_to_np,
 )
@@ -79,23 +78,18 @@ class ADHDFWriter(DetectorWriter):
         # Wait for it to start, stashing the status that tells us when it finishes
         self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
         name = self._name_provider()
-        detector_shape = tuple(await self._shape_provider())
+        detector_shape = await self._shape_provider()
+        np_dtype = await self._shape_provider.np_datatype()
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
-        frame_shape = detector_shape[:-1] if len(detector_shape) > 0 else []
-        dtype_numpy = (
-            convert_ad_dtype_to_np(detector_shape[-1])
-            if len(detector_shape) > 0
-            else ""
-        )
 
         # Add the main data
         self._datasets = [
             HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
-                shape=frame_shape,
-                dtype_numpy=dtype_numpy,
+                shape=detector_shape,
+                dtype_numpy=np_dtype,
                 multiplier=multiplier,
             )
         ]

@@ -17,11 +17,11 @@ from ophyd_async.plan_stubs._nd_attributes import setup_ndattributes, setup_ndst
 
 
 class DummyShapeProvider(ShapeProvider):
-    def __init__(self) -> None:
-        pass
+    async def np_datatype(self) -> str:
+        return "<u2"
 
-    async def __call__(self) -> tuple:
-        return (10, 10, adcore.ADBaseDataType.UInt16)
+    async def __call__(self) -> tuple[int, int]:
+        return (10, 10)
 
 
 @pytest.fixture

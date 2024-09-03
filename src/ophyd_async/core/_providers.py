@@ -213,5 +213,9 @@ class NameProvider(Protocol):
 
 class ShapeProvider(Protocol):
     @abstractmethod
-    async def __call__(self) -> tuple:
+    async def np_datatype(self) -> str:
+        """Represents the numpy datatype"""
+
+    @abstractmethod
+    async def __call__(self) -> tuple[int, ...]:
         """Get the shape of the data collection"""

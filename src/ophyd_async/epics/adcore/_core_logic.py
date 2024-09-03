@@ -8,6 +8,7 @@ from ophyd_async.core import (
     ShapeProvider,
     set_and_wait_for_value,
 )
+from ophyd_async.epics.adcore._utils import convert_ad_dtype_to_np
 
 from ._core_io import ADBaseIO, DetectorState
 
@@ -22,11 +23,13 @@ class ADBaseShapeProvider(ShapeProvider):
     def __init__(self, driver: ADBaseIO) -> None:
         self._driver = driver
 
-    async def __call__(self) -> tuple:
+    async def np_datatype(self) -> str:
+        return convert_ad_dtype_to_np(await self._driver.data_type.get_value())
+
+    async def __call__(self) -> tuple[int, int]:
         shape = await asyncio.gather(
             self._driver.array_size_y.get_value(),
             self._driver.array_size_x.get_value(),
-            self._driver.data_type.get_value(),
         )
         return shape
 
