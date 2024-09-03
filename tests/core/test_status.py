@@ -7,7 +7,7 @@ import pytest
 from bluesky.protocols import Movable, Status
 from bluesky.utils import FailedStatus
 
-from ophyd_async.core import AsyncStatus, Device
+from ophyd_async.core import AsyncStatus, Device, completed_status
 
 
 async def test_async_status_success():
@@ -188,3 +188,9 @@ def test_asyncstatus_wraps_bare_func_with_args_kwargs(loop):
         assert test_result == 12
 
     loop.run_until_complete(do_test())
+
+
+async def test_completed_status():
+    with pytest.raises(ValueError):
+        await completed_status(ValueError())
+    await completed_status()

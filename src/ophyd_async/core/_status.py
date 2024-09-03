@@ -4,7 +4,16 @@ import asyncio
 import functools
 import time
 from dataclasses import asdict, replace
-from typing import AsyncIterator, Awaitable, Callable, Generic, Type, TypeVar, cast
+from typing import (
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Generic,
+    Optional,
+    Type,
+    TypeVar,
+    cast,
+)
 
 from bluesky.protocols import Status
 
@@ -132,3 +141,10 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
             return cls(f(*args, **kwargs))
 
         return cast(Callable[P, WAS], wrap_f)
+
+
+@AsyncStatus.wrap
+async def completed_status(exception: Optional[Exception] = None):
+    if exception:
+        raise exception
+    return None
