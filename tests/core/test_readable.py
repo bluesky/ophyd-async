@@ -15,9 +15,10 @@ from ophyd_async.core import (
     DeviceVector,
     HintedSignal,
     MockSignalBackend,
-    ReadableDeviceConfig,
+    PerSignalConfig,
     SignalR,
     SignalRW,
+    SignalW,
     SoftSignalBackend,
     StandardReadable,
     soft_signal_r_and_setter,
@@ -245,8 +246,8 @@ def test_standard_readable_add_children_multi_nested():
 
 
 @pytest.fixture
-def readable_device_config():
-    return ReadableDeviceConfig()
+def standard_readable_config():
+    return PerSignalConfig()
 
 
 test_data = [
@@ -267,97 +268,72 @@ test_data = [
 ]
 
 
-@pytest.mark.parametrize("name,dtype,value", test_data)
-def test_add_attribute(readable_device_config, name, dtype, value):
-    readable_device_config.add_attribute(name, dtype, value)
-    assert name in readable_device_config.signals[dtype]
-    assert readable_device_config.signals[dtype][name] == (dtype, value)
+def test_config_initialization(standard_readable_config):
+    assert len(standard_readable_config) == 0
 
 
-@pytest.mark.parametrize("name,dtype,value", test_data)
-def test_get_attribute(readable_device_config, name, dtype, value):
-    readable_device_config.add_attribute(name, dtype, value)
-    if isinstance(value, np.ndarray):
-        assert np.array_equal(readable_device_config[name][dtype], value)
+@pytest.mark.parametrize("name, type_, value", test_data)
+def test_config_set_get_item(standard_readable_config, name, type_, value):
+    mock_signal = MagicMock(spec=SignalW)
+    standard_readable_config[mock_signal] = value
+    if type_ is np.ndarray:
+        assert np.array_equal(standard_readable_config[mock_signal], value)
     else:
-        assert readable_device_config[name][dtype] == value
+        assert standard_readable_config[mock_signal] == value
 
 
-@pytest.mark.parametrize("name,dtype,value", test_data)
-def test_set_attribute(readable_device_config, name, dtype, value):
-    readable_device_config.add_attribute(name, dtype, value)
-    new_value = value if not isinstance(value, (int, float)) else value + 1
-    if dtype is bool:
-        new_value = not value
-    if dtype is np.ndarray:
-        new_value = np.flip(value)
-    readable_device_config[name][dtype] = new_value
-    if isinstance(value, np.ndarray):
-        assert np.array_equal(readable_device_config[name][dtype], new_value)
-    else:
-        assert readable_device_config[name][dtype] == new_value
+@pytest.mark.parametrize("name, type_, value", test_data)
+def test_config_del_item(standard_readable_config, name, type_, value):
+    mock_signal = MagicMock(spec=SignalW)
+    standard_readable_config[mock_signal] = value
+    del standard_readable_config[mock_signal]
+    with pytest.raises(KeyError):
+        _ = standard_readable_config[mock_signal]
 
 
-@pytest.mark.parametrize("name,dtype,value", test_data)
-def test_invalid_type(readable_device_config, name, dtype, value):
-    with pytest.raises(TypeError):
-        if dtype is str:
-            readable_device_config.add_attribute(name, dtype, 1)
-        else:
-            readable_device_config.add_attribute(name, dtype, "invalid_type")
+def test_config_iteration(standard_readable_config):
+    mock_signal1 = MagicMock(spec=SignalW)
+    mock_signal2 = MagicMock(spec=SignalW)
+    standard_readable_config[mock_signal1] = 42
+    standard_readable_config[mock_signal2] = 43
+    signals = list(standard_readable_config)
+    assert mock_signal1 in signals
+    assert mock_signal2 in signals
 
 
-@pytest.mark.parametrize("name,dtype,value", test_data)
-def test_add_attribute_default_value(readable_device_config, name, dtype, value):
-    readable_device_config.add_attribute(name, dtype)
-    assert name in readable_device_config.signals[dtype]
-    # Check that the default value is of the correct type
-    assert readable_device_config.signals[dtype][name][1] is None
+def test_config_length(standard_readable_config):
+    mock_signal1 = MagicMock(spec=SignalW)
+    mock_signal2 = MagicMock(spec=SignalW)
+    standard_readable_config[mock_signal1] = 42
+    standard_readable_config[mock_signal2] = 43
+    assert len(standard_readable_config) == 2
 
 
 @pytest.mark.asyncio
-async def test_readable_device_prepare(readable_device_config):
-    sr = StandardReadable()
-    mock = MagicMock()
-    sr.add_readables = mock
-    with sr.add_children_as_readables(ConfigSignal):
-        sr.a = SignalRW(name="a", backend=SoftSignalBackend(datatype=int))
-        sr.b = SignalRW(name="b", backend=SoftSignalBackend(datatype=float))
-        sr.c = SignalRW(name="c", backend=SoftSignalBackend(datatype=str))
-        sr.d = SignalRW(name="d", backend=SoftSignalBackend(datatype=bool))
+@pytest.mark.parametrize("name, type_, value", test_data)
+async def test_config_prepare(standard_readable_config, name, type_, value):
+    readable = StandardReadable()
+    if type_ is np.ndarray:
+        readable.mock_signal1 = SignalRW(
+            name="mock_signal1",
+            backend=SoftSignalBackend(
+                datatype=type_, initial_value=np.ndarray([0, 0, 0])
+            ),
+        )
+    else:
+        readable.mock_signal1 = SignalRW(
+            name="mock_signal1", backend=SoftSignalBackend(datatype=type_)
+        )
 
-    readable_device_config.add_attribute("a", int, 42)
-    readable_device_config.add_attribute("b", float, 3.14)
-    readable_device_config.add_attribute("c", str, "hello")
+    readable.add_readables([readable.mock_signal1])
 
-    await sr.prepare(readable_device_config)
-    assert await sr.a.get_value() == 42
-    assert await sr.b.get_value() == 3.14
-    assert await sr.c.get_value() == "hello"
+    config = PerSignalConfig()
+    config[readable.mock_signal1] = value
 
-    readable_device_config.add_attribute("d", int, 1)
-    with pytest.raises(TypeError):
-        await sr.prepare(readable_device_config)
+    await readable.prepare(config)
+    val = await readable.mock_signal1.get_value()
 
-
-def test_get_config():
-    sr = StandardReadable()
-
-    hinted = SignalRW(name="hinted", backend=SoftSignalBackend(datatype=int))
-    configurable = SignalRW(
-        name="configurable", backend=SoftSignalBackend(datatype=int)
-    )
-    normal = SignalRW(name="normal", backend=SoftSignalBackend(datatype=int))
-
-    sr.add_readables([configurable], ConfigSignal)
-    sr.add_readables([hinted], HintedSignal)
-    sr.add_readables([normal])
-
-    config = sr.get_config()
-
-    # Check that configurable is in the config
-    assert config["configurable"][int] is None
-    with pytest.raises(AttributeError):
-        config["hinted"][int]
-    with pytest.raises(AttributeError):
-        config["normal"][int]
+    if type_ is np.ndarray:
+        assert np.array_equal(val, value)
+    else:
+        assert await readable.mock_signal1.get_value() == value

@@ -1,14 +1,27 @@
 import asyncio
 import warnings
+from collections.abc import MutableMapping
 from contextlib import contextmanager
-from typing import Callable, Dict, Generator, Optional, Sequence, Tuple, Type, Union
+from dataclasses import dataclass, field
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Iterator,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
-from bluesky.protocols import DataKey, HasHints, Hints, Reading
+from bluesky.protocols import DataKey, HasHints, Hints, Preparable, Reading
 
 from ._device import Device, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
-from ._readable_config import ReadableDeviceConfig
-from ._signal import SignalR
+from ._signal import SignalR, SignalW
 from ._status import AsyncStatus
 from ._utils import merge_gathered_dicts
 
@@ -17,9 +30,35 @@ ReadableChildWrapper = Union[
     Callable[[ReadableChild], ReadableChild], Type["ConfigSignal"], Type["HintedSignal"]
 ]
 
+T = TypeVar("T")
+
+
+@dataclass
+class PerSignalConfig(MutableMapping):
+    _signal_configuration: Dict[SignalW[Any], Any] = field(default_factory=dict)
+
+    @property
+    def signal_configuration(self) -> Dict[SignalW[Any], Any]:
+        return self._signal_configuration
+
+    def __setitem__(self, signal: SignalW[T], value: T):
+        self._signal_configuration[signal] = value
+
+    def __getitem__(self, signal: SignalW[T]) -> T:
+        return self._signal_configuration[signal]
+
+    def __delitem__(self, signal: SignalW[T]):
+        del self._signal_configuration[signal]
+
+    def __iter__(self) -> Iterator[SignalW[Any]]:
+        return iter(self._signal_configuration)
+
+    def __len__(self) -> int:
+        return len(self._signal_configuration)
+
 
 class StandardReadable(
-    Device, AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints
+    Device, AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints, Preparable
 ):
     """Device that owns its children and provides useful default behavior.
 
@@ -213,34 +252,11 @@ class StandardReadable(
                 self._has_hints += (obj,)
 
     @AsyncStatus.wrap
-    async def prepare(self, value: ReadableDeviceConfig) -> None:
+    async def prepare(self, config: PerSignalConfig) -> None:
         tasks = []
-        for dtype, signals in value.signals.items():
-            for signal_name, (expected_dtype, val) in signals.items():
-                if hasattr(self, signal_name):
-                    attr = getattr(self, signal_name)
-                    if isinstance(attr, (HintedSignal, ConfigSignal)):
-                        attr = attr.signal
-                    if attr._backend.datatype == expected_dtype:  # noqa: SLF001
-                        if val is not None:
-                            tasks.append(attr.set(val))
-                    else:
-                        raise TypeError(
-                            f"Expected value of type {expected_dtype} for attribute"
-                            f" '{signal_name}',"
-                            f" got {type(attr._backend.datatype)}"  # noqa: SLF001
-                        )
+        for sig, value in config.items():
+            tasks.append(sig.set(value))
         await asyncio.gather(*tasks)
-
-    def get_config(self) -> ReadableDeviceConfig:
-        config = ReadableDeviceConfig()
-        for readable in self._configurables:
-            if isinstance(readable, Union[ConfigSignal, HintedSignal]):
-                readable = readable.signal
-            name = readable.name.split("-")[-1]
-            dtype = readable._backend.datatype  # noqa: SLF001
-            config.add_attribute(name, dtype)
-        return config
 
 
 class ConfigSignal(AsyncConfigurable):
