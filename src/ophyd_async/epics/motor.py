@@ -119,7 +119,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         )
 
         await self.set(fly_prepared_position)
-        await self.velocity.set(fly_velocity)
+        await self.velocity.set(abs(fly_velocity))
 
     @AsyncStatus.wrap
     async def kickoff(self):
