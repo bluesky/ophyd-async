@@ -211,7 +211,11 @@ class NameProvider(Protocol):
         """Get the name to be used as a data_key in the descriptor document"""
 
 
-class ShapeProvider(Protocol):
+class DatasetDescriber(Protocol):
     @abstractmethod
-    async def __call__(self) -> tuple:
+    async def np_datatype(self) -> str:
+        """Represents the numpy datatype"""
+
+    @abstractmethod
+    async def shape(self) -> tuple[int, ...]:
         """Get the shape of the data collection"""
