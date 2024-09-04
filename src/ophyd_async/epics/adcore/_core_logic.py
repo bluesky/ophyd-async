@@ -26,7 +26,7 @@ class ADBaseShapeProvider(ShapeProvider):
     async def np_datatype(self) -> str:
         return convert_ad_dtype_to_np(await self._driver.data_type.get_value())
 
-    async def __call__(self) -> tuple[int, int]:
+    async def shape(self) -> tuple[int, int]:
         shape = await asyncio.gather(
             self._driver.array_size_y.get_value(),
             self._driver.array_size_x.get_value(),

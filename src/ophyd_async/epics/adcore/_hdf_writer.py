@@ -78,7 +78,7 @@ class ADHDFWriter(DetectorWriter):
         # Wait for it to start, stashing the status that tells us when it finishes
         self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
         name = self._name_provider()
-        detector_shape = await self._shape_provider()
+        detector_shape = await self._shape_provider.shape()
         np_dtype = await self._shape_provider.np_datatype()
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()

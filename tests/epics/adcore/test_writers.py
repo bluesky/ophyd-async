@@ -20,7 +20,7 @@ class DummyShapeProvider(ShapeProvider):
     async def np_datatype(self) -> str:
         return "<u2"
 
-    async def __call__(self) -> tuple[int, int]:
+    async def shape(self) -> tuple[int, int]:
         return (10, 10)
 
 
