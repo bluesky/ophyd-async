@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._providers &#8212; ophyd-async 0.5.2.dev3+g27ad5b91 documentation</title>
+    <title>ophyd_async.core._providers &#8212; ophyd-async 0.5.2.dev4+gab4dc460 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=8cacd8d9"></script>
+    <script src="../../../_static/documentation_options.js?v=6b5d0eb2"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -757,13 +757,20 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="ShapeProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.ShapeProvider.html#ophyd_async.core.ShapeProvider">[docs]</a>
-<span class="k">class</span> <span class="nc">ShapeProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<div class="viewcode-block" id="ShapeProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.ShapeProvider.html#ophyd_async.core.ShapeProvider.__call__">[docs]</a>
+<div class="viewcode-block" id="DatasetDescriber">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DatasetDescriber.html#ophyd_async.core.DatasetDescriber">[docs]</a>
+<span class="k">class</span> <span class="nc">DatasetDescriber</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<div class="viewcode-block" id="DatasetDescriber.np_datatype">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DatasetDescriber.html#ophyd_async.core.DatasetDescriber.np_datatype">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">np_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents the numpy datatype&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DatasetDescriber.shape">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.DatasetDescriber.html#ophyd_async.core.DatasetDescriber.shape">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the shape of the data collection&quot;&quot;&quot;</span></div>
 </div>
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.5.2.dev3+g27ad5b91 documentation</title>
+    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.5.2.dev4+gab4dc460 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=8cacd8d9"></script>
+    <script src="../../../../_static/documentation_options.js?v=6b5d0eb2"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -497,12 +497,12 @@ document.write(`
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
+    <span class="n">DatasetDescriber</span><span class="p">,</span>
     <span class="n">DetectorWriter</span><span class="p">,</span>
     <span class="n">HDFDataset</span><span class="p">,</span>
     <span class="n">HDFFile</span><span class="p">,</span>
     <span class="n">NameProvider</span><span class="p">,</span>
     <span class="n">PathProvider</span><span class="p">,</span>
-    <span class="n">ShapeProvider</span><span class="p">,</span>
     <span class="n">observe_value</span><span class="p">,</span>
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
     <span class="n">wait_for_value</span><span class="p">,</span>
@@ -511,7 +511,6 @@ document.write(`
 <span class="kn">from</span> <span class="nn">._core_io</span> <span class="kn">import</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span> <span class="n">NDFileHDFIO</span>
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">FileWriteMode</span><span class="p">,</span>
-    <span class="n">convert_ad_dtype_to_np</span><span class="p">,</span>
     <span class="n">convert_param_dtype_to_np</span><span class="p">,</span>
     <span class="n">convert_pv_dtype_to_np</span><span class="p">,</span>
 <span class="p">)</span>
@@ -525,13 +524,13 @@ document.write(`
         <span class="n">hdf</span><span class="p">:</span> <span class="n">NDFileHDFIO</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
-        <span class="n">shape_provider</span><span class="p">:</span> <span class="n">ShapeProvider</span><span class="p">,</span>
+        <span class="n">dataset_describer</span><span class="p">:</span> <span class="n">DatasetDescriber</span><span class="p">,</span>
         <span class="o">*</span><span class="n">plugins</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hdf</span> <span class="o">=</span> <span class="n">hdf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_shape_provider</span> <span class="o">=</span> <span class="n">shape_provider</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span> <span class="o">=</span> <span class="n">dataset_describer</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_plugins</span> <span class="o">=</span> <span class="n">plugins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncStatus</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -572,23 +571,18 @@ document.write(`
         <span class="c1"># Wait for it to start, stashing the status that tells us when it finishes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hdf</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">()</span>
-        <span class="n">detector_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape_provider</span><span class="p">())</span>
+        <span class="n">detector_shape</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span><span class="o">.</span><span class="n">shape</span><span class="p">()</span>
+        <span class="n">np_dtype</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span><span class="o">.</span><span class="n">np_datatype</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="n">multiplier</span>
         <span class="n">outer_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">multiplier</span><span class="p">,)</span> <span class="k">if</span> <span class="n">multiplier</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">()</span>
-        <span class="n">frame_shape</span> <span class="o">=</span> <span class="n">detector_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detector_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[]</span>
-        <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span><span class="n">detector_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detector_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-            <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">)</span>
 
         <span class="c1"># Add the main data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">HDFDataset</span><span class="p">(</span>
                 <span class="n">data_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;/entry/data/data&quot;</span><span class="p">,</span>
-                <span class="n">shape</span><span class="o">=</span><span class="n">frame_shape</span><span class="p">,</span>
-                <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">dtype_numpy</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">detector_shape</span><span class="p">,</span>
+                <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">np_dtype</span><span class="p">,</span>
                 <span class="n">multiplier</span><span class="o">=</span><span class="n">multiplier</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">]</span>

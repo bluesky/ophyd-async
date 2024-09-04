@@ -84,7 +84,7 @@ ophyd\_async.core
       NameProvider
       PathInfo
       PathProvider
-      ShapeProvider
+      DatasetDescriber
       StaticFilenameProvider
       StaticPathProvider
       UUIDFilenameProvider

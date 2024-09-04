@@ -40,7 +40,7 @@ ophyd\_async.epics.adcore
       NDArrayBaseIO
       NDFileHDFIO
       NDPluginStatsIO
-      ADBaseShapeProvider
+      ADBaseDatasetDescriber
       ADHDFWriter
       SingleTriggerDetector
       ADBaseDataType

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore.ADHDFWriter &#8212; ophyd-async 0.5.2.dev3+g27ad5b91 documentation</title>
+    <title>ophyd_async.epics.adcore.ADHDFWriter &#8212; ophyd-async 0.5.2.dev4+gab4dc460 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=8cacd8d9"></script>
+    <script src="../_static/documentation_options.js?v=6b5d0eb2"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="ophyd_async.epics.adcore.SingleTriggerDetector" href="ophyd_async.epics.adcore.SingleTriggerDetector.html" />
-    <link rel="prev" title="ophyd_async.epics.adcore.ADBaseShapeProvider" href="ophyd_async.epics.adcore.ADBaseShapeProvider.html" />
+    <link rel="prev" title="ophyd_async.epics.adcore.ADBaseDatasetDescriber" href="ophyd_async.epics.adcore.ADBaseDatasetDescriber.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -497,7 +497,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NameProvider.html">ophyd_async.core.NameProvider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.PathInfo.html">ophyd_async.core.PathInfo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.PathProvider.html">ophyd_async.core.PathProvider</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ShapeProvider.html">ophyd_async.core.ShapeProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DatasetDescriber.html">ophyd_async.core.DatasetDescriber</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticFilenameProvider.html">ophyd_async.core.StaticFilenameProvider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticPathProvider.html">ophyd_async.core.StaticPathProvider</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.UUIDFilenameProvider.html">ophyd_async.core.UUIDFilenameProvider</a></li>
@@ -538,7 +538,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDArrayBaseIO.html">ophyd_async.epics.adcore.NDArrayBaseIO</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDFileHDFIO.html">ophyd_async.epics.adcore.NDFileHDFIO</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDPluginStatsIO.html">ophyd_async.epics.adcore.NDPluginStatsIO</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.ADBaseShapeProvider.html">ophyd_async.epics.adcore.ADBaseShapeProvider</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.ADBaseDatasetDescriber.html">ophyd_async.epics.adcore.ADBaseDatasetDescriber</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">ophyd_async.epics.adcore.ADHDFWriter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.SingleTriggerDetector.html">ophyd_async.epics.adcore.SingleTriggerDetector</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.ADBaseDataType.html">ophyd_async.epics.adcore.ADBaseDataType</a></li>
@@ -721,7 +721,7 @@ may change API on minor release numbers before then</p>
 <h1>ophyd_async.epics.adcore.ADHDFWriter<a class="headerlink" href="#ophyd-async-epics-adcore-adhdfwriter" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADHDFWriter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADHDFWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.NDFileHDFIO.html#ophyd_async.epics.adcore.NDFileHDFIO" title="ophyd_async.epics.adcore._core_io.NDFileHDFIO"><span class="pre">NDFileHDFIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.PathProvider.html#ophyd_async.core.PathProvider" title="ophyd_async.core._providers.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.NameProvider.html#ophyd_async.core.NameProvider" title="ophyd_async.core._providers.NameProvider"><span class="pre">NameProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.ShapeProvider.html#ophyd_async.core.ShapeProvider" title="ophyd_async.core._providers.ShapeProvider"><span class="pre">ShapeProvider</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">plugins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.NDArrayBaseIO.html#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._core_io.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/adcore/_hdf_writer.html#ADHDFWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADHDFWriter" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADHDFWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.NDFileHDFIO.html#ophyd_async.epics.adcore.NDFileHDFIO" title="ophyd_async.epics.adcore._core_io.NDFileHDFIO"><span class="pre">NDFileHDFIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.PathProvider.html#ophyd_async.core.PathProvider" title="ophyd_async.core._providers.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.NameProvider.html#ophyd_async.core.NameProvider" title="ophyd_async.core._providers.NameProvider"><span class="pre">NameProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_describer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.DatasetDescriber.html#ophyd_async.core.DatasetDescriber" title="ophyd_async.core._providers.DatasetDescriber"><span class="pre">DatasetDescriber</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">plugins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.NDArrayBaseIO.html#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._core_io.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/adcore/_hdf_writer.html#ADHDFWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADHDFWriter" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.DetectorWriter.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core._detector.DetectorWriter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a></p>
 <p class="rubric">Methods</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
@@ -799,12 +799,12 @@ may change API on minor release numbers before then</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.epics.adcore.ADBaseShapeProvider.html"
+       href="ophyd_async.epics.adcore.ADBaseDatasetDescriber.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">ophyd_async.epics.adcore.ADBaseShapeProvider</p>
+        <p class="prev-next-title">ophyd_async.epics.adcore.ADBaseDatasetDescriber</p>
       </div>
     </a>
     <a class="right-next"
