@@ -110,10 +110,10 @@ class PandaHDFWriter(DetectorWriter):
         # i.e. no stream resources will be generated
         if len(self._datasets) == 0:
             self.panda_data_block.log.warning(
-                f"PandA {self._name_provider()} DATASETS table is empty! \
-                  No stream resource docs will be generated. \
-                  Make sure captured positions have their corresponding \
-                  *:DATASET PV set to a scientifically relevant name."
+                f"PandA {self._name_provider()} DATASETS table is empty! "
+                "No stream resource docs will be generated. "
+                "Make sure captured positions have their corresponding "
+                "*:DATASET PV set to a scientifically relevant name."
             )
 
     # Next few functions are exactly the same as AD writer. Could move as default
