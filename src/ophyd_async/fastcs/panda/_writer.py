@@ -109,7 +109,7 @@ class PandaHDFWriter(DetectorWriter):
         # Warn user if dataset table is empty in PandA
         # i.e. no stream resources will be generated
         if len(self._datasets) == 0:
-            self.panda_data_block.log.warn(
+            self.panda_data_block.log.warning(
                 f"PandA {self._name_provider()} DATASETS table is empty! \
                   No stream resource docs will be generated. \
                   Make sure captured positions have their corresponding \
