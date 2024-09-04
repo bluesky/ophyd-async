@@ -20,6 +20,7 @@ from ophyd_async.core import (
 )
 
 from ._core_io import NDArrayBaseIO, NDFileHDFIO
+from ._core_writer import ADWriter
 from ._utils import (
     FileWriteMode,
     convert_ad_dtype_to_np,
@@ -28,25 +29,16 @@ from ._utils import (
 )
 
 
-class ADHDFWriter(DetectorWriter):
+class ADHDFWriter(ADWriter):
     def __init__(
         self,
-        hdf: NDFileHDFIO,
-        path_provider: PathProvider,
-        name_provider: NameProvider,
-        shape_provider: ShapeProvider,
-        *plugins: NDArrayBaseIO,
+        *args,
     ) -> None:
-        self.hdf = hdf
-        self._path_provider = path_provider
-        self._name_provider = name_provider
-        self._shape_provider = shape_provider
+        super().__init__(*args)
+        self.hdf = self.fileio
 
-        self._plugins = plugins
-        self._capture_status: Optional[AsyncStatus] = None
         self._datasets: List[HDFDataset] = []
         self._file: Optional[HDFFile] = None
-        self._multiplier = 1
 
     async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
         self._file = None

@@ -111,12 +111,8 @@ class Compression(str, Enum):
     jpeg = "JPEG"
 
 
-class NDFileHDFIO(NDPluginBaseIO):
+class NDFileIO(NDPluginBaseIO):
     def __init__(self, prefix: str, name="") -> None:
-        # Define some signals
-        self.position_mode = epics_signal_rw_rbv(bool, prefix + "PositionMode")
-        self.compression = epics_signal_rw_rbv(Compression, prefix + "Compression")
-        self.num_extra_dims = epics_signal_rw_rbv(int, prefix + "NumExtraDims")
         self.file_path = epics_signal_rw_rbv(str, prefix + "FilePath")
         self.file_name = epics_signal_rw_rbv(str, prefix + "FileName")
         self.file_path_exists = epics_signal_r(bool, prefix + "FilePathExists_RBV")
@@ -127,12 +123,20 @@ class NDFileHDFIO(NDPluginBaseIO):
         )
         self.num_capture = epics_signal_rw_rbv(int, prefix + "NumCapture")
         self.num_captured = epics_signal_r(int, prefix + "NumCaptured_RBV")
-        self.swmr_mode = epics_signal_rw_rbv(bool, prefix + "SWMRMode")
-        self.lazy_open = epics_signal_rw_rbv(bool, prefix + "LazyOpen")
         self.capture = epics_signal_rw_rbv(bool, prefix + "Capture")
-        self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
-        self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1")
         self.create_directory = epics_signal_rw(int, prefix + "CreateDirectory")
+        self.lazy_open = epics_signal_rw_rbv(bool, prefix + "LazyOpen")
+        super().__init__(prefix, name)
+
+
+class NDFileHDFIO(NDFileIO):
+    def __init__(self, prefix: str, name="") -> None:
+        self.position_mode = epics_signal_rw_rbv(bool, prefix + "PositionMode")
+        self.compression = epics_signal_rw_rbv(Compression, prefix + "Compression")
+        self.num_extra_dims = epics_signal_rw_rbv(int, prefix + "NumExtraDims")
+        self.swmr_mode = epics_signal_rw_rbv(bool, prefix + "SWMRMode")
+        self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
+        self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
         super().__init__(prefix, name)
