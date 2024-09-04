@@ -1,0 +1,56 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.eiger.EigerDetector
+======================================
+
+.. currentmodule:: ophyd_async.epics.eiger
+
+.. autoclass:: EigerDetector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~EigerDetector.children
+      ~EigerDetector.collect_asset_docs
+      ~EigerDetector.complete
+      ~EigerDetector.connect
+      ~EigerDetector.describe
+      ~EigerDetector.describe_collect
+      ~EigerDetector.describe_configuration
+      ~EigerDetector.get_index
+      ~EigerDetector.kickoff
+      ~EigerDetector.prepare
+      ~EigerDetector.read
+      ~EigerDetector.read_configuration
+      ~EigerDetector.set_name
+      ~EigerDetector.stage
+      ~EigerDetector.trigger
+      ~EigerDetector.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~EigerDetector.controller
+      ~EigerDetector.log
+      ~EigerDetector.name
+      ~EigerDetector.parent
+      ~EigerDetector.writer
+   
+   

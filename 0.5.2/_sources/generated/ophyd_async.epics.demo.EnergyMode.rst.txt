@@ -1,0 +1,84 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.epics.demo.EnergyMode
+==================================
+
+.. currentmodule:: ophyd_async.epics.demo
+
+.. autoclass:: EnergyMode
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~EnergyMode.encode
+      ~EnergyMode.replace
+      ~EnergyMode.split
+      ~EnergyMode.rsplit
+      ~EnergyMode.join
+      ~EnergyMode.capitalize
+      ~EnergyMode.casefold
+      ~EnergyMode.title
+      ~EnergyMode.center
+      ~EnergyMode.count
+      ~EnergyMode.expandtabs
+      ~EnergyMode.find
+      ~EnergyMode.partition
+      ~EnergyMode.index
+      ~EnergyMode.ljust
+      ~EnergyMode.lower
+      ~EnergyMode.lstrip
+      ~EnergyMode.rfind
+      ~EnergyMode.rindex
+      ~EnergyMode.rjust
+      ~EnergyMode.rstrip
+      ~EnergyMode.rpartition
+      ~EnergyMode.splitlines
+      ~EnergyMode.strip
+      ~EnergyMode.swapcase
+      ~EnergyMode.translate
+      ~EnergyMode.upper
+      ~EnergyMode.startswith
+      ~EnergyMode.endswith
+      ~EnergyMode.removeprefix
+      ~EnergyMode.removesuffix
+      ~EnergyMode.isascii
+      ~EnergyMode.islower
+      ~EnergyMode.isupper
+      ~EnergyMode.istitle
+      ~EnergyMode.isspace
+      ~EnergyMode.isdecimal
+      ~EnergyMode.isdigit
+      ~EnergyMode.isnumeric
+      ~EnergyMode.isalpha
+      ~EnergyMode.isalnum
+      ~EnergyMode.isidentifier
+      ~EnergyMode.isprintable
+      ~EnergyMode.zfill
+      ~EnergyMode.format
+      ~EnergyMode.format_map
+      ~EnergyMode.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~EnergyMode.low
+      ~EnergyMode.high
+   
+   

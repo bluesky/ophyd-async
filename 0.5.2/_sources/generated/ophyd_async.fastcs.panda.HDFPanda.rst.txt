@@ -1,0 +1,61 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.fastcs.panda.HDFPanda
+==================================
+
+.. currentmodule:: ophyd_async.fastcs.panda
+
+.. autoclass:: HDFPanda
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~HDFPanda.children
+      ~HDFPanda.collect_asset_docs
+      ~HDFPanda.complete
+      ~HDFPanda.connect
+      ~HDFPanda.describe
+      ~HDFPanda.describe_collect
+      ~HDFPanda.describe_configuration
+      ~HDFPanda.get_index
+      ~HDFPanda.kickoff
+      ~HDFPanda.prepare
+      ~HDFPanda.read
+      ~HDFPanda.read_configuration
+      ~HDFPanda.set_name
+      ~HDFPanda.stage
+      ~HDFPanda.trigger
+      ~HDFPanda.unstage
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~HDFPanda.controller
+      ~HDFPanda.log
+      ~HDFPanda.name
+      ~HDFPanda.parent
+      ~HDFPanda.writer
+      ~HDFPanda.pulse
+      ~HDFPanda.seq
+      ~HDFPanda.pcomp
+      ~HDFPanda.pcap
+      ~HDFPanda.data
+   
+   

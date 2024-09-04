@@ -1,0 +1,1570 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ophyd_async.epics.adcore.ADBaseDataType &#8212; ophyd-async 0.5.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=8e576371"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/ophyd_async.epics.adcore.ADBaseDataType';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.5.2';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../_static/ophyd_favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ophyd_async.epics.adcore.FileWriteMode" href="ophyd_async.epics.adcore.FileWriteMode.html" />
+    <link rel="prev" title="ophyd_async.epics.adcore.SingleTriggerDetector" href="ophyd_async.epics.adcore.SingleTriggerDetector.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">ophyd-async</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../reference/api.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.core.html">ophyd_async.core</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.all_at_once.html">ophyd_async.core.all_at_once</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_signal_values.html">ophyd_async.core.get_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_device.html">ophyd_async.core.load_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.load_from_yaml.html">ophyd_async.core.load_from_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_device.html">ophyd_async.core.save_device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.save_to_yaml.html">ophyd_async.core.save_to_yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_signal_values.html">ophyd_async.core.set_signal_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.walk_rw_signals.html">ophyd_async.core.walk_rw_signals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.config_ophyd_async_logging.html">ophyd_async.core.config_ophyd_async_logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.callback_on_mock_put.html">ophyd_async.core.callback_on_mock_put</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_mock_put.html">ophyd_async.core.get_mock_put</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.mock_puts_blocked.html">ophyd_async.core.mock_puts_blocked</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.reset_mock_put_calls.html">ophyd_async.core.reset_mock_put_calls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_put_proceeds.html">ophyd_async.core.set_mock_put_proceeds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_value.html">ophyd_async.core.set_mock_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_mock_values.html">ophyd_async.core.set_mock_values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_configuration.html">ophyd_async.core.assert_configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_emitted.html">ophyd_async.core.assert_emitted</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_reading.html">ophyd_async.core.assert_reading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.assert_value.html">ophyd_async.core.assert_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.observe_value.html">ophyd_async.core.observe_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_value.html">ophyd_async.core.set_and_wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.set_and_wait_for_other_value.html">ophyd_async.core.set_and_wait_for_other_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_r_and_setter.html">ophyd_async.core.soft_signal_r_and_setter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.soft_signal_rw.html">ophyd_async.core.soft_signal_rw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_value.html">ophyd_async.core.wait_for_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_dtype.html">ophyd_async.core.get_dtype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.get_unique.html">ophyd_async.core.get_unique</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.in_micros.html">ophyd_async.core.in_micros</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.wait_for_connection.html">ophyd_async.core.wait_for_connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.completed_status.html">ophyd_async.core.completed_status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorControl.html">ophyd_async.core.DetectorControl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorTrigger.html">ophyd_async.core.DetectorTrigger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DetectorWriter.html">ophyd_async.core.DetectorWriter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardDetector.html">ophyd_async.core.StandardDetector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.Device.html">ophyd_async.core.Device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceCollector.html">ophyd_async.core.DeviceCollector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DeviceVector.html">ophyd_async.core.DeviceVector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardFlyer.html">ophyd_async.core.StandardFlyer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.TriggerLogic.html">ophyd_async.core.TriggerLogic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HDFDataset.html">ophyd_async.core.HDFDataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HDFFile.html">ophyd_async.core.HDFFile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.MockSignalBackend.html">ophyd_async.core.MockSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncConfigurable.html">ophyd_async.core.AsyncConfigurable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncReadable.html">ophyd_async.core.AsyncReadable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncStageable.html">ophyd_async.core.AsyncStageable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AutoIncrementFilenameProvider.html">ophyd_async.core.AutoIncrementFilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AutoIncrementingPathProvider.html">ophyd_async.core.AutoIncrementingPathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.FilenameProvider.html">ophyd_async.core.FilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NameProvider.html">ophyd_async.core.NameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.PathInfo.html">ophyd_async.core.PathInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.PathProvider.html">ophyd_async.core.PathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.DatasetDescriber.html">ophyd_async.core.DatasetDescriber</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticFilenameProvider.html">ophyd_async.core.StaticFilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StaticPathProvider.html">ophyd_async.core.StaticPathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.UUIDFilenameProvider.html">ophyd_async.core.UUIDFilenameProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.YMDPathProvider.html">ophyd_async.core.YMDPathProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.ConfigSignal.html">ophyd_async.core.ConfigSignal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.HintedSignal.html">ophyd_async.core.HintedSignal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.StandardReadable.html">ophyd_async.core.StandardReadable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.Signal.html">ophyd_async.core.Signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalR.html">ophyd_async.core.SignalR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalRW.html">ophyd_async.core.SignalRW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalW.html">ophyd_async.core.SignalW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalX.html">ophyd_async.core.SignalX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.RuntimeSubsetEnum.html">ophyd_async.core.RuntimeSubsetEnum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalBackend.html">ophyd_async.core.SignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SubsetEnum.html">ophyd_async.core.SubsetEnum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SignalMetadata.html">ophyd_async.core.SignalMetadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.SoftSignalBackend.html">ophyd_async.core.SoftSignalBackend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.AsyncStatus.html">ophyd_async.core.AsyncStatus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.WatchableAsyncStatus.html">ophyd_async.core.WatchableAsyncStatus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.CalculateTimeout.html">ophyd_async.core.CalculateTimeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.WatcherUpdate.html">ophyd_async.core.WatcherUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.NotConnected.html">ophyd_async.core.NotConnected</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.epics.html">ophyd_async.epics</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.adaravis.html">ophyd_async.epics.adaravis</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.AravisDetector.html">ophyd_async.epics.adaravis.AravisDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.AravisController.html">ophyd_async.epics.adaravis.AravisController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.AravisDriverIO.html">ophyd_async.epics.adaravis.AravisDriverIO</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="ophyd_async.epics.adcore.html">ophyd_async.epics.adcore</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied.html">ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status.html">ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.stop_busy_record.html">ophyd_async.epics.adcore.stop_busy_record</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.ADBaseIO.html">ophyd_async.epics.adcore.ADBaseIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.DetectorState.html">ophyd_async.epics.adcore.DetectorState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDArrayBaseIO.html">ophyd_async.epics.adcore.NDArrayBaseIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDFileHDFIO.html">ophyd_async.epics.adcore.NDFileHDFIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDPluginStatsIO.html">ophyd_async.epics.adcore.NDPluginStatsIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.ADBaseDatasetDescriber.html">ophyd_async.epics.adcore.ADBaseDatasetDescriber</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.ADHDFWriter.html">ophyd_async.epics.adcore.ADHDFWriter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.SingleTriggerDetector.html">ophyd_async.epics.adcore.SingleTriggerDetector</a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">ophyd_async.epics.adcore.ADBaseDataType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.FileWriteMode.html">ophyd_async.epics.adcore.FileWriteMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.ImageMode.html">ophyd_async.epics.adcore.ImageMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDAttributePv.html">ophyd_async.epics.adcore.NDAttributePv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDAttributeParam.html">ophyd_async.epics.adcore.NDAttributeParam</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDAttributeDataType.html">ophyd_async.epics.adcore.NDAttributeDataType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.NDAttributePvDbrType.html">ophyd_async.epics.adcore.NDAttributePvDbrType</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.adkinetix.html">ophyd_async.epics.adkinetix</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.KinetixDetector.html">ophyd_async.epics.adkinetix.KinetixDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.KinetixController.html">ophyd_async.epics.adkinetix.KinetixController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.KinetixDriverIO.html">ophyd_async.epics.adkinetix.KinetixDriverIO</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.adpilatus.html">ophyd_async.epics.adpilatus</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.PilatusDetector.html">ophyd_async.epics.adpilatus.PilatusDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.PilatusReadoutTime.html">ophyd_async.epics.adpilatus.PilatusReadoutTime</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.PilatusController.html">ophyd_async.epics.adpilatus.PilatusController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.PilatusDriverIO.html">ophyd_async.epics.adpilatus.PilatusDriverIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.PilatusTriggerMode.html">ophyd_async.epics.adpilatus.PilatusTriggerMode</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html">ophyd_async.epics.adsimdetector</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.SimDetector.html">ophyd_async.epics.adsimdetector.SimDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.SimController.html">ophyd_async.epics.adsimdetector.SimController</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.advimba.html">ophyd_async.epics.advimba</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.VimbaDetector.html">ophyd_async.epics.advimba.VimbaDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.VimbaController.html">ophyd_async.epics.advimba.VimbaController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.VimbaDriverIO.html">ophyd_async.epics.advimba.VimbaDriverIO</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.demo.html">ophyd_async.epics.demo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.Mover.html">ophyd_async.epics.demo.Mover</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.SampleStage.html">ophyd_async.epics.demo.SampleStage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.EnergyMode.html">ophyd_async.epics.demo.EnergyMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.Sensor.html">ophyd_async.epics.demo.Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.SensorGroup.html">ophyd_async.epics.demo.SensorGroup</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.eiger.html">ophyd_async.epics.eiger</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.eiger.EigerDetector.html">ophyd_async.epics.eiger.EigerDetector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.eiger.EigerController.html">ophyd_async.epics.eiger.EigerController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.eiger.EigerDriverIO.html">ophyd_async.epics.eiger.EigerDriverIO</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.motor.html">ophyd_async.epics.motor</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.Motor.html">ophyd_async.epics.motor.Motor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.InvalidFlyMotorException.html">ophyd_async.epics.motor.InvalidFlyMotorException</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.MotorLimitsException.html">ophyd_async.epics.motor.MotorLimitsException</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.pvi.html">ophyd_async.epics.pvi</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pvi.fill_pvi_entries.html">ophyd_async.epics.pvi.fill_pvi_entries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pvi.create_children_from_annotations.html">ophyd_async.epics.pvi.create_children_from_annotations</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.signal.html">ophyd_async.epics.signal</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.get_supported_values.html">ophyd_async.epics.signal.get_supported_values</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_r.html">ophyd_async.epics.signal.epics_signal_r</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_rw.html">ophyd_async.epics.signal.epics_signal_rw</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_rw_rbv.html">ophyd_async.epics.signal.epics_signal_rw_rbv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_w.html">ophyd_async.epics.signal.epics_signal_w</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.epics_signal_x.html">ophyd_async.epics.signal.epics_signal_x</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.LimitPair.html">ophyd_async.epics.signal.LimitPair</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.Limits.html">ophyd_async.epics.signal.Limits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.PvaSignalBackend.html">ophyd_async.epics.signal.PvaSignalBackend</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.fastcs.html">ophyd_async.fastcs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.fastcs.odin.html">ophyd_async.fastcs.odin</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.fastcs.panda.html">ophyd_async.fastcs.panda</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.seq_table_from_arrays.html">ophyd_async.fastcs.panda.seq_table_from_arrays</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.seq_table_from_rows.html">ophyd_async.fastcs.panda.seq_table_from_rows</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.phase_sorter.html">ophyd_async.fastcs.panda.phase_sorter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.CommonPandaBlocks.html">ophyd_async.fastcs.panda.CommonPandaBlocks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.DataBlock.html">ophyd_async.fastcs.panda.DataBlock</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.EnableDisableOptions.html">ophyd_async.fastcs.panda.EnableDisableOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PcapBlock.html">ophyd_async.fastcs.panda.PcapBlock</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PcompBlock.html">ophyd_async.fastcs.panda.PcompBlock</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PcompDirectionOptions.html">ophyd_async.fastcs.panda.PcompDirectionOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PulseBlock.html">ophyd_async.fastcs.panda.PulseBlock</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.SeqBlock.html">ophyd_async.fastcs.panda.SeqBlock</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.TimeUnits.html">ophyd_async.fastcs.panda.TimeUnits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.HDFPanda.html">ophyd_async.fastcs.panda.HDFPanda</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PandaHDFWriter.html">ophyd_async.fastcs.panda.PandaHDFWriter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PandaPcapController.html">ophyd_async.fastcs.panda.PandaPcapController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.DatasetTable.html">ophyd_async.fastcs.panda.DatasetTable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PandaHdf5DatasetType.html">ophyd_async.fastcs.panda.PandaHdf5DatasetType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.SeqTable.html">ophyd_async.fastcs.panda.SeqTable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.SeqTableRow.html">ophyd_async.fastcs.panda.SeqTableRow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.SeqTrigger.html">ophyd_async.fastcs.panda.SeqTrigger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.html">ophyd_async.fastcs.panda.StaticPcompTriggerLogic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.html">ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../reference.html" class="nav-link">Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
+    
+    
+    <li class="breadcrumb-item"><a href="ophyd_async.epics.adcore.html" class="nav-link">ophyd_async.epics.adcore</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">ophyd_async....</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ophyd async is included on a provisional basis until the v1.0 release and
+may change API on minor release numbers before then</p>
+</div>
+<section id="ophyd-async-epics-adcore-adbasedatatype">
+<h1>ophyd_async.epics.adcore.ADBaseDataType<a class="headerlink" href="#ophyd-async-epics-adcore-adbasedatatype" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADBaseDataType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/adcore/_utils.html#ADBaseDataType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.encode" title="ophyd_async.epics.adcore.ADBaseDataType.encode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encode</span></code></a></p></td>
+<td><p>Encode the string using the codec registered for encoding.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.replace" title="ophyd_async.epics.adcore.ADBaseDataType.replace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">replace</span></code></a></p></td>
+<td><p>Return a copy with all occurrences of substring old replaced by new.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.split" title="ophyd_async.epics.adcore.ADBaseDataType.split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split</span></code></a></p></td>
+<td><p>Return a list of the substrings in the string, using sep as the separator string.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.rsplit" title="ophyd_async.epics.adcore.ADBaseDataType.rsplit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rsplit</span></code></a></p></td>
+<td><p>Return a list of the substrings in the string, using sep as the separator string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.join" title="ophyd_async.epics.adcore.ADBaseDataType.join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join</span></code></a></p></td>
+<td><p>Concatenate any number of strings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.capitalize" title="ophyd_async.epics.adcore.ADBaseDataType.capitalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">capitalize</span></code></a></p></td>
+<td><p>Return a capitalized version of the string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.casefold" title="ophyd_async.epics.adcore.ADBaseDataType.casefold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">casefold</span></code></a></p></td>
+<td><p>Return a version of the string suitable for caseless comparisons.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.title" title="ophyd_async.epics.adcore.ADBaseDataType.title"><code class="xref py py-obj docutils literal notranslate"><span class="pre">title</span></code></a></p></td>
+<td><p>Return a version of the string where each word is titlecased.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.center" title="ophyd_async.epics.adcore.ADBaseDataType.center"><code class="xref py py-obj docutils literal notranslate"><span class="pre">center</span></code></a></p></td>
+<td><p>Return a centered string of length width.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.count" title="ophyd_async.epics.adcore.ADBaseDataType.count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count</span></code></a></p></td>
+<td><p>Return the number of non-overlapping occurrences of substring sub in string S[start:end].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.expandtabs" title="ophyd_async.epics.adcore.ADBaseDataType.expandtabs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">expandtabs</span></code></a></p></td>
+<td><p>Return a copy where all tab characters are expanded using spaces.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.find" title="ophyd_async.epics.adcore.ADBaseDataType.find"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find</span></code></a></p></td>
+<td><p>Return the lowest index in S where substring sub is found, such that sub is contained within S[start:end].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.partition" title="ophyd_async.epics.adcore.ADBaseDataType.partition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">partition</span></code></a></p></td>
+<td><p>Partition the string into three parts using the given separator.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.index" title="ophyd_async.epics.adcore.ADBaseDataType.index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">index</span></code></a></p></td>
+<td><p>Return the lowest index in S where substring sub is found, such that sub is contained within S[start:end].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.ljust" title="ophyd_async.epics.adcore.ADBaseDataType.ljust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ljust</span></code></a></p></td>
+<td><p>Return a left-justified string of length width.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.lower" title="ophyd_async.epics.adcore.ADBaseDataType.lower"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower</span></code></a></p></td>
+<td><p>Return a copy of the string converted to lowercase.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.lstrip" title="ophyd_async.epics.adcore.ADBaseDataType.lstrip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lstrip</span></code></a></p></td>
+<td><p>Return a copy of the string with leading whitespace removed.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.rfind" title="ophyd_async.epics.adcore.ADBaseDataType.rfind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rfind</span></code></a></p></td>
+<td><p>Return the highest index in S where substring sub is found, such that sub is contained within S[start:end].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.rindex" title="ophyd_async.epics.adcore.ADBaseDataType.rindex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rindex</span></code></a></p></td>
+<td><p>Return the highest index in S where substring sub is found, such that sub is contained within S[start:end].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.rjust" title="ophyd_async.epics.adcore.ADBaseDataType.rjust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rjust</span></code></a></p></td>
+<td><p>Return a right-justified string of length width.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.rstrip" title="ophyd_async.epics.adcore.ADBaseDataType.rstrip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rstrip</span></code></a></p></td>
+<td><p>Return a copy of the string with trailing whitespace removed.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.rpartition" title="ophyd_async.epics.adcore.ADBaseDataType.rpartition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rpartition</span></code></a></p></td>
+<td><p>Partition the string into three parts using the given separator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.splitlines" title="ophyd_async.epics.adcore.ADBaseDataType.splitlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splitlines</span></code></a></p></td>
+<td><p>Return a list of the lines in the string, breaking at line boundaries.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.strip" title="ophyd_async.epics.adcore.ADBaseDataType.strip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">strip</span></code></a></p></td>
+<td><p>Return a copy of the string with leading and trailing whitespace removed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.swapcase" title="ophyd_async.epics.adcore.ADBaseDataType.swapcase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">swapcase</span></code></a></p></td>
+<td><p>Convert uppercase characters to lowercase and lowercase characters to uppercase.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.translate" title="ophyd_async.epics.adcore.ADBaseDataType.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a></p></td>
+<td><p>Replace each character in the string using the given translation table.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.upper" title="ophyd_async.epics.adcore.ADBaseDataType.upper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper</span></code></a></p></td>
+<td><p>Return a copy of the string converted to uppercase.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.startswith" title="ophyd_async.epics.adcore.ADBaseDataType.startswith"><code class="xref py py-obj docutils literal notranslate"><span class="pre">startswith</span></code></a></p></td>
+<td><p>Return True if S starts with the specified prefix, False otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.endswith" title="ophyd_async.epics.adcore.ADBaseDataType.endswith"><code class="xref py py-obj docutils literal notranslate"><span class="pre">endswith</span></code></a></p></td>
+<td><p>Return True if S ends with the specified suffix, False otherwise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.removeprefix" title="ophyd_async.epics.adcore.ADBaseDataType.removeprefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">removeprefix</span></code></a></p></td>
+<td><p>Return a str with the given prefix string removed if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.removesuffix" title="ophyd_async.epics.adcore.ADBaseDataType.removesuffix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">removesuffix</span></code></a></p></td>
+<td><p>Return a str with the given suffix string removed if present.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isascii" title="ophyd_async.epics.adcore.ADBaseDataType.isascii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isascii</span></code></a></p></td>
+<td><p>Return True if all characters in the string are ASCII, False otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.islower" title="ophyd_async.epics.adcore.ADBaseDataType.islower"><code class="xref py py-obj docutils literal notranslate"><span class="pre">islower</span></code></a></p></td>
+<td><p>Return True if the string is a lowercase string, False otherwise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isupper" title="ophyd_async.epics.adcore.ADBaseDataType.isupper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isupper</span></code></a></p></td>
+<td><p>Return True if the string is an uppercase string, False otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.istitle" title="ophyd_async.epics.adcore.ADBaseDataType.istitle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">istitle</span></code></a></p></td>
+<td><p>Return True if the string is a title-cased string, False otherwise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isspace" title="ophyd_async.epics.adcore.ADBaseDataType.isspace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isspace</span></code></a></p></td>
+<td><p>Return True if the string is a whitespace string, False otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isdecimal" title="ophyd_async.epics.adcore.ADBaseDataType.isdecimal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isdecimal</span></code></a></p></td>
+<td><p>Return True if the string is a decimal string, False otherwise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isdigit" title="ophyd_async.epics.adcore.ADBaseDataType.isdigit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isdigit</span></code></a></p></td>
+<td><p>Return True if the string is a digit string, False otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isnumeric" title="ophyd_async.epics.adcore.ADBaseDataType.isnumeric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isnumeric</span></code></a></p></td>
+<td><p>Return True if the string is a numeric string, False otherwise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isalpha" title="ophyd_async.epics.adcore.ADBaseDataType.isalpha"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isalpha</span></code></a></p></td>
+<td><p>Return True if the string is an alphabetic string, False otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isalnum" title="ophyd_async.epics.adcore.ADBaseDataType.isalnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isalnum</span></code></a></p></td>
+<td><p>Return True if the string is an alpha-numeric string, False otherwise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isidentifier" title="ophyd_async.epics.adcore.ADBaseDataType.isidentifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isidentifier</span></code></a></p></td>
+<td><p>Return True if the string is a valid Python identifier, False otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.isprintable" title="ophyd_async.epics.adcore.ADBaseDataType.isprintable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isprintable</span></code></a></p></td>
+<td><p>Return True if the string is printable, False otherwise.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.zfill" title="ophyd_async.epics.adcore.ADBaseDataType.zfill"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zfill</span></code></a></p></td>
+<td><p>Pad a numeric string with zeros on the left, to fill a field of the given width.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.format" title="ophyd_async.epics.adcore.ADBaseDataType.format"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format</span></code></a></p></td>
+<td><p>Return a formatted version of S, using substitutions from args and kwargs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.format_map" title="ophyd_async.epics.adcore.ADBaseDataType.format_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_map</span></code></a></p></td>
+<td><p>Return a formatted version of S, using substitutions from mapping.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.maketrans" title="ophyd_async.epics.adcore.ADBaseDataType.maketrans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">maketrans</span></code></a></p></td>
+<td><p>Return a translation table usable for str.translate().</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.Int8" title="ophyd_async.epics.adcore.ADBaseDataType.Int8"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Int8</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt8" title="ophyd_async.epics.adcore.ADBaseDataType.UInt8"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UInt8</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.Int16" title="ophyd_async.epics.adcore.ADBaseDataType.Int16"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Int16</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt16" title="ophyd_async.epics.adcore.ADBaseDataType.UInt16"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UInt16</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.Int32" title="ophyd_async.epics.adcore.ADBaseDataType.Int32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Int32</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt32" title="ophyd_async.epics.adcore.ADBaseDataType.UInt32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UInt32</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.Int64" title="ophyd_async.epics.adcore.ADBaseDataType.Int64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Int64</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt64" title="ophyd_async.epics.adcore.ADBaseDataType.UInt64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UInt64</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.Float32" title="ophyd_async.epics.adcore.ADBaseDataType.Float32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Float32</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType.Float64" title="ophyd_async.epics.adcore.ADBaseDataType.Float64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Float64</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.Int8">
+<span class="sig-name descname"><span class="pre">Int8</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Int8'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.Int8" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.UInt8">
+<span class="sig-name descname"><span class="pre">UInt8</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'UInt8'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt8" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.Int16">
+<span class="sig-name descname"><span class="pre">Int16</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Int16'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.Int16" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.UInt16">
+<span class="sig-name descname"><span class="pre">UInt16</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'UInt16'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt16" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.Int32">
+<span class="sig-name descname"><span class="pre">Int32</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Int32'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.Int32" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.UInt32">
+<span class="sig-name descname"><span class="pre">UInt32</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'UInt32'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt32" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.Int64">
+<span class="sig-name descname"><span class="pre">Int64</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Int64'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.Int64" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.UInt64">
+<span class="sig-name descname"><span class="pre">UInt64</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'UInt64'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt64" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.Float32">
+<span class="sig-name descname"><span class="pre">Float32</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Float32'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.Float32" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.Float64">
+<span class="sig-name descname"><span class="pre">Float64</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Float64'</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.Float64" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.__add__">
+<span class="sig-name descname"><span class="pre">__add__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.__add__" title="Link to this definition">#</a></dt>
+<dd><p>Return self+value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.__mul__">
+<span class="sig-name descname"><span class="pre">__mul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.__mul__" title="Link to this definition">#</a></dt>
+<dd><p>Return self*value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding='utf-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors='strict'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.encode" title="Link to this definition">#</a></dt>
+<dd><p>Encode the string using the codec registered for encoding.</p>
+<dl class="simple">
+<dt>encoding</dt><dd><p>The encoding in which to encode the string.</p>
+</dd>
+<dt>errors</dt><dd><p>The error handling scheme to use for encoding errors.
+The default is ‘strict’ meaning that encoding errors raise a
+UnicodeEncodeError.  Other possible values are ‘ignore’, ‘replace’ and
+‘xmlcharrefreplace’ as well as any other name registered with
+codecs.register_error that can handle UnicodeEncodeErrors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.replace" title="Link to this definition">#</a></dt>
+<dd><p>Return a copy with all occurrences of substring old replaced by new.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>count</dt><dd><p>Maximum number of occurrences to replace.
+-1 (the default value) means replace all occurrences.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>If the optional argument count is given, only the first count occurrences are
+replaced.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsplit=-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.split" title="Link to this definition">#</a></dt>
+<dd><p>Return a list of the substrings in the string, using sep as the separator string.</p>
+<blockquote>
+<div><dl>
+<dt>sep</dt><dd><p>The separator used to split the string.</p>
+<p>When set to None (the default value), will split on any whitespace
+character (including n r t f and spaces) and will discard
+empty strings from the result.</p>
+</dd>
+<dt>maxsplit</dt><dd><p>Maximum number of splits.
+-1 (the default value) means no limit.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Splitting starts at the front of the string and works to the end.</p>
+<p>Note, str.split() is mainly useful for data that has been intentionally
+delimited.  With natural text that includes punctuation, consider using
+the regular expression module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.rsplit">
+<span class="sig-name descname"><span class="pre">rsplit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsplit=-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.rsplit" title="Link to this definition">#</a></dt>
+<dd><p>Return a list of the substrings in the string, using sep as the separator string.</p>
+<blockquote>
+<div><dl>
+<dt>sep</dt><dd><p>The separator used to split the string.</p>
+<p>When set to None (the default value), will split on any whitespace
+character (including n r t f and spaces) and will discard
+empty strings from the result.</p>
+</dd>
+<dt>maxsplit</dt><dd><p>Maximum number of splits.
+-1 (the default value) means no limit.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Splitting starts at the end of the string and works to the front.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.join" title="Link to this definition">#</a></dt>
+<dd><p>Concatenate any number of strings.</p>
+<p>The string whose method is called is inserted in between each given string.
+The result is returned as a new string.</p>
+<p>Example: ‘.’.join([‘ab’, ‘pq’, ‘rs’]) -&gt; ‘ab.pq.rs’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.capitalize">
+<span class="sig-name descname"><span class="pre">capitalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.capitalize" title="Link to this definition">#</a></dt>
+<dd><p>Return a capitalized version of the string.</p>
+<p>More specifically, make the first character have upper case and the rest lower
+case.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.casefold">
+<span class="sig-name descname"><span class="pre">casefold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.casefold" title="Link to this definition">#</a></dt>
+<dd><p>Return a version of the string suitable for caseless comparisons.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.title">
+<span class="sig-name descname"><span class="pre">title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.title" title="Link to this definition">#</a></dt>
+<dd><p>Return a version of the string where each word is titlecased.</p>
+<p>More specifically, words start with uppercased characters and all remaining
+cased characters have lower case.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.center">
+<span class="sig-name descname"><span class="pre">center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.center" title="Link to this definition">#</a></dt>
+<dd><p>Return a centered string of length width.</p>
+<p>Padding is done using the specified fill character (default is a space).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.count">
+<span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.count" title="Link to this definition">#</a></dt>
+<dd><p>Return the number of non-overlapping occurrences of substring sub in
+string S[start:end].  Optional arguments start and end are
+interpreted as in slice notation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.expandtabs">
+<span class="sig-name descname"><span class="pre">expandtabs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tabsize=8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.expandtabs" title="Link to this definition">#</a></dt>
+<dd><p>Return a copy where all tab characters are expanded using spaces.</p>
+<p>If tabsize is not given, a tab size of 8 characters is assumed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.find">
+<span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.find" title="Link to this definition">#</a></dt>
+<dd><p>Return the lowest index in S where substring sub is found,
+such that sub is contained within S[start:end].  Optional
+arguments start and end are interpreted as in slice notation.</p>
+<p>Return -1 on failure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.partition">
+<span class="sig-name descname"><span class="pre">partition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sep</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.partition" title="Link to this definition">#</a></dt>
+<dd><p>Partition the string into three parts using the given separator.</p>
+<p>This will search for the separator in the string.  If the separator is found,
+returns a 3-tuple containing the part before the separator, the separator
+itself, and the part after it.</p>
+<p>If the separator is not found, returns a 3-tuple containing the original string
+and two empty strings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.index">
+<span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.index" title="Link to this definition">#</a></dt>
+<dd><p>Return the lowest index in S where substring sub is found,
+such that sub is contained within S[start:end].  Optional
+arguments start and end are interpreted as in slice notation.</p>
+<p>Raises ValueError when the substring is not found.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.ljust">
+<span class="sig-name descname"><span class="pre">ljust</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.ljust" title="Link to this definition">#</a></dt>
+<dd><p>Return a left-justified string of length width.</p>
+<p>Padding is done using the specified fill character (default is a space).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.lower" title="Link to this definition">#</a></dt>
+<dd><p>Return a copy of the string converted to lowercase.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.lstrip">
+<span class="sig-name descname"><span class="pre">lstrip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.lstrip" title="Link to this definition">#</a></dt>
+<dd><p>Return a copy of the string with leading whitespace removed.</p>
+<p>If chars is given and not None, remove characters in chars instead.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.rfind">
+<span class="sig-name descname"><span class="pre">rfind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.rfind" title="Link to this definition">#</a></dt>
+<dd><p>Return the highest index in S where substring sub is found,
+such that sub is contained within S[start:end].  Optional
+arguments start and end are interpreted as in slice notation.</p>
+<p>Return -1 on failure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.rindex">
+<span class="sig-name descname"><span class="pre">rindex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.rindex" title="Link to this definition">#</a></dt>
+<dd><p>Return the highest index in S where substring sub is found,
+such that sub is contained within S[start:end].  Optional
+arguments start and end are interpreted as in slice notation.</p>
+<p>Raises ValueError when the substring is not found.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.rjust">
+<span class="sig-name descname"><span class="pre">rjust</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'</span> <span class="pre">'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.rjust" title="Link to this definition">#</a></dt>
+<dd><p>Return a right-justified string of length width.</p>
+<p>Padding is done using the specified fill character (default is a space).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.rstrip">
+<span class="sig-name descname"><span class="pre">rstrip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.rstrip" title="Link to this definition">#</a></dt>
+<dd><p>Return a copy of the string with trailing whitespace removed.</p>
+<p>If chars is given and not None, remove characters in chars instead.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.rpartition">
+<span class="sig-name descname"><span class="pre">rpartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sep</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.rpartition" title="Link to this definition">#</a></dt>
+<dd><p>Partition the string into three parts using the given separator.</p>
+<p>This will search for the separator in the string, starting at the end. If
+the separator is found, returns a 3-tuple containing the part before the
+separator, the separator itself, and the part after it.</p>
+<p>If the separator is not found, returns a 3-tuple containing two empty strings
+and the original string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.splitlines">
+<span class="sig-name descname"><span class="pre">splitlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepends=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.splitlines" title="Link to this definition">#</a></dt>
+<dd><p>Return a list of the lines in the string, breaking at line boundaries.</p>
+<p>Line breaks are not included in the resulting list unless keepends is given and
+true.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.strip">
+<span class="sig-name descname"><span class="pre">strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.strip" title="Link to this definition">#</a></dt>
+<dd><p>Return a copy of the string with leading and trailing whitespace removed.</p>
+<p>If chars is given and not None, remove characters in chars instead.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.swapcase">
+<span class="sig-name descname"><span class="pre">swapcase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.swapcase" title="Link to this definition">#</a></dt>
+<dd><p>Convert uppercase characters to lowercase and lowercase characters to uppercase.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.translate">
+<span class="sig-name descname"><span class="pre">translate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.translate" title="Link to this definition">#</a></dt>
+<dd><p>Replace each character in the string using the given translation table.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>table</dt><dd><p>Translation table, which must be a mapping of Unicode ordinals to
+Unicode ordinals, strings, or None.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>The table must implement lookup/indexing via __getitem__, for instance a
+dictionary or list.  If this operation raises LookupError, the character is
+left untouched.  Characters mapped to None are deleted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.upper">
+<span class="sig-name descname"><span class="pre">upper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.upper" title="Link to this definition">#</a></dt>
+<dd><p>Return a copy of the string converted to uppercase.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.startswith">
+<span class="sig-name descname"><span class="pre">startswith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.startswith" title="Link to this definition">#</a></dt>
+<dd><p>Return True if S starts with the specified prefix, False otherwise.
+With optional start, test S beginning at that position.
+With optional end, stop comparing S at that position.
+prefix can also be a tuple of strings to try.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.endswith">
+<span class="sig-name descname"><span class="pre">endswith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.endswith" title="Link to this definition">#</a></dt>
+<dd><p>Return True if S ends with the specified suffix, False otherwise.
+With optional start, test S beginning at that position.
+With optional end, stop comparing S at that position.
+suffix can also be a tuple of strings to try.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.removeprefix">
+<span class="sig-name descname"><span class="pre">removeprefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.removeprefix" title="Link to this definition">#</a></dt>
+<dd><p>Return a str with the given prefix string removed if present.</p>
+<p>If the string starts with the prefix string, return string[len(prefix):].
+Otherwise, return a copy of the original string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.removesuffix">
+<span class="sig-name descname"><span class="pre">removesuffix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.removesuffix" title="Link to this definition">#</a></dt>
+<dd><p>Return a str with the given suffix string removed if present.</p>
+<p>If the string ends with the suffix string and that suffix is not empty,
+return string[:-len(suffix)]. Otherwise, return a copy of the original
+string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isascii">
+<span class="sig-name descname"><span class="pre">isascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isascii" title="Link to this definition">#</a></dt>
+<dd><p>Return True if all characters in the string are ASCII, False otherwise.</p>
+<p>ASCII characters have code points in the range U+0000-U+007F.
+Empty string is ASCII too.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.islower">
+<span class="sig-name descname"><span class="pre">islower</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.islower" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is a lowercase string, False otherwise.</p>
+<p>A string is lowercase if all cased characters in the string are lowercase and
+there is at least one cased character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isupper">
+<span class="sig-name descname"><span class="pre">isupper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isupper" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is an uppercase string, False otherwise.</p>
+<p>A string is uppercase if all cased characters in the string are uppercase and
+there is at least one cased character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.istitle">
+<span class="sig-name descname"><span class="pre">istitle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.istitle" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is a title-cased string, False otherwise.</p>
+<p>In a title-cased string, upper- and title-case characters may only
+follow uncased characters and lowercase characters only cased ones.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isspace">
+<span class="sig-name descname"><span class="pre">isspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isspace" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is a whitespace string, False otherwise.</p>
+<p>A string is whitespace if all characters in the string are whitespace and there
+is at least one character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isdecimal">
+<span class="sig-name descname"><span class="pre">isdecimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isdecimal" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is a decimal string, False otherwise.</p>
+<p>A string is a decimal string if all characters in the string are decimal and
+there is at least one character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isdigit">
+<span class="sig-name descname"><span class="pre">isdigit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isdigit" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is a digit string, False otherwise.</p>
+<p>A string is a digit string if all characters in the string are digits and there
+is at least one character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isnumeric">
+<span class="sig-name descname"><span class="pre">isnumeric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isnumeric" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is a numeric string, False otherwise.</p>
+<p>A string is numeric if all characters in the string are numeric and there is at
+least one character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isalpha">
+<span class="sig-name descname"><span class="pre">isalpha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isalpha" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is an alphabetic string, False otherwise.</p>
+<p>A string is alphabetic if all characters in the string are alphabetic and there
+is at least one character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isalnum">
+<span class="sig-name descname"><span class="pre">isalnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isalnum" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is an alpha-numeric string, False otherwise.</p>
+<p>A string is alpha-numeric if all characters in the string are alpha-numeric and
+there is at least one character in the string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isidentifier">
+<span class="sig-name descname"><span class="pre">isidentifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isidentifier" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is a valid Python identifier, False otherwise.</p>
+<p>Call keyword.iskeyword(s) to test whether string s is a reserved identifier,
+such as “def” or “class”.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.isprintable">
+<span class="sig-name descname"><span class="pre">isprintable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.isprintable" title="Link to this definition">#</a></dt>
+<dd><p>Return True if the string is printable, False otherwise.</p>
+<p>A string is printable if all of its characters are considered printable in
+repr() or if it is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.zfill">
+<span class="sig-name descname"><span class="pre">zfill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.zfill" title="Link to this definition">#</a></dt>
+<dd><p>Pad a numeric string with zeros on the left, to fill a field of the given width.</p>
+<p>The string is never truncated.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.format" title="Link to this definition">#</a></dt>
+<dd><p>Return a formatted version of S, using substitutions from args and kwargs.
+The substitutions are identified by braces (‘{’ and ‘}’).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.format_map">
+<span class="sig-name descname"><span class="pre">format_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.format_map" title="Link to this definition">#</a></dt>
+<dd><p>Return a formatted version of S, using substitutions from mapping.
+The substitutions are identified by braces (‘{’ and ‘}’).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.maketrans">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">maketrans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y=&lt;unrepresentable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z=&lt;unrepresentable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.maketrans" title="Link to this definition">#</a></dt>
+<dd><p>Return a translation table usable for str.translate().</p>
+<p>If there is only one argument, it must be a dictionary mapping Unicode
+ordinals (integers) or characters to Unicode ordinals, strings or None.
+Character keys will be then converted to ordinals.
+If there are two arguments, they must be strings of equal length, and
+in the resulting dictionary, each character in x will be mapped to the
+character at the same position in y. If there is a third argument, it
+must be a string, whose characters will be mapped to None in the result.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="ophyd_async.epics.adcore.SingleTriggerDetector.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">ophyd_async.epics.adcore.SingleTriggerDetector</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="ophyd_async.epics.adcore.FileWriteMode.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ophyd_async.epics.adcore.FileWriteMode</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.Int8"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.Int8</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt8"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.UInt8</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.Int16"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.Int16</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt16"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.UInt16</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.Int32"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.Int32</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt32"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.UInt32</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.Int64"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.Int64</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.UInt64"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.UInt64</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.Float32"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.Float32</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.Float64"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.Float64</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.__add__"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.__add__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.__mul__"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.__mul__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.encode"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.encode()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.replace"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.replace()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.split"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.split()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.rsplit"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.rsplit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.join"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.join()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.capitalize"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.capitalize()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.casefold"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.casefold()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.title"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.title()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.center"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.center()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.count"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.count()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.expandtabs"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.expandtabs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.find"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.find()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.partition"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.partition()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.index"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.index()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.ljust"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.ljust()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.lower"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.lower()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.lstrip"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.lstrip()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.rfind"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.rfind()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.rindex"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.rindex()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.rjust"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.rjust()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.rstrip"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.rstrip()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.rpartition"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.rpartition()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.splitlines"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.splitlines()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.strip"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.strip()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.swapcase"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.swapcase()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.translate"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.translate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.upper"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.upper()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.startswith"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.startswith()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.endswith"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.endswith()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.removeprefix"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.removeprefix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.removesuffix"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.removesuffix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isascii"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isascii()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.islower"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.islower()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isupper"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isupper()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.istitle"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.istitle()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isspace"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isspace()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isdecimal"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isdecimal()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isdigit"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isdigit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isnumeric"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isnumeric()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isalpha"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isalpha()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isalnum"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isalnum()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isidentifier"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isidentifier()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.isprintable"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.isprintable()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.zfill"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.zfill()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.format"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.format()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.format_map"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.format_map()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.maketrans"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.maketrans()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.5.2/docs/generated/ophyd_async.epics.adcore.ADBaseDataType.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/generated/ophyd_async.epics.adcore.ADBaseDataType.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

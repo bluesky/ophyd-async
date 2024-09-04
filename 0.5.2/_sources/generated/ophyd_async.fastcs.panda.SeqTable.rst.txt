@@ -1,0 +1,63 @@
+.. note::
+
+    Ophyd async is included on a provisional basis until the v1.0 release and 
+    may change API on minor release numbers before then
+
+ophyd\_async.fastcs.panda.SeqTable
+==================================
+
+.. currentmodule:: ophyd_async.fastcs.panda
+
+.. autoclass:: SeqTable
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SeqTable.clear
+      ~SeqTable.copy
+      ~SeqTable.fromkeys
+      ~SeqTable.get
+      ~SeqTable.items
+      ~SeqTable.keys
+      ~SeqTable.pop
+      ~SeqTable.popitem
+      ~SeqTable.setdefault
+      ~SeqTable.update
+      ~SeqTable.values
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SeqTable.repeats
+      ~SeqTable.trigger
+      ~SeqTable.position
+      ~SeqTable.time1
+      ~SeqTable.outa1
+      ~SeqTable.outb1
+      ~SeqTable.outc1
+      ~SeqTable.outd1
+      ~SeqTable.oute1
+      ~SeqTable.outf1
+      ~SeqTable.time2
+      ~SeqTable.outa2
+      ~SeqTable.outb2
+      ~SeqTable.outc2
+      ~SeqTable.outd2
+      ~SeqTable.oute2
+      ~SeqTable.outf2
+   
+   

@@ -1,0 +1,6 @@
+ophyd\_async.fastcs.panda.phase\_sorter
+=======================================
+
+.. currentmodule:: ophyd_async.fastcs.panda
+
+.. autofunction:: phase_sorter

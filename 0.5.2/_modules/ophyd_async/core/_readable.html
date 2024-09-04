@@ -1,0 +1,844 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ophyd_async.core._readable &#8212; ophyd-async 0.5.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=8e576371"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/core/_readable';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.5.2';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        </script>
+    <link rel="icon" href="../../../_static/ophyd_favicon.svg"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../../../_static/bluesky_ophyd_logo.svg" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">ophyd-async</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">ophyd_async....</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for ophyd_async.core._readable</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">,</span> <span class="n">Hints</span><span class="p">,</span> <span class="n">Reading</span>
+
+<span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span>
+<span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span>
+<span class="kn">from</span> <span class="nn">._signal</span> <span class="kn">import</span> <span class="n">SignalR</span>
+<span class="kn">from</span> <span class="nn">._status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
+<span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">merge_gathered_dicts</span>
+
+<span class="n">ReadableChild</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">]</span>
+<span class="n">ReadableChildWrapper</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">Callable</span><span class="p">[[</span><span class="n">ReadableChild</span><span class="p">],</span> <span class="n">ReadableChild</span><span class="p">],</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;ConfigSignal&quot;</span><span class="p">],</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;HintedSignal&quot;</span><span class="p">]</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="StandardReadable">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable">[docs]</a>
+<span class="k">class</span> <span class="nc">StandardReadable</span><span class="p">(</span>
+    <span class="n">Device</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">HasHints</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that owns its children and provides useful default behavior.</span>
+
+<span class="sd">    - When its name is set it renames child Devices</span>
+<span class="sd">    - Signals can be registered for read() and read_configuration()</span>
+<span class="sd">    - These signals will be subscribed for read() between stage() and unstage()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># These must be immutable types to avoid accidental sharing between</span>
+    <span class="c1"># different instances of the class</span>
+    <span class="n">_readables</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AsyncReadable</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">_configurables</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">_stageables</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AsyncStageable</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">_has_hints</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">HasHints</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="StandardReadable.set_readable_signals">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.set_readable_signals">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_readable_signals</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">read</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">read_uncached</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        read:</span>
+<span class="sd">            Signals to make up :meth:`~StandardReadable.read`</span>
+<span class="sd">        conf:</span>
+<span class="sd">            Signals to make up :meth:`~StandardReadable.read_configuration`</span>
+<span class="sd">        read_uncached:</span>
+<span class="sd">            Signals to make up :meth:`~StandardReadable.read` that won&#39;t be cached</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="ne">DeprecationWarning</span><span class="p">(</span>
+                <span class="s2">&quot;Migrate to `add_children_as_readables` context manager or &quot;</span>
+                <span class="s2">&quot;`add_readables` method&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">HintedSignal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">ConfigSignal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">(</span><span class="n">read_uncached</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">HintedSignal</span><span class="o">.</span><span class="n">uncached</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardReadable.stage">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.stage">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span></div>
+
+
+<div class="viewcode-block" id="StandardReadable.unstage">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.unstage">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span></div>
+
+
+<div class="viewcode-block" id="StandardReadable.describe_configuration">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.describe_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">sig</span><span class="o">.</span><span class="n">describe_configuration</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_configurables</span><span class="p">]</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardReadable.read_configuration">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.read_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">sig</span><span class="o">.</span><span class="n">read_configuration</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_configurables</span><span class="p">]</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardReadable.describe">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.describe">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">sig</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readables</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="StandardReadable.read">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.read">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">sig</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readables</span><span class="p">])</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
+        <span class="n">hints</span><span class="p">:</span> <span class="n">Hints</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">new_hint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span><span class="p">:</span>
+            <span class="c1"># Merge the existing and new hints, based on the type of the value.</span>
+            <span class="c1"># This avoids default dict merge behaviour that overrides the values;</span>
+            <span class="c1"># we want to combine them when they are Sequences, and ensure they are</span>
+            <span class="c1"># identical when string values.</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_hint</span><span class="o">.</span><span class="n">hints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">:</span>
+                        <span class="k">assert</span> <span class="p">(</span>
+                            <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
+                        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Hints key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> value may not be overridden&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">new_val</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                            <span class="k">assert</span> <span class="p">(</span>
+                                <span class="n">new_val</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="c1"># type: ignore[literal-required]</span>
+                            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Hint </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">new_val</span><span class="si">}</span><span class="s2"> overrides existing hint&quot;</span>
+                        <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>  <span class="c1"># type: ignore[literal-required]</span>
+                            <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_hint</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: Unknown type for value &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot; for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">hints</span>
+
+<div class="viewcode-block" id="StandardReadable.add_children_as_readables">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.add_children_as_readables">[docs]</a>
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span> <span class="nf">add_children_as_readables</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">wrapper</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ReadableChildWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Context manager to wrap adding Devices</span>
+
+<span class="sd">        Add Devices to this class instance inside the Context Manager to automatically</span>
+<span class="sd">        add them to the correct fields, based on the Device&#39;s interfaces.</span>
+
+<span class="sd">        The provided wrapper class will be applied to all Devices and can be used to</span>
+<span class="sd">        specify their behaviour.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wrapper:</span>
+<span class="sd">            Wrapper class to apply to all Devices created inside the context manager.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :func:`~StandardReadable.add_readables`</span>
+<span class="sd">        :class:`ConfigSignal`</span>
+<span class="sd">        :class:`HintedSignal`</span>
+<span class="sd">        :meth:`HintedSignal.uncached`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">dict_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">yield</span>
+
+        <span class="c1"># Set symmetric difference operator gives all newly added keys</span>
+        <span class="n">new_keys</span> <span class="o">=</span> <span class="n">dict_copy</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">^</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">new_values</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">new_keys</span><span class="p">]</span>
+
+        <span class="n">flattened_values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">):</span>
+                <span class="n">children</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
+                <span class="n">flattened_values</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">children</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">flattened_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">new_devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Device</span><span class="p">),</span> <span class="n">flattened_values</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">(</span><span class="n">new_devices</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardReadable.add_readables">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable.add_readables">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_readables</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">devices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Device</span><span class="p">],</span>
+        <span class="n">wrapper</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ReadableChildWrapper</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add the given devices to the lists of known Devices</span>
+
+<span class="sd">        Add the provided Devices to the relevant fields, based on the Signal&#39;s</span>
+<span class="sd">        interfaces.</span>
+
+<span class="sd">        The provided wrapper class will be applied to all Devices and can be used to</span>
+<span class="sd">        specify their behaviour.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        devices:</span>
+<span class="sd">            The devices to be added</span>
+<span class="sd">        wrapper:</span>
+<span class="sd">            Wrapper class to apply to all Devices created inside the context manager.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :func:`~StandardReadable.add_children_as_readables`</span>
+<span class="sd">        :class:`ConfigSignal`</span>
+<span class="sd">        :class:`HintedSignal`</span>
+<span class="sd">        :meth:`HintedSignal.uncached`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">readable</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">readable</span>
+            <span class="k">if</span> <span class="n">wrapper</span><span class="p">:</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">wrapper</span><span class="p">(</span><span class="n">readable</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_readables</span> <span class="o">+=</span> <span class="p">(</span><span class="n">obj</span><span class="p">,)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">AsyncConfigurable</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_configurables</span> <span class="o">+=</span> <span class="p">(</span><span class="n">obj</span><span class="p">,)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span> <span class="o">+=</span> <span class="p">(</span><span class="n">obj</span><span class="p">,)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">obj</span><span class="p">,)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ConfigSignal">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.ConfigSignal.html#ophyd_async.core.ConfigSignal">[docs]</a>
+<span class="k">class</span> <span class="nc">ConfigSignal</span><span class="p">(</span><span class="n">AsyncConfigurable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">ReadableChild</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected signal, got </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span>
+
+<div class="viewcode-block" id="ConfigSignal.read_configuration">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.ConfigSignal.html#ophyd_async.core.ConfigSignal.read_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ConfigSignal.describe_configuration">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.ConfigSignal.html#ophyd_async.core.ConfigSignal.describe_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HintedSignal">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.HintedSignal.html#ophyd_async.core.HintedSignal">[docs]</a>
+<span class="k">class</span> <span class="nc">HintedSignal</span><span class="p">(</span><span class="n">HasHints</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">ReadableChild</span><span class="p">,</span> <span class="n">allow_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected signal, got </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cached</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">allow_cache</span> <span class="k">else</span> <span class="n">allow_cache</span>
+        <span class="k">if</span> <span class="n">allow_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">stage</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unstage</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">unstage</span>
+
+<div class="viewcode-block" id="HintedSignal.read">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.HintedSignal.html#ophyd_async.core.HintedSignal.read">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">cached</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cached</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HintedSignal.describe">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.HintedSignal.html#ophyd_async.core.HintedSignal.describe">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">]}</span>
+
+<div class="viewcode-block" id="HintedSignal.uncached">
+<a class="viewcode-back" href="../../../generated/ophyd_async.core.HintedSignal.html#ophyd_async.core.HintedSignal.uncached">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">uncached</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">ReadableChild</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;HintedSignal&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">allow_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
