@@ -27,7 +27,7 @@ class SimDetector(StandardDetector):
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                adcore.ADBaseShapeProvider(self.drv),
+                adcore.ADBaseDatasetDescriber(self.drv),
             ),
             config_sigs=config_sigs,
             name=name,

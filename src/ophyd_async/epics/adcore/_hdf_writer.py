@@ -8,12 +8,12 @@ from bluesky.protocols import DataKey, Hints, StreamAsset
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
+    DatasetDescriber,
     DetectorWriter,
     HDFDataset,
     HDFFile,
     NameProvider,
     PathProvider,
-    ShapeProvider,
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
@@ -33,13 +33,13 @@ class ADHDFWriter(DetectorWriter):
         hdf: NDFileHDFIO,
         path_provider: PathProvider,
         name_provider: NameProvider,
-        shape_provider: ShapeProvider,
+        dataset_describer: DatasetDescriber,
         *plugins: NDArrayBaseIO,
     ) -> None:
         self.hdf = hdf
         self._path_provider = path_provider
         self._name_provider = name_provider
-        self._shape_provider = shape_provider
+        self._dataset_describer = dataset_describer
 
         self._plugins = plugins
         self._capture_status: Optional[AsyncStatus] = None
@@ -78,8 +78,8 @@ class ADHDFWriter(DetectorWriter):
         # Wait for it to start, stashing the status that tells us when it finishes
         self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
         name = self._name_provider()
-        detector_shape = await self._shape_provider.shape()
-        np_dtype = await self._shape_provider.np_datatype()
+        detector_shape = await self._dataset_describer.shape()
+        np_dtype = await self._dataset_describer.np_datatype()
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
 
