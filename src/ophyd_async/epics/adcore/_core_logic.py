@@ -4,8 +4,8 @@ from typing import FrozenSet, Set
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
+    DatasetDescriber,
     DetectorControl,
-    ShapeProvider,
     set_and_wait_for_value,
 )
 from ophyd_async.epics.adcore._utils import convert_ad_dtype_to_np
@@ -19,7 +19,7 @@ DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
 )
 
 
-class ADBaseShapeProvider(ShapeProvider):
+class ADBaseDatasetDescriber(DatasetDescriber):
     def __init__(self, driver: ADBaseIO) -> None:
         self._driver = driver
 
