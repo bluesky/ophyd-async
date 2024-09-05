@@ -33,10 +33,12 @@ requires-python = ">=3.10"
 ca = ["aioca>=1.6"]
 pva = ["p4p"]
 sim = ["h5py"]
+tango = ["pytango>=10.0.0rc1"]
 dev = [
     "ophyd_async[pva]",
     "ophyd_async[sim]",
     "ophyd_async[ca]",
+    "ophyd_async[tango]",
     "black",
     "flake8",
     "flake8-isort",
@@ -54,7 +56,6 @@ dev = [
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
     "pyside6==6.7.0",
-    "pytango>=10.0.0rc1",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
