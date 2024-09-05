@@ -33,11 +33,11 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
+    DatasetDescriber,
     FilenameProvider,
     NameProvider,
     PathInfo,
     PathProvider,
-    ShapeProvider,
     StaticFilenameProvider,
     StaticPathProvider,
     UUIDFilenameProvider,
@@ -63,7 +63,7 @@ from ._signal import (
 )
 from ._signal_backend import RuntimeSubsetEnum, SignalBackend, SubsetEnum
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus
+from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
 from ._utils import (
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
@@ -117,7 +117,7 @@ __all__ = [
     "NameProvider",
     "PathInfo",
     "PathProvider",
-    "ShapeProvider",
+    "DatasetDescriber",
     "StaticFilenameProvider",
     "StaticPathProvider",
     "UUIDFilenameProvider",
@@ -158,4 +158,5 @@ __all__ = [
     "get_unique",
     "in_micros",
     "wait_for_connection",
+    "completed_status",
 ]

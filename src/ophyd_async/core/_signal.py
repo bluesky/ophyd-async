@@ -547,7 +547,7 @@ async def wait_for_value(
 
 
 async def set_and_wait_for_other_value(
-    set_signal: SignalRW[T],
+    set_signal: SignalW[T],
     set_value: T,
     read_signal: SignalR[S],
     read_value: S,

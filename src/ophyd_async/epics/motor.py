@@ -1,7 +1,13 @@
 import asyncio
 from typing import Optional
 
-from bluesky.protocols import Flyable, Movable, Preparable, Stoppable
+from bluesky.protocols import (
+    Flyable,
+    Locatable,
+    Location,
+    Preparable,
+    Stoppable,
+)
 from pydantic import BaseModel, Field
 
 from ophyd_async.core import (
@@ -51,7 +57,7 @@ class FlyMotorInfo(BaseModel):
     timeout: CalculatableTimeout = Field(frozen=True, default=CalculateTimeout)
 
 
-class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
+class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
     """Device that moves a motor record"""
 
     def __init__(self, prefix: str, name="") -> None:
@@ -113,7 +119,7 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         )
 
         await self.set(fly_prepared_position)
-        await self.velocity.set(fly_velocity)
+        await self.velocity.set(abs(fly_velocity))
 
     @AsyncStatus.wrap
     async def kickoff(self):
@@ -192,6 +198,13 @@ class Motor(StandardReadable, Movable, Stoppable, Flyable, Preparable):
         # move to prepare position at maximum velocity
         await self.velocity.set(abs(max_speed))
         return fly_velocity
+
+    async def locate(self) -> Location[float]:
+        location: Location = {
+            "setpoint": await self.user_setpoint.get_value(),
+            "readback": await self.user_readback.get_value(),
+        }
+        return location
 
     async def _prepare_motor_path(
         self, fly_velocity: float, start_position: float, end_position: float

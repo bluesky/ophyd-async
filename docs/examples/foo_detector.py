@@ -69,7 +69,7 @@ class FooDetector(StandardDetector, HasHints):
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                adcore.ADBaseShapeProvider(self.drv),
+                adcore.ADBaseDatasetDescriber(self.drv),
             ),
             config_sigs=(self.drv.acquire_time,),
             name=name,
