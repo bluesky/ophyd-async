@@ -171,7 +171,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
                     "dataset": f"/{dataset_name}",
                     "swmr": False,
                     "multiplier": 1,
-                    "chunk_size": None,
+                    "chunk_size": 1024,
                 },
             }
             assert "test-panda.h5" in stream_resource["uri"]

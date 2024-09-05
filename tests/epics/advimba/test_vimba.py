@@ -19,6 +19,9 @@ async def test_advimba(
     async with DeviceCollector(mock=True):
         test_advimba = advimba.VimbaDetector("VIMBA:", static_path_provider)
 
+    # Set number of frames per chunk to something reasonable
+    set_mock_value(test_advimba.hdf.num_frames_chunks, 10)
+
     return test_advimba
 
 
@@ -117,7 +120,7 @@ async def test_can_collect(
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
-        "chunk_size": 0,
+        "chunk_size": 10,
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]
