@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.5.2.dev4+gab4dc460 documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.5.3.dev1+ga0cdb108 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=6b5d0eb2"></script>
+    <script src="../_static/documentation_options.js?v=d79305aa"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -718,6 +718,16 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
             <span class="n">HDFDataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
         <span class="p">]</span>
+
+        <span class="c1"># Warn user if dataset table is empty in PandA</span>
+        <span class="c1"># i.e. no stream resources will be generated</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;PandA </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">()</span><span class="si">}</span><span class="s2"> DATASETS table is empty! &quot;</span>
+                <span class="s2">&quot;No stream resource docs will be generated. &quot;</span>
+                <span class="s2">&quot;Make sure captured positions have their corresponding &quot;</span>
+                <span class="s2">&quot;*:DATASET PV set to a scientifically relevant name.&quot;</span>
+            <span class="p">)</span>
 
     <span class="c1"># Next few functions are exactly the same as AD writer. Could move as default</span>
     <span class="c1"># StandardDetector behavior</span>
