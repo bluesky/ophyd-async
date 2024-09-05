@@ -386,6 +386,7 @@ async def test_tango_demo(demo_test_context):
         await motor1.connect()
         await counter1.connect()
         await counter2.connect()
+        print("Polling:", motor1._polling)
 
         RE = RunEngine()
 

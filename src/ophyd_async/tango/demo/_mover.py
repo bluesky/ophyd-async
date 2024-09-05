@@ -77,7 +77,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
 
     async def _wait_for_idle(self):
         if self.state._backend.support_events is False:  # noqa: SLF001
-            if self.state._backend.polling[0] is False:  # noqa: SLF001
+            if self.state._backend._polling[0] is False:  # noqa: SLF001
                 raise RuntimeError("State does not support events or polling")
 
         event = asyncio.Event()

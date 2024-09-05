@@ -694,7 +694,7 @@ async def test_set_callback(transport):
 @pytest.mark.asyncio
 async def test_tango_transport_set_polling(transport):
     transport.set_polling(True, 0.1, 1, 0.1)
-    assert transport.polling == (True, 0.1, 1, 0.1)
+    assert transport._polling == (True, 0.1, 1, 0.1)
 
 
 # --------------------------------------------------------------------
