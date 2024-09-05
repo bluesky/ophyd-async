@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from unittest.mock import ANY
@@ -124,14 +125,20 @@ async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
 
 @pytest.mark.parametrize("table", TABLES)
 async def test_open_returns_correct_descriptors(
-    mock_writer: PandaHDFWriter, table: DatasetTable
+    mock_writer: PandaHDFWriter, table: DatasetTable, caplog
 ):
     assert hasattr(mock_writer, "panda_data_block")
     set_mock_value(
         mock_writer.panda_data_block.datasets,
         table,
     )
-    description = await mock_writer.open()  # to make capturing status not time out
+
+    with caplog.at_level(logging.WARNING):
+        description = await mock_writer.open()  # to make capturing status not time out
+
+        # Check if empty datasets table leads to warning log message
+        if len(table["name"]) == 0:
+            assert "DATASETS table is empty!" in caplog.text
 
     for key, entry, expected_key in zip(
         description.keys(), description.values(), table["name"]
