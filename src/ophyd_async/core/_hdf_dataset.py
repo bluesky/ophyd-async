@@ -19,11 +19,10 @@ class HDFDataset:
     dtype_numpy: str = ""
     multiplier: int = 1
     swmr: bool = False
-    # Represents number of points/frames in first chunking dimension.
-    # If 0 or None, assume all points in single chunk.
-    # Otherwise, assume equally sized chunks of chunk_size points/frames,
-    # except potentially last chunk which may be smaller.
-    chunk_size: int | None = None
+    # Represents explicit chunk size written to disk.
+    # The first dimension represents the number of frames/points
+    # per equally-sized chunk in the first chunking dimension.
+    chunk_size: tuple | None = None
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"

@@ -22,7 +22,7 @@ async def test_adaravis(
         test_adaravis = adaravis.AravisDetector("ADARAVIS:", static_path_provider)
 
     # Set number of frames per chunk to something reasonable
-    set_mock_value(test_adaravis.hdf.num_frames_chunks, 10)
+    set_mock_value(test_adaravis.hdf.num_frames_chunks, 5)
 
     return test_adaravis
 
@@ -126,7 +126,7 @@ async def test_can_collect(
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
-        "chunk_size": 10,
+        "chunk_size": (5, 0, 0),
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]
