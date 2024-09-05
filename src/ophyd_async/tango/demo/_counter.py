@@ -9,7 +9,7 @@ from ophyd_async.core import (
     Signal,
     SignalX,
 )
-from ophyd_async.tango import TangoReadable
+from ophyd_async.tango import TangoReadable, tango_polling
 
 
 @dataclass
@@ -17,6 +17,9 @@ class TangoCounterConfig:
     sample_time: Optional[float] = None
 
 
+# Enable device level polling, useful for servers that do not support events
+# Polling for individual signal can be enabled with a dict
+@tango_polling((0.1, 0.1, 0.1), {"counts": (1.0, 0.1, 0.1)})
 class TangoCounter(TangoReadable):
     # Enter the name and type of the signals you want to use
     # If type is None or Signal, the type will be inferred from the Tango device

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 from ophyd_async.core import (
     StandardReadable,
@@ -23,8 +23,6 @@ class TangoReadable(TangoDevice, StandardReadable):
         proxy:      AsyncDeviceProxy object for the device. This is created when the
                     device is connected.
     """
-
-    _polling: Tuple = (False, 0.1, None, 0.1)
 
     def __init__(
         self,

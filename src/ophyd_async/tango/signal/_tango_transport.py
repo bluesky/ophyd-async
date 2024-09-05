@@ -593,7 +593,7 @@ class TangoSignalBackend(SignalBackend[T]):
         }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
         self.descriptor: Descriptor = {}  # type: ignore
-        self.polling = (False, 0.1, None, 0.1)
+        self._polling = (False, 0.1, None, 0.1)
         self.support_events = True
         self.status = None
 
@@ -619,7 +619,7 @@ class TangoSignalBackend(SignalBackend[T]):
         else:
             # The same, so only need to connect one
             await self._connect_and_store_config(self.read_trl)
-        self.proxies[self.read_trl].set_polling(*self.polling)
+        self.proxies[self.read_trl].set_polling(*self._polling)
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
         )
@@ -642,7 +642,7 @@ class TangoSignalBackend(SignalBackend[T]):
         return await self.proxies[self.write_trl].get_w_value()
 
     def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
-        if self.support_events is False and self.polling[0] is False:
+        if self.support_events is False and self._polling[0] is False:
             raise RuntimeError(
                 f"Cannot set event for {self.read_trl}. "
                 "Cannot set a callback on an attribute that does not support events and"
@@ -668,7 +668,7 @@ class TangoSignalBackend(SignalBackend[T]):
         abs_change=None,
         rel_change=0.1,
     ):
-        self.polling = (allow_polling, polling_period, abs_change, rel_change)
+        self._polling = (allow_polling, polling_period, abs_change, rel_change)
 
     def allow_events(self, allow: Optional[bool] = True):
         self.support_events = allow
