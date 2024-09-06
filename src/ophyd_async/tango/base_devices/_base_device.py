@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Union, get_type_hints
+from typing import Dict, Optional, Tuple, Union, get_type_hints
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -33,7 +33,8 @@ class TangoDevice(Device):
 
     trl: str = ""
     proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None
-    _polling: tuple = (False, 0.1, None, 0.1)
+    _polling: Tuple[bool, float, float, float] = (False, 0.1, None, 0.1)
+    _signal_polling: Dict[str, Tuple[bool, float, float, float]] = {}
 
     def __init__(
         self,
@@ -92,6 +93,9 @@ class TangoDevice(Device):
                     if self._polling[0]:
                         backend.allow_events(False)
                         backend.set_polling(*self._polling)
+                    if name in self._signal_polling:
+                        backend.allow_events(False)
+                        backend.set_polling(*self._signal_polling[name])
                     signal._backend = backend  # noqa: SLF001
 
     def create_children_from_annotations(self):
@@ -108,14 +112,61 @@ class TangoDevice(Device):
                     setattr(self, attr_name, obj_type(name=attr_name))
 
 
-def tango_polling(*args):
+def tango_polling(
+    polling: Optional[
+        Union[Tuple[float, float, float], Dict[str, Tuple[float, float, float]]]
+    ] = None,
+    signal_polling: Optional[Dict[str, Tuple[float, float, float]]] = None,
+):
     """
-    Class decorator to set polling for Tango devices. This is useful for device servers
-    that do not support event-driven updates.
+    Class decorator to configure polling for Tango devices.
+
+    This decorator allows for the configuration of both device-level and signal-level
+    polling for Tango devices. Polling is useful for device servers that do not support
+    event-driven updates.
+
+    Parameters
+    ----------
+    polling : Optional[Union[Tuple[float, float, float],
+        Dict[str, Tuple[float, float, float]]]], optional
+        Device-level polling configuration as a tuple of three floats representing the
+        polling interval, polling timeout, and polling delay. Alternatively,
+        a dictionary can be provided to specify signal-level polling configurations
+        directly.
+    signal_polling : Optional[Dict[str, Tuple[float, float, float]]], optional
+        Signal-level polling configuration as a dictionary where keys are signal names
+        and values are tuples of three floats representing the polling interval, polling
+        timeout, and polling delay.
+
+    Returns
+    -------
+    Callable
+        A class decorator that sets the `_polling` and `_signal_polling` attributes on
+        the decorated class.
+
+    Example
+    -------
+    Device-level and signal-level polling:
+    @tango_polling(
+        polling=(0.5, 1.0, 0.1),
+        signal_polling={
+            'signal1': (0.5, 1.0, 0.1),
+            'signal2': (1.0, 2.0, 0.2),
+        }
+    )
+    class MyTangoDevice(TangoDevice):
+        signal1: Signal
+        signal2: Signal
     """
+    if isinstance(polling, dict):
+        signal_polling = polling
+        polling = None
 
     def decorator(cls):
-        cls._polling = (True, *args)
+        if polling is not None:
+            cls._polling = (True, *polling)
+        if signal_polling is not None:
+            cls._signal_polling = {k: (True, *v) for k, v in signal_polling.items()}
         return cls
 
     return decorator
