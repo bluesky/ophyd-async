@@ -1,7 +1,7 @@
 import asyncio
 import re
 from itertools import repeat
-from unittest.mock import ANY, MagicMock, call
+from unittest.mock import ANY, AsyncMock, MagicMock, call
 
 import pytest
 
@@ -65,6 +65,7 @@ async def test_set_mock_value():
     mock_signal = SignalRW(SoftSignalBackend(int))
     await mock_signal.connect(mock=True)
     assert await mock_signal.get_value() == 0
+    assert mock_signal._backend
     assert await mock_signal._backend.get_value() == 0
     set_mock_value(mock_signal, 10)
     assert await mock_signal.get_value() == 10
@@ -200,7 +201,7 @@ async def test_blocks_during_put(mock_signals):
     assert await signal2._backend.get_value() == "second_value"
 
 
-async def test_callback_on_mock_put_ctxt(mock_signals):
+async def test_callback_on_mock_put_as_context_manager(mock_signals):
     signal1_callbacks = MagicMock()
     signal2_callbacks = MagicMock()
     signal1, signal2 = mock_signals
@@ -213,7 +214,7 @@ async def test_callback_on_mock_put_ctxt(mock_signals):
     signal2_callbacks.assert_called_once_with("second_value", wait=True, timeout=1)
 
 
-async def test_callback_on_mock_put_no_ctx():
+async def test_callback_on_mock_put_not_as_context_manager():
     mock_signal = SignalRW(SoftSignalBackend(float))
     await mock_signal.connect(mock=True)
     calls = []
@@ -228,6 +229,19 @@ async def test_callback_on_mock_put_no_ctx():
             "wait": True,
         }
     ]
+
+
+async def test_async_callback_on_mock_put(mock_signals):
+    signal1_callbacks = AsyncMock()
+    signal2_callbacks = AsyncMock()
+    signal1, signal2 = mock_signals
+    with callback_on_mock_put(signal1, signal1_callbacks):
+        await signal1.set("second_value", wait=True, timeout=1)
+    with callback_on_mock_put(signal2, signal2_callbacks):
+        await signal2.set("second_value", wait=True, timeout=1)
+
+    signal1_callbacks.assert_awaited_once_with("second_value", wait=True, timeout=1)
+    signal2_callbacks.assert_awaited_once_with("second_value", wait=True, timeout=1)
 
 
 async def test_callback_on_mock_put_fails_if_args_are_not_correct():
@@ -392,4 +406,4 @@ async def test_when_put_mock_called_with_typo_then_fails_but_calling_directly_pa
     mock = mock_signal._backend.put_mock
     with pytest.raises(AttributeError):
         mock.asssert_called_once()  # Note typo here is deliberate!
-    mock()
+    await mock()
