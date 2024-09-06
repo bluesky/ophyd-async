@@ -65,6 +65,10 @@ class TriggerInfo(BaseModel):
     #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
     #: but publish 2 indices, and describe() will show a shape of (5, h, w)
     multiplier: int = 1
+    #: The number of times the detector can go through a complete cycle of kickoff and
+    #: complete without needing to re-arm. This is important for detectors where the
+    #: process of arming is expensive in terms of time
+    iteration: int = 0
 
 
 class DetectorControl(ABC):
@@ -73,32 +77,36 @@ class DetectorControl(ABC):
     arming and disarming a detector
     """
 
+    _arm_status = AsyncStatus
+
     @abstractmethod
     def get_deadtime(self, exposure: float | None) -> float:
         """For a given exposure, how long should the time between exposures be"""
 
     @abstractmethod
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
+    def prepare(self, trigger_info: TriggerInfo) -> None:
         """
-        Arm detector, do all necessary steps to prepare detector for triggers.
-
+        Prepare the detector with the trigger Info
         Args:
-            num: Expected number of frames
+            TriggerInfo which contains
+            number: Expected number of frames
             trigger: Type of trigger for which to prepare the detector. Defaults to
-            DetectorTrigger.internal.
-            exposure: Exposure time with which to set up the detector. Defaults to None
+            DetectorTrigger.internal
+            deadtime: Exposure time with which to set up the detector. Defaults to None
             if not applicable or the detector is expected to use its previously-set
             exposure time.
+        """
 
-        Returns:
-            AsyncStatus: Status representing the arm operation. This function returning
-            represents the start of the arm. The returned status completing means
-            the detector is now armed.
+    @abstractmethod
+    async def arm(self):
+        """
+        Arm the detector and save the status of arm in _arm_status
+        """
+
+    @abstractmethod
+    async def wait_for_disarm():
+        """
+        This will wait on the internal _arm_status and wait for it to get disarmed
         """
 
     @abstractmethod
@@ -248,8 +256,13 @@ class StandardDetector(
                     trigger=DetectorTrigger.internal,
                     deadtime=None,
                     livetime=None,
+                    frame_timeout=None,
                 )
             )
+        assert self._trigger_info, "Trigger Info cannot be none after prepare"
+        assert (
+            self._trigger_info.trigger == DetectorTrigger.internal
+        ), "It can only be triggered for internal trigger"
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         written_status = await self.controller.arm(
@@ -283,6 +296,7 @@ class StandardDetector(
         Args:
             value: TriggerInfo describing how to trigger the detector
         """
+        self.controller.prepare(value)
         self._trigger_info = value
         if value.trigger != DetectorTrigger.internal:
             assert (
@@ -296,11 +310,12 @@ class StandardDetector(
             )
         self._initial_frame = await self.writer.get_indices_written()
         self._last_frame = self._initial_frame + self._trigger_info.number
-        self._arm_status = await self.controller.arm(
-            num=self._trigger_info.number,
-            trigger=self._trigger_info.trigger,
-            exposure=self._trigger_info.livetime,
-        )
+        if value.trigger != DetectorTrigger.internal:
+            self._arm_status = await self.controller.arm(
+                num=self._trigger_info.number,
+                trigger=self._trigger_info.trigger,
+                exposure=self._trigger_info.livetime,
+            )
         self._fly_start = time.monotonic()
         self._describe = await self.writer.open(value.multiplier)
 
