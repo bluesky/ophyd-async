@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import time
+from abc import ABCMeta
 from collections import abc
 from enum import Enum
 from typing import Any, Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
@@ -154,7 +155,11 @@ def make_converter(datatype):
     is_enum = inspect.isclass(datatype) and (
         issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
     )
-    is_pydantic_model = inspect.isclass(datatype) and issubclass(datatype, BaseModel)
+    is_pydantic_model = (
+        inspect.isclass(datatype)
+        and isinstance(datatype, ABCMeta)
+        and issubclass(datatype, BaseModel)
+    )
 
     if is_array or is_sequence:
         return SoftArrayConverter()
