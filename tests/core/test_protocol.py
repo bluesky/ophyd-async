@@ -9,7 +9,7 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
 )
-from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics import adsimdetector
 from ophyd_async.sim.demo import SimMotor
 
 
@@ -18,11 +18,9 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     dp = StaticPathProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
-        drv = adcore.ADBaseIO(f"{prefix}DRV:")
-        hdf = adcore.NDFileHDFIO(f"{prefix}HDF:")
-        det = adsimdetector.SimDetector(
-            drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
-        )
+        det = adsimdetector.SimDetector(prefix, dp, name=name)
+
+    det._config_sigs = [det.drv.acquire_time, det.drv.acquire]
 
     return det
 
