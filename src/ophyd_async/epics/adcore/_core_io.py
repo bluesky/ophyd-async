@@ -135,6 +135,6 @@ class NDFileHDFIO(NDPluginBaseIO):
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1")
         self.create_directory = epics_signal_rw(int, prefix + "CreateDirectory")
-        self.num_frames_chunks = epics_signal_rw(int, prefix + "NumFramesChunks")
+        self.num_frames_chunks = epics_signal_r(int, prefix + "NumFramesChunks_RBV")
         self.chunk_size_auto = epics_signal_rw(bool, prefix + "ChunkSizeAuto")
         super().__init__(prefix, name)
