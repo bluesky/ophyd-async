@@ -212,7 +212,7 @@ async def test_collect_stream_docs(
                 "dataset": f"/{name}",
                 "swmr": False,
                 "multiplier": 1,
-                "chunk_size": (1024),
+                "chunk_size": (1024,),
             },
         }
         assert "mock_panda/data.h5" in resource_doc["uri"]

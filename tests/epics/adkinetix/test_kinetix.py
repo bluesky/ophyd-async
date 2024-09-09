@@ -1,38 +1,28 @@
 import pytest
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
-    DeviceCollector,
     StaticPathProvider,
     set_mock_value,
 )
 from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.epics import adkinetix
+from ophyd_async.epics.adkinetix import KinetixDetector
 
 
 @pytest.fixture
-async def test_adkinetix(
-    RE: RunEngine,
-    static_path_provider: StaticPathProvider,
-) -> adkinetix.KinetixDetector:
-    async with DeviceCollector(mock=True):
-        test_adkinetix = adkinetix.KinetixDetector("KINETIX:", static_path_provider)
-
-    # Set number of frames per chunk to something reasonable
-    set_mock_value(test_adkinetix.hdf.num_frames_chunks, 10)
-
-    return test_adkinetix
+async def test_adkinetix(ad_standard_det_factory):
+    kinetix = await ad_standard_det_factory(KinetixDetector)
+    return kinetix
 
 
 async def test_get_deadtime(
-    test_adkinetix: adkinetix.KinetixDetector,
+    test_adkinetix: KinetixDetector,
 ):
     # Currently Kinetix driver doesn't support getting deadtime.
     assert test_adkinetix._controller.get_deadtime(0) == 0.001
 
 
-async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
+async def test_trigger_modes(test_adkinetix: KinetixDetector):
     set_mock_value(test_adkinetix.drv.trigger_mode, "Internal")
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
@@ -56,17 +46,17 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
     assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
 
 
-async def test_hints_from_hdf_writer(test_adkinetix: adkinetix.KinetixDetector):
-    assert test_adkinetix.hints == {"fields": ["test_adkinetix"]}
+async def test_hints_from_hdf_writer(test_adkinetix: KinetixDetector):
+    assert test_adkinetix.hints == {"fields": ["test_adkinetix1"]}
 
 
-async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
+async def test_can_read(test_adkinetix: KinetixDetector):
     # Standard detector can be used as Readable
     assert (await test_adkinetix.read()) == {}
 
 
 async def test_decribe_describes_writer_dataset(
-    test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
+    test_adkinetix: KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(test_adkinetix._writer.hdf.capture, True)
@@ -75,9 +65,9 @@ async def test_decribe_describes_writer_dataset(
     await test_adkinetix.stage()
     await test_adkinetix.prepare(one_shot_trigger_info)
     assert await test_adkinetix.describe() == {
-        "test_adkinetix": {
-            "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_adkinetix1": {
+            "source": "mock+ca://KINETIX1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -86,7 +76,7 @@ async def test_decribe_describes_writer_dataset(
 
 
 async def test_can_collect(
-    test_adkinetix: adkinetix.KinetixDetector,
+    test_adkinetix: KinetixDetector,
     static_path_provider: StaticPathProvider,
     one_shot_trigger_info: TriggerInfo,
 ):
@@ -102,13 +92,13 @@ async def test_can_collect(
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "test_adkinetix"
+    assert stream_resource["data_key"] == "test_adkinetix1"
     assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
-        "chunk_size": (10, 0, 0),
+        "chunk_size": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]
@@ -118,7 +108,7 @@ async def test_can_collect(
 
 
 async def test_can_decribe_collect(
-    test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
+    test_adkinetix: KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(test_adkinetix._writer.hdf.capture, True)
@@ -126,9 +116,9 @@ async def test_can_decribe_collect(
     await test_adkinetix.stage()
     await test_adkinetix.prepare(one_shot_trigger_info)
     assert (await test_adkinetix.describe_collect()) == {
-        "test_adkinetix": {
-            "source": "mock+ca://KINETIX:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_adkinetix1": {
+            "source": "mock+ca://KINETIX1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

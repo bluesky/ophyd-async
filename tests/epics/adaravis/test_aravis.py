@@ -1,11 +1,9 @@
 import re
 
 import pytest
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
-    DeviceCollector,
     PathProvider,
     TriggerInfo,
     set_mock_value,
@@ -14,15 +12,8 @@ from ophyd_async.epics import adaravis
 
 
 @pytest.fixture
-async def test_adaravis(
-    RE: RunEngine,
-    static_path_provider: PathProvider,
-) -> adaravis.AravisDetector:
-    async with DeviceCollector(mock=True):
-        test_adaravis = adaravis.AravisDetector("ADARAVIS:", static_path_provider)
-
-    # Set number of frames per chunk to something reasonable
-    set_mock_value(test_adaravis.hdf.num_frames_chunks, 5)
+async def test_adaravis(ad_standard_det_factory) -> adaravis.AravisDetector:
+    test_adaravis = await ad_standard_det_factory(adaravis.AravisDetector)
 
     return test_adaravis
 
@@ -75,7 +66,7 @@ def test_gpio_pin_limited(test_adaravis: adaravis.AravisDetector):
 
 
 async def test_hints_from_hdf_writer(test_adaravis: adaravis.AravisDetector):
-    assert test_adaravis.hints == {"fields": ["test_adaravis"]}
+    assert test_adaravis.hints == {"fields": ["test_adaravis1"]}
 
 
 async def test_can_read(test_adaravis: adaravis.AravisDetector):
@@ -93,9 +84,9 @@ async def test_decribe_describes_writer_dataset(
     await test_adaravis.stage()
     await test_adaravis.prepare(one_shot_trigger_info)
     assert await test_adaravis.describe() == {
-        "test_adaravis": {
-            "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_adaravis1": {
+            "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -120,13 +111,13 @@ async def test_can_collect(
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "test_adaravis"
+    assert stream_resource["data_key"] == "test_adaravis1"
     assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
-        "chunk_size": (5, 0, 0),
+        "chunk_size": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]
@@ -144,9 +135,9 @@ async def test_can_decribe_collect(
     await test_adaravis.stage()
     await test_adaravis.prepare(one_shot_trigger_info)
     assert (await test_adaravis.describe_collect()) == {
-        "test_adaravis": {
-            "source": "mock+ca://ADARAVIS:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_adaravis1": {
+            "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

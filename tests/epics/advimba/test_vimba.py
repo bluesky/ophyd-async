@@ -1,9 +1,7 @@
 import pytest
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
-    DeviceCollector,
     PathProvider,
     set_mock_value,
 )
@@ -12,15 +10,8 @@ from ophyd_async.epics import advimba
 
 
 @pytest.fixture
-async def test_advimba(
-    RE: RunEngine,
-    static_path_provider: PathProvider,
-) -> advimba.VimbaDetector:
-    async with DeviceCollector(mock=True):
-        test_advimba = advimba.VimbaDetector("VIMBA:", static_path_provider)
-
-    # Set number of frames per chunk to something reasonable
-    set_mock_value(test_advimba.hdf.num_frames_chunks, 10)
+async def test_advimba(ad_standard_det_factory) -> advimba.VimbaDetector:
+    test_advimba = await ad_standard_det_factory(advimba.VimbaDetector)
 
     return test_advimba
 
@@ -69,7 +60,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
 
 async def test_hints_from_hdf_writer(test_advimba: advimba.VimbaDetector):
-    assert test_advimba.hints == {"fields": ["test_advimba"]}
+    assert test_advimba.hints == {"fields": ["test_advimba1"]}
 
 
 async def test_can_read(test_advimba: advimba.VimbaDetector):
@@ -87,9 +78,9 @@ async def test_decribe_describes_writer_dataset(
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
     assert await test_advimba.describe() == {
-        "test_advimba": {
-            "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_advimba1": {
+            "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -114,13 +105,13 @@ async def test_can_collect(
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "test_advimba"
+    assert stream_resource["data_key"] == "test_advimba1"
     assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
-        "chunk_size": (10, 0, 0),
+        "chunk_size": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]
@@ -138,9 +129,9 @@ async def test_can_decribe_collect(
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
     assert (await test_advimba.describe_collect()) == {
-        "test_advimba": {
-            "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_advimba1": {
+            "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

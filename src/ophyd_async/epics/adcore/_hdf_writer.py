@@ -126,7 +126,7 @@ class ADHDFWriter(DetectorWriter):
                             multiplier,
                             # NDAttributes appear to always be configured with
                             # this chunk size
-                            chunk_size=(16384),
+                            chunk_size=(16384,),
                         )
                     )
 
