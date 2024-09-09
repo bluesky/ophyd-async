@@ -22,7 +22,7 @@ class HDFDataset:
     # Represents explicit chunk size written to disk.
     # The first dimension represents the number of frames/points
     # per equally-sized chunk in the first chunking dimension.
-    chunk_size: tuple | None = None
+    chunk_size: tuple[int, ...] = ()
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
