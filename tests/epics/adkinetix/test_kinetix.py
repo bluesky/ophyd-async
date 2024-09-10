@@ -6,23 +6,23 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.epics.adkinetix import KinetixDetector
+from ophyd_async.epics import adkinetix
 
 
 @pytest.fixture
 async def test_adkinetix(ad_standard_det_factory):
-    kinetix = await ad_standard_det_factory(KinetixDetector)
+    kinetix = await ad_standard_det_factory(adkinetix.KinetixDetector)
     return kinetix
 
 
 async def test_get_deadtime(
-    test_adkinetix: KinetixDetector,
+    test_adkinetix: adkinetix.KinetixDetector,
 ):
     # Currently Kinetix driver doesn't support getting deadtime.
     assert test_adkinetix._controller.get_deadtime(0) == 0.001
 
 
-async def test_trigger_modes(test_adkinetix: KinetixDetector):
+async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
     set_mock_value(test_adkinetix.drv.trigger_mode, "Internal")
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
@@ -46,17 +46,17 @@ async def test_trigger_modes(test_adkinetix: KinetixDetector):
     assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
 
 
-async def test_hints_from_hdf_writer(test_adkinetix: KinetixDetector):
+async def test_hints_from_hdf_writer(test_adkinetix: adkinetix.KinetixDetector):
     assert test_adkinetix.hints == {"fields": ["test_adkinetix1"]}
 
 
-async def test_can_read(test_adkinetix: KinetixDetector):
+async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
     # Standard detector can be used as Readable
     assert (await test_adkinetix.read()) == {}
 
 
 async def test_decribe_describes_writer_dataset(
-    test_adkinetix: KinetixDetector, one_shot_trigger_info: TriggerInfo
+    test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(test_adkinetix._writer.hdf.capture, True)
@@ -76,7 +76,7 @@ async def test_decribe_describes_writer_dataset(
 
 
 async def test_can_collect(
-    test_adkinetix: KinetixDetector,
+    test_adkinetix: adkinetix.KinetixDetector,
     static_path_provider: StaticPathProvider,
     one_shot_trigger_info: TriggerInfo,
 ):
@@ -108,7 +108,7 @@ async def test_can_collect(
 
 
 async def test_can_decribe_collect(
-    test_adkinetix: KinetixDetector, one_shot_trigger_info: TriggerInfo
+    test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
     set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
     set_mock_value(test_adkinetix._writer.hdf.capture, True)
