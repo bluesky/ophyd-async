@@ -65,6 +65,10 @@ class TriggerInfo(BaseModel):
     #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
     #: but publish 2 indices, and describe() will show a shape of (5, h, w)
     multiplier: int = 1
+    #: The number of times the detector can go through a complete cycle of kickoff and
+    #: complete without needing to re-arm. This is important for detectors where the
+    #: process of arming is expensive in terms of time
+    iteration: int = Field(default=1, ge=1)
 
 
 class DetectorControl(ABC):
@@ -193,7 +197,7 @@ class StandardDetector(
         self._watchers: List[Callable] = []
         self._fly_status: Optional[WatchableAsyncStatus] = None
         self._fly_start: float
-
+        self._iterations_completed: int = 0
         self._intial_frame: int
         self._last_frame: int
         super().__init__(name)
@@ -253,9 +257,6 @@ class StandardDetector(
                 TriggerInfo(
                     number=1,
                     trigger=DetectorTrigger.internal,
-                    deadtime=None,
-                    livetime=None,
-                    frame_timeout=None,
                 )
             )
         assert self._trigger_info
@@ -311,8 +312,13 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def kickoff(self):
+        if self._trigger_info is None:
+            raise Exception("Prepare must be called before kickoff!")
+        if self._iterations_completed >= self._trigger_info.iteration:
+            raise Exception(f"Kickoff called more than {self._trigger_info.iteration}")
         if not self._arm_status:
             raise Exception("Detector not armed!")
+        self._iterations_completed += 1
 
     @WatchableAsyncStatus.wrap
     async def complete(self):

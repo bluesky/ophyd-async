@@ -48,6 +48,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     repeats: int = 1,
     period: float = 0.0,
     frame_timeout: Optional[float] = None,
+    iteration: int = 1,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
 
@@ -70,6 +71,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         deadtime=deadtime,
         livetime=exposure,
         frame_timeout=frame_timeout,
+        iteration=iteration,
     )
     trigger_time = number_of_frames * (exposure + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
