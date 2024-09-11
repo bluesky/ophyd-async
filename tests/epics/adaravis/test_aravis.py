@@ -166,7 +166,7 @@ async def test_unsupported_trigger_excepts(test_adaravis: adaravis.AravisDetecto
     ):
         await test_adaravis.prepare(
             TriggerInfo(
-                number=1,
+                number=0,
                 trigger=DetectorTrigger.variable_gate,
                 deadtime=1,
                 livetime=1,
