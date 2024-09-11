@@ -21,7 +21,7 @@ class PandaPcapController(DetectorControl):
     async def prepare(self, trigger_info: TriggerInfo):
         assert trigger_info.trigger in (
             DetectorTrigger.constant_gate,
-            trigger_info.trigger == DetectorTrigger.variable_gate,
+            DetectorTrigger.variable_gate,
         ), "Only constant_gate and variable_gate triggering is supported on the PandA"
         await asyncio.gather(self.pcap.arm.set(True))
         await wait_for_value(self.pcap.active, True, timeout=1)
@@ -29,7 +29,6 @@ class PandaPcapController(DetectorControl):
     async def arm(self) -> AsyncStatus:
         return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
 
-    async def disarm(self) -> AsyncStatus:
+    async def disarm(self):
         await asyncio.gather(self.pcap.arm.set(False))
         await wait_for_value(self.pcap.active, False, timeout=1)
-        return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
