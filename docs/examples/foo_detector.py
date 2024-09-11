@@ -1,13 +1,14 @@
 import asyncio
+from typing import Optional
 
 from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     AsyncStatus,
     DetectorControl,
+    DetectorTrigger,
     PathProvider,
     StandardDetector,
-    TriggerInfo,
 )
 from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_rw_rbv
@@ -27,16 +28,19 @@ class FooController(DetectorControl):
         # FooDetector deadtime handling
         return 0.001
 
-    async def prepare(self, trigger_info: TriggerInfo):
+    async def arm(
+        self,
+        num: int,
+        trigger: DetectorTrigger = DetectorTrigger.internal,
+        exposure: Optional[float] = None,
+    ) -> AsyncStatus:
         await asyncio.gather(
-            self._drv.num_images.set(trigger_info.number),
+            self._drv.num_images.set(num),
             self._drv.image_mode.set(adcore.ImageMode.multiple),
-            self._drv.trigger_mode.set(f"FOO{trigger_info}"),
+            self._drv.trigger_mode.set(f"FOO{trigger}"),
         )
-        if exposure := trigger_info.livetime is not None:
+        if exposure is not None:
             await self._drv.acquire_time.set(exposure)
-
-    async def arm(self) -> AsyncStatus:
         return await adcore.start_acquiring_driver_and_ensure_status(self._drv)
 
     async def disarm(self):
