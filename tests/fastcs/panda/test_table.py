@@ -17,10 +17,10 @@ def test_seq_table_converts_lists():
 
 
 def test_seq_table_validation_errors():
-    with pytest.raises(ValidationError, match="80 validation errors for SeqTable"):
+    with pytest.raises(ValidationError, match="81 validation errors for SeqTable"):
         SeqTable(
             repeats=0,
-            trigger="",
+            trigger="Immediate",
             position=0,
             time1=0,
             outa1=False,
@@ -40,7 +40,7 @@ def test_seq_table_validation_errors():
 
     large_seq_table = SeqTable(
         repeats=np.zeros(4095, dtype=np.int32),
-        trigger=np.array([""] * 4095, dtype="U32"),
+        trigger=np.array(["Immediate"] * 4095, dtype="U32"),
         position=np.zeros(4095, dtype=np.int32),
         time1=np.zeros(4095, dtype=np.int32),
         outa1=np.zeros(4095, dtype=np.bool_),
