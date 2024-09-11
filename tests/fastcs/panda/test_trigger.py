@@ -1,5 +1,6 @@
 import asyncio
 
+import numpy as np
 import pytest
 from pydantic import ValidationError
 
@@ -109,7 +110,39 @@ async def test_pcomp_trigger_logic(mock_panda):
     ],
 )
 def test_malformed_seq_table_info(kwargs, error_msg):
-    kwargs["sequence_table"] = kwargs.pop("sequence_table_factory")()
     with pytest.raises(ValidationError) as exc:
-        SeqTableInfo(**kwargs)
+        SeqTableInfo(sequence_table=kwargs.pop("sequence_table_factory")(), **kwargs)
     assert error_msg in str(exc.value)
+
+
+def test_malformed_trigger_in_seq_table():
+    def full_seq_table(trigger):
+        SeqTable(
+            repeats=np.array([1], dtype=np.int32),
+            trigger=trigger,
+            position=np.array([1], dtype=np.int32),
+            time1=np.array([1], dtype=np.int32),
+            outa1=np.array([1], dtype=np.bool_),
+            outb1=np.array([1], dtype=np.bool_),
+            outc1=np.array([1], dtype=np.bool_),
+            outd1=np.array([1], dtype=np.bool_),
+            oute1=np.array([1], dtype=np.bool_),
+            outf1=np.array([1], dtype=np.bool_),
+            time2=np.array([1], dtype=np.int32),
+            outa2=np.array([1], dtype=np.bool_),
+            outb2=np.array([1], dtype=np.bool_),
+            outc2=np.array([1], dtype=np.bool_),
+            outd2=np.array([1], dtype=np.bool_),
+            oute2=np.array([1], dtype=np.bool_),
+            outf2=np.array([1], dtype=np.bool_),
+        )
+
+    with pytest.raises(ValidationError) as exc:
+        full_seq_table(np.array(["A"], dtype="U32"))
+    assert "Value error, 'A' is not a valid SeqTrigger" in str(exc)
+    with pytest.raises(ValidationError) as exc:
+        full_seq_table(["A"])
+    assert "Value error, 'A' is not a valid SeqTrigger" in str(exc)
+    with pytest.raises(ValidationError) as exc:
+        full_seq_table({"A"})
+    assert "Expected a numpy array or a sequence of `SeqTrigger`, got" in str(exc)

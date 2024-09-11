@@ -103,8 +103,12 @@ class SeqTable(Table):
     ) -> "SeqTable":
         sig = inspect.signature(cls.row)
         kwargs = {k: v for k, v in locals().items() if k in sig.parameters}
+
         if isinstance(kwargs["trigger"], SeqTrigger):
             kwargs["trigger"] = kwargs["trigger"].value
+        elif isinstance(kwargs["trigger"], str):
+            SeqTrigger(kwargs["trigger"])
+
         return Table.row(cls, **kwargs)
 
     @field_validator("trigger", mode="before")
@@ -118,6 +122,18 @@ class SeqTable(Table):
         ):
             trigger_column = np.array(
                 [trigger.value for trigger in trigger_column], dtype=np.dtype("<U32")
+            )
+        elif isinstance(trigger_column, Sequence) or isinstance(
+            trigger_column, np.ndarray
+        ):
+            for trigger in trigger_column:
+                SeqTrigger(
+                    trigger
+                )  # To check all the given strings are actually `SeqTrigger`s
+        else:
+            raise ValueError(
+                "Expected a numpy array or a sequence of `SeqTrigger`, got "
+                f"{type(trigger_column)}."
             )
         return trigger_column
 
