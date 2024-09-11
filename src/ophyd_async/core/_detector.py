@@ -51,7 +51,7 @@ class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
     #: Number of triggers that will be sent, 0 means infinite
-    number: int = Field(gt=0)
+    number: int = Field(ge=0)
     #: Sort of triggers that will be sent
     trigger: DetectorTrigger = Field(default=DetectorTrigger.internal)
     #: What is the minimum deadtime between triggers
