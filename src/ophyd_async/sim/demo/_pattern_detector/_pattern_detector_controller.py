@@ -1,7 +1,10 @@
 import asyncio
 from typing import Optional
 
-from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger, PathProvider
+from pydantic import Field
+
+from ophyd_async.core import AsyncStatus, DetectorControl, PathProvider
+from ophyd_async.core._detector import TriggerInfo
 
 from ._pattern_generator import PatternGenerator
 
@@ -11,30 +14,29 @@ class PatternDetectorController(DetectorControl):
         self,
         pattern_generator: PatternGenerator,
         path_provider: PathProvider,
-        exposure: float = 0.1,
+        exposure: float = Field(default=0.1),
     ) -> None:
         self.pattern_generator: PatternGenerator = pattern_generator
-        if exposure is None:
-            exposure = 0.1
         self.pattern_generator.set_exposure(exposure)
         self.path_provider: PathProvider = path_provider
         self.task: Optional[asyncio.Task] = None
         super().__init__()
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = 0.01,
-    ) -> AsyncStatus:
-        if exposure is None:
-            exposure = 0.1
-        period: float = exposure + self.get_deadtime(exposure)
-        task = asyncio.create_task(
-            self._coroutine_for_image_writing(exposure, period, num)
+    async def prepare(
+        self, trigger_info: TriggerInfo = TriggerInfo(number=1, livetime=0.01)
+    ):
+        if trigger_info.livetime is None:
+            trigger_info.livetime = 0.01
+        period: float = trigger_info.livetime + self.get_deadtime(trigger_info.livetime)
+        self.task = asyncio.create_task(
+            self._coroutine_for_image_writing(
+                trigger_info.livetime, period, trigger_info.number
+            )
         )
-        self.task = task
-        return AsyncStatus(task)
+
+    async def arm(self) -> AsyncStatus:
+        assert self.task
+        return AsyncStatus(self.task)
 
     async def disarm(self):
         if self.task:

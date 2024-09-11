@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -7,6 +6,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     wait_for_value,
 )
+from ophyd_async.core._detector import TriggerInfo
 
 from ._block import PcapBlock
 
@@ -18,18 +18,15 @@ class PandaPcapController(DetectorControl):
     def get_deadtime(self, exposure: float) -> float:
         return 0.000000008
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.constant_gate,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
-        assert trigger in (
+    async def prepare(self, trigger_info: TriggerInfo):
+        assert trigger_info.trigger in (
             DetectorTrigger.constant_gate,
-            trigger == DetectorTrigger.variable_gate,
+            trigger_info.trigger == DetectorTrigger.variable_gate,
         ), "Only constant_gate and variable_gate triggering is supported on the PandA"
         await asyncio.gather(self.pcap.arm.set(True))
         await wait_for_value(self.pcap.active, True, timeout=1)
+
+    async def arm(self) -> AsyncStatus:
         return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
 
     async def disarm(self) -> AsyncStatus:
