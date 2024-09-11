@@ -31,16 +31,13 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     dp = StaticPathProvider(fp, tmp_path)
 
     async with DeviceCollector(mock=True):
-        drv = adcore.ADBaseIO(f"{prefix}DRV:", name="drv")
-        hdf = adcore.NDFileHDFIO(f"{prefix}HDF:")
-        det = adsimdetector.SimDetector(
-            drv, hdf, dp, config_sigs=[drv.acquire_time, drv.acquire], name=name
-        )
+        det = adsimdetector.SimDetector(prefix, dp, name=name)
+    det._config_sigs = [det.drv.acquire_time, det.drv.acquire]
 
     def _set_full_file_name(val, *args, **kwargs):
-        set_mock_value(hdf.full_file_name, str(tmp_path / val))
+        set_mock_value(det.hdf.full_file_name, str(tmp_path / val))
 
-    callback_on_mock_put(hdf.file_name, _set_full_file_name)
+    callback_on_mock_put(det.hdf.file_name, _set_full_file_name)
 
     return det
 
@@ -60,7 +57,7 @@ def count_sim(dets: List[StandardDetector], times: int = 1):
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
 
-        yield from bps.sleep(0.1)
+        yield from bps.sleep(0.2)
         [
             set_mock_value(
                 cast(adcore.ADHDFWriter, det.writer).hdf.num_captured,
@@ -284,13 +281,13 @@ async def test_read_and_describe_detector(single_detector: StandardDetector):
     read = await single_detector.read_configuration()
     assert describe == {
         "test-drv-acquire_time": {
-            "source": "mock+ca://TEST:DRV:AcquireTime_RBV",
+            "source": "mock+ca://TEST:cam1:AcquireTime_RBV",
             "dtype": "number",
             "dtype_numpy": "<f8",
             "shape": [],
         },
         "test-drv-acquire": {
-            "source": "mock+ca://TEST:DRV:Acquire_RBV",
+            "source": "mock+ca://TEST:cam1:Acquire_RBV",
             "dtype": "boolean",
             "dtype_numpy": "|b1",
             "shape": [],
@@ -332,19 +329,17 @@ async def test_detector_with_unnamed_or_disconnected_config_sigs(
     RE, static_filename_provider: StaticFilenameProvider, tmp_path: Path
 ):
     dp = StaticPathProvider(static_filename_provider, tmp_path)
-    drv = adcore.ADBaseIO("FOO:DRV:")
 
     some_other_driver = adcore.ADBaseIO("TEST")
 
     async with DeviceCollector(mock=True):
-        hdf = adcore.NDFileHDFIO("FOO:HDF:")
         det = adsimdetector.SimDetector(
-            drv,
-            hdf,
+            "FOO:",
             dp,
-            config_sigs=[some_other_driver.acquire_time, drv.acquire],
             name="foo",
         )
+
+    det._config_sigs = [some_other_driver.acquire_time, det.drv.acquire]
 
     with pytest.raises(Exception) as exc:
         RE(count_sim([det], times=1))
