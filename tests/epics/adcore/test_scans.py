@@ -37,14 +37,11 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyController(DetectorControl):
     def __init__(self) -> None: ...
+    async def prepare(self, trigger_info: TriggerInfo):
+        return AsyncStatus(asyncio.sleep(0.01))
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
-        return AsyncStatus(asyncio.sleep(0.1))
+    async def arm(self) -> AsyncStatus:
+        return AsyncStatus(asyncio.sleep(0.01))
 
     async def disarm(self): ...
 

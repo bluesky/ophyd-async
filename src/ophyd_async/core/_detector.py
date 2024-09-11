@@ -53,13 +53,13 @@ class TriggerInfo(BaseModel):
     #: Number of triggers that will be sent, 0 means infinite
     number: int = Field(gt=0)
     #: Sort of triggers that will be sent
-    trigger: DetectorTrigger = Field()
+    trigger: DetectorTrigger = Field(default=DetectorTrigger.internal)
     #: What is the minimum deadtime between triggers
-    deadtime: float | None = Field(ge=0)
+    deadtime: float | None = Field(default=None, ge=0)
     #: What is the maximum high time of the triggers
-    livetime: float | None = Field(ge=0)
+    livetime: float | None = Field(default=None, ge=0)
     #: What is the maximum timeout on waiting for a frame
-    frame_timeout: float | None = Field(None, gt=0)
+    frame_timeout: float | None = Field(default=None, gt=0)
     #: How many triggers make up a single StreamDatum index, to allow multiple frames
     #: from a faster detector to be zipped with a single frame from a slow detector
     #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
@@ -78,15 +78,8 @@ class DetectorControl(ABC):
         """For a given exposure, how long should the time between exposures be"""
 
     @abstractmethod
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
-        """
-        Arm detector, do all necessary steps to prepare detector for triggers.
-
+    async def prepare(self, trigger_info: TriggerInfo):
+        """, do all necessary steps to prepare detector for triggers.
         Args:
             num: Expected number of frames
             trigger: Type of trigger for which to prepare the detector. Defaults to
@@ -94,6 +87,13 @@ class DetectorControl(ABC):
             exposure: Exposure time with which to set up the detector. Defaults to None
             if not applicable or the detector is expected to use its previously-set
             exposure time.
+        """
+        ...
+
+    @abstractmethod
+    async def arm(self) -> AsyncStatus:
+        """
+        Arm detector
 
         Returns:
             AsyncStatus: Status representing the arm operation. This function returning
@@ -248,14 +248,14 @@ class StandardDetector(
                     trigger=DetectorTrigger.internal,
                     deadtime=None,
                     livetime=None,
+                    frame_timeout=None,
                 )
             )
+        assert self._trigger_info
+        assert self._trigger_info.trigger is DetectorTrigger.internal
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
-        written_status = await self.controller.arm(
-            num=self._trigger_info.number,
-            trigger=self._trigger_info.trigger,
-        )
+        written_status = await self.controller.arm()
         await written_status
         end_observation = indices_written + 1
 
@@ -296,12 +296,10 @@ class StandardDetector(
             )
         self._initial_frame = await self.writer.get_indices_written()
         self._last_frame = self._initial_frame + self._trigger_info.number
-        self._arm_status = await self.controller.arm(
-            num=self._trigger_info.number,
-            trigger=self._trigger_info.trigger,
-            exposure=self._trigger_info.livetime,
-        )
-        self._fly_start = time.monotonic()
+        await self.controller.prepare(value)
+        if self._trigger_info.trigger is not DetectorTrigger.internal:
+            self._arm_status = await self.controller.arm()
+            self._fly_start = time.monotonic()
         self._describe = await self.writer.open(value.multiplier)
 
     @AsyncStatus.wrap
@@ -312,6 +310,7 @@ class StandardDetector(
     @WatchableAsyncStatus.wrap
     async def complete(self):
         assert self._arm_status, "Prepare not run"
+        await self._arm_status
         assert self._trigger_info
         async for index in self.writer.observe_indices_written(
             self._trigger_info.frame_timeout

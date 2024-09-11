@@ -1,7 +1,7 @@
 import asyncio
-from typing import Optional
 
 from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
+from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import adcore
 
 from ._kinetix_io import KinetixDriverIO, KinetixTriggerMode
@@ -24,22 +24,19 @@ class KinetixController(DetectorControl):
     def get_deadtime(self, exposure: float) -> float:
         return 0.001
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
+    async def prepare(self, trigger_info: TriggerInfo):
         await asyncio.gather(
-            self._drv.trigger_mode.set(KINETIX_TRIGGER_MODE_MAP[trigger]),
-            self._drv.num_images.set(num),
+            self._drv.trigger_mode.set(KINETIX_TRIGGER_MODE_MAP[trigger_info.trigger]),
+            self._drv.num_images.set(trigger_info.number),
             self._drv.image_mode.set(adcore.ImageMode.multiple),
         )
-        if exposure is not None and trigger not in [
+        if trigger_info.livetime is not None and trigger_info.trigger not in [
             DetectorTrigger.variable_gate,
             DetectorTrigger.constant_gate,
         ]:
-            await self._drv.acquire_time.set(exposure)
+            await self._drv.acquire_time.set(trigger_info.livetime)
+
+    async def arm(self) -> AsyncStatus:
         return await adcore.start_acquiring_driver_and_ensure_status(self._drv)
 
     async def disarm(self):

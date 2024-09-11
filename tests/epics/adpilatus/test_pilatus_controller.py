@@ -1,6 +1,7 @@
 import pytest
 
 from ophyd_async.core import DetectorTrigger, DeviceCollector, set_mock_value
+from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import adcore, adpilatus
 
 
@@ -28,7 +29,8 @@ async def test_pilatus_controller(
     pilatus_driver: adpilatus.PilatusDriverIO,
 ):
     set_mock_value(pilatus_driver.armed, True)
-    status = await pilatus.arm(num=1, trigger=DetectorTrigger.constant_gate)
+    await pilatus.prepare(TriggerInfo(number=1, trigger=DetectorTrigger.constant_gate))
+    status = await pilatus.arm()
     await status
 
     assert await pilatus_driver.num_images.get_value() == 1

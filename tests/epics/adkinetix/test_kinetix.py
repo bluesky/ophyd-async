@@ -33,7 +33,10 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
     set_mock_value(test_adkinetix.drv.trigger_mode, "Internal")
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
-        await test_adkinetix.controller.arm(num=1, trigger=trig_mode)
+        await test_adkinetix.controller.prepare(
+            TriggerInfo(number=1, trigger=trig_mode)
+        )
+        await test_adkinetix.controller.arm()
         # Prevent timeouts
         set_mock_value(test_adkinetix.drv.acquire, True)
 

@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -8,6 +7,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     set_and_wait_for_other_value,
 )
+from ophyd_async.core._detector import TriggerInfo
 
 from ._eiger_io import EigerDriverIO, EigerTriggerMode
 
@@ -37,26 +37,26 @@ class EigerController(DetectorControl):
         if abs(current_energy - energy) > tolerance:
             await self._drv.photon_energy.set(energy)
 
-    @AsyncStatus.wrap
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ):
+    async def prepare(self, trigger_info: TriggerInfo):
         coros = [
-            self._drv.trigger_mode.set(EIGER_TRIGGER_MODE_MAP[trigger].value),
-            self._drv.num_images.set(num),
+            self._drv.trigger_mode.set(
+                EIGER_TRIGGER_MODE_MAP[trigger_info.trigger].value
+            ),
+            self._drv.num_images.set(trigger_info.number),
         ]
-        if exposure is not None:
+        if trigger_info.livetime is not None:
             coros.extend(
                 [
-                    self._drv.acquire_time.set(exposure),
-                    self._drv.acquire_period.set(exposure),
+                    self._drv.acquire_time.set(trigger_info.livetime),
+                    self._drv.acquire_period.set(trigger_info.livetime),
                 ]
             )
         await asyncio.gather(*coros)
 
+    @AsyncStatus.wrap
+    async def arm(
+        self,
+    ):
         # TODO: Detector state should be an enum see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
         await set_and_wait_for_other_value(
             self._drv.arm, 1, self._drv.state, "ready", timeout=DEFAULT_TIMEOUT

@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -8,6 +7,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     wait_for_value,
 )
+from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import adcore
 
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
@@ -31,22 +31,20 @@ class PilatusController(DetectorControl):
     def get_deadtime(self, exposure: float) -> float:
         return self._readout_time
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
-        if exposure is not None:
+    async def prepare(self, trigger_info: TriggerInfo):
+        if trigger_info.livetime is not None:
             await adcore.set_exposure_time_and_acquire_period_if_supplied(
-                self, self._drv, exposure
+                self, self._drv, trigger_info.livetime
             )
         await asyncio.gather(
-            self._drv.trigger_mode.set(self._get_trigger_mode(trigger)),
-            self._drv.num_images.set(999_999 if num == 0 else num),
+            self._drv.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
+            self._drv.num_images.set(
+                999_999 if trigger_info.number == 0 else trigger_info.number
+            ),
             self._drv.image_mode.set(adcore.ImageMode.multiple),
         )
 
+    async def arm(self) -> AsyncStatus:
         # Standard arm the detector and wait for the acquire PV to be True
         idle_status = await adcore.start_acquiring_driver_and_ensure_status(self._drv)
 

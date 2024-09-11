@@ -61,10 +61,10 @@ async def test_trigger_mode_set(
 ):
     async def trigger_and_complete():
         set_mock_value(test_adpilatus.drv.armed, True)
-        status = await test_adpilatus.controller.arm(
-            num=1,
-            trigger=detector_trigger,
+        await test_adpilatus.controller.prepare(
+            TriggerInfo(number=1, trigger=detector_trigger)
         )
+        status = await test_adpilatus.controller.arm()
         await status
 
     await _trigger(test_adpilatus, expected_trigger_mode, trigger_and_complete)
@@ -74,10 +74,10 @@ async def test_trigger_mode_set_without_armed_pv(
     test_adpilatus: adpilatus.PilatusDetector,
 ):
     async def trigger_and_complete():
-        status = await test_adpilatus.controller.arm(
-            num=1,
-            trigger=DetectorTrigger.internal,
+        await test_adpilatus.controller.prepare(
+            TriggerInfo(number=1, trigger=DetectorTrigger.internal)
         )
+        status = await test_adpilatus.controller.arm()
         await status
 
     with patch(

@@ -1,10 +1,11 @@
 import asyncio
-from typing import Literal, Optional, Tuple
+from typing import Literal, Tuple
 
 from ophyd_async.core import (
     AsyncStatus,
     DetectorControl,
     DetectorTrigger,
+    TriggerInfo,
     set_and_wait_for_value,
 )
 from ophyd_async.epics import adcore
@@ -27,20 +28,15 @@ class AravisController(DetectorControl):
     def get_deadtime(self, exposure: float) -> float:
         return _HIGHEST_POSSIBLE_DEADTIME
 
-    async def arm(
-        self,
-        num: int = 0,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
-        if num == 0:
+    async def prepare(self, trigger_info: TriggerInfo):
+        if (num := trigger_info.number) == 0:
             image_mode = adcore.ImageMode.continuous
         else:
             image_mode = adcore.ImageMode.multiple
-        if exposure is not None:
+        if (exposure := trigger_info.livetime) is not None:
             await self._drv.acquire_time.set(exposure)
 
-        trigger_mode, trigger_source = self._get_trigger_info(trigger)
+        trigger_mode, trigger_source = self._get_trigger_info(trigger_info.trigger)
         # trigger mode must be set first and on it's own!
         await self._drv.trigger_mode.set(trigger_mode)
 
@@ -50,8 +46,8 @@ class AravisController(DetectorControl):
             self._drv.image_mode.set(image_mode),
         )
 
-        status = await set_and_wait_for_value(self._drv.acquire, True)
-        return status
+    async def arm(self) -> AsyncStatus:
+        return await set_and_wait_for_value(self._drv.acquire, True)
 
     def _get_trigger_info(
         self, trigger: DetectorTrigger
