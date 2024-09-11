@@ -2,13 +2,13 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, model_validator
 
 
-class PvaTable(BaseModel):
-    """An abstraction of a PVA Table of str to numpy array."""
+class Table(BaseModel):
+    """An abstraction of a Table of str to numpy array."""
 
     model_config = ConfigDict(validate_assignment=True, strict=False)
 
     @classmethod
-    def row(cls, sub_cls, **kwargs) -> "PvaTable":
+    def row(cls, sub_cls, **kwargs) -> "Table":
         arrayified_kwargs = {
             field_name: np.concatenate(
                 (
@@ -20,12 +20,12 @@ class PvaTable(BaseModel):
         }
         return sub_cls(**arrayified_kwargs)
 
-    def __add__(self, right: "PvaTable") -> "PvaTable":
+    def __add__(self, right: "Table") -> "Table":
         """Concatenate the arrays in field values."""
 
         assert isinstance(right, type(self)), (
-            f"{right} is not a `PvaTable`, or is not the same "
-            f"type of `PvaTable` as {self}."
+            f"{right} is not a `Table`, or is not the same "
+            f"type of `Table` as {self}."
         )
 
         return type(self)(
@@ -38,13 +38,11 @@ class PvaTable(BaseModel):
         )
 
     @model_validator(mode="after")
-    def validate_arrays(self) -> "PvaTable":
+    def validate_arrays(self) -> "Table":
         first_length = len(next(iter(self))[1])
         assert all(
             len(field_value) == first_length for _, field_value in self
         ), "Rows should all be of equal size."
-
-        assert 0 <= first_length < 4096, f"Length {first_length} not in range."
 
         if not all(
             np.issubdtype(

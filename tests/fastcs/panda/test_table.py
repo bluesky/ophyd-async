@@ -5,6 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from ophyd_async.fastcs.panda import SeqTable
+from ophyd_async.fastcs.panda._table import SeqTrigger
 
 
 def test_seq_table_converts_lists():
@@ -16,7 +17,7 @@ def test_seq_table_converts_lists():
 
 
 def test_seq_table_validation_errors():
-    with pytest.raises(ValidationError, match="81 validation errors for SeqTable"):
+    with pytest.raises(ValidationError, match="80 validation errors for SeqTable"):
         SeqTable(
             repeats=0,
             trigger="",
@@ -195,3 +196,31 @@ def test_seq_table_pva_conversion():
     for column1, column2 in zip(applied_twice_to_pva_dict.values(), pva_dict.values()):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype
+
+
+def test_seq_table_takes_trigger_enum_row():
+    for trigger in (SeqTrigger.BITA_0, "BITA=0"):
+        table = SeqTable.row(trigger=trigger)
+        assert table.trigger[0] == "BITA=0"
+        assert np.issubdtype(table.trigger.dtype, np.dtype("<U32"))
+        table = SeqTable(
+            repeats=np.array([1], dtype=np.int32),
+            trigger=[trigger],
+            position=np.array([1], dtype=np.int32),
+            time1=np.array([1], dtype=np.int32),
+            outa1=np.array([1], dtype=np.bool_),
+            outb1=np.array([1], dtype=np.bool_),
+            outc1=np.array([1], dtype=np.bool_),
+            outd1=np.array([1], dtype=np.bool_),
+            oute1=np.array([1], dtype=np.bool_),
+            outf1=np.array([1], dtype=np.bool_),
+            time2=np.array([1], dtype=np.int32),
+            outa2=np.array([1], dtype=np.bool_),
+            outb2=np.array([1], dtype=np.bool_),
+            outc2=np.array([1], dtype=np.bool_),
+            outd2=np.array([1], dtype=np.bool_),
+            oute2=np.array([1], dtype=np.bool_),
+            outf2=np.array([1], dtype=np.bool_),
+        )
+        assert table.trigger[0] == "BITA=0"
+        assert np.issubdtype(table.trigger.dtype, np.dtype("<U32"))

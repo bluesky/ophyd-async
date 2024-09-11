@@ -1,13 +1,14 @@
+import inspect
 from enum import Enum
 from typing import Annotated, Sequence
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from typing_extensions import TypedDict
 
-from ophyd_async.epics.signal import PvaTable
+from ophyd_async.core import Table
 
 
 class PandaHdf5DatasetType(str, Enum):
@@ -50,8 +51,7 @@ PydanticNp1DArrayBool = Annotated[
     ),
     Field(default_factory=lambda: np.array([], dtype=np.bool_)),
 ]
-
-PydanticNp1DArrayUnicodeString = Annotated[
+TriggerStr = Annotated[
     np.ndarray[tuple[int], np.unicode_],
     NpArrayPydanticAnnotation.factory(
         data_type=np.unicode_, dimensions=1, strict_data_typing=False
@@ -60,9 +60,9 @@ PydanticNp1DArrayUnicodeString = Annotated[
 ]
 
 
-class SeqTable(PvaTable):
+class SeqTable(Table):
     repeats: PydanticNp1DArrayInt32
-    trigger: PydanticNp1DArrayUnicodeString
+    trigger: TriggerStr
     position: PydanticNp1DArrayInt32
     time1: PydanticNp1DArrayInt32
     outa1: PydanticNp1DArrayBool
@@ -83,8 +83,8 @@ class SeqTable(PvaTable):
     def row(
         cls,
         *,
-        repeats: int = 0,
-        trigger: str = "",
+        repeats: int = 1,
+        trigger: str = SeqTrigger.IMMEDIATE,
         position: int = 0,
         time1: int = 0,
         outa1: bool = False,
@@ -101,23 +101,33 @@ class SeqTable(PvaTable):
         oute2: bool = False,
         outf2: bool = False,
     ) -> "SeqTable":
-        return PvaTable.row(
-            cls,
-            repeats=repeats,
-            trigger=trigger,
-            position=position,
-            time1=time1,
-            outa1=outa1,
-            outb1=outb1,
-            outc1=outc1,
-            outd1=outd1,
-            oute1=oute1,
-            outf1=outf1,
-            time2=time2,
-            outa2=outa2,
-            outb2=outb2,
-            outc2=outc2,
-            outd2=outd2,
-            oute2=oute2,
-            outf2=outf2,
-        )
+        sig = inspect.signature(cls.row)
+        kwargs = {k: v for k, v in locals().items() if k in sig.parameters}
+        if isinstance(kwargs["trigger"], SeqTrigger):
+            kwargs["trigger"] = kwargs["trigger"].value
+        return Table.row(cls, **kwargs)
+
+    @field_validator("trigger", mode="before")
+    @classmethod
+    def trigger_to_np_array(cls, trigger_column):
+        """
+        The user can provide a list of SeqTrigger enum elements instead of a numpy str.
+        """
+        if isinstance(trigger_column, Sequence) and all(
+            isinstance(trigger, SeqTrigger) for trigger in trigger_column
+        ):
+            trigger_column = np.array(
+                [trigger.value for trigger in trigger_column], dtype=np.dtype("<U32")
+            )
+        return trigger_column
+
+    @model_validator(mode="after")
+    def validate_max_length(self) -> "SeqTable":
+        """
+        Used to check max_length. Unfortunately trying the `max_length` arg in
+        the pydantic field doesn't work
+        """
+
+        first_length = len(next(iter(self))[1])
+        assert 0 <= first_length < 4096, f"Length {first_length} not in range."
+        return self

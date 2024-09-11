@@ -3,6 +3,7 @@ import atexit
 import inspect
 import logging
 import time
+from abc import ABCMeta
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan, nan
@@ -363,7 +364,14 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
                 raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
-        if datatype and inspect.isclass(datatype) and issubclass(datatype, BaseModel):
+        if (
+            datatype
+            and inspect.isclass(datatype)
+            and
+            # Necessary to avoid weirdness in ABCMeta.__subclasscheck__
+            isinstance(datatype, ABCMeta)
+            and issubclass(datatype, BaseModel)
+        ):
             return PvaPydanticModelConverter(datatype)
         return PvaTableConverter()
     elif "structure" in typeid:

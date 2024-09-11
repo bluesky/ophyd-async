@@ -5,7 +5,7 @@ import time
 from abc import ABCMeta
 from collections import abc
 from enum import Enum
-from typing import Any, Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
+from typing import Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -131,22 +131,10 @@ class SoftPydanticModelConverter(SoftConverter):
     def __init__(self, datatype: Type[BaseModel]):
         self.datatype = datatype
 
-    def reading(self, value: T, timestamp: float, severity: int) -> Reading:
-        value = self.value(value)
-        return super().reading(value, timestamp, severity)
-
-    def value(self, value: Any) -> Any:
-        if isinstance(value, dict):
-            value = self.datatype(**value)
-        return value
-
     def write_value(self, value):
-        if isinstance(value, self.datatype):
-            return value.model_dump(mode="python")
+        if isinstance(value, dict):
+            return self.datatype(**value)
         return value
-
-    def make_initial_value(self, datatype: Type | None) -> Any:
-        return super().make_initial_value(datatype)
 
 
 def make_converter(datatype):
@@ -155,8 +143,10 @@ def make_converter(datatype):
     is_enum = inspect.isclass(datatype) and (
         issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
     )
+
     is_pydantic_model = (
         inspect.isclass(datatype)
+        # Necessary to avoid weirdness in ABCMeta.__subclasscheck__
         and isinstance(datatype, ABCMeta)
         and issubclass(datatype, BaseModel)
     )
@@ -178,8 +168,6 @@ class SoftSignalBackend(SignalBackend[T]):
     _initial_value: Optional[T]
     _timestamp: float
     _severity: int
-
-    _ALLOWED_DATATYPES = (object,)  # Any type is allowed
 
     @classmethod
     def datatype_allowed(cls, datatype: Type) -> bool:
