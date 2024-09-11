@@ -79,16 +79,23 @@ class DetectorControl(ABC):
 
     @abstractmethod
     async def prepare(self, trigger_info: TriggerInfo):
-        """, do all necessary steps to prepare detector for triggers.
-        Args:
-            num: Expected number of frames
-            trigger: Type of trigger for which to prepare the detector. Defaults to
-            DetectorTrigger.internal.
-            exposure: Exposure time with which to set up the detector. Defaults to None
-            if not applicable or the detector is expected to use its previously-set
-            exposure time.
         """
-        ...
+        Do all necessary steps to prepare the detector for triggers.
+
+        Args:
+            trigger_info: This is a Pydantic model which contains
+                number Expected number of frames.
+                trigger Type of trigger for which to prepare the detector. Defaults
+                to DetectorTrigger.internal.
+                livetime Livetime / Exposure time with which to set up the detector.
+                Defaults to None
+                if not applicable or the detector is expected to use its previously-set
+                exposure time.
+                deadtime Defaults to None. This is the minimum deadtime between
+                triggers.
+                multiplier The number of triggers grouped into a single StreamDatum
+                index.
+        """
 
     @abstractmethod
     async def arm(self) -> AsyncStatus:
@@ -310,7 +317,6 @@ class StandardDetector(
     @WatchableAsyncStatus.wrap
     async def complete(self):
         assert self._arm_status, "Prepare not run"
-        await self._arm_status
         assert self._trigger_info
         async for index in self.writer.observe_indices_written(
             self._trigger_info.frame_timeout
@@ -331,6 +337,7 @@ class StandardDetector(
             )
             if index >= self._trigger_info.number:
                 break
+        self._arm_status = None
 
     async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe
