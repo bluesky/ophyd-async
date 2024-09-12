@@ -13,7 +13,6 @@ from ophyd_async.tango.signal._tango_transport import (
     get_python_type,
 )
 from tango import AttrDataFormat, AttrWriteType, CmdArgType, DevState
-from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy
 
 
@@ -27,8 +26,7 @@ def make_backend(
 
 
 def tango_signal_rw(
-    datatype: Optional[Type[T]] = None,
-    *,
+    datatype: Type[T],
     read_trl: str,
     write_trl: Optional[str] = None,
     device_proxy: Optional[DeviceProxy] = None,
@@ -52,15 +50,12 @@ def tango_signal_rw(
     name:
         The name of the Signal
     """
-    if datatype is None:
-        datatype = infer_python_type(read_trl)
     backend = make_backend(datatype, read_trl, write_trl or read_trl, device_proxy)
     return SignalRW(backend, timeout=timeout, name=name)
 
 
 def tango_signal_r(
-    datatype: Optional[Type[T]] = None,
-    *,
+    datatype: Type[T],
     read_trl: str,
     device_proxy: Optional[DeviceProxy] = None,
     timeout: float = DEFAULT_TIMEOUT,
@@ -81,15 +76,12 @@ def tango_signal_r(
     name:
         The name of the Signal
     """
-    if datatype is None:
-        datatype = infer_python_type(read_trl)
     backend = make_backend(datatype, read_trl, read_trl, device_proxy)
     return SignalR(backend, timeout=timeout, name=name)
 
 
 def tango_signal_w(
-    datatype: Optional[Type[T]] = None,
-    *,
+    datatype: Type[T],
     write_trl: str,
     device_proxy: Optional[DeviceProxy] = None,
     timeout: float = DEFAULT_TIMEOUT,
@@ -110,8 +102,6 @@ def tango_signal_w(
     name:
         The name of the Signal
     """
-    if datatype is None:
-        datatype = infer_python_type(write_trl)
     backend = make_backend(datatype, write_trl, write_trl, device_proxy)
     return SignalW(backend, timeout=timeout, name=name)
 
@@ -139,32 +129,48 @@ def tango_signal_x(
     return SignalX(backend, timeout=timeout, name=name)
 
 
-def tango_signal_auto(
+async def tango_signal_auto(
     datatype: Optional[Type[T]] = None,
     *,
     trl: str,
-    device_proxy: Optional[DeviceProxy] = None,
+    device_proxy: Optional[DeviceProxy],
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
-) -> Union[SignalW, SignalX, SignalR, SignalRW]:
+) -> Union[SignalW, SignalX, SignalR, SignalRW, None]:
+    try:
+        signal_character = await infer_signal_character(trl, device_proxy)
+    except RuntimeError as e:
+        if "Commands with different in and out dtypes" in str(e):
+            return None
+        else:
+            raise e
+
     if datatype is None:
-        datatype = infer_python_type(trl)
+        datatype = await infer_python_type(trl, device_proxy)
+
     backend = make_backend(datatype, trl, trl, device_proxy)
-    signal = infer_signal_frontend(trl, name, timeout)
-    signal._backend = backend  # noqa: SLF001
+    if signal_character == "RW":
+        return SignalRW(backend=backend, timeout=timeout, name=name)
+    if signal_character == "R":
+        return SignalR(backend=backend, timeout=timeout, name=name)
+    if signal_character == "W":
+        return SignalW(backend=backend, timeout=timeout, name=name)
+    if signal_character == "X":
+        return SignalX(backend=backend, timeout=timeout, name=name)
 
-    return signal
 
-
-def infer_python_type(trl: str) -> Type[T]:
+async def infer_python_type(trl: str = "", proxy: DeviceProxy = None) -> Type[T]:
     device_trl, tr_name = trl.rsplit("/", 1)
-    syn_proxy = SyncDeviceProxy(device_trl)
+    if proxy is None:
+        dev_proxy = await DeviceProxy(device_trl)
+    else:
+        dev_proxy = proxy
 
-    if tr_name in syn_proxy.get_command_list():
-        config = syn_proxy.get_command_config(tr_name)
+    if tr_name in dev_proxy.get_command_list():
+        config = await dev_proxy.get_command_config(tr_name)
         isarray, py_type, _ = get_python_type(config.in_type)
-    elif tr_name in syn_proxy.get_attribute_list():
-        config = syn_proxy.get_attribute_config(tr_name)
+    elif tr_name in dev_proxy.get_attribute_list():
+        config = await dev_proxy.get_attribute_config(tr_name)
         isarray, py_type, _ = get_python_type(config.data_type)
         if py_type is Enum:
             enum_dict = {label: i for i, label in enumerate(config.enum_labels)}
@@ -180,29 +186,36 @@ def infer_python_type(trl: str) -> Type[T]:
     return npt.NDArray[py_type] if isarray else py_type
 
 
-def infer_signal_frontend(trl, name: str = "", timeout: float = DEFAULT_TIMEOUT):
+async def infer_signal_character(trl, proxy: DeviceProxy = None) -> str:
     device_trl, tr_name = trl.rsplit("/", 1)
-    proxy = SyncDeviceProxy(device_trl)
+    if proxy is None:
+        dev_proxy = await DeviceProxy(device_trl)
+    else:
+        dev_proxy = proxy
 
-    if tr_name in proxy.get_pipe_list():
+    if tr_name in dev_proxy.get_pipe_list():
         raise NotImplementedError("Pipes are not supported")
 
-    if tr_name not in proxy.get_attribute_list():
-        if tr_name not in proxy.get_command_list():
+    if tr_name not in dev_proxy.get_attribute_list():
+        if tr_name not in dev_proxy.get_command_list():
             raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 
-    if tr_name in proxy.get_attribute_list():
-        config = proxy.get_attribute_config(tr_name)
+    if tr_name in dev_proxy.get_attribute_list():
+        config = await dev_proxy.get_attribute_config(tr_name)
         if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
-            return SignalRW(name=name, timeout=timeout)
+            return "RW"
         elif config.writable == AttrWriteType.READ:
-            return SignalR(name=name, timeout=timeout)
+            return "R"
         else:
-            return SignalW(name=name, timeout=timeout)
+            return "W"
 
-    if tr_name in proxy.get_command_list():
-        config = proxy.get_command_config(tr_name)
+    if tr_name in dev_proxy.get_command_list():
+        config = await dev_proxy.get_command_config(tr_name)
         if config.in_type == CmdArgType.DevVoid:
-            return SignalX(name=name, timeout=timeout)
-        elif config.out_type != CmdArgType.DevVoid:
-            return SignalRW(name=name, timeout=timeout)
+            return "X"
+        elif config.in_type != config.out_type:
+            raise RuntimeError(
+                "Commands with different in and out dtypes are not" " supported"
+            )
+        else:
+            return "RW"

@@ -1,6 +1,6 @@
 from ._signal import (
     infer_python_type,
-    infer_signal_frontend,
+    infer_signal_character,
     make_backend,
     tango_signal_auto,
     tango_signal_r,
@@ -29,7 +29,7 @@ __all__ = (
     "get_trl_descriptor",
     "get_tango_trl",
     "infer_python_type",
-    "infer_signal_frontend",
+    "infer_signal_character",
     "make_backend",
     "tango_signal_r",
     "tango_signal_rw",

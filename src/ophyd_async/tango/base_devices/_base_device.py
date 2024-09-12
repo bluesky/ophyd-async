@@ -1,19 +1,31 @@
 from __future__ import annotations
 
-from typing import Dict, Optional, Tuple, Union, get_type_hints
+from typing import (
+    Dict,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
+    DeviceVector,
     Signal,
 )
 from ophyd_async.tango.signal import (
-    infer_python_type,
-    infer_signal_frontend,
     make_backend,
+    tango_signal_auto,
 )
 from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
+
+T = TypeVar("T")
 
 
 class TangoDevice(Device):
@@ -35,6 +47,7 @@ class TangoDevice(Device):
     proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None
     _polling: Tuple[bool, float, float, float] = (False, 0.1, None, 0.1)
     _signal_polling: Dict[str, Tuple[bool, float, float, float]] = {}
+    _poll_only_annotated_signals: bool = True
 
     def __init__(
         self,
@@ -47,8 +60,7 @@ class TangoDevice(Device):
 
         self.trl = trl if trl else ""
         self.proxy = device_proxy
-
-        self.create_children_from_annotations()
+        tango_create_children_from_annotations(self)
         super().__init__(name=name)
 
     async def connect(
@@ -70,46 +82,29 @@ class TangoDevice(Device):
 
         await closure()
         self.register_signals()
+        await fill_proxy_entries(self)
+
         # set_name should be called again to propagate the new signal names
         self.set_name(self.name)
 
+        # Set the polling configuration
+        if self._polling[0]:
+            for child in self.children():
+                if issubclass(type(child[1]), Signal):
+                    child[1]._backend.set_polling(*self._polling)  # noqa: SLF001
+                    child[1]._backend.allow_events(False)  # noqa: SLF001
+        if self._signal_polling:
+            for signal_name, polling in self._signal_polling.items():
+                if hasattr(self, signal_name):
+                    attr = getattr(self, signal_name)
+                    attr._backend.set_polling(*polling)  # noqa: SLF001
+                    attr._backend.allow_events(False)  # noqa: SLF001
+
         await super().connect(mock=mock, timeout=timeout)
 
+    # Users can override this method to register new signals
     def register_signals(self):
-        annots = get_type_hints(self.__class__)
-        for name, obj_type in annots.items():
-            if hasattr(self, name):
-                signal = getattr(self, name)
-                if issubclass(type(signal), Signal):
-                    tango_name = name.lstrip("_")
-                    read_trl = f"{self.trl}/{tango_name}"
-                    datatype = infer_python_type(read_trl)
-                    backend = make_backend(
-                        datatype=datatype,
-                        read_trl=read_trl,
-                        write_trl=read_trl,
-                        device_proxy=self.proxy,
-                    )
-                    if self._polling[0]:
-                        backend.allow_events(False)
-                        backend.set_polling(*self._polling)
-                    if name in self._signal_polling:
-                        backend.allow_events(False)
-                        backend.set_polling(*self._signal_polling[name])
-                    signal._backend = backend  # noqa: SLF001
-
-    def create_children_from_annotations(self):
-        annots = get_type_hints(self.__class__)
-        for attr_name, obj_type in annots.items():
-            if isinstance(obj_type, type):
-                if obj_type is Signal:
-                    tango_name = attr_name.lstrip("_")
-                    trl = f"{self.trl}/{tango_name}"
-                    setattr(
-                        self, attr_name, infer_signal_frontend(trl=trl, name=attr_name)
-                    )
-                elif issubclass(obj_type, Signal):
-                    setattr(self, attr_name, obj_type(name=attr_name))
+        pass
 
 
 def tango_polling(
@@ -170,3 +165,94 @@ def tango_polling(
         return cls
 
     return decorator
+
+
+def tango_create_children_from_annotations(
+    device: TangoDevice,
+    included_optional_fields: Tuple[str, ...] = (),
+    device_vectors: Optional[Dict[str, int]] = None,
+):
+    """Initialize blocks at __init__ of `device`."""
+    for name, device_type in get_type_hints(type(device)).items():
+        if name in ("_name", "parent"):
+            continue
+
+        device_type, is_optional = _strip_union(device_type)
+        if is_optional and name not in included_optional_fields:
+            continue
+
+        is_device_vector, device_type = _strip_device_vector(device_type)
+        if is_device_vector:
+            kwargs = "_" + name + "_kwargs"
+            kwargs = getattr(device, kwargs, {})
+            prefix = kwargs["prefix"]
+            count = kwargs["count"]
+            n_device_vector = DeviceVector(
+                {i: device_type(f"{prefix}{i}") for i in range(1, count + 1)}
+            )
+            setattr(device, name, n_device_vector)
+
+        else:
+            origin = get_origin(device_type)
+            origin = origin if origin else device_type
+
+            if issubclass(origin, Signal):
+                datatype = None
+                tango_name = name.lstrip("_")
+                read_trl = f"{device.trl}/{tango_name}"
+                type_args = get_args(device_type)
+                if type_args:
+                    datatype = type_args[0]
+                backend = make_backend(
+                    datatype=datatype,
+                    read_trl=read_trl,
+                    write_trl=read_trl,
+                    device_proxy=device.proxy,
+                )
+                setattr(device, name, origin(name=name, backend=backend))
+
+            elif issubclass(origin, Device) or isinstance(origin, Device):
+                kwargs = "_" + name + "_kwargs"
+                kwargs = getattr(device, kwargs, "")
+                setattr(device, name, origin(**kwargs))
+
+
+async def fill_proxy_entries(device: TangoDevice):
+    proxy_trl = device.trl
+    children = [name.lstrip("_") for name, _ in device.children()]
+    proxy_attributes = list(device.proxy.get_attribute_list())
+    proxy_commands = list(device.proxy.get_command_list())
+    combined = proxy_attributes + proxy_commands
+
+    for name in combined:
+        if name not in children:
+            full_trl = f"{proxy_trl}/{name}"
+            try:
+                auto_signal = await tango_signal_auto(
+                    trl=full_trl, device_proxy=device.proxy
+                )
+                setattr(device, name, auto_signal)
+            except RuntimeError as e:
+                if "Commands with different in and out dtypes" in str(e):
+                    print(
+                        f"Skipping {name}. Commands with different in and out dtypes"
+                        f" are not supported."
+                    )
+                    continue
+                raise e
+
+
+def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
+    if get_origin(field) is Union:
+        args = get_args(field)
+        is_optional = type(None) in args
+        for arg in args:
+            if arg is not type(None):
+                return arg, is_optional
+    return field, False
+
+
+def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]]:
+    if get_origin(field) is DeviceVector:
+        return True, get_args(field)[0]
+    return False, field

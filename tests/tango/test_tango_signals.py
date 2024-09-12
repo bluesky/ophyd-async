@@ -11,7 +11,7 @@ import pytest
 from bluesky.protocols import Reading
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalBackend, SignalRW, SignalX, T
+from ophyd_async.core import SignalBackend, SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.tango import (
     TangoSignalBackend,
     tango_signal_auto,
@@ -411,7 +411,7 @@ async def test_backend_get_put_monitor_cmd(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_dtype, use_proxy",
+    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
     [
         (
             pv,
@@ -420,7 +420,6 @@ async def test_backend_get_put_monitor_cmd(
             py_type,
             initial_value,
             put_value,
-            use_dtype,
             use_proxy,
         )
         for (
@@ -431,15 +430,9 @@ async def test_backend_get_put_monitor_cmd(
             initial_value,
             put_value,
         ) in ATTRIBUTES_SET
-        for use_dtype in [True, False]
         for use_proxy in [True, False]
     ],
-    ids=[
-        f"{x[0]}_{use_dtype}_{use_proxy}"
-        for x in ATTRIBUTES_SET
-        for use_dtype in [True, False]
-        for use_proxy in [True, False]
-    ],
+    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
 )
 async def test_tango_signal_r(
     echo_device: str,
@@ -449,13 +442,11 @@ async def test_tango_signal_r(
     py_type: Type[T],
     initial_value: T,
     put_value: T,
-    use_dtype: bool,
     use_proxy: bool,
 ):
     await prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
-    py_type = py_type if use_dtype else None
 
     timeout = 0.2
     signal = tango_signal_r(
@@ -473,7 +464,7 @@ async def test_tango_signal_r(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_dtype, use_proxy",
+    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
     [
         (
             pv,
@@ -482,7 +473,6 @@ async def test_tango_signal_r(
             py_type,
             initial_value,
             put_value,
-            use_dtype,
             use_proxy,
         )
         for (
@@ -493,15 +483,9 @@ async def test_tango_signal_r(
             initial_value,
             put_value,
         ) in ATTRIBUTES_SET
-        for use_dtype in [True, False]
         for use_proxy in [True, False]
     ],
-    ids=[
-        f"{x[0]}_{use_dtype}_{use_proxy}"
-        for x in ATTRIBUTES_SET
-        for use_dtype in [True, False]
-        for use_proxy in [True, False]
-    ],
+    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
 )
 async def test_tango_signal_w(
     echo_device: str,
@@ -511,13 +495,11 @@ async def test_tango_signal_w(
     py_type: Type[T],
     initial_value: T,
     put_value: T,
-    use_dtype: bool,
     use_proxy: bool,
 ):
     await prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
-    py_type = py_type if use_dtype else None
 
     timeout = 0.2
     signal = tango_signal_w(
@@ -548,7 +530,7 @@ async def test_tango_signal_w(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_dtype, use_proxy",
+    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
     [
         (
             pv,
@@ -557,7 +539,6 @@ async def test_tango_signal_w(
             py_type,
             initial_value,
             put_value,
-            use_dtype,
             use_proxy,
         )
         for (
@@ -568,15 +549,9 @@ async def test_tango_signal_w(
             initial_value,
             put_value,
         ) in ATTRIBUTES_SET
-        for use_dtype in [True, False]
         for use_proxy in [True, False]
     ],
-    ids=[
-        f"{x[0]}_{use_dtype}_{use_proxy}"
-        for x in ATTRIBUTES_SET
-        for use_dtype in [True, False]
-        for use_proxy in [True, False]
-    ],
+    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
 )
 async def test_tango_signal_rw(
     echo_device: str,
@@ -586,13 +561,11 @@ async def test_tango_signal_rw(
     py_type: Type[T],
     initial_value: T,
     put_value: T,
-    use_dtype: bool,
     use_proxy: bool,
 ):
     await prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
-    py_type = py_type if use_dtype else None
 
     timeout = 0.2
     signal = tango_signal_rw(
@@ -633,7 +606,7 @@ async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_dtype, use_proxy",
+    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
     [
         (
             pv,
@@ -642,7 +615,6 @@ async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
             py_type,
             initial_value,
             put_value,
-            use_dtype,
             use_proxy,
         )
         for (
@@ -653,15 +625,9 @@ async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
             initial_value,
             put_value,
         ) in ATTRIBUTES_SET
-        for use_dtype in [True, False]
         for use_proxy in [True, False]
     ],
-    ids=[
-        f"{x[0]}_{use_dtype}_{use_proxy}"
-        for x in ATTRIBUTES_SET
-        for use_dtype in [True, False]
-        for use_proxy in [True, False]
-    ],
+    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
 )
 async def test_tango_signal_auto_attrs(
     echo_device: str,
@@ -671,7 +637,6 @@ async def test_tango_signal_auto_attrs(
     py_type: Type[T],
     initial_value: T,
     put_value: T,
-    use_dtype: bool,
     use_proxy: bool,
 ):
     await prepare_device(echo_device, pv, initial_value)
@@ -680,7 +645,7 @@ async def test_tango_signal_auto_attrs(
     timeout = 0.2
 
     async def _test_signal(dtype, proxy):
-        signal = tango_signal_auto(
+        signal = await tango_signal_auto(
             datatype=dtype,
             trl=source,
             device_proxy=proxy,
@@ -702,7 +667,7 @@ async def test_tango_signal_auto_attrs(
             value = value.tolist()
         assert_close(value, put_value)
 
-    dtype = py_type if use_dtype else None
+    dtype = py_type
     await _test_signal(dtype, proxy)
 
 
@@ -754,7 +719,7 @@ async def test_tango_signal_auto_cmds(
     timeout = 0.2
 
     async def _test_signal(dtype, proxy):
-        signal = tango_signal_auto(
+        signal = await tango_signal_auto(
             datatype=dtype,
             trl=source,
             device_proxy=proxy,
@@ -762,7 +727,7 @@ async def test_tango_signal_auto_cmds(
             timeout=timeout,
         )
         # Ophyd SignalX does not support types
-        assert type(signal) is SignalRW
+        assert type(signal) in [SignalR, SignalRW, SignalW]
         await signal.connect()
         assert signal
         reading = await signal.read()
@@ -785,7 +750,7 @@ async def test_tango_signal_auto_cmds(
 @pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bool):
     proxy = await DeviceProxy(tango_test_device) if use_proxy else None
-    signal = tango_signal_auto(
+    signal = await tango_signal_auto(
         datatype=None,
         trl=tango_test_device + "/" + "clear",
         device_proxy=proxy,
@@ -799,9 +764,11 @@ async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bo
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_signal_auto_badtrl(tango_test_device: str):
+    proxy = await DeviceProxy(tango_test_device)
     with pytest.raises(RuntimeError) as exc_info:
-        tango_signal_auto(
+        await tango_signal_auto(
             datatype=None,
             trl=tango_test_device + "/" + "badtrl",
+            device_proxy=proxy,
         )
     assert f"Cannot find badtrl in {tango_test_device}" in str(exc_info.value)

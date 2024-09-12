@@ -11,7 +11,6 @@ from ophyd_async.core import (
     CalculateTimeout,
     ConfigSignal,
     HintedSignal,
-    SignalR,
     SignalRW,
     SignalX,
     WatchableAsyncStatus,
@@ -32,9 +31,8 @@ class TangoMoverConfig:
 class TangoMover(TangoReadable, Movable, Stoppable):
     # Enter the name and type of the signals you want to use
     # If type is None or Signal, the type will be inferred from the Tango device
-    position: SignalRW
-    velocity: SignalRW
-    state: SignalR
+    position: SignalRW[float]
+    velocity: SignalRW[float]
     _stop: SignalX
 
     def __init__(self, trl: str, name=""):
@@ -57,7 +55,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
         await self.position.set(value, wait=False, timeout=timeout)
 
         # Wait for the motor to stop
-        move_status = AsyncStatus(self._wait_for_idle())
+        move_status = self.wait_for_idle()
 
         try:
             async for current_position in observe_value(
@@ -75,11 +73,8 @@ class TangoMover(TangoReadable, Movable, Stoppable):
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 
-    async def _wait_for_idle(self):
-        if self.state._backend.support_events is False:  # noqa: SLF001
-            if self.state._backend._polling[0] is False:  # noqa: SLF001
-                raise RuntimeError("State does not support events or polling")
-
+    @AsyncStatus.wrap
+    async def wait_for_idle(self):
         event = asyncio.Event()
 
         def _wait(value: dict[str, Reading]):
@@ -88,6 +83,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
 
         self.state.subscribe(_wait)
         await event.wait()
+        self.state.clear_sub(_wait)
 
     def stop(self, success: bool = True) -> AsyncStatus:
         self._set_success = success

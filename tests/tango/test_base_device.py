@@ -6,12 +6,13 @@ from typing import Optional, Type, Union
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import numpy as np
+import numpy.typing as npt
 import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import DeviceCollector, T
-from ophyd_async.tango import TangoReadable, get_python_type, tango_signal_auto
+from ophyd_async.core import DeviceCollector, HintedSignal, SignalRW, T
+from ophyd_async.tango import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
@@ -176,6 +177,9 @@ class TestDevice(Device):
 # --------------------------------------------------------------------
 class TestTangoReadable(TangoReadable):
     __test__ = False
+    justvalue: SignalRW[int]
+    array: SignalRW[npt.NDArray[float]]
+    limitedvalue: SignalRW[float]
 
     def __init__(
         self,
@@ -183,20 +187,10 @@ class TestTangoReadable(TangoReadable):
         device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None,
         name: str = "",
     ) -> None:
-        self.trl = trl
-        TangoReadable.__init__(self, trl, device_proxy, name)
-
-    def register_signals(self):
-        for feature in TESTED_FEATURES:
-            setattr(
-                self,
-                feature,
-                tango_signal_auto(datatype=None, trl=f"{self.trl}/{feature}"),
-            )
-            attr = getattr(self, feature)
-            attr._backend.allow_events(False)
-            attr._backend.set_polling(0.1, 0.1, 0.1)
-            self.add_readables([attr])
+        super().__init__(trl, device_proxy, name=name)
+        self.add_readables(
+            [self.justvalue, self.array, self.limitedvalue], HintedSignal.uncached
+        )
 
 
 # --------------------------------------------------------------------
@@ -349,25 +343,20 @@ async def test_connect_proxy(tango_test_device, proxy: Optional[bool]):
         await test_device.connect()
         assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
     else:
-        proxy = SyncDeviceProxy(tango_test_device)
-        test_device = TestTangoReadable(device_proxy=proxy)
-        await test_device.connect()
-        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
+        proxy = None
+        with pytest.raises(ValueError) as excinfo:
+            test_device = TestTangoReadable(device_proxy=proxy)
+        assert "Either 'trl' or 'device_proxy' must be provided." in str(excinfo.value)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_with_bluesky(tango_test_device):
-    async def connect():
-        async with DeviceCollector():
-            device = TestTangoReadable(tango_test_device)
-            return device
-
-    ophyd_dev = await connect()
-
     # now let's do some bluesky stuff
     RE = RunEngine()
-    RE(bp.count([ophyd_dev], 1))
+    with DeviceCollector():
+        device = TestTangoReadable(tango_test_device)
+    RE(bp.count([device]))
 
 
 # --------------------------------------------------------------------
@@ -386,7 +375,6 @@ async def test_tango_demo(demo_test_context):
         await motor1.connect()
         await counter1.connect()
         await counter2.connect()
-        print("Polling:", motor1._polling)
 
         RE = RunEngine()
 
