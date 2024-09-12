@@ -55,9 +55,6 @@ class TangoDevice(Device):
         device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None,
         name: str = "",
     ) -> None:
-        if not trl and not device_proxy:
-            raise ValueError("Either 'trl' or 'device_proxy' must be provided.")
-
         self.trl = trl if trl else ""
         self.proxy = device_proxy
         tango_create_children_from_annotations(self)
@@ -77,12 +74,14 @@ class TangoDevice(Device):
                 raise RuntimeError("Could not connect to device proxy") from e
             return self
 
-        if self.trl in ["", None]:
+        if self.trl in ["", None] and self.proxy is not None:
             self.trl = self.proxy.name()
 
-        await closure()
-        self.register_signals()
-        await fill_proxy_entries(self)
+        if self.trl:
+            await closure()
+        if self.proxy is not None:
+            self.register_signals()
+            await fill_proxy_entries(self)
 
         # set_name should be called again to propagate the new signal names
         self.set_name(self.name)

@@ -1,6 +1,4 @@
 import asyncio
-from dataclasses import dataclass
-from typing import Optional
 
 from bluesky.protocols import Movable, Reading, Stoppable
 
@@ -19,11 +17,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.tango import TangoReadable, tango_polling
 from tango import DevState
-
-
-@dataclass
-class TangoMoverConfig:
-    velocity: Optional[float] = None
 
 
 # Enable device level polling, useful for servers that do not support events
@@ -88,15 +81,3 @@ class TangoMover(TangoReadable, Movable, Stoppable):
     def stop(self, success: bool = True) -> AsyncStatus:
         self._set_success = success
         return self._stop.trigger()
-
-    @AsyncStatus.wrap
-    async def prepare(self, value: TangoMoverConfig) -> None:
-        config = value.__dataclass_fields__
-        for key in config:
-            v = getattr(value, key)
-            if v is not None:
-                if hasattr(self, key):
-                    await getattr(self, key).set(v)
-
-    def get_dataclass(self) -> TangoMoverConfig:
-        return TangoMoverConfig()

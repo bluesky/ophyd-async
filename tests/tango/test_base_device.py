@@ -16,8 +16,7 @@ from ophyd_async.tango import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
-    TangoCounter,
-    TangoMover,
+    TangoDetector,
 )
 from tango import (
     AttrDataFormat,
@@ -363,43 +362,23 @@ async def test_with_bluesky(tango_test_device):
 @pytest.mark.asyncio
 async def test_tango_demo(demo_test_context):
     with demo_test_context:
-        motor1 = TangoMover(
-            trl=demo_test_context.get_device_access("demo/motor/1"), name="motor1"
+        detector = TangoDetector(
+            trl="",
+            name="detector",
+            counters_kwargs={"prefix": "demo/counter/", "count": 2},
+            mover_kwargs={"trl": "demo/motor/1"},
         )
-        counter1 = TangoCounter(
-            trl=demo_test_context.get_device_access("demo/counter/1"), name="counter1"
-        )
-        counter2 = TangoCounter(
-            trl=demo_test_context.get_device_access("demo/counter/2"), name="counter2"
-        )
-        await motor1.connect()
-        await counter1.connect()
-        await counter2.connect()
+        await detector.connect()
 
         RE = RunEngine()
 
-        dc = motor1.get_dataclass()
-        dc.velocity = 1.0
-        prepare_status = motor1.prepare(dc)
-        await prepare_status
-        assert all([prepare_status.done, prepare_status.success])
+        RE(bps.read(detector))
+        RE(bps.mv(detector, 0))
+        RE(bp.count(list(detector.counters.values())))
 
-        cc = counter1.get_dataclass()
-        cc.sample_time = 0.1
-        prepare_status1 = counter1.prepare(cc)
-        prepare_status2 = counter2.prepare(cc)
-        await prepare_status1
-        await prepare_status2
-        assert all([prepare_status1.done, prepare_status1.success])
-        assert all([prepare_status2.done, prepare_status2.success])
-
-        RE(bps.read(motor1.position))
-        RE(bps.mv(motor1, 0))
-        RE(bp.count([counter1, counter2]))
-
-        set_status = motor1.set(1.0)
+        set_status = detector.set(1.0)
         await asyncio.sleep(0.1)
-        stop_status = motor1.stop()
+        stop_status = detector.stop()
         await set_status
         await stop_status
         assert all([set_status.done, stop_status.done])

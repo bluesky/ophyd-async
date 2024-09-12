@@ -26,21 +26,11 @@ class DemoMover(Device):
         await self.move()
 
     @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
-    async def setpoint(self):
-        return self._setpoint
-
-    async def write_setpoint(self, new_position):
-        self._setpoint = new_position
-
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
     async def velocity(self):
         return self._velocity
 
     async def write_velocity(self, value: float):
         self._velocity = value
-
-    async def write_precision(self, value: float):
-        self._precision = value
 
     @attribute(dtype=DevState, access=AttrWriteType.READ)
     async def state(self):
@@ -88,8 +78,6 @@ class DemoCounter(Device):
         return self._sample_time
 
     async def write_sample_time(self, value: float):
-        if value < 0.0:
-            raise ValueError("Sample time must be a positive number")
         self._sample_time = value
 
     @attribute(dtype=DevState, access=AttrWriteType.READ)
