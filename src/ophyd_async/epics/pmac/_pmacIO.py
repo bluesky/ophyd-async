@@ -3,7 +3,7 @@ import numpy.typing as npt
 
 from ophyd_async.core import DeviceVector, StandardReadable, SubsetEnum
 
-from ..signal.signal import epics_signal_r, epics_signal_rw
+from ..signal import epics_signal_r, epics_signal_rw
 
 
 class Pmac(StandardReadable):
