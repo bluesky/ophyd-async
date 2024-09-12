@@ -1,9 +1,10 @@
+import inspect
 import logging
 import sys
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan, nan
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union, get_origin
 
 import numpy as np
 from aioca import (
@@ -24,6 +25,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     NotConnected,
     ReadingValueCallback,
+    RuntimeSubsetEnum,
     SignalBackend,
     T,
     get_dtype,
@@ -211,7 +213,8 @@ def make_converter(
                 raise TypeError(f"{pv} has type [{pv_dtype}] not [{dtype}]")
         return CaArrayConverter(pv_dbr, None)
     elif pv_dbr == dbr.DBR_ENUM and datatype is bool:
-        # Database can't do bools, so are often representated as enums, CA can do int
+        # Database can't do bools, so are often representated as enums,
+        # CA can do int
         pv_choices_len = get_unique(
             {k: len(v.enums) for k, v in values.items()}, "number of choices"
         )
@@ -240,7 +243,7 @@ def make_converter(
                     f"{pv} has type {type(value).__name__.replace('ca_', '')} "
                     + f"not {datatype.__name__}"
                 )
-        return CaConverter(pv_dbr, None)
+    return CaConverter(pv_dbr, None)
 
 
 _tried_pyepics = False
@@ -256,8 +259,31 @@ def _use_pyepics_context_if_imported():
 
 
 class CaSignalBackend(SignalBackend[T]):
+    _ALLOWED_DATATYPES = (
+        bool,
+        int,
+        float,
+        str,
+        Sequence,
+        Enum,
+        RuntimeSubsetEnum,
+        np.ndarray,
+    )
+
+    @classmethod
+    def datatype_allowed(cls, datatype: Optional[Type]) -> bool:
+        stripped_origin = get_origin(datatype) or datatype
+        if datatype is None:
+            return True
+
+        return inspect.isclass(stripped_origin) and issubclass(
+            stripped_origin, cls._ALLOWED_DATATYPES
+        )
+
     def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
         self.datatype = datatype
+        if not CaSignalBackend.datatype_allowed(self.datatype):
+            raise TypeError(f"Given datatype {self.datatype} unsupported in CA.")
         self.read_pv = read_pv
         self.write_pv = write_pv
         self.initial_values: Dict[str, AugmentedValue] = {}

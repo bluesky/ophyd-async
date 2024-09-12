@@ -2,15 +2,20 @@ from __future__ import annotations
 
 import inspect
 import time
+from abc import ABCMeta
 from collections import abc
 from enum import Enum
 from typing import Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
+from pydantic import BaseModel
 from typing_extensions import TypedDict
 
-from ._signal_backend import RuntimeSubsetEnum, SignalBackend
+from ._signal_backend import (
+    RuntimeSubsetEnum,
+    SignalBackend,
+)
 from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
 primitive_dtypes: Dict[type, Dtype] = {
@@ -94,7 +99,7 @@ class SoftArrayConverter(SoftConverter):
 class SoftEnumConverter(SoftConverter):
     choices: Tuple[str, ...]
 
-    def __init__(self, datatype: Union[RuntimeSubsetEnum, Enum]):
+    def __init__(self, datatype: Union[RuntimeSubsetEnum, Type[Enum]]):
         if issubclass(datatype, Enum):
             self.choices = tuple(v.value for v in datatype)
         else:
@@ -122,6 +127,16 @@ class SoftEnumConverter(SoftConverter):
         return cast(T, self.choices[0])
 
 
+class SoftPydanticModelConverter(SoftConverter):
+    def __init__(self, datatype: Type[BaseModel]):
+        self.datatype = datatype
+
+    def write_value(self, value):
+        if isinstance(value, dict):
+            return self.datatype(**value)
+        return value
+
+
 def make_converter(datatype):
     is_array = get_dtype(datatype) is not None
     is_sequence = get_origin(datatype) == abc.Sequence
@@ -129,10 +144,19 @@ def make_converter(datatype):
         issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
     )
 
+    is_pydantic_model = (
+        inspect.isclass(datatype)
+        # Necessary to avoid weirdness in ABCMeta.__subclasscheck__
+        and isinstance(datatype, ABCMeta)
+        and issubclass(datatype, BaseModel)
+    )
+
     if is_array or is_sequence:
         return SoftArrayConverter()
     if is_enum:
         return SoftEnumConverter(datatype)
+    if is_pydantic_model:
+        return SoftPydanticModelConverter(datatype)
 
     return SoftConverter()
 
@@ -144,6 +168,10 @@ class SoftSignalBackend(SignalBackend[T]):
     _initial_value: Optional[T]
     _timestamp: float
     _severity: int
+
+    @classmethod
+    def datatype_allowed(cls, datatype: Type) -> bool:
+        return True  # Any value allowed in a soft signal
 
     def __init__(
         self,
