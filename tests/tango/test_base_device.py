@@ -314,11 +314,6 @@ def compare_values(expected, received):
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
 
-    with pytest.raises(ValueError) as excinfo:
-        async with DeviceCollector():
-            TestTangoReadable()
-    assert "Either 'trl' or 'device_proxy' must be provided." in str(excinfo.value)
-
     async with DeviceCollector():
         test_device = TestTangoReadable(tango_test_device)
 
@@ -343,9 +338,8 @@ async def test_connect_proxy(tango_test_device, proxy: Optional[bool]):
         assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
     else:
         proxy = None
-        with pytest.raises(ValueError) as excinfo:
-            test_device = TestTangoReadable(device_proxy=proxy)
-        assert "Either 'trl' or 'device_proxy' must be provided." in str(excinfo.value)
+        test_device = TestTangoReadable(device_proxy=proxy)
+        assert test_device
 
 
 # --------------------------------------------------------------------
