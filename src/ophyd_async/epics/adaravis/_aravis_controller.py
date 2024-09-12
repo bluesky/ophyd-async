@@ -2,7 +2,6 @@ import asyncio
 from typing import Literal, Tuple
 
 from ophyd_async.core import (
-    AsyncStatus,
     DetectorControl,
     DetectorTrigger,
     TriggerInfo,
@@ -24,6 +23,7 @@ class AravisController(DetectorControl):
     def __init__(self, driver: AravisDriverIO, gpio_number: GPIO_NUMBER) -> None:
         self._drv = driver
         self.gpio_number = gpio_number
+        self._arm_status = None
 
     def get_deadtime(self, exposure: float) -> float:
         return _HIGHEST_POSSIBLE_DEADTIME
@@ -46,8 +46,12 @@ class AravisController(DetectorControl):
             self._drv.image_mode.set(image_mode),
         )
 
-    async def arm(self) -> AsyncStatus:
-        return await set_and_wait_for_value(self._drv.acquire, True)
+    def arm(self):
+        self._arm_status = set_and_wait_for_value(self._drv.acquire, True)
+
+    async def wait_for_armed(self):
+        if self._arm_status:
+            await self._arm_status
 
     def _get_trigger_info(
         self, trigger: DetectorTrigger

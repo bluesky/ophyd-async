@@ -30,8 +30,8 @@ async def test_pilatus_controller(
 ):
     set_mock_value(pilatus_driver.armed, True)
     await pilatus.prepare(TriggerInfo(number=1, trigger=DetectorTrigger.constant_gate))
-    status = await pilatus.arm()
-    await status
+    pilatus.arm()
+    await pilatus.wait_for_armed()
 
     assert await pilatus_driver.num_images.get_value() == 1
     assert await pilatus_driver.image_mode.get_value() == adcore.ImageMode.multiple

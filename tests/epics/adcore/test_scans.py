@@ -40,8 +40,11 @@ class DummyController(DetectorControl):
     async def prepare(self, trigger_info: TriggerInfo):
         return AsyncStatus(asyncio.sleep(0.01))
 
-    async def arm(self) -> AsyncStatus:
-        return AsyncStatus(asyncio.sleep(0.01))
+    def arm(self):
+        self._arm_status = AsyncStatus(asyncio.sleep(0.01))
+
+    async def wait_for_armed(self):
+        await self._arm_status
 
     async def disarm(self): ...
 

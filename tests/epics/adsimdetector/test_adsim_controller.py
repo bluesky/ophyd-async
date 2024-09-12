@@ -19,7 +19,8 @@ async def ad(RE) -> adsimdetector.SimController:
 async def test_ad_controller(RE, ad: adsimdetector.SimController):
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         await ad.prepare(TriggerInfo(number=1, trigger=DetectorTrigger.internal))
-        await ad.arm()
+        ad.arm()
+        await ad.wait_for_armed()
 
     driver = ad.driver
     assert await driver.num_images.get_value() == 1

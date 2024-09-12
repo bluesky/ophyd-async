@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import Field
 
-from ophyd_async.core import AsyncStatus, DetectorControl, PathProvider
+from ophyd_async.core import DetectorControl, PathProvider
 from ophyd_async.core._detector import TriggerInfo
 
 from ._pattern_generator import PatternGenerator
@@ -25,18 +25,25 @@ class PatternDetectorController(DetectorControl):
     async def prepare(
         self, trigger_info: TriggerInfo = TriggerInfo(number=1, livetime=0.01)
     ):
-        if trigger_info.livetime is None:
-            trigger_info.livetime = 0.01
-        period: float = trigger_info.livetime + self.get_deadtime(trigger_info.livetime)
+        self._trigger_info = trigger_info
+        if self._trigger_info.livetime is None:
+            self._trigger_info.livetime = 0.01
+        self.period: float = self._trigger_info.livetime + self.get_deadtime(
+            trigger_info.livetime
+        )
+
+    def arm(self):
+        assert self._trigger_info.livetime
+        assert self.period
         self.task = asyncio.create_task(
             self._coroutine_for_image_writing(
-                trigger_info.livetime, period, trigger_info.number
+                self._trigger_info.livetime, self.period, self._trigger_info.number
             )
         )
 
-    async def arm(self) -> AsyncStatus:
-        assert self.task
-        return AsyncStatus(self.task)
+    async def wait_for_armed(self):
+        if self.task:
+            await self.task
 
     async def disarm(self):
         if self.task:

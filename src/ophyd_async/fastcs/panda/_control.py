@@ -26,8 +26,14 @@ class PandaPcapController(DetectorControl):
         await asyncio.gather(self.pcap.arm.set(True))
         await wait_for_value(self.pcap.active, True, timeout=1)
 
-    async def arm(self) -> AsyncStatus:
-        return AsyncStatus(wait_for_value(self.pcap.active, False, timeout=None))
+    def arm(self):
+        self._arm_status = AsyncStatus(
+            wait_for_value(self.pcap.active, False, timeout=None)
+        )
+
+    async def wait_for_armed(self):
+        if self._arm_status:
+            await self._arm_status
 
     async def disarm(self):
         await asyncio.gather(self.pcap.arm.set(False))

@@ -1,6 +1,6 @@
 import asyncio
 
-from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger
+from ophyd_async.core import DetectorControl, DetectorTrigger
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import adcore
 
@@ -48,10 +48,11 @@ class VimbaController(DetectorControl):
         else:
             self._drv.trigger_source.set(VimbaTriggerSource.freerun)
 
-    async def arm(
-        self,
-    ) -> AsyncStatus:
-        return await adcore.start_acquiring_driver_and_ensure_status(self._drv)
+    def arm(self):
+        self._arm_status = adcore.start_acquiring_driver_and_ensure_status(self._drv)
+
+    async def wait_for_armed(self):
+        await self._arm_status
 
     async def disarm(self):
         await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)

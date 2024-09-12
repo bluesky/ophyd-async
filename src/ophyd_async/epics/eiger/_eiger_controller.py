@@ -2,7 +2,6 @@ import asyncio
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    AsyncStatus,
     DetectorControl,
     DetectorTrigger,
     set_and_wait_for_other_value,
@@ -53,14 +52,17 @@ class EigerController(DetectorControl):
             )
         await asyncio.gather(*coros)
 
-    @AsyncStatus.wrap
-    async def arm(
+    def arm(
         self,
     ):
         # TODO: Detector state should be an enum see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
-        await set_and_wait_for_other_value(
+        self._arm_status = set_and_wait_for_other_value(
             self._drv.arm, 1, self._drv.state, "ready", timeout=DEFAULT_TIMEOUT
         )
+
+    async def wait_for_armed(self):
+        if self._arm_status:
+            await self._arm_status
 
     async def disarm(self):
         await self._drv.disarm.set(1)

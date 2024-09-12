@@ -3,7 +3,6 @@ from typing import Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    AsyncStatus,
     DetectorControl,
     DetectorTrigger,
 )
@@ -36,10 +35,13 @@ class SimController(DetectorControl):
             self.driver.image_mode.set(adcore.ImageMode.multiple),
         )
 
-    async def arm(self) -> AsyncStatus:
-        return await adcore.start_acquiring_driver_and_ensure_status(
+    def arm(self):
+        self._arm_status = adcore.start_acquiring_driver_and_ensure_status(
             self.driver, good_states=self.good_states, timeout=self.frame_timeout
         )
+
+    async def wait_for_armed(self):
+        await self._arm_status
 
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have

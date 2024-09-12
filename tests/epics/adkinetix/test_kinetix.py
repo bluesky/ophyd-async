@@ -36,7 +36,8 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
         await test_adkinetix.controller.prepare(
             TriggerInfo(number=1, trigger=trig_mode)
         )
-        await test_adkinetix.controller.arm()
+        test_adkinetix.controller.arm()
+        await test_adkinetix.controller.wait_for_armed()
         # Prevent timeouts
         set_mock_value(test_adkinetix.drv.acquire, True)
 

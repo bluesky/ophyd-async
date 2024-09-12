@@ -50,7 +50,8 @@ async def test_panda_controller_arm_disarm(mock_panda):
         await pandaController.prepare(
             TriggerInfo(number=1, trigger=DetectorTrigger.constant_gate)
         )
-        await pandaController.arm()
+        pandaController.arm()
+        await pandaController.wait_for_armed()
     await pandaController.disarm()
 
 

@@ -64,8 +64,8 @@ async def test_trigger_mode_set(
         await test_adpilatus.controller.prepare(
             TriggerInfo(number=1, trigger=detector_trigger)
         )
-        status = await test_adpilatus.controller.arm()
-        await status
+        test_adpilatus.controller.arm()
+        await test_adpilatus.controller.wait_for_armed()
 
     await _trigger(test_adpilatus, expected_trigger_mode, trigger_and_complete)
 
@@ -77,8 +77,8 @@ async def test_trigger_mode_set_without_armed_pv(
         await test_adpilatus.controller.prepare(
             TriggerInfo(number=1, trigger=DetectorTrigger.internal)
         )
-        status = await test_adpilatus.controller.arm()
-        await status
+        test_adpilatus.controller.arm()
+        await test_adpilatus.controller.wait_for_armed()
 
     with patch(
         "ophyd_async.epics.adpilatus._pilatus_controller.DEFAULT_TIMEOUT",

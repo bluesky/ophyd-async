@@ -65,6 +65,10 @@ class TriggerInfo(BaseModel):
     #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
     #: but publish 2 indices, and describe() will show a shape of (5, h, w)
     multiplier: int = 1
+    #: The number of times the detector can go through a complete cycle of kickoff and
+    #: complete without needing to re-arm. This is important for detectors where the
+    #: process of arming is expensive in terms of time
+    iteration: int = 1
 
 
 class DetectorControl(ABC):
@@ -98,14 +102,14 @@ class DetectorControl(ABC):
         """
 
     @abstractmethod
-    async def arm(self) -> AsyncStatus:
+    def arm(self) -> None:
         """
-        Arm detector
+        Arm the detector
+        """
 
-        Returns:
-            AsyncStatus: Status representing the arm operation. This function returning
-            represents the start of the arm. The returned status completing means
-            the detector is now armed.
+    async def wait_for_armed(self):
+        """
+        This will wait on the internal _arm_status and wait for it to get disarmed
         """
 
     @abstractmethod
@@ -193,7 +197,7 @@ class StandardDetector(
         self._watchers: List[Callable] = []
         self._fly_status: Optional[WatchableAsyncStatus] = None
         self._fly_start: float
-
+        self._iterations_completed: int = 0
         self._intial_frame: int
         self._last_frame: int
         super().__init__(name)
@@ -262,8 +266,8 @@ class StandardDetector(
         assert self._trigger_info.trigger is DetectorTrigger.internal
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
-        written_status = await self.controller.arm()
-        await written_status
+        self.controller.arm()
+        await self.controller.wait_for_armed()
         end_observation = indices_written + 1
 
         async for index in self.writer.observe_indices_written(
@@ -304,19 +308,21 @@ class StandardDetector(
         self._initial_frame = await self.writer.get_indices_written()
         self._last_frame = self._initial_frame + self._trigger_info.number
         await self.controller.prepare(value)
-        if self._trigger_info.trigger is not DetectorTrigger.internal:
-            self._arm_status = await self.controller.arm()
-            self._fly_start = time.monotonic()
         self._describe = await self.writer.open(value.multiplier)
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        if not self._arm_status:
-            raise Exception("Detector not armed!")
+        assert self._trigger_info, "Prepare must be called before kickoff!"
+        if self._iterations_completed >= self._trigger_info.iteration:
+            raise Exception(f"Kickoff called more than {self._trigger_info.iteration}")
+        if self._trigger_info.trigger is not DetectorTrigger.internal:
+            self.controller.arm()
+            await self.controller.wait_for_armed()
+            self._fly_start = time.monotonic()
+        self._iterations_completed += 1
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        assert self._arm_status, "Prepare not run"
         assert self._trigger_info
         async for index in self.writer.observe_indices_written(
             self._trigger_info.frame_timeout
