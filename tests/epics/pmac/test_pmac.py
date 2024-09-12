@@ -2,14 +2,14 @@ import pytest
 from scanspec.specs import Line, fly
 
 from ophyd_async.core import DeviceCollector, set_mock_value
-from ophyd_async.epics.motion import Motor
+from ophyd_async.epics import motor
 from ophyd_async.epics.pmac import Pmac, PmacTrajectoryTriggerLogic, PmacTrajInfo
 
 
 @pytest.fixture
 async def sim_x_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = Motor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
+        sim_motor = motor.Motor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
@@ -24,7 +24,7 @@ async def sim_x_motor():
 @pytest.fixture
 async def sim_y_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = Motor("BLxxI-MO-STAGE-01:Y", name="sim_x_motor")
+        sim_motor = motor.Motor("BLxxI-MO-STAGE-01:Y", name="sim_x_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
