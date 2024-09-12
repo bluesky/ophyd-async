@@ -6,7 +6,8 @@ from ophyd_async.core import (
 )
 from ophyd_async.tango import TangoReadable
 
-from . import TangoCounter, TangoMover
+from ._counter import TangoCounter
+from ._mover import TangoMover
 
 
 class TangoDetector(TangoReadable):
@@ -24,8 +25,8 @@ class TangoDetector(TangoReadable):
     def set(self, value):
         return self.mover.set(value)
 
-    def stop(self):
-        return self.mover.stop()
+    def stop(self, success: bool = True) -> AsyncStatus:
+        return self.mover.stop(success)
 
     @AsyncStatus.wrap
     async def trigger(self):
