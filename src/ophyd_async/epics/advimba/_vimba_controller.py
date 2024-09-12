@@ -2,6 +2,7 @@ import asyncio
 
 from ophyd_async.core import DetectorControl, DetectorTrigger
 from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff, VimbaTriggerSource
@@ -27,6 +28,7 @@ class VimbaController(DetectorControl):
         driver: VimbaDriverIO,
     ) -> None:
         self._drv = driver
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.001
@@ -48,11 +50,14 @@ class VimbaController(DetectorControl):
         else:
             self._drv.trigger_source.set(VimbaTriggerSource.freerun)
 
-    def arm(self):
-        self._arm_status = adcore.start_acquiring_driver_and_ensure_status(self._drv)
+    async def arm(self):
+        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
+            self._drv
+        )
 
-    async def wait_for_armed(self):
-        await self._arm_status
+    async def wait_for_idle(self):
+        if self._arm_status:
+            await self._arm_status
 
     async def disarm(self):
         await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)

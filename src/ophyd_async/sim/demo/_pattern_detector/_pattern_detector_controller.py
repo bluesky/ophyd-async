@@ -32,7 +32,7 @@ class PatternDetectorController(DetectorControl):
             trigger_info.livetime
         )
 
-    def arm(self):
+    async def arm(self):
         assert self._trigger_info.livetime
         assert self.period
         self.task = asyncio.create_task(
@@ -41,7 +41,7 @@ class PatternDetectorController(DetectorControl):
             )
         )
 
-    async def wait_for_armed(self):
+    async def wait_for_idle(self):
         if self.task:
             await self.task
 

@@ -102,12 +102,12 @@ class DetectorControl(ABC):
         """
 
     @abstractmethod
-    def arm(self) -> None:
+    async def arm(self) -> None:
         """
         Arm the detector
         """
 
-    async def wait_for_armed(self):
+    async def wait_for_idle(self):
         """
         This will wait on the internal _arm_status and wait for it to get disarmed
         """
@@ -266,8 +266,8 @@ class StandardDetector(
         assert self._trigger_info.trigger is DetectorTrigger.internal
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
-        self.controller.arm()
-        await self.controller.wait_for_armed()
+        await self.controller.arm()
+        await self.controller.wait_for_idle()
         end_observation = indices_written + 1
 
         async for index in self.writer.observe_indices_written(
@@ -294,31 +294,30 @@ class StandardDetector(
         Args:
             value: TriggerInfo describing how to trigger the detector
         """
-        self._trigger_info = value
         if value.trigger != DetectorTrigger.internal:
             assert (
                 value.deadtime
             ), "Deadtime must be supplied when in externally triggered mode"
         if value.deadtime:
-            required = self.controller.get_deadtime(self._trigger_info.livetime)
+            required = self.controller.get_deadtime(value.livetime)
             assert required <= value.deadtime, (
                 f"Detector {self.controller} needs at least {required}s deadtime, "
                 f"but trigger logic provides only {value.deadtime}s"
             )
+        self._trigger_info = value
         self._initial_frame = await self.writer.get_indices_written()
         self._last_frame = self._initial_frame + self._trigger_info.number
         await self.controller.prepare(value)
         self._describe = await self.writer.open(value.multiplier)
+        if value.trigger != DetectorTrigger.internal:
+            await self.controller.arm()
+            self._fly_start = time.monotonic()
 
     @AsyncStatus.wrap
     async def kickoff(self):
         assert self._trigger_info, "Prepare must be called before kickoff!"
         if self._iterations_completed >= self._trigger_info.iteration:
             raise Exception(f"Kickoff called more than {self._trigger_info.iteration}")
-        if self._trigger_info.trigger is not DetectorTrigger.internal:
-            self.controller.arm()
-            await self.controller.wait_for_armed()
-            self._fly_start = time.monotonic()
         self._iterations_completed += 1
 
     @WatchableAsyncStatus.wrap
@@ -343,7 +342,8 @@ class StandardDetector(
             )
             if index >= self._trigger_info.number:
                 break
-        self._arm_status = None
+        if self._iterations_completed == self._trigger_info.iteration:
+            await self.controller.wait_for_idle()
 
     async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe

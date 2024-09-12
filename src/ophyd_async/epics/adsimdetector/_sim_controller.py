@@ -7,6 +7,7 @@ from ophyd_async.core import (
     DetectorTrigger,
 )
 from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 
@@ -19,6 +20,7 @@ class SimController(DetectorControl):
         self.driver = driver
         self.good_states = good_states
         self.frame_timeout: float
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.002
@@ -35,13 +37,14 @@ class SimController(DetectorControl):
             self.driver.image_mode.set(adcore.ImageMode.multiple),
         )
 
-    def arm(self):
-        self._arm_status = adcore.start_acquiring_driver_and_ensure_status(
+    async def arm(self):
+        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
             self.driver, good_states=self.good_states, timeout=self.frame_timeout
         )
 
-    async def wait_for_armed(self):
-        await self._arm_status
+    async def wait_for_idle(self):
+        if self._arm_status:
+            await self._arm_status
 
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have

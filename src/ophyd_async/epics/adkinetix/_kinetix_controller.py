@@ -2,6 +2,7 @@ import asyncio
 
 from ophyd_async.core import DetectorControl, DetectorTrigger
 from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 from ._kinetix_io import KinetixDriverIO, KinetixTriggerMode
@@ -20,6 +21,7 @@ class KinetixController(DetectorControl):
         driver: KinetixDriverIO,
     ) -> None:
         self._drv = driver
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.001
@@ -36,10 +38,12 @@ class KinetixController(DetectorControl):
         ]:
             await self._drv.acquire_time.set(trigger_info.livetime)
 
-    def arm(self):
-        self._arm_status = adcore.start_acquiring_driver_and_ensure_status(self._drv)
+    async def arm(self):
+        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
+            self._drv
+        )
 
-    async def wait_for_armed(self):
+    async def wait_for_idle(self):
         if self._arm_status:
             await self._arm_status
 

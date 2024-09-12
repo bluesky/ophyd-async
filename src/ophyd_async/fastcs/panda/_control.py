@@ -1,7 +1,6 @@
 import asyncio
 
 from ophyd_async.core import (
-    AsyncStatus,
     DetectorControl,
     DetectorTrigger,
     wait_for_value,
@@ -23,17 +22,13 @@ class PandaPcapController(DetectorControl):
             DetectorTrigger.constant_gate,
             DetectorTrigger.variable_gate,
         ), "Only constant_gate and variable_gate triggering is supported on the PandA"
+
+    async def arm(self):
         await asyncio.gather(self.pcap.arm.set(True))
         await wait_for_value(self.pcap.active, True, timeout=1)
 
-    def arm(self):
-        self._arm_status = AsyncStatus(
-            wait_for_value(self.pcap.active, False, timeout=None)
-        )
-
-    async def wait_for_armed(self):
-        if self._arm_status:
-            await self._arm_status
+    async def wait_for_idle(self):
+        pass
 
     async def disarm(self):
         await asyncio.gather(self.pcap.arm.set(False))

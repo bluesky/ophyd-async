@@ -52,7 +52,7 @@ class EigerController(DetectorControl):
             )
         await asyncio.gather(*coros)
 
-    def arm(
+    async def arm(
         self,
     ):
         # TODO: Detector state should be an enum see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
@@ -60,7 +60,7 @@ class EigerController(DetectorControl):
             self._drv.arm, 1, self._drv.state, "ready", timeout=DEFAULT_TIMEOUT
         )
 
-    async def wait_for_armed(self):
+    async def wait_for_idle(self):
         if self._arm_status:
             await self._arm_status
 

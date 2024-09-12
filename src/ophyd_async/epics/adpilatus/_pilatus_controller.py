@@ -7,6 +7,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
@@ -26,6 +27,7 @@ class PilatusController(DetectorControl):
     ) -> None:
         self._drv = driver
         self._readout_time = readout_time
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float) -> float:
         return self._readout_time
@@ -43,12 +45,15 @@ class PilatusController(DetectorControl):
             self._drv.image_mode.set(adcore.ImageMode.multiple),
         )
 
-    def arm(self):
+    async def arm(self):
         # Standard arm the detector and wait for the acquire PV to be True
-        self._arm_status = adcore.start_acquiring_driver_and_ensure_status(self._drv)
+        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
+            self._drv
+        )
 
-    async def wait_for_armed(self):
-        await self._arm_status
+    async def wait_for_idle(self):
+        if self._arm_status:
+            await self._arm_status
         # The pilatus has an additional PV that goes True when the camserver
         # is actually ready. Should wait for that too or we risk dropping
         # a frame
