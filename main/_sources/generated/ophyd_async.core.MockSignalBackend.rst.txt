@@ -23,6 +23,7 @@ ophyd\_async.core.MockSignalBackend
       :nosignatures:
    
       ~MockSignalBackend.connect
+      ~MockSignalBackend.datatype_allowed
       ~MockSignalBackend.get_datakey
       ~MockSignalBackend.get_reading
       ~MockSignalBackend.get_setpoint

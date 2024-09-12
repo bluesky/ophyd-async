@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core.SoftSignalBackend &#8212; ophyd-async 0.5.3.dev4+g81a6dbbb documentation</title>
+    <title>ophyd_async.core.SoftSignalBackend &#8212; ophyd-async 0.5.3.dev5+g0cbfbe64 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=0d31b6ee"></script>
+    <script src="../_static/documentation_options.js?v=e2546b55"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -617,8 +617,6 @@ document.write(`
 <li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.fastcs.html">ophyd_async.fastcs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.fastcs.odin.html">ophyd_async.fastcs.odin</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.fastcs.panda.html">ophyd_async.fastcs.panda</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.seq_table_from_arrays.html">ophyd_async.fastcs.panda.seq_table_from_arrays</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.seq_table_from_rows.html">ophyd_async.fastcs.panda.seq_table_from_rows</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.phase_sorter.html">ophyd_async.fastcs.panda.phase_sorter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.CommonPandaBlocks.html">ophyd_async.fastcs.panda.CommonPandaBlocks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.DataBlock.html">ophyd_async.fastcs.panda.DataBlock</a></li>
@@ -634,8 +632,6 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PandaPcapController.html">ophyd_async.fastcs.panda.PandaPcapController</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.DatasetTable.html">ophyd_async.fastcs.panda.DatasetTable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.PandaHdf5DatasetType.html">ophyd_async.fastcs.panda.PandaHdf5DatasetType</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.SeqTable.html">ophyd_async.fastcs.panda.SeqTable</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.SeqTableRow.html">ophyd_async.fastcs.panda.SeqTableRow</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.SeqTrigger.html">ophyd_async.fastcs.panda.SeqTrigger</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.html">ophyd_async.fastcs.panda.StaticPcompTriggerLogic</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.html">ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic</a></li>
@@ -730,28 +726,31 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.connect" title="ophyd_async.core.SoftSignalBackend.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code></a></p></td>
 <td><p>Connection isn't required for soft signals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_datakey" title="ophyd_async.core.SoftSignalBackend.get_datakey"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_datakey</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.datatype_allowed" title="ophyd_async.core.SoftSignalBackend.datatype_allowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datatype_allowed</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_reading" title="ophyd_async.core.SoftSignalBackend.get_reading"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_reading</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_datakey" title="ophyd_async.core.SoftSignalBackend.get_datakey"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_datakey</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_setpoint" title="ophyd_async.core.SoftSignalBackend.get_setpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_setpoint</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_reading" title="ophyd_async.core.SoftSignalBackend.get_reading"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_reading</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_setpoint" title="ophyd_async.core.SoftSignalBackend.get_setpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_setpoint</span></code></a></p></td>
 <td><p>For a soft signal, the setpoint and readback values are the same.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_value" title="ophyd_async.core.SoftSignalBackend.get_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.get_value" title="ophyd_async.core.SoftSignalBackend.get_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.put" title="ophyd_async.core.SoftSignalBackend.put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">put</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.put" title="ophyd_async.core.SoftSignalBackend.put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">put</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.set_callback" title="ophyd_async.core.SoftSignalBackend.set_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_callback</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.set_callback" title="ophyd_async.core.SoftSignalBackend.set_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_callback</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.set_value" title="ophyd_async.core.SoftSignalBackend.set_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_value</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.set_value" title="ophyd_async.core.SoftSignalBackend.set_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_value</span></code></a></p></td>
 <td><p>Method to bypass asynchronous logic.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.source" title="ophyd_async.core.SoftSignalBackend.source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend.source" title="ophyd_async.core.SoftSignalBackend.source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -766,6 +765,11 @@ may change API on minor release numbers before then</p>
 </tbody>
 </table>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.SoftSignalBackend.datatype_allowed">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datatype_allowed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.12)"><span class="pre">Type</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_soft_signal_backend.html#SoftSignalBackend.datatype_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SoftSignalBackend.datatype_allowed" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.core.SoftSignalBackend.datatype">
 <span class="sig-name descname"><span class="pre">datatype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.12)"><span class="pre">Type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ophyd_async.core.SoftSignalBackend.datatype" title="Link to this definition">#</a></dt>
@@ -871,6 +875,7 @@ may change API on minor release numbers before then</p>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftSignalBackend"><code class="docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftSignalBackend.datatype_allowed"><code class="docutils literal notranslate"><span class="pre">SoftSignalBackend.datatype_allowed()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftSignalBackend.datatype"><code class="docutils literal notranslate"><span class="pre">SoftSignalBackend.datatype</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftSignalBackend.source"><code class="docutils literal notranslate"><span class="pre">SoftSignalBackend.source()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SoftSignalBackend.connect"><code class="docutils literal notranslate"><span class="pre">SoftSignalBackend.connect()</span></code></a></li>

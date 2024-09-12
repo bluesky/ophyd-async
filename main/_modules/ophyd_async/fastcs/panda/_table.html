@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._table &#8212; ophyd-async 0.5.3.dev4+g81a6dbbb documentation</title>
+    <title>ophyd_async.fastcs.panda._table &#8212; ophyd-async 0.5.3.dev5+g0cbfbe64 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0d31b6ee"></script>
+    <script src="../../../../_static/documentation_options.js?v=e2546b55"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -487,14 +487,17 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.fastcs.panda._table</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span></span><span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Sequence</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="kn">import</span> <span class="nn">pydantic_numpy.typing</span> <span class="k">as</span> <span class="nn">pnd</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">NotRequired</span><span class="p">,</span> <span class="n">TypedDict</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">field_validator</span><span class="p">,</span> <span class="n">model_validator</span>
+<span class="kn">from</span> <span class="nn">pydantic_numpy.helper.annotation</span> <span class="kn">import</span> <span class="n">NpArrayPydanticAnnotation</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Table</span>
 
 
 <div class="viewcode-block" id="PandaHdf5DatasetType">
@@ -532,152 +535,116 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="SeqTableRow">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.SeqTableRow.html#ophyd_async.fastcs.panda.SeqTableRow">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">SeqTableRow</span><span class="p">:</span>
-    <span class="n">repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">trigger</span><span class="p">:</span> <span class="n">SeqTrigger</span> <span class="o">=</span> <span class="n">SeqTrigger</span><span class="o">.</span><span class="n">IMMEDIATE</span>
-    <span class="n">position</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">time1</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">outa1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outb1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outc1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outd1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">oute1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outf1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">time2</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">outa2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outb2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outc2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outd2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">oute2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">outf2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></div>
+<span class="n">PydanticNp1DArrayInt32</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span>
+    <span class="n">NpArrayPydanticAnnotation</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span>
+        <span class="n">data_type</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">strict_data_typing</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">),</span>
+    <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)),</span>
+<span class="p">]</span>
+<span class="n">PydanticNp1DArrayBool</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">],</span>
+    <span class="n">NpArrayPydanticAnnotation</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span>
+        <span class="n">data_type</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">strict_data_typing</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">),</span>
+    <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)),</span>
+<span class="p">]</span>
+<span class="n">TriggerStr</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">unicode_</span><span class="p">],</span>
+    <span class="n">NpArrayPydanticAnnotation</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span>
+        <span class="n">data_type</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">unicode_</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">strict_data_typing</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">),</span>
+    <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s2">&quot;&lt;U32&quot;</span><span class="p">))),</span>
+<span class="p">]</span>
 
 
+<span class="k">class</span> <span class="nc">SeqTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="n">repeats</span><span class="p">:</span> <span class="n">PydanticNp1DArrayInt32</span>
+    <span class="n">trigger</span><span class="p">:</span> <span class="n">TriggerStr</span>
+    <span class="n">position</span><span class="p">:</span> <span class="n">PydanticNp1DArrayInt32</span>
+    <span class="n">time1</span><span class="p">:</span> <span class="n">PydanticNp1DArrayInt32</span>
+    <span class="n">outa1</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outb1</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outc1</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outd1</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">oute1</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outf1</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">time2</span><span class="p">:</span> <span class="n">PydanticNp1DArrayInt32</span>
+    <span class="n">outa2</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outb2</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outc2</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outd2</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">oute2</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
+    <span class="n">outf2</span><span class="p">:</span> <span class="n">PydanticNp1DArrayBool</span>
 
-<div class="viewcode-block" id="SeqTable">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.SeqTable.html#ophyd_async.fastcs.panda.SeqTable">[docs]</a>
-<span class="k">class</span> <span class="nc">SeqTable</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-    <span class="n">repeats</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayUint16</span><span class="p">]</span>
-    <span class="n">trigger</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">SeqTrigger</span><span class="p">]]</span>
-    <span class="n">position</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayInt32</span><span class="p">]</span>
-    <span class="n">time1</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayUint32</span><span class="p">]</span>
-    <span class="n">outa1</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outb1</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outc1</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outd1</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">oute1</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outf1</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">time2</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayUint32</span><span class="p">]</span>
-    <span class="n">outa2</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outb2</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outc2</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outd2</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">oute2</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span>
-    <span class="n">outf2</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">pnd</span><span class="o">.</span><span class="n">Np1DArrayBool</span><span class="p">]</span></div>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">row</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">trigger</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">SeqTrigger</span><span class="o">.</span><span class="n">IMMEDIATE</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">time1</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">outa1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outb1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outc1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outd1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">oute1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outf1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">time2</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">outa2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outb2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outc2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outd2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">oute2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">outf2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SeqTable&quot;</span><span class="p">:</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">row</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">}</span>
 
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;trigger&quot;</span><span class="p">],</span> <span class="n">SeqTrigger</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;trigger&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;trigger&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;trigger&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">SeqTrigger</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;trigger&quot;</span><span class="p">])</span>
 
+        <span class="k">return</span> <span class="n">Table</span><span class="o">.</span><span class="n">row</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="seq_table_from_rows">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.seq_table_from_rows.html#ophyd_async.fastcs.panda.seq_table_from_rows">[docs]</a>
-<span class="k">def</span> <span class="nf">seq_table_from_rows</span><span class="p">(</span><span class="o">*</span><span class="n">rows</span><span class="p">:</span> <span class="n">SeqTableRow</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Constructs a sequence table from a series of rows.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">seq_table_from_arrays</span><span class="p">(</span>
-        <span class="n">repeats</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">repeats</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">),</span>
-        <span class="n">trigger</span><span class="o">=</span><span class="p">[</span><span class="n">row</span><span class="o">.</span><span class="n">trigger</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span>
-        <span class="n">position</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">position</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-        <span class="n">time1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">time1</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span>
-        <span class="n">outa1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outa1</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outb1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outb1</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outc1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outc1</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outd1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outd1</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">oute1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">oute1</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outf1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outf1</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">time2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">time2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span>
-        <span class="n">outa2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outa2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outb2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outb2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outc2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outc2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outd2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outd2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">oute2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">oute2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outf2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">outf2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-    <span class="p">)</span></div>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;trigger&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">trigger_to_np_array</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">trigger_column</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The user can provide a list of SeqTrigger enum elements instead of a numpy str.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trigger_column</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">trigger</span><span class="p">,</span> <span class="n">SeqTrigger</span><span class="p">)</span> <span class="k">for</span> <span class="n">trigger</span> <span class="ow">in</span> <span class="n">trigger_column</span>
+        <span class="p">):</span>
+            <span class="n">trigger_column</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">trigger</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">trigger</span> <span class="ow">in</span> <span class="n">trigger_column</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s2">&quot;&lt;U32&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trigger_column</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">trigger_column</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">trigger</span> <span class="ow">in</span> <span class="n">trigger_column</span><span class="p">:</span>
+                <span class="n">SeqTrigger</span><span class="p">(</span>
+                    <span class="n">trigger</span>
+                <span class="p">)</span>  <span class="c1"># To check all the given strings are actually `SeqTrigger`s</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Expected a numpy array or a sequence of `SeqTrigger`, got &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">trigger_column</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">trigger_column</span>
 
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">validate_max_length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SeqTable&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Used to check max_length. Unfortunately trying the `max_length` arg in</span>
+<span class="sd">        the pydantic field doesn&#39;t work</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-
-<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="seq_table_from_arrays">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.fastcs.panda.seq_table_from_arrays.html#ophyd_async.fastcs.panda.seq_table_from_arrays">[docs]</a>
-<span class="k">def</span> <span class="nf">seq_table_from_arrays</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">repeats</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">trigger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">SeqTrigger</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">time1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outa1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outb1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outc1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outd1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">oute1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outf1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">time2</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">],</span>
-    <span class="n">outa2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outb2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outc2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outd2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">oute2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">outf2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeqTable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Constructs a sequence table from a series of columns as arrays.</span>
-<span class="sd">    time2 is the only required argument and must not be None.</span>
-<span class="sd">    All other provided arguments must be of equal length to time2.</span>
-<span class="sd">    If any other argument is not given, or else given as None or empty,</span>
-<span class="sd">    an array of length len(time2) filled with the following is defaulted:</span>
-<span class="sd">    repeats: 1</span>
-<span class="sd">    trigger: SeqTrigger.IMMEDIATE</span>
-<span class="sd">    all others: 0/False as appropriate</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">time2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;time2 must be provided&quot;</span>
-    <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time2</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">length</span> <span class="o">&lt;</span> <span class="mi">4096</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Length </span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2"> not in range&quot;</span>
-
-    <span class="k">def</span> <span class="nf">or_default</span><span class="p">(</span>
-        <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">default_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">default_value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">value</span>
-
-    <span class="n">table</span> <span class="o">=</span> <span class="n">SeqTable</span><span class="p">(</span>
-        <span class="n">repeats</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">repeats</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-        <span class="n">trigger</span><span class="o">=</span><span class="n">trigger</span> <span class="ow">or</span> <span class="p">[</span><span class="n">SeqTrigger</span><span class="o">.</span><span class="n">IMMEDIATE</span><span class="p">]</span> <span class="o">*</span> <span class="n">length</span><span class="p">,</span>
-        <span class="n">position</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-        <span class="n">time1</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">time1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span>
-        <span class="n">outa1</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outa1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outb1</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outb1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outc1</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outc1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outd1</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outd1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">oute1</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">oute1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outf1</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outf1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">time2</span><span class="o">=</span><span class="n">time2</span><span class="p">,</span>
-        <span class="n">outa2</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outa2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outb2</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outb2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outc2</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outc2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outd2</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outd2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">oute2</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">oute2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-        <span class="n">outf2</span><span class="o">=</span><span class="n">or_default</span><span class="p">(</span><span class="n">outf2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-    <span class="p">)</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="k">if</span> <span class="n">size</span> <span class="o">!=</span> <span class="n">length</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: has length </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">table</span></div>
-
+        <span class="n">first_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">))[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">first_length</span> <span class="o">&lt;</span> <span class="mi">4096</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Length </span><span class="si">{</span><span class="n">first_length</span><span class="si">}</span><span class="s2"> not in range.&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
 </pre></div>
 
                 </article>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.signal._p4p &#8212; ophyd-async 0.5.3.dev4+g81a6dbbb documentation</title>
+    <title>ophyd_async.epics.signal._p4p &#8212; ophyd-async 0.5.3.dev5+g0cbfbe64 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0d31b6ee"></script>
+    <script src="../../../../_static/documentation_options.js?v=e2546b55"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -492,14 +492,17 @@ document.write(`
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">isnan</span><span class="p">,</span> <span class="n">nan</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">get_origin</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">Dtype</span><span class="p">,</span> <span class="n">Reading</span>
 <span class="kn">from</span> <span class="nn">p4p</span> <span class="kn">import</span> <span class="n">Value</span>
 <span class="kn">from</span> <span class="nn">p4p.client.asyncio</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">Subscription</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
@@ -742,6 +745,19 @@ document.write(`
         <span class="k">return</span> <span class="n">_data_key_from_value</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;object&quot;</span><span class="p">)</span>
 
 
+<span class="k">class</span> <span class="nc">PvaPydanticModelConverter</span><span class="p">(</span><span class="n">PvaConverter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="n">datatype</span>
+
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">(</span><span class="o">**</span><span class="n">value</span><span class="o">.</span><span class="n">todict</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+
 <span class="k">class</span> <span class="nc">PvaDictConverter</span><span class="p">(</span><span class="n">PvaConverter</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">reading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -837,6 +853,15 @@ document.write(`
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has type </span><span class="si">{</span><span class="n">typ</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="n">datatype</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PvaConverter</span><span class="p">()</span>
     <span class="k">elif</span> <span class="s2">&quot;NTTable&quot;</span> <span class="ow">in</span> <span class="n">typeid</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">datatype</span>
+            <span class="ow">and</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+            <span class="ow">and</span>
+            <span class="c1"># Necessary to avoid weirdness in ABCMeta.__subclasscheck__</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">ABCMeta</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">BaseModel</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">PvaPydanticModelConverter</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PvaTableConverter</span><span class="p">()</span>
     <span class="k">elif</span> <span class="s2">&quot;structure&quot;</span> <span class="ow">in</span> <span class="n">typeid</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">PvaDictConverter</span><span class="p">()</span>
@@ -849,8 +874,36 @@ document.write(`
 <span class="k">class</span> <span class="nc">PvaSignalBackend</span><span class="p">(</span><span class="n">SignalBackend</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="n">_ctxt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Context</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="n">_ALLOWED_DATATYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">bool</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">,</span>
+        <span class="nb">float</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">,</span>
+        <span class="n">Sequence</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">Enum</span><span class="p">,</span>
+        <span class="n">RuntimeSubsetEnum</span><span class="p">,</span>
+        <span class="n">BaseModel</span><span class="p">,</span>
+        <span class="nb">dict</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="PvaSignalBackend.datatype_allowed">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.signal.PvaSignalBackend.html#ophyd_async.epics.signal.PvaSignalBackend.datatype_allowed">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">datatype_allowed</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">stripped_origin</span> <span class="o">=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">or</span> <span class="n">datatype</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">stripped_origin</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span>
+            <span class="n">stripped_origin</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ALLOWED_DATATYPES</span>
+        <span class="p">)</span></div>
+
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="n">datatype</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">PvaSignalBackend</span><span class="o">.</span><span class="n">datatype_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Given datatype </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> unsupported in PVA.&quot;</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">read_pv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">write_pv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>

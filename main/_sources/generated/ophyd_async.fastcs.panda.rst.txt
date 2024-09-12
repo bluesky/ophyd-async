@@ -20,8 +20,6 @@ ophyd\_async.fastcs.panda
       :toctree:
       :nosignatures:
    
-      seq_table_from_arrays
-      seq_table_from_rows
       phase_sorter
    
    
@@ -49,8 +47,6 @@ ophyd\_async.fastcs.panda
       PandaPcapController
       DatasetTable
       PandaHdf5DatasetType
-      SeqTable
-      SeqTableRow
       SeqTrigger
       StaticPcompTriggerLogic
       StaticSeqTableTriggerLogic

@@ -23,6 +23,7 @@ ophyd\_async.epics.signal.PvaSignalBackend
       :nosignatures:
    
       ~PvaSignalBackend.connect
+      ~PvaSignalBackend.datatype_allowed
       ~PvaSignalBackend.get_datakey
       ~PvaSignalBackend.get_reading
       ~PvaSignalBackend.get_setpoint

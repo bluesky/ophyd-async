@@ -23,6 +23,7 @@ ophyd\_async.core.SoftSignalBackend
       :nosignatures:
    
       ~SoftSignalBackend.connect
+      ~SoftSignalBackend.datatype_allowed
       ~SoftSignalBackend.get_datakey
       ~SoftSignalBackend.get_reading
       ~SoftSignalBackend.get_setpoint
