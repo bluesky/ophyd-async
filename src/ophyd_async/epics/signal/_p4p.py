@@ -3,14 +3,17 @@ import atexit
 import inspect
 import logging
 import time
+from abc import ABCMeta
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan, nan
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union, get_origin
 
+import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
 from p4p import Value
 from p4p.client.asyncio import Context, Subscription
+from pydantic import BaseModel
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -253,6 +256,19 @@ class PvaTableConverter(PvaConverter):
         return _data_key_from_value(source, value, dtype="object")
 
 
+class PvaPydanticModelConverter(PvaConverter):
+    def __init__(self, datatype: BaseModel):
+        self.datatype = datatype
+
+    def value(self, value: Value):
+        return self.datatype(**value.todict())
+
+    def write_value(self, value: Union[BaseModel, Dict[str, Any]]):
+        if isinstance(value, self.datatype):
+            return value.model_dump(mode="python")
+        return value
+
+
 class PvaDictConverter(PvaConverter):
     def reading(self, value):
         ts = time.time()
@@ -348,6 +364,15 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
                 raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
+        if (
+            datatype
+            and inspect.isclass(datatype)
+            and
+            # Necessary to avoid weirdness in ABCMeta.__subclasscheck__
+            isinstance(datatype, ABCMeta)
+            and issubclass(datatype, BaseModel)
+        ):
+            return PvaPydanticModelConverter(datatype)
         return PvaTableConverter()
     elif "structure" in typeid:
         return PvaDictConverter()
@@ -358,8 +383,33 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
 class PvaSignalBackend(SignalBackend[T]):
     _ctxt: Optional[Context] = None
 
+    _ALLOWED_DATATYPES = (
+        bool,
+        int,
+        float,
+        str,
+        Sequence,
+        np.ndarray,
+        Enum,
+        RuntimeSubsetEnum,
+        BaseModel,
+        dict,
+    )
+
+    @classmethod
+    def datatype_allowed(cls, datatype: Optional[Type]) -> bool:
+        stripped_origin = get_origin(datatype) or datatype
+        if datatype is None:
+            return True
+        return inspect.isclass(stripped_origin) and issubclass(
+            stripped_origin, cls._ALLOWED_DATATYPES
+        )
+
     def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
         self.datatype = datatype
+        if not PvaSignalBackend.datatype_allowed(self.datatype):
+            raise TypeError(f"Given datatype {self.datatype} unsupported in PVA.")
+
         self.read_pv = read_pv
         self.write_pv = write_pv
         self.initial_values: Dict[str, Any] = {}
