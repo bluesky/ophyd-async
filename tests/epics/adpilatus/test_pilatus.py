@@ -1,3 +1,4 @@
+import asyncio
 from typing import Awaitable, Callable
 from unittest.mock import patch
 
@@ -84,7 +85,7 @@ async def test_trigger_mode_set_without_armed_pv(
         "ophyd_async.epics.adpilatus._pilatus_controller.DEFAULT_TIMEOUT",
         0.1,
     ):
-        with pytest.raises(TimeoutError):
+        with pytest.raises(asyncio.TimeoutError):
             await _trigger(
                 test_adpilatus,
                 adpilatus.PilatusTriggerMode.internal,
