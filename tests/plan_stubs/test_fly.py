@@ -18,7 +18,7 @@ from ophyd_async.core import (
     SignalR,
     StandardDetector,
     StandardFlyer,
-    TriggerLogic,
+    FlyerController,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
@@ -190,7 +190,7 @@ async def mock_panda():
 class MockFlyer(StandardFlyer):
     def __init__(
         self,
-        trigger_logic: TriggerLogic,
+        trigger_logic: FlyerController,
         configuration_signals: Sequence[SignalR] = ...,
         name: str = "",
     ):

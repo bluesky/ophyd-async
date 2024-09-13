@@ -16,7 +16,7 @@ from ._device_save_loader import (
     set_signal_values,
     walk_rw_signals,
 )
-from ._flyer import StandardFlyer, TriggerLogic
+from ._flyer import StandardFlyer, FlyerController
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
@@ -102,7 +102,7 @@ __all__ = [
     "set_signal_values",
     "walk_rw_signals",
     "StandardFlyer",
-    "TriggerLogic",
+    "FlyerController",
     "HDFDataset",
     "HDFFile",
     "config_ophyd_async_logging",

@@ -16,13 +16,13 @@ from ophyd_async.core import (
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    TriggerLogic,
+    FlyerController,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
 
 
-class DummyTriggerLogic(TriggerLogic[int]):
+class DummyTriggerLogic(FlyerController[int]):
     def __init__(self): ...
 
     async def prepare(self, value: int):

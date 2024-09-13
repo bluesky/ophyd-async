@@ -19,7 +19,7 @@ from ophyd_async.core import (
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    TriggerLogic,
+    FlyerController,
     observe_value,
 )
 from ophyd_async.core._signal import assert_emitted
@@ -33,7 +33,7 @@ class TriggerState(str, Enum):
     stopping = "stopping"
 
 
-class DummyTriggerLogic(TriggerLogic[int]):
+class DummyTriggerLogic(FlyerController[int]):
     def __init__(self):
         self.state = TriggerState.null
 
