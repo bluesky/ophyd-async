@@ -620,7 +620,18 @@ async def test_pva_table(ioc: IOC) -> None:
         enum=[MyEnum.c, MyEnum.b],
     )
     # TODO: what should this be for a variable length table?
-    datakey = {"dtype": "object", "shape": [], "source": "test-source"}
+    datakey = {
+        "dtype": "object",
+        "shape": [],
+        "source": "test-source",
+        "dtype_numpy": "",
+        "limits": {
+            "alarm": {"high": None, "low": None},
+            "control": {"high": None, "low": None},
+            "display": {"high": None, "low": None},
+            "warning": {"high": None, "low": None},
+        },
+    }
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")
