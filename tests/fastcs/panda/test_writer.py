@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from pathlib import Path
@@ -187,7 +188,7 @@ async def test_wait_for_index(mock_writer: PandaHDFWriter):
     set_mock_value(mock_writer.panda_data_block.num_captured, 3)
     await mock_writer.wait_for_index(3, timeout=1)
     set_mock_value(mock_writer.panda_data_block.num_captured, 2)
-    with pytest.raises(TimeoutError):
+    with pytest.raises(asyncio.TimeoutError):
         await mock_writer.wait_for_index(3, timeout=0.1)
 
 
