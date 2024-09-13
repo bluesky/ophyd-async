@@ -36,7 +36,15 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
     set_mock_value(test_adaravis.drv.trigger_source, "Freerun")
 
     async def trigger_and_complete():
-        await test_adaravis.controller.arm(num=1, trigger=DetectorTrigger.edge_trigger)
+        await test_adaravis.controller.prepare(
+            TriggerInfo(
+                number=1,
+                trigger=DetectorTrigger.edge_trigger,
+                livetime=None,
+                deadtime=None,
+                frame_timeout=None,
+            )
+        )
         # Prevent timeouts
         set_mock_value(test_adaravis.drv.acquire, True)
 
@@ -158,7 +166,7 @@ async def test_unsupported_trigger_excepts(test_adaravis: adaravis.AravisDetecto
     ):
         await test_adaravis.prepare(
             TriggerInfo(
-                number=1,
+                number=0,
                 trigger=DetectorTrigger.variable_gate,
                 deadtime=1,
                 livetime=1,

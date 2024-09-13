@@ -114,9 +114,6 @@ async def test_two_detectors_fly_different_rate(
     trigger_info = TriggerInfo(
         number=15,
         trigger=DetectorTrigger.internal,
-        deadtime=None,
-        livetime=None,
-        frame_timeout=None,
     )
     docs = defaultdict(list)
 
