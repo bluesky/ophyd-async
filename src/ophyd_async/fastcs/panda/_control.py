@@ -14,7 +14,7 @@ from ._block import PcapBlock
 class PandaPcapController(DetectorControl):
     def __init__(self, pcap: PcapBlock) -> None:
         self.pcap = pcap
-        self._arm_status: tuple[AsyncStatus, None]
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.000000008
@@ -26,9 +26,8 @@ class PandaPcapController(DetectorControl):
         ), "Only constant_gate and variable_gate triggering is supported on the PandA"
 
     async def arm(self):
-        self._arm_status = await asyncio.gather(
-            self.pcap.arm.set(True), wait_for_value(self.pcap.active, True, timeout=1)
-        )
+        self._arm_status = self.pcap.arm.set(True)
+        await wait_for_value(self.pcap.active, True, timeout=1)
 
     async def wait_for_idle(self):
         pass

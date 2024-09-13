@@ -27,7 +27,7 @@ class PilatusController(DetectorControl):
     ) -> None:
         self._drv = driver
         self._readout_time = readout_time
-        self._arm_status: tuple[AsyncStatus, None]
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float) -> float:
         return self._readout_time
@@ -47,22 +47,21 @@ class PilatusController(DetectorControl):
 
     async def arm(self):
         # Standard arm the detector and wait for the acquire PV to be True
-        self._arm_status = await asyncio.gather(
-            adcore.start_acquiring_driver_and_ensure_status(self._drv),
-            # The pilatus has an additional PV that goes True when the camserver
-            # is actually ready. Should wait for that too or we risk dropping
-            # a frame
-            wait_for_value(
-                self._drv.armed,
-                True,
-                timeout=DEFAULT_TIMEOUT,
-            ),
+        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
+            self._drv
+        )
+        # The pilatus has an additional PV that goes True when the camserver
+        # is actually ready. Should wait for that too or we risk dropping
+        # a frame
+        await wait_for_value(
+            self._drv.armed,
+            True,
+            timeout=DEFAULT_TIMEOUT,
         )
 
     async def wait_for_idle(self):
-        for status in self._arm_status:
-            if status:
-                await status
+        if self._arm_status:
+            await self._arm_status
 
     @classmethod
     def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:
