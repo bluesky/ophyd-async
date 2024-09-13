@@ -2,7 +2,7 @@ import asyncio
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     wait_for_value,
 )
@@ -13,7 +13,7 @@ from ophyd_async.epics import adcore
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
 
-class PilatusController(DetectorControl):
+class PilatusController(DetectorController):
     _supported_trigger_types = {
         DetectorTrigger.internal: PilatusTriggerMode.internal,
         DetectorTrigger.constant_gate: PilatusTriggerMode.ext_enable,

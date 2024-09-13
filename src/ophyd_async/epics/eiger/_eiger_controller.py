@@ -2,7 +2,7 @@ import asyncio
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     set_and_wait_for_other_value,
 )
@@ -18,7 +18,7 @@ EIGER_TRIGGER_MODE_MAP = {
 }
 
 
-class EigerController(DetectorControl):
+class EigerController(DetectorController):
     def __init__(
         self,
         driver: EigerDriverIO,

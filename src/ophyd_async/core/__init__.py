@@ -1,5 +1,5 @@
 from ._detector import (
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     DetectorWriter,
     StandardDetector,
@@ -85,7 +85,7 @@ from ._utils import (
 )
 
 __all__ = [
-    "DetectorControl",
+    "DetectorController",
     "DetectorTrigger",
     "DetectorWriter",
     "StandardDetector",
