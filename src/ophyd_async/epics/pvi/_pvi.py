@@ -1,4 +1,5 @@
 import re
+import types
 from collections.abc import Callable
 from dataclasses import dataclass
 from inspect import isclass
@@ -56,7 +57,7 @@ def _split_subscript(tp: T) -> tuple[Any, tuple[Any]] | tuple[T, None]:
 
 
 def _strip_union(field: T | T) -> tuple[T, bool]:
-    if get_origin(field) is Union:
+    if get_origin(field) in [Union, types.UnionType]:
         args = get_args(field)
         is_optional = type(None) in args
         for arg in args:
