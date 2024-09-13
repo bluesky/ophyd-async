@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.5.3.dev5+g0cbfbe64 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.5.3.dev6+g965a4d7c documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=e2546b55"></script>
+    <script src="../../../_static/documentation_options.js?v=36ef717e"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -1066,7 +1066,7 @@ document.write(`
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span> <span class="n">timeout</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t match </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s, &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;last value </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span><span class="si">!r}</span><span class="s2">&quot;</span>
             <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
