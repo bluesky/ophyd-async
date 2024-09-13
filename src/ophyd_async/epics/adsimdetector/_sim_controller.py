@@ -21,7 +21,7 @@ class SimController(DetectorControl):
         self.frame_timeout: float
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return 0.002
 
     async def prepare(self, trigger_info: TriggerInfo):

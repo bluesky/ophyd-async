@@ -1,8 +1,8 @@
 from collections.abc import AsyncGenerator, AsyncIterator
 
-from bluesky.protocols import DataKey
+from event_model import DataKey
 
-from ophyd_async.core import DetectorWriter, NameProvider, PathProvider
+from ophyd_async.core import DEFAULT_TIMEOUT, DetectorWriter, NameProvider, PathProvider
 
 from ._pattern_generator import PatternGenerator
 
@@ -31,8 +31,11 @@ class PatternDetectorWriter(DetectorWriter):
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator:
         return self.pattern_generator.collect_stream_docs(indices_written)
 
-    def observe_indices_written(self, timeout=...) -> AsyncGenerator[int, None]:
-        return self.pattern_generator.observe_indices_written()
+    async def observe_indices_written(
+        self, timeout=DEFAULT_TIMEOUT
+    ) -> AsyncGenerator[int, None]:
+        async for index in self.pattern_generator.observe_indices_written(timeout):
+            yield index
 
     async def get_indices_written(self) -> int:
         return self.pattern_generator.image_counter

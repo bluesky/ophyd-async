@@ -8,7 +8,9 @@ from enum import Enum
 from typing import Generic, cast, get_origin
 
 import numpy as np
-from bluesky.protocols import DataKey, Dtype, Reading
+from bluesky.protocols import Reading
+from event_model import DataKey
+from event_model.documents.event_descriptor import Dtype
 from pydantic import BaseModel
 from typing_extensions import TypedDict
 
@@ -27,8 +29,8 @@ primitive_dtypes: dict[type, Dtype] = {
 
 
 class SignalMetadata(TypedDict):
-    units: str | None = None
-    precision: int | None = None
+    units: str | None
+    precision: int | None
 
 
 class SoftConverter(Generic[T]):
@@ -46,7 +48,7 @@ class SoftConverter(Generic[T]):
         )
 
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        dk = {"source": source, "shape": [], **metadata}
+        dk: DataKey = {"source": source, "shape": [], **metadata}  # type: ignore
         dtype = type(value)
         if np.issubdtype(dtype, np.integer):
             dtype = int
@@ -56,10 +58,11 @@ class SoftConverter(Generic[T]):
             dtype in primitive_dtypes
         ), f"invalid converter for value of type {type(value)}"
         dk["dtype"] = primitive_dtypes[dtype]
+        # type ignore until https://github.com/bluesky/event-model/issues/308
         try:
-            dk["dtype_numpy"] = np.dtype(dtype).descr[0][1]
+            dk["dtype_numpy"] = np.dtype(dtype).descr[0][1]  # type: ignore
         except TypeError:
-            dk["dtype_numpy"] = ""
+            dk["dtype_numpy"] = ""  # type: ignore
         return dk
 
     def make_initial_value(self, datatype: type[T] | None) -> T:
@@ -81,7 +84,7 @@ class SoftArrayConverter(SoftConverter):
         return {
             "source": source,
             "dtype": "array",
-            "dtype_numpy": dtype_numpy,
+            "dtype_numpy": dtype_numpy,  # type: ignore
             "shape": [len(value)],
             **metadata,
         }
@@ -100,19 +103,20 @@ class SoftEnumConverter(SoftConverter):
     choices: tuple[str, ...]
 
     def __init__(self, datatype: RuntimeSubsetEnum | type[Enum]):
-        if issubclass(datatype, Enum):
+        if issubclass(datatype, Enum):  # type: ignore
             self.choices = tuple(v.value for v in datatype)
         else:
             self.choices = datatype.choices
 
     def write_value(self, value: Enum | str) -> str:
-        return value
+        return value  # type: ignore
 
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
         return {
             "source": source,
             "dtype": "string",
-            "dtype_numpy": "|S40",
+            # type ignore until https://github.com/bluesky/event-model/issues/308
+            "dtype_numpy": "|S40",  # type: ignore
             "shape": [],
             "choices": self.choices,
             **metadata,
@@ -154,9 +158,9 @@ def make_converter(datatype):
     if is_array or is_sequence:
         return SoftArrayConverter()
     if is_enum:
-        return SoftEnumConverter(datatype)
+        return SoftEnumConverter(datatype)  # type: ignore
     if is_pydantic_model:
-        return SoftPydanticModelConverter(datatype)
+        return SoftPydanticModelConverter(datatype)  # type: ignore
 
     return SoftConverter()
 
@@ -170,14 +174,14 @@ class SoftSignalBackend(SignalBackend[T]):
     _severity: int
 
     @classmethod
-    def datatype_allowed(cls, datatype: type) -> bool:
+    def datatype_allowed(cls, dtype: type) -> bool:
         return True  # Any value allowed in a soft signal
 
     def __init__(
         self,
         datatype: type[T] | None,
         initial_value: T | None = None,
-        metadata: SignalMetadata = None,
+        metadata: SignalMetadata = None,  # type: ignore
     ) -> None:
         self.datatype = datatype
         self._initial_value = initial_value
@@ -186,11 +190,11 @@ class SoftSignalBackend(SignalBackend[T]):
         if self._initial_value is None:
             self._initial_value = self.converter.make_initial_value(self.datatype)
         else:
-            self._initial_value = self.converter.write_value(self._initial_value)
+            self._initial_value = self.converter.write_value(self._initial_value)  # type: ignore
 
         self.callback: ReadingValueCallback[T] | None = None
         self._severity = 0
-        self.set_value(self._initial_value)
+        self.set_value(self._initial_value)  # type: ignore
 
     def source(self, name: str) -> str:
         return f"soft://{name}"
@@ -206,7 +210,7 @@ class SoftSignalBackend(SignalBackend[T]):
             else self._initial_value
         )
 
-        self.set_value(write_value)
+        self.set_value(write_value)  # type: ignore
 
     def set_value(self, value: T):
         """Method to bypass asynchronous logic."""

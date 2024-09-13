@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from enum import Enum
 
 from bluesky.protocols import StreamAsset
-from event_model.documents.event_descriptor import DataKey
+from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -103,7 +103,8 @@ class OdinWriter(DetectorWriter):
                 source=self._drv.file_name.source,
                 shape=data_shape,
                 dtype="array",
-                dtype_numpy="<u2",  # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
+                # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
+                dtype_numpy="<u2",  # type: ignore
                 external="STREAM:",
             )
         }

@@ -1,5 +1,6 @@
 from collections.abc import Callable, Generator, Sequence
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -68,8 +69,8 @@ def get_signal_values(
     selected_values = yield Msg("locate", *selected_signals.values())
 
     # TODO: investigate wrong type hints
-    if isinstance(selected_values, dict):
-        selected_values = [selected_values]  # type: ignore
+    # if isinstance(selected_values, dict):
+    #    selected_values = [selected_values]  # type: ignore
 
     assert selected_values is not None, "No signalRW's were able to be located"
     named_values = {
@@ -123,7 +124,7 @@ def walk_rw_signals(
     return signals
 
 
-def save_to_yaml(phases: Sequence[dict[str, Any]], save_path: str) -> None:
+def save_to_yaml(phases: Sequence[dict[str, Any]], save_path: str | Path) -> None:
     """Plan which serialises a phase or set of phases of SignalRWs to a yaml file.
 
     Parameters

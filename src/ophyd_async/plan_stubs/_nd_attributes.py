@@ -3,12 +3,13 @@ from xml.etree import ElementTree as ET
 
 import bluesky.plan_stubs as bps
 
-from ophyd_async.core._device import Device
-from ophyd_async.epics.adcore._core_io import NDArrayBaseIO
-from ophyd_async.epics.adcore._utils import (
+from ophyd_async.core import Device
+from ophyd_async.epics.adcore import (
+    NDArrayBaseIO,
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
+    NDFileHDFIO,
 )
 
 
@@ -48,9 +49,14 @@ def setup_ndattributes(
 
 
 def setup_ndstats_sum(detector: Device):
+    hdf = getattr(detector, "hdf", None)
+    assert isinstance(hdf, NDFileHDFIO), (
+        f"Expected {detector.name} to have 'hdf' attribute that is an NDFilHDFIO, "
+        f"got {hdf}"
+    )
     yield from (
         setup_ndattributes(
-            detector.hdf,
+            hdf,
             [
                 NDAttributeParam(
                     name=f"{detector.name}-sum",

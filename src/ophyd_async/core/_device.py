@@ -190,6 +190,9 @@ class DeviceCollector:
             caller_frame = tb.tb_frame
             while caller_frame.f_locals.get("self", None) is self:
                 caller_frame = caller_frame.f_back
+                assert (
+                    caller_frame
+                ), "No previous frame to the one with self in it, this shouldn't happen"
             return caller_frame.f_locals
 
     def __enter__(self) -> "DeviceCollector":

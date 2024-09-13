@@ -1,12 +1,15 @@
 from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
+    Any,
     ClassVar,
     Generic,
     Literal,
 )
 
-from ._protocol import DataKey, Reading
+from bluesky.protocols import Reading
+from event_model import DataKey
+
 from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
@@ -18,7 +21,7 @@ class SignalBackend(Generic[T]):
 
     @classmethod
     @abstractmethod
-    def datatype_allowed(cls, dtype: type):
+    def datatype_allowed(cls, dtype: Any) -> bool:
         """Check if a given datatype is acceptable for this signal backend."""
 
     #: Like ca://PV_PREFIX:SIGNAL
@@ -59,7 +62,7 @@ class SignalBackend(Generic[T]):
 class _RuntimeSubsetEnumMeta(type):
     def __str__(cls):
         if hasattr(cls, "choices"):
-            return f"SubsetEnum{list(cls.choices)}"
+            return f"SubsetEnum{list(cls.choices)}"  # type: ignore
         return "SubsetEnum"
 
     def __getitem__(cls, _choices):

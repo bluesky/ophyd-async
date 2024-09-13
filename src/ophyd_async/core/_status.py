@@ -3,7 +3,7 @@
 import asyncio
 import functools
 import time
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator, Callable, Coroutine
 from dataclasses import asdict, replace
 from typing import (
     Generic,
@@ -23,7 +23,7 @@ WAS = TypeVar("WAS", bound="WatchableAsyncStatus")
 class AsyncStatusBase(Status):
     """Convert asyncio awaitable to bluesky Status interface"""
 
-    def __init__(self, awaitable: Awaitable):
+    def __init__(self, awaitable: Coroutine | asyncio.Task):
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
@@ -85,7 +85,7 @@ class AsyncStatus(AsyncStatusBase):
     """Convert asyncio awaitable to bluesky Status interface"""
 
     @classmethod
-    def wrap(cls: type[AS], f: Callable[P, Awaitable]) -> Callable[P, AS]:
+    def wrap(cls: type[AS], f: Callable[P, Coroutine]) -> Callable[P, AS]:
         """Wrap an async function in an AsyncStatus."""
 
         @functools.wraps(f)

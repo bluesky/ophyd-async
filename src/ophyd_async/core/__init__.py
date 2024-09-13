@@ -70,9 +70,9 @@ from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
 from ._table import Table
 from ._utils import (
+    CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
-    CalculateTimeout,
     NotConnected,
     ReadingValueCallback,
     T,
@@ -154,7 +154,7 @@ __all__ = [
     "WatchableAsyncStatus",
     "DEFAULT_TIMEOUT",
     "CalculatableTimeout",
-    "CalculateTimeout",
+    "CALCULATE_TIMEOUT",
     "NotConnected",
     "ReadingValueCallback",
     "Table",

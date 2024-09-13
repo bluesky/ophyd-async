@@ -3,7 +3,8 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from bluesky.protocols import DataKey, Hints, StreamAsset
+from bluesky.protocols import Hints, StreamAsset
+from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -125,7 +126,7 @@ class ADHDFWriter(DetectorWriter):
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
-                dtype_numpy=ds.dtype_numpy,
+                dtype_numpy=ds.dtype_numpy,  # type: ignore
                 external="STREAM:",
             )
             for ds in self._datasets

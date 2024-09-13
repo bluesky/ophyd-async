@@ -6,8 +6,8 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    CALCULATE_TIMEOUT,
     AsyncStatus,
-    CalculateTimeout,
     DeviceCollector,
     MockSignalBackend,
     SignalRW,
@@ -315,7 +315,7 @@ async def test_kickoff(sim_motor: motor.Motor):
         await sim_motor.kickoff()
     sim_motor._fly_completed_position = 20
     await sim_motor.kickoff()
-    sim_motor.set.assert_called_once_with(20, timeout=CalculateTimeout)
+    sim_motor.set.assert_called_once_with(20, timeout=CALCULATE_TIMEOUT)
 
 
 async def test_complete(sim_motor: motor.Motor) -> None:

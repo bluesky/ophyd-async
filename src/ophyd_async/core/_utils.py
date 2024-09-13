@@ -4,11 +4,7 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass
-from typing import (
-    Generic,
-    ParamSpec,
-    TypeVar,
-)
+from typing import Generic, Literal, ParamSpec, TypeVar
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -24,15 +20,15 @@ DEFAULT_TIMEOUT = 10.0
 ErrorText = str | dict[str, Exception]
 
 
-class CalculateTimeout:
-    """Sentinel class used to implement ``myfunc(timeout=CalculateTimeout)``
+CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
+"""Sentinel used to implement ``myfunc(timeout=CalculateTimeout)``
 
-    This signifies that the function should calculate a suitable non-zero
-    timeout itself
-    """
+This signifies that the function should calculate a suitable non-zero
+timeout itself
+"""
 
 
-CalculatableTimeout = float | None | type[CalculateTimeout]
+CalculatableTimeout = float | None | Literal["CALCULATE_TIMEOUT"]
 
 
 class NotConnected(Exception):

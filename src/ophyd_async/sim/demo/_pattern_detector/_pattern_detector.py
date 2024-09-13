@@ -2,9 +2,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from ophyd_async.core import (
-    AsyncReadable,
     FilenameProvider,
     PathProvider,
+    SignalR,
     StandardDetector,
     StaticFilenameProvider,
     StaticPathProvider,
@@ -19,7 +19,7 @@ class PatternDetector(StandardDetector):
     def __init__(
         self,
         path: Path,
-        config_sigs: Sequence[AsyncReadable] = [],
+        config_sigs: Sequence[SignalR] = [],
         name: str = "",
     ) -> None:
         fp: FilenameProvider = StaticFilenameProvider(name)

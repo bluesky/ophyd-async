@@ -36,7 +36,14 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         )
 
     async def connect(
-        self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
-    ) -> None:
+        self,
+        mock: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+    ):
+        # TODO: this doesn't support caching
+        # https://github.com/bluesky/ophyd-async/issues/472
         await fill_pvi_entries(self, self._prefix + "PVI", timeout=timeout, mock=mock)
-        await super().connect(mock=mock, timeout=timeout)
+        await super().connect(
+            mock=mock, timeout=timeout, force_reconnect=force_reconnect
+        )

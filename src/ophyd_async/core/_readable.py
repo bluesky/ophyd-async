@@ -2,7 +2,8 @@ import warnings
 from collections.abc import Callable, Generator, Sequence
 from contextlib import contextmanager
 
-from bluesky.protocols import DataKey, HasHints, Hints, Reading
+from bluesky.protocols import HasHints, Hints, Reading
+from event_model import DataKey
 
 from ._device import Device, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
@@ -170,7 +171,7 @@ class StandardReadable(
 
     def add_readables(
         self,
-        devices: Sequence[Device],
+        devices: Sequence[ReadableChild],
         wrapper: ReadableChildWrapper | None = None,
     ) -> None:
         """Add the given devices to the lists of known Devices
@@ -224,6 +225,10 @@ class ConfigSignal(AsyncConfigurable):
 
     async def describe_configuration(self) -> dict[str, DataKey]:
         return await self.signal.describe()
+
+    @property
+    def name(self) -> str:
+        return self.signal.name
 
 
 class HintedSignal(HasHints, AsyncReadable):

@@ -10,7 +10,8 @@ from typing import (
     runtime_checkable,
 )
 
-from bluesky.protocols import DataKey, HasName, Reading
+from bluesky.protocols import HasName, Reading
+from event_model import DataKey
 
 if TYPE_CHECKING:
     from ._status import AsyncStatus
@@ -56,7 +57,7 @@ class AsyncReadable(HasName, Protocol):
 
 
 @runtime_checkable
-class AsyncConfigurable(Protocol):
+class AsyncConfigurable(HasName, Protocol):
     @abstractmethod
     async def read_configuration(self) -> dict[str, Reading]:
         """Same API as ``read`` but for slow-changing fields related to configuration.

@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import Generic
 
-from bluesky.protocols import DataKey, Flyable, Preparable, Reading, Stageable
+from bluesky.protocols import Flyable, Preparable, Reading, Stageable
+from event_model import DataKey
 
 from ._device import Device
 from ._signal import SignalR

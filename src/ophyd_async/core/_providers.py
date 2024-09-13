@@ -129,7 +129,7 @@ class AutoIncrementingPathProvider(PathProvider):
         num_calls_per_inc: int = 1,
         increment: int = 1,
         inc_delimeter: str = "_",
-        base_name: str = None,
+        base_name: str | None = None,
     ) -> None:
         self._filename_provider = filename_provider
         self._base_directory_path = base_directory_path

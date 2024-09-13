@@ -2,7 +2,8 @@ import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 
-from bluesky.protocols import DataKey, StreamAsset
+from bluesky.protocols import StreamAsset
+from event_model import DataKey
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -85,9 +86,11 @@ class PandaHDFWriter(DetectorWriter):
         describe = {
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
-                shape=ds.shape,
+                shape=list(ds.shape),
                 dtype="array" if ds.shape != [1] else "number",
-                dtype_numpy="<f8",  # PandA data should always be written as Float64
+                # PandA data should always be written as Float64
+                # Ignore type check until https://github.com/bluesky/event-model/issues/308
+                dtype_numpy="<f8",  # type: ignore
                 external="STREAM:",
             )
             for ds in self._datasets

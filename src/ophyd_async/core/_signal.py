@@ -3,14 +3,9 @@ from __future__ import annotations
 import asyncio
 import functools
 from collections.abc import AsyncGenerator, Callable, Mapping
-from typing import (
-    Any,
-    Generic,
-    TypeVar,
-)
+from typing import Any, Generic, TypeVar, cast
 
 from bluesky.protocols import (
-    DataKey,
     Locatable,
     Location,
     Movable,
@@ -18,6 +13,7 @@ from bluesky.protocols import (
     Status,
     Subscribable,
 )
+from event_model import DataKey
 
 from ._device import Device
 from ._mock_signal_backend import MockSignalBackend
@@ -25,7 +21,7 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus
-from ._utils import DEFAULT_TIMEOUT, CalculatableTimeout, CalculateTimeout, Callback, T
+from ._utils import CALCULATE_TIMEOUT, DEFAULT_TIMEOUT, CalculatableTimeout, Callback, T
 
 S = TypeVar("S")
 
@@ -38,12 +34,25 @@ def _add_timeout(func):
     return wrapper
 
 
+def _fail(*args, **kwargs):
+    raise RuntimeError("Signal has not been supplied a backend yet")
+
+
+class DisconnectedBackend(SignalBackend):
+    source = connect = put = get_datakey = get_reading = get_value = get_setpoint = (
+        set_callback
+    ) = _fail
+
+
+DISCONNECTED_BACKEND = DisconnectedBackend()
+
+
 class Signal(Device, Generic[T]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
 
     def __init__(
         self,
-        backend: SignalBackend[T] | None = None,
+        backend: SignalBackend[T] = DISCONNECTED_BACKEND,
         timeout: float | None = DEFAULT_TIMEOUT,
         name: str = "",
     ) -> None:
@@ -59,7 +68,10 @@ class Signal(Device, Generic[T]):
         backend: SignalBackend[T] | None = None,
     ):
         if backend:
-            if self._backend and backend is not self._backend:
+            if (
+                self._backend is not DISCONNECTED_BACKEND
+                and backend is not self._backend
+            ):
                 raise ValueError("Backend at connection different from previous one.")
 
             self._backend = backend
@@ -230,10 +242,10 @@ class SignalW(Signal[T], Movable):
     """Signal that can be set"""
 
     def set(
-        self, value: T, wait=True, timeout: CalculatableTimeout = CalculateTimeout
+        self, value: T, wait=True, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
     ) -> AsyncStatus:
         """Set the value and return a status saying when it's done"""
-        if timeout is CalculateTimeout:
+        if timeout is CALCULATE_TIMEOUT:
             timeout = self._timeout
 
         async def do_set():
@@ -261,10 +273,10 @@ class SignalX(Signal):
     """Signal that puts the default value"""
 
     def trigger(
-        self, wait=True, timeout: CalculatableTimeout = CalculateTimeout
+        self, wait=True, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
     ) -> AsyncStatus:
         """Trigger the action and return a status saying when it's done"""
-        if timeout is CalculateTimeout:
+        if timeout is CALCULATE_TIMEOUT:
             timeout = self._timeout
         coro = self._backend.put(None, wait=wait, timeout=timeout)
         return AsyncStatus(coro)
@@ -307,9 +319,7 @@ def soft_signal_r_and_setter(
     return (signal, backend.set_value)
 
 
-def _generate_assert_error_msg(
-    name: str, expected_result: str, actual_result: str
-) -> str:
+def _generate_assert_error_msg(name: str, expected_result, actual_result) -> str:
     WARNING = "\033[93m"
     FAIL = "\033[91m"
     ENDC = "\033[0m"
@@ -475,7 +485,7 @@ async def observe_value(
                 else:
                     break
             else:
-                yield item
+                yield cast(T, item)
     finally:
         signal.clear_sub(q.put_nowait)
 
@@ -531,7 +541,7 @@ async def wait_for_value(
         wait_for_value(device.num_captured, lambda v: v > 45, timeout=1)
     """
     if callable(match):
-        checker = _ValueChecker(match, match.__name__)
+        checker = _ValueChecker(match, match.__name__)  # type: ignore
     else:
         checker = _ValueChecker(lambda v: v == match, repr(match))
     await checker.wait_for_value(signal, timeout)

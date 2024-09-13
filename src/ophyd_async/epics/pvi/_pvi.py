@@ -39,9 +39,10 @@ def _strip_number_from_string(string: str) -> tuple[str, int | None]:
 
     name = match.group(1)
     number = match.group(2) or None
-    if number:
-        number = int(number)
-    return name, number
+    if number is None:
+        return name, None
+    else:
+        return name, int(number)
 
 
 def _split_subscript(tp: T) -> tuple[Any, tuple[Any]] | tuple[T, None]:
@@ -103,7 +104,7 @@ def _verify_common_blocks(entry: _PVIEntry, common_device: type[Device]):
                 _verify_common_blocks(sub_sub_entry, sub_device)  # type: ignore
         else:
             _verify_common_blocks(
-                entry.sub_entries[sub_name],
+                entry.sub_entries[sub_name],  # type: ignore
                 sub_device,  # type: ignore
             )
 
@@ -169,11 +170,10 @@ def _mock_common_blocks(device: Device, stripped_type: type | None = None):
         device_cls, device_args = _split_subscript(device_cls)
         assert issubclass(device_cls, Device)
 
-        is_signal = issubclass(device_cls, Signal)
         signal_dtype = device_args[0] if device_args is not None else None
 
         if is_device_vector:
-            if is_signal:
+            if issubclass(device_cls, Signal):
                 sub_device_1 = device_cls(SoftSignalBackend(signal_dtype))
                 sub_device_2 = device_cls(SoftSignalBackend(signal_dtype))
                 sub_device = DeviceVector({1: sub_device_1, 2: sub_device_2})
@@ -194,7 +194,7 @@ def _mock_common_blocks(device: Device, stripped_type: type | None = None):
             for value in sub_device.values():
                 value.parent = sub_device
         else:
-            if is_signal:
+            if issubclass(device_cls, Signal):
                 sub_device = device_cls(SoftSignalBackend(signal_dtype))
             else:
                 sub_device = getattr(device, device_name, device_cls())
@@ -267,7 +267,8 @@ def _set_device_attributes(entry: _PVIEntry):
                 # Set the device vector entry to have the device vector as a parent
                 device_vector_sub_entry.device.parent = sub_device  # type: ignore
         else:
-            sub_device = sub_entry.device  # type: ignore
+            sub_device = sub_entry.device
+            assert sub_device, f"Device of {sub_entry} is None"
             if sub_entry.pvi_pv:
                 _set_device_attributes(sub_entry)
 
@@ -324,7 +325,7 @@ def create_children_from_annotations(
 
         if is_device_vector:
             n_device_vector = DeviceVector(
-                {i: device_type() for i in range(1, device_vectors[name] + 1)}
+                {i: device_type() for i in range(1, device_vectors[name] + 1)}  # type: ignore
             )
             setattr(device, name, n_device_vector)
             for sub_device in n_device_vector.values():

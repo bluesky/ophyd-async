@@ -21,13 +21,13 @@ async def test_correct_descriptor_doc_after_open(writer: PatternDetectorWriter):
     assert descriptor == {
         "NAME": {
             "source": "sim://pattern-generator-hdf-file",
-            "shape": (240, 320),
+            "shape": [240, 320],
             "dtype": "array",
             "external": "STREAM:",
         },
         "NAME-sum": {
             "source": "sim://pattern-generator-hdf-file",
-            "shape": (),
+            "shape": [],
             "dtype": "number",
             "external": "STREAM:",
         },

@@ -18,7 +18,8 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
-from bluesky.protocols import DataKey, Reading
+from bluesky.protocols import Reading
+from event_model import DataKey
 from typing_extensions import TypedDict
 
 from ophyd_async.core import (
@@ -56,17 +57,17 @@ class IOC:
         pv = f"{PV_PREFIX}:{self.protocol}:{suff}"
         # Make and connect the backend
         cls = _EpicsTransport[self.protocol].value
-        backend = cls(typ, pv, pv)
+        backend = cls(typ, pv, pv)  # type: ignore
         if connect:
-            await asyncio.wait_for(backend.connect(), 10)
-        return backend
+            await asyncio.wait_for(backend.connect(), 10)  # type: ignore
+        return backend  # type: ignore
 
 
 # Use a module level fixture per protocol so it's fast to run tests. This means
 # we need to add a record for every PV that we will modify in tests to stop
 # tests interfering with each other
 @pytest.fixture(scope="module", params=["pva", "ca"])
-def ioc(request):
+def ioc(request: pytest.FixtureRequest):
     protocol = request.param
     process = subprocess.Popen(
         [
@@ -86,7 +87,7 @@ def ioc(request):
 
     start_time = time.monotonic()
     while "iocRun: All initialization complete" not in (
-        process.stdout.readline().strip()
+        process.stdout.readline().strip()  # type: ignore
     ):
         if time.monotonic() - start_time > 10:
             raise TimeoutError("IOC did not start in time")
@@ -250,7 +251,7 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             return "string"
         return get_internal_dtype(suffix)
 
-    def get_dtype_numpy(suffix: str) -> str:
+    def get_dtype_numpy(suffix: str) -> str:  # type: ignore
         if "float32" in suffix:
             return "<f4"
         if "float" in suffix or "double" in suffix:
@@ -280,17 +281,17 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
     d = {
         "dtype": dtype,
         "dtype_numpy": dtype_numpy,
-        "shape": [len(value)] if dtype == "array" else [],
+        "shape": [len(value)] if dtype == "array" else [],  # type: ignore
     }
     if get_internal_dtype(suffix) == "enum":
         if issubclass(type(value), Enum):
-            d["choices"] = [e.value for e in type(value)]
+            d["choices"] = [e.value for e in type(value)]  # type: ignore
         else:
-            d["choices"] = list(value.choices)
+            d["choices"] = list(value.choices)  # type: ignore
 
     d.update(_metadata[protocol].get(get_internal_dtype(suffix), {}))
 
-    return d
+    return d  # type: ignore
 
 
 ls1 = "a string that is just longer than forty characters"
@@ -401,7 +402,7 @@ async def test_backend_get_put_monitor(
     suffix: str,
     initial_value: T,
     put_value: T,
-    tmp_path,
+    tmp_path: Path,
     supported_backends: set[str],
 ):
     # ca can't support all the types
@@ -414,7 +415,7 @@ async def test_backend_get_put_monitor(
     await assert_monitor_then_put(
         ioc,
         suffix,
-        datakey(ioc.protocol, suffix, initial_value),
+        datakey(ioc.protocol, suffix, initial_value),  # type: ignore
         initial_value,
         put_value,
         datatype,
@@ -423,7 +424,7 @@ async def test_backend_get_put_monitor(
     await assert_monitor_then_put(
         ioc,
         suffix,
-        datakey(ioc.protocol, suffix, put_value),
+        datakey(ioc.protocol, suffix, put_value),  # type: ignore
         put_value,
         initial_value,
         datatype=None,
@@ -436,7 +437,7 @@ async def test_backend_get_put_monitor(
 
 
 @pytest.mark.parametrize("suffix", ["bool", "bool_unnamed"])
-async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path) -> None:
+async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path: Path) -> None:
     """Booleans are converted to Short Enumerations with values 0,1 as database does
     not support boolean natively.
     The flow of test_backend_get_put_monitor Gets a value with a dtype of None: we

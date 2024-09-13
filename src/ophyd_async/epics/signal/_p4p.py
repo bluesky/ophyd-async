@@ -11,7 +11,9 @@ from math import isnan, nan
 from typing import Any, get_origin
 
 import numpy as np
-from bluesky.protocols import DataKey, Dtype, Reading
+from bluesky.protocols import Reading
+from event_model import DataKey
+from event_model.documents.event_descriptor import Dtype
 from p4p import Value
 from p4p.client.asyncio import Context, Subscription
 from pydantic import BaseModel
@@ -109,7 +111,8 @@ def _data_key_from_value(
     d = DataKey(
         source=source,
         dtype=dtype,
-        dtype_numpy=dtype_numpy,
+        # type ignore until https://github.com/bluesky/event-model/issues/308
+        dtype_numpy=dtype_numpy,  # type: ignore
         shape=shape,
     )
     if display_data is not None:
@@ -119,10 +122,12 @@ def _data_key_from_value(
                 d[key] = attr
 
     if choices is not None:
-        d["choices"] = choices
+        # type ignore until https://github.com/bluesky/event-model/issues/309
+        d["choices"] = choices  # type: ignore
 
     if limits := _limits_from_value(value):
-        d["limits"] = limits
+        # type ignore until https://github.com/bluesky/event-model/issues/309
+        d["limits"] = limits  # type: ignore
 
     return d
 
@@ -153,7 +158,7 @@ class PvaConverter:
     def value(self, value):
         return value["value"]
 
-    def reading(self, value):
+    def reading(self, value) -> Reading:
         ts = value["timeStamp"]
         sv = value["alarm"]["severity"]
         return {
@@ -254,7 +259,7 @@ class PvaTableConverter(PvaConverter):
 
     def get_datakey(self, source: str, value) -> DataKey:
         # This is wrong, but defer until we know how to actually describe a table
-        return _data_key_from_value(source, value, dtype="object")
+        return _data_key_from_value(source, value, dtype="object")  # type: ignore
 
 
 class PvaPydanticModelConverter(PvaConverter):
@@ -262,16 +267,16 @@ class PvaPydanticModelConverter(PvaConverter):
         self.datatype = datatype
 
     def value(self, value: Value):
-        return self.datatype(**value.todict())
+        return self.datatype(**value.todict())  # type: ignore
 
     def write_value(self, value: BaseModel | dict[str, Any]):
-        if isinstance(value, self.datatype):
-            return value.model_dump(mode="python")
+        if isinstance(value, self.datatype):  # type: ignore
+            return value.model_dump(mode="python")  # type: ignore
         return value
 
 
 class PvaDictConverter(PvaConverter):
-    def reading(self, value):
+    def reading(self, value) -> Reading:
         ts = time.time()
         value = value.todict()
         # Alarm severity is vacuously 0 for a table
@@ -350,7 +355,7 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
             and issubclass(datatype, RuntimeSubsetEnum)
         ):
             return PvaEnumConverter(
-                get_supported_values(pv, datatype, datatype.choices)
+                get_supported_values(pv, datatype, datatype.choices)  # type: ignore
             )
         elif datatype and not issubclass(typ, datatype):
             # Allow int signals to represent float records when prec is 0
@@ -373,7 +378,7 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
             isinstance(datatype, ABCMeta)
             and issubclass(datatype, BaseModel)
         ):
-            return PvaPydanticModelConverter(datatype)
+            return PvaPydanticModelConverter(datatype)  # type: ignore
         return PvaTableConverter()
     elif "structure" in typeid:
         return PvaDictConverter()
@@ -398,9 +403,9 @@ class PvaSignalBackend(SignalBackend[T]):
     )
 
     @classmethod
-    def datatype_allowed(cls, datatype: type | None) -> bool:
-        stripped_origin = get_origin(datatype) or datatype
-        if datatype is None:
+    def datatype_allowed(cls, dtype: Any) -> bool:
+        stripped_origin = get_origin(dtype) or dtype
+        if dtype is None:
             return True
         return inspect.isclass(stripped_origin) and issubclass(
             stripped_origin, cls._ALLOWED_DATATYPES

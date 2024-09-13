@@ -11,7 +11,6 @@ from typing import (
 
 from bluesky.protocols import (
     Collectable,
-    DataKey,
     Flyable,
     Preparable,
     Reading,
@@ -20,10 +19,12 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
+from event_model import DataKey
 from pydantic import BaseModel, Field
 
 from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
+from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import DEFAULT_TIMEOUT, T, WatcherUpdate, merge_gathered_dicts
 
@@ -168,7 +169,7 @@ class StandardDetector(
         self,
         controller: DetectorControl,
         writer: DetectorWriter,
-        config_sigs: Sequence[AsyncReadable] = (),
+        config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         """
