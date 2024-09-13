@@ -1,6 +1,5 @@
 import asyncio
 import warnings
-from collections.abc import MutableMapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import (
@@ -8,7 +7,6 @@ from typing import (
     Callable,
     Dict,
     Generator,
-    Iterator,
     Optional,
     Sequence,
     Tuple,
@@ -34,27 +32,12 @@ T = TypeVar("T")
 
 
 @dataclass
-class PerSignalConfig(MutableMapping):
+class PerSignalConfig(Dict[SignalW[T], T]):
     _signal_configuration: Dict[SignalW[Any], Any] = field(default_factory=dict)
 
     @property
     def signal_configuration(self) -> Dict[SignalW[Any], Any]:
         return self._signal_configuration
-
-    def __setitem__(self, signal: SignalW[T], value: T):
-        self._signal_configuration[signal] = value
-
-    def __getitem__(self, signal: SignalW[T]) -> T:
-        return self._signal_configuration[signal]
-
-    def __delitem__(self, signal: SignalW[T]):
-        del self._signal_configuration[signal]
-
-    def __iter__(self) -> Iterator[SignalW[Any]]:
-        return iter(self._signal_configuration)
-
-    def __len__(self) -> int:
-        return len(self._signal_configuration)
 
 
 class StandardReadable(
