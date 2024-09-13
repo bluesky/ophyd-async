@@ -25,6 +25,8 @@ ophyd\_async.core.DetectorControl
       ~DetectorControl.arm
       ~DetectorControl.disarm
       ~DetectorControl.get_deadtime
+      ~DetectorControl.prepare
+      ~DetectorControl.wait_for_idle
    
    
 

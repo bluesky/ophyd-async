@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.5.3.dev6+g965a4d7c documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.5.3.dev7+g5b675810 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=36ef717e"></script>
+    <script src="../_static/documentation_options.js?v=793e228c"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -607,28 +607,27 @@ Here we construct a <a class="reference internal" href="../generated/ophyd_async
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PandaPcapController</span><span class="p">(</span><span class="n">DetectorControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pcap</span> <span class="o">=</span> <span class="n">pcap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.000000008</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">constant_gate</span><span class="p">,</span>
-        <span class="n">exposure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">trigger</span> <span class="ow">in</span> <span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">in</span> <span class="p">(</span>
             <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">constant_gate</span><span class="p">,</span>
-            <span class="n">trigger</span> <span class="o">==</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">variable_gate</span><span class="p">,</span>
+            <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">variable_gate</span><span class="p">,</span>
         <span class="p">),</span> <span class="s2">&quot;Only constant_gate and variable_gate triggering is supported on the PandA&quot;</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
-        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The PandA may write a number of fields, and the <code class="xref py py-class docutils literal notranslate"><span class="pre">PandaHDFWriter</span></code> co-ordinates those, configures the filewriter and describes the data for the RunEngine.</p>

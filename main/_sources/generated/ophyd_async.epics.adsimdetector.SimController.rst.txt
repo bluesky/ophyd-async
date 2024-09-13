@@ -25,6 +25,8 @@ ophyd\_async.epics.adsimdetector.SimController
       ~SimController.arm
       ~SimController.disarm
       ~SimController.get_deadtime
+      ~SimController.prepare
+      ~SimController.wait_for_idle
    
    
 

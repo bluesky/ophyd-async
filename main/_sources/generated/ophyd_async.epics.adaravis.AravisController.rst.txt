@@ -25,6 +25,8 @@ ophyd\_async.epics.adaravis.AravisController
       ~AravisController.arm
       ~AravisController.disarm
       ~AravisController.get_deadtime
+      ~AravisController.prepare
+      ~AravisController.wait_for_idle
    
    
 

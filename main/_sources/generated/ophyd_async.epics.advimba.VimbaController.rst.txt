@@ -25,6 +25,8 @@ ophyd\_async.epics.advimba.VimbaController
       ~VimbaController.arm
       ~VimbaController.disarm
       ~VimbaController.get_deadtime
+      ~VimbaController.prepare
+      ~VimbaController.wait_for_idle
    
    
 

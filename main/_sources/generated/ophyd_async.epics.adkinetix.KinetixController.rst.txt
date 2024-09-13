@@ -25,6 +25,8 @@ ophyd\_async.epics.adkinetix.KinetixController
       ~KinetixController.arm
       ~KinetixController.disarm
       ~KinetixController.get_deadtime
+      ~KinetixController.prepare
+      ~KinetixController.wait_for_idle
    
    
 

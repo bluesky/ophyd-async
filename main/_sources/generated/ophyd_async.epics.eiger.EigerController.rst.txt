@@ -25,7 +25,9 @@ ophyd\_async.epics.eiger.EigerController
       ~EigerController.arm
       ~EigerController.disarm
       ~EigerController.get_deadtime
+      ~EigerController.prepare
       ~EigerController.set_energy
+      ~EigerController.wait_for_idle
    
    
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adaravis._aravis_controller &#8212; ophyd-async 0.5.3.dev6+g965a4d7c documentation</title>
+    <title>ophyd_async.epics.adaravis._aravis_controller &#8212; ophyd-async 0.5.3.dev7+g5b675810 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=36ef717e"></script>
+    <script src="../../../../_static/documentation_options.js?v=793e228c"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -488,14 +488,15 @@ document.write(`
                   
   <h1>Source code for ophyd_async.epics.adaravis._aravis_controller</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">DetectorControl</span><span class="p">,</span>
     <span class="n">DetectorTrigger</span><span class="p">,</span>
+    <span class="n">TriggerInfo</span><span class="p">,</span>
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core._status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics</span> <span class="kn">import</span> <span class="n">adcore</span>
 
 <span class="kn">from</span> <span class="nn">._aravis_io</span> <span class="kn">import</span> <span class="n">AravisDriverIO</span><span class="p">,</span> <span class="n">AravisTriggerMode</span><span class="p">,</span> <span class="n">AravisTriggerSource</span>
@@ -514,6 +515,7 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">AravisDriverIO</span><span class="p">,</span> <span class="n">gpio_number</span><span class="p">:</span> <span class="n">GPIO_NUMBER</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span> <span class="o">=</span> <span class="n">driver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gpio_number</span> <span class="o">=</span> <span class="n">gpio_number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="AravisController.get_deadtime">
 <a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisController.html#ophyd_async.epics.adaravis.AravisController.get_deadtime">[docs]</a>
@@ -521,22 +523,17 @@ document.write(`
         <span class="k">return</span> <span class="n">_HIGHEST_POSSIBLE_DEADTIME</span></div>
 
 
-<div class="viewcode-block" id="AravisController.arm">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisController.html#ophyd_async.epics.adaravis.AravisController.arm">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span>
-        <span class="n">exposure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<div class="viewcode-block" id="AravisController.prepare">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisController.html#ophyd_async.epics.adaravis.AravisController.prepare">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">:=</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">image_mode</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ImageMode</span><span class="o">.</span><span class="n">continuous</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">image_mode</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ImageMode</span><span class="o">.</span><span class="n">multiple</span>
-        <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">exposure</span> <span class="o">:=</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
 
-        <span class="n">trigger_mode</span><span class="p">,</span> <span class="n">trigger_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trigger_info</span><span class="p">(</span><span class="n">trigger</span><span class="p">)</span>
+        <span class="n">trigger_mode</span><span class="p">,</span> <span class="n">trigger_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trigger_info</span><span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">)</span>
         <span class="c1"># trigger mode must be set first and on it&#39;s own!</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">trigger_mode</span><span class="p">)</span>
 
@@ -544,10 +541,20 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">trigger_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">trigger_source</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">num</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">image_mode</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
-        <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">status</span></div>
+
+<div class="viewcode-block" id="AravisController.arm">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisController.html#ophyd_async.epics.adaravis.AravisController.arm">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AravisController.wait_for_idle">
+<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisController.html#ophyd_async.epics.adaravis.AravisController.wait_for_idle">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span></div>
 
 
     <span class="k">def</span> <span class="nf">_get_trigger_info</span><span class="p">(</span>

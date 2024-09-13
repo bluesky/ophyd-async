@@ -25,6 +25,8 @@ ophyd\_async.epics.adpilatus.PilatusController
       ~PilatusController.arm
       ~PilatusController.disarm
       ~PilatusController.get_deadtime
+      ~PilatusController.prepare
+      ~PilatusController.wait_for_idle
    
    
 

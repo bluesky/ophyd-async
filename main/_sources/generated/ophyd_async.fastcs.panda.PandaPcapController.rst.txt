@@ -25,6 +25,8 @@ ophyd\_async.fastcs.panda.PandaPcapController
       ~PandaPcapController.arm
       ~PandaPcapController.disarm
       ~PandaPcapController.get_deadtime
+      ~PandaPcapController.prepare
+      ~PandaPcapController.wait_for_idle
    
    
 

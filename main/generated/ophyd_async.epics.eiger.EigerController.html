@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.eiger.EigerController &#8212; ophyd-async 0.5.3.dev6+g965a4d7c documentation</title>
+    <title>ophyd_async.epics.eiger.EigerController &#8212; ophyd-async 0.5.3.dev7+g5b675810 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=36ef717e"></script>
+    <script src="../_static/documentation_options.js?v=793e228c"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -731,8 +731,14 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.eiger.EigerController.get_deadtime" title="ophyd_async.epics.eiger.EigerController.get_deadtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_deadtime</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.eiger.EigerController.set_energy" title="ophyd_async.epics.eiger.EigerController.set_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_energy</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.eiger.EigerController.prepare" title="ophyd_async.epics.eiger.EigerController.prepare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.eiger.EigerController.set_energy" title="ophyd_async.epics.eiger.EigerController.set_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_energy</span></code></a></p></td>
 <td><p>Changing photon energy takes some time so only do so if the current energy is outside the tolerance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.eiger.EigerController.wait_for_idle" title="ophyd_async.epics.eiger.EigerController.wait_for_idle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_idle</span></code></a></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -750,8 +756,18 @@ outside the tolerance.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.eiger.EigerController.prepare">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trigger_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TriggerInfo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/eiger/_eiger_controller.html#EigerController.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.eiger.EigerController.prepare" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.eiger.EigerController.arm">
-<span class="sig-name descname"><span class="pre">arm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.DetectorTrigger.html#ophyd_async.core.DetectorTrigger" title="ophyd_async.core._detector.DetectorTrigger"><span class="pre">DetectorTrigger</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DetectorTrigger.internal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/eiger/_eiger_controller.html#EigerController.arm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.eiger.EigerController.arm" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/eiger/_eiger_controller.html#EigerController.arm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.eiger.EigerController.arm" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.eiger.EigerController.wait_for_idle">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wait_for_idle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/eiger/_eiger_controller.html#EigerController.wait_for_idle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.eiger.EigerController.wait_for_idle" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -812,7 +828,9 @@ outside the tolerance.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.eiger.EigerController"><code class="docutils literal notranslate"><span class="pre">EigerController</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.eiger.EigerController.get_deadtime"><code class="docutils literal notranslate"><span class="pre">EigerController.get_deadtime()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.eiger.EigerController.set_energy"><code class="docutils literal notranslate"><span class="pre">EigerController.set_energy()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.eiger.EigerController.prepare"><code class="docutils literal notranslate"><span class="pre">EigerController.prepare()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.eiger.EigerController.arm"><code class="docutils literal notranslate"><span class="pre">EigerController.arm()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.eiger.EigerController.wait_for_idle"><code class="docutils literal notranslate"><span class="pre">EigerController.wait_for_idle()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.eiger.EigerController.disarm"><code class="docutils literal notranslate"><span class="pre">EigerController.disarm()</span></code></a></li>
 </ul>
 </li>
