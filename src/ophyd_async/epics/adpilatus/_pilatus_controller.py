@@ -50,10 +50,6 @@ class PilatusController(DetectorControl):
         self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
             self._drv
         )
-
-    async def wait_for_idle(self):
-        if self._arm_status:
-            await self._arm_status
         # The pilatus has an additional PV that goes True when the camserver
         # is actually ready. Should wait for that too or we risk dropping
         # a frame
@@ -62,6 +58,10 @@ class PilatusController(DetectorControl):
             True,
             timeout=DEFAULT_TIMEOUT,
         )
+
+    async def wait_for_idle(self):
+        if self._arm_status:
+            await self._arm_status
 
     @classmethod
     def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:

@@ -107,9 +107,10 @@ class DetectorControl(ABC):
         Arm the detector
         """
 
+    @abstractmethod
     async def wait_for_idle(self):
         """
-        This will wait on the internal _arm_status and wait for it to get disarmed
+        This will wait on the internal _arm_status and wait for it to get disarmed/idle
         """
 
     @abstractmethod
@@ -307,8 +308,9 @@ class StandardDetector(
         self._trigger_info = value
         self._initial_frame = await self.writer.get_indices_written()
         self._last_frame = self._initial_frame + self._trigger_info.number
-        await self.controller.prepare(value)
-        self._describe = await self.writer.open(value.multiplier)
+        self._describe, _ = await asyncio.gather(
+            self.writer.open(value.multiplier), self.controller.prepare(value)
+        )
         if value.trigger != DetectorTrigger.internal:
             await self.controller.arm()
             self._fly_start = time.monotonic()
