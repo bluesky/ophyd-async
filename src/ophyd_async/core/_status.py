@@ -86,6 +86,8 @@ class AsyncStatusBase(Status):
 
 
 class AsyncStatus(AsyncStatusBase):
+    """Convert asyncio awaitable to bluesky Status interface"""
+
     @classmethod
     def wrap(cls: Type[AS], f: Callable[P, Awaitable]) -> Callable[P, AS]:
         """Wrap an async function in an AsyncStatus."""

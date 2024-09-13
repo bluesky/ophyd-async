@@ -1,9 +1,9 @@
-{{ ('``' + fullname + '``') | underline }}
-
 .. note::
 
     Ophyd async is considered experimental until the v1.0 release and
     may change API on minor release numbers before then
+
+{{ ('``' + fullname + '``') | underline }}
 
 {%- set filtered_members = [] %}
 {%- for item in members %}

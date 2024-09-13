@@ -11,6 +11,8 @@ from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
 
 
 class MockSignalBackend(SignalBackend[T]):
+    """Signal backend for testing, created by ``Device.connect(mock=True)``."""
+
     def __init__(
         self,
         datatype: Optional[Type[T]] = None,

@@ -91,10 +91,6 @@ nitpick_ignore = [
     ("py:class", "typing_extensions.Literal"),
 ]
 
-# Both the class’ and the __init__ method’s docstring are concatenated and
-# inserted into the main body of the autoclass directive
-autoclass_content = "both"
-
 # Order the members by the order they appear in the source code
 autodoc_member_order = "bysource"
 
@@ -253,9 +249,11 @@ autodoc_docstring_signature = True
 # numpydoc config
 numpydoc_show_class_members = False
 
-# pydantic models
-autodoc_pydantic_model_show_json = True
+# Don't show config summary as it's not relevant
 autodoc_pydantic_model_show_config_summary = False
+
+# Show the fields in source order
+autodoc_pydantic_model_summary_list_order = "bysource"
 
 # Where to put Ipython savefigs
 ipython_savefig_dir = "../build/savefig"
