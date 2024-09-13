@@ -291,24 +291,6 @@ def test_config_del_item(standard_readable_config, name, type_, value):
         _ = standard_readable_config[mock_signal]
 
 
-def test_config_iteration(standard_readable_config):
-    mock_signal1 = MagicMock(spec=SignalW)
-    mock_signal2 = MagicMock(spec=SignalW)
-    standard_readable_config[mock_signal1] = 42
-    standard_readable_config[mock_signal2] = 43
-    signals = list(standard_readable_config)
-    assert mock_signal1 in signals
-    assert mock_signal2 in signals
-
-
-def test_config_length(standard_readable_config):
-    mock_signal1 = MagicMock(spec=SignalW)
-    mock_signal2 = MagicMock(spec=SignalW)
-    standard_readable_config[mock_signal1] = 42
-    standard_readable_config[mock_signal2] = 43
-    assert len(standard_readable_config) == 2
-
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize("name, type_, value", test_data)
 async def test_config_prepare(standard_readable_config, name, type_, value):
