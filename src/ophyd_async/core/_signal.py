@@ -505,7 +505,7 @@ class _ValueChecker(Generic[T]):
         try:
             await asyncio.wait_for(self._wait_for_value(signal), timeout)
         except asyncio.TimeoutError as e:
-            raise TimeoutError(
+            raise asyncio.TimeoutError(
                 f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
                 f"last value {self._last_value!r}"
             ) from e
