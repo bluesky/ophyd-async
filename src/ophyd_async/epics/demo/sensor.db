@@ -17,4 +17,3 @@ record(calc, "$(P)Value") {
     field(EGU,  "$(EGU=cts/s)")
     field(PREC, "$(PREC=3)")
 }
-
