@@ -16,7 +16,7 @@ from ._device_save_loader import (
     set_signal_values,
     walk_rw_signals,
 )
-from ._flyer import StandardFlyer, FlyerController
+from ._flyer import FlyerController, StandardFlyer
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend

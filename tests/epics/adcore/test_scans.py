@@ -13,10 +13,10 @@ from ophyd_async.core import (
     DetectorController,
     DetectorTrigger,
     DeviceCollector,
+    FlyerController,
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    FlyerController,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector

@@ -16,10 +16,10 @@ from ophyd_async.core import (
     DetectorController,
     DetectorTrigger,
     DetectorWriter,
+    FlyerController,
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    FlyerController,
     observe_value,
 )
 from ophyd_async.core._signal import assert_emitted
