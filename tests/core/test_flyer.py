@@ -1,6 +1,7 @@
 import time
+from collections.abc import AsyncGenerator, AsyncIterator, Sequence
 from enum import Enum
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from typing import Any
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -54,11 +55,11 @@ class DummyWriter(DetectorWriter):
         self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
-        self._file: Optional[ComposeStreamResourceBundle] = None
+        self._file: ComposeStreamResourceBundle | None = None
         self._last_emitted = 0
         self.index = 0
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         return {
             self._name: DataKey(
                 source="soft://some-source",
@@ -173,7 +174,7 @@ async def test_hardware_triggered_flyable(
 
         assert flyer._trigger_logic.state == TriggerState.preparing
         for detector in detectors:
-            detector.controller.disarm.assert_called_once  # type: ignore
+            detector.controller.disarm.assert_called_once()  # type: ignore
 
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)

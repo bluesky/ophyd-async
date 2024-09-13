@@ -5,7 +5,7 @@ import time
 from abc import ABCMeta
 from collections import abc
 from enum import Enum
-from typing import Dict, Generic, Optional, Tuple, Type, Union, cast, get_origin
+from typing import Generic, cast, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -18,7 +18,7 @@ from ._signal_backend import (
 )
 from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
 
-primitive_dtypes: Dict[type, Dtype] = {
+primitive_dtypes: dict[type, Dtype] = {
     str: "string",
     int: "integer",
     float: "number",
@@ -62,7 +62,7 @@ class SoftConverter(Generic[T]):
             dk["dtype_numpy"] = ""
         return dk
 
-    def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
+    def make_initial_value(self, datatype: type[T] | None) -> T:
         if datatype is None:
             return cast(T, None)
 
@@ -86,7 +86,7 @@ class SoftArrayConverter(SoftConverter):
             **metadata,
         }
 
-    def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
+    def make_initial_value(self, datatype: type[T] | None) -> T:
         if datatype is None:
             return cast(T, None)
 
@@ -97,15 +97,15 @@ class SoftArrayConverter(SoftConverter):
 
 
 class SoftEnumConverter(SoftConverter):
-    choices: Tuple[str, ...]
+    choices: tuple[str, ...]
 
-    def __init__(self, datatype: Union[RuntimeSubsetEnum, Type[Enum]]):
+    def __init__(self, datatype: RuntimeSubsetEnum | type[Enum]):
         if issubclass(datatype, Enum):
             self.choices = tuple(v.value for v in datatype)
         else:
             self.choices = datatype.choices
 
-    def write_value(self, value: Union[Enum, str]) -> str:
+    def write_value(self, value: Enum | str) -> str:
         return value
 
     def get_datakey(self, source: str, value, **metadata) -> DataKey:
@@ -118,7 +118,7 @@ class SoftEnumConverter(SoftConverter):
             **metadata,
         }
 
-    def make_initial_value(self, datatype: Optional[Type[T]]) -> T:
+    def make_initial_value(self, datatype: type[T] | None) -> T:
         if datatype is None:
             return cast(T, None)
 
@@ -128,7 +128,7 @@ class SoftEnumConverter(SoftConverter):
 
 
 class SoftPydanticModelConverter(SoftConverter):
-    def __init__(self, datatype: Type[BaseModel]):
+    def __init__(self, datatype: type[BaseModel]):
         self.datatype = datatype
 
     def write_value(self, value):
@@ -165,18 +165,18 @@ class SoftSignalBackend(SignalBackend[T]):
     """An backend to a soft Signal, for test signals see ``MockSignalBackend``."""
 
     _value: T
-    _initial_value: Optional[T]
+    _initial_value: T | None
     _timestamp: float
     _severity: int
 
     @classmethod
-    def datatype_allowed(cls, datatype: Type) -> bool:
+    def datatype_allowed(cls, datatype: type) -> bool:
         return True  # Any value allowed in a soft signal
 
     def __init__(
         self,
-        datatype: Optional[Type[T]],
-        initial_value: Optional[T] = None,
+        datatype: type[T] | None,
+        initial_value: T | None = None,
         metadata: SignalMetadata = None,
     ) -> None:
         self.datatype = datatype
@@ -188,7 +188,7 @@ class SoftSignalBackend(SignalBackend[T]):
         else:
             self._initial_value = self.converter.write_value(self._initial_value)
 
-        self.callback: Optional[ReadingValueCallback[T]] = None
+        self.callback: ReadingValueCallback[T] | None = None
         self._severity = 0
         self.set_value(self._initial_value)
 
@@ -199,7 +199,7 @@ class SoftSignalBackend(SignalBackend[T]):
         """Connection isn't required for soft signals."""
         pass
 
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: T | None, wait=True, timeout=None):
         write_value = (
             self.converter.write_value(value)
             if value is not None
@@ -232,7 +232,7 @@ class SoftSignalBackend(SignalBackend[T]):
         """For a soft signal, the setpoint and readback values are the same."""
         return await self.get_value()
 
-    def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
+    def set_callback(self, callback: ReadingValueCallback[T] | None) -> None:
         if callback:
             assert not self.callback, "Cannot set a callback when one is already set"
             reading: Reading = self.converter.reading(

@@ -5,12 +5,13 @@ import string
 import subprocess
 import sys
 import time
+from collections.abc import Sequence
 from contextlib import closing
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from types import GenericAlias
-from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type
+from typing import Any, Literal
 from unittest.mock import ANY
 
 import numpy as np
@@ -49,7 +50,7 @@ class IOC:
     protocol: Literal["ca", "pva"]
 
     async def make_backend(
-        self, typ: Optional[Type], suff: str, connect=True
+        self, typ: type | None, suff: str, connect=True
     ) -> SignalBackend:
         # Calculate the pv
         pv = f"{PV_PREFIX}:{self.protocol}:{suff}"
@@ -127,7 +128,7 @@ class MonitorQueue:
     def __init__(self, backend: SignalBackend):
         self.backend = backend
         self.subscription = backend.set_callback(self.add_reading_value)
-        self.updates: asyncio.Queue[Tuple[Reading, Any]] = asyncio.Queue()
+        self.updates: asyncio.Queue[tuple[Reading, Any]] = asyncio.Queue()
 
     def add_reading_value(self, reading: Reading, value):
         self.updates.put_nowait((reading, value))
@@ -165,8 +166,8 @@ async def assert_monitor_then_put(
     datakey: dict,
     initial_value: T,
     put_value: T,
-    datatype: Optional[Type[T]] = None,
-    check_type: Optional[bool] = True,
+    datatype: type[T] | None = None,
+    check_type: bool | None = True,
 ):
     backend = await ioc.make_backend(datatype, suffix)
     # Make a monitor queue that will monitor for updates
@@ -193,7 +194,7 @@ async def put_error(
     ioc: IOC,
     suffix: str,
     put_value: T,
-    datatype: Optional[Type[T]] = None,
+    datatype: type[T] | None = None,
 ):
     backend = await ioc.make_backend(datatype, suffix)
     # The below will work without error
@@ -211,7 +212,7 @@ class MyEnum(str, Enum):
 
 MySubsetEnum = SubsetEnum["Aaa", "Bbb", "Ccc"]
 
-_metadata: Dict[str, Dict[str, Dict[str, Any]]] = {
+_metadata: dict[str, dict[str, dict[str, Any]]] = {
     "ca": {
         "boolean": {"units": ANY, "limits": ANY},
         "integer": {"units": ANY, "limits": ANY},
@@ -396,7 +397,7 @@ ls2 = "another string that is just longer than forty characters"
 )
 async def test_backend_get_put_monitor(
     ioc: IOC,
-    datatype: Type[T],
+    datatype: type[T],
     suffix: str,
     initial_value: T,
     put_value: T,
@@ -627,7 +628,7 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check datakey
-            datakey == await backend.get_datakey("test-source")
+            assert datakey == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(approx_table(i))
             # Put to new value and check that
@@ -642,7 +643,7 @@ async def test_pvi_structure(ioc: IOC) -> None:
         # CA can't do structure
         return
     # Make and connect the backend
-    backend = await ioc.make_backend(Dict[str, Any], "pvi")
+    backend = await ioc.make_backend(dict[str, Any], "pvi")
 
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
@@ -726,8 +727,11 @@ def test_make_backend_fails_for_different_transports():
 
     with pytest.raises(TypeError) as err:
         epics_signal_rw(str, read_pv, write_pv)
-        assert err.args[0] == f"Differing transports: {read_pv} has EpicsTransport.ca,"
-        +" {write_pv} has EpicsTransport.pva"
+        assert (
+            err.args[0]
+            == f"Differing transports: {read_pv} has EpicsTransport.ca,"
+            + " {write_pv} has EpicsTransport.pva"
+        )
 
 
 def test_signal_helpers():

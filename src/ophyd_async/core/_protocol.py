@@ -4,7 +4,6 @@ from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
     Generic,
     Protocol,
     TypeVar,
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
 @runtime_checkable
 class AsyncReadable(HasName, Protocol):
     @abstractmethod
-    async def read(self) -> Dict[str, Reading]:
+    async def read(self) -> dict[str, Reading]:
         """Return an OrderedDict mapping string field name(s) to dictionaries
         of values and timestamps and optional per-point metadata.
 
@@ -36,7 +35,7 @@ class AsyncReadable(HasName, Protocol):
         ...
 
     @abstractmethod
-    async def describe(self) -> Dict[str, DataKey]:
+    async def describe(self) -> dict[str, DataKey]:
         """Return an OrderedDict with exactly the same keys as the ``read``
         method, here mapped to per-scan metadata about each field.
 
@@ -59,14 +58,14 @@ class AsyncReadable(HasName, Protocol):
 @runtime_checkable
 class AsyncConfigurable(Protocol):
     @abstractmethod
-    async def read_configuration(self) -> Dict[str, Reading]:
+    async def read_configuration(self) -> dict[str, Reading]:
         """Same API as ``read`` but for slow-changing fields related to configuration.
         e.g., exposure time. These will typically be read only once per run.
         """
         ...
 
     @abstractmethod
-    async def describe_configuration(self) -> Dict[str, DataKey]:
+    async def describe_configuration(self) -> dict[str, DataKey]:
         """Same API as ``describe``, but corresponding to the keys in
         ``read_configuration``.
         """

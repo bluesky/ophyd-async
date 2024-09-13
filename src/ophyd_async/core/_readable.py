@@ -1,6 +1,6 @@
 import warnings
+from collections.abc import Callable, Generator, Sequence
 from contextlib import contextmanager
-from typing import Callable, Dict, Generator, Optional, Sequence, Tuple, Type, Union
 
 from bluesky.protocols import DataKey, HasHints, Hints, Reading
 
@@ -10,10 +10,12 @@ from ._signal import SignalR
 from ._status import AsyncStatus
 from ._utils import merge_gathered_dicts
 
-ReadableChild = Union[AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints]
-ReadableChildWrapper = Union[
-    Callable[[ReadableChild], ReadableChild], Type["ConfigSignal"], Type["HintedSignal"]
-]
+ReadableChild = AsyncReadable | AsyncConfigurable | AsyncStageable | HasHints
+ReadableChildWrapper = (
+    Callable[[ReadableChild], ReadableChild]
+    | type["ConfigSignal"]
+    | type["HintedSignal"]
+)
 
 
 class StandardReadable(
@@ -28,10 +30,10 @@ class StandardReadable(
 
     # These must be immutable types to avoid accidental sharing between
     # different instances of the class
-    _readables: Tuple[AsyncReadable, ...] = ()
-    _configurables: Tuple[AsyncConfigurable, ...] = ()
-    _stageables: Tuple[AsyncStageable, ...] = ()
-    _has_hints: Tuple[HasHints, ...] = ()
+    _readables: tuple[AsyncReadable, ...] = ()
+    _configurables: tuple[AsyncConfigurable, ...] = ()
+    _stageables: tuple[AsyncStageable, ...] = ()
+    _has_hints: tuple[HasHints, ...] = ()
 
     def set_readable_signals(
         self,
@@ -53,7 +55,8 @@ class StandardReadable(
             DeprecationWarning(
                 "Migrate to `add_children_as_readables` context manager or "
                 "`add_readables` method"
-            )
+            ),
+            stacklevel=2,
         )
         self.add_readables(read, wrapper=HintedSignal)
         self.add_readables(config, wrapper=ConfigSignal)
@@ -69,20 +72,20 @@ class StandardReadable(
         for sig in self._stageables:
             await sig.unstage().task
 
-    async def describe_configuration(self) -> Dict[str, DataKey]:
+    async def describe_configuration(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(
             [sig.describe_configuration() for sig in self._configurables]
         )
 
-    async def read_configuration(self) -> Dict[str, Reading]:
+    async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(
             [sig.read_configuration() for sig in self._configurables]
         )
 
-    async def describe(self) -> Dict[str, DataKey]:
+    async def describe(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts([sig.describe() for sig in self._readables])
 
-    async def read(self) -> Dict[str, Reading]:
+    async def read(self) -> dict[str, Reading]:
         return await merge_gathered_dicts([sig.read() for sig in self._readables])
 
     @property
@@ -123,7 +126,7 @@ class StandardReadable(
     @contextmanager
     def add_children_as_readables(
         self,
-        wrapper: Optional[ReadableChildWrapper] = None,
+        wrapper: ReadableChildWrapper | None = None,
     ) -> Generator[None, None, None]:
         """Context manager to wrap adding Devices
 
@@ -168,7 +171,7 @@ class StandardReadable(
     def add_readables(
         self,
         devices: Sequence[Device],
-        wrapper: Optional[ReadableChildWrapper] = None,
+        wrapper: ReadableChildWrapper | None = None,
     ) -> None:
         """Add the given devices to the lists of known Devices
 
@@ -216,10 +219,10 @@ class ConfigSignal(AsyncConfigurable):
         assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
         self.signal = signal
 
-    async def read_configuration(self) -> Dict[str, Reading]:
+    async def read_configuration(self) -> dict[str, Reading]:
         return await self.signal.read()
 
-    async def describe_configuration(self) -> Dict[str, DataKey]:
+    async def describe_configuration(self) -> dict[str, DataKey]:
         return await self.signal.describe()
 
 
@@ -232,10 +235,10 @@ class HintedSignal(HasHints, AsyncReadable):
             self.stage = signal.stage
             self.unstage = signal.unstage
 
-    async def read(self) -> Dict[str, Reading]:
+    async def read(self) -> dict[str, Reading]:
         return await self.signal.read(cached=self.cached)
 
-    async def describe(self) -> Dict[str, DataKey]:
+    async def describe(self) -> dict[str, DataKey]:
         return await self.signal.describe()
 
     @property

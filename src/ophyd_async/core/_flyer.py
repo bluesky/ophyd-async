@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, Sequence
+from collections.abc import Sequence
+from typing import Generic
 
 from bluesky.protocols import DataKey, Flyable, Preparable, Reading, Stageable
 
@@ -72,12 +73,12 @@ class StandardFlyer(
     async def complete(self) -> None:
         await self._trigger_logic.complete()
 
-    async def describe_configuration(self) -> Dict[str, DataKey]:
+    async def describe_configuration(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(
             [sig.describe() for sig in self._configuration_signals]
         )
 
-    async def read_configuration(self) -> Dict[str, Reading]:
+    async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(
             [sig.read() for sig in self._configuration_signals]
         )

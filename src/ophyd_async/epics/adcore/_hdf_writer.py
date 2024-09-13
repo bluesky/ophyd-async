@@ -1,6 +1,6 @@
 import asyncio
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from xml.etree import ElementTree as ET
 
 from bluesky.protocols import DataKey, Hints, StreamAsset
@@ -42,12 +42,12 @@ class ADHDFWriter(DetectorWriter):
         self._dataset_describer = dataset_describer
 
         self._plugins = plugins
-        self._capture_status: Optional[AsyncStatus] = None
-        self._datasets: List[HDFDataset] = []
-        self._file: Optional[HDFFile] = None
+        self._capture_status: AsyncStatus | None = None
+        self._datasets: list[HDFDataset] = []
+        self._file: HDFFile | None = None
         self._multiplier = 1
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._file = None
         info = self._path_provider(device_name=self.hdf.name)
 

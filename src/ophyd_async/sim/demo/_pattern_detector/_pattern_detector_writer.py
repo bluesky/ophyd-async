@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, AsyncIterator, Dict
+from collections.abc import AsyncGenerator, AsyncIterator
 
 from bluesky.protocols import DataKey
 
@@ -20,7 +20,7 @@ class PatternDetectorWriter(DetectorWriter):
         self.path_provider = path_provider
         self.name_provider = name_provider
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         return await self.pattern_generator.open_file(
             self.path_provider, self.name_provider(), multiplier
         )

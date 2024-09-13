@@ -1,10 +1,11 @@
 import inspect
 import logging
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan, nan
-from typing import Any, Dict, List, Optional, Sequence, Type, Union, get_origin
+from typing import Any, get_origin
 
 import numpy as np
 from aioca import (
@@ -35,7 +36,7 @@ from ophyd_async.core import (
 
 from ._common import LimitPair, Limits, common_meta, get_supported_values
 
-dbr_to_dtype: Dict[Dbr, Dtype] = {
+dbr_to_dtype: dict[Dbr, Dtype] = {
     dbr.DBR_STRING: "string",
     dbr.DBR_SHORT: "integer",
     dbr.DBR_FLOAT: "number",
@@ -48,8 +49,8 @@ dbr_to_dtype: Dict[Dbr, Dtype] = {
 def _data_key_from_augmented_value(
     value: AugmentedValue,
     *,
-    choices: Optional[List[str]] = None,
-    dtype: Optional[Dtype] = None,
+    choices: list[str] | None = None,
+    dtype: Dtype | None = None,
 ) -> DataKey:
     """Use the return value of get with FORMAT_CTRL to construct a DataKey
     describing the signal. See docstring of AugmentedValue for expected
@@ -110,8 +111,8 @@ def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
 
 @dataclass
 class CaConverter:
-    read_dbr: Optional[Dbr]
-    write_dbr: Optional[Dbr]
+    read_dbr: Dbr | None
+    write_dbr: Dbr | None
 
     def write_value(self, value) -> Any:
         return value
@@ -157,7 +158,7 @@ class CaEnumConverter(CaConverter):
 
     choices: dict[str, str]
 
-    def write_value(self, value: Union[Enum, str]):
+    def write_value(self, value: Enum | str):
         if isinstance(value, Enum):
             return value.value
         else:
@@ -186,7 +187,7 @@ class DisconnectedCaConverter(CaConverter):
 
 
 def make_converter(
-    datatype: Optional[Type], values: Dict[str, AugmentedValue]
+    datatype: type | None, values: dict[str, AugmentedValue]
 ) -> CaConverter:
     pv = list(values)[0]
     pv_dbr = get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
@@ -271,7 +272,7 @@ class CaSignalBackend(SignalBackend[T]):
     )
 
     @classmethod
-    def datatype_allowed(cls, datatype: Optional[Type]) -> bool:
+    def datatype_allowed(cls, datatype: type | None) -> bool:
         stripped_origin = get_origin(datatype) or datatype
         if datatype is None:
             return True
@@ -280,15 +281,15 @@ class CaSignalBackend(SignalBackend[T]):
             stripped_origin, cls._ALLOWED_DATATYPES
         )
 
-    def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
+    def __init__(self, datatype: type[T] | None, read_pv: str, write_pv: str):
         self.datatype = datatype
         if not CaSignalBackend.datatype_allowed(self.datatype):
             raise TypeError(f"Given datatype {self.datatype} unsupported in CA.")
         self.read_pv = read_pv
         self.write_pv = write_pv
-        self.initial_values: Dict[str, AugmentedValue] = {}
+        self.initial_values: dict[str, AugmentedValue] = {}
         self.converter: CaConverter = DisconnectedCaConverter(None, None)
-        self.subscription: Optional[Subscription] = None
+        self.subscription: Subscription | None = None
 
     def source(self, name: str):
         return f"ca://{self.read_pv}"
@@ -315,7 +316,7 @@ class CaSignalBackend(SignalBackend[T]):
             await self._store_initial_value(self.read_pv, timeout=timeout)
         self.converter = make_converter(self.datatype, self.initial_values)
 
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: T | None, wait=True, timeout=None):
         if value is None:
             write_value = self.initial_values[self.write_pv]
         else:
@@ -357,7 +358,7 @@ class CaSignalBackend(SignalBackend[T]):
         )
         return self.converter.value(value)
 
-    def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
+    def set_callback(self, callback: ReadingValueCallback[T] | None) -> None:
         if callback:
             assert (
                 not self.subscription

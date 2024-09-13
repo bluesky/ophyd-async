@@ -1,15 +1,10 @@
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from inspect import isclass
 from typing import (
     Any,
-    Callable,
-    Dict,
-    FrozenSet,
     Literal,
-    Optional,
-    Tuple,
-    Type,
     Union,
     get_args,
     get_origin,
@@ -32,12 +27,12 @@ from ophyd_async.epics.signal import (
     epics_signal_x,
 )
 
-Access = FrozenSet[
-    Union[Literal["r"], Literal["w"], Literal["rw"], Literal["x"], Literal["d"]]
+Access = frozenset[
+    Literal["r"] | Literal["w"] | Literal["rw"] | Literal["x"] | Literal["d"]
 ]
 
 
-def _strip_number_from_string(string: str) -> Tuple[str, Optional[int]]:
+def _strip_number_from_string(string: str) -> tuple[str, int | None]:
     match = re.match(r"(.*?)(\d*)$", string)
     assert match
 
@@ -48,7 +43,7 @@ def _strip_number_from_string(string: str) -> Tuple[str, Optional[int]]:
     return name, number
 
 
-def _split_subscript(tp: T) -> Union[Tuple[Any, Tuple[Any]], Tuple[T, None]]:
+def _split_subscript(tp: T) -> tuple[Any, tuple[Any]] | tuple[T, None]:
     """Split a subscripted type into the its origin and args.
 
     If `tp` is not a subscripted type, then just return the type and None as args.
@@ -60,7 +55,7 @@ def _split_subscript(tp: T) -> Union[Tuple[Any, Tuple[Any]], Tuple[T, None]]:
     return tp, None
 
 
-def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
+def _strip_union(field: T | T) -> tuple[T, bool]:
     if get_origin(field) is Union:
         args = get_args(field)
         is_optional = type(None) in args
@@ -70,7 +65,7 @@ def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
     return field, False
 
 
-def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]]:
+def _strip_device_vector(field: type[Device]) -> tuple[bool, type[Device]]:
     if get_origin(field) is DeviceVector:
         return True, get_args(field)[0]
     return False, field
@@ -83,13 +78,13 @@ class _PVIEntry:
     This could either be a signal or a sub-table.
     """
 
-    sub_entries: Dict[str, Union[Dict[int, "_PVIEntry"], "_PVIEntry"]]
-    pvi_pv: Optional[str] = None
-    device: Optional[Device] = None
-    common_device_type: Optional[Type[Device]] = None
+    sub_entries: dict[str, Union[dict[int, "_PVIEntry"], "_PVIEntry"]]
+    pvi_pv: str | None = None
+    device: Device | None = None
+    common_device_type: type[Device] | None = None
 
 
-def _verify_common_blocks(entry: _PVIEntry, common_device: Type[Device]):
+def _verify_common_blocks(entry: _PVIEntry, common_device: type[Device]):
     if not entry.sub_entries:
         return
     common_sub_devices = get_type_hints(common_device)
@@ -112,7 +107,7 @@ def _verify_common_blocks(entry: _PVIEntry, common_device: Type[Device]):
             )
 
 
-_pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
+_pvi_mapping: dict[frozenset[str], Callable[..., Signal]] = {
     frozenset({"r", "w"}): lambda dtype, read_pv, write_pv: epics_signal_rw(
         dtype, "pva://" + read_pv, "pva://" + write_pv
     ),
@@ -129,8 +124,8 @@ _pvi_mapping: Dict[FrozenSet[str], Callable[..., Signal]] = {
 
 def _parse_type(
     is_pvi_table: bool,
-    number_suffix: Optional[int],
-    common_device_type: Optional[Type[Device]],
+    number_suffix: int | None,
+    common_device_type: type[Device] | None,
 ):
     if common_device_type:
         # pre-defined type
@@ -159,7 +154,7 @@ def _parse_type(
     return is_device_vector, is_signal, signal_dtype, device_cls
 
 
-def _mock_common_blocks(device: Device, stripped_type: Optional[Type] = None):
+def _mock_common_blocks(device: Device, stripped_type: type | None = None):
     device_t = stripped_type or type(device)
     sub_devices = (
         (field, field_type)
@@ -308,8 +303,8 @@ async def fill_pvi_entries(
 
 def create_children_from_annotations(
     device: Device,
-    included_optional_fields: Tuple[str, ...] = (),
-    device_vectors: Optional[Dict[str, int]] = None,
+    included_optional_fields: tuple[str, ...] = (),
+    device_vectors: dict[str, int] | None = None,
 ):
     """For intializing blocks at __init__ of ``device``."""
     for name, device_type in get_type_hints(type(device)).items():

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Literal, Tuple
+from typing import Literal
 
 from ophyd_async.core import (
     DetectorControl,
@@ -56,7 +56,7 @@ class AravisController(DetectorControl):
 
     def _get_trigger_info(
         self, trigger: DetectorTrigger
-    ) -> Tuple[AravisTriggerMode, AravisTriggerSource]:
+    ) -> tuple[AravisTriggerMode, AravisTriggerSource]:
         supported_trigger_types = (
             DetectorTrigger.constant_gate,
             DetectorTrigger.edge_trigger,

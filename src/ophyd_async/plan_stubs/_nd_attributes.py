@@ -1,5 +1,5 @@
-from typing import Sequence
-from xml.etree import cElementTree as ET
+from collections.abc import Sequence
+from xml.etree import ElementTree as ET
 
 import bluesky.plan_stubs as bps
 

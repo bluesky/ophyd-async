@@ -45,7 +45,7 @@ async def test_device_collector_handles_top_level_errors(caplog):
     ]  # In some environments the asyncio teardown will be logged as an error too
 
     assert len(device_log) == 1
-    device_log[0].levelname == "ERROR"
+    assert device_log[0].levelname == "ERROR"
 
 
 def test_sync_device_connector_no_run_engine_raises_error():

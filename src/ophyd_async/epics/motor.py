@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from bluesky.protocols import (
     Flyable,
@@ -83,13 +82,13 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self._set_success = True
 
         # end_position of a fly move, with run_up_distance added on.
-        self._fly_completed_position: Optional[float] = None
+        self._fly_completed_position: float | None = None
 
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
-        self._fly_status: Optional[WatchableAsyncStatus] = None
+        self._fly_status: WatchableAsyncStatus | None = None
 
         # Set during prepare
-        self._fly_timeout: Optional[CalculatableTimeout] = CalculateTimeout
+        self._fly_timeout: CalculatableTimeout | None = CalculateTimeout
 
         super().__init__(name=name)
 

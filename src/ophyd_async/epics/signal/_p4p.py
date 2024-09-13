@@ -4,10 +4,11 @@ import inspect
 import logging
 import time
 from abc import ABCMeta
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from math import isnan, nan
-from typing import Any, Dict, List, Optional, Sequence, Type, Union, get_origin
+from typing import Any, get_origin
 
 import numpy as np
 from bluesky.protocols import DataKey, Dtype, Reading
@@ -30,7 +31,7 @@ from ophyd_async.core import (
 from ._common import LimitPair, Limits, common_meta, get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
-specifier_to_dtype: Dict[str, Dtype] = {
+specifier_to_dtype: dict[str, Dtype] = {
     "?": "integer",  # bool
     "b": "integer",  # int8
     "B": "integer",  # uint8
@@ -45,7 +46,7 @@ specifier_to_dtype: Dict[str, Dtype] = {
     "s": "string",
 }
 
-specifier_to_np_dtype: Dict[str, str] = {
+specifier_to_np_dtype: dict[str, str] = {
     "?": "<i2",  # bool
     "b": "|i1",  # int8
     "B": "|u1",  # uint8
@@ -65,9 +66,9 @@ def _data_key_from_value(
     source: str,
     value: Value,
     *,
-    shape: Optional[list[int]] = None,
-    choices: Optional[list[str]] = None,
-    dtype: Optional[Dtype] = None,
+    shape: list[int] | None = None,
+    choices: list[str] | None = None,
+    dtype: Dtype | None = None,
 ) -> DataKey:
     """
     Args:
@@ -164,13 +165,13 @@ class PvaConverter:
     def get_datakey(self, source: str, value) -> DataKey:
         return _data_key_from_value(source, value)
 
-    def metadata_fields(self) -> List[str]:
+    def metadata_fields(self) -> list[str]:
         """
         Fields to request from PVA for metadata.
         """
         return ["alarm", "timeStamp"]
 
-    def value_fields(self) -> List[str]:
+    def value_fields(self) -> list[str]:
         """
         Fields to request from PVA for the value.
         """
@@ -185,11 +186,11 @@ class PvaArrayConverter(PvaConverter):
 
 
 class PvaNDArrayConverter(PvaConverter):
-    def metadata_fields(self) -> List[str]:
+    def metadata_fields(self) -> list[str]:
         return super().metadata_fields() + ["dimension"]
 
-    def _get_dimensions(self, value) -> List[int]:
-        dimensions: List[Value] = value["dimension"]
+    def _get_dimensions(self, value) -> list[int]:
+        dimensions: list[Value] = value["dimension"]
         dims = [dim.size for dim in dimensions]
         # Note: dimensions in NTNDArray are in fortran-like order
         # with first index changing fastest.
@@ -224,7 +225,7 @@ class PvaEnumConverter(PvaConverter):
     def __init__(self, choices: dict[str, str]):
         self.choices = tuple(choices.values())
 
-    def write_value(self, value: Union[Enum, str]):
+    def write_value(self, value: Enum | str):
         if isinstance(value, Enum):
             return value.value
         else:
@@ -263,7 +264,7 @@ class PvaPydanticModelConverter(PvaConverter):
     def value(self, value: Value):
         return self.datatype(**value.todict())
 
-    def write_value(self, value: Union[BaseModel, Dict[str, Any]]):
+    def write_value(self, value: BaseModel | dict[str, Any]):
         if isinstance(value, self.datatype):
             return value.model_dump(mode="python")
         return value
@@ -282,13 +283,13 @@ class PvaDictConverter(PvaConverter):
     def get_datakey(self, source: str, value) -> DataKey:
         raise NotImplementedError("Describing Dict signals not currently supported")
 
-    def metadata_fields(self) -> List[str]:
+    def metadata_fields(self) -> list[str]:
         """
         Fields to request from PVA for metadata.
         """
         return []
 
-    def value_fields(self) -> List[str]:
+    def value_fields(self) -> list[str]:
         """
         Fields to request from PVA for the value.
         """
@@ -300,7 +301,7 @@ class DisconnectedPvaConverter(PvaConverter):
         raise NotImplementedError("No PV has been set as connect() has not been called")
 
 
-def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConverter:
+def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverter:
     pv = list(values)[0]
     typeid = get_unique({k: v.getID() for k, v in values.items()}, "typeids")
     typ = get_unique(
@@ -381,7 +382,7 @@ def make_converter(datatype: Optional[Type], values: Dict[str, Any]) -> PvaConve
 
 
 class PvaSignalBackend(SignalBackend[T]):
-    _ctxt: Optional[Context] = None
+    _ctxt: Context | None = None
 
     _ALLOWED_DATATYPES = (
         bool,
@@ -397,7 +398,7 @@ class PvaSignalBackend(SignalBackend[T]):
     )
 
     @classmethod
-    def datatype_allowed(cls, datatype: Optional[Type]) -> bool:
+    def datatype_allowed(cls, datatype: type | None) -> bool:
         stripped_origin = get_origin(datatype) or datatype
         if datatype is None:
             return True
@@ -405,16 +406,16 @@ class PvaSignalBackend(SignalBackend[T]):
             stripped_origin, cls._ALLOWED_DATATYPES
         )
 
-    def __init__(self, datatype: Optional[Type[T]], read_pv: str, write_pv: str):
+    def __init__(self, datatype: type[T] | None, read_pv: str, write_pv: str):
         self.datatype = datatype
         if not PvaSignalBackend.datatype_allowed(self.datatype):
             raise TypeError(f"Given datatype {self.datatype} unsupported in PVA.")
 
         self.read_pv = read_pv
         self.write_pv = write_pv
-        self.initial_values: Dict[str, Any] = {}
+        self.initial_values: dict[str, Any] = {}
         self.converter: PvaConverter = DisconnectedPvaConverter()
-        self.subscription: Optional[Subscription] = None
+        self.subscription: Subscription | None = None
 
     def source(self, name: str):
         return f"pva://{self.read_pv}"
@@ -454,7 +455,7 @@ class PvaSignalBackend(SignalBackend[T]):
             await self._store_initial_value(self.read_pv, timeout=timeout)
         self.converter = make_converter(self.datatype, self.initial_values)
 
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: T | None, wait=True, timeout=None):
         if value is None:
             write_value = self.initial_values[self.write_pv]
         else:
@@ -474,7 +475,7 @@ class PvaSignalBackend(SignalBackend[T]):
         value = await self.ctxt.get(self.read_pv)
         return self.converter.get_datakey(source, value)
 
-    def _pva_request_string(self, fields: List[str]) -> str:
+    def _pva_request_string(self, fields: list[str]) -> str:
         """
         Converts a list of requested fields into a PVA request string which can be
         passed to p4p.
@@ -497,7 +498,7 @@ class PvaSignalBackend(SignalBackend[T]):
         value = await self.ctxt.get(self.write_pv, "field(value)")
         return self.converter.value(value)
 
-    def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
+    def set_callback(self, callback: ReadingValueCallback[T] | None) -> None:
         if callback:
             assert (
                 not self.subscription

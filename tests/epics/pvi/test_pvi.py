@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 
 from ophyd_async.core import (
@@ -28,7 +26,7 @@ class Block2(Device):
 
 
 class Block3(Device):
-    device_vector: Optional[DeviceVector[Block2]]
+    device_vector: DeviceVector[Block2] | None
     device: Block2
     signal_device: Block1
     signal_x: SignalX
@@ -152,9 +150,9 @@ def pvi_test_device_with_device_vectors_t():
 
     class TestBlock(Device):
         device_vector: DeviceVector[Block1]
-        device: Optional[Block1]
+        device: Block1 | None
         signal_x: SignalX
-        signal_rw: Optional[SignalRW[int]]
+        signal_rw: SignalRW[int] | None
 
     class TestDevice(TestBlock):
         def __init__(self, prefix: str, name: str = ""):

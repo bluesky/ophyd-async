@@ -1,6 +1,5 @@
 import inspect
 from enum import Enum
-from typing import Dict, Optional, Tuple, Type
 
 from typing_extensions import TypedDict
 
@@ -32,9 +31,9 @@ class Limits(TypedDict):
 
 def get_supported_values(
     pv: str,
-    datatype: Optional[Type[str]],
-    pv_choices: Tuple[str, ...],
-) -> Dict[str, str]:
+    datatype: type[str] | None,
+    pv_choices: tuple[str, ...],
+) -> dict[str, str]:
     if inspect.isclass(datatype) and issubclass(datatype, RuntimeSubsetEnum):
         if not set(datatype.choices).issubset(set(pv_choices)):
             raise TypeError(

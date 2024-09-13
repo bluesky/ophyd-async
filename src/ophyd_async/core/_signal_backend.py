@@ -4,9 +4,6 @@ from typing import (
     ClassVar,
     Generic,
     Literal,
-    Optional,
-    Tuple,
-    Type,
 )
 
 from ._protocol import DataKey, Reading
@@ -17,7 +14,7 @@ class SignalBackend(Generic[T]):
     """A read/write/monitor backend for a Signals"""
 
     #: Datatype of the signal value
-    datatype: Optional[Type[T]] = None
+    datatype: type[T] | None = None
 
     @classmethod
     @abstractmethod
@@ -35,7 +32,7 @@ class SignalBackend(Generic[T]):
         """Connect to underlying hardware"""
 
     @abstractmethod
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: T | None, wait=True, timeout=None):
         """Put a value to the PV, if wait then wait for completion for up to timeout"""
 
     @abstractmethod
@@ -55,7 +52,7 @@ class SignalBackend(Generic[T]):
         """The point that a signal was requested to move to."""
 
     @abstractmethod
-    def set_callback(self, callback: Optional[ReadingValueCallback[T]]) -> None:
+    def set_callback(self, callback: ReadingValueCallback[T] | None) -> None:
         """Observe changes to the current value, timestamp and severity"""
 
 
@@ -85,7 +82,7 @@ class _RuntimeSubsetEnumMeta(type):
 
 
 class RuntimeSubsetEnum(metaclass=_RuntimeSubsetEnumMeta):
-    choices: ClassVar[Tuple[str, ...]]
+    choices: ClassVar[tuple[str, ...]]
 
     def __init__(self):
         raise RuntimeError("SubsetEnum cannot be instantiated")

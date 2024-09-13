@@ -1,5 +1,5 @@
 import time
-from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from collections.abc import AsyncGenerator, AsyncIterator, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -42,12 +42,12 @@ class DummyWriter(DetectorWriter):
         self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
-        self._file: Optional[ComposeStreamResourceBundle] = None
+        self._file: ComposeStreamResourceBundle | None = None
         self._last_emitted = 0
         self.index = 0
         self.observe_indices_written_timeout_log = []
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         return {
             self._name: DataKey(
                 source="soft://some-source",
@@ -264,7 +264,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         )
 
         for detector in detector_list:
-            detector.controller.disarm.assert_called_once  # type: ignore
+            detector.controller.disarm.assert_called_once()  # type: ignore
 
         yield from bps.open_run()
         yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)

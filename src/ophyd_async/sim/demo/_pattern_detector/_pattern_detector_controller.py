@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from ophyd_async.core import DetectorControl, PathProvider
 from ophyd_async.core._detector import TriggerInfo
@@ -17,12 +16,10 @@ class PatternDetectorController(DetectorControl):
         self.pattern_generator: PatternGenerator = pattern_generator
         self.pattern_generator.set_exposure(exposure)
         self.path_provider: PathProvider = path_provider
-        self.task: Optional[asyncio.Task] = None
+        self.task: asyncio.Task | None = None
         super().__init__()
 
-    async def prepare(
-        self, trigger_info: TriggerInfo = TriggerInfo(number=1, livetime=0.01)
-    ):
+    async def prepare(self, trigger_info: TriggerInfo):
         self._trigger_info = trigger_info
         if self._trigger_info.livetime is None:
             self._trigger_info.livetime = 0.01

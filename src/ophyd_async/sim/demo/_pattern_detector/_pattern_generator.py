@@ -1,5 +1,5 @@
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, Optional
 
 import h5py
 import numpy as np
@@ -60,9 +60,9 @@ class PatternGenerator:
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
         )
-        self._hdf_stream_provider: Optional[HDFFile] = None
-        self._handle_for_h5_file: Optional[h5py.File] = None
-        self.target_path: Optional[Path] = None
+        self._hdf_stream_provider: HDFFile | None = None
+        self._handle_for_h5_file: h5py.File | None = None
+        self.target_path: Path | None = None
 
     async def write_image_to_file(self) -> None:
         assert self._handle_for_h5_file, "no file has been opened!"
@@ -107,7 +107,7 @@ class PatternGenerator:
 
     async def open_file(
         self, path_provider: PathProvider, name: str, multiplier: int = 1
-    ) -> Dict[str, DataKey]:
+    ) -> dict[str, DataKey]:
         await self.counter_signal.connect()
 
         self.target_path = self._get_new_path(path_provider)
