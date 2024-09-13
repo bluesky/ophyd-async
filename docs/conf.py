@@ -1,8 +1,9 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Configuration file for the Sphinx documentation builder.
+
+This file only contains a selection of the most common options. For a full
+list see the documentation:
+https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""
 
 import os
 import sys
@@ -38,7 +39,10 @@ extensions = [
     "sphinxcontrib.autodoc_pydantic",
     # Use this for generating API docs
     "sphinx.ext.autodoc",
+    # Not sure if this is still used?
     "sphinx.ext.doctest",
+    # and making summary tables at the top of API docs
+    "sphinx.ext.autosummary",
     # This can parse google style docstrings
     "sphinx.ext.napoleon",
     # For linking to external sphinx documentation
@@ -51,7 +55,6 @@ extensions = [
     "sphinx_copybutton",
     # For the card element
     "sphinx_design",
-    "sphinx.ext.autosummary",
     "sphinx.ext.mathjax",
     "sphinx.ext.githubpages",
     "IPython.sphinxext.ipython_directive",
@@ -97,6 +100,15 @@ autodoc_member_order = "bysource"
 
 # Don't inherit docstrings from baseclasses
 autodoc_inherit_docstrings = False
+
+# Add some more modules to the top level autosummary
+ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs"]
+
+# Document only what is in __all__
+autosummary_ignore_module_all = False
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
 
 # Output graphviz directive produced images in a scalable format
 graphviz_output_format = "svg"

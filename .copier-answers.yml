@@ -1,9 +1,8 @@
 # Changes here will be overwritten by Copier
-_commit: 2.1.0
+_commit: 2.3.0
 _src_path: gh:DiamondLightSource/python-copier-template
 author_email: tom.cobb@diamond.ac.uk
 author_name: Tom Cobb
-component_owner: ''
 description: Asynchronous Bluesky hardware abstraction code, compatible with control
     systems like EPICS and Tango
 distribution_name: ophyd-async
