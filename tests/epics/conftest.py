@@ -15,7 +15,7 @@ async def ad_standard_det_factory(
         # Dynamically generate a name based on the class of detector
         detector_name = ad_standard_detector_class.__name__
         if detector_name.endswith("Detector"):
-            detector_name = detector_name[:-len("Detector")]
+            detector_name = detector_name[: -len("Detector")]
 
         async with DeviceCollector(mock=True):
             test_adstandard_det = ad_standard_detector_class(
