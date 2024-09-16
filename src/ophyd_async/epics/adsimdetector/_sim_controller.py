@@ -1,12 +1,13 @@
 import asyncio
-from typing import Optional, Set
+from typing import Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    AsyncStatus,
     DetectorControl,
     DetectorTrigger,
 )
+from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 
@@ -18,27 +19,32 @@ class SimController(DetectorControl):
     ) -> None:
         self.driver = driver
         self.good_states = good_states
+        self.frame_timeout: float
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float) -> float:
         return 0.002
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
+    async def prepare(self, trigger_info: TriggerInfo):
         assert (
-            trigger == DetectorTrigger.internal
+            trigger_info.trigger == DetectorTrigger.internal
         ), "fly scanning (i.e. external triggering) is not supported for this device"
-        frame_timeout = DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
+        self.frame_timeout = (
+            DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
+        )
         await asyncio.gather(
-            self.driver.num_images.set(num),
+            self.driver.num_images.set(trigger_info.number),
             self.driver.image_mode.set(adcore.ImageMode.multiple),
         )
-        return await adcore.start_acquiring_driver_and_ensure_status(
-            self.driver, good_states=self.good_states, timeout=frame_timeout
+
+    async def arm(self):
+        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
+            self.driver, good_states=self.good_states, timeout=self.frame_timeout
         )
+
+    async def wait_for_idle(self):
+        if self._arm_status:
+            await self._arm_status
 
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have

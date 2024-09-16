@@ -94,7 +94,7 @@ async def test_soft_signal_backend_get_put_monitor(
     descriptor: Callable[[Any], dict],
     dtype_numpy: str,
 ):
-    backend = SoftSignalBackend(datatype)
+    backend = SoftSignalBackend(datatype=datatype)
 
     await backend.connect()
     q = MonitorQueue(backend)

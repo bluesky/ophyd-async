@@ -19,4 +19,8 @@
   pv_enum_str: two
   pv_float: 1.234
   pv_int: 1
+  pv_protocol_device_abstraction:
+    some_int_field: 1
+    some_pydantic_numpy_field_float: [1, 2, 3]
+    some_pydantic_numpy_field_int: [1, 2, 3]
   pv_str: test_string

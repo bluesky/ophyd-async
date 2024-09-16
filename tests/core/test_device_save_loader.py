@@ -8,6 +8,8 @@ import numpy.typing as npt
 import pytest
 import yaml
 from bluesky.run_engine import RunEngine
+from pydantic import BaseModel, Field
+from pydantic_numpy.typing import NpNDArrayFp16, NpNDArrayInt32
 
 from ophyd_async.core import (
     Device,
@@ -54,6 +56,16 @@ class MyEnum(str, Enum):
     three = "three"
 
 
+class SomePvaPydanticModel(BaseModel):
+    some_int_field: int = Field(default=1)
+    some_pydantic_numpy_field_float: NpNDArrayFp16 = Field(
+        default_factory=lambda: np.array([1, 2, 3])
+    )
+    some_pydantic_numpy_field_int: NpNDArrayInt32 = Field(
+        default_factory=lambda: np.array([1, 2, 3])
+    )
+
+
 class DummyDeviceGroupAllTypes(Device):
     def __init__(self, name: str):
         self.pv_int: SignalRW = epics_signal_rw(int, "PV1")
@@ -73,6 +85,9 @@ class DummyDeviceGroupAllTypes(Device):
         self.pv_array_float64 = epics_signal_rw(npt.NDArray[np.float64], "PV14")
         self.pv_array_npstr = epics_signal_rw(npt.NDArray[np.str_], "PV15")
         self.pv_array_str = epics_signal_rw(Sequence[str], "PV16")
+        self.pv_protocol_device_abstraction = epics_signal_rw(
+            SomePvaPydanticModel, "pva://PV17"
+        )
 
 
 @pytest.fixture
@@ -155,6 +170,7 @@ async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
     await device_all_types.pv_array_str.set(
         ["one", "two", "three"],
     )
+    await device_all_types.pv_protocol_device_abstraction.set(SomePvaPydanticModel())
 
     # Create save plan from utility functions
     def save_my_device():

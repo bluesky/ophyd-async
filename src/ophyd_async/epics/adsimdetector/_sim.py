@@ -12,14 +12,15 @@ class SimDetector(StandardDetector):
 
     def __init__(
         self,
-        drv: adcore.ADBaseIO,
-        hdf: adcore.NDFileHDFIO,
+        prefix: str,
         path_provider: PathProvider,
+        drv_suffix="cam1:",
+        hdf_suffix="HDF1:",
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
     ):
-        self.drv = drv
-        self.hdf = hdf
+        self.drv = adcore.ADBaseIO(prefix + drv_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             SimController(self.drv),

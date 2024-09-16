@@ -145,7 +145,7 @@ def get_dtype(typ: Type) -> Optional[np.dtype]:
 
 
 def get_unique(values: Dict[str, T], types: str) -> T:
-    """If all values are the same, return that value, otherwise return TypeError
+    """If all values are the same, return that value, otherwise raise TypeError
 
     >>> get_unique({"a": 1, "b": 1}, "integers")
     1
