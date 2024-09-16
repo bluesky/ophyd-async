@@ -117,7 +117,7 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     await writers[0].dummy_signal.connect(mock=True)
     await writers[1].dummy_signal.connect(mock=True)
 
-    async def dummy_arm_1(self=None, trigger=None, num=0, exposure=None):
+    def dummy_arm_1(self=None, trigger=None, num=0, exposure=None):
         return writers[0].dummy_signal.set(1)
 
     async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):

@@ -240,7 +240,7 @@ async def test_wait_for_value_with_value():
     await signal.set("blah")
 
     with pytest.raises(
-        TimeoutError,
+        asyncio.TimeoutError,
         match="signal didn't match 'something' in 0.1s, last value 'blah'",
     ):
         await wait_for_value(signal, "something", timeout=0.1)
@@ -263,7 +263,7 @@ async def test_wait_for_value_with_funcion():
         return v < 42
 
     with pytest.raises(
-        TimeoutError,
+        asyncio.TimeoutError,
         match="signal didn't match less_than_42 in 0.1s, last value 45.8",
     ):
         await wait_for_value(signal, less_than_42, timeout=0.1)

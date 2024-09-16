@@ -1,3 +1,4 @@
+import asyncio
 from typing import Awaitable, Callable
 from unittest.mock import patch
 
@@ -61,11 +62,11 @@ async def test_trigger_mode_set(
 ):
     async def trigger_and_complete():
         set_mock_value(test_adpilatus.drv.armed, True)
-        status = await test_adpilatus.controller.arm(
-            num=1,
-            trigger=detector_trigger,
+        await test_adpilatus.controller.prepare(
+            TriggerInfo(number=1, trigger=detector_trigger)
         )
-        await status
+        await test_adpilatus.controller.arm()
+        await test_adpilatus.controller.wait_for_idle()
 
     await _trigger(test_adpilatus, expected_trigger_mode, trigger_and_complete)
 
@@ -74,17 +75,17 @@ async def test_trigger_mode_set_without_armed_pv(
     test_adpilatus: adpilatus.PilatusDetector,
 ):
     async def trigger_and_complete():
-        status = await test_adpilatus.controller.arm(
-            num=1,
-            trigger=DetectorTrigger.internal,
+        await test_adpilatus.controller.prepare(
+            TriggerInfo(number=1, trigger=DetectorTrigger.internal)
         )
-        await status
+        await test_adpilatus.controller.arm()
+        await test_adpilatus.controller.wait_for_idle()
 
     with patch(
         "ophyd_async.epics.adpilatus._pilatus_controller.DEFAULT_TIMEOUT",
         0.1,
     ):
-        with pytest.raises(TimeoutError):
+        with pytest.raises(asyncio.TimeoutError):
             await _trigger(
                 test_adpilatus,
                 adpilatus.PilatusTriggerMode.internal,
