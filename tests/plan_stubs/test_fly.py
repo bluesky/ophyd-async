@@ -115,7 +115,6 @@ class MockDetector(StandardDetector):
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        assert self._arm_status, "Prepare not run"
         assert self._trigger_info
         self.writer.increment_index()
         async for index in self.writer.observe_indices_written(
@@ -145,10 +144,10 @@ async def detectors(RE: RunEngine) -> tuple[MockDetector, MockDetector]:
     await writers[0].dummy_signal.connect(mock=True)
     await writers[1].dummy_signal.connect(mock=True)
 
-    async def dummy_arm_1(self=None, trigger=None, num=0, exposure=None):
+    def dummy_arm_1(self=None):
         return writers[0].dummy_signal.set(1)
 
-    async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):
+    def dummy_arm_2(self=None):
         return writers[1].dummy_signal.set(1)
 
     detector_1 = MockDetector(

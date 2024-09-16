@@ -115,6 +115,7 @@ async def test_panda_children_connected(mock_panda):
         oute2=np.array([1, 0, 1, 0]).astype(np.bool_),
         outf2=np.array([1, 0, 0, 0]).astype(np.bool_),
     )
+
     await mock_panda.pulse[1].delay.set(20.0)
     await mock_panda.seq[1].table.set(table)
 

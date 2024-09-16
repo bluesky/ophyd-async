@@ -1,5 +1,13 @@
 from abc import abstractmethod
-from typing import TYPE_CHECKING, ClassVar, Generic, Literal, Optional, Tuple, Type
+from typing import (
+    TYPE_CHECKING,
+    ClassVar,
+    Generic,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+)
 
 from ._protocol import DataKey, Reading
 from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T
@@ -10,6 +18,11 @@ class SignalBackend(Generic[T]):
 
     #: Datatype of the signal value
     datatype: Optional[Type[T]] = None
+
+    @classmethod
+    @abstractmethod
+    def datatype_allowed(cls, dtype: type):
+        """Check if a given datatype is acceptable for this signal backend."""
 
     #: Like ca://PV_PREFIX:SIGNAL
     @abstractmethod
