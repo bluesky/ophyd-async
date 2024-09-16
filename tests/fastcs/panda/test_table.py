@@ -12,8 +12,11 @@ def test_seq_table_converts_lists():
     seq_table_dict_with_lists = {field_name: [] for field_name, _ in SeqTable()}
     # Validation passes
     seq_table = SeqTable(**seq_table_dict_with_lists)
-    assert isinstance(seq_table.trigger, np.ndarray)
-    assert seq_table.trigger.dtype == np.dtype("U32")
+    for field_name, field_value in seq_table:
+        if field_name == "trigger":
+            assert field_value == []
+        else:
+            assert np.array_equal(field_value, np.array([], dtype=field_value.dtype))
 
 
 def test_seq_table_validation_errors():
@@ -73,6 +76,7 @@ def test_seq_table_validation_errors():
         wrong_types = {
             field_name: field_value.astype(np.unicode_)
             for field_name, field_value in row_one
+            if isinstance(field_value, np.ndarray)
         }
         SeqTable(**wrong_types)
 
@@ -80,9 +84,12 @@ def test_seq_table_validation_errors():
 def test_seq_table_pva_conversion():
     pva_dict = {
         "repeats": np.array([1, 2, 3, 4], dtype=np.int32),
-        "trigger": np.array(
-            ["Immediate", "Immediate", "BITC=0", "Immediate"], dtype=np.dtype("U32")
-        ),
+        "trigger": [
+            SeqTrigger.IMMEDIATE,
+            SeqTrigger.IMMEDIATE,
+            SeqTrigger.BITC_0,
+            SeqTrigger.IMMEDIATE,
+        ],
         "position": np.array([1, 2, 3, 4], dtype=np.int32),
         "time1": np.array([1, 0, 1, 0], dtype=np.int32),
         "outa1": np.array([1, 0, 1, 0], dtype=np.bool_),
@@ -178,31 +185,36 @@ def test_seq_table_pva_conversion():
         },
     ]
 
+    def _assert_col_equal(column1, column2):
+        if isinstance(column1, np.ndarray):
+            assert np.array_equal(column1, column2)
+            assert column1.dtype == column2.dtype
+        else:
+            assert column1 == column2
+            assert all(isinstance(x, SeqTrigger) for x in column1)
+            assert all(isinstance(x, SeqTrigger) for x in column2)
+
     seq_table_from_pva_dict = SeqTable(**pva_dict)
     for (_, column1), column2 in zip(seq_table_from_pva_dict, pva_dict.values()):
-        assert np.array_equal(column1, column2)
-        assert column1.dtype == column2.dtype
+        _assert_col_equal(column1, column2)
 
     seq_table_from_rows = reduce(
         lambda x, y: x + y,
         [SeqTable.row(**row_kwargs) for row_kwargs in row_wise_dicts],
     )
     for (_, column1), column2 in zip(seq_table_from_rows, pva_dict.values()):
-        assert np.array_equal(column1, column2)
-        assert column1.dtype == column2.dtype
+        _assert_col_equal(column1, column2)
 
     # Idempotency
     applied_twice_to_pva_dict = SeqTable(**pva_dict).model_dump(mode="python")
     for column1, column2 in zip(applied_twice_to_pva_dict.values(), pva_dict.values()):
-        assert np.array_equal(column1, column2)
-        assert column1.dtype == column2.dtype
+        _assert_col_equal(column1, column2)
 
 
 def test_seq_table_takes_trigger_enum_row():
     for trigger in (SeqTrigger.BITA_0, "BITA=0"):
         table = SeqTable.row(trigger=trigger)
-        assert table.trigger[0] == "BITA=0"
-        assert np.issubdtype(table.trigger.dtype, np.dtype("<U32"))
+        assert table.trigger[0] == SeqTrigger.BITA_0
         table = SeqTable(
             repeats=np.array([1], dtype=np.int32),
             trigger=[trigger],
@@ -222,5 +234,4 @@ def test_seq_table_takes_trigger_enum_row():
             oute2=np.array([1], dtype=np.bool_),
             outf2=np.array([1], dtype=np.bool_),
         )
-        assert table.trigger[0] == "BITA=0"
-        assert np.issubdtype(table.trigger.dtype, np.dtype("<U32"))
+        assert table.trigger[0] == SeqTrigger.BITA_0

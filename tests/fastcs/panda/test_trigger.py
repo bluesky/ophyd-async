@@ -144,5 +144,5 @@ def test_malformed_trigger_in_seq_table():
         full_seq_table(["A"])
     assert "Value error, 'A' is not a valid SeqTrigger" in str(exc)
     with pytest.raises(ValidationError) as exc:
-        full_seq_table({"A"})
+        full_seq_table({"Immediate"})
     assert "Expected a numpy array or a sequence of `SeqTrigger`, got" in str(exc)
