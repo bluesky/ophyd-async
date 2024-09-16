@@ -98,7 +98,7 @@ async def test_can_collect(
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
-        "chunk_size": (1, 10, 10),
+        "chunk_shape": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]

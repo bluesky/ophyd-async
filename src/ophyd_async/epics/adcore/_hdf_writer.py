@@ -97,7 +97,7 @@ class ADHDFWriter(DetectorWriter):
                 shape=detector_shape,
                 dtype_numpy=np_dtype,
                 multiplier=multiplier,
-                chunk_size=(frames_per_chunk, *detector_shape),
+                chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
         # And all the scalar datasets
@@ -126,7 +126,7 @@ class ADHDFWriter(DetectorWriter):
                             multiplier,
                             # NDAttributes appear to always be configured with
                             # this chunk size
-                            chunk_size=(16384,),
+                            chunk_shape=(16384,),
                         )
                     )
 
