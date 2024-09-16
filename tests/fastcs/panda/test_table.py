@@ -79,6 +79,8 @@ def test_seq_table_validation_errors():
             if isinstance(field_value, np.ndarray)
         }
         SeqTable(**wrong_types)
+    with pytest.raises(ValueError, match="'A' is not a valid SeqTrigger."):
+        SeqTable.row(trigger="A")
 
 
 def test_seq_table_pva_conversion():

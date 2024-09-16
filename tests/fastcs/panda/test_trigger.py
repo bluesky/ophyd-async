@@ -14,6 +14,7 @@ from ophyd_async.fastcs.panda import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
+from ophyd_async.fastcs.panda._table import SeqTrigger
 
 
 @pytest.fixture
@@ -117,7 +118,7 @@ def test_malformed_seq_table_info(kwargs, error_msg):
 
 def test_malformed_trigger_in_seq_table():
     def full_seq_table(trigger):
-        SeqTable(
+        return SeqTable(
             repeats=np.array([1], dtype=np.int32),
             trigger=trigger,
             position=np.array([1], dtype=np.int32),
@@ -139,10 +140,21 @@ def test_malformed_trigger_in_seq_table():
 
     with pytest.raises(ValidationError) as exc:
         full_seq_table(np.array(["A"], dtype="U32"))
-    assert "Value error, 'A' is not a valid SeqTrigger" in str(exc)
+    assert (
+        "Input should be 'Immediate', 'BITA=0', 'BITA=1', 'BITB=0', 'BITB=1', "
+        "'BITC... [type=enum, input_value='A', input_type=str_]"
+    ) in str(exc)
     with pytest.raises(ValidationError) as exc:
         full_seq_table(["A"])
-    assert "Value error, 'A' is not a valid SeqTrigger" in str(exc)
-    with pytest.raises(ValidationError) as exc:
-        full_seq_table({"Immediate"})
-    assert "Expected a numpy array or a sequence of `SeqTrigger`, got" in str(exc)
+    assert (
+        "Input should be 'Immediate', 'BITA=0', 'BITA=1', 'BITB=0', 'BITB=1', "
+        "'BITC...' [type=enum, input_value='A', input_type=str]"
+    ) in str(exc)
+
+    # Pydantic is able to infer type from these
+    table = full_seq_table({"Immediate"})
+    assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]
+    table = full_seq_table({SeqTrigger.IMMEDIATE})
+    assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]
+    full_seq_table(np.array(["Immediate"], dtype="U32"))
+    assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]

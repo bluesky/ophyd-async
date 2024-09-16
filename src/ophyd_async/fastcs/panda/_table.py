@@ -4,7 +4,7 @@ from typing import Annotated, Sequence
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from typing_extensions import TypedDict
 
@@ -99,7 +99,7 @@ class SeqTable(Table):
         kwargs = {k: v for k, v in locals().items() if k in sig.parameters}
         if not isinstance(kwargs["trigger"], SeqTrigger):
             if kwargs["trigger"] not in SeqTrigger.__members__.values():
-                raise ValueError(f"'{kwargs['trigger']}' is not a valid trigger.")
+                raise ValueError(f"'{kwargs['trigger']}' is not a valid SeqTrigger.")
             kwargs["trigger"] = SeqTrigger(kwargs["trigger"])
         return Table.row(cls, **kwargs)
 
