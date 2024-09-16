@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import get_args
+from typing import get_args, get_origin
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, model_validator
@@ -63,24 +63,36 @@ class Table(BaseModel):
             }
         )
 
+    @property
     def numpy_dtype(self) -> np.dtype:
         dtype = []
-        for field_value in self.model_fields.values():
-            if isinstance(field_value, np.ndarray):
-                dtype.append(field_value.dtype)
+        for field_name, field_value in self.model_fields.items():
+            if np.ndarray in (
+                get_origin(field_value.annotation),
+                field_value.annotation,
+            ):
+                dtype.append((field_name, getattr(self, field_name).dtype))
             else:
                 enum_type = get_args(field_value.annotation)[0]
                 assert issubclass(enum_type, Enum)
                 enum_values = [element.value for element in enum_type]
                 max_length_in_enum = max(len(value) for value in enum_values)
-                dtype.append(np.dtype(f"<U{max_length_in_enum}"))
+                dtype.append((field_name, np.dtype(f"<U{max_length_in_enum}")))
 
+        return np.dtype(dtype)
+
+    @property
     def numpy_table(self):
-        return np.array(
-            self.numpy_columns(),
-            dtype=self.numpy_dtype(),
-        ).transpose()
+        # It would be nice to be able to use np.transpose for this,
+        # but it defaults to the largest dtype for everything.
+        dtype = self.numpy_dtype
+        transposed_list = [
+            np.array(tuple(row), dtype=dtype) for row in zip(*self.numpy_columns)
+        ]
+        transposed = np.array(transposed_list, dtype=dtype)
+        return transposed
 
+    @property
     def numpy_columns(self) -> list[np.ndarray]:
         """Columns in the table can be lists of string enums or numpy arrays.
 
@@ -88,17 +100,24 @@ class Table(BaseModel):
         """
 
         columns = []
-        for field_value in self.model_fields.values():
-            if isinstance(field_value, np.ndarray):
-                columns.append(field_value)
+        for field_name, field_value in self.model_fields.items():
+            if np.ndarray in (
+                get_origin(field_value.annotation),
+                field_value.annotation,
+            ):
+                columns.append(getattr(self, field_name))
             else:
-                enum_type = get_args(field_value.field_info.annotation)[0]
+                enum_type = get_args(field_value.annotation)[0]
                 assert issubclass(enum_type, Enum)
                 enum_values = [element.value for element in enum_type]
                 max_length_in_enum = max(len(value) for value in enum_values)
                 dtype = np.dtype(f"<U{max_length_in_enum}")
 
-                columns.append(np.array(enum_values, dtype=dtype))
+                columns.append(
+                    np.array(
+                        [enum.value for enum in getattr(self, field_name)], dtype=dtype
+                    )
+                )
 
         return columns
 

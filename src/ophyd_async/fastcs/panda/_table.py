@@ -97,10 +97,6 @@ class SeqTable(Table):
     ) -> "SeqTable":
         sig = inspect.signature(cls.row)
         kwargs = {k: v for k, v in locals().items() if k in sig.parameters}
-        if not isinstance(kwargs["trigger"], SeqTrigger):
-            if kwargs["trigger"] not in SeqTrigger.__members__.values():
-                raise ValueError(f"'{kwargs['trigger']}' is not a valid SeqTrigger.")
-            kwargs["trigger"] = SeqTrigger(kwargs["trigger"])
         return Table.row(cls, **kwargs)
 
     @model_validator(mode="after")
