@@ -1,6 +1,5 @@
 """Integration tests for a StandardDetector using a ADHDFWriter and SimController."""
 
-import asyncio
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -353,31 +352,28 @@ def test_detector_with_unnamed_or_disconnected_config_sigs(
 
     some_other_driver = adcore.ADBaseIO("TEST", name=driver_name)
 
-    async with DeviceCollector(mock=True):
-        det = adsimdetector.SimDetector(
-            "FOO:",
-            dp,
-            name="foo",
-        )
+    det = adsimdetector.SimDetector(
+        "FOO:",
+        dp,
+        name="foo",
+    )
 
     det._config_sigs = [some_other_driver.acquire_time, det.drv.acquire]
 
-    with pytest.raises(Exception) as exc:
-        RE(count_sim([det], times=1))
-
-    assert isinstance(exc.value.args[0], AsyncStatus)
-    assert (
-        str(exc.value.args[0].exception())
-        == "config signal must be named before it is passed to the detector"
-    )
-
-    def plan():
+    def my_plan():
         yield from ops.ensure_connected(det, mock=True)
+        assert det.drv.acquire.name == "foo-drv-acquire"
+        assert some_other_driver.acquire_time.name == (
+            driver_name + "-acquire_time" if driver_name else ""
+        )
+
         yield from count_sim([det], times=1)
 
-    loop = asyncio.get_event_loop()
     with pytest.raises(Exception) as exc:
-        RE(plan(), loop=loop)
+        RE(my_plan())
 
     assert isinstance(exc.value.args[0], AsyncStatus)
     assert str(exc.value.args[0].exception()) == error_output
+
+    # Need to unstage to properly kill tasks
+    RE(bps.unstage(det, wait=True))

@@ -1,8 +1,6 @@
 import asyncio
 from typing import Optional
 
-from pydantic import Field
-
 from ophyd_async.core import DetectorControl, PathProvider
 from ophyd_async.core._detector import TriggerInfo
 
