@@ -178,7 +178,8 @@ async def test_set_and_wait_for_value_same_set_as_read():
         set_mock_put_proceeds(signal, True)
 
     async def check_set_and_wait():
-        await (await set_and_wait_for_value(signal, 1, timeout=0.1))
+        await set_and_wait_for_value(signal, 1, timeout=0.1)
+        await wait_for_value(signal, 1, timeout=0.1)
 
     await asyncio.gather(wait_and_set_proceeds(), check_set_and_wait())
     assert await signal.get_value() == 1
@@ -186,9 +187,9 @@ async def test_set_and_wait_for_value_same_set_as_read():
 
 async def test_set_and_wait_for_value_different_set_and_read():
     set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
-    read_signal = epics_signal_r(str, "pva://read", name="read-signal")
+    match_signal = epics_signal_r(str, "pva://read", name="read-signal")
     await set_signal.connect(mock=True)
-    await read_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
 
     do_read_set = Event()
 
@@ -196,14 +197,14 @@ async def test_set_and_wait_for_value_different_set_and_read():
 
     async def wait_and_set_read():
         await do_read_set.wait()
-        set_mock_value(read_signal, "test")
+        set_mock_value(match_signal, "test")
 
     async def check_set_and_wait():
-        await (
-            await set_and_wait_for_other_value(
-                set_signal, 1, read_signal, "test", timeout=100
-            )
+        await set_and_wait_for_other_value(
+            set_signal, 1, match_signal, "test", timeout=100
         )
+        await wait_for_value(set_signal, 1, timeout=100)
+        await wait_for_value(match_signal, "test", timeout=100)
 
     await asyncio.gather(wait_and_set_read(), check_set_and_wait())
     assert await set_signal.get_value() == 1

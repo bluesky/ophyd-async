@@ -493,7 +493,7 @@ async def observe_signals_values(
     *signals: SignalR[T],
     timeout: float | None = None,
     done_status: Status | None = None,
-) -> AsyncGenerator[T, None]:
+) -> AsyncGenerator[Tuple[SignalR[T], T], None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
     Parameters
@@ -603,14 +603,14 @@ async def set_and_wait_for_other_value(
     set_signal: SignalW[T],
     set_value: T,
     match_signal: SignalR[S],
-    match_value: S,
+    match_value: S | Callable[[S], bool],
     timeout: float = DEFAULT_TIMEOUT,
     set_timeout: Optional[float] = None,
-) -> AsyncStatus:
+):
     """Set a signal and monitor another signal until it has the specified value.
 
     This function sets a set_signal to a specified set_value and waits for
-    a read_signal to have the read_value.
+    a match_signal to have the match_value.
 
     Parameters
     ----------
@@ -618,9 +618,9 @@ async def set_and_wait_for_other_value(
         The signal to set
     set_value:
         The value to set it to
-    read_signal:
+    match_signal:
         The signal to monitor
-    read_value:
+    match_value:
         The value to wait for
     timeout:
         How long to wait for the signal to have the value
@@ -639,7 +639,7 @@ async def set_and_wait_for_other_value(
     # Get the initial value from the monitor to make sure we've created it
     current_value = await anext(values_gen)
 
-    status = set_signal.set(set_value, timeout=set_timeout)
+    set_signal.set(set_value, timeout=set_timeout)
 
     # If the value was the same as before no need to wait for it to change
     if current_value != match_value:
@@ -656,15 +656,14 @@ async def set_and_wait_for_other_value(
                 f"{match_signal.name} didn't match {match_value} in {timeout}s"
             ) from e
 
-    return status
-
 
 async def set_and_wait_for_value(
     signal: SignalRW[T],
     value: T,
+    match_value: T | Callable[[T], bool] | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: Optional[float] = None,
-) -> AsyncStatus:
+):
     """Set a signal and monitor it until it has that value.
 
     Useful for busy record, or other Signals with pattern:
@@ -678,6 +677,9 @@ async def set_and_wait_for_value(
         The signal to set
     value:
         The value to set it to
+    match_value:
+        The expected value of the signal after the operation.
+        Used to verify that the set operation was successful.
     timeout:
         How long to wait for the signal to have the value
     status_timeout:
@@ -689,6 +691,9 @@ async def set_and_wait_for_value(
 
         set_and_wait_for_value(device.acquire, 1)
     """
-    return await set_and_wait_for_other_value(
-        signal, value, signal, value, timeout, status_timeout
+    if match_value is None:
+        match_value = value
+
+    await set_and_wait_for_other_value(
+        signal, value, signal, match_value, timeout, status_timeout
     )
