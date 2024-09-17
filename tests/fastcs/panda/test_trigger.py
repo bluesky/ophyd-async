@@ -138,12 +138,15 @@ def test_malformed_trigger_in_seq_table():
             outf2=np.array([1], dtype=np.bool_),
         )
 
-    with pytest.raises(ValidationError) as exc:
-        full_seq_table(np.array(["A"], dtype="U32"))
-    assert (
-        "Input should be 'Immediate', 'BITA=0', 'BITA=1', 'BITB=0', 'BITB=1', "
-        "'BITC... [type=enum, input_value='A', input_type=str_]"
-    ) in str(exc)
+    for attempted_table in [
+        np.array(["A"], dtype="U32"),
+        np.array(["Immediate"], dtype="U32"),
+        {"Immediate"},
+    ]:
+        with pytest.raises(ValidationError) as exc:
+            full_seq_table(attempted_table)
+        assert "Input should be an instance of Sequence" in str(exc)
+
     with pytest.raises(ValidationError) as exc:
         full_seq_table(["A"])
     assert (
@@ -152,9 +155,7 @@ def test_malformed_trigger_in_seq_table():
     ) in str(exc)
 
     # Pydantic is able to infer type from these
-    table = full_seq_table({"Immediate"})
+    table = full_seq_table([SeqTrigger.IMMEDIATE])
     assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]
-    table = full_seq_table({SeqTrigger.IMMEDIATE})
-    assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]
-    full_seq_table(np.array(["Immediate"], dtype="U32"))
+    table = full_seq_table(["Immediate"])
     assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]

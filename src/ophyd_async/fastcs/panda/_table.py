@@ -51,7 +51,7 @@ PydanticNp1DArrayBool = Annotated[
     ),
     Field(default_factory=lambda: np.array([], dtype=np.bool_)),
 ]
-TriggerStr = Annotated[list[SeqTrigger], Field(default_factory=list)]
+TriggerStr = Annotated[Sequence[SeqTrigger], Field(default_factory=list)]
 
 
 class SeqTable(Table):

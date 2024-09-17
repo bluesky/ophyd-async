@@ -63,7 +63,6 @@ class Table(BaseModel):
             }
         )
 
-    @property
     def numpy_dtype(self) -> np.dtype:
         dtype = []
         for field_name, field_value in self.model_fields.items():
@@ -81,18 +80,16 @@ class Table(BaseModel):
 
         return np.dtype(dtype)
 
-    @property
     def numpy_table(self):
         # It would be nice to be able to use np.transpose for this,
         # but it defaults to the largest dtype for everything.
-        dtype = self.numpy_dtype
+        dtype = self.numpy_dtype()
         transposed_list = [
-            np.array(tuple(row), dtype=dtype) for row in zip(*self.numpy_columns)
+            np.array(tuple(row), dtype=dtype) for row in zip(*self.numpy_columns())
         ]
         transposed = np.array(transposed_list, dtype=dtype)
         return transposed
 
-    @property
     def numpy_columns(self) -> list[np.ndarray]:
         """Columns in the table can be lists of string enums or numpy arrays.
 

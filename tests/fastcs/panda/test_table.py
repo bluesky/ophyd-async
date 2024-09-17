@@ -216,7 +216,7 @@ def test_seq_table_pva_conversion():
         _assert_col_equal(column1, column2)
 
     assert np.array_equal(
-        seq_table_from_pva_dict.numpy_columns,
+        seq_table_from_pva_dict.numpy_columns(),
         [
             np.array([1, 2, 3, 4], dtype=np.int32),
             np.array(
@@ -245,7 +245,7 @@ def test_seq_table_pva_conversion():
             np.array([True, False, True, False], dtype=np.bool_),
         ],
     )
-    dtype = seq_table_from_pva_dict.numpy_dtype
+    dtype = seq_table_from_pva_dict.numpy_dtype()
     assert dtype == np.dtype(
         [
             ("repeats", np.int32),
@@ -269,7 +269,7 @@ def test_seq_table_pva_conversion():
     )
 
     assert np.array_equal(
-        seq_table_from_pva_dict.numpy_table,
+        seq_table_from_pva_dict.numpy_table(),
         np.array(
             [
                 (
