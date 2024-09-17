@@ -513,7 +513,7 @@ class _ValueChecker(Generic[T]):
 
 async def wait_for_value(
     signal: SignalR[T],
-    match: Union[T, Callable[[T], bool]],
+    match_value: T | Callable[[T], bool],
     timeout: Optional[float],
 ):
     """Wait for a signal to have a matching value.
@@ -539,18 +539,18 @@ async def wait_for_value(
 
         wait_for_value(device.num_captured, lambda v: v > 45, timeout=1)
     """
-    if callable(match):
-        checker = _ValueChecker(match, match.__name__)
+    if callable(match_value):
+        checker = _ValueChecker(match_value, match_value.__name__)
     else:
-        checker = _ValueChecker(lambda v: v == match, repr(match))
+        checker = _ValueChecker(lambda v: v == match_value, repr(match_value))
     await checker.wait_for_value(signal, timeout)
 
 
 async def set_and_wait_for_other_value(
     set_signal: SignalW[T],
     set_value: T,
-    read_signal: SignalR[S],
-    read_value: S,
+    match_signal: SignalR[S],
+    match_value: S,
     timeout: float = DEFAULT_TIMEOUT,
     set_timeout: Optional[float] = None,
 ) -> AsyncStatus:
@@ -581,7 +581,7 @@ async def set_and_wait_for_other_value(
         set_and_wait_for_value(device.acquire, 1, device.acquire_rbv, 1)
     """
     # Start monitoring before the set to avoid a race condition
-    values_gen = observe_value(read_signal)
+    values_gen = observe_value(match_signal)
 
     # Get the initial value from the monitor to make sure we've created it
     current_value = await anext(values_gen)
@@ -589,18 +589,18 @@ async def set_and_wait_for_other_value(
     status = set_signal.set(set_value, timeout=set_timeout)
 
     # If the value was the same as before no need to wait for it to change
-    if current_value != read_value:
+    if current_value != match_value:
 
         async def _wait_for_value():
             async for value in values_gen:
-                if value == read_value:
+                if value == match_value:
                     break
 
         try:
             await asyncio.wait_for(_wait_for_value(), timeout)
         except asyncio.TimeoutError as e:
             raise TimeoutError(
-                f"{read_signal.name} didn't match {read_value} in {timeout}s"
+                f"{match_signal.name} didn't match {match_value} in {timeout}s"
             ) from e
 
     return status
