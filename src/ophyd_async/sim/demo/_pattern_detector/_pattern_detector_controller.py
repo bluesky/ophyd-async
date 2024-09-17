@@ -11,7 +11,7 @@ class PatternDetectorController(DetectorControl):
         self,
         pattern_generator: PatternGenerator,
         path_provider: PathProvider,
-        exposure: Optional[float] = 0.1,
+        exposure: float = 0.1,
     ) -> None:
         self.pattern_generator: PatternGenerator = pattern_generator
         self.pattern_generator.set_exposure(exposure)

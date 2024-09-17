@@ -3,7 +3,6 @@ import atexit
 import inspect
 import logging
 import time
-from abc import ABCMeta
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
@@ -27,6 +26,7 @@ from ophyd_async.core import (
     T,
     get_dtype,
     get_unique,
+    is_pydantic_model,
     wait_for_connection,
 )
 
@@ -370,14 +370,7 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
                 raise TypeError(f"{pv} has type {typ.__name__} not {datatype.__name__}")
         return PvaConverter()
     elif "NTTable" in typeid:
-        if (
-            datatype
-            and inspect.isclass(datatype)
-            and
-            # Necessary to avoid weirdness in ABCMeta.__subclasscheck__
-            isinstance(datatype, ABCMeta)
-            and issubclass(datatype, BaseModel)
-        ):
+        if is_pydantic_model(datatype):
             return PvaPydanticModelConverter(datatype)  # type: ignore
         return PvaTableConverter()
     elif "structure" in typeid:

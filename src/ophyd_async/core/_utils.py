@@ -4,10 +4,11 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass
-from typing import Generic, Literal, ParamSpec, TypeVar
+from typing import Generic, Literal, ParamSpec, TypeVar, get_origin
 
 import numpy as np
 from bluesky.protocols import Reading
+from pydantic import BaseModel
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -184,3 +185,9 @@ def in_micros(t: float) -> int:
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")
     return int(np.ceil(t * 1e6))
+
+
+def is_pydantic_model(datatype) -> bool:
+    while origin := get_origin(datatype):
+        datatype = origin
+    return datatype and issubclass(datatype, BaseModel)

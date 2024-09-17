@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 import time
-from abc import ABCMeta
 from collections import abc
 from enum import Enum
 from typing import Generic, cast, get_origin
@@ -18,7 +17,13 @@ from ._signal_backend import (
     RuntimeSubsetEnum,
     SignalBackend,
 )
-from ._utils import DEFAULT_TIMEOUT, ReadingValueCallback, T, get_dtype
+from ._utils import (
+    DEFAULT_TIMEOUT,
+    ReadingValueCallback,
+    T,
+    get_dtype,
+    is_pydantic_model,
+)
 
 primitive_dtypes: dict[type, Dtype] = {
     str: "string",
@@ -148,18 +153,11 @@ def make_converter(datatype):
         issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
     )
 
-    is_pydantic_model = (
-        inspect.isclass(datatype)
-        # Necessary to avoid weirdness in ABCMeta.__subclasscheck__
-        and isinstance(datatype, ABCMeta)
-        and issubclass(datatype, BaseModel)
-    )
-
     if is_array or is_sequence:
         return SoftArrayConverter()
     if is_enum:
         return SoftEnumConverter(datatype)  # type: ignore
-    if is_pydantic_model:
+    if is_pydantic_model(datatype):
         return SoftPydanticModelConverter(datatype)  # type: ignore
 
     return SoftConverter()

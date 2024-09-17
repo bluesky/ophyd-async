@@ -80,6 +80,7 @@ from ._utils import (
     get_dtype,
     get_unique,
     in_micros,
+    is_pydantic_model,
     wait_for_connection,
 )
 
@@ -163,6 +164,7 @@ __all__ = [
     "get_dtype",
     "get_unique",
     "in_micros",
+    "is_pydantic_model",
     "wait_for_connection",
     "completed_status",
 ]
