@@ -199,7 +199,6 @@ class PatternGenerator:
     def close(self) -> None:
         if self._handle_for_h5_file:
             self._handle_for_h5_file.close()
-            print("file closed")
             self._handle_for_h5_file = None
 
     async def observe_indices_written(

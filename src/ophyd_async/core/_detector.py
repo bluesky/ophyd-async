@@ -236,7 +236,7 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         # Stop data writing.
-        await self.writer.close()
+        await asyncio.gather(self.writer.close(), self.controller.disarm())
 
     async def read_configuration(self) -> Dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
