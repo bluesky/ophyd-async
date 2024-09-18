@@ -57,7 +57,7 @@ class ADHDFWriter(DetectorWriter):
         await self.hdf.create_directory.set(info.create_dir_depth)
 
         # Make sure we are using chunk auto-sizing
-        await self.hdf.chunk_size_auto.set(True)
+        await asyncio.gather(self.hdf.chunk_size_auto.set(True))
 
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
