@@ -29,7 +29,7 @@ class PilatusController(DetectorControl):
         self._readout_time = readout_time
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return self._readout_time
 
     async def prepare(self, trigger_info: TriggerInfo):

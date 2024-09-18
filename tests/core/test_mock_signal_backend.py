@@ -286,7 +286,8 @@ async def test_set_mock_values_exhausted_passes(mock_signals):
         repeat(iter(["second_value", "third_value"]), 6),
         require_all_consumed=False,
     )
-    for calls, value_set in enumerate(iterator, start=1):
+    calls = 0
+    for calls, value_set in enumerate(iterator, start=1):  # noqa: B007
         assert await signal2.get_value() == value_set
 
     assert calls == 6

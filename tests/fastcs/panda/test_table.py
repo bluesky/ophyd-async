@@ -179,7 +179,9 @@ def test_seq_table_pva_conversion():
     ]
 
     seq_table_from_pva_dict = SeqTable(**pva_dict)
-    for (_, column1), column2 in zip(seq_table_from_pva_dict, pva_dict.values()):
+    for (_, column1), column2 in zip(
+        seq_table_from_pva_dict, pva_dict.values(), strict=False
+    ):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype
 
@@ -187,13 +189,17 @@ def test_seq_table_pva_conversion():
         lambda x, y: x + y,
         [SeqTable.row(**row_kwargs) for row_kwargs in row_wise_dicts],
     )
-    for (_, column1), column2 in zip(seq_table_from_rows, pva_dict.values()):
+    for (_, column1), column2 in zip(
+        seq_table_from_rows, pva_dict.values(), strict=False
+    ):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype
 
     # Idempotency
     applied_twice_to_pva_dict = SeqTable(**pva_dict).model_dump(mode="python")
-    for column1, column2 in zip(applied_twice_to_pva_dict.values(), pva_dict.values()):
+    for column1, column2 in zip(
+        applied_twice_to_pva_dict.values(), pva_dict.values(), strict=False
+    ):
         assert np.array_equal(column1, column2)
         assert column1.dtype == column2.dtype
 

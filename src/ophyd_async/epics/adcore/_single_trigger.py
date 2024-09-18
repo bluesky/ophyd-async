@@ -1,5 +1,5 @@
 import asyncio
-from typing import Sequence
+from collections.abc import Sequence
 
 from bluesky.protocols import Triggerable
 
