@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import bluesky.plan_stubs as bps
@@ -97,7 +97,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     controller = DummyController()
     set_mock_value(writer.hdf.file_path_exists, True)
 
-    detector: StandardDetector[Optional[TriggerInfo]] = StandardDetector(
+    detector: StandardDetector[TriggerInfo | None] = StandardDetector(
         controller, writer
     )
     trigger_logic = DummyTriggerLogic()

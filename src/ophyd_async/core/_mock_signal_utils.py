@@ -1,5 +1,6 @@
+from collections.abc import Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, Awaitable, Callable, Iterable
+from typing import Any
 from unittest.mock import AsyncMock
 
 from ._mock_signal_backend import MockSignalBackend

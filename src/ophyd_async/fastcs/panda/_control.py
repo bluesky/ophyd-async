@@ -16,7 +16,7 @@ class PandaPcapController(DetectorControl):
         self.pcap = pcap
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return 0.000000008
 
     async def prepare(self, trigger_info: TriggerInfo):

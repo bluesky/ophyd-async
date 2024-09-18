@@ -1,12 +1,13 @@
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, List, Sequence
 from urllib.parse import urlunparse
 
 from event_model import (
     ComposeStreamResource,
     ComposeStreamResourceBundle,
     StreamDatum,
+    StreamRange,
     StreamResource,
 )
 
@@ -35,7 +36,7 @@ class HDFFile:
     def __init__(
         self,
         full_file_name: Path,
-        datasets: List[HDFDataset],
+        datasets: list[HDFDataset],
         hostname: str = "localhost",
     ) -> None:
         self._last_emitted = 0
@@ -58,7 +59,7 @@ class HDFFile:
             )
         )
 
-        self._bundles: List[ComposeStreamResourceBundle] = [
+        self._bundles: list[ComposeStreamResourceBundle] = [
             bundler_composer(
                 mimetype="application/x-hdf5",
                 uri=uri,
@@ -82,15 +83,10 @@ class HDFFile:
     def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
         # Indices are relative to resource
         if indices_written > self._last_emitted:
-            indices = {
+            indices: StreamRange = {
                 "start": self._last_emitted,
                 "stop": indices_written,
             }
             self._last_emitted = indices_written
             for bundle in self._bundles:
                 yield bundle.compose_stream_datum(indices)
-        return None
-
-    def close(self) -> None:
-        for bundle in self._bundles:
-            bundle.close()
