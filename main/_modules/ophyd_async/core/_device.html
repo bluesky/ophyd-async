@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.core._device &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -491,17 +491,12 @@ document.write(`
 
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterator</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">LoggerAdapter</span><span class="p">,</span> <span class="n">getLogger</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
-    <span class="n">Coroutine</span><span class="p">,</span>
-    <span class="n">Dict</span><span class="p">,</span>
-    <span class="n">Generator</span><span class="p">,</span>
-    <span class="n">Iterator</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Set</span><span class="p">,</span>
-    <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -512,7 +507,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="Device">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.Device.html#ophyd_async.core.Device">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Device">[docs]</a>
 <span class="k">class</span> <span class="nc">Device</span><span class="p">(</span><span class="n">HasName</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Common base class for all Ophyd Async Devices.</span>
 
@@ -523,7 +518,7 @@ document.write(`
     <span class="c1">#: The parent Device if it exists</span>
     <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Device&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1"># None if connect hasn&#39;t started, a Task if it has</span>
-    <span class="n">_connect_task</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_connect_task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="c1"># Used to check if the previous connect was mocked,</span>
     <span class="c1"># if the next mock value differs then we fail</span>
@@ -543,16 +538,13 @@ document.write(`
             <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ophyd_async.devices&quot;</span><span class="p">),</span> <span class="p">{</span><span class="s2">&quot;ophyd_async_device_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Device.children">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.Device.html#ophyd_async.core.Device.children">[docs]</a>
-    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Device&quot;</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Device&quot;</span><span class="p">]]:</span>
         <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">attr_name</span> <span class="o">!=</span> <span class="s2">&quot;parent&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">Device</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span></div>
-
+                <span class="k">yield</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span>
 
 <div class="viewcode-block" id="Device.set_name">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.Device.html#ophyd_async.core.Device.set_name">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Device.set_name">[docs]</a>
     <span class="k">def</span> <span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set ``self.name=name`` and each ``self.child.name=name+&quot;-child&quot;``.</span>
 
@@ -574,7 +566,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="Device.connect">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.Device.html#ophyd_async.core.Device.connect">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Device.connect">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mock</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -629,8 +621,8 @@ document.write(`
 
 
 <div class="viewcode-block" id="DeviceVector">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.DeviceVector.html#ophyd_async.core.DeviceVector">[docs]</a>
-<span class="k">class</span> <span class="nc">DeviceVector</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">Device</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DeviceVector">[docs]</a>
+<span class="k">class</span> <span class="nc">DeviceVector</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">Device</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Defines device components with indices.</span>
 
@@ -639,18 +631,15 @@ document.write(`
 <span class="sd">    :class:`~ophyd_async.epics.demo.DynamicSensorGroup`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DeviceVector.children">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.DeviceVector.html#ophyd_async.core.DeviceVector.children">[docs]</a>
-    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">Device</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">attr_name</span><span class="p">),</span> <span class="n">attr</span></div>
-</div>
 
 
 
 <div class="viewcode-block" id="DeviceCollector">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.DeviceCollector.html#ophyd_async.core.DeviceCollector">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DeviceCollector">[docs]</a>
 <span class="k">class</span> <span class="nc">DeviceCollector</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Collector of top level Device instances to be used as a context manager</span>
 
@@ -691,8 +680,8 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span> <span class="o">=</span> <span class="n">connect</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span> <span class="o">=</span> <span class="n">mock</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_names_on_enter</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_objects_on_exit</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_names_on_enter</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objects_on_exit</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span> <span class="nf">_caller_locals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Walk up until we find a stack frame that doesn&#39;t have us as self&quot;&quot;&quot;</span>
@@ -704,6 +693,9 @@ document.write(`
             <span class="n">caller_frame</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">tb_frame</span>
             <span class="k">while</span> <span class="n">caller_frame</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="n">caller_frame</span> <span class="o">=</span> <span class="n">caller_frame</span><span class="o">.</span><span class="n">f_back</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">caller_frame</span>
+                <span class="p">),</span> <span class="s2">&quot;No previous frame to the one with self in it, this shouldn&#39;t happen&quot;</span>
             <span class="k">return</span> <span class="n">caller_frame</span><span class="o">.</span><span class="n">f_locals</span>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DeviceCollector&quot;</span><span class="p">:</span>
@@ -716,7 +708,7 @@ document.write(`
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_on_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Name and kick off connect for devices</span>
-        <span class="n">connect_coroutines</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">connect_coroutines</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objects_on_exit</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_names_on_enter</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Device</span><span class="p">):</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_name</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
@@ -738,12 +730,12 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_objects_on_exit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller_locals</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">fut</span> <span class="o">=</span> <span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_exit</span><span class="p">())</span>
-        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span>
                 <span class="s2">&quot;Could not connect devices. Is the bluesky event loop running? See &quot;</span>
                 <span class="s2">&quot;https://blueskyproject.io/ophyd-async/main/&quot;</span>
                 <span class="s2">&quot;user/explanations/event-loop-choice.html for more info.&quot;</span>
-            <span class="p">)</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
         <span class="k">return</span> <span class="n">fut</span></div>
 
 </pre></div>

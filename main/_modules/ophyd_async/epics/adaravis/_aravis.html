@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adaravis._aravis &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.adaravis._aravis &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -499,7 +499,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="AravisDetector">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisDetector.html#ophyd_async.epics.adaravis.AravisDetector">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisDetector">[docs]</a>
 <span class="k">class</span> <span class="nc">AravisDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Ophyd-async implementation of an ADAravis Detector.</span>
@@ -534,14 +534,9 @@ document.write(`
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="AravisDetector.get_external_trigger_gpio">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisDetector.html#ophyd_async.epics.adaravis.AravisDetector.get_external_trigger_gpio">[docs]</a>
     <span class="k">def</span> <span class="nf">get_external_trigger_gpio</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">gpio_number</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">gpio_number</span>
 
-
-<div class="viewcode-block" id="AravisDetector.set_external_trigger_gpio">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisDetector.html#ophyd_async.epics.adaravis.AravisDetector.set_external_trigger_gpio">[docs]</a>
     <span class="k">def</span> <span class="nf">set_external_trigger_gpio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpio_number</span><span class="p">:</span> <span class="n">AravisController</span><span class="o">.</span><span class="n">GPIO_NUMBER</span><span class="p">):</span>
         <span class="n">supported_gpio_numbers</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">AravisController</span><span class="o">.</span><span class="n">GPIO_NUMBER</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">gpio_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported_gpio_numbers</span><span class="p">:</span>
@@ -550,8 +545,7 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;indices: </span><span class="si">{</span><span class="n">supported_gpio_numbers</span><span class="si">}</span><span class="s2"> but was asked to &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;use </span><span class="si">{</span><span class="n">gpio_number</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">gpio_number</span> <span class="o">=</span> <span class="n">gpio_number</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">gpio_number</span> <span class="o">=</span> <span class="n">gpio_number</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>

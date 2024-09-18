@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.demo._mover &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.demo._mover &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -493,10 +493,10 @@ document.write(`
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">CalculatableTimeout</span><span class="p">,</span>
-    <span class="n">CalculateTimeout</span><span class="p">,</span>
     <span class="n">ConfigSignal</span><span class="p">,</span>
     <span class="n">Device</span><span class="p">,</span>
     <span class="n">HintedSignal</span><span class="p">,</span>
@@ -509,7 +509,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="Mover">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.Mover.html#ophyd_async.epics.demo.Mover">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Mover">[docs]</a>
 <span class="k">class</span> <span class="nc">Mover</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity&quot;&quot;&quot;</span>
 
@@ -529,20 +529,14 @@ document.write(`
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Mover.set_name">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.Mover.html#ophyd_async.epics.demo.Mover.set_name">[docs]</a>
     <span class="k">def</span> <span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="c1"># Readback should be named the same as its parent in read()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="Mover.set">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.Mover.html#ophyd_async.epics.demo.Mover.set">[docs]</a>
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">set</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CalculateTimeout</span>
-    <span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">):</span>
+        <span class="n">new_position</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">old_position</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
@@ -550,7 +544,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="n">CalculateTimeout</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">velocity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Mover has zero velocity&quot;</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
         <span class="c1"># Make an Event that will be set on completion, and a Status that will</span>
@@ -574,21 +568,17 @@ document.write(`
                 <span class="n">done</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
                 <span class="k">break</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="Mover.stop">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.Mover.html#ophyd_async.epics.demo.Mover.stop">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
         <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">status</span></div>
-</div>
 
 
 
 <div class="viewcode-block" id="SampleStage">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.SampleStage.html#ophyd_async.epics.demo.SampleStage">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.SampleStage">[docs]</a>
 <span class="k">class</span> <span class="nc">SampleStage</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo sample stage with X and Y movables&quot;&quot;&quot;</span>
 

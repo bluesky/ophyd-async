@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._providers &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.core._providers &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -494,11 +494,11 @@ document.write(`
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Protocol</span>
 
 
 <div class="viewcode-block" id="PathInfo">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.PathInfo.html#ophyd_async.core.PathInfo">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.PathInfo">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">PathInfo</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -516,58 +516,36 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="FilenameProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.FilenameProvider.html#ophyd_async.core.FilenameProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">FilenameProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<div class="viewcode-block" id="FilenameProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.FilenameProvider.html#ophyd_async.core.FilenameProvider.__call__">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a filename to use for output data, w/o extension&quot;&quot;&quot;</span></div>
-</div>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a filename to use for output data, w/o extension&quot;&quot;&quot;</span>
 
 
-
-<div class="viewcode-block" id="PathProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.PathProvider.html#ophyd_async.core.PathProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">PathProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<div class="viewcode-block" id="PathProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.PathProvider.html#ophyd_async.core.PathProvider.__call__">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current directory to write files into&quot;&quot;&quot;</span></div>
-</div>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current directory to write files into&quot;&quot;&quot;</span>
 
 
-
-<div class="viewcode-block" id="StaticFilenameProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.StaticFilenameProvider.html#ophyd_async.core.StaticFilenameProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">StaticFilenameProvider</span><span class="p">(</span><span class="n">FilenameProvider</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_static_filename</span> <span class="o">=</span> <span class="n">filename</span>
 
-<div class="viewcode-block" id="StaticFilenameProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.StaticFilenameProvider.html#ophyd_async.core.StaticFilenameProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_filename</span></div>
-</div>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_filename</span>
 
 
-
-<div class="viewcode-block" id="UUIDFilenameProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.UUIDFilenameProvider.html#ophyd_async.core.UUIDFilenameProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">UUIDFilenameProvider</span><span class="p">(</span><span class="n">FilenameProvider</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">uuid_call_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">,</span>
-        <span class="n">uuid_call_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">uuid_call_args</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_func</span> <span class="o">=</span> <span class="n">uuid_call_func</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_args</span> <span class="o">=</span> <span class="n">uuid_call_args</span> <span class="ow">or</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="UUIDFilenameProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.UUIDFilenameProvider.html#ophyd_async.core.UUIDFilenameProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_func</span> <span class="ow">in</span> <span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid3</span><span class="p">,</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">]</span>
             <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span>
@@ -578,13 +556,9 @@ document.write(`
             <span class="p">)</span>
 
         <span class="n">uuid_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_args</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid_str</span><span class="si">}</span><span class="s2">&quot;</span></div>
-</div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid_str</span><span class="si">}</span><span class="s2">&quot;</span>
 
 
-
-<div class="viewcode-block" id="AutoIncrementFilenameProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.AutoIncrementFilenameProvider.html#ophyd_async.core.AutoIncrementFilenameProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">AutoIncrementFilenameProvider</span><span class="p">(</span><span class="n">FilenameProvider</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -600,9 +574,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_increment</span> <span class="o">=</span> <span class="n">increment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inc_delimeter</span> <span class="o">=</span> <span class="n">inc_delimeter</span>
 
-<div class="viewcode-block" id="AutoIncrementFilenameProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.AutoIncrementFilenameProvider.html#ophyd_async.core.AutoIncrementFilenameProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span><span class="p">))</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_digits</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Auto incrementing filename counter </span><span class="se">\</span>
@@ -614,13 +586,9 @@ document.write(`
         <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_filename</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">_inc_delimeter</span><span class="si">}{</span><span class="n">padded_counter</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_increment</span>
-        <span class="k">return</span> <span class="n">filename</span></div>
-</div>
+        <span class="k">return</span> <span class="n">filename</span>
 
 
-
-<div class="viewcode-block" id="StaticPathProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.StaticPathProvider.html#ophyd_async.core.StaticPathProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">StaticPathProvider</span><span class="p">(</span><span class="n">PathProvider</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -632,22 +600,16 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span> <span class="o">=</span> <span class="n">directory_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span> <span class="o">=</span> <span class="n">create_dir_depth</span>
 
-<div class="viewcode-block" id="StaticPathProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.StaticPathProvider.html#ophyd_async.core.StaticPathProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">(</span><span class="n">device_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">PathInfo</span><span class="p">(</span>
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="AutoIncrementingPathProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.AutoIncrementingPathProvider.html#ophyd_async.core.AutoIncrementingPathProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">AutoIncrementingPathProvider</span><span class="p">(</span><span class="n">PathProvider</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -659,7 +621,7 @@ document.write(`
         <span class="n">num_calls_per_inc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">increment</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">inc_delimeter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span>
-        <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span> <span class="o">=</span> <span class="n">filename_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">=</span> <span class="n">base_directory_path</span>
@@ -673,9 +635,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_increment</span> <span class="o">=</span> <span class="n">increment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inc_delimeter</span> <span class="o">=</span> <span class="n">inc_delimeter</span>
 
-<div class="viewcode-block" id="AutoIncrementingPathProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.AutoIncrementingPathProvider.html#ophyd_async.core.AutoIncrementingPathProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">(</span><span class="n">device_name</span><span class="p">)</span>
 
         <span class="n">padded_counter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span><span class="si">:</span><span class="s2">0</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_digits</span><span class="si">}}</span><span class="s2">&quot;</span>
@@ -697,13 +657,9 @@ document.write(`
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">/</span> <span class="n">auto_inc_dir_name</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="YMDPathProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.YMDPathProvider.html#ophyd_async.core.YMDPathProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">YMDPathProvider</span><span class="p">(</span><span class="n">PathProvider</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -717,9 +673,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span> <span class="o">=</span> <span class="n">create_dir_depth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_device_name_as_base_dir</span> <span class="o">=</span> <span class="n">device_name_as_base_dir</span>
 
-<div class="viewcode-block" id="YMDPathProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.YMDPathProvider.html#ophyd_async.core.YMDPathProvider.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
         <span class="n">sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
         <span class="n">current_date</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;%Y</span><span class="si">{</span><span class="n">sep</span><span class="si">}</span><span class="s2">%m</span><span class="si">{</span><span class="n">sep</span><span class="si">}</span><span class="s2">%d&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">device_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -740,40 +694,23 @@ document.write(`
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">/</span> <span class="n">ymd_dir_path</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
-        <span class="p">)</span></div>
-</div>
+        <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="NameProvider">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.NameProvider.html#ophyd_async.core.NameProvider">[docs]</a>
 <span class="k">class</span> <span class="nc">NameProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<div class="viewcode-block" id="NameProvider.__call__">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.NameProvider.html#ophyd_async.core.NameProvider.__call__">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name to be used as a data_key in the descriptor document&quot;&quot;&quot;</span></div>
-</div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name to be used as a data_key in the descriptor document&quot;&quot;&quot;</span>
 
 
-
-<div class="viewcode-block" id="DatasetDescriber">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.DatasetDescriber.html#ophyd_async.core.DatasetDescriber">[docs]</a>
 <span class="k">class</span> <span class="nc">DatasetDescriber</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<div class="viewcode-block" id="DatasetDescriber.np_datatype">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.DatasetDescriber.html#ophyd_async.core.DatasetDescriber.np_datatype">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">np_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents the numpy datatype&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents the numpy datatype&quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="DatasetDescriber.shape">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.DatasetDescriber.html#ophyd_async.core.DatasetDescriber.shape">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the shape of the data collection&quot;&quot;&quot;</span></div>
-</div>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the shape of the data collection&quot;&quot;&quot;</span>
 </pre></div>
 
                 </article>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a Simple Device &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>Make a Simple Device &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -514,13 +514,13 @@ may change API on minor release numbers before then</p>
 <section id="make-a-simple-device">
 <h1>Make a Simple Device<a class="headerlink" href="#make-a-simple-device" title="Link to this heading">#</a></h1>
 <p>To make a simple device, you need to subclass from the
-<a class="reference internal" href="../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> class, create some <a class="reference internal" href="../generated/ophyd_async.core.Signal.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> instances, and optionally implement
+<a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> class, create some <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> instances, and optionally implement
 other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.13.0a5.dev88+gace1a96d)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
 <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.0a5.dev88+gace1a96d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
 <p>The rest of this guide will show examples from <code class="docutils literal notranslate"><span class="pre">src/ophyd_async/epics/demo/__init__.py</span></code></p>
 <section id="readable">
 <h2>Readable<a class="headerlink" href="#readable" title="Link to this heading">#</a></h2>
-<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.13.0a5.dev88+gace1a96d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../generated/ophyd_async.epics.demo.Sensor.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
+<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.13.0a5.dev88+gace1a96d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
 define some signals, then tell the superclass which signals should contribute to
 <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
@@ -550,7 +550,7 @@ its Python type, which could be:</p>
 </li>
 </ul>
 <p>The rest of the arguments are PV connection information, in this case the PV suffix.</p>
-<p>Finally <a class="reference internal" href="../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">super().__init__()</span></code></a> is called with:</p>
+<p>Finally <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">super().__init__()</span></code></a> is called with:</p>
 <ul class="simple">
 <li><p>Possibly empty Device <code class="docutils literal notranslate"><span class="pre">name</span></code>: will also dash-prefix its child Device names is set</p></li>
 <li><p>Optional <code class="docutils literal notranslate"><span class="pre">primary</span></code> signal: a Signal that should be renamed to take the name
@@ -565,7 +565,7 @@ and <code class="docutils literal notranslate"><span class="pre">unstage()</span
 </section>
 <section id="movable">
 <h2>Movable<a class="headerlink" href="#movable" title="Link to this heading">#</a></h2>
-<p>For a more complicated device like a <a class="reference internal" href="../generated/ophyd_async.epics.demo.Mover.html#ophyd_async.epics.demo.Mover" title="ophyd_async.epics.demo.Mover"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Mover</span></code></a>, you can still use <a class="reference internal" href="../generated/ophyd_async.core.StandardReadable.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>
+<p>For a more complicated device like a <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Mover" title="ophyd_async.epics.demo.Mover"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Mover</span></code></a>, you can still use <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>
 and implement some addition protocols:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mover</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity&quot;&quot;&quot;</span>
@@ -592,9 +592,8 @@ and implement some addition protocols:</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">set</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CalculateTimeout</span>
-    <span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">):</span>
+        <span class="n">new_position</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">old_position</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
@@ -602,7 +601,7 @@ and implement some addition protocols:</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="n">CalculateTimeout</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">velocity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Mover has zero velocity&quot;</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
         <span class="c1"># Make an Event that will be set on completion, and a Status that will</span>
@@ -639,7 +638,7 @@ creates a <a class="reference external" href="https://docs.python.org/3/glossary
 precision in parallel, sets the setpoint, then observes the readback value,
 informing watchers of the progress. When it gets to the requested value it
 completes. This co-routine is wrapped in a timeout handler, and passed to an
-<a class="reference internal" href="../generated/ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a> which will start executing it as soon as the Run Engine adds a
+<a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a> which will start executing it as soon as the Run Engine adds a
 callback to it. The <code class="docutils literal notranslate"><span class="pre">stop()</span></code> method then pokes a PV if the move needs to be
 interrupted.</p>
 </section>

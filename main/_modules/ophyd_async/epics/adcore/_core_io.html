@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -504,8 +504,6 @@ document.write(`
     <span class="n">Disable</span> <span class="o">=</span> <span class="s2">&quot;Disable&quot;</span>
 
 
-<div class="viewcode-block" id="NDArrayBaseIO">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDArrayBaseIO.html#ophyd_async.epics.adcore.NDArrayBaseIO">[docs]</a>
 <span class="k">class</span> <span class="nc">NDArrayBaseIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unique_id</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;UniqueId_RBV&quot;</span><span class="p">)</span>
@@ -517,8 +515,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">array_counter</span> <span class="o">=</span> <span class="n">epics_signal_rw_rbv</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ArrayCounter&quot;</span><span class="p">)</span>
         <span class="c1"># There is no _RBV for this one</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_plugins</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;WaitForPlugins&quot;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">NDPluginBaseIO</span><span class="p">(</span><span class="n">NDArrayBaseIO</span><span class="p">):</span>
@@ -534,7 +531,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="NDPluginStatsIO">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDPluginStatsIO.html#ophyd_async.epics.adcore.NDPluginStatsIO">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginStatsIO">[docs]</a>
 <span class="k">class</span> <span class="nc">NDPluginStatsIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plugin for computing statistics from an image or region of interest within an image.</span>
@@ -564,7 +561,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="DetectorState">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.DetectorState.html#ophyd_async.epics.adcore.DetectorState">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.DetectorState">[docs]</a>
 <span class="k">class</span> <span class="nc">DetectorState</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default set of states of an AreaDetector driver.</span>
@@ -585,8 +582,6 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="ADBaseIO">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADBaseIO.html#ophyd_async.epics.adcore.ADBaseIO">[docs]</a>
 <span class="k">class</span> <span class="nc">ADBaseIO</span><span class="p">(</span><span class="n">NDArrayBaseIO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Define some signals</span>
@@ -597,8 +592,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">detector_state</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span>
             <span class="n">DetectorState</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;DetectorState_RBV&quot;</span>
         <span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">Compression</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
@@ -612,8 +606,6 @@ document.write(`
     <span class="n">jpeg</span> <span class="o">=</span> <span class="s2">&quot;JPEG&quot;</span>
 
 
-<div class="viewcode-block" id="NDFileHDFIO">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDFileHDFIO.html#ophyd_async.epics.adcore.NDFileHDFIO">[docs]</a>
 <span class="k">class</span> <span class="nc">NDFileHDFIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Define some signals</span>
@@ -638,8 +630,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">array_size0</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ArraySize0&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">array_size1</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;ArraySize1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_directory</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;CreateDirectory&quot;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 </pre></div>
 
                 </article>

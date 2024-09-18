@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adaravis._aravis_io &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.adaravis._aravis_io &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -512,7 +512,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="AravisDriverIO">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adaravis.AravisDriverIO.html#ophyd_async.epics.adaravis.AravisDriverIO">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisDriverIO">[docs]</a>
 <span class="k">class</span> <span class="nc">AravisDriverIO</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">):</span>
     <span class="c1"># If instantiating a new instance, ensure it is supported in the _deadtimes dict</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generic Driver supporting the Manta and Mako drivers.</span>
@@ -529,7 +529,8 @@ document.write(`
             <span class="n">AravisTriggerMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;TriggerMode&quot;</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trigger_source</span> <span class="o">=</span> <span class="n">epics_signal_rw_rbv</span><span class="p">(</span>
-            <span class="n">AravisTriggerSource</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;TriggerSource&quot;</span>
+            <span class="n">AravisTriggerSource</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;TriggerSource&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 

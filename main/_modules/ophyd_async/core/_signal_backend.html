@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal_backend &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.core._signal_backend &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -490,37 +490,37 @@ document.write(`
 <span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
     <span class="n">ClassVar</span><span class="p">,</span>
     <span class="n">Generic</span><span class="p">,</span>
     <span class="n">Literal</span><span class="p">,</span>
-    <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Tuple</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">Reading</span>
+<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Reading</span>
+<span class="kn">from</span> <span class="nn">event_model</span> <span class="kn">import</span> <span class="n">DataKey</span>
+
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">ReadingValueCallback</span><span class="p">,</span> <span class="n">T</span>
 
 
 <div class="viewcode-block" id="SignalBackend">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend">[docs]</a>
 <span class="k">class</span> <span class="nc">SignalBackend</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A read/write/monitor backend for a Signals&quot;&quot;&quot;</span>
 
     <span class="c1">#: Datatype of the signal value</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="SignalBackend.datatype_allowed">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.datatype_allowed">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.datatype_allowed">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">datatype_allowed</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">datatype_allowed</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a given datatype is acceptable for this signal backend.&quot;&quot;&quot;</span></div>
 
 
     <span class="c1">#: Like ca://PV_PREFIX:SIGNAL</span>
 <div class="viewcode-block" id="SignalBackend.source">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.source">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.source">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return source of signal. Signals may pass a name to the backend, which can be</span>
@@ -528,51 +528,51 @@ document.write(`
 
 
 <div class="viewcode-block" id="SignalBackend.connect">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.connect">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.connect">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Connect to underlying hardware&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SignalBackend.put">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.put">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.put">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Put a value to the PV, if wait then wait for completion for up to timeout&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SignalBackend.get_datakey">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.get_datakey">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_datakey">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Metadata like source, dtype, shape, precision, units&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SignalBackend.get_reading">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.get_reading">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_reading">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The current value, timestamp and severity&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SignalBackend.get_value">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.get_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_value">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The current value&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SignalBackend.get_setpoint">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.get_setpoint">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_setpoint">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The point that a signal was requested to move to.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SignalBackend.set_callback">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.SignalBackend.html#ophyd_async.core.SignalBackend.set_callback">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.set_callback">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ReadingValueCallback</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">ReadingValueCallback</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Observe changes to the current value, timestamp and severity&quot;&quot;&quot;</span></div>
 </div>
 
@@ -581,7 +581,7 @@ document.write(`
 <span class="k">class</span> <span class="nc">_RuntimeSubsetEnumMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;choices&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;SubsetEnum</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;SubsetEnum</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="s2">&quot;SubsetEnum&quot;</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">_choices</span><span class="p">):</span>
@@ -603,14 +603,11 @@ document.write(`
         <span class="k">return</span> <span class="n">_RuntimeSubsetEnum</span>
 
 
-<div class="viewcode-block" id="RuntimeSubsetEnum">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.RuntimeSubsetEnum.html#ophyd_async.core.RuntimeSubsetEnum">[docs]</a>
 <span class="k">class</span> <span class="nc">RuntimeSubsetEnum</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">_RuntimeSubsetEnumMeta</span><span class="p">):</span>
-    <span class="n">choices</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+    <span class="n">choices</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;SubsetEnum cannot be instantiated&quot;</span><span class="p">)</span></div>
-
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;SubsetEnum cannot be instantiated&quot;</span><span class="p">)</span>
 
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>

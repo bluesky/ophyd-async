@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pvi._pvi &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.pvi._pvi &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -488,17 +488,13 @@ document.write(`
                   
   <h1>Source code for ophyd_async.epics.pvi._pvi</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">isclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
-    <span class="n">Callable</span><span class="p">,</span>
-    <span class="n">Dict</span><span class="p">,</span>
-    <span class="n">FrozenSet</span><span class="p">,</span>
     <span class="n">Literal</span><span class="p">,</span>
-    <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Tuple</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
     <span class="n">get_args</span><span class="p">,</span>
     <span class="n">get_origin</span><span class="p">,</span>
@@ -521,23 +517,24 @@ document.write(`
     <span class="n">epics_signal_x</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">Access</span> <span class="o">=</span> <span class="n">FrozenSet</span><span class="p">[</span>
-    <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;w&quot;</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;rw&quot;</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">]]</span>
+<span class="n">Access</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">[</span>
+    <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;w&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;rw&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">]</span>
 <span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">_strip_number_from_string</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="k">def</span> <span class="nf">_strip_number_from_string</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
     <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(.*?)(\d*)$&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">match</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">number</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">number</span><span class="p">:</span>
-        <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">number</span>
+    <span class="k">if</span> <span class="n">number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_split_subscript</span><span class="p">(</span><span class="n">tp</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="k">def</span> <span class="nf">_split_subscript</span><span class="p">(</span><span class="n">tp</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Split a subscripted type into the its origin and args.</span>
 
 <span class="sd">    If `tp` is not a subscripted type, then just return the type and None as args.</span>
@@ -549,8 +546,8 @@ document.write(`
     <span class="k">return</span> <span class="n">tp</span><span class="p">,</span> <span class="kc">None</span>
 
 
-<span class="k">def</span> <span class="nf">_strip_union</span><span class="p">(</span><span class="n">field</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Union</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_strip_union</span><span class="p">(</span><span class="n">field</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Union</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">UnionType</span><span class="p">]:</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="n">is_optional</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="ow">in</span> <span class="n">args</span>
         <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
@@ -559,7 +556,7 @@ document.write(`
     <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="kc">False</span>
 
 
-<span class="k">def</span> <span class="nf">_strip_device_vector</span><span class="p">(</span><span class="n">field</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Device</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Device</span><span class="p">]]:</span>
+<span class="k">def</span> <span class="nf">_strip_device_vector</span><span class="p">(</span><span class="n">field</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">]]:</span>
     <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">is</span> <span class="n">DeviceVector</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">get_args</span><span class="p">(</span><span class="n">field</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">field</span>
@@ -572,13 +569,13 @@ document.write(`
 <span class="sd">    This could either be a signal or a sub-table.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">sub_entries</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;_PVIEntry&quot;</span><span class="p">],</span> <span class="s2">&quot;_PVIEntry&quot;</span><span class="p">]]</span>
-    <span class="n">pvi_pv</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">common_device_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Device</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sub_entries</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;_PVIEntry&quot;</span><span class="p">],</span> <span class="s2">&quot;_PVIEntry&quot;</span><span class="p">]]</span>
+    <span class="n">pvi_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">common_device_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="k">def</span> <span class="nf">_verify_common_blocks</span><span class="p">(</span><span class="n">entry</span><span class="p">:</span> <span class="n">_PVIEntry</span><span class="p">,</span> <span class="n">common_device</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Device</span><span class="p">]):</span>
+<span class="k">def</span> <span class="nf">_verify_common_blocks</span><span class="p">(</span><span class="n">entry</span><span class="p">:</span> <span class="n">_PVIEntry</span><span class="p">,</span> <span class="n">common_device</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">]):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">sub_entries</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">common_sub_devices</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">common_device</span><span class="p">)</span>
@@ -596,12 +593,12 @@ document.write(`
                 <span class="n">_verify_common_blocks</span><span class="p">(</span><span class="n">sub_sub_entry</span><span class="p">,</span> <span class="n">sub_device</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">_verify_common_blocks</span><span class="p">(</span>
-                <span class="n">entry</span><span class="o">.</span><span class="n">sub_entries</span><span class="p">[</span><span class="n">sub_name</span><span class="p">],</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">sub_entries</span><span class="p">[</span><span class="n">sub_name</span><span class="p">],</span>  <span class="c1"># type: ignore</span>
                 <span class="n">sub_device</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
             <span class="p">)</span>
 
 
-<span class="n">_pvi_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">FrozenSet</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Signal</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+<span class="n">_pvi_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Signal</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">}):</span> <span class="k">lambda</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">epics_signal_rw</span><span class="p">(</span>
         <span class="n">dtype</span><span class="p">,</span> <span class="s2">&quot;pva://&quot;</span> <span class="o">+</span> <span class="n">read_pv</span><span class="p">,</span> <span class="s2">&quot;pva://&quot;</span> <span class="o">+</span> <span class="n">write_pv</span>
     <span class="p">),</span>
@@ -618,8 +615,8 @@ document.write(`
 
 <span class="k">def</span> <span class="nf">_parse_type</span><span class="p">(</span>
     <span class="n">is_pvi_table</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">number_suffix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-    <span class="n">common_device_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Device</span><span class="p">]],</span>
+    <span class="n">number_suffix</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">common_device_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">if</span> <span class="n">common_device_type</span><span class="p">:</span>
         <span class="c1"># pre-defined type</span>
@@ -648,7 +645,7 @@ document.write(`
     <span class="k">return</span> <span class="n">is_device_vector</span><span class="p">,</span> <span class="n">is_signal</span><span class="p">,</span> <span class="n">signal_dtype</span><span class="p">,</span> <span class="n">device_cls</span>
 
 
-<span class="k">def</span> <span class="nf">_mock_common_blocks</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">stripped_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_mock_common_blocks</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">stripped_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="n">device_t</span> <span class="o">=</span> <span class="n">stripped_type</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">sub_devices</span> <span class="o">=</span> <span class="p">(</span>
         <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field_type</span><span class="p">)</span>
@@ -662,11 +659,10 @@ document.write(`
         <span class="n">device_cls</span><span class="p">,</span> <span class="n">device_args</span> <span class="o">=</span> <span class="n">_split_subscript</span><span class="p">(</span><span class="n">device_cls</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">device_cls</span><span class="p">,</span> <span class="n">Device</span><span class="p">)</span>
 
-        <span class="n">is_signal</span> <span class="o">=</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">device_cls</span><span class="p">,</span> <span class="n">Signal</span><span class="p">)</span>
         <span class="n">signal_dtype</span> <span class="o">=</span> <span class="n">device_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">device_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">is_device_vector</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">is_signal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">device_cls</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
                 <span class="n">sub_device_1</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
                 <span class="n">sub_device_2</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
                 <span class="n">sub_device</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="n">sub_device_1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="n">sub_device_2</span><span class="p">})</span>
@@ -687,7 +683,7 @@ document.write(`
             <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sub_device</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">value</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">sub_device</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">is_signal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">device_cls</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
                 <span class="n">sub_device</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">signal_dtype</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sub_device</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">device_name</span><span class="p">,</span> <span class="n">device_cls</span><span class="p">())</span>
@@ -760,7 +756,8 @@ document.write(`
                 <span class="c1"># Set the device vector entry to have the device vector as a parent</span>
                 <span class="n">device_vector_sub_entry</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">sub_device</span>  <span class="c1"># type: ignore</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sub_device</span> <span class="o">=</span> <span class="n">sub_entry</span><span class="o">.</span><span class="n">device</span>  <span class="c1"># type: ignore</span>
+            <span class="n">sub_device</span> <span class="o">=</span> <span class="n">sub_entry</span><span class="o">.</span><span class="n">device</span>
+            <span class="k">assert</span> <span class="n">sub_device</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Device of </span><span class="si">{</span><span class="n">sub_entry</span><span class="si">}</span><span class="s2"> is None&quot;</span>
             <span class="k">if</span> <span class="n">sub_entry</span><span class="o">.</span><span class="n">pvi_pv</span><span class="p">:</span>
                 <span class="n">_set_device_attributes</span><span class="p">(</span><span class="n">sub_entry</span><span class="p">)</span>
 
@@ -769,7 +766,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="fill_pvi_entries">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.pvi.fill_pvi_entries.html#ophyd_async.epics.pvi.fill_pvi_entries">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.pvi.html#ophyd_async.epics.pvi.fill_pvi_entries">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">fill_pvi_entries</span><span class="p">(</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">root_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">mock</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">):</span>
@@ -799,11 +796,11 @@ document.write(`
 
 
 <div class="viewcode-block" id="create_children_from_annotations">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.pvi.create_children_from_annotations.html#ophyd_async.epics.pvi.create_children_from_annotations">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.pvi.html#ophyd_async.epics.pvi.create_children_from_annotations">[docs]</a>
 <span class="k">def</span> <span class="nf">create_children_from_annotations</span><span class="p">(</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
-    <span class="n">included_optional_fields</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-    <span class="n">device_vectors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">included_optional_fields</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">device_vectors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For intializing blocks at __init__ of ``device``.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">device_type</span> <span class="ow">in</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -822,7 +819,7 @@ document.write(`
 
         <span class="k">if</span> <span class="n">is_device_vector</span><span class="p">:</span>
             <span class="n">n_device_vector</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
-                <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">device_type</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device_vectors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span>
+                <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">device_type</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device_vectors</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span>  <span class="c1"># type: ignore</span>
             <span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">n_device_vector</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">sub_device</span> <span class="ow">in</span> <span class="n">n_device_vector</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>

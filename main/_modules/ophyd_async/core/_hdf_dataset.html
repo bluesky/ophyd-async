@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._hdf_dataset &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.core._hdf_dataset &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -487,21 +487,22 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.core._hdf_dataset</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlunparse</span>
 
 <span class="kn">from</span> <span class="nn">event_model</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ComposeStreamResource</span><span class="p">,</span>
     <span class="n">ComposeStreamResourceBundle</span><span class="p">,</span>
     <span class="n">StreamDatum</span><span class="p">,</span>
+    <span class="n">StreamRange</span><span class="p">,</span>
     <span class="n">StreamResource</span><span class="p">,</span>
 <span class="p">)</span>
 
 
 <div class="viewcode-block" id="HDFDataset">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.HDFDataset.html#ophyd_async.core.HDFDataset">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.HDFDataset">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">HDFDataset</span><span class="p">:</span>
     <span class="n">data_key</span><span class="p">:</span> <span class="nb">str</span>
@@ -517,7 +518,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="HDFFile">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.HDFFile.html#ophyd_async.core.HDFFile">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.HDFFile">[docs]</a>
 <span class="k">class</span> <span class="nc">HDFFile</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param full_file_name: Absolute path to the file to be written</span>
@@ -527,7 +528,7 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">full_file_name</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
-        <span class="n">datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">],</span>
+        <span class="n">datasets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">],</span>
         <span class="n">hostname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span> <span class="o">=</span> <span class="mi">0</span>
@@ -550,7 +551,7 @@ document.write(`
             <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ComposeStreamResourceBundle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ComposeStreamResourceBundle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">bundler_composer</span><span class="p">(</span>
                 <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;application/x-hdf5&quot;</span><span class="p">,</span>
                 <span class="n">uri</span><span class="o">=</span><span class="n">uri</span><span class="p">,</span>
@@ -566,34 +567,20 @@ document.write(`
             <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">datasets</span>
         <span class="p">]</span>
 
-<div class="viewcode-block" id="HDFFile.stream_resources">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.HDFFile.html#ophyd_async.core.HDFFile.stream_resources">[docs]</a>
     <span class="k">def</span> <span class="nf">stream_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">StreamResource</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">bundle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">bundle</span><span class="o">.</span><span class="n">stream_resource_doc</span></div>
+            <span class="k">yield</span> <span class="n">bundle</span><span class="o">.</span><span class="n">stream_resource_doc</span>
 
-
-<div class="viewcode-block" id="HDFFile.stream_data">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.HDFFile.html#ophyd_async.core.HDFFile.stream_data">[docs]</a>
     <span class="k">def</span> <span class="nf">stream_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">StreamDatum</span><span class="p">]:</span>
         <span class="c1"># Indices are relative to resource</span>
         <span class="k">if</span> <span class="n">indices_written</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span><span class="p">:</span>
-            <span class="n">indices</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">indices</span><span class="p">:</span> <span class="n">StreamRange</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span><span class="p">,</span>
                 <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">indices_written</span><span class="p">,</span>
             <span class="p">}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span> <span class="o">=</span> <span class="n">indices_written</span>
             <span class="k">for</span> <span class="n">bundle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">bundle</span><span class="o">.</span><span class="n">compose_stream_datum</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
-
-
-<div class="viewcode-block" id="HDFFile.close">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.HDFFile.html#ophyd_async.core.HDFFile.close">[docs]</a>
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">bundle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">:</span>
-            <span class="n">bundle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
-</div>
+                <span class="k">yield</span> <span class="n">bundle</span><span class="o">.</span><span class="n">compose_stream_datum</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span></div>
 
 </pre></div>
 

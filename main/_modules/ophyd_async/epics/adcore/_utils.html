@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -489,14 +489,11 @@ document.write(`
   <h1>Source code for ophyd_async.epics.adcore._utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">wait_for_value</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.core._signal</span> <span class="kn">import</span> <span class="n">SignalR</span>
 
 
-<div class="viewcode-block" id="ADBaseDataType">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADBaseDataType.html#ophyd_async.epics.adcore.ADBaseDataType">[docs]</a>
 <span class="k">class</span> <span class="nc">ADBaseDataType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">Int8</span> <span class="o">=</span> <span class="s2">&quot;Int8&quot;</span>
     <span class="n">UInt8</span> <span class="o">=</span> <span class="s2">&quot;UInt8&quot;</span>
@@ -507,8 +504,7 @@ document.write(`
     <span class="n">Int64</span> <span class="o">=</span> <span class="s2">&quot;Int64&quot;</span>
     <span class="n">UInt64</span> <span class="o">=</span> <span class="s2">&quot;UInt64&quot;</span>
     <span class="n">Float32</span> <span class="o">=</span> <span class="s2">&quot;Float32&quot;</span>
-    <span class="n">Float64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span></div>
-
+    <span class="n">Float64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span>
 
 
 <span class="k">def</span> <span class="nf">convert_ad_dtype_to_np</span><span class="p">(</span><span class="n">ad_dtype</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -543,8 +539,8 @@ document.write(`
     <span class="k">else</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">np_datatype</span> <span class="o">=</span> <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span><span class="n">_pvattribute_to_ad_datatype</span><span class="p">[</span><span class="n">datatype</span><span class="p">])</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid dbr type </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid dbr type </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
     <span class="k">return</span> <span class="n">np_datatype</span>
 
 
@@ -561,40 +557,29 @@ document.write(`
             <span class="n">np_datatype</span> <span class="o">=</span> <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span>
                 <span class="n">_paramattribute_to_ad_datatype</span><span class="p">[</span><span class="n">datatype</span><span class="p">]</span>
             <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid datatype </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid datatype </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
     <span class="k">return</span> <span class="n">np_datatype</span>
 
 
-<div class="viewcode-block" id="FileWriteMode">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.FileWriteMode.html#ophyd_async.epics.adcore.FileWriteMode">[docs]</a>
 <span class="k">class</span> <span class="nc">FileWriteMode</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">single</span> <span class="o">=</span> <span class="s2">&quot;Single&quot;</span>
     <span class="n">capture</span> <span class="o">=</span> <span class="s2">&quot;Capture&quot;</span>
-    <span class="n">stream</span> <span class="o">=</span> <span class="s2">&quot;Stream&quot;</span></div>
+    <span class="n">stream</span> <span class="o">=</span> <span class="s2">&quot;Stream&quot;</span>
 
 
-
-<div class="viewcode-block" id="ImageMode">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ImageMode.html#ophyd_async.epics.adcore.ImageMode">[docs]</a>
 <span class="k">class</span> <span class="nc">ImageMode</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">single</span> <span class="o">=</span> <span class="s2">&quot;Single&quot;</span>
     <span class="n">multiple</span> <span class="o">=</span> <span class="s2">&quot;Multiple&quot;</span>
-    <span class="n">continuous</span> <span class="o">=</span> <span class="s2">&quot;Continuous&quot;</span></div>
+    <span class="n">continuous</span> <span class="o">=</span> <span class="s2">&quot;Continuous&quot;</span>
 
 
-
-<div class="viewcode-block" id="NDAttributeDataType">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributeDataType.html#ophyd_async.epics.adcore.NDAttributeDataType">[docs]</a>
 <span class="k">class</span> <span class="nc">NDAttributeDataType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">INT</span> <span class="o">=</span> <span class="s2">&quot;INT&quot;</span>
     <span class="n">DOUBLE</span> <span class="o">=</span> <span class="s2">&quot;DOUBLE&quot;</span>
-    <span class="n">STRING</span> <span class="o">=</span> <span class="s2">&quot;STRING&quot;</span></div>
+    <span class="n">STRING</span> <span class="o">=</span> <span class="s2">&quot;STRING&quot;</span>
 
 
-
-<div class="viewcode-block" id="NDAttributePvDbrType">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributePvDbrType.html#ophyd_async.epics.adcore.NDAttributePvDbrType">[docs]</a>
 <span class="k">class</span> <span class="nc">NDAttributePvDbrType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">DBR_SHORT</span> <span class="o">=</span> <span class="s2">&quot;DBR_SHORT&quot;</span>
     <span class="n">DBR_ENUM</span> <span class="o">=</span> <span class="s2">&quot;DBR_ENUM&quot;</span>
@@ -603,12 +588,11 @@ document.write(`
     <span class="n">DBR_FLOAT</span> <span class="o">=</span> <span class="s2">&quot;DBR_FLOAT&quot;</span>
     <span class="n">DBR_DOUBLE</span> <span class="o">=</span> <span class="s2">&quot;DBR_DOUBLE&quot;</span>
     <span class="n">DBR_STRING</span> <span class="o">=</span> <span class="s2">&quot;DBR_STRING&quot;</span>
-    <span class="n">DBR_CHAR</span> <span class="o">=</span> <span class="s2">&quot;DBR_CHAR&quot;</span></div>
-
+    <span class="n">DBR_CHAR</span> <span class="o">=</span> <span class="s2">&quot;DBR_CHAR&quot;</span>
 
 
 <div class="viewcode-block" id="NDAttributePv">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributePv.html#ophyd_async.epics.adcore.NDAttributePv">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePv">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">NDAttributePv</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># name of attribute stamped on array, also scientifically useful name</span>
@@ -620,7 +604,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="NDAttributeParam">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.NDAttributeParam.html#ophyd_async.epics.adcore.NDAttributeParam">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeParam">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">NDAttributeParam</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># name of attribute stamped on array, also scientifically useful name</span>
@@ -632,17 +616,14 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="stop_busy_record">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.stop_busy_record.html#ophyd_async.epics.adcore.stop_busy_record">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">stop_busy_record</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-    <span class="n">status_timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">status_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">status_timeout</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
-
+    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 </pre></div>
 
                 </article>

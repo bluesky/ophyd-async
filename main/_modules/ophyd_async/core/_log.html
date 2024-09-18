@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._log &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.core._log &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -518,7 +518,7 @@ document.write(`
     <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
         <span class="n">message</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">&quot;ophyd_async_device_name&quot;</span><span class="p">):</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">ophyd_async_device_name</span><span class="si">}</span><span class="s2">]</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">ophyd_async_device_name</span><span class="si">}</span><span class="s2">]</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="n">message</span>
 
 
@@ -528,6 +528,8 @@ document.write(`
         <span class="n">levelno</span> <span class="o">=</span> <span class="n">level</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">levelno</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLevelName</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Level </span><span class="si">{</span><span class="n">level</span><span class="si">!r}</span><span class="s2"> is not an int or str&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">levelno</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">levelno</span>
@@ -544,7 +546,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="config_ophyd_async_logging">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.config_ophyd_async_logging.html#ophyd_async.core.config_ophyd_async_logging">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.config_ophyd_async_logging">[docs]</a>
 <span class="k">def</span> <span class="nf">config_ophyd_async_logging</span><span class="p">(</span>
     <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
     <span class="n">fmt</span><span class="o">=</span><span class="n">DEFAULT_FORMAT</span><span class="p">,</span>

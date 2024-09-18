@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -488,7 +488,6 @@ document.write(`
                   
   <h1>Source code for ophyd_async.epics.adcore._core_logic</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
@@ -503,37 +502,28 @@ document.write(`
 
 <span class="c1"># Default set of states that we should consider &quot;good&quot; i.e. the acquisition</span>
 <span class="c1">#  is complete and went well</span>
-<span class="n">DEFAULT_GOOD_STATES</span><span class="p">:</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">DetectorState</span><span class="p">]</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+<span class="n">DEFAULT_GOOD_STATES</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="n">DetectorState</span><span class="p">]</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
     <span class="p">[</span><span class="n">DetectorState</span><span class="o">.</span><span class="n">Idle</span><span class="p">,</span> <span class="n">DetectorState</span><span class="o">.</span><span class="n">Aborted</span><span class="p">]</span>
 <span class="p">)</span>
 
 
-<div class="viewcode-block" id="ADBaseDatasetDescriber">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADBaseDatasetDescriber.html#ophyd_async.epics.adcore.ADBaseDatasetDescriber">[docs]</a>
 <span class="k">class</span> <span class="nc">ADBaseDatasetDescriber</span><span class="p">(</span><span class="n">DatasetDescriber</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span> <span class="o">=</span> <span class="n">driver</span>
 
-<div class="viewcode-block" id="ADBaseDatasetDescriber.np_datatype">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADBaseDatasetDescriber.html#ophyd_async.epics.adcore.ADBaseDatasetDescriber.np_datatype">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">np_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="o">.</span><span class="n">data_type</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span></div>
+        <span class="k">return</span> <span class="n">convert_ad_dtype_to_np</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="o">.</span><span class="n">data_type</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
 
-
-<div class="viewcode-block" id="ADBaseDatasetDescriber.shape">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.ADBaseDatasetDescriber.html#ophyd_async.epics.adcore.ADBaseDatasetDescriber.shape">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
         <span class="n">shape</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="o">.</span><span class="n">array_size_y</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="o">.</span><span class="n">array_size_x</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">shape</span></div>
-</div>
-
+        <span class="k">return</span> <span class="n">shape</span>
 
 
 <div class="viewcode-block" id="set_exposure_time_and_acquire_period_if_supplied">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied.html#ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">set_exposure_time_and_acquire_period_if_supplied</span><span class="p">(</span>
     <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorControl</span><span class="p">,</span>
     <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
@@ -566,10 +556,10 @@ document.write(`
 
 
 <div class="viewcode-block" id="start_acquiring_driver_and_ensure_status">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status.html#ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">start_acquiring_driver_and_ensure_status</span><span class="p">(</span>
     <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
-    <span class="n">good_states</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">DetectorState</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">DEFAULT_GOOD_STATES</span><span class="p">),</span>
+    <span class="n">good_states</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="n">DetectorState</span><span class="p">]</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">DEFAULT_GOOD_STATES</span><span class="p">),</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>

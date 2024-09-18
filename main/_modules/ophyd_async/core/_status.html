@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._status &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.core._status &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -492,14 +492,10 @@ document.write(`
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">replace</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AsyncIterator</span><span class="p">,</span>
-    <span class="n">Awaitable</span><span class="p">,</span>
-    <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Generic</span><span class="p">,</span>
-    <span class="n">Optional</span><span class="p">,</span>
-    <span class="n">Type</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">cast</span><span class="p">,</span>
 <span class="p">)</span>
@@ -516,7 +512,7 @@ document.write(`
 <span class="k">class</span> <span class="nc">AsyncStatusBase</span><span class="p">(</span><span class="n">Status</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert asyncio awaitable to bluesky Status interface&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">awaitable</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">awaitable</span><span class="p">:</span> <span class="n">Coroutine</span> <span class="o">|</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">awaitable</span><span class="p">,</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">awaitable</span>
         <span class="k">else</span><span class="p">:</span>
@@ -575,12 +571,14 @@ document.write(`
 
 
 <div class="viewcode-block" id="AsyncStatus">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.AsyncStatus">[docs]</a>
 <span class="k">class</span> <span class="nc">AsyncStatus</span><span class="p">(</span><span class="n">AsyncStatusBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert asyncio awaitable to bluesky Status interface&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="AsyncStatus.wrap">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.AsyncStatus.html#ophyd_async.core.AsyncStatus.wrap">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.AsyncStatus.wrap">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AS</span><span class="p">],</span> <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">AS</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">AS</span><span class="p">],</span> <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">AS</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap an async function in an AsyncStatus.&quot;&quot;&quot;</span>
 
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -595,7 +593,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="WatchableAsyncStatus">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.WatchableAsyncStatus.html#ophyd_async.core.WatchableAsyncStatus">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus">[docs]</a>
 <span class="k">class</span> <span class="nc">WatchableAsyncStatus</span><span class="p">(</span><span class="n">AsyncStatusBase</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert AsyncIterator of WatcherUpdates to bluesky Status interface.&quot;&quot;&quot;</span>
 
@@ -621,19 +619,16 @@ document.write(`
         <span class="p">)</span>
         <span class="n">watcher</span><span class="p">(</span><span class="o">**</span><span class="n">vals</span><span class="p">)</span>
 
-<div class="viewcode-block" id="WatchableAsyncStatus.watch">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.WatchableAsyncStatus.html#ophyd_async.core.WatchableAsyncStatus.watch">[docs]</a>
     <span class="k">def</span> <span class="nf">watch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">watcher</span><span class="p">:</span> <span class="n">Watcher</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">watcher</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_update_watcher</span><span class="p">(</span><span class="n">watcher</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span><span class="p">)</span></div>
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_watcher</span><span class="p">(</span><span class="n">watcher</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span><span class="p">)</span>
 
 <div class="viewcode-block" id="WatchableAsyncStatus.wrap">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.WatchableAsyncStatus.html#ophyd_async.core.WatchableAsyncStatus.wrap">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus.wrap">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">WAS</span><span class="p">],</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">WAS</span><span class="p">],</span>
         <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">WAS</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap an AsyncIterator in a WatchableAsyncStatus.&quot;&quot;&quot;</span>
@@ -647,14 +642,11 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="completed_status">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.completed_status.html#ophyd_async.core.completed_status">[docs]</a>
 <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">completed_status</span><span class="p">(</span><span class="n">exception</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">completed_status</span><span class="p">(</span><span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">exception</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">exception</span>
-    <span class="k">return</span> <span class="kc">None</span></div>
-
+    <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 
                 </article>

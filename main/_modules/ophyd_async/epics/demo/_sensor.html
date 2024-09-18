@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.demo._sensor &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.epics.demo._sensor &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -494,7 +494,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="EnergyMode">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.EnergyMode.html#ophyd_async.epics.demo.EnergyMode">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.EnergyMode">[docs]</a>
 <span class="k">class</span> <span class="nc">EnergyMode</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Energy mode for `Sensor`&quot;&quot;&quot;</span>
 
@@ -506,7 +506,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="Sensor">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.Sensor.html#ophyd_async.epics.demo.Sensor">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Sensor">[docs]</a>
 <span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo sensor that produces a scalar value based on X and Y Movers&quot;&quot;&quot;</span>
 
@@ -521,8 +521,6 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="SensorGroup">
-<a class="viewcode-back" href="../../../../generated/ophyd_async.epics.demo.SensorGroup.html#ophyd_async.epics.demo.SensorGroup">[docs]</a>
 <span class="k">class</span> <span class="nc">SensorGroup</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sensor_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
@@ -530,8 +528,7 @@ document.write(`
                 <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">Sensor</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sensor_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span>
             <span class="p">)</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 </pre></div>
 
                 </article>

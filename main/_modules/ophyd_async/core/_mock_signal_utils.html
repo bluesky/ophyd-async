@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.5.3.dev8+g989beeb1 documentation</title>
+    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.5.3.dev9+gab112433 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=0cfb10b5"></script>
+    <script src="../../../_static/documentation_options.js?v=e71b54d1"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -487,8 +487,9 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.core._mock_signal_utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">asynccontextmanager</span><span class="p">,</span> <span class="n">contextmanager</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">asynccontextmanager</span><span class="p">,</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">AsyncMock</span>
 
 <span class="kn">from</span> <span class="nn">._mock_signal_backend</span> <span class="kn">import</span> <span class="n">MockSignalBackend</span>
@@ -506,7 +507,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="set_mock_value">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.set_mock_value.html#ophyd_async.core.set_mock_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_mock_value">[docs]</a>
 <span class="k">def</span> <span class="nf">set_mock_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the value of a signal that is in mock mode.&quot;&quot;&quot;</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
@@ -515,7 +516,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="set_mock_put_proceeds">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.set_mock_put_proceeds.html#ophyd_async.core.set_mock_put_proceeds">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_mock_put_proceeds">[docs]</a>
 <span class="k">def</span> <span class="nf">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">proceeds</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Allow or block a put with wait=True from proceeding&quot;&quot;&quot;</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
@@ -527,32 +528,26 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="mock_puts_blocked">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.mock_puts_blocked.html#ophyd_async.core.mock_puts_blocked">[docs]</a>
 <span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">mock_puts_blocked</span><span class="p">(</span><span class="o">*</span><span class="n">signals</span><span class="p">:</span> <span class="n">Signal</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
         <span class="n">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="k">yield</span>
     <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
-        <span class="n">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
-
+        <span class="n">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_mock_put">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.get_mock_put.html#ophyd_async.core.get_mock_put">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.get_mock_put">[docs]</a>
 <span class="k">def</span> <span class="nf">get_mock_put</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMock</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the mock associated with the put call on the signal.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span><span class="o">.</span><span class="n">put_mock</span></div>
 
 
 
-<div class="viewcode-block" id="reset_mock_put_calls">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.reset_mock_put_calls.html#ophyd_async.core.reset_mock_put_calls">[docs]</a>
 <span class="k">def</span> <span class="nf">reset_mock_put_calls</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">):</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">put_mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span></div>
-
+    <span class="n">backend</span><span class="o">.</span><span class="n">put_mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span>
 
 
 <span class="k">class</span> <span class="nc">_SetValuesIterator</span><span class="p">:</span>
@@ -602,7 +597,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="set_mock_values">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.set_mock_values.html#ophyd_async.core.set_mock_values">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_mock_values">[docs]</a>
 <span class="k">def</span> <span class="nf">set_mock_values</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">,</span>
     <span class="n">values</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
@@ -649,7 +644,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="callback_on_mock_put">
-<a class="viewcode-back" href="../../../generated/ophyd_async.core.callback_on_mock_put.html#ophyd_async.core.callback_on_mock_put">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put">[docs]</a>
 <span class="k">def</span> <span class="nf">callback_on_mock_put</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span>
 <span class="p">):</span>
