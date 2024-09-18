@@ -1,7 +1,6 @@
 import asyncio
 import warnings
 from contextlib import contextmanager
-from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
@@ -31,13 +30,12 @@ ReadableChildWrapper = Union[
 T = TypeVar("T")
 
 
-@dataclass
 class PerSignalConfig(Dict[SignalW, Any]):
     def __setitem__(self, signal: SignalW[T], value: T):
         super().__setitem__(signal, value)
 
     def __getitem__(self, signal: SignalW[T]) -> T:
-        return super().__getitem__[signal]
+        return super().__getitem__(signal)
 
 
 class StandardReadable(

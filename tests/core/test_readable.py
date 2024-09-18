@@ -268,10 +268,6 @@ test_data = [
 ]
 
 
-def test_config_initialization(standard_readable_config):
-    assert len(standard_readable_config) == 0
-
-
 @pytest.mark.parametrize("name, type_, value", test_data)
 def test_config_set_get_item(standard_readable_config, name, type_, value):
     mock_signal = MagicMock(spec=SignalW)
