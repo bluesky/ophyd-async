@@ -37,14 +37,14 @@ class DummyTriggerLogic(TriggerLogic[int]):
 
 class DummyController(DetectorControl):
     def __init__(self) -> None: ...
+    async def prepare(self, trigger_info: TriggerInfo):
+        return AsyncStatus(asyncio.sleep(0.01))
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
-        return AsyncStatus(asyncio.sleep(0.1))
+    async def arm(self):
+        self._arm_status = AsyncStatus(asyncio.sleep(0.01))
+
+    async def wait_for_idle(self):
+        await self._arm_status
 
     async def disarm(self): ...
 
@@ -69,7 +69,7 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
         hdf,
         path_provider=static_path_provider,
         name_provider=lambda: "test",
-        shape_provider=AsyncMock(),
+        dataset_describer=AsyncMock(),
     )
 
 

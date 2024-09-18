@@ -240,7 +240,7 @@ async def test_wait_for_value_with_value():
     await signal.set("blah")
 
     with pytest.raises(
-        TimeoutError,
+        asyncio.TimeoutError,
         match="signal didn't match 'something' in 0.1s, last value 'blah'",
     ):
         await wait_for_value(signal, "something", timeout=0.1)
@@ -263,7 +263,7 @@ async def test_wait_for_value_with_funcion():
         return v < 42
 
     with pytest.raises(
-        TimeoutError,
+        asyncio.TimeoutError,
         match="signal didn't match less_than_42 in 0.1s, last value 45.8",
     ):
         await wait_for_value(signal, less_than_42, timeout=0.1)
@@ -403,3 +403,28 @@ async def test_subscription_logs(caplog):
     assert "Making subscription" in caplog.text
     mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text
+
+
+async def test_signal_unknown_datatype():
+    class SomeClass:
+        def __init__(self):
+            self.some_attribute = "some_attribute"
+
+        def some_function(self):
+            pass
+
+    err_str = (
+        "Given datatype <class "
+        "'test_signal.test_signal_unknown_datatype.<locals>.SomeClass'>"
+        " unsupported in %s."
+    )
+    with pytest.raises(TypeError, match=err_str % ("PVA",)):
+        epics_signal_rw(SomeClass, "pva://mock_signal", name="mock_signal")
+    with pytest.raises(TypeError, match=err_str % ("CA",)):
+        epics_signal_rw(SomeClass, "ca://mock_signal", name="mock_signal")
+
+    # Any dtype allowed in soft signal
+    signal = soft_signal_rw(SomeClass, SomeClass(), "soft_signal")
+    assert isinstance((await signal.get_value()), SomeClass)
+    await signal.set(1)
+    assert (await signal.get_value()) == 1

@@ -33,11 +33,11 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
+    DatasetDescriber,
     FilenameProvider,
     NameProvider,
     PathInfo,
     PathProvider,
-    ShapeProvider,
     StaticFilenameProvider,
     StaticPathProvider,
     UUIDFilenameProvider,
@@ -61,9 +61,14 @@ from ._signal import (
     soft_signal_rw,
     wait_for_value,
 )
-from ._signal_backend import RuntimeSubsetEnum, SignalBackend, SubsetEnum
+from ._signal_backend import (
+    RuntimeSubsetEnum,
+    SignalBackend,
+    SubsetEnum,
+)
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._table import Table
 from ._utils import (
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
@@ -117,7 +122,7 @@ __all__ = [
     "NameProvider",
     "PathInfo",
     "PathProvider",
-    "ShapeProvider",
+    "DatasetDescriber",
     "StaticFilenameProvider",
     "StaticPathProvider",
     "UUIDFilenameProvider",
@@ -152,6 +157,7 @@ __all__ = [
     "CalculateTimeout",
     "NotConnected",
     "ReadingValueCallback",
+    "Table",
     "T",
     "WatcherUpdate",
     "get_dtype",

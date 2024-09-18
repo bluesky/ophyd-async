@@ -51,20 +51,24 @@ class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
     #: Number of triggers that will be sent, 0 means infinite
-    number: int = Field(gt=0)
+    number: int = Field(ge=0)
     #: Sort of triggers that will be sent
-    trigger: DetectorTrigger = Field()
+    trigger: DetectorTrigger = Field(default=DetectorTrigger.internal)
     #: What is the minimum deadtime between triggers
-    deadtime: float | None = Field(ge=0)
+    deadtime: float | None = Field(default=None, ge=0)
     #: What is the maximum high time of the triggers
-    livetime: float | None = Field(ge=0)
+    livetime: float | None = Field(default=None, ge=0)
     #: What is the maximum timeout on waiting for a frame
-    frame_timeout: float | None = Field(None, gt=0)
+    frame_timeout: float | None = Field(default=None, gt=0)
     #: How many triggers make up a single StreamDatum index, to allow multiple frames
     #: from a faster detector to be zipped with a single frame from a slow detector
     #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
     #: but publish 2 indices, and describe() will show a shape of (5, h, w)
     multiplier: int = 1
+    #: The number of times the detector can go through a complete cycle of kickoff and
+    #: complete without needing to re-arm. This is important for detectors where the
+    #: process of arming is expensive in terms of time
+    iteration: int = 1
 
 
 class DetectorControl(ABC):
@@ -78,27 +82,35 @@ class DetectorControl(ABC):
         """For a given exposure, how long should the time between exposures be"""
 
     @abstractmethod
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
-    ) -> AsyncStatus:
+    async def prepare(self, trigger_info: TriggerInfo):
         """
-        Arm detector, do all necessary steps to prepare detector for triggers.
+        Do all necessary steps to prepare the detector for triggers.
 
         Args:
-            num: Expected number of frames
-            trigger: Type of trigger for which to prepare the detector. Defaults to
-            DetectorTrigger.internal.
-            exposure: Exposure time with which to set up the detector. Defaults to None
-            if not applicable or the detector is expected to use its previously-set
-            exposure time.
+            trigger_info: This is a Pydantic model which contains
+                number Expected number of frames.
+                trigger Type of trigger for which to prepare the detector. Defaults
+                to DetectorTrigger.internal.
+                livetime Livetime / Exposure time with which to set up the detector.
+                Defaults to None
+                if not applicable or the detector is expected to use its previously-set
+                exposure time.
+                deadtime Defaults to None. This is the minimum deadtime between
+                triggers.
+                multiplier The number of triggers grouped into a single StreamDatum
+                index.
+        """
 
-        Returns:
-            AsyncStatus: Status representing the arm operation. This function returning
-            represents the start of the arm. The returned status completing means
-            the detector is now armed.
+    @abstractmethod
+    async def arm(self) -> None:
+        """
+        Arm the detector
+        """
+
+    @abstractmethod
+    async def wait_for_idle(self):
+        """
+        This will wait on the internal _arm_status and wait for it to get disarmed/idle
         """
 
     @abstractmethod
@@ -186,7 +198,7 @@ class StandardDetector(
         self._watchers: List[Callable] = []
         self._fly_status: Optional[WatchableAsyncStatus] = None
         self._fly_start: float
-
+        self._iterations_completed: int = 0
         self._intial_frame: int
         self._last_frame: int
         super().__init__(name)
@@ -224,7 +236,7 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         # Stop data writing.
-        await self.writer.close()
+        await asyncio.gather(self.writer.close(), self.controller.disarm())
 
     async def read_configuration(self) -> Dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
@@ -248,15 +260,15 @@ class StandardDetector(
                     trigger=DetectorTrigger.internal,
                     deadtime=None,
                     livetime=None,
+                    frame_timeout=None,
                 )
             )
+        assert self._trigger_info
+        assert self._trigger_info.trigger is DetectorTrigger.internal
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
-        written_status = await self.controller.arm(
-            num=self._trigger_info.number,
-            trigger=self._trigger_info.trigger,
-        )
-        await written_status
+        await self.controller.arm()
+        await self.controller.wait_for_idle()
         end_observation = indices_written + 1
 
         async for index in self.writer.observe_indices_written(
@@ -283,35 +295,35 @@ class StandardDetector(
         Args:
             value: TriggerInfo describing how to trigger the detector
         """
-        self._trigger_info = value
         if value.trigger != DetectorTrigger.internal:
             assert (
                 value.deadtime
             ), "Deadtime must be supplied when in externally triggered mode"
         if value.deadtime:
-            required = self.controller.get_deadtime(self._trigger_info.livetime)
+            required = self.controller.get_deadtime(value.livetime)
             assert required <= value.deadtime, (
                 f"Detector {self.controller} needs at least {required}s deadtime, "
                 f"but trigger logic provides only {value.deadtime}s"
             )
+        self._trigger_info = value
         self._initial_frame = await self.writer.get_indices_written()
         self._last_frame = self._initial_frame + self._trigger_info.number
-        self._arm_status = await self.controller.arm(
-            num=self._trigger_info.number,
-            trigger=self._trigger_info.trigger,
-            exposure=self._trigger_info.livetime,
+        self._describe, _ = await asyncio.gather(
+            self.writer.open(value.multiplier), self.controller.prepare(value)
         )
-        self._fly_start = time.monotonic()
-        self._describe = await self.writer.open(value.multiplier)
+        if value.trigger != DetectorTrigger.internal:
+            await self.controller.arm()
+            self._fly_start = time.monotonic()
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        if not self._arm_status:
-            raise Exception("Detector not armed!")
+        assert self._trigger_info, "Prepare must be called before kickoff!"
+        if self._iterations_completed >= self._trigger_info.iteration:
+            raise Exception(f"Kickoff called more than {self._trigger_info.iteration}")
+        self._iterations_completed += 1
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        assert self._arm_status, "Prepare not run"
         assert self._trigger_info
         async for index in self.writer.observe_indices_written(
             self._trigger_info.frame_timeout
@@ -332,6 +344,8 @@ class StandardDetector(
             )
             if index >= self._trigger_info.number:
                 break
+        if self._iterations_completed == self._trigger_info.iteration:
+            await self.controller.wait_for_idle()
 
     async def describe_collect(self) -> Dict[str, DataKey]:
         return self._describe

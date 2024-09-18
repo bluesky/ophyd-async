@@ -7,6 +7,7 @@ import yaml
 from bluesky.plan_stubs import abs_set, wait
 from bluesky.protocols import Location
 from bluesky.utils import Msg
+from pydantic import BaseModel
 
 from ._device import Device
 from ._signal import SignalRW
@@ -16,6 +17,12 @@ def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.No
     return dumper.represent_sequence(
         "tag:yaml.org,2002:seq", array.tolist(), flow_style=True
     )
+
+
+def pydantic_model_abstraction_representer(
+    dumper: yaml.Dumper, model: BaseModel
+) -> yaml.Node:
+    return dumper.represent_data(model.model_dump(mode="python"))
 
 
 class OphydDumper(yaml.Dumper):
@@ -134,6 +141,11 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
     """
 
     yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
+    yaml.add_multi_representer(
+        BaseModel,
+        pydantic_model_abstraction_representer,
+        Dumper=yaml.Dumper,
+    )
 
     with open(save_path, "w") as file:
         yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)

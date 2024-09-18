@@ -4,9 +4,9 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import (
+    DatasetDescriber,
     DeviceCollector,
     PathProvider,
-    ShapeProvider,
     StandardDetector,
     StaticPathProvider,
 )
@@ -16,12 +16,12 @@ from ophyd_async.epics.signal._signal import epics_signal_r
 from ophyd_async.plan_stubs._nd_attributes import setup_ndattributes, setup_ndstats_sum
 
 
-class DummyShapeProvider(ShapeProvider):
-    def __init__(self) -> None:
-        pass
+class DummyDatasetDescriber(DatasetDescriber):
+    async def np_datatype(self) -> str:
+        return "<u2"
 
-    async def __call__(self) -> tuple:
-        return (10, 10, adcore.ADBaseDataType.UInt16)
+    async def shape(self) -> tuple[int, int]:
+        return (10, 10)
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ async def hdf_writer(
         hdf,
         static_path_provider,
         lambda: "test",
-        DummyShapeProvider(),
+        DummyDatasetDescriber(),
     )
 
 
@@ -51,7 +51,7 @@ async def hdf_writer_with_stats(
         hdf,
         static_path_provider,
         lambda: "test",
-        DummyShapeProvider(),
+        DummyDatasetDescriber(),
         stats,
     )
 
