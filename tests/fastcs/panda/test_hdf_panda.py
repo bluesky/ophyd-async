@@ -275,26 +275,6 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
     for dataset_name, stream_resource, data_key_name in zip(
         ("x", "y"), docs["stream_resource"], data_key_names, strict=False
     ):
-<<<<<<< HEAD
-
-        def assert_resource_document():
-            assert stream_resource == {
-                "run_start": docs["start"][0]["uid"],
-                "uid": ANY,
-                "data_key": data_key_name,
-                "mimetype": "application/x-hdf5",
-                "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
-                "parameters": {
-                    "dataset": f"/{dataset_name}",
-                    "swmr": False,
-                    "multiplier": 1,
-                    "chunk_shape": (1024,),
-                },
-            }
-            assert "test-panda.h5" in stream_resource["uri"]
-
-        assert_resource_document()
-=======
         assert stream_resource == {
             "run_start": docs["start"][0]["uid"],
             "uid": ANY,
@@ -305,10 +285,10 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
                 "dataset": f"/{dataset_name}",
                 "swmr": False,
                 "multiplier": 1,
+                "chunk_shape": (1024,),
             },
         }
         assert "test-panda.h5" in stream_resource["uri"]
->>>>>>> ab11243303c02f7376fbf4ecb18e07b2d2a8ff5c
 
     # test stream datum
     for stream_datum in docs["stream_datum"]:
