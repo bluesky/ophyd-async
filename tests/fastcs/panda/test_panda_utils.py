@@ -58,7 +58,7 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
     )
 
     # Load the YAML content as a string
-    with open(str(tmp_path / "panda.yaml"), "r") as file:
+    with open(str(tmp_path / "panda.yaml")) as file:
         yaml_content = file.read()
 
     # Parse the YAML content

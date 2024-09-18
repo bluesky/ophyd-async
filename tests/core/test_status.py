@@ -147,8 +147,8 @@ async def test_status_propogates_traceback_under_RE(RE) -> None:
 
 
 async def test_async_status_exception_timeout():
+    st = AsyncStatus(asyncio.sleep(0.1))
     try:
-        st = AsyncStatus(asyncio.sleep(0.1))
         with pytest.raises(
             ValueError,
             match=(

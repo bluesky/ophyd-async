@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
 from ophyd_async.epics import adcore

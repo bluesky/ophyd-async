@@ -1,5 +1,7 @@
+from collections.abc import Callable, Generator, Sequence
 from enum import Enum
-from typing import Any, Callable, Dict, Generator, List, Optional, Sequence
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -29,12 +31,12 @@ class OphydDumper(yaml.Dumper):
     def represent_data(self, data: Any) -> Any:
         if isinstance(data, Enum):
             return self.represent_data(data.value)
-        return super(OphydDumper, self).represent_data(data)
+        return super().represent_data(data)
 
 
 def get_signal_values(
-    signals: Dict[str, SignalRW[Any]], ignore: Optional[List[str]] = None
-) -> Generator[Msg, Sequence[Location[Any]], Dict[str, Any]]:
+    signals: dict[str, SignalRW[Any]], ignore: list[str] | None = None
+) -> Generator[Msg, Sequence[Location[Any]], dict[str, Any]]:
     """Get signal values in bulk.
 
     Used as part of saving the signals of a device to a yaml file.
@@ -66,13 +68,10 @@ def get_signal_values(
     }
     selected_values = yield Msg("locate", *selected_signals.values())
 
-    # TODO: investigate wrong type hints
-    if isinstance(selected_values, dict):
-        selected_values = [selected_values]  # type: ignore
-
     assert selected_values is not None, "No signalRW's were able to be located"
     named_values = {
-        key: value["setpoint"] for key, value in zip(selected_signals, selected_values)
+        key: value["setpoint"]
+        for key, value in zip(selected_signals, selected_values, strict=False)
     }
     # Ignored values place in with value None so we know which ones were ignored
     named_values.update({key: None for key in ignore})
@@ -80,8 +79,8 @@ def get_signal_values(
 
 
 def walk_rw_signals(
-    device: Device, path_prefix: Optional[str] = ""
-) -> Dict[str, SignalRW[Any]]:
+    device: Device, path_prefix: str | None = ""
+) -> dict[str, SignalRW[Any]]:
     """Retrieve all SignalRWs from a device.
 
     Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
@@ -111,7 +110,7 @@ def walk_rw_signals(
     if not path_prefix:
         path_prefix = ""
 
-    signals: Dict[str, SignalRW[Any]] = {}
+    signals: dict[str, SignalRW[Any]] = {}
     for attr_name, attr in device.children():
         dot_path = f"{path_prefix}{attr_name}"
         if type(attr) is SignalRW:
@@ -121,7 +120,7 @@ def walk_rw_signals(
     return signals
 
 
-def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
+def save_to_yaml(phases: Sequence[dict[str, Any]], save_path: str | Path) -> None:
     """Plan which serialises a phase or set of phases of SignalRWs to a yaml file.
 
     Parameters
@@ -151,7 +150,7 @@ def save_to_yaml(phases: Sequence[Dict[str, Any]], save_path: str) -> None:
         yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)
 
 
-def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
+def load_from_yaml(save_path: str) -> Sequence[dict[str, Any]]:
     """Plan that returns a list of dicts with saved signal values from a yaml file.
 
     Parameters
@@ -164,12 +163,12 @@ def load_from_yaml(save_path: str) -> Sequence[Dict[str, Any]]:
     :func:`ophyd_async.core.save_to_yaml`
     :func:`ophyd_async.core.set_signal_values`
     """
-    with open(save_path, "r") as file:
+    with open(save_path) as file:
         return yaml.full_load(file)
 
 
 def set_signal_values(
-    signals: Dict[str, SignalRW[Any]], values: Sequence[Dict[str, Any]]
+    signals: dict[str, SignalRW[Any]], values: Sequence[dict[str, Any]]
 ) -> Generator[Msg, None, None]:
     """Maps signals from a yaml file into device signals.
 
@@ -229,7 +228,7 @@ def load_device(device: Device, path: str):
     yield from set_signal_values(signals_to_set, values)
 
 
-def all_at_once(values: Dict[str, Any]) -> Sequence[Dict[str, Any]]:
+def all_at_once(values: dict[str, Any]) -> Sequence[dict[str, Any]]:
     """Sort all the values into a single phase so they are set all at once"""
     return [values]
 
@@ -237,8 +236,8 @@ def all_at_once(values: Dict[str, Any]) -> Sequence[Dict[str, Any]]:
 def save_device(
     device: Device,
     path: str,
-    sorter: Callable[[Dict[str, Any]], Sequence[Dict[str, Any]]] = all_at_once,
-    ignore: Optional[List[str]] = None,
+    sorter: Callable[[dict[str, Any]], Sequence[dict[str, Any]]] = all_at_once,
+    ignore: list[str] | None = None,
 ):
     """Plan that saves the state of all PV's on a device using a sorter.
 

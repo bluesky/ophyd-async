@@ -3,7 +3,7 @@
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import List, cast
+from typing import cast
 
 import bluesky.plan_stubs as bps
 import bluesky.preprocessors as bpp
@@ -43,7 +43,7 @@ async def make_detector(prefix: str, name: str, tmp_path: Path):
     return det
 
 
-def count_sim(dets: List[StandardDetector], times: int = 1):
+def count_sim(dets: list[StandardDetector], times: int = 1):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 
     yield from bps.stage_all(*dets)
@@ -110,7 +110,7 @@ async def two_detectors(tmp_path: Path):
 
 
 async def test_two_detectors_fly_different_rate(
-    two_detectors: List[adsimdetector.SimDetector], RE: RunEngine
+    two_detectors: list[adsimdetector.SimDetector], RE: RunEngine
 ):
     trigger_info = TriggerInfo(
         number=15,
@@ -174,7 +174,7 @@ async def test_two_detectors_fly_different_rate(
 
 
 async def test_two_detectors_step(
-    two_detectors: List[StandardDetector],
+    two_detectors: list[StandardDetector],
     RE: RunEngine,
 ):
     names = []
@@ -235,12 +235,8 @@ async def test_two_detectors_step(
     assert descriptor["data_keys"]["testb"]["shape"] == (769, 1025)
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
-    assert srb["uri"] == str("file://localhost") + str(
-        info_b.directory_path / file_name_b
-    )
-    assert sra["uri"] == str("file://localhost") + str(
-        info_a.directory_path / file_name_a
-    )
+    assert srb["uri"] == "file://localhost" + str(info_b.directory_path / file_name_b)
+    assert sra["uri"] == "file://localhost" + str(info_a.directory_path / file_name_a)
 
     assert event["data"] == {}
 

@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import patch
 
 import pytest
@@ -59,7 +58,7 @@ async def hdf_writer_with_stats(
 @pytest.fixture
 async def detectors(
     static_path_provider: PathProvider,
-) -> List[StandardDetector]:
+) -> list[StandardDetector]:
     detectors = []
     async with DeviceCollector(mock=True):
         detectors.append(advimba.VimbaDetector("VIMBA:", static_path_provider))
@@ -83,7 +82,7 @@ async def test_stats_describe_when_plugin_configured(
     set_mock_value(hdf_writer_with_stats.hdf.file_path_exists, True)
     set_mock_value(
         hdf_writer_with_stats._plugins[0].nd_attributes_file,
-        str("""<?xml version='1.0' encoding='utf-8'?>
+        """<?xml version='1.0' encoding='utf-8'?>
 <Attributes>
     <Attribute
         name="mydetector-sum"
@@ -97,7 +96,7 @@ async def test_stats_describe_when_plugin_configured(
         source="LINKAM:TEMP"
         dbrtype="DBR_FLOAT"/>
 </Attributes>
-"""),
+""",
     )
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         descriptor = await hdf_writer_with_stats.open()
@@ -135,7 +134,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
     set_mock_value(hdf_writer_with_stats.hdf.file_path_exists, True)
     set_mock_value(
         hdf_writer_with_stats._plugins[0].nd_attributes_file,
-        str("""<?xml version='1.0' encoding='utf-8'?>
+        """<?xml version='1.0' encoding='utf-8'?>
 <Attributes>
     <Attribute
         name="mydetector-Temperature"
@@ -143,7 +142,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
         source="LINKAM:TEMP"
         dbrtype="DBR_NATIVE"/>
 </Attributes>
-"""),
+""",
     )
     with pytest.raises(ValueError) as e:
         with patch("ophyd_async.core._signal.wait_for_value", return_value=None):

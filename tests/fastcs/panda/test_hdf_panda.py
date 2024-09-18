@@ -1,5 +1,4 @@
 import os
-from typing import Dict
 from unittest.mock import ANY
 
 import bluesky.plan_stubs as bps
@@ -147,7 +146,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     )
 
     # test descriptor
-    data_key_names: Dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
+    data_key_names: dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
     assert data_key_names == ["x", "y"]
     for data_key_name in data_key_names:
         assert (
@@ -157,25 +156,21 @@ async def test_hdf_panda_hardware_triggered_flyable(
 
     # test stream resources
     for dataset_name, stream_resource, data_key_name in zip(
-        ("x", "y"), docs["stream_resource"], data_key_names
+        ("x", "y"), docs["stream_resource"], data_key_names, strict=False
     ):
-
-        def assert_resource_document():
-            assert stream_resource == {
-                "run_start": docs["start"][0]["uid"],
-                "uid": ANY,
-                "data_key": data_key_name,
-                "mimetype": "application/x-hdf5",
-                "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
-                "parameters": {
-                    "dataset": f"/{dataset_name}",
-                    "swmr": False,
-                    "multiplier": 1,
-                },
-            }
-            assert "test-panda.h5" in stream_resource["uri"]
-
-        assert_resource_document()
+        assert stream_resource == {
+            "run_start": docs["start"][0]["uid"],
+            "uid": ANY,
+            "data_key": data_key_name,
+            "mimetype": "application/x-hdf5",
+            "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
+            "parameters": {
+                "dataset": f"/{dataset_name}",
+                "swmr": False,
+                "multiplier": 1,
+            },
+        }
+        assert "test-panda.h5" in stream_resource["uri"]
 
     # test stream datum
     for stream_datum in docs["stream_datum"]:
@@ -228,7 +223,7 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
 
         yield from bps.declare_stream(mock_hdf_panda, name="main_stream", collect=True)
 
-        for i in range(iteration):
+        for _ in range(iteration):
             set_mock_value(flyer.trigger_logic.seq.active, 1)
             yield from bps.kickoff(flyer, wait=True)
             yield from bps.kickoff(mock_hdf_panda)
@@ -267,7 +262,7 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
     )
 
     # test descriptor
-    data_key_names: Dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
+    data_key_names: dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
     assert data_key_names == ["x", "y"]
     for data_key_name in data_key_names:
         assert (
@@ -277,25 +272,21 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
 
     # test stream resources
     for dataset_name, stream_resource, data_key_name in zip(
-        ("x", "y"), docs["stream_resource"], data_key_names
+        ("x", "y"), docs["stream_resource"], data_key_names, strict=False
     ):
-
-        def assert_resource_document():
-            assert stream_resource == {
-                "run_start": docs["start"][0]["uid"],
-                "uid": ANY,
-                "data_key": data_key_name,
-                "mimetype": "application/x-hdf5",
-                "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
-                "parameters": {
-                    "dataset": f"/{dataset_name}",
-                    "swmr": False,
-                    "multiplier": 1,
-                },
-            }
-            assert "test-panda.h5" in stream_resource["uri"]
-
-        assert_resource_document()
+        assert stream_resource == {
+            "run_start": docs["start"][0]["uid"],
+            "uid": ANY,
+            "data_key": data_key_name,
+            "mimetype": "application/x-hdf5",
+            "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
+            "parameters": {
+                "dataset": f"/{dataset_name}",
+                "swmr": False,
+                "multiplier": 1,
+            },
+        }
+        assert "test-panda.h5" in stream_resource["uri"]
 
     # test stream datum
     for stream_datum in docs["stream_datum"]:

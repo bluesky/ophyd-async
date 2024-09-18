@@ -37,9 +37,11 @@ from ophyd_async.plan_stubs import ensure_connected
 
 
 async def test_signal_can_be_given_backend_on_connect():
+    from ophyd_async.core._signal import DISCONNECTED_BACKEND
+
     sim_signal = SignalR()
     backend = MockSignalBackend(int)
-    assert sim_signal._backend is None
+    assert sim_signal._backend is DISCONNECTED_BACKEND
     await sim_signal.connect(mock=False, backend=backend)
     assert await sim_signal.get_value() == 0
 
