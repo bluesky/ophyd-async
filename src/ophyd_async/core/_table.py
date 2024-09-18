@@ -1,5 +1,9 @@
+from typing import TypeVar
+
 import numpy as np
 from pydantic import BaseModel, ConfigDict, model_validator
+
+TableSubclass = TypeVar("TableSubclass", bound="Table")
 
 
 class Table(BaseModel):
@@ -7,28 +11,28 @@ class Table(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True, strict=False)
 
-    @classmethod
-    def row(cls, sub_cls, **kwargs) -> "Table":
+    @staticmethod
+    def row(cls: type[TableSubclass], **kwargs) -> TableSubclass:  # type: ignore
         arrayified_kwargs = {
             field_name: np.concatenate(
                 (
-                    (default_arr := field_value.default_factory()),
+                    (default_arr := field_value.default_factory()),  # type: ignore
                     np.array([kwargs[field_name]], dtype=default_arr.dtype),
                 )
             )
-            for field_name, field_value in sub_cls.model_fields.items()
+            for field_name, field_value in cls.model_fields.items()
         }
-        return sub_cls(**arrayified_kwargs)
+        return cls(**arrayified_kwargs)
 
-    def __add__(self, right: "Table") -> "Table":
+    def __add__(self, right: TableSubclass) -> TableSubclass:
         """Concatenate the arrays in field values."""
 
-        assert isinstance(right, type(self)), (
+        assert type(right) is type(self), (
             f"{right} is not a `Table`, or is not the same "
             f"type of `Table` as {self}."
         )
 
-        return type(self)(
+        return type(right)(
             **{
                 field_name: np.concatenate(
                     (getattr(self, field_name), getattr(right, field_name))
@@ -46,7 +50,8 @@ class Table(BaseModel):
 
         if not all(
             np.issubdtype(
-                self.model_fields[field_name].default_factory().dtype, field_value.dtype
+                self.model_fields[field_name].default_factory().dtype,  # type: ignore
+                field_value.dtype,
             )
             for field_name, field_value in self
         ):

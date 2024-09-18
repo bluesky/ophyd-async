@@ -1,9 +1,10 @@
 import asyncio
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from xml.etree import ElementTree as ET
 
-from bluesky.protocols import DataKey, Hints, StreamAsset
+from bluesky.protocols import Hints, StreamAsset
+from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -42,12 +43,12 @@ class ADHDFWriter(DetectorWriter):
         self._dataset_describer = dataset_describer
 
         self._plugins = plugins
-        self._capture_status: Optional[AsyncStatus] = None
-        self._datasets: List[HDFDataset] = []
-        self._file: Optional[HDFFile] = None
+        self._capture_status: AsyncStatus | None = None
+        self._datasets: list[HDFDataset] = []
+        self._file: HDFFile | None = None
         self._multiplier = 1
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._file = None
         info = self._path_provider(device_name=self.hdf.name)
 
@@ -125,7 +126,7 @@ class ADHDFWriter(DetectorWriter):
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
-                dtype_numpy=ds.dtype_numpy,
+                dtype_numpy=ds.dtype_numpy,  # type: ignore
                 external="STREAM:",
             )
             for ds in self._datasets

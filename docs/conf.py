@@ -1,8 +1,9 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Configuration file for the Sphinx documentation builder.
+
+This file only contains a selection of the most common options. For a full
+list see the documentation:
+https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""
 
 import os
 import sys
@@ -38,7 +39,10 @@ extensions = [
     "sphinxcontrib.autodoc_pydantic",
     # Use this for generating API docs
     "sphinx.ext.autodoc",
+    # Not sure if this is still used?
     "sphinx.ext.doctest",
+    # and making summary tables at the top of API docs
+    "sphinx.ext.autosummary",
     # This can parse google style docstrings
     "sphinx.ext.napoleon",
     # For linking to external sphinx documentation
@@ -51,7 +55,6 @@ extensions = [
     "sphinx_copybutton",
     # For the card element
     "sphinx_design",
-    "sphinx.ext.autosummary",
     "sphinx.ext.mathjax",
     "sphinx.ext.githubpages",
     "IPython.sphinxext.ipython_directive",
@@ -88,15 +91,20 @@ nitpick_ignore = [
     ("py:class", "typing_extensions.Literal"),
 ]
 
-# Both the class’ and the __init__ method’s docstring are concatenated and
-# inserted into the main body of the autoclass directive
-autoclass_content = "both"
-
 # Order the members by the order they appear in the source code
 autodoc_member_order = "bysource"
 
 # Don't inherit docstrings from baseclasses
 autodoc_inherit_docstrings = False
+
+# Add some more modules to the top level autosummary
+ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs"]
+
+# Document only what is in __all__
+autosummary_ignore_module_all = False
+
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
 
 # Output graphviz directive produced images in a scalable format
 graphviz_output_format = "svg"
@@ -241,9 +249,11 @@ autodoc_docstring_signature = True
 # numpydoc config
 numpydoc_show_class_members = False
 
-# pydantic models
-autodoc_pydantic_model_show_json = True
+# Don't show config summary as it's not relevant
 autodoc_pydantic_model_show_config_summary = False
+
+# Show the fields in source order
+autodoc_pydantic_model_summary_list_order = "bysource"
 
 # Where to put Ipython savefigs
 ipython_savefig_dir = "../build/savefig"

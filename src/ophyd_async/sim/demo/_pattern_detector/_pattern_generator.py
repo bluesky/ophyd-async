@@ -1,9 +1,10 @@
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, Optional
 
 import h5py
 import numpy as np
-from bluesky.protocols import DataKey, StreamAsset
+from bluesky.protocols import StreamAsset
+from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -60,19 +61,22 @@ class PatternGenerator:
             generate_gaussian_blob(width=detector_width, height=detector_height)
             * MAX_UINT8_VALUE
         )
-        self._hdf_stream_provider: Optional[HDFFile] = None
-        self._handle_for_h5_file: Optional[h5py.File] = None
-        self.target_path: Optional[Path] = None
+        self._hdf_stream_provider: HDFFile | None = None
+        self._handle_for_h5_file: h5py.File | None = None
+        self.target_path: Path | None = None
+
+    def write_data_to_dataset(self, path: str, data_shape: tuple[int, ...], data):
+        """Write data to named dataset, resizing to fit and flushing after."""
+        assert self._handle_for_h5_file, "no file has been opened!"
+        dset = self._handle_for_h5_file[path]
+        assert isinstance(
+            dset, h5py.Dataset
+        ), f"Expected {path} to be dataset, got {dset}"
+        dset.resize((self.image_counter + 1,) + data_shape)
+        dset[self.image_counter] = data
+        dset.flush()
 
     async def write_image_to_file(self) -> None:
-        assert self._handle_for_h5_file, "no file has been opened!"
-        # prepare - resize the fixed hdf5 data structure
-        # so that the new image can be written
-        self._handle_for_h5_file[DATA_PATH].resize(
-            (self.image_counter + 1, self.height, self.width)
-        )
-        self._handle_for_h5_file[SUM_PATH].resize((self.image_counter + 1,))
-
         # generate the simulated data
         intensity: float = generate_interesting_pattern(self.x, self.y)
         detector_data = (
@@ -82,14 +86,9 @@ class PatternGenerator:
             / self.saturation_exposure_time
         ).astype(np.uint8)
 
-        # write data to disc (intermediate step)
-        self._handle_for_h5_file[DATA_PATH][self.image_counter] = detector_data
-        sum = np.sum(detector_data)
-        self._handle_for_h5_file[SUM_PATH][self.image_counter] = sum
-
-        # save metadata - so that it's discoverable
-        self._handle_for_h5_file[DATA_PATH].flush()
-        self._handle_for_h5_file[SUM_PATH].flush()
+        # Write the data and sum
+        self.write_data_to_dataset(DATA_PATH, (self.height, self.width), detector_data)
+        self.write_data_to_dataset(SUM_PATH, (), np.sum(detector_data))
 
         # counter increment is last
         # as only at this point the new data is visible from the outside
@@ -107,7 +106,7 @@ class PatternGenerator:
 
     async def open_file(
         self, path_provider: PathProvider, name: str, multiplier: int = 1
-    ) -> Dict[str, DataKey]:
+    ) -> dict[str, DataKey]:
         await self.counter_signal.connect()
 
         self.target_path = self._get_new_path(path_provider)
@@ -156,7 +155,7 @@ class PatternGenerator:
         describe = {
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
-                shape=outer_shape + tuple(ds.shape),
+                shape=list(outer_shape) + list(ds.shape),
                 dtype="array" if ds.shape else "number",
                 external="STREAM:",
             )
