@@ -1,7 +1,7 @@
 import asyncio
 from typing import Optional
 
-from bluesky.protocols import Movable, Reading, Stoppable
+from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -15,6 +15,7 @@ from ophyd_async.core import (
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
+    wait_for_value,
 )
 from ophyd_async.tango import TangoReadable, tango_polling
 from tango import DevState
@@ -48,8 +49,9 @@ class TangoMover(TangoReadable, Movable, Stoppable):
         # For this server, set returns immediately so this status should not be awaited
         await self.position.set(value, wait=False, timeout=timeout)
 
-        # Wait for the motor to stop
-        move_status = self.wait_for_idle()
+        move_status = AsyncStatus(
+            wait_for_value(self.state, DevState.ON, timeout=timeout)
+        )
 
         try:
             async for current_position in observe_value(
@@ -66,18 +68,6 @@ class TangoMover(TangoReadable, Movable, Stoppable):
             raise RuntimeError("Motor was stopped") from exc
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
-
-    @AsyncStatus.wrap
-    async def wait_for_idle(self):
-        event = asyncio.Event()
-
-        def _wait(value: dict[str, Reading]):
-            if value[self.state.name]["value"] == DevState.ON:
-                event.set()
-
-        self.state.subscribe(_wait)
-        await event.wait()
-        self.state.clear_sub(_wait)
 
     def stop(self, success: bool = True) -> AsyncStatus:
         self._set_success = success
