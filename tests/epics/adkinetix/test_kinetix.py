@@ -11,7 +11,7 @@ from ophyd_async.epics.adkinetix._kinetix_io import KinetixTriggerMode
 
 
 @pytest.fixture
-async def test_adkinetix(ad_standard_det_factory):
+def test_adkinetix(ad_standard_det_factory):
     return ad_standard_det_factory(adkinetix.KinetixDetector)
 
 
