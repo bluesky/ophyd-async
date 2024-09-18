@@ -11,15 +11,20 @@ from ._mover import TangoMover
 
 
 class TangoDetector(TangoReadable):
-    counters: DeviceVector[TangoCounter]
+    counters: DeviceVector
     mover: TangoMover
 
-    def __init__(self, *args, **kwargs):
-        if "counters_kwargs" in kwargs:
-            self._counters_kwargs = kwargs.pop("counters_kwargs")
-        if "mover_kwargs" in kwargs:
-            self._mover_kwargs = kwargs.pop("mover_kwargs")
-        super().__init__(*args, **kwargs)
+    def __init__(self, trl: str, mover_trl: str, counter_trls: list[str], name=""):
+        super().__init__(trl, name=name)
+
+        # If devices are inferred from type hints, they will be created automatically
+        # during init. If they are created automatically, their trl must be set before
+        # they are connected.
+        self.mover.set_trl(mover_trl)
+        for i, c_trl in enumerate(counter_trls):
+            self.counters[i + 1] = TangoCounter(c_trl)
+
+        # Define the readables for TangoDetector
         self.add_readables([self.counters, self.mover])
 
     def set(self, value):

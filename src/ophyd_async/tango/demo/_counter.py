@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
@@ -21,7 +23,7 @@ class TangoCounter(TangoReadable):
     start: SignalX
     reset: SignalX
 
-    def __init__(self, trl: str, name=""):
+    def __init__(self, trl: Optional[str] = "", name=""):
         super().__init__(trl, name=name)
         self.add_readables([self.counts], HintedSignal)
         self.add_readables([self.sample_time], ConfigSignal)

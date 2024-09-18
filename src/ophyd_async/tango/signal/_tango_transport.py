@@ -580,22 +580,31 @@ class TangoSignalBackend(SignalBackend[T]):
     def __init__(
         self,
         datatype: Optional[Type[T]],
-        read_trl: str,
-        write_trl: str,
+        read_trl: Optional[str] = "",
+        write_trl: Optional[str] = "",
         device_proxy: Optional[DeviceProxy] = None,
     ):
+        self.device_proxy = device_proxy
         self.datatype = datatype
         self.read_trl = read_trl
         self.write_trl = write_trl
         self.proxies: Dict[str, TangoProxy] = {
-            read_trl: device_proxy,
-            write_trl: device_proxy,
+            read_trl: self.device_proxy,
+            write_trl: self.device_proxy,
         }
         self.trl_configs: Dict[str, AttributeInfoEx] = {}
         self.descriptor: Descriptor = {}  # type: ignore
         self._polling = (False, 0.1, None, 0.1)
         self.support_events = True
         self.status = None
+
+    def set_trl(self, read_trl: str, write_trl: Optional[str] = ""):
+        self.read_trl = read_trl
+        self.write_trl = write_trl if write_trl else read_trl
+        self.proxies: Dict[str, TangoProxy] = {
+            read_trl: self.device_proxy,
+            write_trl: self.device_proxy,
+        }
 
     def source(self, name: str) -> str:
         return self.read_trl

@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 
 from bluesky.protocols import Movable, Reading, Stoppable
 
@@ -28,7 +29,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
     velocity: SignalRW[float]
     _stop: SignalX
 
-    def __init__(self, trl: str, name=""):
+    def __init__(self, trl: Optional[str] = "", name=""):
         super().__init__(trl, name=name)
         self.add_readables([self.position], HintedSignal)
         self.add_readables([self.velocity], ConfigSignal)

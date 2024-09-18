@@ -359,8 +359,8 @@ async def test_tango_demo(demo_test_context):
         detector = TangoDetector(
             trl="",
             name="detector",
-            counters_kwargs={"prefix": "demo/counter/", "count": 2},
-            mover_kwargs={"trl": "demo/motor/1"},
+            mover_trl="demo/motor/1",
+            counter_trls=["demo/counter/1", "demo/counter/2"],
         )
         await detector.connect()
 
