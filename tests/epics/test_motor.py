@@ -280,10 +280,13 @@ async def test_prepare(
     set_mock_value(sim_motor.high_limit_travel, 20)
     set_mock_value(sim_motor.max_velocity, 10)
     fake_set_signal = SignalRW(MockSignalBackend(float))
+    fake_other_set_signal = SignalRW(MockSignalBackend(float))
 
     async def wait_for_set(_):
-        async for value in observe_signals_values(fake_set_signal, timeout=1):
-            if value == target_position:
+        async for signal, value in observe_signals_values(
+            fake_other_set_signal, fake_set_signal, timeout=1
+        ):
+            if signal == fake_set_signal and value == target_position:
                 break
 
     sim_motor.set = AsyncMock(side_effect=wait_for_set)
