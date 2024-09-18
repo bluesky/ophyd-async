@@ -7,13 +7,16 @@ from ophyd_async.core import (
 )
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import advimba
+from ophyd_async.epics.advimba._vimba_io import (
+    VimbaExposeOutMode,
+    VimbaOnOff,
+    VimbaTriggerSource,
+)
 
 
 @pytest.fixture
-async def test_advimba(ad_standard_det_factory) -> advimba.VimbaDetector:
-    test_advimba = await ad_standard_det_factory(advimba.VimbaDetector)
-
-    return test_advimba
+def test_advimba(ad_standard_det_factory) -> advimba.VimbaDetector:
+    return ad_standard_det_factory(advimba.VimbaDetector)
 
 
 async def test_get_deadtime(
@@ -24,9 +27,9 @@ async def test_get_deadtime(
 
 
 async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
-    set_mock_value(test_advimba.drv.trigger_source, "Freerun")
-    set_mock_value(test_advimba.drv.trigger_mode, "Off")
-    set_mock_value(test_advimba.drv.exposure_mode, "Timed")
+    set_mock_value(test_advimba.drv.trigger_source, VimbaTriggerSource.freerun)
+    set_mock_value(test_advimba.drv.trigger_mode, VimbaOnOff.off)
+    set_mock_value(test_advimba.drv.exposure_mode, VimbaExposeOutMode.timed)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_advimba.controller.prepare(TriggerInfo(number=1, trigger=trig_mode))

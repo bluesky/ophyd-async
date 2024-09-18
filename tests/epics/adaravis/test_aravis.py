@@ -12,10 +12,8 @@ from ophyd_async.epics import adaravis
 
 
 @pytest.fixture
-async def test_adaravis(ad_standard_det_factory) -> adaravis.AravisDetector:
-    test_adaravis = await ad_standard_det_factory(adaravis.AravisDetector)
-
-    return test_adaravis
+def test_adaravis(ad_standard_det_factory) -> adaravis.AravisDetector:
+    return ad_standard_det_factory(adaravis.AravisDetector)
 
 
 @pytest.mark.parametrize("exposure_time", [0.0, 0.1, 1.0, 10.0, 100.0])

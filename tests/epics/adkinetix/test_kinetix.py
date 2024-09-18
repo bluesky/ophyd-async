@@ -7,12 +7,12 @@ from ophyd_async.core import (
 )
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import adkinetix
+from ophyd_async.epics.adkinetix._kinetix_io import KinetixTriggerMode
 
 
 @pytest.fixture
 async def test_adkinetix(ad_standard_det_factory):
-    kinetix = await ad_standard_det_factory(adkinetix.KinetixDetector)
-    return kinetix
+    return ad_standard_det_factory(adkinetix.KinetixDetector)
 
 
 async def test_get_deadtime(
@@ -23,7 +23,7 @@ async def test_get_deadtime(
 
 
 async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
-    set_mock_value(test_adkinetix.drv.trigger_mode, "Internal")
+    set_mock_value(test_adkinetix.drv.trigger_mode, KinetixTriggerMode.internal)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_adkinetix.controller.prepare(
