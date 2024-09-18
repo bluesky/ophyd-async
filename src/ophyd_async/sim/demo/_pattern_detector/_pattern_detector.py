@@ -19,7 +19,7 @@ class PatternDetector(StandardDetector):
     def __init__(
         self,
         path: Path,
-        config_sigs: Sequence[SignalR] = [],
+        config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         fp: FilenameProvider = StaticFilenameProvider(name)

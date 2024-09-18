@@ -68,10 +68,6 @@ def get_signal_values(
     }
     selected_values = yield Msg("locate", *selected_signals.values())
 
-    # TODO: investigate wrong type hints
-    # if isinstance(selected_values, dict):
-    #    selected_values = [selected_values]  # type: ignore
-
     assert selected_values is not None, "No signalRW's were able to be located"
     named_values = {
         key: value["setpoint"]
