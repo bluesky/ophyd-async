@@ -494,7 +494,7 @@ async def observe_signals_values(
     *signals: SignalR[T],
     timeout: float | None = None,
     done_status: Status | None = None,
-) -> AsyncGenerator[Tuple[SignalR[T], T], None]:
+) -> AsyncGenerator[tuple[SignalR[T], T], None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
     Parameters
@@ -516,7 +516,6 @@ async def observe_signals_values(
         async for value in observe_value(sig):
             do_something_with(value)
     """
-
     q: asyncio.Queue[tuple[SignalR[T], T | Status]] = asyncio.Queue()
     if timeout is None:
         get_value = q.get
@@ -554,7 +553,7 @@ async def observe_signals_values(
                 else:
                     break
             else:
-                yield item
+                yield item  # type: ignore
     finally:
         for clear_signal in clear_signals:
             clear_signal()
@@ -612,7 +611,7 @@ async def wait_for_value(
     """
 
     if callable(match_value):
-        checker = _ValueChecker(match_value, match_value.__name__)  # type: ignore 
+        checker = _ValueChecker(match_value, match_value.__name__)  # type: ignore
     else:
         checker = _ValueChecker(lambda v: v == match_value, repr(match_value))
     await checker.wait_for_value(signal, timeout)
@@ -624,10 +623,8 @@ async def set_and_wait_for_other_value(
     match_signal: SignalR[S],
     match_value: S | Callable[[S], bool],
     timeout: float = DEFAULT_TIMEOUT,
-
     set_timeout: float | None = None,
 ):
-
     """Set a signal and monitor another signal until it has the specified value.
 
     This function sets a set_signal to a specified set_value and waits for
@@ -685,7 +682,6 @@ async def set_and_wait_for_value(
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: float | None = None,
 ):
-
     """Set a signal and monitor it until it has that value.
 
     Useful for busy record, or other Signals with pattern:
