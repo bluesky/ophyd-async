@@ -14,10 +14,7 @@ from ophyd_async.core import (
     DeviceVector,
     Signal,
 )
-from ophyd_async.tango.signal import (
-    make_backend,
-    tango_signal_auto,
-)
+from ophyd_async.tango.signal import TangoSignalBackend, make_backend, tango_signal_auto
 from tango import DeviceProxy as DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
@@ -41,7 +38,7 @@ class TangoDevice(Device):
 
     trl: str = ""
     proxy: DeviceProxy | None = None
-    _polling: tuple[bool, float, float, float] = (False, 0.1, None, 0.1)
+    _polling: tuple[bool, float, float | None, float | None] = (False, 0.1, None, 0.1)
     _signal_polling: dict[str, tuple[bool, float, float, float]] = {}
     _poll_only_annotated_signals: bool = True
 
@@ -76,13 +73,14 @@ class TangoDevice(Device):
         # Set the trl of the signal backends
         for child in self.children():
             if isinstance(child[1], Signal):
-                resource_name = child[0].lstrip("_")
-                read_trl = f"{self.trl}/{resource_name}"
-                child[1]._backend.set_trl(read_trl, read_trl)  # noqa: SLF001
+                if isinstance(child[1]._backend, TangoSignalBackend):  # noqa: SLF001
+                    resource_name = child[0].lstrip("_")
+                    read_trl = f"{self.trl}/{resource_name}"
+                    child[1]._backend.set_trl(read_trl, read_trl)  # noqa: SLF001
 
         if self.proxy is not None:
             self.register_signals()
-            await fill_proxy_entries(self)
+            await _fill_proxy_entries(self)
 
         # set_name should be called again to propagate the new signal names
         self.set_name(self.name)
@@ -90,15 +88,18 @@ class TangoDevice(Device):
         # Set the polling configuration
         if self._polling[0]:
             for child in self.children():
-                if issubclass(type(child[1]), Signal):
-                    child[1]._backend.set_polling(*self._polling)  # noqa: SLF001
-                    child[1]._backend.allow_events(False)  # noqa: SLF001
+                child_type = type(child[1])
+                if issubclass(child_type, Signal):
+                    if isinstance(child[1]._backend, TangoSignalBackend):  # noqa: SLF001  # type: ignore
+                        child[1]._backend.set_polling(*self._polling)  # noqa: SLF001  # type: ignore
+                        child[1]._backend.allow_events(False)  # noqa: SLF001  # type: ignore
         if self._signal_polling:
             for signal_name, polling in self._signal_polling.items():
                 if hasattr(self, signal_name):
                     attr = getattr(self, signal_name)
-                    attr._backend.set_polling(*polling)  # noqa: SLF001
-                    attr._backend.allow_events(False)  # noqa: SLF001
+                    if isinstance(attr._backend, TangoSignalBackend):  # noqa: SLF001
+                        attr._backend.set_polling(*polling)  # noqa: SLF001
+                        attr._backend.allow_events(False)  # noqa: SLF001
 
         await super().connect(mock=mock, timeout=timeout)
 
@@ -195,10 +196,13 @@ def tango_create_children_from_annotations(
                 setattr(device, name, origin(name=name, backend=backend))
 
             elif issubclass(origin, Device) or isinstance(origin, Device):
+                assert callable(origin), f"{origin} is not callable."
                 setattr(device, name, origin())
 
 
-async def fill_proxy_entries(device: TangoDevice):
+async def _fill_proxy_entries(device: TangoDevice):
+    if device.proxy is None:
+        raise RuntimeError(f"Device proxy is not connected for {device.name}")
     proxy_trl = device.trl
     children = [name.lstrip("_") for name, _ in device.children()]
     proxy_attributes = list(device.proxy.get_attribute_list())

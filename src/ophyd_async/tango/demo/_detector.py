@@ -25,7 +25,8 @@ class TangoDetector(TangoReadable):
             self.counters[i + 1] = TangoCounter(c_trl)
 
         # Define the readables for TangoDetector
-        self.add_readables([self.counters, self.mover])
+        # DeviceVectors are incompatible with AsyncReadable. Ignore until fixed.
+        self.add_readables([self.counters, self.mover])  # type: ignore
 
     def set(self, value):
         return self.mover.set(value)

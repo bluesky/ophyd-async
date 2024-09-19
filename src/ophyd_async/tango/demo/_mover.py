@@ -9,6 +9,7 @@ from ophyd_async.core import (
     CalculatableTimeout,
     ConfigSignal,
     HintedSignal,
+    SignalR,
     SignalRW,
     SignalX,
     WatchableAsyncStatus,
@@ -27,6 +28,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
     # If type is None or Signal, the type will be inferred from the Tango device
     position: SignalRW[float]
     velocity: SignalRW[float]
+    state: SignalR[DevState]
     _stop: SignalX
 
     def __init__(self, trl: str | None = "", name=""):
@@ -45,6 +47,8 @@ class TangoMover(TangoReadable, Movable, Stoppable):
             assert velocity > 0, "Motor has zero velocity"
             timeout = abs(value - old_position) / velocity + DEFAULT_TIMEOUT
 
+        if not (isinstance(timeout, float) or timeout is None):
+            raise ValueError("Timeout must be a float or None")
         # For this server, set returns immediately so this status should not be awaited
         await self.position.set(value, wait=False, timeout=timeout)
 

@@ -19,7 +19,7 @@ class TangoCounter(TangoReadable):
     counts: SignalR[int]
     sample_time: SignalRW[float]
     start: SignalX
-    reset: SignalX
+    _reset: SignalX
 
     def __init__(self, trl: str | None = "", name=""):
         super().__init__(trl, name=name)
@@ -34,4 +34,4 @@ class TangoCounter(TangoReadable):
 
     @AsyncStatus.wrap
     async def reset(self) -> None:
-        await self.reset.trigger(wait=True, timeout=DEFAULT_TIMEOUT)
+        await self._reset.trigger(wait=True, timeout=DEFAULT_TIMEOUT)
