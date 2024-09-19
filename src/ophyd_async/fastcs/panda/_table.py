@@ -1,6 +1,6 @@
-import inspect
+from collections.abc import Sequence
 from enum import Enum
-from typing import Annotated, Sequence
+from typing import Annotated
 
 import numpy as np
 import numpy.typing as npt
@@ -38,21 +38,21 @@ class SeqTrigger(str, Enum):
 
 
 PydanticNp1DArrayInt32 = Annotated[
-    np.ndarray[tuple[int], np.int32],
+    np.ndarray[tuple[int], np.dtype[np.int32]],
     NpArrayPydanticAnnotation.factory(
         data_type=np.int32, dimensions=1, strict_data_typing=False
     ),
     Field(default_factory=lambda: np.array([], np.int32)),
 ]
 PydanticNp1DArrayBool = Annotated[
-    np.ndarray[tuple[int], np.bool_],
+    np.ndarray[tuple[int], np.dtype[np.bool_]],
     NpArrayPydanticAnnotation.factory(
         data_type=np.bool_, dimensions=1, strict_data_typing=False
     ),
     Field(default_factory=lambda: np.array([], dtype=np.bool_)),
 ]
 TriggerStr = Annotated[
-    np.ndarray[tuple[int], np.unicode_],
+    np.ndarray[tuple[int], np.dtype[np.unicode_]],
     NpArrayPydanticAnnotation.factory(
         data_type=np.unicode_, dimensions=1, strict_data_typing=False
     ),
@@ -80,7 +80,7 @@ class SeqTable(Table):
     outf2: PydanticNp1DArrayBool
 
     @classmethod
-    def row(
+    def row(  # type: ignore
         cls,
         *,
         repeats: int = 1,
@@ -101,15 +101,9 @@ class SeqTable(Table):
         oute2: bool = False,
         outf2: bool = False,
     ) -> "SeqTable":
-        sig = inspect.signature(cls.row)
-        kwargs = {k: v for k, v in locals().items() if k in sig.parameters}
-
-        if isinstance(kwargs["trigger"], SeqTrigger):
-            kwargs["trigger"] = kwargs["trigger"].value
-        elif isinstance(kwargs["trigger"], str):
-            SeqTrigger(kwargs["trigger"])
-
-        return Table.row(cls, **kwargs)
+        if isinstance(trigger, SeqTrigger):
+            trigger = trigger.value
+        return super().row(**locals())
 
     @field_validator("trigger", mode="before")
     @classmethod

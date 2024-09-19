@@ -1,5 +1,5 @@
 from inspect import ismethod
-from typing import List, get_type_hints
+from typing import get_type_hints
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -63,7 +63,7 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
     )
 
     with pytest.raises(AssertionError):
-        sr.hints
+        sr.hints  # noqa: B018
 
 
 def test_standard_readable_hints_raises_when_overriding_sequence():
@@ -81,7 +81,7 @@ def test_standard_readable_hints_raises_when_overriding_sequence():
     )
 
     with pytest.raises(AssertionError):
-        sr.hints
+        sr.hints  # noqa: B018
 
 
 @pytest.mark.parametrize("invalid_type", [1, 1.0, {"abc": "def"}, {1, 2, 3}])
@@ -94,7 +94,7 @@ def test_standard_readable_hints_invalid_types(invalid_type):
     sr._has_hints = (hint1,)
 
     with pytest.raises(TypeError):
-        sr.hints
+        sr.hints  # noqa: B018
 
 
 def test_standard_readable_add_children_context_manager():
@@ -189,7 +189,7 @@ def test_standard_readable_add_readables_adds_to_expected_attrs(
     ],
 )
 def test_standard_readable_add_readables_adds_wrapped_to_expected_attr(
-    wrapper, expected_attrs: List[str]
+    wrapper, expected_attrs: list[str]
 ):
     sr = StandardReadable()
 

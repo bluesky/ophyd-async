@@ -1,9 +1,9 @@
 import asyncio
+from collections.abc import AsyncGenerator, AsyncIterator
 from enum import Enum
-from typing import AsyncGenerator, AsyncIterator, Dict
 
 from bluesky.protocols import StreamAsset
-from event_model.documents.event_descriptor import DataKey
+from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -77,7 +77,7 @@ class OdinWriter(DetectorWriter):
         self._name_provider = name_provider
         super().__init__()
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=self._name_provider())
 
         await asyncio.gather(
@@ -93,7 +93,7 @@ class OdinWriter(DetectorWriter):
 
         return await self._describe()
 
-    async def _describe(self) -> Dict[str, DataKey]:
+    async def _describe(self) -> dict[str, DataKey]:
         data_shape = await asyncio.gather(
             self._drv.image_height.get_value(), self._drv.image_width.get_value()
         )
@@ -103,7 +103,8 @@ class OdinWriter(DetectorWriter):
                 source=self._drv.file_name.source,
                 shape=data_shape,
                 dtype="array",
-                dtype_numpy="<u2",  # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
+                # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
+                dtype_numpy="<u2",  # type: ignore
                 external="STREAM:",
             )
         }

@@ -1,14 +1,13 @@
 import asyncio
 import time
-from typing import Dict
 from unittest.mock import AsyncMock, MagicMock, Mock, call
 
 import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    CALCULATE_TIMEOUT,
     AsyncStatus,
-    CalculateTimeout,
     DeviceCollector,
     MockSignalBackend,
     SignalRW,
@@ -184,7 +183,7 @@ async def test_read_motor(sim_motor: motor.Motor):
 
 async def test_set_velocity(sim_motor: motor.Motor) -> None:
     v = sim_motor.velocity
-    q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
+    q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["sim_motor-velocity"]["value"] == 1.0
     await v.set(2.0)
@@ -316,7 +315,7 @@ async def test_kickoff(sim_motor: motor.Motor):
         await sim_motor.kickoff()
     sim_motor._fly_completed_position = 20
     await sim_motor.kickoff()
-    sim_motor.set.assert_called_once_with(20, timeout=CalculateTimeout)
+    sim_motor.set.assert_called_once_with(20, timeout=CALCULATE_TIMEOUT)
 
 
 async def test_complete(sim_motor: motor.Motor) -> None:

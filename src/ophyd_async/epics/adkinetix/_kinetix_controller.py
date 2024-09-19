@@ -23,7 +23,7 @@ class KinetixController(DetectorControl):
         self._drv = driver
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return 0.001
 
     async def prepare(self, trigger_info: TriggerInfo):

@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -82,7 +81,7 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
         await self.pcomp.enable.set("ONE")
         await wait_for_value(self.pcomp.active, True, timeout=1)
 
-    async def complete(self, timeout: Optional[float] = None) -> None:
+    async def complete(self, timeout: float | None = None) -> None:
         await wait_for_value(self.pcomp.active, False, timeout=timeout)
 
     async def stop(self):

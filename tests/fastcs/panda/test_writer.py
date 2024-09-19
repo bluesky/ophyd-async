@@ -142,7 +142,7 @@ async def test_open_returns_correct_descriptors(
             assert "DATASETS table is empty!" in caplog.text
 
     for key, entry, expected_key in zip(
-        description.keys(), description.values(), table["name"]
+        description.keys(), description.values(), table["name"], strict=False
     ):
         assert key == expected_key
         assert entry == {

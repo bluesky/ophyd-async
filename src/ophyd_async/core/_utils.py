@@ -2,23 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass
-from typing import (
-    Awaitable,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    ParamSpec,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Generic, Literal, ParamSpec, TypeVar, get_origin
 
 import numpy as np
 from bluesky.protocols import Reading
+from pydantic import BaseModel
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -28,18 +18,18 @@ Callback = Callable[[T], None]
 #: monitor updates
 ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
-ErrorText = Union[str, Dict[str, Exception]]
+ErrorText = str | dict[str, Exception]
 
 
-class CalculateTimeout:
-    """Sentinel class used to implement ``myfunc(timeout=CalculateTimeout)``
+CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
+"""Sentinel used to implement ``myfunc(timeout=CalculateTimeout)``
 
-    This signifies that the function should calculate a suitable non-zero
-    timeout itself
-    """
+This signifies that the function should calculate a suitable non-zero
+timeout itself
+"""
 
 
-CalculatableTimeout = float | None | Type[CalculateTimeout]
+CalculatableTimeout = float | None | Literal["CALCULATE_TIMEOUT"]
 
 
 class NotConnected(Exception):
@@ -115,7 +105,7 @@ async def wait_for_connection(**coros: Awaitable[None]):
     results = await asyncio.gather(*coros.values(), return_exceptions=True)
     exceptions = {}
 
-    for name, result in zip(coros, results):
+    for name, result in zip(coros, results, strict=False):
         if isinstance(result, Exception):
             exceptions[name] = result
             if not isinstance(result, NotConnected):
@@ -129,7 +119,7 @@ async def wait_for_connection(**coros: Awaitable[None]):
         raise NotConnected(exceptions)
 
 
-def get_dtype(typ: Type) -> Optional[np.dtype]:
+def get_dtype(typ: type) -> np.dtype | None:
     """Get the runtime dtype from a numpy ndarray type annotation
 
     >>> import numpy.typing as npt
@@ -144,7 +134,7 @@ def get_dtype(typ: Type) -> Optional[np.dtype]:
     return None
 
 
-def get_unique(values: Dict[str, T], types: str) -> T:
+def get_unique(values: dict[str, T], types: str) -> T:
     """If all values are the same, return that value, otherwise raise TypeError
 
     >>> get_unique({"a": 1, "b": 1}, "integers")
@@ -162,21 +152,21 @@ def get_unique(values: Dict[str, T], types: str) -> T:
 
 
 async def merge_gathered_dicts(
-    coros: Iterable[Awaitable[Dict[str, T]]],
-) -> Dict[str, T]:
+    coros: Iterable[Awaitable[dict[str, T]]],
+) -> dict[str, T]:
     """Merge dictionaries produced by a sequence of coroutines.
 
     Can be used for merging ``read()`` or ``describe``. For instance::
 
         combined_read = await merge_gathered_dicts(s.read() for s in signals)
     """
-    ret: Dict[str, T] = {}
+    ret: dict[str, T] = {}
     for result in await asyncio.gather(*coros):
         ret.update(result)
     return ret
 
 
-async def gather_list(coros: Iterable[Awaitable[T]]) -> List[T]:
+async def gather_list(coros: Iterable[Awaitable[T]]) -> list[T]:
     return await asyncio.gather(*coros)
 
 
@@ -195,3 +185,9 @@ def in_micros(t: float) -> int:
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")
     return int(np.ceil(t * 1e6))
+
+
+def is_pydantic_model(datatype) -> bool:
+    while origin := get_origin(datatype):
+        datatype = origin
+    return datatype and issubclass(datatype, BaseModel)
