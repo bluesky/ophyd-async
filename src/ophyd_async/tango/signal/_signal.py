@@ -158,7 +158,9 @@ async def tango_signal_auto(
         return SignalX(backend=backend, timeout=timeout, name=name)
 
 
-async def infer_python_type(trl: str = "", proxy: DeviceProxy = None) -> type[T]:
+async def infer_python_type(
+    trl: str = "", proxy: DeviceProxy | None = None
+) -> object | npt.NDArray | type[DevState] | IntEnum:
     device_trl, tr_name = trl.rsplit("/", 1)
     if proxy is None:
         dev_proxy = await AsyncDeviceProxy(device_trl)
@@ -185,7 +187,7 @@ async def infer_python_type(trl: str = "", proxy: DeviceProxy = None) -> type[T]
     return npt.NDArray[py_type] if isarray else py_type
 
 
-async def infer_signal_character(trl, proxy: DeviceProxy = None) -> str:
+async def infer_signal_character(trl, proxy: DeviceProxy | None = None) -> str:
     device_trl, tr_name = trl.rsplit("/", 1)
     if proxy is None:
         dev_proxy = await AsyncDeviceProxy(device_trl)
@@ -218,3 +220,4 @@ async def infer_signal_character(trl, proxy: DeviceProxy = None) -> str:
             )
         else:
             return "RW"
+    raise RuntimeError(f"Unable to infer signal character for {trl}")
