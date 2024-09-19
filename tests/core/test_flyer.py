@@ -259,7 +259,6 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
                 wait=True,
             )
 
-
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
 
@@ -296,9 +295,10 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         yield from bps.unstage_all(flyer, *detectors)
 
     # fly scan
-    with pytest.raises(Exception, match="Kickoff called more than the configured number"):
+    with pytest.raises(
+        Exception, match="Kickoff called more than the configured number"
+    ):
         RE(flying_plan())
-
 
 
 # To do: Populate configuration signals
