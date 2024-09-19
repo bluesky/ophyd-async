@@ -230,10 +230,10 @@ class StandardReadable(
                 self._has_hints += (obj,)
 
     @AsyncStatus.wrap
-    async def prepare(self, config: PerSignalConfig) -> None:
+    async def prepare(self, value: PerSignalConfig) -> None:
         tasks = []
-        for sig, value in config.items():
-            tasks.append(sig.set(value))
+        for signal, new_value in value.items():
+            tasks.append(signal.set(new_value))
         await asyncio.gather(*tasks)
 
 
