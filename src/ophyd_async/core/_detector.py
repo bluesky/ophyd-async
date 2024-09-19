@@ -314,7 +314,10 @@ class StandardDetector(
     async def kickoff(self):
         assert self._trigger_info, "Prepare must be called before kickoff!"
         if self._iterations_completed >= self._trigger_info.iteration:
-            raise Exception(f"Kickoff called more than {self._trigger_info.iteration}")
+            raise Exception(
+                f"Kickoff called more than the configured number of "
+                f"{self._trigger_info.iteration} iteration(s)!"
+            )
         self._iterations_completed += 1
 
     @WatchableAsyncStatus.wrap
@@ -340,6 +343,7 @@ class StandardDetector(
             if index >= self._trigger_info.number:
                 break
         if self._iterations_completed == self._trigger_info.iteration:
+            self._iterations_completed = 0
             await self.controller.wait_for_idle()
 
     async def describe_collect(self) -> dict[str, DataKey]:

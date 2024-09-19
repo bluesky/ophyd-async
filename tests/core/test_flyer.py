@@ -183,6 +183,10 @@ async def test_hardware_triggered_flyable(
         for detector in detectors:
             yield from bps.kickoff(detector)
 
+            # Since we set number of iterations to 1 (default),
+            # make sure it gets reset
+            assert detector._iterations_completed == 0
+
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detectors:
             yield from bps.complete(detector, wait=False, group="complete")
