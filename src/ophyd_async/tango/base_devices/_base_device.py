@@ -1,10 +1,6 @@
 from __future__ import annotations
 
 from typing import (
-    Dict,
-    Optional,
-    Tuple,
-    Type,
     TypeVar,
     Union,
     get_args,
@@ -22,7 +18,7 @@ from ophyd_async.tango.signal import (
     make_backend,
     tango_signal_auto,
 )
-from tango import DeviceProxy as SyncDeviceProxy
+from tango import DeviceProxy as DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 T = TypeVar("T")
@@ -44,15 +40,15 @@ class TangoDevice(Device):
     """
 
     trl: str = ""
-    proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None
-    _polling: Tuple[bool, float, float, float] = (False, 0.1, None, 0.1)
-    _signal_polling: Dict[str, Tuple[bool, float, float, float]] = {}
+    proxy: DeviceProxy | None = None
+    _polling: tuple[bool, float, float, float] = (False, 0.1, None, 0.1)
+    _signal_polling: dict[str, tuple[bool, float, float, float]] = {}
     _poll_only_annotated_signals: bool = True
 
     def __init__(
         self,
-        trl: Optional[str] = None,
-        device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None,
+        trl: str | None = None,
+        device_proxy: DeviceProxy | None = None,
         name: str = "",
     ) -> None:
         self.trl = trl if trl else ""
@@ -112,10 +108,10 @@ class TangoDevice(Device):
 
 
 def tango_polling(
-    polling: Optional[
-        Union[Tuple[float, float, float], Dict[str, Tuple[float, float, float]]]
-    ] = None,
-    signal_polling: Optional[Dict[str, Tuple[float, float, float]]] = None,
+    polling: tuple[float, float, float]
+    | dict[str, tuple[float, float, float]]
+    | None = None,
+    signal_polling: dict[str, tuple[float, float, float]] | None = None,
 ):
     """
     Class decorator to configure polling for Tango devices.
@@ -172,7 +168,7 @@ def tango_polling(
 
 
 def tango_create_children_from_annotations(
-    device: TangoDevice, included_optional_fields: Tuple[str, ...] = ()
+    device: TangoDevice, included_optional_fields: tuple[str, ...] = ()
 ):
     """Initialize blocks at __init__ of `device`."""
     for name, device_type in get_type_hints(type(device)).items():
@@ -227,7 +223,7 @@ async def fill_proxy_entries(device: TangoDevice):
                 raise e
 
 
-def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
+def _strip_union(field: T | T) -> tuple[T, bool]:
     if get_origin(field) is Union:
         args = get_args(field)
         is_optional = type(None) in args
@@ -237,7 +233,7 @@ def _strip_union(field: Union[Union[T], T]) -> Tuple[T, bool]:
     return field, False
 
 
-def _strip_device_vector(field: Union[Type[Device]]) -> Tuple[bool, Type[Device]]:
+def _strip_device_vector(field: type[Device]) -> tuple[bool, type[Device]]:
     if get_origin(field) is DeviceVector:
         return True, get_args(field)[0]
     return False, field

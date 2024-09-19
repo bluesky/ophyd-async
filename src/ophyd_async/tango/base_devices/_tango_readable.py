@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-from typing import Optional, Union
-
 from ophyd_async.core import (
     StandardReadable,
 )
 from ophyd_async.tango.base_devices._base_device import TangoDevice
-from tango import DeviceProxy as SyncDeviceProxy
-from tango.asyncio import DeviceProxy as AsyncDeviceProxy
+from tango import DeviceProxy
 
 
 class TangoReadable(TangoDevice, StandardReadable):
@@ -26,8 +23,8 @@ class TangoReadable(TangoDevice, StandardReadable):
 
     def __init__(
         self,
-        trl: Optional[str] = None,
-        device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None,
+        trl: str | None = None,
+        device_proxy: DeviceProxy | None = None,
         name: str = "",
     ) -> None:
         TangoDevice.__init__(self, trl, device_proxy=device_proxy, name=name)

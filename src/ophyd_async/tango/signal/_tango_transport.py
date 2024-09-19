@@ -4,7 +4,6 @@ import time
 from abc import abstractmethod
 from asyncio import CancelledError
 from enum import Enum
-from typing import Dict, Optional, Type, Union
 
 import numpy as np
 from bluesky.protocols import DataKey, Descriptor, Reading
@@ -26,10 +25,11 @@ from tango import (
     CmdArgType,
     CommandInfo,
     DevFailed,
+    DeviceProxy,
     DevState,
     EventType,
 )
-from tango.asyncio import DeviceProxy
+from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
@@ -96,12 +96,12 @@ class TangoProxy:
 
     @abstractmethod
     async def put(
-        self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
+        self, value: T | None, wait: bool = True, timeout: float | None = None
     ) -> None:
         """Put value to TRL"""
 
     @abstractmethod
-    async def get_config(self) -> Union[AttributeInfoEx, CommandInfo]:
+    async def get_config(self) -> AttributeInfoEx | CommandInfo:
         """Get TRL config async"""
 
     @abstractmethod
@@ -112,7 +112,7 @@ class TangoProxy:
         """indicates, that this trl already subscribed"""
 
     @abstractmethod
-    def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
+    def subscribe_callback(self, callback: ReadingValueCallback | None):
         """subscribe tango CHANGE event to callback"""
 
     @abstractmethod
@@ -164,7 +164,7 @@ class AttributeProxy(TangoProxy):
 
     @ensure_proper_executor
     async def put(
-        self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
+        self, value: T | None, wait: bool = True, timeout: float | None = None
     ) -> None or AsyncStatus:
         if wait:
             try:
@@ -174,10 +174,12 @@ class AttributeProxy(TangoProxy):
 
                 task = asyncio.create_task(_write())
                 await asyncio.wait_for(task, timeout)
-            except asyncio.TimeoutError:
-                raise TimeoutError(f"{self._name} attr put failed: Timeout")
-            except DevFailed as e:
-                raise RuntimeError(f"{self._name} device failure: {e.args[0].desc}")
+            except asyncio.TimeoutError as te:
+                raise TimeoutError(f"{self._name} attr put failed: Timeout") from te
+            except DevFailed as de:
+                raise RuntimeError(
+                    f"{self._name} device" f" failure: {de.args[0].desc}"
+                ) from de
 
         else:
             rid = await self._proxy.write_attribute_asynch(self._name, value)
@@ -194,11 +196,11 @@ class AttributeProxy(TangoProxy):
                             if to and time.time() - start_time > to:
                                 raise TimeoutError(
                                     f"{self._name} attr put failed:" f" Timeout"
-                                )
+                                ) from exc
                         else:
                             raise RuntimeError(
                                 f"{self._name} device failure:" f" {exc.args[0].desc}"
-                            )
+                            ) from exc
 
             return AsyncStatus(wait_for_reply(rid, timeout))
 
@@ -218,7 +220,7 @@ class AttributeProxy(TangoProxy):
     def has_subscription(self) -> bool:
         return bool(self._callback)
 
-    def subscribe_callback(self, callback: Optional[ReadingValueCallback]):
+    def subscribe_callback(self, callback: ReadingValueCallback | None):
         # If the attribute supports events, then we can subscribe to them
         # If the callback is not a callable, then we raise an error
         if callback is not None and not callable(callback):
@@ -293,11 +295,11 @@ class AttributeProxy(TangoProxy):
             if self._callback is not None:
                 self._callback(last_reading, last_reading["value"])
         except Exception as e:
-            raise RuntimeError(f"Could not poll the attribute: {e}")
+            raise RuntimeError(f"Could not poll the attribute: {e}") from e
 
         try:
             # If the value is a number, we can check for changes
-            if isinstance(last_reading["value"], (int, float)):
+            if isinstance(last_reading["value"], int | float):
                 while True:
                     await asyncio.sleep(self._polling_period)
                     reading = await self.get_reading()
@@ -350,7 +352,7 @@ class AttributeProxy(TangoProxy):
                                     break
                         last_reading = reading.copy()
         except Exception as e:
-            raise RuntimeError(f"Could not poll the attribute: {e}")
+            raise RuntimeError(f"Could not poll the attribute: {e}") from e
 
     def set_polling(
         self,
@@ -380,7 +382,7 @@ class CommandProxy(TangoProxy):
 
     @ensure_proper_executor
     async def put(
-        self, value: Optional[T], wait: bool = True, timeout: Optional[float] = None
+        self, value: T | None, wait: bool = True, timeout: float | None = None
     ) -> None or AsyncStatus:
         if wait:
             try:
@@ -395,10 +397,12 @@ class CommandProxy(TangoProxy):
                     "timestamp": time.time(),
                     "alarm_severity": 0,
                 }
-            except asyncio.TimeoutError:
-                raise TimeoutError(f"{self._name} command failed: Timeout")
-            except DevFailed as e:
-                raise RuntimeError(f"{self._name} device failure: {e.args[0].desc}")
+            except asyncio.TimeoutError as te:
+                raise TimeoutError(f"{self._name} command failed: Timeout") from te
+            except DevFailed as de:
+                raise RuntimeError(
+                    f"{self._name} device" f" failure: {de.args[0].desc}"
+                ) from de
 
         else:
             rid = self._proxy.command_inout_asynch(self._name, value)
@@ -415,17 +419,17 @@ class CommandProxy(TangoProxy):
                             "alarm_severity": 0,
                         }
                         break
-                    except DevFailed as e:
-                        if e.args[0].reason == "API_AsynReplyNotArrived":
+                    except DevFailed as de:
+                        if de.args[0].reason == "API_AsynReplyNotArrived":
                             await asyncio.sleep(A_BIT)
                             if to and time.time() - start_time > to:
                                 raise TimeoutError(
                                     "Timeout while waiting for command reply"
-                                )
+                                ) from de
                         else:
                             raise RuntimeError(
-                                f"{self._name} device failure:" f" {e.args[0].desc}"
-                            )
+                                f"{self._name} device failure:" f" {de.args[0].desc}"
+                            ) from de
 
             return AsyncStatus(wait_for_reply(rid, timeout))
 
@@ -461,9 +465,9 @@ def get_dtype_extended(datatype):
 
 
 def get_trl_descriptor(
-    datatype: Optional[Type],
+    datatype: type | None,
     tango_resource: str,
-    tr_configs: Dict[str, Union[AttributeInfoEx, CommandInfo]],
+    tr_configs: dict[str, AttributeInfoEx | CommandInfo],
 ) -> dict:
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
@@ -524,7 +528,7 @@ def get_trl_descriptor(
                 trl_choices = list(DevState.names.keys())
 
             if datatype:
-                if not issubclass(datatype, (Enum, DevState)):
+                if not issubclass(datatype, Enum | DevState):
                     raise TypeError(
                         f"{tango_resource} has type Enum not {datatype.__name__}"
                     )
@@ -549,12 +553,10 @@ def get_trl_descriptor(
             return {"source": tango_resource, "dtype": tr_dtype_desc, "shape": []}
 
 
-async def get_tango_trl(
-    full_trl: str, device_proxy: Optional[DeviceProxy]
-) -> TangoProxy:
+async def get_tango_trl(full_trl: str, device_proxy: DeviceProxy | None) -> TangoProxy:
     device_trl, trl_name = full_trl.rsplit("/", 1)
     trl_name = trl_name.lower()
-    device_proxy = device_proxy or await DeviceProxy(device_trl)
+    device_proxy = device_proxy or await AsyncDeviceProxy(device_trl)
 
     # all attributes can be always accessible with low register
     all_attrs = [attr_name.lower() for attr_name in device_proxy.get_attribute_list()]
@@ -579,29 +581,29 @@ async def get_tango_trl(
 class TangoSignalBackend(SignalBackend[T]):
     def __init__(
         self,
-        datatype: Optional[Type[T]],
-        read_trl: Optional[str] = "",
-        write_trl: Optional[str] = "",
-        device_proxy: Optional[DeviceProxy] = None,
+        datatype: type[T] | None,
+        read_trl: str | None = "",
+        write_trl: str | None = "",
+        device_proxy: DeviceProxy | None = None,
     ):
         self.device_proxy = device_proxy
         self.datatype = datatype
         self.read_trl = read_trl
         self.write_trl = write_trl
-        self.proxies: Dict[str, TangoProxy] = {
+        self.proxies: dict[str, TangoProxy] = {
             read_trl: self.device_proxy,
             write_trl: self.device_proxy,
         }
-        self.trl_configs: Dict[str, AttributeInfoEx] = {}
+        self.trl_configs: dict[str, AttributeInfoEx] = {}
         self.descriptor: Descriptor = {}  # type: ignore
         self._polling = (False, 0.1, None, 0.1)
         self.support_events = True
         self.status = None
 
-    def set_trl(self, read_trl: str, write_trl: Optional[str] = ""):
+    def set_trl(self, read_trl: str, write_trl: str | None = ""):
         self.read_trl = read_trl
         self.write_trl = write_trl if write_trl else read_trl
-        self.proxies: Dict[str, TangoProxy] = {
+        self.proxies: dict[str, TangoProxy] = {
             read_trl: self.device_proxy,
             write_trl: self.device_proxy,
         }
@@ -615,8 +617,8 @@ class TangoSignalBackend(SignalBackend[T]):
             await self.proxies[trl].connect()
             self.trl_configs[trl] = await self.proxies[trl].get_config()
             self.proxies[trl].support_events = self.support_events
-        except CancelledError:
-            raise NotConnected(f"Could not connect to {trl}")
+        except CancelledError as ce:
+            raise NotConnected(f"Could not connect to {trl}") from ce
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         if self.read_trl != self.write_trl:
@@ -633,7 +635,7 @@ class TangoSignalBackend(SignalBackend[T]):
             self.datatype, self.read_trl, self.trl_configs
         )
 
-    async def put(self, value: Optional[T], wait=True, timeout=None):
+    async def put(self, value: T | None, wait=True, timeout=None):
         self.status = None
         put_status = await self.proxies[self.write_trl].put(value, wait, timeout)
         self.status = put_status
@@ -650,7 +652,7 @@ class TangoSignalBackend(SignalBackend[T]):
     async def get_setpoint(self) -> T:
         return await self.proxies[self.write_trl].get_w_value()
 
-    def set_callback(self, callback: Optional[ReadingValueCallback]) -> None:
+    def set_callback(self, callback: ReadingValueCallback | None) -> None:
         if self.support_events is False and self._polling[0] is False:
             raise RuntimeError(
                 f"Cannot set event for {self.read_trl}. "
@@ -662,10 +664,14 @@ class TangoSignalBackend(SignalBackend[T]):
             try:
                 assert not self.proxies[self.read_trl].has_subscription()
                 self.proxies[self.read_trl].subscribe_callback(callback)
-            except AssertionError:
-                raise RuntimeError("Cannot set a callback when one is already set")
+            except AssertionError as ae:
+                raise RuntimeError(
+                    "Cannot set a callback when one" " is already set"
+                ) from ae
             except RuntimeError as exc:
-                raise RuntimeError(f"Cannot set callback for {self.read_trl}. {exc}")
+                raise RuntimeError(
+                    f"Cannot set callback" f" for {self.read_trl}. {exc}"
+                ) from exc
 
         else:
             self.proxies[self.read_trl].unsubscribe_callback()
@@ -679,5 +685,5 @@ class TangoSignalBackend(SignalBackend[T]):
     ):
         self._polling = (allow_polling, polling_period, abs_change, rel_change)
 
-    def allow_events(self, allow: Optional[bool] = True):
+    def allow_events(self, allow: bool | None = True):
         self.support_events = allow

@@ -1,13 +1,12 @@
 import asyncio
-from typing import Optional
 
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
+    CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
-    CalculateTimeout,
     ConfigSignal,
     HintedSignal,
     SignalRW,
@@ -30,19 +29,19 @@ class TangoMover(TangoReadable, Movable, Stoppable):
     velocity: SignalRW[float]
     _stop: SignalX
 
-    def __init__(self, trl: Optional[str] = "", name=""):
+    def __init__(self, trl: str | None = "", name=""):
         super().__init__(trl, name=name)
         self.add_readables([self.position], HintedSignal)
         self.add_readables([self.velocity], ConfigSignal)
         self._set_success = True
 
     @WatchableAsyncStatus.wrap
-    async def set(self, value: float, timeout: CalculatableTimeout = CalculateTimeout):
+    async def set(self, value: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT):
         self._set_success = True
         (old_position, velocity) = await asyncio.gather(
             self.position.get_value(), self.velocity.get_value()
         )
-        if timeout is CalculateTimeout:
+        if timeout is CALCULATE_TIMEOUT:
             assert velocity > 0, "Motor has zero velocity"
             timeout = abs(value - old_position) / velocity + DEFAULT_TIMEOUT
 

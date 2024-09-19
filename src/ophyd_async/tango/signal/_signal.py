@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from enum import Enum, IntEnum
-from typing import Optional, Type, Union
 
 import numpy.typing as npt
 
@@ -12,24 +11,24 @@ from ophyd_async.tango.signal._tango_transport import (
     TangoSignalBackend,
     get_python_type,
 )
-from tango import AttrDataFormat, AttrWriteType, CmdArgType, DevState
-from tango.asyncio import DeviceProxy
+from tango import AttrDataFormat, AttrWriteType, CmdArgType, DeviceProxy, DevState
+from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 
 def make_backend(
-    datatype: Optional[Type[T]],
-    read_trl: Optional[str] = "",
-    write_trl: Optional[str] = "",
-    device_proxy: Optional[DeviceProxy] = None,
+    datatype: type[T] | None,
+    read_trl: str | None = "",
+    write_trl: str | None = "",
+    device_proxy: DeviceProxy | None = None,
 ) -> TangoSignalBackend:
     return TangoSignalBackend(datatype, read_trl, write_trl, device_proxy)
 
 
 def tango_signal_rw(
-    datatype: Type[T],
+    datatype: type[T],
     read_trl: str,
-    write_trl: Optional[str] = None,
-    device_proxy: Optional[DeviceProxy] = None,
+    write_trl: str | None = None,
+    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalRW[T]:
@@ -55,9 +54,9 @@ def tango_signal_rw(
 
 
 def tango_signal_r(
-    datatype: Type[T],
+    datatype: type[T],
     read_trl: str,
-    device_proxy: Optional[DeviceProxy] = None,
+    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalR[T]:
@@ -81,9 +80,9 @@ def tango_signal_r(
 
 
 def tango_signal_w(
-    datatype: Type[T],
+    datatype: type[T],
     write_trl: str,
-    device_proxy: Optional[DeviceProxy] = None,
+    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalW[T]:
@@ -108,7 +107,7 @@ def tango_signal_w(
 
 def tango_signal_x(
     write_trl: str,
-    device_proxy: Optional[DeviceProxy] = None,
+    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalX:
@@ -130,13 +129,13 @@ def tango_signal_x(
 
 
 async def tango_signal_auto(
-    datatype: Optional[Type[T]] = None,
+    datatype: type[T] | None = None,
     *,
     trl: str,
-    device_proxy: Optional[DeviceProxy],
+    device_proxy: DeviceProxy | None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
-) -> Union[SignalW, SignalX, SignalR, SignalRW, None]:
+) -> SignalW | SignalX | SignalR | SignalRW | None:
     try:
         signal_character = await infer_signal_character(trl, device_proxy)
     except RuntimeError as e:
@@ -159,10 +158,10 @@ async def tango_signal_auto(
         return SignalX(backend=backend, timeout=timeout, name=name)
 
 
-async def infer_python_type(trl: str = "", proxy: DeviceProxy = None) -> Type[T]:
+async def infer_python_type(trl: str = "", proxy: DeviceProxy = None) -> type[T]:
     device_trl, tr_name = trl.rsplit("/", 1)
     if proxy is None:
-        dev_proxy = await DeviceProxy(device_trl)
+        dev_proxy = await AsyncDeviceProxy(device_trl)
     else:
         dev_proxy = proxy
 
@@ -189,7 +188,7 @@ async def infer_python_type(trl: str = "", proxy: DeviceProxy = None) -> Type[T]
 async def infer_signal_character(trl, proxy: DeviceProxy = None) -> str:
     device_trl, tr_name = trl.rsplit("/", 1)
     if proxy is None:
-        dev_proxy = await DeviceProxy(device_trl)
+        dev_proxy = await AsyncDeviceProxy(device_trl)
     else:
         dev_proxy = proxy
 

@@ -3,7 +3,7 @@ import textwrap
 import time
 from enum import Enum, IntEnum
 from random import choice
-from typing import Any, Optional, Tuple, Type
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -189,7 +189,9 @@ class EchoDevice(Device):
 # --------------------------------------------------------------------
 def assert_enum(initial_value, readout_value):
     if type(readout_value) in [list, tuple]:
-        for _initial_value, _readout_value in zip(initial_value, readout_value):
+        for _initial_value, _readout_value in zip(
+            initial_value, readout_value, strict=False
+        ):
             assert_enum(_initial_value, _readout_value)
     else:
         assert initial_value == readout_value
@@ -215,7 +217,7 @@ def reset_tango_asyncio():
 # --------------------------------------------------------------------
 #               helpers to run tests
 # --------------------------------------------------------------------
-def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
+def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [bool, int]:
         return {"dtype": "integer", "shape": []}
     if python_type in [float]:
@@ -239,10 +241,10 @@ def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
 
 # --------------------------------------------------------------------
 async def make_backend(
-    typ: Optional[Type],
+    typ: type | None,
     pv: str,
     connect: bool = True,
-    allow_events: Optional[bool] = True,
+    allow_events: bool | None = True,
 ) -> TangoSignalBackend:
     backend = TangoSignalBackend(typ, pv, pv)
     backend.allow_events(allow_events)
@@ -260,7 +262,7 @@ async def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
 # --------------------------------------------------------------------
 class MonitorQueue:
     def __init__(self, backend: SignalBackend):
-        self.updates: asyncio.Queue[Tuple[Reading, Any]] = asyncio.Queue()
+        self.updates: asyncio.Queue[tuple[Reading, Any]] = asyncio.Queue()
         self.backend = backend
         self.subscription = backend.set_callback(self.add_reading_value)
 
@@ -301,7 +303,7 @@ async def assert_monitor_then_put(
     initial_value: T,
     put_value: T,
     descriptor: dict,
-    datatype: Optional[Type[T]] = None,
+    datatype: type[T] | None = None,
 ):
     await prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
@@ -332,7 +334,7 @@ async def test_backend_get_put_monitor_attr(
     pv: str,
     tango_type: str,
     d_format: AttrDataFormat,
-    py_type: Type[T],
+    py_type: type[T],
     initial_value: T,
     put_value: T,
 ):
@@ -361,7 +363,7 @@ async def assert_put_read(
     pv: str,
     put_value: T,
     descriptor: dict,
-    datatype: Optional[Type[T]] = None,
+    datatype: type[T] | None = None,
 ):
     source = echo_device + "/" + pv
     backend = await make_backend(datatype, source)
@@ -394,7 +396,7 @@ async def test_backend_get_put_monitor_cmd(
     pv: str,
     tango_type: str,
     d_format: AttrDataFormat,
-    py_type: Type[T],
+    py_type: type[T],
     initial_value: T,
     put_value: T,
 ):
@@ -439,7 +441,7 @@ async def test_tango_signal_r(
     pv: str,
     tango_type: str,
     d_format: AttrDataFormat,
-    py_type: Type[T],
+    py_type: type[T],
     initial_value: T,
     put_value: T,
     use_proxy: bool,
@@ -492,7 +494,7 @@ async def test_tango_signal_w(
     pv: str,
     tango_type: str,
     d_format: AttrDataFormat,
-    py_type: Type[T],
+    py_type: type[T],
     initial_value: T,
     put_value: T,
     use_proxy: bool,
@@ -558,7 +560,7 @@ async def test_tango_signal_rw(
     pv: str,
     tango_type: str,
     d_format: AttrDataFormat,
-    py_type: Type[T],
+    py_type: type[T],
     initial_value: T,
     put_value: T,
     use_proxy: bool,
@@ -634,7 +636,7 @@ async def test_tango_signal_auto_attrs(
     pv: str,
     tango_type: str,
     d_format: AttrDataFormat,
-    py_type: Type[T],
+    py_type: type[T],
     initial_value: T,
     put_value: T,
     use_proxy: bool,
@@ -709,7 +711,7 @@ async def test_tango_signal_auto_cmds(
     pv: str,
     tango_type: str,
     d_format: AttrDataFormat,
-    py_type: Type[T],
+    py_type: type[T],
     initial_value: T,
     put_value: T,
     use_dtype: bool,

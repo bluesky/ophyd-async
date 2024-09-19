@@ -1,7 +1,6 @@
 import asyncio
 import time
 from enum import Enum, IntEnum
-from typing import Optional, Type, Union
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -182,8 +181,8 @@ class TestTangoReadable(TangoReadable):
 
     def __init__(
         self,
-        trl: Optional[str] = None,
-        device_proxy: Optional[Union[AsyncDeviceProxy, SyncDeviceProxy]] = None,
+        trl: str | None = None,
+        device_proxy: SyncDeviceProxy | None = None,
         name: str = "",
     ) -> None:
         super().__init__(trl, device_proxy, name=name)
@@ -248,7 +247,7 @@ async def describe_class(fqtrl):
 
 
 # --------------------------------------------------------------------
-def get_test_descriptor(python_type: Type[T], value: T, is_cmd: bool) -> dict:
+def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [bool, int]:
         return {"dtype": "integer", "shape": []}
     if python_type in [float]:
@@ -325,7 +324,7 @@ async def test_connect(tango_test_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize("proxy", [True, False, None])
-async def test_connect_proxy(tango_test_device, proxy: Optional[bool]):
+async def test_connect_proxy(tango_test_device, proxy: bool | None):
     if proxy is None:
         test_device = TestTangoReadable(trl=tango_test_device)
         test_device.proxy = None
