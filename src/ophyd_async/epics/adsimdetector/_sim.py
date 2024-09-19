@@ -30,6 +30,6 @@ class SimDetector(StandardDetector):
                 lambda: self.name,
                 adcore.ADBaseDatasetDescriber(self.drv),
             ),
-            config_sigs=config_sigs,
+            config_sigs=(self.drv.acquire_period, self.drv.acquire_time),
             name=name,
         )
