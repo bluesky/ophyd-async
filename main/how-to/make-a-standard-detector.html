@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.5.3.dev12+g0b6ab214 documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.5.3.dev13+g35c07fee documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=16150b7a"></script>
+    <script src="../_static/documentation_options.js?v=7fcb9af3"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -716,7 +716,11 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
 
         <span class="n">capture_table</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">HDFDataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># TODO: Update chunk size to read signal once available in IOC</span>
+            <span class="c1"># Currently PandA IOC sets chunk size to 1024 points per chunk</span>
+            <span class="n">HDFDataset</span><span class="p">(</span>
+                <span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">chunk_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,)</span>
+            <span class="p">)</span>
             <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
         <span class="p">]</span>
 
