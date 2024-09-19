@@ -194,7 +194,7 @@ class StandardDetector(
         self._fly_status: WatchableAsyncStatus | None = None
         self._fly_start: float
         self._iterations_completed: int = 0
-        self._intial_frame: int
+        self._initial_frame: int
         self._last_frame: int
         super().__init__(name)
 
@@ -208,7 +208,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        # Disarm the detector, stop filewriting.
+        # Disarm the detector, stop file writing.
         await self._check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._trigger_info = None
