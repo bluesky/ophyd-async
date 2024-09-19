@@ -183,13 +183,10 @@ async def test_hardware_triggered_flyable(
         for detector in detectors:
             yield from bps.kickoff(detector)
 
-            # Since we set number of iterations to 1 (default),
-            # make sure it gets reset
-            assert detector._iterations_completed == 0
-
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detectors:
             yield from bps.complete(detector, wait=False, group="complete")
+
         assert flyer._trigger_logic.state == TriggerState.null
 
         # Manually incremenet the index as if a frame was taken
@@ -210,6 +207,12 @@ async def test_hardware_triggered_flyable(
                 name="main_stream",
             )
         yield from bps.wait(group="complete")
+
+        for detector in detectors:
+            # Since we set number of iterations to 1 (default),
+            # make sure it gets reset on complete
+            assert detector._iterations_completed == 0
+
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer, *detectors)
