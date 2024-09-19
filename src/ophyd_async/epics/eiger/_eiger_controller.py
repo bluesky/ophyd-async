@@ -25,7 +25,7 @@ class EigerController(DetectorControl):
     ) -> None:
         self._drv = driver
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         # See https://media.dectris.com/filer_public/30/14/3014704e-5f3b-43ba-8ccf-8ef720e60d2a/240202_usermanual_eiger2.pdf
         return 0.0001
 

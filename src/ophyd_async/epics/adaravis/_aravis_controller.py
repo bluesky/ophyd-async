@@ -1,5 +1,5 @@
 import asyncio
-from typing import Literal, Tuple
+from typing import Literal
 
 from ophyd_async.core import (
     DetectorControl,
@@ -26,7 +26,7 @@ class AravisController(DetectorControl):
         self.gpio_number = gpio_number
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return _HIGHEST_POSSIBLE_DEADTIME
 
     async def prepare(self, trigger_info: TriggerInfo):
@@ -56,7 +56,7 @@ class AravisController(DetectorControl):
 
     def _get_trigger_info(
         self, trigger: DetectorTrigger
-    ) -> Tuple[AravisTriggerMode, AravisTriggerSource]:
+    ) -> tuple[AravisTriggerMode, AravisTriggerSource]:
         supported_trigger_types = (
             DetectorTrigger.constant_gate,
             DetectorTrigger.edge_trigger,
@@ -71,7 +71,7 @@ class AravisController(DetectorControl):
         if trigger == DetectorTrigger.internal:
             return AravisTriggerMode.off, "Freerun"
         else:
-            return (AravisTriggerMode.on, f"Line{self.gpio_number}")
+            return (AravisTriggerMode.on, f"Line{self.gpio_number}")  # type: ignore
 
     async def disarm(self):
         await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)

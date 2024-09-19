@@ -79,12 +79,12 @@ async def test_runtime_enum_signal():
     signal_rw_ca = epics_signal_rw(SubsetEnum["A2", "B2"], "ca://RW_PV", name="signal")
     await signal_rw_pva.connect(mock=True)
     await signal_rw_ca.connect(mock=True)
-    await signal_rw_pva.get_value() == "A1"
-    await signal_rw_ca.get_value() == "A2"
+    assert await signal_rw_pva.get_value() == "A1"
+    assert await signal_rw_ca.get_value() == "A2"
     await signal_rw_pva.set("B1")
     await signal_rw_ca.set("B2")
-    await signal_rw_pva.get_value() == "B1"
-    await signal_rw_ca.get_value() == "B2"
+    assert await signal_rw_pva.get_value() == "B1"
+    assert await signal_rw_ca.get_value() == "B2"
 
     # Will accept string values even if they're not in the runtime enum
     # Though type checking should compain

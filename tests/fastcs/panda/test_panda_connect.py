@@ -1,7 +1,6 @@
 """Used to test setting up signals for a PandA"""
 
 import copy
-from typing import Dict
 
 import numpy as np
 import pytest
@@ -33,7 +32,7 @@ class DummyDict:
 
 
 class MockPvi:
-    def __init__(self, pvi: Dict[str, _PVIEntry]) -> None:
+    def __init__(self, pvi: dict[str, _PVIEntry]) -> None:
         self.pvi = pvi
 
     def get(self, item: str):
@@ -41,7 +40,7 @@ class MockPvi:
 
 
 class MockCtxt:
-    def __init__(self, pvi: Dict[str, _PVIEntry]) -> None:
+    def __init__(self, pvi: dict[str, _PVIEntry]) -> None:
         self.pvi = copy.copy(pvi)
 
     def get(self, pv: str, timeout: float = 0.0):

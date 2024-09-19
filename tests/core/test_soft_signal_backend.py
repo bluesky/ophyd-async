@@ -1,7 +1,8 @@
 import asyncio
 import time
+from collections.abc import Callable, Sequence
 from enum import Enum
-from typing import Any, Callable, Sequence, Tuple, Type
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -40,7 +41,7 @@ def waveform_d(value):
 class MonitorQueue:
     def __init__(self, backend: SignalBackend):
         self.backend = backend
-        self.updates: asyncio.Queue[Tuple[Reading, Any]] = asyncio.Queue()
+        self.updates: asyncio.Queue[tuple[Reading, Any]] = asyncio.Queue()
         backend.set_callback(self.add_reading_value)
 
     def add_reading_value(self, reading: Reading, value):
@@ -88,7 +89,7 @@ class MonitorQueue:
     ],
 )
 async def test_soft_signal_backend_get_put_monitor(
-    datatype: Type[T],
+    datatype: type[T],
     initial_value: T,
     put_value: T,
     descriptor: Callable[[Any], dict],

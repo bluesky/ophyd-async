@@ -1,5 +1,4 @@
 import asyncio
-from typing import Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -15,14 +14,14 @@ class SimController(DetectorControl):
     def __init__(
         self,
         driver: adcore.ADBaseIO,
-        good_states: Set[adcore.DetectorState] = set(adcore.DEFAULT_GOOD_STATES),
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
     ) -> None:
         self.driver = driver
         self.good_states = good_states
         self.frame_timeout: float
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return 0.002
 
     async def prepare(self, trigger_info: TriggerInfo):

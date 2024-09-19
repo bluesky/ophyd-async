@@ -38,6 +38,6 @@ class EigerDetector(StandardDetector):
         )
 
     @AsyncStatus.wrap
-    async def prepare(self, value: EigerTriggerInfo) -> None:
+    async def prepare(self, value: EigerTriggerInfo) -> None:  # type: ignore
         await self._controller.set_energy(value.energy_ev)
         await super().prepare(value)

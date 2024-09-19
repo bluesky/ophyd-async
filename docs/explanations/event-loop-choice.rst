@@ -48,5 +48,3 @@ they can either:
 
 * Run the :python:`DeviceCollector` first and pass the event-loop into the run-engine.
 * Initialize the run-engine first and run the :python:`DeviceCollector` using the bluesky event-loop.
-
-

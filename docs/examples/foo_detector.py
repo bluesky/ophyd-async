@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from bluesky.protocols import HasHints, Hints
 
@@ -32,7 +31,7 @@ class FooController(DetectorControl):
         self,
         num: int,
         trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = None,
+        exposure: float | None = None,
     ) -> AsyncStatus:
         await asyncio.gather(
             self._drv.num_images.set(num),
