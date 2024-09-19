@@ -50,7 +50,7 @@ class ADHDFWriter(DetectorWriter):
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._file = None
-        info = self._path_provider(device_name=self.hdf.name)
+        info = self._path_provider(device_name=self._name_provider())
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
