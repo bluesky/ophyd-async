@@ -1,0 +1,174 @@
+.. note::
+
+    Ophyd async is considered experimental until the v1.0 release and
+    may change API on minor release numbers before then
+
+``ophyd_async.core``
+====================
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+.. automodule:: ophyd_async.core
+    :members:
+
+    
+    
+    
+
+    
+    
+    .. rubric:: Members
+
+    .. autosummary::
+        :nosignatures:
+    
+        DetectorControl
+        DetectorTrigger
+        DetectorWriter
+        StandardDetector
+        Device
+        DeviceCollector
+        DeviceVector
+        all_at_once
+        get_signal_values
+        load_device
+        load_from_yaml
+        save_device
+        save_to_yaml
+        set_signal_values
+        walk_rw_signals
+        StandardFlyer
+        TriggerLogic
+        HDFDataset
+        HDFFile
+        config_ophyd_async_logging
+        MockSignalBackend
+        callback_on_mock_put
+        get_mock_put
+        mock_puts_blocked
+        reset_mock_put_calls
+        set_mock_put_proceeds
+        set_mock_value
+        set_mock_values
+        AsyncConfigurable
+        AsyncReadable
+        AsyncStageable
+        AutoIncrementFilenameProvider
+        AutoIncrementingPathProvider
+        FilenameProvider
+        NameProvider
+        PathInfo
+        PathProvider
+        DatasetDescriber
+        StaticFilenameProvider
+        StaticPathProvider
+        UUIDFilenameProvider
+        YMDPathProvider
+        ConfigSignal
+        HintedSignal
+        StandardReadable
+        Signal
+        SignalR
+        SignalRW
+        SignalW
+        SignalX
+        assert_configuration
+        assert_emitted
+        assert_reading
+        assert_value
+        observe_value
+        set_and_wait_for_value
+        set_and_wait_for_other_value
+        soft_signal_r_and_setter
+        soft_signal_rw
+        wait_for_value
+        RuntimeSubsetEnum
+        SignalBackend
+        SubsetEnum
+        SignalMetadata
+        SoftSignalBackend
+        AsyncStatus
+        WatchableAsyncStatus
+        NotConnected
+        WatcherUpdate
+        get_dtype
+        get_unique
+        in_micros
+        is_pydantic_model
+        wait_for_connection
+        completed_status
+    
+    
