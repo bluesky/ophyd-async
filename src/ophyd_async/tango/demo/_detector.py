@@ -11,7 +11,7 @@ from ._mover import TangoMover
 
 
 class TangoDetector(TangoReadable):
-    counters: DeviceVector
+    counters: DeviceVector[TangoCounter]
     mover: TangoMover
 
     def __init__(self, trl: str, mover_trl: str, counter_trls: list[str], name=""):

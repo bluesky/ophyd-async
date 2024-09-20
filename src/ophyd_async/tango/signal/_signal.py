@@ -17,8 +17,8 @@ from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 def make_backend(
     datatype: type[T] | None,
-    read_trl: str | None = "",
-    write_trl: str | None = "",
+    read_trl: str = "",
+    write_trl: str = "",
     device_proxy: DeviceProxy | None = None,
 ) -> TangoSignalBackend:
     return TangoSignalBackend(datatype, read_trl, write_trl, device_proxy)
@@ -27,7 +27,7 @@ def make_backend(
 def tango_signal_rw(
     datatype: type[T],
     read_trl: str,
-    write_trl: str | None = None,
+    write_trl: str = "",
     device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
