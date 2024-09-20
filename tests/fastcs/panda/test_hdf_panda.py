@@ -224,10 +224,12 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
 
         yield from bps.declare_stream(mock_hdf_panda, name="main_stream", collect=True)
 
-        for _ in range(iteration):
+        for i in range(iteration):
             set_mock_value(flyer.trigger_logic.seq.active, 1)
+
             yield from bps.kickoff(flyer, wait=True)
             yield from bps.kickoff(mock_hdf_panda)
+            assert mock_hdf_panda._iterations_completed == i + 1
 
             yield from bps.complete(flyer, wait=False, group="complete")
             yield from bps.complete(mock_hdf_panda, wait=False, group="complete")
@@ -250,6 +252,14 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
                     name="main_stream",
                 )
             yield from bps.wait(group="complete")
+
+            # Make sure first complete doesn't reset iterations completed
+            if i == 0:
+                assert mock_hdf_panda._iterations_completed == 1
+
+        # Make sure the number of iterations completed is set to 0 after final complete.
+        assert mock_hdf_panda._iterations_completed == 0
+
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer, mock_hdf_panda)
