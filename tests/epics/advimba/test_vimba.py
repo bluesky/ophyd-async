@@ -65,7 +65,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
 
 async def test_hints_from_hdf_writer(test_advimba: advimba.VimbaDetector):
-    assert test_advimba.hints == {"fields": ["test_advimba1"]}
+    assert test_advimba.hints == {"fields": [test_advimba.name]}
 
 
 async def test_can_read(test_advimba: advimba.VimbaDetector):

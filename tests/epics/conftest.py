@@ -13,7 +13,7 @@ from ophyd_async.core._mock_signal_utils import callback_on_mock_put, set_mock_v
 def ad_standard_det_factory(
     RE: RunEngine,
     static_path_provider,
-) -> Callable:
+) -> Callable[[StandardDetector, int], StandardDetector]:
     def generate_ad_standard_det(
         ad_standard_detector_class, number=1
     ) -> StandardDetector:
@@ -34,7 +34,7 @@ def ad_standard_det_factory(
                 set_mock_value(test_adstandard_det.hdf.file_path_exists, True)
                 set_mock_value(
                     test_adstandard_det.hdf.full_file_name,
-                    f"{value}/{static_path_provider._filename_provider()}.h5",
+                    f"{value}/{static_path_provider._filename_provider(device_name=test_adstandard_det.name)}.h5",
                 )
 
         callback_on_mock_put(

@@ -97,7 +97,7 @@ async def _trigger(
 
 
 async def test_hints_from_hdf_writer(test_adpilatus: adpilatus.PilatusDetector):
-    assert test_adpilatus.hints == {"fields": ["test_adpilatus1"]}
+    assert test_adpilatus.hints == {"fields": [test_adpilatus.name]}
 
 
 async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDetector):

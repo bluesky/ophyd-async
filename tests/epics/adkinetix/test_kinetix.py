@@ -51,7 +51,7 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
 
 
 async def test_hints_from_hdf_writer(test_adkinetix: adkinetix.KinetixDetector):
-    assert test_adkinetix.hints == {"fields": ["test_adkinetix1"]}
+    assert test_adkinetix.hints == {"fields": [test_adkinetix.name]}
 
 
 async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
