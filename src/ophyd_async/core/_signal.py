@@ -513,10 +513,10 @@ async def observe_signals_values(
     -----
     Example usage::
 
-        async for value in observe_value(sig):
+        async for value1,value2,value3 in observe_signals_values(sig1,sig2,..):
             do_something_with(value)
     """
-    q: asyncio.Queue[tuple[SignalR[T], T | Status]] = asyncio.Queue()
+    q: asyncio.Queue[tuple[SignalR[T], T] | Status] = asyncio.Queue()
     if timeout is None:
         get_value = q.get
     else:
@@ -524,26 +524,18 @@ async def observe_signals_values(
         async def get_value():
             return await asyncio.wait_for(q.get(), timeout)
 
-    def wrapped_signal_put(signal: SignalR[T]):
-        def queue_value(value: T):
+    cbs: dict[SignalR, Callback] = {}
+    for signal in signals:
+
+        def queue_value(value: T, signal=signal):
             q.put_nowait((signal, value))
 
-        def queue_status(status: Status):
-            q.put_nowait((signal, status))
-
-        def clear_signals():
-            signal.clear_sub(queue_value)
-            signal.clear_sub(queue_status)
-
-        return queue_value, queue_status, clear_signals
-
-    clear_signals = []
-    for signal in signals:
-        queue_value, queue_status, clear_signal = wrapped_signal_put(signal)
-        clear_signals.append(clear_signal)
-        if done_status is not None:
-            done_status.add_callback(queue_status)
+        cbs[signal] = queue_value
         signal.subscribe_value(queue_value)
+
+    if done_status is not None:
+        done_status.add_callback(q.put_nowait)
+
     try:
         while True:
             item = await get_value()
@@ -555,8 +547,8 @@ async def observe_signals_values(
             else:
                 yield item  # type: ignore
     finally:
-        for clear_signal in clear_signals:
-            clear_signal()
+        for signal, cb in cbs.items():
+            signal.clear_sub(cb)
 
 
 class _ValueChecker(Generic[T]):
