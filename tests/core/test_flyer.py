@@ -186,6 +186,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detectors:
             yield from bps.complete(detector, wait=False, group="complete")
+
         assert flyer._trigger_logic.state == TriggerState.null
 
         # Manually incremenet the index as if a frame was taken
@@ -206,6 +207,12 @@ async def test_hardware_triggered_flyable(
                 name="main_stream",
             )
         yield from bps.wait(group="complete")
+
+        for detector in detectors:
+            # Since we set number of iterations to 1 (default),
+            # make sure it gets reset on complete
+            assert detector._iterations_completed == 0
+
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer, *detectors)
@@ -225,6 +232,73 @@ async def test_hardware_triggered_flyable(
         "stream_datum",
         "stop",
     ]
+
+
+async def test_hardware_triggered_flyable_too_many_kickoffs(
+    RE: RunEngine, detectors: tuple[StandardDetector]
+):
+    trigger_logic = DummyTriggerLogic()
+    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    trigger_info = TriggerInfo(
+        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+    )
+
+    def flying_plan():
+        yield from bps.stage_all(*detectors, flyer)
+        assert flyer._trigger_logic.state == TriggerState.stopping
+
+        # move the flyer to the correct place, before fly scanning.
+        # Prepare the flyer first to get the trigger info for the detectors
+        yield from bps.prepare(flyer, 1, wait=True)
+
+        # prepare detectors second.
+        for detector in detectors:
+            yield from bps.prepare(
+                detector,
+                trigger_info,
+                wait=True,
+            )
+
+        yield from bps.open_run()
+        yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
+
+        for _ in range(2):
+            yield from bps.kickoff(flyer)
+            for detector in detectors:
+                yield from bps.kickoff(detector)
+
+        yield from bps.complete(flyer, wait=False, group="complete")
+        for detector in detectors:
+            yield from bps.complete(detector, wait=False, group="complete")
+
+        assert flyer._trigger_logic.state == TriggerState.null
+
+        # Manually incremenet the index as if a frame was taken
+        for detector in detectors:
+            detector.writer.index += 1
+
+        yield from bps.wait(group="complete")
+
+        yield from bps.collect(
+            *detectors,
+            return_payload=False,
+            name="main_stream",
+        )
+
+        for detector in detectors:
+            # Since we set number of iterations to 1 (default),
+            # make sure it gets reset on complete
+            assert detector._iterations_completed == 0
+
+        yield from bps.close_run()
+
+        yield from bps.unstage_all(flyer, *detectors)
+
+    # fly scan
+    with pytest.raises(
+        Exception, match="Kickoff called more than the configured number"
+    ):
+        RE(flying_plan())
 
 
 # To do: Populate configuration signals
