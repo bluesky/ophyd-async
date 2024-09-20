@@ -142,7 +142,7 @@ async def test_open_returns_correct_descriptors(
             assert "DATASETS table is empty!" in caplog.text
 
     for key, entry, expected_key in zip(
-        description.keys(), description.values(), table["name"]
+        description.keys(), description.values(), table["name"], strict=False
     ):
         assert key == expected_key
         assert entry == {
@@ -209,7 +209,12 @@ async def test_collect_stream_docs(
             "data_key": name,
             "mimetype": "application/x-hdf5",
             "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
-            "parameters": {"dataset": f"/{name}", "swmr": False, "multiplier": 1},
+            "parameters": {
+                "dataset": f"/{name}",
+                "swmr": False,
+                "multiplier": 1,
+                "chunk_shape": (1024,),
+            },
         }
         assert "mock_panda/data.h5" in resource_doc["uri"]
 

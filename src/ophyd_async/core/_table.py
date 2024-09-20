@@ -1,8 +1,10 @@
 from enum import Enum
-from typing import get_args, get_origin
+from typing import TypeVar, get_args, get_origin
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, model_validator
+
+TableSubclass = TypeVar("TableSubclass", bound="Table")
 
 
 def _concat(value1, value2):
@@ -17,10 +19,10 @@ class Table(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True, strict=False)
 
-    @classmethod
-    def row(cls, sub_cls, **kwargs) -> "Table":
+    @staticmethod
+    def row(cls: type[TableSubclass], **kwargs) -> TableSubclass:  # type: ignore
         arrayified_kwargs = {}
-        for field_name, field_value in sub_cls.model_fields.items():
+        for field_name, field_value in cls.model_fields.items():
             value = kwargs.pop(field_name)
             if field_value.default_factory is None:
                 raise ValueError(
@@ -40,21 +42,20 @@ class Table(BaseModel):
                 )
         if kwargs:
             raise TypeError(
-                f"Unexpected keyword arguments {kwargs.keys()} for {sub_cls.__name__}."
+                f"Unexpected keyword arguments {kwargs.keys()} for {cls.__name__}."
             )
+        return cls(**arrayified_kwargs)
 
-        return sub_cls(**arrayified_kwargs)
-
-    def __add__(self, right: "Table") -> "Table":
+    def __add__(self, right: TableSubclass) -> TableSubclass:
         """Concatenate the arrays in field values."""
 
-        if not isinstance(right, type(self)):
+        if type(right) is not type(self):
             raise RuntimeError(
                 f"{right} is not a `Table`, or is not the same "
                 f"type of `Table` as {self}."
             )
 
-        return type(self)(
+        return type(right)(
             **{
                 field_name: _concat(
                     getattr(self, field_name), getattr(right, field_name)
@@ -85,7 +86,8 @@ class Table(BaseModel):
         # but it defaults to the largest dtype for everything.
         dtype = self.numpy_dtype()
         transposed_list = [
-            np.array(tuple(row), dtype=dtype) for row in zip(*self.numpy_columns())
+            np.array(tuple(row), dtype=dtype)
+            for row in zip(*self.numpy_columns(), strict=False)
         ]
         transposed = np.array(transposed_list, dtype=dtype)
         return transposed
@@ -130,7 +132,7 @@ class Table(BaseModel):
             # or if the value is a string enum.
             np.issubdtype(getattr(self, field_name).dtype, default_array.dtype)
             if isinstance(
-                default_array := self.model_fields[field_name].default_factory(),
+                default_array := self.model_fields[field_name].default_factory(),  # type: ignore
                 np.ndarray,
             )
             else issubclass(get_args(field_value.annotation)[0], Enum)

@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from bluesky.protocols import (
     Flyable,
@@ -11,10 +10,10 @@ from bluesky.protocols import (
 from pydantic import BaseModel, Field
 
 from ophyd_async.core import (
+    CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
-    CalculateTimeout,
     ConfigSignal,
     HintedSignal,
     StandardReadable,
@@ -54,7 +53,7 @@ class FlyMotorInfo(BaseModel):
 
     #: Maximum time for the complete motor move, including run up and run down.
     #: Defaults to `time_for_move` + run up and run down times + 10s.
-    timeout: CalculatableTimeout = Field(frozen=True, default=CalculateTimeout)
+    timeout: CalculatableTimeout = Field(frozen=True, default=CALCULATE_TIMEOUT)
 
 
 class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
@@ -83,13 +82,13 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self._set_success = True
 
         # end_position of a fly move, with run_up_distance added on.
-        self._fly_completed_position: Optional[float] = None
+        self._fly_completed_position: float | None = None
 
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
-        self._fly_status: Optional[WatchableAsyncStatus] = None
+        self._fly_status: WatchableAsyncStatus | None = None
 
         # Set during prepare
-        self._fly_timeout: Optional[CalculatableTimeout] = CalculateTimeout
+        self._fly_timeout: CalculatableTimeout | None = CALCULATE_TIMEOUT
 
         super().__init__(name=name)
 
@@ -138,9 +137,8 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         return self._fly_status
 
     @WatchableAsyncStatus.wrap
-    async def set(
-        self, new_position: float, timeout: CalculatableTimeout = CalculateTimeout
-    ):
+    async def set(self, value: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT):
+        new_position = value
         self._set_success = True
         (
             old_position,
@@ -155,7 +153,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
             self.velocity.get_value(),
             self.acceleration_time.get_value(),
         )
-        if timeout is CalculateTimeout:
+        if timeout is CALCULATE_TIMEOUT:
             assert velocity > 0, "Motor has zero velocity"
             timeout = (
                 abs(new_position - old_position) / velocity

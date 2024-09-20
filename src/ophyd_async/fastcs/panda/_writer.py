@@ -1,8 +1,9 @@
 import asyncio
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 
-from bluesky.protocols import DataKey, StreamAsset
+from bluesky.protocols import StreamAsset
+from event_model import DataKey
 from p4p.client.thread import Context
 
 from ophyd_async.core import (
@@ -20,7 +21,7 @@ from ._block import DataBlock
 
 
 class PandaHDFWriter(DetectorWriter):
-    _ctxt: Optional[Context] = None
+    _ctxt: Context | None = None
 
     def __init__(
         self,
@@ -33,12 +34,12 @@ class PandaHDFWriter(DetectorWriter):
         self._prefix = prefix
         self._path_provider = path_provider
         self._name_provider = name_provider
-        self._datasets: List[HDFDataset] = []
-        self._file: Optional[HDFFile] = None
+        self._datasets: list[HDFDataset] = []
+        self._file: HDFFile | None = None
         self._multiplier = 1
 
     # Triggered on PCAP arm
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture"""
 
         # Ensure flushes are immediate
@@ -76,7 +77,7 @@ class PandaHDFWriter(DetectorWriter):
 
         return await self._describe()
 
-    async def _describe(self) -> Dict[str, DataKey]:
+    async def _describe(self) -> dict[str, DataKey]:
         """
         Return a describe based on the datasets PV
         """
@@ -85,9 +86,11 @@ class PandaHDFWriter(DetectorWriter):
         describe = {
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
-                shape=ds.shape,
+                shape=list(ds.shape),
                 dtype="array" if ds.shape != [1] else "number",
-                dtype_numpy="<f8",  # PandA data should always be written as Float64
+                # PandA data should always be written as Float64
+                # Ignore type check until https://github.com/bluesky/event-model/issues/308
+                dtype_numpy="<f8",  # type: ignore
                 external="STREAM:",
             )
             for ds in self._datasets
@@ -102,7 +105,11 @@ class PandaHDFWriter(DetectorWriter):
 
         capture_table = await self.panda_data_block.datasets.get_value()
         self._datasets = [
-            HDFDataset(dataset_name, "/" + dataset_name, [1], multiplier=1)
+            # TODO: Update chunk size to read signal once available in IOC
+            # Currently PandA IOC sets chunk size to 1024 points per chunk
+            HDFDataset(
+                dataset_name, "/" + dataset_name, [1], multiplier=1, chunk_shape=(1024,)
+            )
             for dataset_name in capture_table["name"]
         ]
 
@@ -118,9 +125,7 @@ class PandaHDFWriter(DetectorWriter):
 
     # Next few functions are exactly the same as AD writer. Could move as default
     # StandardDetector behavior
-    async def wait_for_index(
-        self, index: int, timeout: Optional[float] = DEFAULT_TIMEOUT
-    ):
+    async def wait_for_index(self, index: int, timeout: float | None = DEFAULT_TIMEOUT):
         def matcher(value: int) -> bool:
             return value >= index
 

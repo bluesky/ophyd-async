@@ -3,21 +3,14 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator, AsyncIterator, Callable, Sequence
 from enum import Enum
 from typing import (
-    AsyncGenerator,
-    AsyncIterator,
-    Callable,
-    Dict,
     Generic,
-    List,
-    Optional,
-    Sequence,
 )
 
 from bluesky.protocols import (
     Collectable,
-    DataKey,
     Flyable,
     Preparable,
     Reading,
@@ -26,10 +19,12 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
+from event_model import DataKey
 from pydantic import BaseModel, Field
 
 from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
+from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import DEFAULT_TIMEOUT, T, WatcherUpdate, merge_gathered_dicts
 
@@ -123,7 +118,7 @@ class DetectorWriter(ABC):
     (e.g. an HDF5 file)"""
 
     @abstractmethod
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
         Args:
@@ -174,7 +169,7 @@ class StandardDetector(
         self,
         controller: DetectorControl,
         writer: DetectorWriter,
-        config_sigs: Sequence[AsyncReadable] = (),
+        config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         """
@@ -189,17 +184,17 @@ class StandardDetector(
         """
         self._controller = controller
         self._writer = writer
-        self._describe: Dict[str, DataKey] = {}
+        self._describe: dict[str, DataKey] = {}
         self._config_sigs = list(config_sigs)
         # For prepare
-        self._arm_status: Optional[AsyncStatus] = None
-        self._trigger_info: Optional[TriggerInfo] = None
+        self._arm_status: AsyncStatus | None = None
+        self._trigger_info: TriggerInfo | None = None
         # For kickoff
-        self._watchers: List[Callable] = []
-        self._fly_status: Optional[WatchableAsyncStatus] = None
+        self._watchers: list[Callable] = []
+        self._fly_status: WatchableAsyncStatus | None = None
         self._fly_start: float
         self._iterations_completed: int = 0
-        self._intial_frame: int
+        self._initial_frame: int
         self._last_frame: int
         super().__init__(name)
 
@@ -213,7 +208,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        # Disarm the detector, stop filewriting.
+        # Disarm the detector, stop file writing.
         await self._check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._trigger_info = None
@@ -227,28 +222,28 @@ class StandardDetector(
                 )
             try:
                 await signal.get_value()
-            except NotImplementedError:
+            except NotImplementedError as e:
                 raise Exception(
                     f"config signal {signal.name} must be connected before it is "
                     + "passed to the detector"
-                )
+                ) from e
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         # Stop data writing.
         await asyncio.gather(self.writer.close(), self.controller.disarm())
 
-    async def read_configuration(self) -> Dict[str, Reading]:
+    async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
 
-    async def describe_configuration(self) -> Dict[str, DataKey]:
+    async def describe_configuration(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
-    async def read(self) -> Dict[str, Reading]:
+    async def read(self) -> dict[str, Reading]:
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
-    async def describe(self) -> Dict[str, DataKey]:
+    async def describe(self) -> dict[str, DataKey]:
         return self._describe
 
     @AsyncStatus.wrap
@@ -347,11 +342,11 @@ class StandardDetector(
         if self._iterations_completed == self._trigger_info.iteration:
             await self.controller.wait_for_idle()
 
-    async def describe_collect(self) -> Dict[str, DataKey]:
+    async def describe_collect(self) -> dict[str, DataKey]:
         return self._describe
 
     async def collect_asset_docs(
-        self, index: Optional[int] = None
+        self, index: int | None = None
     ) -> AsyncIterator[StreamAsset]:
         # Collect stream datum documents for all indices written.
         # The index is optional, and provided for fly scans, however this needs to be

@@ -1,6 +1,5 @@
 import inspect
 from enum import Enum
-from typing import Dict, Optional, Tuple, Type
 
 from typing_extensions import TypedDict
 
@@ -16,9 +15,6 @@ class LimitPair(TypedDict):
     high: float | None
     low: float | None
 
-    def __bool__(self) -> bool:
-        return self.low is None and self.high is None
-
 
 class Limits(TypedDict):
     alarm: LimitPair
@@ -26,15 +22,12 @@ class Limits(TypedDict):
     display: LimitPair
     warning: LimitPair
 
-    def __bool__(self) -> bool:
-        return any(self.alarm, self.control, self.display, self.warning)
-
 
 def get_supported_values(
     pv: str,
-    datatype: Optional[Type[str]],
-    pv_choices: Tuple[str, ...],
-) -> Dict[str, str]:
+    datatype: type[str] | None,
+    pv_choices: tuple[str, ...],
+) -> dict[str, str]:
     if inspect.isclass(datatype) and issubclass(datatype, RuntimeSubsetEnum):
         if not set(datatype.choices).issubset(set(pv_choices)):
             raise TypeError(
