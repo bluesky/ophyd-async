@@ -65,7 +65,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
 
 async def test_hints_from_hdf_writer(test_advimba: advimba.VimbaDetector):
-    assert test_advimba.hints == {"fields": ["test_advimba1"]}
+    assert test_advimba.hints == {"fields": [test_advimba.name]}
 
 
 async def test_can_read(test_advimba: advimba.VimbaDetector):
@@ -76,9 +76,6 @@ async def test_can_read(test_advimba: advimba.VimbaDetector):
 async def test_decribe_describes_writer_dataset(
     test_advimba: advimba.VimbaDetector, one_shot_trigger_info: TriggerInfo
 ):
-    set_mock_value(test_advimba._writer.hdf.file_path_exists, True)
-    set_mock_value(test_advimba._writer.hdf.capture, True)
-
     assert await test_advimba.describe() == {}
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
@@ -99,10 +96,8 @@ async def test_can_collect(
     one_shot_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
-    full_file_name = path_info.directory_path / "foo.h5"
-    set_mock_value(test_advimba.hdf.full_file_name, str(full_file_name))
-    set_mock_value(test_advimba._writer.hdf.file_path_exists, True)
-    set_mock_value(test_advimba._writer.hdf.capture, True)
+    full_file_name = path_info.directory_path / f"{path_info.filename}.h5"
+
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
     docs = [(name, doc) async for name, doc in test_advimba.collect_asset_docs(1)]
@@ -128,8 +123,6 @@ async def test_can_collect(
 async def test_can_decribe_collect(
     test_advimba: advimba.VimbaDetector, one_shot_trigger_info: TriggerInfo
 ):
-    set_mock_value(test_advimba._writer.hdf.file_path_exists, True)
-    set_mock_value(test_advimba._writer.hdf.capture, True)
     assert (await test_advimba.describe_collect()) == {}
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
