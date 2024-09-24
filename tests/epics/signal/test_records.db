@@ -184,7 +184,7 @@ record(waveform, "$(P)longstr") {
 record(lsi, "$(P)longstr2") {
   field(SIZV, "80")
   field(INP, {const:"a string that is just longer than forty characters"})
-  field(PINI, "YES")  
+  field(PINI, "YES")
 }
 
 record(waveform, "$(P)table:labels") {

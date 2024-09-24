@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import atexit
 import inspect
@@ -20,8 +22,6 @@ from pydantic import BaseModel
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     NotConnected,
-    ReadingValueCallback,
-    RuntimeSubsetEnum,
     SignalBackend,
     T,
     get_dtype,
@@ -30,7 +30,7 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 
-from ._common import LimitPair, Limits, common_meta, get_supported_values
+from ._common import get_supported_values
 
 # https://mdavidsaver.github.io/p4p/values.html
 specifier_to_dtype: dict[str, Dtype] = {
@@ -390,7 +390,6 @@ class PvaSignalBackend(SignalBackend[T]):
         Sequence,
         np.ndarray,
         Enum,
-        RuntimeSubsetEnum,
         BaseModel,
         dict,
     )

@@ -2,23 +2,27 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Generic, Literal, ParamSpec, TypeVar, get_origin
+from enum import Enum
+from typing import Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
 
 import numpy as np
-from bluesky.protocols import Reading
 from pydantic import BaseModel
 
 T = TypeVar("T")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
-
-#: A function that will be called with the Reading and value when the
-#: monitor updates
-ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
 ErrorText = str | dict[str, Exception]
+
+
+class SubsetEnum(str, Enum):
+    """All members should exist in the Backend, but there may be extras"""
+
+
+class StrictEnum(SubsetEnum):
+    """All members should exist in the Backend, and there will be no extras"""
 
 
 CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
@@ -119,7 +123,7 @@ async def wait_for_connection(**coros: Awaitable[None]):
         raise NotConnected(exceptions)
 
 
-def get_dtype(typ: type) -> np.dtype | None:
+def get_dtype(datatype: type) -> np.dtype:
     """Get the runtime dtype from a numpy ndarray type annotation
 
     >>> import numpy.typing as npt
@@ -127,11 +131,30 @@ def get_dtype(typ: type) -> np.dtype | None:
     >>> get_dtype(npt.NDArray[np.int8])
     dtype('int8')
     """
-    if getattr(typ, "__origin__", None) == np.ndarray:
-        # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
-        # so extract numpy.float64 from it
-        return np.dtype(typ.__args__[1].__args__[0])  # type: ignore
-    return None
+    if not get_origin(datatype) == np.ndarray:
+        raise TypeError(f"Expected np.ndarray, got {datatype}")
+    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
+    # so extract numpy.float64 from it
+    return np.dtype(get_args(get_args(datatype)[1])[0])
+
+
+def get_enum_cls(datatype: type | None) -> type[SubsetEnum] | None:
+    """Get the runtime dtype from a numpy ndarray type annotation
+
+    >>> import numpy.typing as npt
+    >>> import numpy as np
+    >>> get_dtype(npt.NDArray[np.int8])
+    dtype('int8')
+    """
+    if get_origin(datatype) == Sequence:
+        datatype = get_args(datatype)[0]
+    if datatype and issubclass(datatype, Enum):
+        if not issubclass(datatype, SubsetEnum):
+            raise TypeError(
+                f"{datatype} should inherit from ophyd_async.core.SubsetEnum "
+                "or ophyd_async.core.StrictEnum"
+            )
+        return datatype
 
 
 def get_unique(values: dict[str, T], types: str) -> T:

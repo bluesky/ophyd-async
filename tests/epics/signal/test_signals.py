@@ -15,14 +15,15 @@ from typing import Any, Literal
 from unittest.mock import ANY
 
 import numpy as np
-import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import Reading
 from event_model import DataKey
+from event_model.documents.event_descriptor import Limits, LimitsRange
 from typing_extensions import TypedDict
 
 from ophyd_async.core import (
+    Array1D,
     NotConnected,
     SignalBackend,
     SubsetEnum,
@@ -30,16 +31,15 @@ from ophyd_async.core import (
     load_from_yaml,
     save_to_yaml,
 )
+from ophyd_async.core._utils import StrictEnum
 from ophyd_async.epics.signal import (
-    LimitPair,
-    Limits,
     epics_signal_r,
     epics_signal_rw,
     epics_signal_rw_rbv,
     epics_signal_w,
     epics_signal_x,
 )
-from ophyd_async.epics.signal._epics_transport import _EpicsTransport  # noqa
+from ophyd_async.epics.signal._signal import _epics_signal_connector
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
@@ -54,13 +54,12 @@ class IOC:
         self, typ: type | None, suff: str, connect=True
     ) -> SignalBackend:
         # Calculate the pv
-        pv = f"{PV_PREFIX}:{self.protocol}:{suff}"
+        pv = f"{self.protocol}://{PV_PREFIX}:{self.protocol}:{suff}"
         # Make and connect the backend
-        cls = _EpicsTransport[self.protocol].value
-        backend = cls(typ, pv, pv)  # type: ignore
+        connector = _epics_signal_connector(typ, pv, pv)
         if connect:
-            await asyncio.wait_for(backend.connect(), 10)  # type: ignore
-        return backend  # type: ignore
+            await connector.connect(None, False, 10, False)  # type: ignore
+        return connector.backend
 
 
 # Use a module level fixture per protocol so it's fast to run tests. This means
@@ -128,11 +127,8 @@ def assert_types_are_equal(t_actual, t_expected, actual_value):
 class MonitorQueue:
     def __init__(self, backend: SignalBackend):
         self.backend = backend
-        self.subscription = backend.set_callback(self.add_reading_value)
-        self.updates: asyncio.Queue[tuple[Reading, Any]] = asyncio.Queue()
-
-    def add_reading_value(self, reading: Reading, value):
-        self.updates.put_nowait((reading, value))
+        self.updates: asyncio.Queue[Reading] = asyncio.Queue()
+        self.subscription = backend.set_callback(self.updates.put_nowait)
 
     async def assert_updates(self, expected_value, expected_type=None):
         expected_reading = {
@@ -141,7 +137,8 @@ class MonitorQueue:
             "alarm_severity": 0,
         }
         backend_reading = await asyncio.wait_for(self.backend.get_reading(), timeout=5)
-        reading, value = await asyncio.wait_for(self.updates.get(), timeout=5)
+        reading = await asyncio.wait_for(self.updates.get(), timeout=5)
+        value = reading["value"]
         backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
 
         assert value == expected_value == backend_value
@@ -205,21 +202,25 @@ async def put_error(
     await backend.put(put_value, timeout=3)
 
 
-class MyEnum(str, Enum):
+class MyEnum(StrictEnum):
     a = "Aaa"
     b = "Bbb"
     c = "Ccc"
 
 
-MySubsetEnum = SubsetEnum["Aaa", "Bbb", "Ccc"]
+class MySubsetEnum(SubsetEnum):
+    a = "Aaa"
+    b = "Bbb"
+    c = "Ccc"
+
 
 _metadata: dict[str, dict[str, dict[str, Any]]] = {
     "ca": {
         "boolean": {"units": ANY, "limits": ANY},
         "integer": {"units": ANY, "limits": ANY},
         "number": {"units": ANY, "limits": ANY, "precision": ANY},
-        "enum": {"limits": ANY},
-        "string": {"limits": ANY},
+        "enum": {},
+        "string": {},
     },
     "pva": {
         "boolean": {"limits": ANY},
@@ -270,10 +271,10 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             elif "64" in suffix:
                 int_str += "8"
             else:
-                int_str += "4"
+                int_str += "8"
             return int_str
         if "str" in suffix or "enum" in suffix:
-            return "|S40"
+            return "|T16"
 
     dtype = get_dtype(suffix)
     dtype_numpy = get_dtype_numpy(suffix)
@@ -308,70 +309,70 @@ ls2 = "another string that is just longer than forty characters"
         (MyEnum, "enum", MyEnum.b, MyEnum.c, {"ca", "pva"}),
         # numpy arrays of numpy types
         (
-            npt.NDArray[np.int8],
+            Array1D[np.int8],
             "int8a",
             [-128, 127],
             [-8, 3, 44],
             {"pva"},
         ),
         (
-            npt.NDArray[np.uint8],
+            Array1D[np.uint8],
             "uint8a",
             [0, 255],
             [218],
             {"ca", "pva"},
         ),
         (
-            npt.NDArray[np.int16],
+            Array1D[np.int16],
             "int16a",
             [-32768, 32767],
             [-855],
             {"ca", "pva"},
         ),
         (
-            npt.NDArray[np.uint16],
+            Array1D[np.uint16],
             "uint16a",
             [0, 65535],
             [5666],
             {"pva"},
         ),
         (
-            npt.NDArray[np.int32],
+            Array1D[np.int32],
             "int32a",
             [-2147483648, 2147483647],
             [-2],
             {"ca", "pva"},
         ),
         (
-            npt.NDArray[np.uint32],
+            Array1D[np.uint32],
             "uint32a",
             [0, 4294967295],
             [1022233],
             {"pva"},
         ),
         (
-            npt.NDArray[np.int64],
+            Array1D[np.int64],
             "int64a",
             [-2147483649, 2147483648],
             [-3],
             {"pva"},
         ),
         (
-            npt.NDArray[np.uint64],
+            Array1D[np.uint64],
             "uint64a",
             [0, 4294967297],
             [995444],
             {"pva"},
         ),
         (
-            npt.NDArray[np.float32],
+            Array1D[np.float32],
             "float32a",
             [0.000002, -123.123],
             [1.0],
             {"ca", "pva"},
         ),
         (
-            npt.NDArray[np.float64],
+            Array1D[np.float64],
             "float64a",
             [0.1, -12345678.123],
             [0.2],
@@ -385,7 +386,7 @@ ls2 = "another string that is just longer than forty characters"
             {"pva"},
         ),
         (
-            npt.NDArray[np.str_],
+            Array1D[np.str_],
             "stra",
             ["five", "six", "seven"],
             ["nine", "ten"],
@@ -529,6 +530,12 @@ class EnumNoString(Enum):
     a = "Aaa"
 
 
+class SubsetEnumWrongChoices(SubsetEnum):
+    a = "Aaa"
+    b = "B"
+    c = "Ccc"
+
+
 @pytest.mark.parametrize(
     "typ, suff, error",
     [
@@ -541,12 +548,11 @@ class EnumNoString(Enum):
             ),
         ),
         (
-            rt_enum := SubsetEnum["Aaa", "B", "Ccc"],
+            SubsetEnumWrongChoices,
             "enum",
             (
                 "has choices ('Aaa', 'Bbb', 'Ccc'), "
-                # SubsetEnum string output isn't deterministic
-                f"which is not a superset of {str(rt_enum)}."
+                "which is not a superset of ('Aaa', 'Bbb', 'Ccc')."
             ),
         ),
         (int, "str", "has type str not int"),
@@ -561,7 +567,7 @@ class EnumNoString(Enum):
                 "Use an Enum or SubsetEnum to represent this."
             ),
         ),
-        (npt.NDArray[np.int32], "float64a", "has type [float64] not [int32]"),
+        (Array1D[np.int32], "float64a", "has type [float64] not [int32]"),
     ],
 )
 async def test_backend_wrong_type_errors(ioc: IOC, typ, suff, error):
@@ -595,9 +601,9 @@ def approx_table(table):
 
 
 class MyTable(TypedDict):
-    bool: npt.NDArray[np.bool_]
-    int: npt.NDArray[np.int32]
-    float: npt.NDArray[np.float64]
+    bool: Array1D[np.bool_]
+    int: Array1D[np.int32]
+    float: Array1D[np.float64]
     str: Sequence[str]
     enum: Sequence[MyEnum]
 
@@ -692,11 +698,11 @@ async def test_pva_ntdarray(ioc: IOC):
     put = np.array([1, 2, 3, 4, 5, 6], dtype=np.int64).reshape((2, 3))
     initial = np.zeros_like(put)
 
-    backend = await ioc.make_backend(npt.NDArray[np.int64], "ntndarray")
+    backend = await ioc.make_backend(Array1D[np.int64], "ntndarray")
 
     # Backdoor into the "raw" data underlying the NDArray in QSrv
     # not supporting direct writes to NDArray at the moment.
-    raw_data_backend = await ioc.make_backend(npt.NDArray[np.int64], "ntndarray:data")
+    raw_data_backend = await ioc.make_backend(Array1D[np.int64], "ntndarray:data")
 
     # Make a monitor queue that will monitor for updates
     for i, p in [(initial, put), (put, initial)]:
@@ -719,7 +725,7 @@ async def test_writing_to_ndarray_raises_typeerror(ioc: IOC):
         # CA can't do ndarray
         return
 
-    backend = await ioc.make_backend(npt.NDArray[np.int64], "ntndarray")
+    backend = await ioc.make_backend(Array1D[np.int64], "ntndarray")
 
     with pytest.raises(TypeError):
         await backend.put(np.zeros((6,), dtype=np.int64))
@@ -836,13 +842,13 @@ async def test_signal_returns_limits(ioc: IOC):
 
     expected_limits = Limits(
         # LOW, HIGH
-        warning=LimitPair(low=5.0, high=96.0),
+        warning=LimitsRange(low=5.0, high=96.0),
         # DRVL, DRVH
-        control=LimitPair(low=10.0, high=90.0),
+        control=LimitsRange(low=10.0, high=90.0),
         # LOPR, HOPR
-        display=LimitPair(low=0.0, high=100.0),
+        display=LimitsRange(low=0.0, high=100.0),
         # LOLO, HIHI
-        alarm=LimitPair(low=2.0, high=98.0),
+        alarm=LimitsRange(low=2.0, high=98.0),
     )
 
     sig = epics_signal_rw(int, pv_name)
@@ -858,13 +864,13 @@ async def test_signal_returns_partial_limits(ioc: IOC):
 
     expected_limits = Limits(
         # LOLO, HIHI
-        alarm=LimitPair(low=2.0, high=98.0),
+        alarm=LimitsRange(low=2.0, high=98.0),
         # DRVL, DRVH
-        control=LimitPair(low=10.0, high=90.0),
+        control=LimitsRange(low=10.0, high=90.0),
         # LOPR, HOPR
-        display=LimitPair(low=0.0, high=100.0),
+        display=LimitsRange(low=0.0, high=100.0),
         # HSV, LSV not set.
-        warning=LimitPair(low=not_set, high=not_set),
+        warning=LimitsRange(low=not_set, high=not_set),
     )
 
     sig = epics_signal_rw(int, pv_name)
@@ -880,13 +886,13 @@ async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
 
     expected_limits = Limits(
         # HSV, LSV not set
-        alarm=LimitPair(low=not_set, high=not_set),
+        alarm=LimitsRange(low=not_set, high=not_set),
         # control = display if DRVL, DRVH not set
-        control=LimitPair(low=0.0, high=100.0),
+        control=LimitsRange(low=0.0, high=100.0),
         # LOPR, HOPR
-        display=LimitPair(low=0.0, high=100.0),
+        display=LimitsRange(low=0.0, high=100.0),
         # LOW, HIGH
-        warning=LimitPair(low=2.0, high=98.0),
+        warning=LimitsRange(low=2.0, high=98.0),
     )
 
     sig = epics_signal_rw(int, pv_name)
@@ -914,6 +920,7 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_1"
     sig = epics_signal_rw(int, pv_name)
     with pytest.raises(
-        TypeError, match=f"{ioc.protocol}:float_prec_1 has type float not int"
+        TypeError,
+        match=f"{ioc.protocol}:float_prec_1 with inferred datatype <class 'float'> cannot be coerced to <class 'int'>",
     ):
         await sig.connect()

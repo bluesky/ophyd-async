@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TypeVar, get_args, get_origin
+from typing import Any, TypeVar, get_args, get_origin
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, model_validator
@@ -64,14 +64,15 @@ class Table(BaseModel):
             }
         )
 
-    def numpy_dtype(self) -> np.dtype:
+    @classmethod
+    def numpy_dtype(cls) -> np.dtype:
         dtype = []
-        for field_name, field_value in self.model_fields.items():
+        for field_name, field_value in cls.model_fields.items():
             if np.ndarray in (
                 get_origin(field_value.annotation),
                 field_value.annotation,
             ):
-                dtype.append((field_name, getattr(self, field_name).dtype))
+                dtype.append((field_name, getattr(cls, field_name).dtype))
             else:
                 enum_type = get_args(field_value.annotation)[0]
                 assert issubclass(enum_type, Enum)
@@ -144,3 +145,9 @@ class Table(BaseModel):
             )
 
         return self
+
+    def __len__(self) -> int:
+        return len(next(iter(self))[1])
+
+    def __getitem__(self) -> Any:
+        raise NotImplementedError()
