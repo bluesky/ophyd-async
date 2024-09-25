@@ -921,6 +921,7 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
     sig = epics_signal_rw(int, pv_name)
     with pytest.raises(
         TypeError,
-        match=f"{ioc.protocol}:float_prec_1 with inferred datatype <class 'float'> cannot be coerced to <class 'int'>",
+        match=f"{ioc.protocol}:float_prec_1 with inferred datatype <class 'float'> "
+        "cannot be coerced to <class 'int'>",
     ):
         await sig.connect()

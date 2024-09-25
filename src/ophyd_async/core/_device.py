@@ -15,19 +15,23 @@ from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
 class DeviceConnector:
+    # TODO: we will add some mechanism of invalidating the cache here later
     @abstractmethod
     async def connect(
-        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
+        self, mock: bool, timeout: float, force_reconnect: bool
     ) -> None: ...
 
 
 class DeviceChildConnector(DeviceConnector):
-    async def connect(
-        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
-    ) -> Any:
+    def __init__(self, children: Callable[[], dict[str, Device]]):
+        self._children = children
+
+    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
         coros = {
-            name: child_device.connect(mock, timeout, force_reconnect)
-            for name, child_device in device.children().items()
+            name: child_device.connect(
+                mock=mock, timeout=timeout, force_reconnect=force_reconnect
+            )
+            for name, child_device in self._children().items()
         }
         await wait_for_connection(**coros)
 
@@ -49,15 +53,18 @@ class Device(HasName, Generic[DeviceConnectorType]):
     # The value of the mock arg to connect
     _connect_mock: bool | None = None
     # The connector to use
-    _connector: DeviceConnectorType = DeviceChildConnector()
+    _connector: DeviceConnectorType
 
     def __init__(
         self,
         name: str = "",
         connector: DeviceConnectorType | None = None,
     ) -> None:
-        if connector is not None:
-            self._connector = connector
+        if connector is None:
+            # TODO: this is ugly, maybe we remove the option to pass None as the
+            # connector so this goes away?
+            connector = cast(DeviceConnectorType, DeviceChildConnector(self.children))
+        self._connector = connector
         self.set_name(name)
 
     @property
@@ -125,7 +132,9 @@ class Device(HasName, Generic[DeviceConnectorType]):
             # Use the connector to make a new connection
             self._connect_mock = mock
             self._connect_task = asyncio.create_task(
-                self._connector.connect(self, mock, timeout, force_reconnect)
+                self._connector.connect(
+                    mock=mock, timeout=timeout, force_reconnect=force_reconnect
+                )
             )
         assert self._connect_task, "Connect task not created, this shouldn't happen"
         # Wait for it to complete
@@ -148,10 +157,9 @@ class DeviceVector(Mapping[int, DeviceType], Device):
         self,
         children: dict[int, DeviceType],
         name: str = "",
-        connector: DeviceConnector | None = None,
     ) -> None:
         self._children = children
-        super().__init__(name, connector)
+        super().__init__(connector=DeviceChildConnector(self.children), name=name)
 
     def __getitem__(self, key: int) -> DeviceType:
         return self._children[key]
@@ -224,12 +232,12 @@ class DeviceCollector:
                 ), "No previous frame to the one with self in it, this shouldn't happen"
             return caller_frame.f_locals
 
-    def __enter__(self) -> "DeviceCollector":
+    def __enter__(self) -> DeviceCollector:
         # Stash the names that were defined before we were called
         self._names_on_enter = set(self._caller_locals())
         return self
 
-    async def __aenter__(self) -> "DeviceCollector":
+    async def __aenter__(self) -> DeviceCollector:
         return self.__enter__()
 
     async def _on_exit(self) -> None:

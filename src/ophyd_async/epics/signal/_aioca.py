@@ -22,7 +22,6 @@ from event_model.documents.event_descriptor import Limits, LimitsRange
 from ophyd_async.core import (
     Array1D,
     Callback,
-    Device,
     MockSignalBackend,
     SignalBackend,
     SignalConnector,
@@ -217,7 +216,8 @@ def make_converter(
             # If datatype matches what we are given then allow it
             return CaConverter(inferred_datatype, pv_dbr)
     raise TypeError(
-        f"{pv} with inferred datatype {inferred_datatype} cannot be coerced to {datatype}"
+        f"{pv} with inferred datatype {inferred_datatype}"
+        f" cannot be coerced to {datatype}"
     )
 
 
@@ -313,9 +313,7 @@ class CaSignalConnector(SignalConnector[SignalDatatypeT]):
     read_pv: str
     write_pv: str
 
-    async def connect(
-        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
-    ) -> None:
+    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
         if mock:
             self.backend = MockSignalBackend(self.datatype)
         else:

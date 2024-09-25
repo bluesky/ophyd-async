@@ -6,13 +6,11 @@ from abc import abstractmethod
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Generic, get_args, get_origin
+from typing import Any, Generic, get_origin
 from unittest.mock import AsyncMock
 
 import numpy as np
 from event_model import DataKey
-
-from ophyd_async.core._device import Device
 
 from ._protocol import Reading
 from ._signal_backend import (
@@ -120,14 +118,14 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         self,
         datatype: type[SignalDatatypeT] | None = None,
         initial_value: SignalDatatypeT | None = None,
-        metadata: SignalMetadata = {},
+        metadata: SignalMetadata | None = None,
     ):
         # If not specified then default to float
         self._datatype = datatype or float
         # Create the right converter for the datatype
         self._converter = make_converter(self._datatype)
         self._initial_value = self._converter.write_value(initial_value)
-        self._metadata = metadata
+        self._metadata = metadata or SignalMetadata()
         self.set_value(self._initial_value)
 
     def set_value(self, value: SignalDatatypeT):
@@ -193,9 +191,7 @@ class SoftSignalConnector(SignalConnector[SignalDatatypeT]):
     units: str | None = None
     precision: int | None = None
 
-    async def connect(
-        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
-    ) -> None:
+    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
         # Add the extra static metadata to the dictionary
         metadata: SignalMetadata = {}
         if self.units is not None:

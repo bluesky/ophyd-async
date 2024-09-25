@@ -45,7 +45,7 @@ class Signal(Device[SignalConnector[SignalDatatypeT]]):
         name: str = "",
     ) -> None:
         self._timeout = timeout
-        super().__init__(name, connector)
+        super().__init__(name=name, connector=connector)
 
     @property
     def source(self) -> str:

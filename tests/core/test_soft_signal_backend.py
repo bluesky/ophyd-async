@@ -100,7 +100,7 @@ async def test_soft_signal_backend_get_put_monitor(
 ):
     connector = SoftSignalConnector(datatype=datatype)
 
-    await connector.connect(None, False, 1, False)
+    await connector.connect(False, 1, False)
     q = MonitorQueue(connector.backend)
     try:
         # Check descriptor
@@ -122,7 +122,7 @@ async def test_soft_signal_backend_get_put_monitor(
 
 async def test_soft_signal_backend_enum_value_equivalence():
     connector = SoftSignalConnector(MyEnum)
-    await connector.connect(None, False, 1, False)
+    await connector.connect(False, 1, False)
     soft_backend = connector.backend
     assert (await soft_backend.get_value()) is MyEnum.a
     await soft_backend.put(MyEnum.b)
@@ -131,7 +131,7 @@ async def test_soft_signal_backend_enum_value_equivalence():
 
 async def test_soft_signal_backend_with_numpy_typing():
     connector = SoftSignalConnector(npt.NDArray[np.float64])
-    await connector.connect(None, False, 1, False)
+    await connector.connect(False, 1, False)
     soft_backend = connector.backend
 
     array = await soft_backend.get_value()
