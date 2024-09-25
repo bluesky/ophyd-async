@@ -225,17 +225,16 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
     if python_type in [str]:
         return {"dtype": "string", "shape": []}
     if issubclass(python_type, DevState):
-        return {"dtype": "string", "shape": [], "choices": list(DevState.names.keys())}
+        return {"dtype": "string", "shape": []}
     if issubclass(python_type, Enum):
         return {
             "dtype": "string",
             "shape": [],
-            "choices": [] if is_cmd else [member.name for member in value.__class__],
         }
 
     return {
         "dtype": "array",
-        "shape": [np.Inf] if is_cmd else list(np.array(value).shape),
+        "shape": [np.iinfo(np.int32).max] if is_cmd else list(np.array(value).shape),
     }
 
 
