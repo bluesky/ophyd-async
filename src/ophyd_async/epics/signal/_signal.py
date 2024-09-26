@@ -24,8 +24,8 @@ def _make_unavailable_class(error: Exception) -> type:
 
 
 class EpicsProtocol(Enum):
-    ca = "ca"
-    pva = "pva"
+    CA = "ca"
+    PVA = "pva"
 
 
 _default_epics_protocol = EpicsProtocol.ca
