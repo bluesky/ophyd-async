@@ -1,6 +1,5 @@
 from abc import abstractmethod
 from collections.abc import Sequence
-from enum import Enum
 from typing import Generic, TypedDict, TypeVar, get_origin
 
 import numpy as np
@@ -28,6 +27,7 @@ SignalDatatype = (
     | Array1D[np.uint64]
     | Array1D[np.float32]
     | Array1D[np.float64]
+    | np.ndarray
     | SubsetEnum
     | Sequence[str]
     | Sequence[SubsetEnum]
@@ -76,9 +76,12 @@ def _fail(*args, **kwargs):
 
 
 class DisconnectedBackend(SignalBackend):
-    source = connect = put = get_datakey = get_reading = get_value = get_setpoint = (
-        set_callback
-    ) = _fail
+    put = _fail
+    get_datakey = _fail
+    get_reading = _fail
+    get_value = _fail
+    get_setpoint = _fail
+    set_callback = _fail
 
 
 class SignalConnector(DeviceConnector, Generic[SignalDatatypeT]):
@@ -103,10 +106,14 @@ class SignalMetadata(TypedDict, total=False):
     units: str
 
 
-def _datakey_dtype(datatype: type[SignalDatatypeT]) -> Dtype:
-    if get_origin(datatype) in (Sequence, np.ndarray) or issubclass(datatype, Table):
+def _datakey_dtype(datatype: type[SignalDatatype]) -> Dtype:
+    if (
+        datatype is np.ndarray
+        or get_origin(datatype) in (Sequence, np.ndarray)
+        or issubclass(datatype, Table)
+    ):
         return "array"
-    elif issubclass(datatype, Enum):
+    elif issubclass(datatype, SubsetEnum):
         return "string"
     elif issubclass(datatype, Primitive):
         return _primitive_dtype[datatype]
@@ -114,13 +121,19 @@ def _datakey_dtype(datatype: type[SignalDatatypeT]) -> Dtype:
         raise TypeError(f"Can't make dtype for {datatype}")
 
 
-def _datakey_dtype_numpy(datatype: type[SignalDatatypeT]) -> np.dtype:
+def _datakey_dtype_numpy(
+    datatype: type[SignalDatatypeT], value: SignalDatatypeT
+) -> np.dtype:
     if get_origin(datatype) == np.ndarray:
+        # If we are told what numpy dtype we will be, use that
         return get_dtype(datatype)
+    elif datatype is np.ndarray and isinstance(value, np.ndarray):
+        # If we are just told an array, get it from the value
+        return value.dtype
     elif (
         get_origin(datatype) == Sequence
         or datatype is str
-        or issubclass(datatype, Enum)
+        or issubclass(datatype, SubsetEnum)
     ):
         return np.dtypes.StringDType()
     elif issubclass(datatype, Table):
@@ -132,7 +145,7 @@ def _datakey_dtype_numpy(datatype: type[SignalDatatypeT]) -> np.dtype:
 
 
 def _datakey_shape(value: SignalDatatype) -> list[int]:
-    if type(value) in _primitive_dtype or isinstance(value, Enum):
+    if type(value) in _primitive_dtype or isinstance(value, SubsetEnum):
         return []
     elif isinstance(value, np.ndarray):
         return list(value.shape)
@@ -152,7 +165,7 @@ def make_datakey(
         dtype=_datakey_dtype(datatype),
         shape=_datakey_shape(value),
         # Ignore until https://github.com/bluesky/event-model/issues/308
-        dtype_numpy=_datakey_dtype_numpy(datatype).str,  # type: ignore
+        dtype_numpy=_datakey_dtype_numpy(datatype, value).str,  # type: ignore
         source=source,
         **metadata,
     )

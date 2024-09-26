@@ -1,14 +1,16 @@
+import logging
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 from math import isnan, nan
-from typing import Any, Generic, cast, get_origin
+from typing import Any, Generic, cast
 
 import numpy as np
 from aioca import (
     FORMAT_CTRL,
     FORMAT_RAW,
     FORMAT_TIME,
+    CANothing,
     Subscription,
     caget,
     camonitor,
@@ -34,8 +36,9 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 from ophyd_async.core._protocol import Reading
+from ophyd_async.core._utils import NotConnected
 
-from ._common import get_supported_values
+from ._common import format_datatype, get_supported_values
 
 
 def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
@@ -97,6 +100,17 @@ class CaConverter(Generic[SignalDatatypeT]):
         return +value  # type: ignore
 
 
+class CaArrayConverter(CaConverter[np.ndarray]):
+    def value(self, value: AugmentedValue) -> np.ndarray:
+        # A less expensive conversion
+        return np.array(value, copy=False)
+
+
+class CaSequenceStrConverter(CaConverter[Sequence[str]]):
+    def value(self, value: AugmentedValue) -> Sequence[str]:
+        return [str(v) for v in value]  # type: ignore
+
+
 class CaLongStrConverter(CaConverter[str]):
     def __init__(self):
         super().__init__(str, dbr.DBR_CHAR_STR, dbr.DBR_CHAR_STR)
@@ -107,10 +121,12 @@ class CaLongStrConverter(CaConverter[str]):
         return value + "\0"
 
 
-class CaArrayConverter(CaConverter[np.ndarray]):
-    def value(self, value: AugmentedValue) -> np.ndarray:
-        # A less expensive conversion
-        return np.array(value, copy=False)
+class CaBoolConverter(CaConverter[bool]):
+    def __init__(self):
+        super().__init__(bool, dbr.DBR_SHORT)
+
+    def value(self, value: AugmentedValue) -> bool:
+        return bool(value)
 
 
 class CaEnumConverter(CaConverter[str]):
@@ -124,37 +140,23 @@ class CaEnumConverter(CaConverter[str]):
         return self.supported_values[str(value)]
 
 
-class CaSequenceStrConverter(CaConverter[Sequence[str]]):
-    def __init__(self):
-        super().__init__(Sequence[str], dbr.DBR_STRING)
-
-    def value(self, value: AugmentedValue) -> Sequence[str]:
-        return [str(v) for v in value]  # type: ignore
-
-
-class CaBoolConverter(CaConverter[bool]):
-    def __init__(self):
-        super().__init__(bool, dbr.DBR_SHORT)
-
-    def value(self, value: AugmentedValue) -> bool:
-        return bool(value)
-
-
-_datatypes_from_dbr: dict[tuple[Dbr, bool], type[SignalDatatype]] = {
-    (dbr.DBR_STRING, False): str,
-    (dbr.DBR_SHORT, False): int,
-    (dbr.DBR_FLOAT, False): float,
-    (dbr.DBR_ENUM, False): str,
-    (dbr.DBR_CHAR, False): int,
-    (dbr.DBR_LONG, False): int,
-    (dbr.DBR_DOUBLE, False): float,
-    (dbr.DBR_STRING, True): Sequence[str],
-    (dbr.DBR_SHORT, True): Array1D[np.int16],
-    (dbr.DBR_FLOAT, True): Array1D[np.float32],
-    (dbr.DBR_ENUM, True): Sequence[str],
-    (dbr.DBR_CHAR, True): Array1D[np.uint8],
-    (dbr.DBR_LONG, True): Array1D[np.int32],
-    (dbr.DBR_DOUBLE, True): Array1D[np.float64],
+_datatype_converter_from_dbr: dict[
+    tuple[Dbr, bool], tuple[type[SignalDatatype], type[CaConverter]]
+] = {
+    (dbr.DBR_STRING, False): (str, CaConverter),
+    (dbr.DBR_SHORT, False): (int, CaConverter),
+    (dbr.DBR_FLOAT, False): (float, CaConverter),
+    (dbr.DBR_ENUM, False): (str, CaConverter),
+    (dbr.DBR_CHAR, False): (int, CaConverter),
+    (dbr.DBR_LONG, False): (int, CaConverter),
+    (dbr.DBR_DOUBLE, False): (float, CaConverter),
+    (dbr.DBR_STRING, True): (Sequence[str], CaSequenceStrConverter),
+    (dbr.DBR_SHORT, True): (Array1D[np.int16], CaArrayConverter),
+    (dbr.DBR_FLOAT, True): (Array1D[np.float32], CaArrayConverter),
+    (dbr.DBR_ENUM, True): (Sequence[str], CaSequenceStrConverter),
+    (dbr.DBR_CHAR, True): (Array1D[np.uint8], CaArrayConverter),
+    (dbr.DBR_LONG, True): (Array1D[np.int32], CaArrayConverter),
+    (dbr.DBR_DOUBLE, True): (Array1D[np.float64], CaArrayConverter),
 }
 
 
@@ -166,58 +168,46 @@ def make_converter(
         Dbr, get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
     )
     is_array = bool([v for v in values.values() if v.element_count > 1])
-    # Infer a datatype from the dbr
-    inferred_datatype = _datatypes_from_dbr[(pv_dbr, is_array)]
-    # Create the correct converter based on requested datatype
-    if is_array:
-        if pv_dbr == dbr.DBR_STRING and datatype in (None, Sequence[str]):
-            # Otherwise they get string if requested or inferred
-            return CaSequenceStrConverter()
-        elif pv_dbr == dbr.DBR_CHAR and datatype is str:
-            # Override waveform of chars to be treated as string
-            return CaLongStrConverter()
-        elif (
-            datatype in (None, inferred_datatype)
-            and get_origin(inferred_datatype) == np.ndarray
-        ):
-            # The requested datatype matches the inferred datatype, so use that
-            # We verify the origin of inferred_datatype above, but pyright doesn't know
-            # that, so do a cast below
-            return CaArrayConverter(cast(type[np.ndarray], inferred_datatype), pv_dbr)
-    else:
-        if pv_dbr == dbr.DBR_ENUM:
-            pv_choices = get_unique(
-                {k: tuple(v.enums) for k, v in values.items()}, "choices"
+    # Infer a datatype and converter from the dbr
+    inferred_datatype, converter_cls = _datatype_converter_from_dbr[(pv_dbr, is_array)]
+    # Some override cases
+    if is_array and pv_dbr == dbr.DBR_CHAR and datatype is str:
+        # Override waveform of chars to be treated as string
+        return CaLongStrConverter()
+    elif not is_array and pv_dbr == dbr.DBR_ENUM:
+        pv_choices = get_unique(
+            {k: tuple(v.enums) for k, v in values.items()}, "choices"
+        )
+        if datatype is bool:
+            # Database can't do bools, so are often representated as enums of len 2
+            if len(pv_choices) != 2:
+                raise TypeError(f"{pv} has {pv_choices=}, can't map to bool")
+            return CaBoolConverter()
+        elif enum_cls := get_enum_cls(datatype):
+            # If explicitly requested then check
+            return CaEnumConverter(get_supported_values(pv, enum_cls, pv_choices))
+        elif datatype in (None, str):
+            # Drop to string for safety, but retain choices as metadata
+            return CaConverter(
+                str,
+                dbr.DBR_STRING,
+                metadata=SignalMetadata(choices=list(pv_choices)),
             )
-            if datatype is bool:
-                # Database can't do bools, so are often representated as enums of len 2
-                if len(pv_choices) != 2:
-                    raise TypeError(f"{pv} has {pv_choices=}, can't map to bool")
-                return CaBoolConverter()
-            elif enum_cls := get_enum_cls(datatype):
-                # If explicitly requested then check
-                supported_values = get_supported_values(pv, enum_cls, pv_choices)
-                return CaEnumConverter(supported_values)
-            else:
-                # Drop to string, but retain choices as metadata
-                return CaConverter(
-                    str,
-                    dbr.DBR_STRING,
-                    metadata=SignalMetadata(choices=list(pv_choices)),
-                )
-        elif (
-            pv_dbr == dbr.DBR_DOUBLE
-            and get_unique({k: v.precision for k, v in values.items()}, "precision")
-            == 0
-        ):
-            # Allow int signals to represent float records when prec is 0
-            return CaConverter(int, pv_dbr)
-        elif datatype in (None, inferred_datatype):
-            # If datatype matches what we are given then allow it
-            return CaConverter(inferred_datatype, pv_dbr)
+    elif (
+        inferred_datatype is float
+        and datatype is int
+        and get_unique({k: v.precision for k, v in values.items()}, "precision") == 0
+    ):
+        # Allow int signals to represent float records when prec is 0
+        return CaConverter(int, pv_dbr)
+    elif datatype in (None, inferred_datatype):
+        # If datatype matches what we are given then allow it and use inferred converter
+        return converter_cls(inferred_datatype, pv_dbr)
+    if pv_dbr == dbr.DBR_ENUM:
+        inferred_datatype = "str | SubsetEnum | StrictEnum"
     raise TypeError(
-        f"{pv} with inferred datatype {inferred_datatype}"
-        f" cannot be coerced to {datatype}"
+        f"{pv} with inferred datatype {format_datatype(inferred_datatype)}"
+        f" cannot be coerced to {format_datatype(datatype)}"
     )
 
 
@@ -324,7 +314,13 @@ class CaSignalConnector(SignalConnector[SignalDatatypeT]):
         initial_values: dict[str, AugmentedValue] = {}
 
         async def store_initial_value(pv: str):
-            initial_values[pv] = await caget(pv, format=FORMAT_CTRL, timeout=timeout)
+            try:
+                initial_values[pv] = await caget(
+                    pv, format=FORMAT_CTRL, timeout=timeout
+                )
+            except CANothing as exc:
+                logging.debug(f"signal ca://{pv} timed out")
+                raise NotConnected(f"ca://{pv}") from exc
 
         if self.read_pv != self.write_pv:
             # Different, need to connect both

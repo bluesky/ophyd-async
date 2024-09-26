@@ -1,6 +1,10 @@
 from collections.abc import Sequence
+from typing import Any, get_args, get_origin
+
+import numpy as np
 
 from ophyd_async.core import StrictEnum, get_enum_cls
+from ophyd_async.core._utils import get_dtype
 
 
 def get_supported_values(
@@ -27,3 +31,13 @@ def get_supported_values(
     for v in enum_cls:
         supported_values[v.value] = v
     return supported_values
+
+
+def format_datatype(datatype: Any) -> str:
+    if get_origin(datatype) is np.ndarray and get_args(datatype)[0] == tuple[int]:
+        dtype = get_dtype(datatype)
+        return f"Array1D[np.{dtype.name}]"
+    elif isinstance(datatype, type):
+        return datatype.__name__
+    else:
+        return str(datatype)

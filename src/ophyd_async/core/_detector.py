@@ -4,10 +4,6 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Sequence
-from enum import Enum
-from typing import (
-    Generic,
-)
 
 from bluesky.protocols import (
     Collectable,
@@ -26,10 +22,10 @@ from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, T, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
 
 
-class DetectorTrigger(str, Enum):
+class DetectorTrigger(StrictEnum):
     """Type of mechanism for triggering a detector to take frames"""
 
     #: Detector generates internal trigger for given rate
@@ -158,7 +154,6 @@ class StandardDetector(
     Flyable,
     Collectable,
     WritesStreamAssets,
-    Generic[T],
 ):
     """
     Useful detector base class for step and fly scanning detectors.

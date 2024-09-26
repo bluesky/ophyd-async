@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from enum import Enum
 from typing import Annotated
 
 import numpy as np
@@ -8,10 +7,10 @@ from pydantic import Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from typing_extensions import TypedDict
 
-from ophyd_async.core import Table
+from ophyd_async.core import StrictEnum, Table
 
 
-class PandaHdf5DatasetType(str, Enum):
+class PandaHdf5DatasetType(StrictEnum):
     FLOAT_64 = "float64"
     UINT_32 = "uint32"
 
@@ -21,7 +20,7 @@ class DatasetTable(TypedDict):
     hdf5_type: Sequence[PandaHdf5DatasetType]
 
 
-class SeqTrigger(str, Enum):
+class SeqTrigger(StrictEnum):
     IMMEDIATE = "Immediate"
     BITA_0 = "BITA=0"
     BITA_1 = "BITA=1"

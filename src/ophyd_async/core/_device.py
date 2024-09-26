@@ -63,7 +63,9 @@ class Device(HasName, Generic[DeviceConnectorType]):
         if connector is None:
             # TODO: this is ugly, maybe we remove the option to pass None as the
             # connector so this goes away?
-            connector = cast(DeviceConnectorType, DeviceChildConnector(self.children))
+            connector = cast(
+                DeviceConnectorType, DeviceChildConnector(lambda: self.children)
+            )
         self._connector = connector
         self.set_name(name)
 
@@ -78,6 +80,7 @@ class Device(HasName, Generic[DeviceConnectorType]):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
+    @property
     def children(self) -> dict[str, Device]:
         return {
             attr_name: attr
@@ -99,7 +102,7 @@ class Device(HasName, Generic[DeviceConnectorType]):
             del self.log
 
         self._name = name
-        for attr_name, child in self.children().items():
+        for attr_name, child in self.children.items():
             child_name = f"{name}-{attr_name.rstrip('_')}" if name else ""
             child.set_name(child_name)
             child.parent = self
@@ -124,13 +127,13 @@ class Device(HasName, Generic[DeviceConnectorType]):
 
         # If previous connect with same args has started and not errored, can use it
         can_use_previous_connect = (
-            mock is self._connect_mock
+            mock is self._connected_in_mock_mode
             and self._connect_task
             and not (self._connect_task.done() and self._connect_task.exception())
         )
         if force_reconnect or not can_use_previous_connect:
             # Use the connector to make a new connection
-            self._connect_mock = mock
+            self._connected_in_mock_mode = mock
             self._connect_task = asyncio.create_task(
                 self._connector.connect(
                     mock=mock, timeout=timeout, force_reconnect=force_reconnect
@@ -159,7 +162,7 @@ class DeviceVector(Mapping[int, DeviceType], Device):
         name: str = "",
     ) -> None:
         self._children = children
-        super().__init__(connector=DeviceChildConnector(self.children), name=name)
+        super().__init__(name=name)
 
     def __getitem__(self, key: int) -> DeviceType:
         return self._children[key]
@@ -170,6 +173,7 @@ class DeviceVector(Mapping[int, DeviceType], Device):
     def __len__(self) -> int:
         return len(self._children)
 
+    @property
     def children(self) -> dict[str, Device]:
         return {str(key): value for key, value in self.items()}
 

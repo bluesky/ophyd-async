@@ -51,7 +51,7 @@ class Signal(Device[SignalConnector[SignalDatatypeT]]):
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
         source = self._connector.source(self.name)
-        if self._connect_mock:
+        if self._connected_in_mock_mode:
             return f"mock+{source}"
         else:
             return source

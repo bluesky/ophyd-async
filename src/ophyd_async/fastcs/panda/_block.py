@@ -1,8 +1,13 @@
 from __future__ import annotations
 
-from enum import Enum
-
-from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW, SubsetEnum
+from ophyd_async.core import (
+    Device,
+    DeviceVector,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+    SubsetEnum,
+)
 
 from ._table import DatasetTable, SeqTable
 
@@ -25,13 +30,15 @@ class PulseBlock(Device):
     width: SignalRW[float]
 
 
-class PcompDirectionOptions(str, Enum):
+class PcompDirectionOptions(StrictEnum):
     positive = "Positive"
     negative = "Negative"
     either = "Either"
 
 
-EnableDisableOptions = SubsetEnum["ZERO", "ONE"]
+class EnableDisableOptions(SubsetEnum):
+    zero = "ZERO"
+    one = "ONE"
 
 
 class PcompBlock(Device):
@@ -44,7 +51,7 @@ class PcompBlock(Device):
     width: SignalRW[int]
 
 
-class TimeUnits(str, Enum):
+class TimeUnits(StrictEnum):
     min = "min"
     s = "s"
     ms = "ms"

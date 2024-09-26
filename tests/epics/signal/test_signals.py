@@ -51,14 +51,13 @@ class IOC:
     protocol: Literal["ca", "pva"]
 
     async def make_backend(
-        self, typ: type | None, suff: str, connect=True
+        self, typ: type | None, suff: str, timeout=10.0
     ) -> SignalBackend:
         # Calculate the pv
         pv = f"{self.protocol}://{PV_PREFIX}:{self.protocol}:{suff}"
         # Make and connect the backend
         connector = _epics_signal_connector(typ, pv, pv)
-        if connect:
-            await connector.connect(None, False, 10, False)  # type: ignore
+        await connector.connect(mock=False, timeout=timeout, force_reconnect=False)
         return connector.backend
 
 
@@ -198,8 +197,8 @@ async def put_error(
     # The below will work without error
     await backend.put(put_value)
     # Change the name of write_pv to mock disconnection
-    backend.__setattr__("write_pv", "Disconnect")
-    await backend.put(put_value, timeout=3)
+    backend.__setattr__("_write_pv", "Disconnect")
+    await backend.put(put_value, timeout=0.1)
 
 
 class MyEnum(StrictEnum):
@@ -223,10 +222,10 @@ _metadata: dict[str, dict[str, dict[str, Any]]] = {
         "string": {},
     },
     "pva": {
-        "boolean": {"limits": ANY},
+        "boolean": {},
         "integer": {"units": ANY, "precision": ANY, "limits": ANY},
         "number": {"units": ANY, "precision": ANY, "limits": ANY},
-        "enum": {"limits": ANY},
+        "enum": {},
         "string": {"units": ANY, "precision": ANY, "limits": ANY},
     },
 }
@@ -258,7 +257,7 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
         if "float" in suffix or "double" in suffix:
             return "<f8"  # Unless specifically float 32, use float 64
         if "bool" in suffix:
-            return "<i2"  # EPICS bool PVs return <i2
+            return "|b1"
         if "int" in suffix:
             int_str = "|" if "8" in suffix else "<"
             int_str += "u" if "uint" in suffix else "i"
@@ -383,14 +382,7 @@ ls2 = "another string that is just longer than forty characters"
             "stra",
             ["five", "six", "seven"],
             ["nine", "ten"],
-            {"pva"},
-        ),
-        (
-            Array1D[np.str_],
-            "stra",
-            ["five", "six", "seven"],
-            ["nine", "ten"],
-            {"ca"},
+            {"pva", "ca"},
         ),
         # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
         # (str, "longstr", ls1, ls2),
@@ -474,8 +466,8 @@ async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path: Path) ->
 
 async def test_error_raised_on_disconnected_PV(ioc: IOC) -> None:
     if ioc.protocol == "pva":
-        err = NotConnected
-        expected = "pva://Disconnect"
+        err = asyncio.TimeoutError
+        expected = "pva://Disconnect: Put timed out"
     elif ioc.protocol == "ca":
         err = CANothing
         expected = "Disconnect: User specified timeout on IO operation expired"
@@ -488,7 +480,7 @@ async def test_error_raised_on_disconnected_PV(ioc: IOC) -> None:
         )
 
 
-class BadEnum(str, Enum):
+class BadEnum(StrictEnum):
     a = "Aaa"
     b = "B"
     c = "Ccc"
@@ -500,12 +492,12 @@ def test_enum_equality():
     possibly more.
     """
 
-    class GeneratedChoices(str, Enum):
+    class GeneratedChoices(StrictEnum):
         a = "Aaa"
         b = "B"
         c = "Ccc"
 
-    class ExtendedGeneratedChoices(str, Enum):
+    class ExtendedGeneratedChoices(StrictEnum):
         a = "Aaa"
         b = "B"
         c = "Ccc"
@@ -543,8 +535,8 @@ class SubsetEnumWrongChoices(SubsetEnum):
             BadEnum,
             "enum",
             (
-                "has choices ('Aaa', 'Bbb', 'Ccc'), which do not match "
-                "<enum 'BadEnum'>, which has ('Aaa', 'B', 'Ccc')"
+                "has choices ('Aaa', 'Bbb', 'Ccc'), but <enum 'BadEnum'> "
+                "requested ['Aaa', 'B', 'Ccc'] to be a subset of them"
             ),
         ),
         (
@@ -698,7 +690,7 @@ async def test_pva_ntdarray(ioc: IOC):
     put = np.array([1, 2, 3, 4, 5, 6], dtype=np.int64).reshape((2, 3))
     initial = np.zeros_like(put)
 
-    backend = await ioc.make_backend(Array1D[np.int64], "ntndarray")
+    backend = await ioc.make_backend(np.ndarray, "ntndarray")
 
     # Backdoor into the "raw" data underlying the NDArray in QSrv
     # not supporting direct writes to NDArray at the moment.
@@ -710,9 +702,8 @@ async def test_pva_ntdarray(ioc: IOC):
             assert {
                 "source": "test-source",
                 "dtype": "array",
-                "dtype_numpy": "",
+                "dtype_numpy": "<i8",
                 "shape": [2, 3],
-                "limits": ANY,
             } == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
@@ -725,18 +716,15 @@ async def test_writing_to_ndarray_raises_typeerror(ioc: IOC):
         # CA can't do ndarray
         return
 
-    backend = await ioc.make_backend(Array1D[np.int64], "ntndarray")
+    backend = await ioc.make_backend(np.ndarray, "ntndarray")
 
     with pytest.raises(TypeError):
         await backend.put(np.zeros((6,), dtype=np.int64))
 
 
 async def test_non_existent_errors(ioc: IOC):
-    backend = await ioc.make_backend(str, "non-existent", connect=False)
-    # Can't use asyncio.wait_for on python3.8 because of
-    # https://github.com/python/cpython/issues/84787
     with pytest.raises(NotConnected):
-        await backend.connect(timeout=0.1)
+        await ioc.make_backend(str, "non-existent", timeout=0.1)
 
 
 def test_make_backend_fails_for_different_transports():
@@ -754,29 +742,29 @@ def test_make_backend_fails_for_different_transports():
 
 def test_signal_helpers():
     read_write = epics_signal_rw(int, "ReadWrite")
-    assert read_write._backend.read_pv == "ReadWrite"
-    assert read_write._backend.write_pv == "ReadWrite"
+    assert read_write._connector.read_pv == "ReadWrite"
+    assert read_write._connector.write_pv == "ReadWrite"
 
     read_write_rbv_manual = epics_signal_rw(int, "ReadWrite_RBV", "ReadWrite")
-    assert read_write_rbv_manual._backend.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv_manual._backend.write_pv == "ReadWrite"
+    assert read_write_rbv_manual._connector.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv_manual._connector.write_pv == "ReadWrite"
 
     read_write_rbv = epics_signal_rw_rbv(int, "ReadWrite")
-    assert read_write_rbv._backend.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv._backend.write_pv == "ReadWrite"
+    assert read_write_rbv._connector.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv._connector.write_pv == "ReadWrite"
 
     read_write_rbv_suffix = epics_signal_rw_rbv(int, "ReadWrite", read_suffix=":RBV")
-    assert read_write_rbv_suffix._backend.read_pv == "ReadWrite:RBV"
-    assert read_write_rbv_suffix._backend.write_pv == "ReadWrite"
+    assert read_write_rbv_suffix._connector.read_pv == "ReadWrite:RBV"
+    assert read_write_rbv_suffix._connector.write_pv == "ReadWrite"
 
     read = epics_signal_r(int, "Read")
-    assert read._backend.read_pv == "Read"
+    assert read._connector.read_pv == "Read"
 
     write = epics_signal_w(int, "Write")
-    assert write._backend.write_pv == "Write"
+    assert write._connector.write_pv == "Write"
 
     execute = epics_signal_x("Execute")
-    assert execute._backend.write_pv == "Execute"
+    assert execute._connector.write_pv == "Execute"
 
 
 async def test_str_enum_returns_enum(ioc: IOC):
@@ -860,7 +848,6 @@ async def test_signal_returns_limits(ioc: IOC):
 async def test_signal_returns_partial_limits(ioc: IOC):
     await ioc.make_backend(int, "partialint")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:partialint"
-    not_set = 0 if ioc.protocol == "ca" else None
 
     expected_limits = Limits(
         # LOLO, HIHI
@@ -869,9 +856,10 @@ async def test_signal_returns_partial_limits(ioc: IOC):
         control=LimitsRange(low=10.0, high=90.0),
         # LOPR, HOPR
         display=LimitsRange(low=0.0, high=100.0),
-        # HSV, LSV not set.
-        warning=LimitsRange(low=not_set, high=not_set),
     )
+    if ioc.protocol == "ca":
+        # HSV, LSV not set, but still present for CA
+        expected_limits["warning"] = LimitsRange(low=0, high=0)
 
     sig = epics_signal_rw(int, pv_name)
     await sig.connect()
@@ -882,11 +870,8 @@ async def test_signal_returns_partial_limits(ioc: IOC):
 async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
     await ioc.make_backend(int, "lessint")
     pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:lessint"
-    not_set = 0 if ioc.protocol == "ca" else None
 
     expected_limits = Limits(
-        # HSV, LSV not set
-        alarm=LimitsRange(low=not_set, high=not_set),
         # control = display if DRVL, DRVH not set
         control=LimitsRange(low=0.0, high=100.0),
         # LOPR, HOPR
@@ -894,6 +879,9 @@ async def test_signal_returns_warning_and_partial_limits(ioc: IOC):
         # LOW, HIGH
         warning=LimitsRange(low=2.0, high=98.0),
     )
+    if ioc.protocol == "ca":
+        # HSV, LSV not set, but still present for CA
+        expected_limits["alarm"] = LimitsRange(low=0, high=0)
 
     sig = epics_signal_rw(int, pv_name)
     await sig.connect()
@@ -921,7 +909,7 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
     sig = epics_signal_rw(int, pv_name)
     with pytest.raises(
         TypeError,
-        match=f"{ioc.protocol}:float_prec_1 with inferred datatype <class 'float'> "
-        "cannot be coerced to <class 'int'>",
+        match=f"{ioc.protocol}:float_prec_1 with inferred datatype float"
+        ".* cannot be coerced to int",
     ):
         await sig.connect()

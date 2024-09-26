@@ -161,8 +161,7 @@ class StandardReadable(
         flattened_values = []
         for value in new_values:
             if isinstance(value, DeviceVector):
-                children = value.children()
-                flattened_values.extend([x[1] for x in children])
+                flattened_values.extend(value.children.values())
             else:
                 flattened_values.append(value)
 

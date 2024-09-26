@@ -28,21 +28,21 @@ class EpicsProtocol(Enum):
     PVA = "pva"
 
 
-_default_epics_protocol = EpicsProtocol.ca
+_default_epics_protocol = EpicsProtocol.CA
 
 try:
     from ._p4p import PvaSignalConnector
 except ImportError as pva_error:
     PvaSignalConnector = _make_unavailable_class(pva_error)
 else:
-    _default_epics_protocol = EpicsProtocol.pva
+    _default_epics_protocol = EpicsProtocol.PVA
 
 try:
     from ._aioca import CaSignalConnector
 except ImportError as ca_error:
     CaSignalConnector = _make_unavailable_class(ca_error)
 else:
-    _default_epics_protocol = EpicsProtocol.ca
+    _default_epics_protocol = EpicsProtocol.CA
 
 
 def _protocol_pv(pv: str) -> tuple[EpicsProtocol, str]:
@@ -50,7 +50,7 @@ def _protocol_pv(pv: str) -> tuple[EpicsProtocol, str]:
     if len(split) > 1:
         # We got something like pva://mydevice, so use specified comms mode
         scheme, pv = split
-        protocol = EpicsProtocol[scheme]
+        protocol = EpicsProtocol(scheme)
     else:
         # No comms mode specified, use the default
         protocol = _default_epics_protocol
@@ -65,9 +65,9 @@ def _epics_signal_connector(
     w_protocol, w_pv = _protocol_pv(write_pv)
     protocol = get_unique({read_pv: r_protocol, write_pv: w_protocol}, "protocols")
     match protocol:
-        case EpicsProtocol.ca:
+        case EpicsProtocol.CA:
             return CaSignalConnector(datatype, r_pv, w_pv)
-        case EpicsProtocol.pva:
+        case EpicsProtocol.PVA:
             return PvaSignalConnector(datatype, r_pv, w_pv)
 
 
