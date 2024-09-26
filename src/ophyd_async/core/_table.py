@@ -149,5 +149,5 @@ class Table(BaseModel):
     def __len__(self) -> int:
         return len(next(iter(self))[1])
 
-    def __getitem__(self) -> Any:
+    def __getitem__(self, items: Tuple[str, ...]) -> Any:
         raise NotImplementedError()

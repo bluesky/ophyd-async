@@ -51,7 +51,7 @@ class Device(HasName, Generic[DeviceConnectorType]):
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
     # The value of the mock arg to connect
-    _connect_mock: bool | None = None
+    _connected_in_mock_mode: bool | None = None
     # The connector to use
     _connector: DeviceConnectorType
 
