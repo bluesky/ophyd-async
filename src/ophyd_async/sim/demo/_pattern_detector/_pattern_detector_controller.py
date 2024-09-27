@@ -32,7 +32,9 @@ class PatternDetectorController(DetectorControl):
         assert self.period
         self.task = asyncio.create_task(
             self._coroutine_for_image_writing(
-                self._trigger_info.livetime, self.period, self._trigger_info.number
+                self._trigger_info.livetime,
+                self.period,
+                self._trigger_info.total_number_of_triggers,
             )
         )
 

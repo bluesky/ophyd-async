@@ -22,6 +22,7 @@ from ophyd_async.core import (
     TriggerLogic,
     observe_value,
 )
+from ophyd_async.core._signal import assert_emitted
 from ophyd_async.epics.signal import epics_signal_rw
 
 
@@ -138,22 +139,26 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     return (detector_1, detector_2)
 
 
+@pytest.mark.parametrize("number_of_frames", [[1, 1, 1, 1], [2, 3, 100, 3]])
 async def test_hardware_triggered_flyable(
-    RE: RunEngine, detectors: tuple[StandardDetector]
+    RE: RunEngine, detectors: tuple[StandardDetector], number_of_frames: list[int]
 ):
-    names = []
-    docs = []
+    docs = {}
 
     def append_and_print(name, doc):
-        names.append(name)
-        docs.append(doc)
+        if name not in docs:
+            docs[name] = []
+        docs[name] += [doc]
 
     RE.subscribe(append_and_print)
 
     trigger_logic = DummyTriggerLogic()
     flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
-        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+        number_of_triggers=number_of_frames,
+        trigger=DetectorTrigger.constant_gate,
+        deadtime=2,
+        livetime=2,
     )
 
     def flying_plan():
@@ -178,40 +183,44 @@ async def test_hardware_triggered_flyable(
 
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
+        frames_completed: int = 0
+        for frame in number_of_frames:
+            yield from bps.kickoff(flyer)
+            for detector in detectors:
+                yield from bps.kickoff(detector)
 
-        yield from bps.kickoff(flyer)
-        for detector in detectors:
-            yield from bps.kickoff(detector)
+            yield from bps.complete(flyer, wait=False, group="complete")
+            for detector in detectors:
+                yield from bps.complete(detector, wait=False, group="complete")
 
-        yield from bps.complete(flyer, wait=False, group="complete")
-        for detector in detectors:
-            yield from bps.complete(detector, wait=False, group="complete")
+            assert flyer._trigger_logic.state == TriggerState.null
 
-        assert flyer._trigger_logic.state == TriggerState.null
+            # Manually increment the index as if a frame was taken
+            frames_completed += frame
+            for detector in detectors:
+                yield from bps.abs_set(detector.writer.dummy_signal, frames_completed)
+                detector.writer.index = frames_completed
+                assert detector._frames_completed == frames_completed
+            done = False
+            while not done:
+                try:
+                    yield from bps.wait(group="complete", timeout=0.5)
+                except TimeoutError:
+                    pass
+                else:
+                    done = True
 
-        # Manually incremenet the index as if a frame was taken
-        for detector in detectors:
-            detector.writer.index += 1
-
-        done = False
-        while not done:
-            try:
-                yield from bps.wait(group="complete", timeout=0.5)
-            except TimeoutError:
-                pass
-            else:
-                done = True
-            yield from bps.collect(
-                *detectors,
-                return_payload=False,
-                name="main_stream",
-            )
-        yield from bps.wait(group="complete")
+                    yield from bps.collect(
+                        *detectors,
+                        return_payload=False,
+                        name="main_stream",
+                    )
+            yield from bps.wait(group="complete")
 
         for detector in detectors:
             # Since we set number of iterations to 1 (default),
             # make sure it gets reset on complete
-            assert detector._iterations_completed == 0
+            assert detector._frames_completed == 0
 
         yield from bps.close_run()
 
@@ -223,15 +232,35 @@ async def test_hardware_triggered_flyable(
     # fly scan
     RE(flying_plan())
 
-    assert names == [
-        "start",
-        "descriptor",
-        "stream_resource",
-        "stream_datum",
-        "stream_resource",
-        "stream_datum",
-        "stop",
-    ]
+    assert_emitted(
+        docs,
+        start=1,
+        descriptor=1,
+        stream_resource=2,
+        stream_datum=2 * len(number_of_frames),
+        stop=1,
+    )
+    # test stream datum
+    seq_numbers: list = []
+    frame_completed: int = 0
+    last_frame_collected: int = 0
+    for frame in number_of_frames:
+        frame_completed += frame
+        seq_numbers.extend([(last_frame_collected, frame_completed)] * 2)
+        last_frame_collected = frame_completed
+    for index, stream_datum in enumerate(docs["stream_datum"]):
+        assert stream_datum["descriptor"] == docs["descriptor"][0]["uid"]
+        assert stream_datum["seq_nums"] == {
+            "start": seq_numbers[index][0] + 1,
+            "stop": seq_numbers[index][1] + 1,
+        }
+        assert stream_datum["indices"] == {
+            "start": seq_numbers[index][0],
+            "stop": seq_numbers[index][1],
+        }
+        assert stream_datum["stream_resource"] in [
+            sd["uid"].split("/")[0] for sd in docs["stream_datum"]
+        ]
 
 
 async def test_hardware_triggered_flyable_too_many_kickoffs(
@@ -240,7 +269,10 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
     trigger_logic = DummyTriggerLogic()
     flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
-        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+        number_of_triggers=1,
+        trigger=DetectorTrigger.constant_gate,
+        deadtime=2,
+        livetime=2,
     )
 
     def flying_plan():
@@ -288,7 +320,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         for detector in detectors:
             # Since we set number of iterations to 1 (default),
             # make sure it gets reset on complete
-            assert detector._iterations_completed == 0
+            assert detector._frames_completed == 0
 
         yield from bps.close_run()
 
@@ -306,7 +338,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
     [
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": DetectorTrigger.constant_gate,
                 "deadtime": 2,
                 "livetime": 2,
@@ -317,7 +349,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         ),
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": "constant_gate",
                 "deadtime": 2,
                 "livetime": -1,
@@ -327,7 +359,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         ),
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": DetectorTrigger.internal,
                 "deadtime": 2,
                 "livetime": 1,
@@ -338,7 +370,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         ),
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": "not_in_enum",
                 "deadtime": 2,
                 "livetime": 1,
@@ -346,6 +378,27 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
             },
             "Input should be 'internal', 'edge_trigger', 'constant_gate' or "
             "'variable_gate' [type=enum, input_value='not_in_enum', input_type=str]",
+        ),
+        (
+            {
+                "number_of_triggers": -100,
+                "trigger": "constant_gate",
+                "deadtime": 2,
+                "livetime": 1,
+            },
+            "number_of_triggers.constrained-int\n  Input should be greater than or "
+            "equal to 0 [type=greater_than_equal, input_value=-100, input_type=int]",
+        ),
+        (
+            {
+                "number_of_triggers": [1, 1, 1, 1, -100],
+                "trigger": "constant_gate",
+                "deadtime": 2,
+                "livetime": 1,
+            },
+            "number_of_triggers.list[constrained-int].4\n"
+            "  Input should be greater than or equal to 0 [type=greater_than_equal,"
+            " input_value=-100, input_type=int]\n",
         ),
     ],
 )

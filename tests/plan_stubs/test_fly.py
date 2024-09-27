@@ -116,6 +116,7 @@ class MockDetector(StandardDetector):
     @WatchableAsyncStatus.wrap
     async def complete(self):
         assert self._trigger_info
+        assert self._fly_start
         self.writer.increment_index()
         async for index in self.writer.observe_indices_written(
             self._trigger_info.frame_timeout
@@ -129,12 +130,15 @@ class MockDetector(StandardDetector):
                 name=self.name,
                 current=index,
                 initial=self._initial_frame,
-                target=self._trigger_info.number,
+                target=self._trigger_info.number_of_triggers,
                 unit="",
                 precision=0,
                 time_elapsed=time.monotonic() - self._fly_start,
             )
-            if index >= self._trigger_info.number:
+            if (
+                isinstance(self._trigger_info.number_of_triggers, int)
+                and index >= self._trigger_info.number_of_triggers
+            ):
                 break
 
 

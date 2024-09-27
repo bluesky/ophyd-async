@@ -30,7 +30,7 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
     async def trigger_and_complete():
         await test_adaravis.controller.prepare(
             TriggerInfo(
-                number=1,
+                number_of_triggers=1,
                 trigger=DetectorTrigger.edge_trigger,
                 livetime=None,
                 deadtime=None,
@@ -151,7 +151,7 @@ async def test_unsupported_trigger_excepts(test_adaravis: adaravis.AravisDetecto
     ):
         await test_adaravis.prepare(
             TriggerInfo(
-                number=0,
+                number_of_triggers=0,
                 trigger=DetectorTrigger.variable_gate,
                 deadtime=1,
                 livetime=1,
