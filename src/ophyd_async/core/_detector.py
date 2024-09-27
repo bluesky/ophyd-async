@@ -18,7 +18,7 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import BaseModel, Field
 
-from ._device import Device
+from ._device import Device, DeviceConnectorType
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
@@ -145,7 +145,7 @@ class DetectorWriter(ABC):
 
 
 class StandardDetector(
-    Device,
+    Device[DeviceConnectorType],
     Stageable,
     AsyncConfigurable,
     AsyncReadable,
@@ -166,6 +166,7 @@ class StandardDetector(
         writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
+        connector: DeviceConnectorType | None = None,
     ) -> None:
         """
         Constructor
@@ -191,7 +192,7 @@ class StandardDetector(
         self._iterations_completed: int = 0
         self._initial_frame: int
         self._last_frame: int
-        super().__init__(name)
+        super().__init__(name=name, connector=connector)
 
     @property
     def controller(self) -> DetectorControl:

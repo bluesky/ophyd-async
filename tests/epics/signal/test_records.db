@@ -329,13 +329,31 @@ record(waveform, "$(P)ntndarray:data")
     })
 }
 
+record(waveform, "$(P)pvi_pv") {
+  field(NELM, "80")
+  field(FTVL, "CHAR")
+  field(INP, {const:"$(P)pvi"})
+  field(PINI, "YES")
+  field(DESC, "The records in this device")
+  info(Q:group,
+    {
+      "$(P)pvi": {
+        "+id": "epics:nt/NTPVI:1.0",
+        "display.description": {"+type": "plain", "+channel": "DESC"},
+        "": {"+type": "meta", "+channel": "VAL"}
+      }
+    }
+  )
+}
+
 record(ao, "$(P)width")
 {
     info(Q:group, {
         "$(P)pvi": {
-            "pvi.width.rw": {
+            "value.width.rw": {
                 "+channel": "NAME",
-                "+type": "plain"
+                "+type": "plain",
+                "+trigger": "value.width.rw"
             }
         }
     })
@@ -345,9 +363,10 @@ record(ao, "$(P)height")
 {
     info(Q:group, {
         "$(P)pvi": {
-            "pvi.height.rw": {
+            "value.height.rw": {
                 "+channel": "NAME",
-                "+type": "plain"
+                "+type": "plain",
+                "+trigger": "value.height.rw"
             }
         }
     })

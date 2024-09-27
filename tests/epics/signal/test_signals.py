@@ -20,7 +20,6 @@ from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import Reading
 from event_model import DataKey
 from event_model.documents.event_descriptor import Limits, LimitsRange
-from typing_extensions import TypedDict
 
 from ophyd_async.core import (
     Array1D,
@@ -31,6 +30,7 @@ from ophyd_async.core import (
     load_from_yaml,
     save_to_yaml,
 )
+from ophyd_async.core._table import Table
 from ophyd_async.core._utils import StrictEnum
 from ophyd_async.epics.signal import (
     epics_signal_r,
@@ -84,11 +84,13 @@ def ioc(request: pytest.FixtureRequest):
     )
 
     start_time = time.monotonic()
-    while "iocRun: All initialization complete" not in (
-        process.stdout.readline().strip()  # type: ignore
-    ):
+    line = ""
+    while "iocRun: All initialization complete" not in line:
+        if line:
+            print(line)
         if time.monotonic() - start_time > 10:
             raise TimeoutError("IOC did not start in time")
+        line = process.stdout.readline().strip()  # type: ignore
 
     yield IOC(process, protocol)
 
@@ -273,7 +275,7 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
                 int_str += "8"
             return int_str
         if "str" in suffix or "enum" in suffix:
-            return "|T16"
+            return "|S40"
 
     dtype = get_dtype(suffix)
     dtype_numpy = get_dtype_numpy(suffix)
@@ -588,11 +590,17 @@ async def test_backend_get_setpoint(ioc: IOC) -> None:
     assert await backend.get_setpoint() == MyEnum.c
 
 
-def approx_table(table):
-    return {k: pytest.approx(v) for k, v in table.items()}
+def approx_table(datatype: type[Table], table: Table):
+    new_table = datatype(**table.model_dump())
+    for k, v in new_table:
+        if datatype is Table:
+            setattr(new_table, k, pytest.approx(v))
+        else:
+            object.__setattr__(new_table, k, pytest.approx(v))
+    return new_table
 
 
-class MyTable(TypedDict):
+class MyTable(Table):
     bool: Array1D[np.bool_]
     int: Array1D[np.int32]
     float: Array1D[np.float64]
@@ -618,19 +626,6 @@ async def test_pva_table(ioc: IOC) -> None:
         str=["Hello", "Bat"],
         enum=[MyEnum.c, MyEnum.b],
     )
-    # TODO: what should this be for a variable length table?
-    datakey = {
-        "dtype": "object",
-        "shape": [],
-        "source": "test-source",
-        "dtype_numpy": "",
-        "limits": {
-            "alarm": {"high": None, "low": None},
-            "control": {"high": None, "low": None},
-            "display": {"high": None, "low": None},
-            "warning": {"high": None, "low": None},
-        },
-    }
     # Make and connect the backend
     for t, i, p in [(MyTable, initial, put), (None, put, initial)]:
         backend = await ioc.make_backend(t, "table")
@@ -638,12 +633,27 @@ async def test_pva_table(ioc: IOC) -> None:
         q = MonitorQueue(backend)
         try:
             # Check datakey
-            assert datakey == await backend.get_datakey("test-source")
+            dk = await backend.get_datakey("test-source")
+            expected_dk = {
+                "dtype": "array",
+                "shape": [len(i)],
+                "source": "test-source",
+                "dtype_numpy": [
+                    # natively bool fields are uint8, so if we don't provide a Table
+                    # subclass to specify bool, that is what we get
+                    ("bool", "|b1" if t else "|u1"),
+                    ("int", "<i4"),
+                    ("float", "<f8"),
+                    ("str", "|S40"),
+                    ("enum", "|S40"),
+                ],
+            }
+            assert expected_dk == dk
             # Check initial value
-            await q.assert_updates(approx_table(i))
+            await q.assert_updates(approx_table(t or Table, i))
             # Put to new value and check that
             await backend.put(p)
-            await q.assert_updates(approx_table(p))
+            await q.assert_updates(approx_table(t or Table, p))
         finally:
             q.close()
 
@@ -653,26 +663,23 @@ async def test_pvi_structure(ioc: IOC) -> None:
         # CA can't do structure
         return
     # Make and connect the backend
-    backend = await ioc.make_backend(dict[str, Any], "pvi")
+    backend = await ioc.make_backend(dict, "pvi")
 
     # Make a monitor queue that will monitor for updates
     q = MonitorQueue(backend)
 
     expected = {
-        "pvi": {
-            "width": {
-                "rw": f"{PV_PREFIX}:{ioc.protocol}:width",
-            },
-            "height": {
-                "rw": f"{PV_PREFIX}:{ioc.protocol}:height",
-            },
+        "width": {
+            "rw": f"{PV_PREFIX}:{ioc.protocol}:width",
         },
-        "record": ANY,
+        "height": {
+            "rw": f"{PV_PREFIX}:{ioc.protocol}:height",
+        },
     }
 
     try:
         # Check datakey
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(TypeError):
             await backend.get_datakey("")
         # Check initial value
         await q.assert_updates(expected)
@@ -742,29 +749,29 @@ def test_make_backend_fails_for_different_transports():
 
 def test_signal_helpers():
     read_write = epics_signal_rw(int, "ReadWrite")
-    assert read_write._connector.read_pv == "ReadWrite"
-    assert read_write._connector.write_pv == "ReadWrite"
+    assert read_write.connect.read_pv == "ReadWrite"
+    assert read_write.connect.write_pv == "ReadWrite"
 
     read_write_rbv_manual = epics_signal_rw(int, "ReadWrite_RBV", "ReadWrite")
-    assert read_write_rbv_manual._connector.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv_manual._connector.write_pv == "ReadWrite"
+    assert read_write_rbv_manual.connect.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv_manual.connect.write_pv == "ReadWrite"
 
     read_write_rbv = epics_signal_rw_rbv(int, "ReadWrite")
-    assert read_write_rbv._connector.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv._connector.write_pv == "ReadWrite"
+    assert read_write_rbv.connect.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv.connect.write_pv == "ReadWrite"
 
     read_write_rbv_suffix = epics_signal_rw_rbv(int, "ReadWrite", read_suffix=":RBV")
-    assert read_write_rbv_suffix._connector.read_pv == "ReadWrite:RBV"
-    assert read_write_rbv_suffix._connector.write_pv == "ReadWrite"
+    assert read_write_rbv_suffix.connect.read_pv == "ReadWrite:RBV"
+    assert read_write_rbv_suffix.connect.write_pv == "ReadWrite"
 
     read = epics_signal_r(int, "Read")
-    assert read._connector.read_pv == "Read"
+    assert read.connect.read_pv == "Read"
 
     write = epics_signal_w(int, "Write")
-    assert write._connector.write_pv == "Write"
+    assert write.connect.write_pv == "Write"
 
     execute = epics_signal_x("Execute")
-    assert execute._connector.write_pv == "Execute"
+    assert execute.connect.write_pv == "Execute"
 
 
 async def test_str_enum_returns_enum(ioc: IOC):

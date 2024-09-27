@@ -10,9 +10,9 @@ from typing import Any, Generic, get_origin
 from unittest.mock import AsyncMock
 
 import numpy as np
+from bluesky.protocols import Reading
 from event_model import DataKey
 
-from ._protocol import Reading
 from ._signal_backend import (
     Array1D,
     EnumT,

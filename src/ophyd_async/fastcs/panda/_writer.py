@@ -25,13 +25,11 @@ class PandaHDFWriter(DetectorWriter):
 
     def __init__(
         self,
-        prefix: str,
         path_provider: PathProvider,
         name_provider: NameProvider,
         panda_data_block: DataBlock,
     ) -> None:
         self.panda_data_block = panda_data_block
-        self._prefix = prefix
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._datasets: list[HDFDataset] = []

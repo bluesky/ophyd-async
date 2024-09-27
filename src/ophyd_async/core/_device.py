@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from abc import abstractmethod
-from collections.abc import Callable, Coroutine, Iterator, Mapping
+from collections.abc import Coroutine, Iterator, Mapping
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
 from typing import Any, Generic, TypeVar, cast
@@ -15,6 +15,47 @@ from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
 class DeviceConnector:
+    # None if connect hasn't started, a Task if it has
+    _task: asyncio.Task | None = None
+    # The value of the mock arg to connect
+    in_mock_mode: bool | None = None
+
+    async def __call__(
+        self,
+        mock: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+    ):
+        """Connect self and all child Devices.
+
+        Contains a timeout that gets propagated to child.connect methods.
+
+        Parameters
+        ----------
+        mock:
+            If True then use ``MockSignalBackend`` for all Signals
+        timeout:
+            Time to wait before failing with a TimeoutError.
+        """
+
+        # If previous connect with same args has started and not errored, can use it
+        can_use_previous_connect = (
+            mock is self.in_mock_mode
+            and self._task
+            and not (self._task.done() and self._task.exception())
+        )
+        if force_reconnect or not can_use_previous_connect:
+            # Use the connector to make a new connection
+            self.in_mock_mode = mock
+            self._task = asyncio.create_task(
+                self.connect(
+                    mock=mock, timeout=timeout, force_reconnect=force_reconnect
+                )
+            )
+        assert self._task, "Connect task not created, this shouldn't happen"
+        # Wait for it to complete
+        await self._task
+
     # TODO: we will add some mechanism of invalidating the cache here later
     @abstractmethod
     async def connect(
@@ -23,15 +64,15 @@ class DeviceConnector:
 
 
 class DeviceChildConnector(DeviceConnector):
-    def __init__(self, children: Callable[[], dict[str, Device]]):
-        self._children = children
+    def __init__(self, device: Device):
+        self._device = device
 
     async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
         coros = {
             name: child_device.connect(
                 mock=mock, timeout=timeout, force_reconnect=force_reconnect
             )
-            for name, child_device in self._children().items()
+            for name, child_device in self._device.children.items()
         }
         await wait_for_connection(**coros)
 
@@ -48,12 +89,8 @@ class Device(HasName, Generic[DeviceConnectorType]):
     _name: str = ""
     #: The parent Device if it exists
     parent: Device | None = None
-    # None if connect hasn't started, a Task if it has
-    _connect_task: asyncio.Task | None = None
-    # The value of the mock arg to connect
-    _connected_in_mock_mode: bool | None = None
     # The connector to use
-    _connector: DeviceConnectorType
+    connect: DeviceConnectorType
 
     def __init__(
         self,
@@ -63,10 +100,8 @@ class Device(HasName, Generic[DeviceConnectorType]):
         if connector is None:
             # TODO: this is ugly, maybe we remove the option to pass None as the
             # connector so this goes away?
-            connector = cast(
-                DeviceConnectorType, DeviceChildConnector(lambda: self.children)
-            )
-        self._connector = connector
+            connector = cast(DeviceConnectorType, DeviceChildConnector(self))
+        self.connect = connector
         self.set_name(name)
 
     @property
@@ -107,42 +142,6 @@ class Device(HasName, Generic[DeviceConnectorType]):
             child.set_name(child_name)
             child.parent = self
 
-    async def connect(
-        self,
-        mock: bool = False,
-        timeout: float = DEFAULT_TIMEOUT,
-        force_reconnect: bool = False,
-    ):
-        """Connect self and all child Devices.
-
-        Contains a timeout that gets propagated to child.connect methods.
-
-        Parameters
-        ----------
-        mock:
-            If True then use ``MockSignalBackend`` for all Signals
-        timeout:
-            Time to wait before failing with a TimeoutError.
-        """
-
-        # If previous connect with same args has started and not errored, can use it
-        can_use_previous_connect = (
-            mock is self._connected_in_mock_mode
-            and self._connect_task
-            and not (self._connect_task.done() and self._connect_task.exception())
-        )
-        if force_reconnect or not can_use_previous_connect:
-            # Use the connector to make a new connection
-            self._connected_in_mock_mode = mock
-            self._connect_task = asyncio.create_task(
-                self._connector.connect(
-                    mock=mock, timeout=timeout, force_reconnect=force_reconnect
-                )
-            )
-        assert self._connect_task, "Connect task not created, this shouldn't happen"
-        # Wait for it to complete
-        await self._connect_task
-
 
 DeviceType = TypeVar("DeviceType", bound=Device)
 
@@ -158,7 +157,7 @@ class DeviceVector(Mapping[int, DeviceType], Device):
 
     def __init__(
         self,
-        children: dict[int, DeviceType],
+        children: Mapping[int, DeviceType],
         name: str = "",
     ) -> None:
         self._children = children

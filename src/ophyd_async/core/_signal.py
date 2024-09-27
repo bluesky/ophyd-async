@@ -24,7 +24,12 @@ from ._signal_backend import (
 )
 from ._soft_signal_backend import SoftSignalConnector
 from ._status import AsyncStatus
-from ._utils import CALCULATE_TIMEOUT, DEFAULT_TIMEOUT, CalculatableTimeout, Callback
+from ._utils import (
+    CALCULATE_TIMEOUT,
+    DEFAULT_TIMEOUT,
+    CalculatableTimeout,
+    Callback,
+)
 
 
 def _add_timeout(func):
@@ -50,8 +55,8 @@ class Signal(Device[SignalConnector[SignalDatatypeT]]):
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
-        source = self._connector.source(self.name)
-        if self._connected_in_mock_mode:
+        source = self.connect.source(self.name)
+        if self.connect.in_mock_mode:
             return f"mock+{source}"
         else:
             return source
@@ -133,11 +138,11 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
             assert self._cache, f"{self.source} not being monitored"
             return self._cache
         else:
-            return self._connector.backend
+            return self.connect.backend
 
     def _get_cache(self) -> _SignalCache:
         if not self._cache:
-            self._cache = _SignalCache(self._connector.backend, self)
+            self._cache = _SignalCache(self.connect.backend, self)
         return self._cache
 
     def _del_cache(self, needed: bool):
@@ -153,7 +158,7 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
     @_add_timeout
     async def describe(self) -> dict[str, DataKey]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._connector.backend.get_datakey(self.source)}
+        return {self.name: await self.connect.backend.get_datakey(self.source)}
 
     @_add_timeout
     async def get_value(self, cached: bool | None = None) -> SignalDatatypeT:
@@ -199,7 +204,7 @@ class SignalW(Signal[SignalDatatypeT], Movable):
         if timeout is CALCULATE_TIMEOUT:
             timeout = self._timeout
         self.log.debug(f"Putting value {value} to backend at source {self.source}")
-        await self._connector.backend.put(value, wait=wait, timeout=timeout)
+        await self.connect.backend.put(value, wait=wait, timeout=timeout)
         self.log.debug(
             f"Successfully put value {value} to backend at source {self.source}"
         )
@@ -211,7 +216,7 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
     async def locate(self) -> Location:
         """Return the setpoint and readback."""
         setpoint, readback = asyncio.gather(
-            self._connector.backend.get_setpoint(), self.get_value()
+            self.connect.backend.get_setpoint(), self.get_value()
         )
         return Location(setpoint=setpoint, readback=readback)
 
@@ -227,7 +232,7 @@ class SignalX(Signal):
         if timeout is CALCULATE_TIMEOUT:
             timeout = self._timeout
         self.log.debug(f"Putting default value to backend at source {self.source}")
-        await self._connector.backend.put(None, wait=wait, timeout=timeout)
+        await self.connect.backend.put(None, wait=wait, timeout=timeout)
         self.log.debug(
             f"Successfully put default value to backend at source {self.source}"
         )

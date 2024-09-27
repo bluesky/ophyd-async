@@ -5,7 +5,7 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
+from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
 
 import numpy as np
 from pydantic import BaseModel
@@ -172,6 +172,16 @@ def get_unique(values: dict[str, T], types: str) -> T:
         diffs = ", ".join(f"{k} has {v}" for k, v in values.items())
         raise TypeError(f"Differing {types}: {diffs}")
     return set_values.pop()
+
+
+def get_ultimate_origin(annotatation: Any) -> type:
+    while True:
+        origin = get_origin(annotatation)
+        if origin:
+            annotatation = origin
+        else:
+            assert issubclass(origin, type), f"{origin} is not a type"
+            return origin
 
 
 async def merge_gathered_dicts(

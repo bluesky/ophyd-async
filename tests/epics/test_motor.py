@@ -9,14 +9,13 @@ from ophyd_async.core import (
     CALCULATE_TIMEOUT,
     AsyncStatus,
     DeviceCollector,
-    MockSignalBackend,
-    SignalRW,
     callback_on_mock_put,
     mock_puts_blocked,
     observe_value,
     set_mock_put_proceeds,
     set_mock_value,
 )
+from ophyd_async.core._signal import soft_signal_rw
 from ophyd_async.epics import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
@@ -278,7 +277,8 @@ async def test_prepare(
     set_mock_value(sim_motor.low_limit_travel, -10)
     set_mock_value(sim_motor.high_limit_travel, 20)
     set_mock_value(sim_motor.max_velocity, 10)
-    fake_set_signal = SignalRW(MockSignalBackend(float))
+    fake_set_signal = soft_signal_rw(float)
+    await fake_set_signal.connect()
 
     async def wait_for_set(_):
         async for value in observe_value(fake_set_signal, timeout=1):

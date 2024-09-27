@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import atexit
 import logging
-import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from math import isnan, nan
@@ -149,47 +148,21 @@ class PvaEnumBoolConverter(PvaConverter[bool]):
 
 
 class PvaTableConverter(PvaConverter[Table]):
-    def value(self, value):
-        return value["value"].todict()
+    def value(self, value) -> Table:
+        return self.datatype(**value["value"].todict())
 
-
-class PvaPydanticModelConverter(PvaConverter):
-    def __init__(self, datatype: BaseModel):
-        self.datatype = datatype
-
-    def value(self, value: Value):
-        return self.datatype(**value.todict())  # type: ignore
-
-    def write_value(self, value: BaseModel | dict[str, Any]):
-        if isinstance(value, self.datatype):  # type: ignore
-            return value.model_dump(mode="python")  # type: ignore
+    def write_value(self, value: BaseModel | dict[str, Any]) -> Any:
+        if isinstance(value, self.datatype):
+            return value.model_dump(mode="python")
         return value
 
 
-class PvaDictConverter(PvaConverter):
-    def reading(self, value) -> Reading:
-        ts = time.time()
-        value = value.todict()
-        # Alarm severity is vacuously 0 for a table
-        return {"value": value, "timestamp": ts, "alarm_severity": 0}
-
+class PvaPviConverter(PvaConverter):
     def value(self, value: Value):
-        return value.todict()
+        return value["value"].todict()
 
-    def get_datakey(self, source: str, value) -> DataKey:
-        raise NotImplementedError("Describing Dict signals not currently supported")
-
-    def metadata_fields(self) -> list[str]:
-        """
-        Fields to request from PVA for metadata.
-        """
-        return []
-
-    def value_fields(self) -> list[str]:
-        """
-        Fields to request from PVA for the value.
-        """
-        return []
+    def write_value(self, value: Any) -> Any:
+        raise TypeError("Writing to PVI structure not supported")
 
 
 # https://mdavidsaver.github.io/p4p/values.html
@@ -223,6 +196,7 @@ _datatype_converter_from_typeid: dict[
     ("epics:nt/NTScalarArray:1.0", "as"): (Sequence[str], PvaConverter),
     ("epics:nt/NTTable:1.0", "S"): (Table, PvaTableConverter),
     ("epics:nt/NTNDArray:1.0", "v"): (np.ndarray, PvaNDArrayConverter),
+    ("epics:nt/NTPVI:1.0", "S"): (dict, PvaPviConverter),
 }
 
 
@@ -273,6 +247,9 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
     ):
         # Allow int signals to represent float records when prec is 0
         return PvaConverter(int)
+    elif inferred_datatype is Table and datatype and issubclass(datatype, Table):
+        # Use a custom table class
+        return PvaTableConverter(datatype)
     elif datatype in (None, inferred_datatype):
         # If datatype matches what we are given then allow it and use inferred converter
         return converter_cls(inferred_datatype)
@@ -388,6 +365,14 @@ class PvaSignalBackend(SignalBackend[SignalDatatypeT]):
             self.subscription = None
 
 
+async def pvget_with_timeout(pv: str, timeout: float) -> Any:
+    try:
+        return await asyncio.wait_for(context().get(pv), timeout=timeout)
+    except asyncio.TimeoutError as exc:
+        logging.debug(f"signal pva://{pv} timed out", exc_info=True)
+        raise NotConnected(f"pva://{pv}") from exc
+
+
 @dataclass
 class PvaSignalConnector(SignalConnector[SignalDatatypeT]):
     datatype: type[SignalDatatypeT] | None
@@ -404,13 +389,7 @@ class PvaSignalConnector(SignalConnector[SignalDatatypeT]):
         initial_values: dict[str, Any] = {}
 
         async def store_initial_value(pv: str):
-            try:
-                initial_values[pv] = await asyncio.wait_for(
-                    context().get(pv), timeout=timeout
-                )
-            except asyncio.TimeoutError as exc:
-                logging.debug(f"signal pva://{pv} timed out", exc_info=True)
-                raise NotConnected(f"pva://{pv}") from exc
+            initial_values[pv] = await pvget_with_timeout(pv, timeout)
 
         if self.read_pv != self.write_pv:
             # Different, need to connect both

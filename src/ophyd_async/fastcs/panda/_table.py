@@ -1,13 +1,9 @@
 from collections.abc import Sequence
-from typing import Annotated
 
 import numpy as np
-import numpy.typing as npt
-from pydantic import Field, model_validator
-from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
-from typing_extensions import TypedDict
+from pydantic import model_validator
 
-from ophyd_async.core import StrictEnum, Table
+from ophyd_async.core import Array1D, StrictEnum, Table
 
 
 class PandaHdf5DatasetType(StrictEnum):
@@ -15,8 +11,8 @@ class PandaHdf5DatasetType(StrictEnum):
     UINT_32 = "uint32"
 
 
-class DatasetTable(TypedDict):
-    name: npt.NDArray[np.str_]
+class DatasetTable(Table):
+    name: Sequence[str]
     hdf5_type: Sequence[PandaHdf5DatasetType]
 
 
@@ -36,41 +32,24 @@ class SeqTrigger(StrictEnum):
     POSC_LT = "POSC<=POSITION"
 
 
-PydanticNp1DArrayInt32 = Annotated[
-    np.ndarray[tuple[int], np.dtype[np.int32]],
-    NpArrayPydanticAnnotation.factory(
-        data_type=np.int32, dimensions=1, strict_data_typing=False
-    ),
-    Field(default_factory=lambda: np.array([], np.int32)),
-]
-PydanticNp1DArrayBool = Annotated[
-    np.ndarray[tuple[int], np.dtype[np.bool_]],
-    NpArrayPydanticAnnotation.factory(
-        data_type=np.bool_, dimensions=1, strict_data_typing=False
-    ),
-    Field(default_factory=lambda: np.array([], dtype=np.bool_)),
-]
-TriggerStr = Annotated[Sequence[SeqTrigger], Field(default_factory=list)]
-
-
 class SeqTable(Table):
-    repeats: PydanticNp1DArrayInt32
-    trigger: TriggerStr
-    position: PydanticNp1DArrayInt32
-    time1: PydanticNp1DArrayInt32
-    outa1: PydanticNp1DArrayBool
-    outb1: PydanticNp1DArrayBool
-    outc1: PydanticNp1DArrayBool
-    outd1: PydanticNp1DArrayBool
-    oute1: PydanticNp1DArrayBool
-    outf1: PydanticNp1DArrayBool
-    time2: PydanticNp1DArrayInt32
-    outa2: PydanticNp1DArrayBool
-    outb2: PydanticNp1DArrayBool
-    outc2: PydanticNp1DArrayBool
-    outd2: PydanticNp1DArrayBool
-    oute2: PydanticNp1DArrayBool
-    outf2: PydanticNp1DArrayBool
+    repeats: Array1D[np.int32]
+    trigger: Sequence[SeqTrigger]
+    position: Array1D[np.int32]
+    time1: Array1D[np.int32]
+    outa1: Array1D[np.bool_]
+    outb1: Array1D[np.bool_]
+    outc1: Array1D[np.bool_]
+    outd1: Array1D[np.bool_]
+    oute1: Array1D[np.bool_]
+    outf1: Array1D[np.bool_]
+    time2: Array1D[np.int32]
+    outa2: Array1D[np.bool_]
+    outb2: Array1D[np.bool_]
+    outc2: Array1D[np.bool_]
+    outd2: Array1D[np.bool_]
+    oute2: Array1D[np.bool_]
+    outf2: Array1D[np.bool_]
 
     @classmethod
     def row(  # type: ignore
@@ -103,6 +82,6 @@ class SeqTable(Table):
         the pydantic field doesn't work
         """
 
-        first_length = len(next(iter(self))[1])
-        assert 0 <= first_length < 4096, f"Length {first_length} not in range."
+        first_length = len(self)
+        assert first_length <= 4096, f"Length {first_length} is too long"
         return self

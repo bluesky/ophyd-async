@@ -36,7 +36,7 @@ class PcompDirectionOptions(StrictEnum):
     either = "Either"
 
 
-class EnableDisableOptions(SubsetEnum):
+class BitMux(SubsetEnum):
     zero = "ZERO"
     one = "ONE"
 
@@ -44,7 +44,7 @@ class EnableDisableOptions(SubsetEnum):
 class PcompBlock(Device):
     active: SignalR[bool]
     dir: SignalRW[PcompDirectionOptions]
-    enable: SignalRW[EnableDisableOptions]
+    enable: SignalRW[BitMux]
     pulses: SignalRW[int]
     start: SignalRW[int]
     step: SignalRW[int]
@@ -64,7 +64,7 @@ class SeqBlock(Device):
     repeats: SignalRW[int]
     prescale: SignalRW[float]
     prescale_units: SignalRW[TimeUnits]
-    enable: SignalRW[EnableDisableOptions]
+    enable: SignalRW[BitMux]
 
 
 class PcapBlock(Device):

@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 
-from ._block import PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
+from ._block import BitMux, PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
 from ._table import SeqTable
 
 
@@ -21,7 +21,7 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
     async def prepare(self, value: SeqTableInfo):
         await asyncio.gather(
             self.seq.prescale_units.set(TimeUnits.us),
-            self.seq.enable.set("ZERO"),
+            self.seq.enable.set(BitMux.zero),
         )
         await asyncio.gather(
             self.seq.prescale.set(value.prescale_as_us),
@@ -30,14 +30,14 @@ class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
         )
 
     async def kickoff(self) -> None:
-        await self.seq.enable.set("ONE")
+        await self.seq.enable.set(BitMux.one)
         await wait_for_value(self.seq.active, True, timeout=1)
 
     async def complete(self) -> None:
         await wait_for_value(self.seq.active, False, timeout=None)
 
     async def stop(self):
-        await self.seq.enable.set("ZERO")
+        await self.seq.enable.set(BitMux.zero)
         await wait_for_value(self.seq.active, False, timeout=1)
 
 
@@ -68,7 +68,7 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
         self.pcomp = pcomp
 
     async def prepare(self, value: PcompInfo):
-        await self.pcomp.enable.set("ZERO")
+        await self.pcomp.enable.set(BitMux.zero)
         await asyncio.gather(
             self.pcomp.start.set(value.start_postion),
             self.pcomp.width.set(value.pulse_width),
@@ -78,12 +78,12 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
         )
 
     async def kickoff(self) -> None:
-        await self.pcomp.enable.set("ONE")
+        await self.pcomp.enable.set(BitMux.one)
         await wait_for_value(self.pcomp.active, True, timeout=1)
 
     async def complete(self, timeout: float | None = None) -> None:
         await wait_for_value(self.pcomp.active, False, timeout=timeout)
 
     async def stop(self):
-        await self.pcomp.enable.set("ZERO")
+        await self.pcomp.enable.set(BitMux.zero)
         await wait_for_value(self.pcomp.active, False, timeout=1)

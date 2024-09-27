@@ -1,8 +1,12 @@
-from enum import Enum
-from typing import Any, TypeVar, get_args, get_origin
+from __future__ import annotations
+
+from typing import Annotated, TypeVar, get_origin
 
 import numpy as np
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
+
+from ophyd_async.core._utils import get_dtype
 
 TableSubclass = TypeVar("TableSubclass", bound="Table")
 
@@ -17,7 +21,27 @@ def _concat(value1, value2):
 class Table(BaseModel):
     """An abstraction of a Table of str to numpy array."""
 
-    model_config = ConfigDict(validate_assignment=True, strict=False)
+    # Allow extra so we can use this as a generic Table
+    model_config = ConfigDict(extra="allow")
+
+    @classmethod
+    def __init_subclass__(cls):
+        # But forbit extra in subclasses so it gets validated
+        cls.model_config = ConfigDict(validate_assignment=True, extra="forbid")
+        # Change fields to have the correct annotations
+        for k, anno in cls.__annotations__.items():
+            if get_origin(anno) is np.ndarray:
+                dtype = get_dtype(anno)
+                new_anno = Annotated[
+                    anno,
+                    NpArrayPydanticAnnotation.factory(
+                        data_type=dtype.type, dimensions=1, strict_data_typing=False
+                    ),
+                    Field(
+                        default_factory=lambda dtype=dtype: np.array([], dtype=dtype)
+                    ),
+                ]
+                cls.__annotations__[k] = new_anno
 
     @staticmethod
     def row(cls: type[TableSubclass], **kwargs) -> TableSubclass:  # type: ignore
@@ -34,11 +58,11 @@ class Table(BaseModel):
                 arrayified_kwargs[field_name] = np.array(
                     [value], dtype=default_array.dtype
                 )
-            elif issubclass(type(value), Enum) and isinstance(value, str):
+            elif isinstance(value, str):  # Also covers SubsetEnum
                 arrayified_kwargs[field_name] = [value]
             else:
                 raise TypeError(
-                    "Row column should be numpy arrays or sequence of string `Enum`."
+                    "Row column should be numpy arrays or sequence of str | SubsetEnum."
                 )
         if kwargs:
             raise TypeError(
@@ -64,90 +88,44 @@ class Table(BaseModel):
             }
         )
 
-    @classmethod
-    def numpy_dtype(cls) -> np.dtype:
-        dtype = []
-        for field_name, field_value in cls.model_fields.items():
-            if np.ndarray in (
-                get_origin(field_value.annotation),
-                field_value.annotation,
-            ):
-                dtype.append((field_name, getattr(cls, field_name).dtype))
-            else:
-                enum_type = get_args(field_value.annotation)[0]
-                assert issubclass(enum_type, Enum)
-                enum_values = [element.value for element in enum_type]
-                max_length_in_enum = max(len(value) for value in enum_values)
-                dtype.append((field_name, np.dtype(f"<U{max_length_in_enum}")))
+    def __eq__(self, value: object) -> bool:
+        return super().__eq__(value)
 
+    def numpy_dtype(self) -> np.dtype:
+        dtype = []
+        for k, v in self:
+            if isinstance(v, np.ndarray):
+                dtype.append((k, v.dtype))
+            else:
+                # TODO: use np.dtypes.StringDType when we can use in structured arrays
+                # https://github.com/numpy/numpy/issues/25693
+                dtype.append((k, np.dtype("S40")))
         return np.dtype(dtype)
 
-    def numpy_table(self):
-        # It would be nice to be able to use np.transpose for this,
-        # but it defaults to the largest dtype for everything.
-        dtype = self.numpy_dtype()
-        transposed_list = [
-            np.array(tuple(row), dtype=dtype)
-            for row in zip(*self.numpy_columns(), strict=False)
-        ]
-        transposed = np.array(transposed_list, dtype=dtype)
-        return transposed
-
-    def numpy_columns(self) -> list[np.ndarray]:
-        """Columns in the table can be lists of string enums or numpy arrays.
-
-        This method returns the columns, converting the string enums to numpy arrays.
-        """
-
-        columns = []
-        for field_name, field_value in self.model_fields.items():
-            if np.ndarray in (
-                get_origin(field_value.annotation),
-                field_value.annotation,
-            ):
-                columns.append(getattr(self, field_name))
-            else:
-                enum_type = get_args(field_value.annotation)[0]
-                assert issubclass(enum_type, Enum)
-                enum_values = [element.value for element in enum_type]
-                max_length_in_enum = max(len(value) for value in enum_values)
-                dtype = np.dtype(f"<U{max_length_in_enum}")
-
-                columns.append(
-                    np.array(
-                        [enum.value for enum in getattr(self, field_name)], dtype=dtype
-                    )
-                )
-
-        return columns
+    def numpy_table(self, selection: slice | None = None) -> np.ndarray:
+        array = None
+        for k, v in self:
+            if selection:
+                v = v[selection]
+            if array is None:
+                array = np.empty(v.shape, dtype=self.numpy_dtype(self))
+            array[k] = v
+        assert array
+        return array
 
     @model_validator(mode="after")
-    def validate_arrays(self) -> "Table":
-        first_length = len(next(iter(self))[1])
+    def validate_arrays(self) -> Table:
+        first_length = len(self)
         assert all(
             len(field_value) == first_length for _, field_value in self
         ), "Rows should all be of equal size."
-
-        if not all(
-            # Checks if the values are numpy subtypes if the array is a numpy array,
-            # or if the value is a string enum.
-            np.issubdtype(getattr(self, field_name).dtype, default_array.dtype)
-            if isinstance(
-                default_array := self.model_fields[field_name].default_factory(),  # type: ignore
-                np.ndarray,
-            )
-            else issubclass(get_args(field_value.annotation)[0], Enum)
-            for field_name, field_value in self.model_fields.items()
-        ):
-            raise ValueError(
-                f"Cannot construct a `{type(self).__name__}`, "
-                "some rows have incorrect types."
-            )
-
         return self
 
     def __len__(self) -> int:
         return len(next(iter(self))[1])
 
-    def __getitem__(self, items: tuple[str, ...]) -> Any:
-        raise NotImplementedError()
+    def __getitem__(self, item: int | slice) -> np.ndarray:
+        if isinstance(item, int):
+            return self.numpy_table(slice(item, item + 1))
+        else:
+            return self.numpy_table(item)

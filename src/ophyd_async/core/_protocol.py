@@ -10,22 +10,11 @@ from typing import (
     runtime_checkable,
 )
 
-from bluesky.protocols import HasName, ReadingOptional
+from bluesky.protocols import HasName, Reading
 from event_model import DataKey
-
-from ._utils import T
 
 if TYPE_CHECKING:
     from ._status import AsyncStatus
-
-
-class Reading(ReadingOptional, Generic[T]):
-    """A dictionary containing the value and timestamp of a piece of scan data"""
-
-    #: The current value, as a JSON encodable type or numpy array
-    value: T
-    #: Timestamp in seconds since the UNIX epoch
-    timestamp: float
 
 
 @runtime_checkable
