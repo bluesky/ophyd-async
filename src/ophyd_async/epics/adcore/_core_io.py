@@ -1,6 +1,4 @@
-from enum import Enum
-
-from ophyd_async.core import Device
+from ophyd_async.core import Device, StrictEnum
 from ophyd_async.epics.signal import (
     epics_signal_r,
     epics_signal_rw,
@@ -10,7 +8,7 @@ from ophyd_async.epics.signal import (
 from ._utils import ADBaseDataType, FileWriteMode, ImageMode
 
 
-class Callback(str, Enum):
+class Callback(StrictEnum):
     Enable = "Enable"
     Disable = "Disable"
 
@@ -68,7 +66,7 @@ class NDPluginStatsIO(NDPluginBaseIO):
         super().__init__(prefix, name)
 
 
-class DetectorState(str, Enum):
+class DetectorState(StrictEnum):
     """
     Default set of states of an AreaDetector driver.
     See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore
@@ -100,7 +98,7 @@ class ADBaseIO(NDArrayBaseIO):
         super().__init__(prefix, name=name)
 
 
-class Compression(str, Enum):
+class Compression(StrictEnum):
     none = "None"
     nbit = "N-bit"
     szip = "szip"

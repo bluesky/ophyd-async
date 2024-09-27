@@ -1,6 +1,5 @@
 import time
 from collections.abc import AsyncGenerator, AsyncIterator, Sequence
-from enum import Enum
 from typing import Any
 from unittest.mock import Mock
 
@@ -18,6 +17,7 @@ from ophyd_async.core import (
     DetectorWriter,
     StandardDetector,
     StandardFlyer,
+    StrictEnum,
     TriggerInfo,
     TriggerLogic,
     observe_value,
@@ -25,7 +25,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.signal import epics_signal_rw
 
 
-class TriggerState(str, Enum):
+class TriggerState(StrictEnum):
     null = "null"
     preparing = "preparing"
     starting = "starting"

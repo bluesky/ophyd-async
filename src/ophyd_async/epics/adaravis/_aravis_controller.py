@@ -69,7 +69,7 @@ class AravisController(DetectorControl):
                 f"use {trigger}"
             )
         if trigger == DetectorTrigger.internal:
-            return AravisTriggerMode.off, "Freerun"
+            return AravisTriggerMode.off, AravisTriggerSource.freerun
         else:
             return (AravisTriggerMode.on, f"Line{self.gpio_number}")  # type: ignore
 

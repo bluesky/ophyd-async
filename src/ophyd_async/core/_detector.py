@@ -4,10 +4,6 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Sequence
-from enum import Enum
-from typing import (
-    Generic,
-)
 
 from bluesky.protocols import (
     Collectable,
@@ -22,14 +18,14 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import BaseModel, Field
 
-from ._device import Device
+from ._device import Device, DeviceConnectorType
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, T, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
 
 
-class DetectorTrigger(str, Enum):
+class DetectorTrigger(StrictEnum):
     """Type of mechanism for triggering a detector to take frames"""
 
     #: Detector generates internal trigger for given rate
@@ -149,7 +145,7 @@ class DetectorWriter(ABC):
 
 
 class StandardDetector(
-    Device,
+    Device[DeviceConnectorType],
     Stageable,
     AsyncConfigurable,
     AsyncReadable,
@@ -158,7 +154,6 @@ class StandardDetector(
     Flyable,
     Collectable,
     WritesStreamAssets,
-    Generic[T],
 ):
     """
     Useful detector base class for step and fly scanning detectors.
@@ -171,6 +166,7 @@ class StandardDetector(
         writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
+        connector: DeviceConnectorType | None = None,
     ) -> None:
         """
         Constructor
@@ -196,7 +192,7 @@ class StandardDetector(
         self._iterations_completed: int = 0
         self._initial_frame: int
         self._last_frame: int
-        super().__init__(name)
+        super().__init__(name=name, connector=connector)
 
     @property
     def controller(self) -> DetectorControl:

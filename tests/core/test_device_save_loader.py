@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from enum import Enum
 from os import path
 from typing import Any
 from unittest.mock import patch
@@ -16,6 +15,7 @@ from ophyd_async.core import (
     Device,
     SignalR,
     SignalRW,
+    StrictEnum,
     all_at_once,
     get_signal_values,
     load_device,
@@ -34,7 +34,7 @@ class DummyChildDevice(Device):
         self.sig2: SignalR = epics_signal_r(str, "Value2")
 
 
-class EnumTest(str, Enum):
+class EnumTest(StrictEnum):
     VAL1 = "val1"
     VAL2 = "val2"
 
@@ -51,7 +51,7 @@ class DummyDeviceGroup(Device):
         self.position: npt.NDArray[np.int32]
 
 
-class MyEnum(str, Enum):
+class MyEnum(StrictEnum):
     one = "one"
     two = "two"
     three = "three"

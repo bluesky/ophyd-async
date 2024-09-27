@@ -19,7 +19,6 @@ from ._device_save_loader import (
 from ._flyer import StandardFlyer, TriggerLogic
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._log import config_ophyd_async_logging
-from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
     callback_on_mock_put,
     get_mock_put,
@@ -62,22 +61,33 @@ from ._signal import (
     wait_for_value,
 )
 from ._signal_backend import (
-    RuntimeSubsetEnum,
+    Array1D,
     SignalBackend,
-    SubsetEnum,
+    SignalConnector,
+    SignalDatatype,
+    SignalDatatypeT,
+    make_datakey,
 )
-from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
+from ._soft_signal_backend import (
+    MockSignalBackend,
+    SignalMetadata,
+    SoftSignalBackend,
+    SoftSignalConnector,
+)
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
 from ._table import Table
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
+    Callback,
     NotConnected,
-    ReadingValueCallback,
+    StrictEnum,
+    SubsetEnum,
     T,
     WatcherUpdate,
     get_dtype,
+    get_enum_cls,
     get_unique,
     in_micros,
     is_pydantic_model,
@@ -146,22 +156,29 @@ __all__ = [
     "soft_signal_r_and_setter",
     "soft_signal_rw",
     "wait_for_value",
-    "RuntimeSubsetEnum",
+    "Array1D",
     "SignalBackend",
+    "SignalConnector",
+    "make_datakey",
+    "StrictEnum",
     "SubsetEnum",
+    "SignalDatatype",
+    "SignalDatatypeT",
     "SignalMetadata",
     "SoftSignalBackend",
+    "SoftSignalConnector",
     "AsyncStatus",
     "WatchableAsyncStatus",
     "DEFAULT_TIMEOUT",
     "CalculatableTimeout",
+    "Callback",
     "CALCULATE_TIMEOUT",
     "NotConnected",
-    "ReadingValueCallback",
     "Table",
     "T",
     "WatcherUpdate",
     "get_dtype",
+    "get_enum_cls",
     "get_unique",
     "in_micros",
     "is_pydantic_model",

@@ -111,7 +111,7 @@ def walk_rw_signals(
         path_prefix = ""
 
     signals: dict[str, SignalRW[Any]] = {}
-    for attr_name, attr in device.children():
+    for attr_name, attr in device.children.items():
         dot_path = f"{path_prefix}{attr_name}"
         if type(attr) is SignalRW:
             signals[dot_path] = attr

@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
-from enum import Enum
 
 from bluesky.protocols import StreamAsset
 from event_model import DataKey
@@ -12,6 +11,7 @@ from ophyd_async.core import (
     DeviceVector,
     NameProvider,
     PathProvider,
+    StrictEnum,
     observe_value,
     set_and_wait_for_value,
 )
@@ -22,7 +22,7 @@ from ophyd_async.epics.signal import (
 )
 
 
-class Writing(str, Enum):
+class Writing(StrictEnum):
     ON = "ON"
     OFF = "OFF"
 

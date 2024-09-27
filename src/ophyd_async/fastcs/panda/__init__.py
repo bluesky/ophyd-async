@@ -1,7 +1,7 @@
 from ._block import (
+    BitMux,
     CommonPandaBlocks,
     DataBlock,
-    EnableDisableOptions,
     PcapBlock,
     PcompBlock,
     PcompDirectionOptions,
@@ -29,7 +29,7 @@ from ._writer import PandaHDFWriter
 __all__ = [
     "CommonPandaBlocks",
     "DataBlock",
-    "EnableDisableOptions",
+    "BitMux",
     "PcapBlock",
     "PcompBlock",
     "PcompDirectionOptions",
