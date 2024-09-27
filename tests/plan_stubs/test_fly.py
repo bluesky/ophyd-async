@@ -190,7 +190,7 @@ class MockFlyer(StandardFlyer):
         configuration_signals: Sequence[SignalR] = ...,
         name: str = "",
     ):
-        super().__init__(trigger_logic, configuration_signals, name)
+        super().__init__(trigger_logic, name)
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
@@ -207,7 +207,7 @@ class MockFlyer(StandardFlyer):
 async def seq_flyer(mock_panda):
     # Make flyer
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    flyer = MockFlyer(trigger_logic, [], name="flyer")
+    flyer = MockFlyer(trigger_logic, name="flyer")
 
     return flyer
 
@@ -216,7 +216,7 @@ async def seq_flyer(mock_panda):
 async def pcomp_flyer(mock_panda):
     # Make flyer
     trigger_logic = StaticPcompTriggerLogic(mock_panda.pcomp[1])
-    flyer = MockFlyer(trigger_logic, [], name="flyer")
+    flyer = MockFlyer(trigger_logic, name="flyer")
 
     return flyer
 
@@ -250,7 +250,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     shutter_time = 0.004
 
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
