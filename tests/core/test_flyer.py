@@ -151,7 +151,7 @@ async def test_hardware_triggered_flyable(
     RE.subscribe(append_and_print)
 
     trigger_logic = DummyTriggerLogic()
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
         number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
@@ -238,7 +238,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
     RE: RunEngine, detectors: tuple[StandardDetector]
 ):
     trigger_logic = DummyTriggerLogic()
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
         number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
     )
@@ -299,18 +299,6 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         Exception, match="Kickoff called more than the configured number"
     ):
         RE(flying_plan())
-
-
-# To do: Populate configuration signals
-async def test_describe_configuration():
-    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
-    assert await flyer.describe_configuration() == {}
-
-
-# To do: Populate configuration signals
-async def test_read_configuration():
-    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
-    assert await flyer.read_configuration() == {}
 
 
 @pytest.mark.parametrize(

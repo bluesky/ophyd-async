@@ -91,7 +91,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     exposure = 1
 
     trigger_logic = StaticSeqTableTriggerLogic(mock_hdf_panda.seq[1])
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(mock_hdf_panda, flyer)
@@ -207,7 +207,7 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
     exposure = 1
 
     trigger_logic = StaticSeqTableTriggerLogic(mock_hdf_panda.seq[1])
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
 
     def flying_plan():
         iteration = 2
