@@ -40,7 +40,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     # Test the generated Trajectory profile from a scanspec
     prefix = "BLxxI-MO-STEP-01"
     async with DeviceCollector(mock=True):
-        pmac = Pmac(prefix, "BRICK1.CS3", name="sim_pmac")
+        pmac = Pmac(prefix, name="sim_pmac")
     spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
     info = PmacTrajInfo(spec=spec)
     trigger_logic = PmacTrajectoryTriggerLogic(pmac)
@@ -126,7 +126,7 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor) -> None:
     # Test the generated Trajectory profile from a scanspec
     prefix = "BLxxI-MO-STEP-01"
     async with DeviceCollector(mock=True):
-        pmac = Pmac(prefix, "BRICK1.CS3", name="sim_pmac")
+        pmac = Pmac(prefix, name="sim_pmac")
     spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)
     info = PmacTrajInfo(spec=spec)
     trigger_logic = PmacTrajectoryTriggerLogic(pmac)
