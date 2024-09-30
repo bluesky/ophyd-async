@@ -86,7 +86,7 @@ def tango_signal_w(
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalW[T]:
-    """Create a `TangoSignalW` backed by 1 Tango Attribute/Command
+    """Create a `SignalW` backed by 1 Tango Attribute/Command
 
     Parameters
     ----------
