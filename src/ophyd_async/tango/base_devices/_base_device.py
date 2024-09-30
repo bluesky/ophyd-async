@@ -133,12 +133,6 @@ def tango_polling(
         Signal-level polling configuration as a dictionary where keys are signal names
         and values are tuples of three floats representing the polling interval, polling
         timeout, and polling delay.
-
-    Returns
-    -------
-    Callable
-        A class decorator that sets the `_polling` and `_signal_polling` attributes on
-        the decorated class.
     """
     if isinstance(polling, dict):
         signal_polling = polling
