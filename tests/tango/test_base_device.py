@@ -323,6 +323,27 @@ async def test_connect(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+async def test_set_trl(tango_test_device):
+    values, description = await describe_class(tango_test_device)
+
+    # async with DeviceCollector():
+    #     test_device = TestTangoReadable(trl=tango_test_device)
+    test_device = TestTangoReadable(name="test_device")
+
+    with pytest.raises(ValueError) as excinfo:
+        test_device.set_trl(0)
+    assert "TRL must be a string." in str(excinfo.value)
+
+    test_device.set_trl(tango_test_device)
+    await test_device.connect()
+
+    assert test_device.name == "test_device"
+    assert description == await test_device.describe()
+    compare_values(values, await test_device.read())
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
 @pytest.mark.parametrize("proxy", [True, False, None])
 async def test_connect_proxy(tango_test_device, proxy: bool | None):
     if proxy is None:
@@ -362,6 +383,8 @@ async def test_tango_demo(demo_test_context):
             counter_trls=["demo/counter/1", "demo/counter/2"],
         )
         await detector.connect()
+        await detector.trigger()
+        await detector.mover.velocity.set(0.5)
 
         RE = RunEngine()
 

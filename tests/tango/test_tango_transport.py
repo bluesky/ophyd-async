@@ -11,6 +11,9 @@ from test_tango_signals import (
     prepare_device,
 )
 
+from ophyd_async.core import (
+    NotConnected,
+)
 from ophyd_async.tango import (
     AttributeProxy,
     CommandProxy,
@@ -595,11 +598,33 @@ async def test_tango_transport_source(echo_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+async def test_tango_transport_datatype_allowed(echo_device):
+    await prepare_device(echo_device, "float_scalar_attr", 1.0)
+    source = echo_device + "/" + "float_scalar_attr"
+    backend = await make_backend(float, source)
+
+    assert backend.datatype_allowed(int)
+    assert backend.datatype_allowed(float)
+    assert backend.datatype_allowed(str)
+    assert backend.datatype_allowed(bool)
+    assert backend.datatype_allowed(np.ndarray)
+    assert backend.datatype_allowed(Enum)
+    assert backend.datatype_allowed(DevState)
+    assert not backend.datatype_allowed(list)
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
 async def test_tango_transport_connect(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
-    backend = await make_backend(float, source, connect=True)
+    backend = await make_backend(float, source, connect=False)
     assert backend is not None
+    await backend.connect()
+    backend.read_trl = ""
+    with pytest.raises(RuntimeError) as exc_info:
+        await backend.connect()
+    assert "trl not set" in str(exc_info.value)
 
 
 # --------------------------------------------------------------------
@@ -611,13 +636,23 @@ async def test_tango_transport_connect_and_store_config(echo_device):
     await transport._connect_and_store_config(source)
     assert transport.trl_configs[source] is not None
 
+    with pytest.raises(RuntimeError) as exc_info:
+        await transport._connect_and_store_config("")
+    assert "trl not set" in str(exc_info.value)
+
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_put(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
-    transport = await make_backend(float, source, connect=True)
+    transport = await make_backend(float, source, connect=False)
+
+    with pytest.raises(NotConnected) as exc_info:
+        await transport.put(1.0)
+    assert "Not connected" in str(exc_info.value)
+
+    await transport.connect()
     source = transport.source("")
     await transport.put(2.0)
     val = await transport.proxies[source].get_w_value()
@@ -643,6 +678,11 @@ async def test_tango_transport_get_reading(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
     transport = await make_backend(float, source, connect=False)
+
+    with pytest.raises(NotConnected) as exc_info:
+        await transport.put(1.0)
+    assert "Not connected" in str(exc_info.value)
+
     await transport.connect()
     reading = await transport.get_reading()
     assert reading["value"] == 1.0
@@ -654,6 +694,11 @@ async def test_tango_transport_get_value(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
     transport = await make_backend(float, source, connect=False)
+
+    with pytest.raises(NotConnected) as exc_info:
+        await transport.put(1.0)
+    assert "Not connected" in str(exc_info.value)
+
     await transport.connect()
     value = await transport.get_value()
     assert value == 1.0
@@ -665,6 +710,11 @@ async def test_tango_transport_get_setpoint(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
     transport = await make_backend(float, source, connect=False)
+
+    with pytest.raises(NotConnected) as exc_info:
+        await transport.put(1.0)
+    assert "Not connected" in str(exc_info.value)
+
     await transport.connect()
     new_setpoint = 2.0
     await transport.put(new_setpoint)
@@ -678,6 +728,11 @@ async def test_set_callback(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
     transport = await make_backend(float, source, connect=False)
+
+    with pytest.raises(NotConnected) as exc_info:
+        await transport.put(1.0)
+    assert "Not connected" in str(exc_info.value)
+
     await transport.connect()
     val = None
 
