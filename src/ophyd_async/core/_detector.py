@@ -194,7 +194,7 @@ class StandardDetector(
         self._fly_status: WatchableAsyncStatus | None = None
         self._fly_start: float
         self._iterations_completed: int = 0
-        self._intial_frame: int
+        self._initial_frame: int
         self._last_frame: int
         super().__init__(name)
 
@@ -208,7 +208,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        # Disarm the detector, stop filewriting.
+        # Disarm the detector, stop file writing.
         await self._check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._trigger_info = None
@@ -314,7 +314,10 @@ class StandardDetector(
     async def kickoff(self):
         assert self._trigger_info, "Prepare must be called before kickoff!"
         if self._iterations_completed >= self._trigger_info.iteration:
-            raise Exception(f"Kickoff called more than {self._trigger_info.iteration}")
+            raise Exception(
+                f"Kickoff called more than the configured number of "
+                f"{self._trigger_info.iteration} iteration(s)!"
+            )
         self._iterations_completed += 1
 
     @WatchableAsyncStatus.wrap
@@ -340,6 +343,7 @@ class StandardDetector(
             if index >= self._trigger_info.number:
                 break
         if self._iterations_completed == self._trigger_info.iteration:
+            self._iterations_completed = 0
             await self.controller.wait_for_idle()
 
     async def describe_collect(self) -> dict[str, DataKey]:

@@ -228,7 +228,7 @@ async def test_set_velocity(mock_mover: demo.Mover) -> None:
     assert q.empty()
 
 
-async def test_mover_disconncted():
+async def test_mover_disconnected():
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
             m = demo.Mover("ca://PRE:", name="mover")

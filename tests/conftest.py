@@ -220,7 +220,7 @@ def static_path_provider_factory(tmp_path: Path):
 
 @pytest.fixture
 def static_path_provider(
-    static_path_provider_factory: callable,
+    static_path_provider_factory: Callable,
     static_filename_provider: FilenameProvider,
 ):
     return static_path_provider_factory(static_filename_provider)
