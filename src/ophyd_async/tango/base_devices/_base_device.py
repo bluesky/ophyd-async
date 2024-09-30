@@ -123,8 +123,8 @@ def tango_polling(
 
     Parameters
     ----------
-    polling : Optional[Union[Tuple[float, float, float], Dict[str, Tuple[float, float,
-                                                                float]]]], optional
+    polling : Optional[Union[Tuple[float, float, float],
+              Dict[str, Tuple[float, float, float]]]], optional
         Device-level polling configuration as a tuple of three floats representing the
         polling interval, polling timeout, and polling delay. Alternatively,
         a dictionary can be provided to specify signal-level polling configurations
