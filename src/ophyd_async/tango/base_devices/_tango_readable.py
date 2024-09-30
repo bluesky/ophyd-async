@@ -15,10 +15,10 @@ class TangoReadable(TangoDevice, StandardReadable):
     Usage: to proper signals mount should be awaited:
     new_device = await TangoDevice(<tango_device>)
 
-    attributes:
-        trl:        Tango resource locator, typically of the device server.
-        proxy:      AsyncDeviceProxy object for the device. This is created when the
-                    device is connected.
+    Attributes:
+        trl: Tango resource locator, typically of the device server.
+        proxy: AsyncDeviceProxy object for the device. This is created when the
+               device is connected.
     """
 
     def __init__(

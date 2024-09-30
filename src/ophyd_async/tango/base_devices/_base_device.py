@@ -123,8 +123,8 @@ def tango_polling(
 
     Parameters
     ----------
-    polling : Optional[Union[Tuple[float, float, float],
-        Dict[str, Tuple[float, float, float]]]], optional
+    polling : Optional[Union[Tuple[float, float, float], Dict[str, Tuple[float, float,
+                                                                float]]]], optional
         Device-level polling configuration as a tuple of three floats representing the
         polling interval, polling timeout, and polling delay. Alternatively,
         a dictionary can be provided to specify signal-level polling configurations
@@ -139,20 +139,6 @@ def tango_polling(
     Callable
         A class decorator that sets the `_polling` and `_signal_polling` attributes on
         the decorated class.
-
-    Example
-    -------
-    Device-level and signal-level polling:
-    @tango_polling(
-        polling=(0.5, 1.0, 0.1),
-        signal_polling={
-            'signal1': (0.5, 1.0, 0.1),
-            'signal2': (1.0, 2.0, 0.2),
-        }
-    )
-    class MyTangoDevice(TangoDevice):
-        signal1: Signal
-        signal2: Signal
     """
     if isinstance(polling, dict):
         signal_polling = polling
