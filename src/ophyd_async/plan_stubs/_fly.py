@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
@@ -15,14 +13,12 @@ from ophyd_async.fastcs.panda import (
     PcompInfo,
     SeqTable,
     SeqTableInfo,
-    SeqTableRow,
-    seq_table_from_rows,
 )
 
 
 def prepare_static_pcomp_flyer_and_detectors(
     flyer: StandardFlyer[PcompInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     pcomp_info: PcompInfo,
     trigger_info: TriggerInfo,
 ):
@@ -41,13 +37,14 @@ def prepare_static_pcomp_flyer_and_detectors(
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     flyer: StandardFlyer[SeqTableInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     number_of_frames: int,
     exposure: float,
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
-    frame_timeout: Optional[float] = None,
+    frame_timeout: float | None = None,
+    iteration: int = 1,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
 
@@ -70,28 +67,31 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         deadtime=deadtime,
         livetime=exposure,
         frame_timeout=frame_timeout,
+        iteration=iteration,
     )
     trigger_time = number_of_frames * (exposure + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
 
-    table: SeqTable = seq_table_from_rows(
+    table = (
         # Wait for pre-delay then open shutter
-        SeqTableRow(
+        SeqTable.row(
             time1=in_micros(pre_delay),
             time2=in_micros(shutter_time),
             outa2=True,
-        ),
+        )
+        +
         # Keeping shutter open, do N triggers
-        SeqTableRow(
+        SeqTable.row(
             repeats=number_of_frames,
             time1=in_micros(exposure),
             outa1=True,
             outb1=True,
             time2=in_micros(deadtime),
             outa2=True,
-        ),
+        )
+        +
         # Add the shutter close
-        SeqTableRow(time2=in_micros(shutter_time)),
+        SeqTable.row(time2=in_micros(shutter_time))
     )
 
     table_info = SeqTableInfo(sequence_table=table, repeats=repeats)
@@ -105,7 +105,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 def fly_and_collect(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
 
@@ -145,7 +145,7 @@ def fly_and_collect(
 def fly_and_collect_with_static_pcomp(
     stream_name: str,
     flyer: StandardFlyer[PcompInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     number_of_pulses: int,
     pulse_width: int,
     rising_edge_step: int,
@@ -171,7 +171,7 @@ def fly_and_collect_with_static_pcomp(
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     number_of_frames: int,
     exposure: float,
     shutter_time: float,

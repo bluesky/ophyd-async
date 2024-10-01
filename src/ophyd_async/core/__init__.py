@@ -33,11 +33,11 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
+    DatasetDescriber,
     FilenameProvider,
     NameProvider,
     PathInfo,
     PathProvider,
-    ShapeProvider,
     StaticFilenameProvider,
     StaticPathProvider,
     UUIDFilenameProvider,
@@ -61,13 +61,18 @@ from ._signal import (
     soft_signal_rw,
     wait_for_value,
 )
-from ._signal_backend import RuntimeSubsetEnum, SignalBackend, SubsetEnum
+from ._signal_backend import (
+    RuntimeSubsetEnum,
+    SignalBackend,
+    SubsetEnum,
+)
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus
+from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._table import Table
 from ._utils import (
+    CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
-    CalculateTimeout,
     NotConnected,
     ReadingValueCallback,
     T,
@@ -75,6 +80,7 @@ from ._utils import (
     get_dtype,
     get_unique,
     in_micros,
+    is_pydantic_model,
     wait_for_connection,
 )
 
@@ -117,7 +123,7 @@ __all__ = [
     "NameProvider",
     "PathInfo",
     "PathProvider",
-    "ShapeProvider",
+    "DatasetDescriber",
     "StaticFilenameProvider",
     "StaticPathProvider",
     "UUIDFilenameProvider",
@@ -149,13 +155,16 @@ __all__ = [
     "WatchableAsyncStatus",
     "DEFAULT_TIMEOUT",
     "CalculatableTimeout",
-    "CalculateTimeout",
+    "CALCULATE_TIMEOUT",
     "NotConnected",
     "ReadingValueCallback",
+    "Table",
     "T",
     "WatcherUpdate",
     "get_dtype",
     "get_unique",
     "in_micros",
+    "is_pydantic_model",
     "wait_for_connection",
+    "completed_status",
 ]

@@ -1,13 +1,16 @@
 
 
+import asyncio
 from pathlib import Path
 from typing import AsyncGenerator, AsyncIterator, Optional
 from ophyd_async.core._detector import DetectorWriter
-from ophyd_async.core._providers import NameProvider, PathProvider, ShapeProvider
+from ophyd_async.core._providers import NameProvider, PathProvider, DatasetDescriber
 from ophyd_async.core._signal import observe_value, wait_for_value
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT
+from ._utils import FileWriteMode
 from ._core_io import NDArrayBaseIO, NDFileIO
+from event_model import DataKey
 
 
 class ADWriter(DetectorWriter):
@@ -16,7 +19,7 @@ class ADWriter(DetectorWriter):
         fileio: NDFileIO,
         path_provider: PathProvider,
         name_provider: NameProvider,
-        shape_provider: ShapeProvider,
+        dataset_describer: DatasetDescriber,
         file_extension: str,
         mimetype: str,
         *plugins: NDArrayBaseIO,
@@ -24,7 +27,7 @@ class ADWriter(DetectorWriter):
         self.fileio = fileio
         self._path_provider = path_provider
         self._name_provider = name_provider
-        self._shape_provider = shape_provider
+        self._dataset_describer = dataset_describer
         self._file_extension = file_extension
         self._mimetype = mimetype
         self._last_emitted = 0
@@ -35,7 +38,7 @@ class ADWriter(DetectorWriter):
         self._multiplier = 1
 
     async def collect_frame_info(self):
-        detector_shape = tuple(await self._shape_provider())
+        detector_shape = tuple(await self._dataset_describer())
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
         frame_shape = detector_shape[:-1] if len(detector_shape) > 0 else []

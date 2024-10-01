@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, Sequence
+from typing import Generic
 
-from bluesky.protocols import DataKey, Flyable, Preparable, Reading, Stageable
+from bluesky.protocols import Flyable, Preparable, Stageable
 
 from ._device import Device
-from ._signal import SignalR
 from ._status import AsyncStatus
-from ._utils import T, merge_gathered_dicts
+from ._utils import T
 
 
 class TriggerLogic(ABC, Generic[T]):
@@ -37,11 +36,9 @@ class StandardFlyer(
     def __init__(
         self,
         trigger_logic: TriggerLogic[T],
-        configuration_signals: Sequence[SignalR] = (),
         name: str = "",
     ):
         self._trigger_logic = trigger_logic
-        self._configuration_signals = tuple(configuration_signals)
         super().__init__(name=name)
 
     @property
@@ -71,13 +68,3 @@ class StandardFlyer(
     @AsyncStatus.wrap
     async def complete(self) -> None:
         await self._trigger_logic.complete()
-
-    async def describe_configuration(self) -> Dict[str, DataKey]:
-        return await merge_gathered_dicts(
-            [sig.describe() for sig in self._configuration_signals]
-        )
-
-    async def read_configuration(self) -> Dict[str, Reading]:
-        return await merge_gathered_dicts(
-            [sig.read() for sig in self._configuration_signals]
-        )

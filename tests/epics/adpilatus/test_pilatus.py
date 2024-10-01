@@ -1,38 +1,26 @@
-from typing import Awaitable, Callable
+import asyncio
+from collections.abc import Awaitable, Callable
 from unittest.mock import patch
 
 import pytest
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
-    DeviceCollector,
-    PathProvider,
     TriggerInfo,
     set_mock_value,
 )
-from ophyd_async.epics import adpilatus
+from ophyd_async.epics import adcore, adpilatus
 
 
 @pytest.fixture
-async def test_adpilatus(
-    RE: RunEngine,
-    static_path_provider: PathProvider,
-) -> adpilatus.PilatusDetector:
-    async with DeviceCollector(mock=True):
-        test_adpilatus = adpilatus.PilatusDetector("PILATUS:", static_path_provider)
-
-    return test_adpilatus
+def test_adpilatus(ad_standard_det_factory) -> adpilatus.PilatusDetector:
+    return ad_standard_det_factory(adpilatus.PilatusDetector)
 
 
-async def test_deadtime_overridable(static_path_provider: PathProvider):
-    async with DeviceCollector(mock=True):
-        test_adpilatus = adpilatus.PilatusDetector(
-            "PILATUS:",
-            static_path_provider,
-            readout_time=adpilatus.PilatusReadoutTime.pilatus2,
-        )
-    pilatus_controller = test_adpilatus.controller
+async def test_deadtime_overridable(test_adpilatus: adpilatus.PilatusDetector):
+    pilatus_controller = test_adpilatus._controller
+    pilatus_controller._readout_time = adpilatus.PilatusReadoutTime.pilatus2
+
     # deadtime invariant with exposure time
     assert pilatus_controller.get_deadtime(0) == 2.28e-3
 
@@ -61,11 +49,11 @@ async def test_trigger_mode_set(
 ):
     async def trigger_and_complete():
         set_mock_value(test_adpilatus.drv.armed, True)
-        status = await test_adpilatus.controller.arm(
-            num=1,
-            trigger=detector_trigger,
+        await test_adpilatus.controller.prepare(
+            TriggerInfo(number=1, trigger=detector_trigger)
         )
-        await status
+        await test_adpilatus.controller.arm()
+        await test_adpilatus.controller.wait_for_idle()
 
     await _trigger(test_adpilatus, expected_trigger_mode, trigger_and_complete)
 
@@ -74,17 +62,17 @@ async def test_trigger_mode_set_without_armed_pv(
     test_adpilatus: adpilatus.PilatusDetector,
 ):
     async def trigger_and_complete():
-        status = await test_adpilatus.controller.arm(
-            num=1,
-            trigger=DetectorTrigger.internal,
+        await test_adpilatus.controller.prepare(
+            TriggerInfo(number=1, trigger=DetectorTrigger.internal)
         )
-        await status
+        await test_adpilatus.controller.arm()
+        await test_adpilatus.controller.wait_for_idle()
 
     with patch(
         "ophyd_async.epics.adpilatus._pilatus_controller.DEFAULT_TIMEOUT",
         0.1,
     ):
-        with pytest.raises(TimeoutError):
+        with pytest.raises(asyncio.TimeoutError):
             await _trigger(
                 test_adpilatus,
                 adpilatus.PilatusTriggerMode.internal,
@@ -109,7 +97,7 @@ async def _trigger(
 
 
 async def test_hints_from_hdf_writer(test_adpilatus: adpilatus.PilatusDetector):
-    assert test_adpilatus.hints == {"fields": ["test_adpilatus"]}
+    assert test_adpilatus.hints == {"fields": [test_adpilatus.name]}
 
 
 async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDetector):
@@ -143,3 +131,24 @@ async def test_exposure_time_and_acquire_period_set(
     )
     assert (await test_adpilatus.drv.acquire_time.get_value()) == 1.0
     assert (await test_adpilatus.drv.acquire_period.get_value()) == 1.0 + 950e-6
+
+
+async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
+    pilatus = test_adpilatus._controller
+    pilatus_driver = pilatus._drv
+    set_mock_value(pilatus_driver.armed, True)
+    await pilatus.prepare(TriggerInfo(number=1, trigger=DetectorTrigger.constant_gate))
+    await pilatus.arm()
+    await pilatus.wait_for_idle()
+
+    assert await pilatus_driver.num_images.get_value() == 1
+    assert await pilatus_driver.image_mode.get_value() == adcore.ImageMode.multiple
+    assert (
+        await pilatus_driver.trigger_mode.get_value()
+        == adpilatus.PilatusTriggerMode.ext_enable
+    )
+    assert await pilatus_driver.acquire.get_value() is True
+
+    await pilatus.disarm()
+
+    assert await pilatus_driver.acquire.get_value() is False

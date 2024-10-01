@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
 from ophyd_async.epics import adcore
@@ -12,14 +12,15 @@ class SimDetector(StandardDetector):
 
     def __init__(
         self,
-        drv: adcore.ADBaseIO,
-        hdf: adcore.NDFileHDFIO,
+        prefix: str,
         path_provider: PathProvider,
+        drv_suffix="cam1:",
+        hdf_suffix="HDF1:",
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
     ):
-        self.drv = drv
-        self.hdf = hdf
+        self.drv = adcore.ADBaseIO(prefix + drv_suffix)
+        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
             SimController(self.drv),
@@ -27,8 +28,8 @@ class SimDetector(StandardDetector):
                 self.hdf,
                 path_provider,
                 lambda: self.name,
-                adcore.ADBaseShapeProvider(self.drv),
+                adcore.ADBaseDatasetDescriber(self.drv),
             ),
-            config_sigs=config_sigs,
+            config_sigs=(self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
             name=name,
         )

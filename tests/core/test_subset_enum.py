@@ -7,8 +7,8 @@ from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.signal import epics_signal_rw
 
 # Allow these imports from private modules for tests
-from ophyd_async.epics.signal._aioca import make_converter as aioca_make_converter
-from ophyd_async.epics.signal._p4p import make_converter as p4p_make_converter
+from ophyd_async.epics.signal._aioca import make_converter as ca_make_converter
+from ophyd_async.epics.signal._p4p import make_converter as pva_make_converter
 
 
 async def test_runtime_enum_behaviour():
@@ -52,7 +52,7 @@ async def test_ca_runtime_enum_converter():
 
     epics_value = EpicsValue()
     rt_enum = SubsetEnum["A", "B"]
-    converter = aioca_make_converter(
+    converter = ca_make_converter(
         rt_enum, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
     assert converter.choices == {"A": "A", "B": "B", "C": "C"}
@@ -68,7 +68,7 @@ async def test_pva_runtime_enum_converter():
         },
     )
     rt_enum = SubsetEnum["A", "B"]
-    converter = p4p_make_converter(
+    converter = pva_make_converter(
         rt_enum, values={"READ_PV": epics_value, "WRITE_PV": epics_value}
     )
     assert {"A", "B"}.issubset(set(converter.choices))
@@ -79,12 +79,12 @@ async def test_runtime_enum_signal():
     signal_rw_ca = epics_signal_rw(SubsetEnum["A2", "B2"], "ca://RW_PV", name="signal")
     await signal_rw_pva.connect(mock=True)
     await signal_rw_ca.connect(mock=True)
-    await signal_rw_pva.get_value() == "A1"
-    await signal_rw_ca.get_value() == "A2"
+    assert await signal_rw_pva.get_value() == "A1"
+    assert await signal_rw_ca.get_value() == "A2"
     await signal_rw_pva.set("B1")
     await signal_rw_ca.set("B2")
-    await signal_rw_pva.get_value() == "B1"
-    await signal_rw_ca.get_value() == "B2"
+    assert await signal_rw_pva.get_value() == "B1"
+    assert await signal_rw_ca.get_value() == "B2"
 
     # Will accept string values even if they're not in the runtime enum
     # Though type checking should compain

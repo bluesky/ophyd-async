@@ -127,7 +127,6 @@ class NDFileIO(NDPluginBaseIO):
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1")
         self.create_directory = epics_signal_rw(int, prefix + "CreateDirectory")
-        self.lazy_open = epics_signal_rw_rbv(bool, prefix + "LazyOpen")
         super().__init__(prefix, name)
 
 
@@ -139,4 +138,7 @@ class NDFileHDFIO(NDFileIO):
         self.swmr_mode = epics_signal_rw_rbv(bool, prefix + "SWMRMode")
         self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
         self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
+        self.num_frames_chunks = epics_signal_r(int, prefix + "NumFramesChunks_RBV")
+        self.chunk_size_auto = epics_signal_rw_rbv(bool, prefix + "ChunkSizeAuto")
+        self.lazy_open = epics_signal_rw_rbv(bool, prefix + "LazyOpen")
         super().__init__(prefix, name)

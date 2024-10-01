@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import os
 from pathlib import Path
 from unittest.mock import ANY
@@ -124,17 +126,23 @@ async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
 
 @pytest.mark.parametrize("table", TABLES)
 async def test_open_returns_correct_descriptors(
-    mock_writer: PandaHDFWriter, table: DatasetTable
+    mock_writer: PandaHDFWriter, table: DatasetTable, caplog
 ):
     assert hasattr(mock_writer, "panda_data_block")
     set_mock_value(
         mock_writer.panda_data_block.datasets,
         table,
     )
-    description = await mock_writer.open()  # to make capturing status not time out
+
+    with caplog.at_level(logging.WARNING):
+        description = await mock_writer.open()  # to make capturing status not time out
+
+        # Check if empty datasets table leads to warning log message
+        if len(table["name"]) == 0:
+            assert "DATASETS table is empty!" in caplog.text
 
     for key, entry, expected_key in zip(
-        description.keys(), description.values(), table["name"]
+        description.keys(), description.values(), table["name"], strict=False
     ):
         assert key == expected_key
         assert entry == {
@@ -180,7 +188,7 @@ async def test_wait_for_index(mock_writer: PandaHDFWriter):
     set_mock_value(mock_writer.panda_data_block.num_captured, 3)
     await mock_writer.wait_for_index(3, timeout=1)
     set_mock_value(mock_writer.panda_data_block.num_captured, 2)
-    with pytest.raises(TimeoutError):
+    with pytest.raises(asyncio.TimeoutError):
         await mock_writer.wait_for_index(3, timeout=0.1)
 
 
@@ -201,7 +209,12 @@ async def test_collect_stream_docs(
             "data_key": name,
             "mimetype": "application/x-hdf5",
             "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
-            "parameters": {"dataset": f"/{name}", "swmr": False, "multiplier": 1},
+            "parameters": {
+                "dataset": f"/{name}",
+                "swmr": False,
+                "multiplier": 1,
+                "chunk_shape": (1024,),
+            },
         }
         assert "mock_panda/data.h5" in resource_doc["uri"]
 

@@ -1,7 +1,7 @@
 import asyncio
-from typing import Optional
 
-from ophyd_async.core import AsyncStatus, DetectorControl, DetectorTrigger, PathProvider
+from ophyd_async.core import DetectorControl, PathProvider
+from ophyd_async.core._detector import TriggerInfo
 
 from ._pattern_generator import PatternGenerator
 
@@ -14,36 +14,40 @@ class PatternDetectorController(DetectorControl):
         exposure: float = 0.1,
     ) -> None:
         self.pattern_generator: PatternGenerator = pattern_generator
-        if exposure is None:
-            exposure = 0.1
         self.pattern_generator.set_exposure(exposure)
         self.path_provider: PathProvider = path_provider
-        self.task: Optional[asyncio.Task] = None
+        self.task: asyncio.Task | None = None
         super().__init__()
 
-    async def arm(
-        self,
-        num: int,
-        trigger: DetectorTrigger = DetectorTrigger.internal,
-        exposure: Optional[float] = 0.01,
-    ) -> AsyncStatus:
-        if exposure is None:
-            exposure = 0.1
-        period: float = exposure + self.get_deadtime(exposure)
-        task = asyncio.create_task(
-            self._coroutine_for_image_writing(exposure, period, num)
+    async def prepare(self, trigger_info: TriggerInfo):
+        self._trigger_info = trigger_info
+        if self._trigger_info.livetime is None:
+            self._trigger_info.livetime = 0.01
+        self.period: float = self._trigger_info.livetime + self.get_deadtime(
+            trigger_info.livetime
         )
-        self.task = task
-        return AsyncStatus(task)
+
+    async def arm(self):
+        assert self._trigger_info.livetime
+        assert self.period
+        self.task = asyncio.create_task(
+            self._coroutine_for_image_writing(
+                self._trigger_info.livetime, self.period, self._trigger_info.number
+            )
+        )
+
+    async def wait_for_idle(self):
+        if self.task:
+            await self.task
 
     async def disarm(self):
-        if self.task:
+        if self.task and not self.task.done():
             self.task.cancel()
             try:
                 await self.task
             except asyncio.CancelledError:
                 pass
-            self.task = None
+        self.task = None
 
     def get_deadtime(self, exposure: float | None) -> float:
         return 0.001

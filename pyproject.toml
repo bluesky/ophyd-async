@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -53,6 +53,7 @@ dev = [
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
     "pyepics>=3.4.2",
+    "pyright",
     "pyside6==6.7.0",
     "pytest",
     "pytest-asyncio",
@@ -83,9 +84,12 @@ GitHub = "https://github.com/bluesky/ophyd-async"
 email = "tom.cobb@diamond.ac.uk"
 name = "Tom Cobb"
 
-
 [tool.setuptools_scm]
-write_to = "src/ophyd_async/_version.py"
+version_file = "src/ophyd_async/_version.py"
+
+[tool.pyright]
+typeCheckingMode = "standard"
+reportMissingImports = false  # Ignore missing stubs in imported modules
 
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
@@ -105,6 +109,7 @@ markers = [
     "adsim: require the ADsim IOC to be running",
 ]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
@@ -127,27 +132,29 @@ passenv = *
 allowlist_externals =
     pytest
     pre-commit
-    mypy
+    pyright
     sphinx-build
     sphinx-autobuild
 commands =
-    tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
-    type-checking: ruff check src tests {posargs}
     pre-commit: pre-commit run --all-files --show-diff-on-failure {posargs}
+    type-checking: pyright src {posargs}
+    tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
     docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
 """
 
 
 [tool.ruff]
-src = ["src", "tests"]
+src = ["src", "tests", "system_tests"]
 line-length = 88
 lint.select = [
-    "C4",   # flake8-comprehensions - https://beta.ruff.rs/docs/rules/#flake8-comprehensions-c4
-    "E",    # pycodestyle errors - https://beta.ruff.rs/docs/rules/#error-e
-    "F",    # pyflakes rules - https://beta.ruff.rs/docs/rules/#pyflakes-f
-    "W",    # pycodestyle warnings - https://beta.ruff.rs/docs/rules/#warning-w
-    "I001", # isort
-    "SLF",  # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
+    "B",   # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "C4",  # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "E",   # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
+    "F",   # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "W",   # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
+    "I",   # isort - https://docs.astral.sh/ruff/rules/#isort-i
+    "UP",  # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "SLF", # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
 ]
 
 [tool.ruff.lint.per-file-ignores]
