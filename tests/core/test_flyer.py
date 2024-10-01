@@ -263,16 +263,19 @@ async def test_hardware_triggered_flyable(
 
 
 @pytest.mark.parametrize(
-    "number_of_triggers",
+    "number_of_triggers,invoke_extra_kickoff_before_complete",
     [
-        10,
-        [10],
+        (10, True),
+        ([10], True),
+        (10, False),
+        ([10], False),
     ],
 )
 async def test_hardware_triggered_flyable_too_many_kickoffs(
     RE: RunEngine,
     detectors: tuple[StandardDetector],
     number_of_triggers: int | list[int],
+    invoke_extra_kickoff_before_complete: bool,
 ):
     trigger_logic = DummyTriggerLogic()
     flyer = StandardFlyer(trigger_logic, name="flyer")
@@ -305,14 +308,16 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         yield from bps.kickoff(flyer)
         for detector in detectors:
             yield from bps.kickoff(detector)
-
+            # Perform an additional kickoff
+            if invoke_extra_kickoff_before_complete:
+                yield from bps.kickoff(detector)
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detectors:
             yield from bps.complete(detector, wait=False, group="complete")
 
         assert flyer._trigger_logic.state == TriggerState.null
 
-        # Manually incremenet the index as if a frame was taken
+        # Manually increment the index as if a frame was taken
         for detector in detectors:
             yield from bps.abs_set(
                 detector.writer.dummy_signal, trigger_info.total_number_of_triggers
@@ -337,7 +342,8 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
 
             # This is an additional kickoff
             # Ensuring stop iteration is called if kickoff is invoked after complete
-            yield from bps.kickoff(detector)
+            if not invoke_extra_kickoff_before_complete:
+                yield from bps.kickoff(detector)
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer, *detectors)
