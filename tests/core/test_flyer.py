@@ -140,10 +140,10 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
 
 
 @pytest.mark.parametrize(
-    "number_of_frames", [[1, 2, 3, 4], [2, 3, 100, 3], [1, 1, 1, 1]]
+    "number_of_triggers", [[1, 2, 3, 4], [2, 3, 100, 3], [1, 1, 1, 1]]
 )
 async def test_hardware_triggered_flyable(
-    RE: RunEngine, detectors: tuple[StandardDetector], number_of_frames: list[int]
+    RE: RunEngine, detectors: tuple[StandardDetector], number_of_triggers: list[int]
 ):
     docs = {}
 
@@ -170,7 +170,7 @@ async def test_hardware_triggered_flyable(
             yield from bps.prepare(
                 detector,
                 TriggerInfo(
-                    number_of_triggers=number_of_frames,
+                    number_of_triggers=number_of_triggers,
                     trigger=DetectorTrigger.constant_gate,
                     deadtime=2,
                     livetime=2,
@@ -185,7 +185,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
         frames_completed: int = 0
-        for frames in number_of_frames:
+        for frames in number_of_triggers:
             yield from bps.kickoff(flyer)
             for detector in detectors:
                 yield from bps.kickoff(detector)
@@ -236,14 +236,14 @@ async def test_hardware_triggered_flyable(
         start=1,
         descriptor=1,
         stream_resource=2,
-        stream_datum=2 * len(number_of_frames),
+        stream_datum=2 * len(number_of_triggers),
         stop=1,
     )
     # test stream datum
     seq_numbers: list = []
     frame_completed: int = 0
     last_frame_collected: int = 0
-    for frame in number_of_frames:
+    for frame in number_of_triggers:
         frame_completed += frame
         seq_numbers.extend([(last_frame_collected, frame_completed)] * 2)
         last_frame_collected = frame_completed
@@ -262,13 +262,22 @@ async def test_hardware_triggered_flyable(
         ]
 
 
+@pytest.mark.parametrize(
+    "number_of_triggers",
+    [
+        10,
+        [10],
+    ],
+)
 async def test_hardware_triggered_flyable_too_many_kickoffs(
-    RE: RunEngine, detectors: tuple[StandardDetector]
+    RE: RunEngine,
+    detectors: tuple[StandardDetector],
+    number_of_triggers: int | list[int],
 ):
     trigger_logic = DummyTriggerLogic()
     flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
-        number_of_triggers=1,
+        number_of_triggers=number_of_triggers,
         trigger=DetectorTrigger.constant_gate,
         deadtime=2,
         livetime=2,
@@ -293,10 +302,9 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
 
-        for _ in range(2):
-            yield from bps.kickoff(flyer)
-            for detector in detectors:
-                yield from bps.kickoff(detector)
+        yield from bps.kickoff(flyer)
+        for detector in detectors:
+            yield from bps.kickoff(detector)
 
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detectors:
@@ -306,7 +314,10 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
 
         # Manually incremenet the index as if a frame was taken
         for detector in detectors:
-            detector.writer.index += 1
+            yield from bps.abs_set(
+                detector.writer.dummy_signal, trigger_info.total_number_of_triggers
+            )
+            detector.writer.index = trigger_info.total_number_of_triggers
 
         yield from bps.wait(group="complete")
 
@@ -324,6 +335,9 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
             assert detector._number_of_triggers_iter is None
             assert detector.controller.wait_for_idle.called  # type: ignore
 
+            # This is an additional kickoff
+            # Ensuring stop iteration is called if kickoff is invoked after complete
+            yield from bps.kickoff(detector)
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer, *detectors)
