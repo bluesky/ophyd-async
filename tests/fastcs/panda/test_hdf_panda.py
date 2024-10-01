@@ -134,8 +134,8 @@ async def test_hdf_panda_hardware_triggered_flyable(
             )
         yield from bps.wait(group="complete")
         yield from bps.close_run()
-        # Make sure the number of iterations completed is set to 0 after final complete.
-        assert mock_hdf_panda._frames_completed == 0
+        # Verify that _completable_frames is reset to 0 after the final complete.
+        assert mock_hdf_panda._completable_frames == 0
         yield from bps.unstage_all(flyer, mock_hdf_panda)
         yield from bps.wait_for([lambda: mock_hdf_panda.controller.disarm()])
 

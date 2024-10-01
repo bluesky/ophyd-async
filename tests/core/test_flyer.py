@@ -139,7 +139,9 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     return (detector_1, detector_2)
 
 
-@pytest.mark.parametrize("number_of_frames", [[1, 1, 1, 1], [2, 3, 100, 3]])
+@pytest.mark.parametrize(
+    "number_of_frames", [[1, 2, 3, 4], [2, 3, 100, 3], [1, 1, 1, 1]]
+)
 async def test_hardware_triggered_flyable(
     RE: RunEngine, detectors: tuple[StandardDetector], number_of_frames: list[int]
 ):
@@ -154,12 +156,6 @@ async def test_hardware_triggered_flyable(
 
     trigger_logic = DummyTriggerLogic()
     flyer = StandardFlyer(trigger_logic, name="flyer")
-    trigger_info = TriggerInfo(
-        number_of_triggers=number_of_frames,
-        trigger=DetectorTrigger.constant_gate,
-        deadtime=2,
-        livetime=2,
-    )
 
     def flying_plan():
         yield from bps.stage_all(*detectors, flyer)
@@ -173,7 +169,12 @@ async def test_hardware_triggered_flyable(
         for detector in detectors:
             yield from bps.prepare(
                 detector,
-                trigger_info,
+                TriggerInfo(
+                    number_of_triggers=number_of_frames,
+                    trigger=DetectorTrigger.constant_gate,
+                    deadtime=2,
+                    livetime=2,
+                ),
                 wait=True,
             )
 
@@ -184,7 +185,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
         frames_completed: int = 0
-        for frame in number_of_frames:
+        for frames in number_of_frames:
             yield from bps.kickoff(flyer)
             for detector in detectors:
                 yield from bps.kickoff(detector)
@@ -196,11 +197,10 @@ async def test_hardware_triggered_flyable(
             assert flyer._trigger_logic.state == TriggerState.null
 
             # Manually increment the index as if a frame was taken
-            frames_completed += frame
+            frames_completed += frames
             for detector in detectors:
                 yield from bps.abs_set(detector.writer.dummy_signal, frames_completed)
                 detector.writer.index = frames_completed
-                assert detector._frames_completed == frames_completed
             done = False
             while not done:
                 try:
@@ -218,9 +218,8 @@ async def test_hardware_triggered_flyable(
             yield from bps.wait(group="complete")
 
         for detector in detectors:
-            # Since we set number of iterations to 1 (default),
-            # make sure it gets reset on complete
-            assert detector._frames_completed == 0
+            # ensure _completable_frames are reset after completion
+            assert detector._completable_frames == 0
 
         yield from bps.close_run()
 
@@ -320,7 +319,10 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         for detector in detectors:
             # Since we set number of iterations to 1 (default),
             # make sure it gets reset on complete
-            assert detector._frames_completed == 0
+            assert detector._completable_frames == 0
+            assert detector._frames_to_complete == 0
+            assert detector._number_of_triggers_iter is None
+            assert detector.controller.wait_for_idle.called  # type: ignore
 
         yield from bps.close_run()
 

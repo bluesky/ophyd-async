@@ -208,7 +208,8 @@ class StandardDetector(
         self._fly_status: WatchableAsyncStatus | None = None
         self._fly_start: float | None = None
         self._frames_to_complete: int = 0
-        self._frames_completed: int = 0
+        # Represents the number of frames that can be completed after kickoff
+        self._completable_frames: int = 0
         self._number_of_triggers_iter: Iterator[int] | None = None
         self._initial_frame: int = 0
 
@@ -332,16 +333,17 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        assert (
-            self._trigger_info and self._number_of_triggers_iter
-        ), "Prepare must be called before kickoff!"
-        if self._frames_completed >= self._trigger_info.total_number_of_triggers:
+        assert self._trigger_info, "Prepare must be called before kickoff!"
+        try:
+            if self._number_of_triggers_iter is None:
+                raise StopIteration
+            self._frames_to_complete = next(self._number_of_triggers_iter)
+            self._completable_frames += self._frames_to_complete
+        except StopIteration as err:
             raise RuntimeError(
                 f"Kickoff called more than the configured number of "
                 f"{self._trigger_info.total_number_of_triggers} iteration(s)!"
-            )
-        self._frames_to_complete = next(self._number_of_triggers_iter)
-        self._frames_completed += self._frames_to_complete
+            ) from err
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
@@ -371,8 +373,8 @@ class StandardDetector(
                     break
         finally:
             await indices_written.aclose()
-            if self._frames_completed == self._trigger_info.total_number_of_triggers:
-                self._frames_completed = 0
+            if self._completable_frames >= self._trigger_info.total_number_of_triggers:
+                self._completable_frames = 0
                 self._frames_to_complete = 0
                 self._number_of_triggers_iter = None
                 await self.controller.wait_for_idle()
