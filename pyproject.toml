@@ -61,6 +61,7 @@ dev = [
     "pytest-faulthandler",
     "pytest-rerunfailures",
     "pytest-timeout",
+    "pytest-json-ctrf",
     "ruff",
     "sphinx<7.4.0",              # https://github.com/bluesky/ophyd-async/issues/459
     "sphinx-autobuild",
