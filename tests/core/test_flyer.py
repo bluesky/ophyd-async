@@ -349,9 +349,11 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         yield from bps.unstage_all(flyer, *detectors)
 
     # fly scan
-    with pytest.raises(
-        Exception, match="Kickoff called more than the configured number"
-    ):
+    if invoke_extra_kickoff_before_complete:
+        match_msg = "Kickoff called more than the configured number"
+    else:
+        match_msg = "Prepare must be called before kickoff!"
+    with pytest.raises(Exception, match=match_msg):
         RE(flying_plan())
 
 
