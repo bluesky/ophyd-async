@@ -71,7 +71,7 @@ async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
 async def test_trigger_saves_file(test_eiger: EigerDetector, setup_device: SetupDevice):
     single_shot = EigerTriggerInfo(
         frame_timeout=None,
-        number=1,
+        number_of_triggers=1,
         trigger=DetectorTrigger.internal,
         deadtime=None,
         livetime=None,

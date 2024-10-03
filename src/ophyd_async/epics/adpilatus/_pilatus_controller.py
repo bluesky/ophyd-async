@@ -40,7 +40,9 @@ class PilatusController(DetectorControl):
         await asyncio.gather(
             self._drv.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
             self._drv.num_images.set(
-                999_999 if trigger_info.number == 0 else trigger_info.number
+                999_999
+                if trigger_info.total_number_of_triggers == 0
+                else trigger_info.total_number_of_triggers
             ),
             self._drv.image_mode.set(adcore.ImageMode.multiple),
         )
