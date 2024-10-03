@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.6.1.dev5+g55f3552e documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.6.1.dev6+gef2a1162 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=71da5d52"></script>
+    <script src="../../../_static/documentation_options.js?v=a343bcc9"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -492,8 +492,9 @@ document.write(`
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Generic</span><span class="p">,</span>
 <span class="p">)</span>
@@ -509,7 +510,7 @@ document.write(`
     <span class="n">WritesStreamAssets</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">event_model</span> <span class="kn">import</span> <span class="n">DataKey</span>
-<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">computed_field</span>
 
 <span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span>
 <span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
@@ -539,8 +540,16 @@ document.write(`
 <span class="k">class</span> <span class="nc">TriggerInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to setup triggering on a detector&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Number of triggers that will be sent, 0 means infinite</span>
-    <span class="n">number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1">#: Number of triggers that will be sent, (0 means infinite) Can be:</span>
+    <span class="c1">#  - A single integer or</span>
+    <span class="c1">#  - A list of integers for multiple triggers</span>
+    <span class="c1"># Example for tomography: TriggerInfo(number=[2,3,100,3])</span>
+    <span class="c1">#:     This would trigger:</span>
+    <span class="c1">#:     - 2 times for dark field images</span>
+    <span class="c1">#:     - 3 times for initial flat field images</span>
+    <span class="c1">#:     - 100 times for projections</span>
+    <span class="c1">#:     - 3 times for final flat field images</span>
+    <span class="n">number_of_triggers</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">NonNegativeInt</span><span class="p">]</span>
     <span class="c1">#: Sort of triggers that will be sent</span>
     <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">)</span>
     <span class="c1">#: What is the minimum deadtime between triggers</span>
@@ -554,10 +563,15 @@ document.write(`
     <span class="c1">#: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,</span>
     <span class="c1">#: but publish 2 indices, and describe() will show a shape of (5, h, w)</span>
     <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="c1">#: The number of times the detector can go through a complete cycle of kickoff and</span>
-    <span class="c1">#: complete without needing to re-arm. This is important for detectors where the</span>
-    <span class="c1">#: process of arming is expensive in terms of time</span>
-    <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span></div>
+
+    <span class="nd">@computed_field</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">total_number_of_triggers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span>
+        <span class="p">)</span></div>
 
 
 
@@ -725,10 +739,14 @@ document.write(`
         <span class="c1"># For kickoff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">WatchableAsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">:</span> <span class="nb">float</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iterations_completed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">:</span> <span class="nb">int</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Represents the total number of frames that will have been completed at the</span>
+        <span class="c1"># end of the next `complete`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -784,7 +802,7 @@ document.write(`
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
                 <span class="n">TriggerInfo</span><span class="p">(</span>
-                    <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">number_of_triggers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                     <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span>
                     <span class="n">deadtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">livetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -836,8 +854,12 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;but trigger logic provides only </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="si">}</span><span class="s2">s&quot;</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number_of_triggers</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">]</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">multiplier</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="p">)</span>
@@ -848,39 +870,50 @@ document.write(`
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">,</span> <span class="s2">&quot;Prepare must be called before kickoff!&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterations_completed</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">iteration</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Prepare must be called before kickoff!&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Kickoff called more than the configured number of &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">iteration</span><span class="si">}</span><span class="s2"> iteration(s)!&quot;</span>
-            <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iterations_completed</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">total_number_of_triggers</span><span class="si">}</span><span class="s2"> iteration(s)!&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
 
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
+        <span class="n">indices_written</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">frame_timeout</span>
             <span class="ow">or</span> <span class="p">(</span>
                 <span class="n">DEFAULT_TIMEOUT</span>
                 <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
                 <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">deadtime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
             <span class="p">)</span>
-        <span class="p">):</span>
-            <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
-                <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
-                <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
-                <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">number</span><span class="p">:</span>
-                <span class="k">break</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterations_completed</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">iteration</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_iterations_completed</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indices_written</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                    <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span>
+                    <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span><span class="p">:</span>
+                    <span class="k">break</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">indices_written</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">total_number_of_triggers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">describe_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span>

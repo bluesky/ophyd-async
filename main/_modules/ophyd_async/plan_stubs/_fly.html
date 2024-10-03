@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.plan_stubs._fly &#8212; ophyd-async 0.6.1.dev5+g55f3552e documentation</title>
+    <title>ophyd_async.plan_stubs._fly &#8212; ophyd-async 0.6.1.dev6+gef2a1162 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=71da5d52"></script>
+    <script src="../../../_static/documentation_options.js?v=a343bcc9"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -535,7 +535,6 @@ document.write(`
     <span class="n">repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare a hardware triggered flyable and one or more detectors.</span>
 
@@ -553,12 +552,11 @@ document.write(`
     <span class="n">deadtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span> <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">)</span>
 
     <span class="n">trigger_info</span> <span class="o">=</span> <span class="n">TriggerInfo</span><span class="p">(</span>
-        <span class="n">number</span><span class="o">=</span><span class="n">number_of_frames</span> <span class="o">*</span> <span class="n">repeats</span><span class="p">,</span>
+        <span class="n">number_of_triggers</span><span class="o">=</span><span class="n">number_of_frames</span> <span class="o">*</span> <span class="n">repeats</span><span class="p">,</span>
         <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">constant_gate</span><span class="p">,</span>
         <span class="n">deadtime</span><span class="o">=</span><span class="n">deadtime</span><span class="p">,</span>
         <span class="n">livetime</span><span class="o">=</span><span class="n">exposure</span><span class="p">,</span>
         <span class="n">frame_timeout</span><span class="o">=</span><span class="n">frame_timeout</span><span class="p">,</span>
-        <span class="n">iteration</span><span class="o">=</span><span class="n">iteration</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">trigger_time</span> <span class="o">=</span> <span class="n">number_of_frames</span> <span class="o">*</span> <span class="p">(</span><span class="n">exposure</span> <span class="o">+</span> <span class="n">deadtime</span><span class="p">)</span>
     <span class="n">pre_delay</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">period</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">shutter_time</span> <span class="o">-</span> <span class="n">trigger_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
