@@ -7,6 +7,7 @@ from ophyd_async.core import (
     DetectorControl,
     set_and_wait_for_value,
 )
+from ophyd_async.core._signal import wait_for_value
 from ophyd_async.epics.adcore._utils import convert_ad_dtype_to_np
 
 from ._core_io import ADBaseIO, DetectorState
@@ -90,8 +91,9 @@ async def start_acquiring_driver_and_ensure_status(
         An AsyncStatus that can be awaited to set driver.acquire to True and perform
         subsequent raising (if applicable) due to detector state.
     """
-
-    status = await set_and_wait_for_value(driver.acquire, True, timeout=timeout)
+    status = driver.acquire.set(True, timeout=timeout)
+    await wait_for_value(driver.acquire, True, timeout=None)
+    await set_and_wait_for_value(driver.acquire, True, timeout=timeout)
 
     async def complete_acquisition() -> None:
         """NOTE: possible race condition here between the callback from
