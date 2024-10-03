@@ -95,7 +95,7 @@
     .. autosummary::
         :nosignatures:
     
-        DetectorControl
+        DetectorController
         DetectorTrigger
         DetectorWriter
         StandardDetector
@@ -111,7 +111,7 @@
         set_signal_values
         walk_rw_signals
         StandardFlyer
-        TriggerLogic
+        FlyerController
         HDFDataset
         HDFFile
         config_ophyd_async_logging

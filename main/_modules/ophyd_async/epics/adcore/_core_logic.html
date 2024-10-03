@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.6.1.dev6+gef2a1162 documentation</title>
+    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.6.1.dev7+ge291396b documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=a343bcc9"></script>
+    <script src="../../../../_static/documentation_options.js?v=23336d80"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -493,7 +493,7 @@ document.write(`
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">DatasetDescriber</span><span class="p">,</span>
-    <span class="n">DetectorControl</span><span class="p">,</span>
+    <span class="n">DetectorController</span><span class="p">,</span>
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.adcore._utils</span> <span class="kn">import</span> <span class="n">convert_ad_dtype_to_np</span>
@@ -525,7 +525,7 @@ document.write(`
 <div class="viewcode-block" id="set_exposure_time_and_acquire_period_if_supplied">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">set_exposure_time_and_acquire_period_if_supplied</span><span class="p">(</span>
-    <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorControl</span><span class="p">,</span>
+    <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorController</span><span class="p">,</span>
     <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
     <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>

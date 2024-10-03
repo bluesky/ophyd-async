@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.6.1.dev6+gef2a1162 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.6.1.dev7+ge291396b documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=a343bcc9"></script>
+    <script src="../../../_static/documentation_options.js?v=23336d80"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -575,23 +575,23 @@ document.write(`
 
 
 
-<div class="viewcode-block" id="DetectorControl">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorControl">[docs]</a>
-<span class="k">class</span> <span class="nc">DetectorControl</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="DetectorController">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController">[docs]</a>
+<span class="k">class</span> <span class="nc">DetectorController</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Classes implementing this interface should hold the logic for</span>
 <span class="sd">    arming and disarming a detector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DetectorControl.get_deadtime">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorControl.get_deadtime">[docs]</a>
+<div class="viewcode-block" id="DetectorController.get_deadtime">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.get_deadtime">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;For a given exposure, how long should the time between exposures be&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorControl.prepare">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorControl.prepare">[docs]</a>
+<div class="viewcode-block" id="DetectorController.prepare">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.prepare">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -613,8 +613,8 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorControl.arm">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorControl.arm">[docs]</a>
+<div class="viewcode-block" id="DetectorController.arm">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.arm">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -622,8 +622,8 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorControl.wait_for_idle">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorControl.wait_for_idle">[docs]</a>
+<div class="viewcode-block" id="DetectorController.wait_for_idle">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.wait_for_idle">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -631,8 +631,8 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorControl.disarm">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorControl.disarm">[docs]</a>
+<div class="viewcode-block" id="DetectorController.disarm">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.disarm">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector, return detector to an idle state&quot;&quot;&quot;</span></div>
@@ -714,7 +714,7 @@ document.write(`
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorControl</span><span class="p">,</span>
+        <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorController</span><span class="p">,</span>
         <span class="n">writer</span><span class="p">:</span> <span class="n">DetectorWriter</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -750,7 +750,7 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorControl</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorController</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span>
 
     <span class="nd">@property</span>
