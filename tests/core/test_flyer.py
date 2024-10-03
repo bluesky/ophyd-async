@@ -13,13 +13,13 @@ from pydantic import ValidationError
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     DetectorWriter,
+    FlyerController,
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    TriggerLogic,
     observe_value,
 )
 from ophyd_async.core._signal import assert_emitted
@@ -33,7 +33,7 @@ class TriggerState(str, Enum):
     stopping = "stopping"
 
 
-class DummyTriggerLogic(TriggerLogic[int]):
+class DummyTriggerLogic(FlyerController[int]):
     def __init__(self):
         self.state = TriggerState.null
 
@@ -126,12 +126,12 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
         return writers[1].dummy_signal.set(1)
 
     detector_1: StandardDetector[Any] = StandardDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
     )
     detector_2: StandardDetector[Any] = StandardDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
     )

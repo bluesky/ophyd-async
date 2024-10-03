@@ -31,7 +31,7 @@ There will be a flat public namespace under core, with contents reimported from 
 - `_signal.py` for `Signal`, `SignalBackend`, `observe_signal`, etc.
 - `_mock.py` for `MockSignalBackend`, `get_mock_put`, etc.
 - `_readable.py` for `StandardReadable`, `ConfigSignal`, `HintedSignal`, etc.
-- `_detector.py` for `StandardDetector`, `DetectorWriter`, `DetectorControl`, `TriggerInfo`, etc.
+- `_detector.py` for `StandardDetector`, `DetectorWriter`, `DetectorController`, `TriggerInfo`, etc.
 - `_flyer.py` for `StandardFlyer`, `FlyerControl`, etc.
 
 There are some renames that will be required, e.g. `HardwareTriggeredFlyable` -> `StandardFlyer`
