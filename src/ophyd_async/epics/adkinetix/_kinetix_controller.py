@@ -1,6 +1,6 @@
 import asyncio
 
-from ophyd_async.core import DetectorControl, DetectorTrigger
+from ophyd_async.core import DetectorController, DetectorTrigger
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
@@ -15,7 +15,7 @@ KINETIX_TRIGGER_MODE_MAP = {
 }
 
 
-class KinetixController(DetectorControl):
+class KinetixController(DetectorController):
     def __init__(
         self,
         driver: KinetixDriverIO,

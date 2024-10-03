@@ -10,19 +10,19 @@ from bluesky import RunEngine
 
 from ophyd_async.core import (
     AsyncStatus,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     DeviceCollector,
+    FlyerController,
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    TriggerLogic,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
 
 
-class DummyTriggerLogic(TriggerLogic[int]):
+class DummyTriggerLogic(FlyerController[int]):
     def __init__(self): ...
 
     async def prepare(self, value: int):
@@ -35,7 +35,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
     async def stop(self): ...
 
 
-class DummyController(DetectorControl):
+class DummyController(DetectorController):
     def __init__(self) -> None: ...
     async def prepare(self, trigger_info: TriggerInfo):
         return AsyncStatus(asyncio.sleep(0.01))

@@ -80,7 +80,7 @@ class TriggerInfo(BaseModel):
         )
 
 
-class DetectorControl(ABC):
+class DetectorController(ABC):
     """
     Classes implementing this interface should hold the logic for
     arming and disarming a detector
@@ -181,7 +181,7 @@ class StandardDetector(
 
     def __init__(
         self,
-        controller: DetectorControl,
+        controller: DetectorController,
         writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
@@ -217,7 +217,7 @@ class StandardDetector(
         super().__init__(name)
 
     @property
-    def controller(self) -> DetectorControl:
+    def controller(self) -> DetectorController:
         return self._controller
 
     @property

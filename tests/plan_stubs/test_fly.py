@@ -12,13 +12,13 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncReadable,
     AsyncStatus,
-    DetectorControl,
+    DetectorController,
     DetectorWriter,
     DeviceCollector,
+    FlyerController,
     SignalR,
     StandardDetector,
     StandardFlyer,
-    TriggerLogic,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
@@ -106,7 +106,7 @@ class DummyWriter(DetectorWriter):
 class MockDetector(StandardDetector):
     def __init__(
         self,
-        controller: DetectorControl,
+        controller: DetectorController,
         writer: DetectorWriter,
         config_sigs: Sequence[AsyncReadable] = [],
         name: str = "",
@@ -155,12 +155,12 @@ async def detectors(RE: RunEngine) -> tuple[MockDetector, MockDetector]:
         return writers[1].dummy_signal.set(1)
 
     detector_1 = MockDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
     )
     detector_2 = MockDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
     )
@@ -190,7 +190,7 @@ async def mock_panda():
 class MockFlyer(StandardFlyer):
     def __init__(
         self,
-        trigger_logic: TriggerLogic,
+        trigger_logic: FlyerController,
         configuration_signals: Sequence[SignalR] = ...,
         name: str = "",
     ):

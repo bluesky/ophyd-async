@@ -2,7 +2,7 @@ import asyncio
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
 )
 from ophyd_async.core._detector import TriggerInfo
@@ -10,7 +10,7 @@ from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 
-class SimController(DetectorControl):
+class SimController(DetectorController):
     def __init__(
         self,
         driver: adcore.ADBaseIO,

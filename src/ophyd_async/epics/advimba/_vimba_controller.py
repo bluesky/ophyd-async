@@ -1,6 +1,6 @@
 import asyncio
 
-from ophyd_async.core import DetectorControl, DetectorTrigger
+from ophyd_async.core import DetectorController, DetectorTrigger
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
@@ -22,7 +22,7 @@ EXPOSE_OUT_MODE = {
 }
 
 
-class VimbaController(DetectorControl):
+class VimbaController(DetectorController):
     def __init__(
         self,
         driver: VimbaDriverIO,

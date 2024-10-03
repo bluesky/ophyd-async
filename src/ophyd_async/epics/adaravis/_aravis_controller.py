@@ -2,7 +2,7 @@ import asyncio
 from typing import Literal
 
 from ophyd_async.core import (
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     TriggerInfo,
     set_and_wait_for_value,
@@ -18,7 +18,7 @@ from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
 _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
 
 
-class AravisController(DetectorControl):
+class AravisController(DetectorController):
     GPIO_NUMBER = Literal[1, 2, 3, 4]
 
     def __init__(self, driver: AravisDriverIO, gpio_number: GPIO_NUMBER) -> None:
