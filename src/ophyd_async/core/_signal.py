@@ -4,6 +4,7 @@ import asyncio
 import functools
 from collections.abc import AsyncGenerator, Callable, Mapping
 from typing import Any, Generic, TypeVar, cast
+from unittest.mock import Mock
 
 from bluesky.protocols import (
     Locatable,
@@ -62,7 +63,7 @@ class Signal(Device, Generic[T]):
 
     async def connect(
         self,
-        mock=False,
+        mock: bool | Mock = False,
         timeout=DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
         backend: SignalBackend[T] | None = None,
@@ -75,6 +76,9 @@ class Signal(Device, Generic[T]):
                 raise ValueError("Backend at connection different from previous one.")
 
             self._backend = backend
+
+        mock = bool(mock)  # Device can pass Mock to child Signal
+
         if (
             self._previous_connect_was_mock is not None
             and self._previous_connect_was_mock != mock

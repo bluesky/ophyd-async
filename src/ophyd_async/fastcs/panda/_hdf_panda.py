@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from unittest.mock import Mock
 
 from ophyd_async.core import DEFAULT_TIMEOUT, PathProvider, SignalR, StandardDetector
 from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
@@ -37,7 +38,7 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
 
     async def connect(
         self,
-        mock: bool = False,
+        mock: bool | Mock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ):
