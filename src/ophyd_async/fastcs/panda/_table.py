@@ -33,17 +33,17 @@ class SeqTrigger(StrictEnum):
 
 
 class SeqTable(Table):
-    repeats: Array1D[np.int32]
+    repeats: Array1D[np.uint16]
     trigger: Sequence[SeqTrigger]
     position: Array1D[np.int32]
-    time1: Array1D[np.int32]
+    time1: Array1D[np.uint32]
     outa1: Array1D[np.bool_]
     outb1: Array1D[np.bool_]
     outc1: Array1D[np.bool_]
     outd1: Array1D[np.bool_]
     oute1: Array1D[np.bool_]
     outf1: Array1D[np.bool_]
-    time2: Array1D[np.int32]
+    time2: Array1D[np.uint32]
     outa2: Array1D[np.bool_]
     outb2: Array1D[np.bool_]
     outc2: Array1D[np.bool_]
@@ -51,9 +51,8 @@ class SeqTable(Table):
     oute2: Array1D[np.bool_]
     outf2: Array1D[np.bool_]
 
-    @classmethod
-    def row(  # type: ignore
-        cls,
+    @staticmethod
+    def row(
         *,
         repeats: int = 1,
         trigger: str = SeqTrigger.IMMEDIATE,
@@ -73,7 +72,8 @@ class SeqTable(Table):
         oute2: bool = False,
         outf2: bool = False,
     ) -> "SeqTable":
-        return Table.row(**locals())
+        # Let pydantic do the conversions for us
+        return SeqTable(**{k: [v] for k, v in locals().items()})  # type: ignore
 
     @model_validator(mode="after")
     def validate_max_length(self) -> "SeqTable":

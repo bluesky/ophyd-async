@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
 import pytest
@@ -160,7 +161,8 @@ async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
         detector.set_name(type(detector).__name__)
         RE(setup_ndstats_sum(detector))
         xml = await detector.hdf.nd_attributes_file.get_value()
-        for element in xml:
+        root = ET.fromstring(xml)
+        for element in root:
             assert str(element.tag) == "Attribute"
             assert element.attrib == {
                 "name": f"{detector.name}-sum",
@@ -189,7 +191,8 @@ async def test_nd_attributes_plan_stub(RE, detectors):
             dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
         )
         RE(setup_ndattributes(detector.hdf, [pv, param]))
-        xml = await detector.hdf.nd_attributes_file.get_value()
+        text = await detector.hdf.nd_attributes_file.get_value()
+        xml = ET.fromstring(text)
         assert xml[0].tag == "Attribute"
         assert xml[0].attrib == {
             "name": "Temperature",

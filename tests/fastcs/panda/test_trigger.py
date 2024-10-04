@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, set_mock_value
-from ophyd_async.epics.pvi import fill_pvi_entries
+from ophyd_async.core import DeviceCollector, set_mock_value
+from ophyd_async.epics.pvi._pvi import PviDeviceConnector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     PcompInfo,
@@ -14,6 +14,7 @@ from ophyd_async.fastcs.panda import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
+from ophyd_async.fastcs.panda._block import PcompDirection
 from ophyd_async.fastcs.panda._table import SeqTrigger
 
 
@@ -22,13 +23,7 @@ async def mock_panda():
     class Panda(CommonPandaBlocks):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name)
-
-        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-            await super().connect(mock=mock, timeout=timeout)
+            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")
@@ -63,7 +58,7 @@ async def test_pcomp_trigger_logic(mock_panda):
         pulse_width=1,
         rising_edge_step=1,
         number_of_pulses=5,
-        direction="Positive",
+        direction=PcompDirection.positive,
     )
 
     async def set_active(value: bool):
@@ -105,8 +100,8 @@ async def test_pcomp_trigger_logic(mock_panda):
                 "sequence_table_factory": lambda: 1,
                 "repeats": 1,
             },
-            "Input should be a valid dictionary or instance of SeqTable "
-            "[type=model_type, input_value=1, input_type=int]",
+            "Cannot construct Table from 1 "
+            "[type=assertion_error, input_value=1, input_type=int]",
         ),
     ],
 )
@@ -119,17 +114,17 @@ def test_malformed_seq_table_info(kwargs, error_msg):
 def test_malformed_trigger_in_seq_table():
     def full_seq_table(trigger):
         return SeqTable(
-            repeats=np.array([1], dtype=np.int32),
+            repeats=np.array([1], dtype=np.uint16),
             trigger=trigger,
             position=np.array([1], dtype=np.int32),
-            time1=np.array([1], dtype=np.int32),
+            time1=np.array([1], dtype=np.uint32),
             outa1=np.array([1], dtype=np.bool_),
             outb1=np.array([1], dtype=np.bool_),
             outc1=np.array([1], dtype=np.bool_),
             outd1=np.array([1], dtype=np.bool_),
             oute1=np.array([1], dtype=np.bool_),
             outf1=np.array([1], dtype=np.bool_),
-            time2=np.array([1], dtype=np.int32),
+            time2=np.array([1], dtype=np.uint32),
             outa2=np.array([1], dtype=np.bool_),
             outb2=np.array([1], dtype=np.bool_),
             outc2=np.array([1], dtype=np.bool_),

@@ -157,14 +157,6 @@ class PvaTableConverter(PvaConverter[Table]):
         return value
 
 
-class PvaPviConverter(PvaConverter):
-    def value(self, value: Value):
-        return value["value"].todict()
-
-    def write_value(self, value: Any) -> Any:
-        raise TypeError("Writing to PVI structure not supported")
-
-
 # https://mdavidsaver.github.io/p4p/values.html
 _datatype_converter_from_typeid: dict[
     tuple[str, str], tuple[type[SignalDatatype], type[PvaConverter]]
@@ -196,7 +188,6 @@ _datatype_converter_from_typeid: dict[
     ("epics:nt/NTScalarArray:1.0", "as"): (Sequence[str], PvaConverter),
     ("epics:nt/NTTable:1.0", "S"): (Table, PvaTableConverter),
     ("epics:nt/NTNDArray:1.0", "v"): (np.ndarray, PvaNDArrayConverter),
-    ("epics:nt/NTPVI:1.0", "S"): (dict, PvaPviConverter),
 }
 
 
@@ -247,6 +238,9 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
     ):
         # Allow int signals to represent float records when prec is 0
         return PvaConverter(int)
+    elif inferred_datatype is str and (enum_cls := get_enum_cls(datatype)):
+        # Allow strings to be used as enums until QSRV supports this
+        return PvaConverter(str)
     elif inferred_datatype is Table and datatype and issubclass(datatype, Table):
         # Use a custom table class
         return PvaTableConverter(datatype)
@@ -405,4 +399,7 @@ class PvaSignalConnector(SignalConnector[SignalDatatypeT]):
         )
 
     def source(self, name: str) -> str:
-        return f"pva://{self.read_pv}"
+        if self.read_pv:
+            return f"pva://{self.read_pv}"
+        else:
+            return f"pvi://{name}"

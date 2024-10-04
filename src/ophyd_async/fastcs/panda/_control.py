@@ -1,5 +1,3 @@
-import asyncio
-
 from ophyd_async.core import (
     DetectorControl,
     DetectorTrigger,
@@ -33,5 +31,5 @@ class PandaPcapController(DetectorControl):
         pass
 
     async def disarm(self):
-        await asyncio.gather(self.pcap.arm.set(False))
+        await self.pcap.arm.set(False)
         await wait_for_value(self.pcap.active, False, timeout=1)

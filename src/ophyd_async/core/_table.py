@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Annotated, TypeVar, get_origin
 
 import numpy as np
@@ -41,34 +42,11 @@ class Table(BaseModel):
                         default_factory=lambda dtype=dtype: np.array([], dtype=dtype)
                     ),
                 ]
-                cls.__annotations__[k] = new_anno
-
-    @staticmethod
-    def row(cls: type[TableSubclass], **kwargs) -> TableSubclass:  # type: ignore
-        arrayified_kwargs = {}
-        for field_name, field_value in cls.model_fields.items():
-            value = kwargs.pop(field_name)
-            if field_value.default_factory is None:
-                raise ValueError(
-                    "`Table` models should have default factories for their "
-                    "mutable empty columns."
-                )
-            default_array = field_value.default_factory()
-            if isinstance(default_array, np.ndarray):
-                arrayified_kwargs[field_name] = np.array(
-                    [value], dtype=default_array.dtype
-                )
-            elif isinstance(value, str):  # Also covers SubsetEnum
-                arrayified_kwargs[field_name] = [value]
+            elif get_origin(anno) is Sequence:
+                new_anno = Annotated[anno, Field(default_factory=list)]
             else:
-                raise TypeError(
-                    "Row column should be numpy arrays or sequence of str | SubsetEnum."
-                )
-        if kwargs:
-            raise TypeError(
-                f"Unexpected keyword arguments {kwargs.keys()} for {cls.__name__}."
-            )
-        return cls(**arrayified_kwargs)
+                raise TypeError(f"Cannot use annotation {anno} in a Table")
+            cls.__annotations__[k] = new_anno
 
     def __add__(self, right: TableSubclass) -> TableSubclass:
         """Concatenate the arrays in field values."""
@@ -108,17 +86,39 @@ class Table(BaseModel):
             if selection:
                 v = v[selection]
             if array is None:
-                array = np.empty(v.shape, dtype=self.numpy_dtype(self))
+                array = np.empty(v.shape, dtype=self.numpy_dtype())
             array[k] = v
-        assert array
+        assert array is not None
         return array
 
+    # TODO: would like to do this validation, but too strict for CA which returns
+    # bool arrays as uint8 arrays
+    # @model_validator(mode="before")
+    # @classmethod
+    # def validate_array_dtypes(cls, data: Any) -> Any:
+    #     if isinstance(data, dict):
+    #         data_dict = data
+    #     elif isinstance(data, Table):
+    #         data_dict = data.model_dump()
+    #     else:
+    #         assert False, f"Cannot construct Table from {data}"
+    #     for field_name, field_value in cls.model_fields.items():
+    #         if get_origin(field_value.annotation) is np.ndarray:
+    #             data_value = data_dict.get(field_name, None)
+    #             if isinstance(data_value, np.ndarray) and field_value.annotation:
+    #                 expected_dtype = get_dtype(field_value.annotation)
+    #                 assert data_value.dtype == expected_dtype, (
+    #                     f"{field_name}: expected dtype {expected_dtype}, "
+    #                     f"got {data_value.dtype}"
+    #                 )
+    #     return data
+
     @model_validator(mode="after")
-    def validate_arrays(self) -> Table:
-        first_length = len(self)
-        assert all(
-            len(field_value) == first_length for _, field_value in self
-        ), "Rows should all be of equal size."
+    def validate_lengths(self) -> Table:
+        lengths: dict[int, set[str]] = {}
+        for field_name, field_value in self:
+            lengths.setdefault(len(field_value), set()).add(field_name)
+        assert len(lengths) == 1, f"Columns should be same length, got {lengths=}"
         return self
 
     def __len__(self) -> int:

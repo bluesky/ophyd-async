@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from ophyd_async.core import (
     Device,
     DeviceVector,
@@ -8,11 +6,17 @@ from ophyd_async.core import (
     StrictEnum,
     SubsetEnum,
 )
+from ophyd_async.epics.pvi._pvi import PviDeviceConnector
 
 from ._table import DatasetTable, SeqTable
 
 
-class DataBlock(Device):
+class FastCsDevice(Device):
+    def __init__(self, uri: str = "", name: str = "") -> None:
+        super().__init__(name=name, connector=PviDeviceConnector(self, uri + "PVI"))
+
+
+class DataBlock(FastCsDevice):
     # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
     hdf_file_name: SignalRW[str]
@@ -25,12 +29,12 @@ class DataBlock(Device):
     datasets: SignalR[DatasetTable]
 
 
-class PulseBlock(Device):
+class PulseBlock(FastCsDevice):
     delay: SignalRW[float]
     width: SignalRW[float]
 
 
-class PcompDirectionOptions(StrictEnum):
+class PcompDirection(StrictEnum):
     positive = "Positive"
     negative = "Negative"
     either = "Either"
@@ -41,9 +45,9 @@ class BitMux(SubsetEnum):
     one = "ONE"
 
 
-class PcompBlock(Device):
+class PcompBlock(FastCsDevice):
     active: SignalR[bool]
-    dir: SignalRW[PcompDirectionOptions]
+    dir: SignalRW[PcompDirection]
     enable: SignalRW[BitMux]
     pulses: SignalRW[int]
     start: SignalRW[int]
@@ -58,16 +62,16 @@ class TimeUnits(StrictEnum):
     us = "us"
 
 
-class SeqBlock(Device):
+class SeqBlock(FastCsDevice):
     table: SignalRW[SeqTable]
-    active: SignalRW[bool]
+    active: SignalR[bool]
     repeats: SignalRW[int]
     prescale: SignalRW[float]
     prescale_units: SignalRW[TimeUnits]
     enable: SignalRW[BitMux]
 
 
-class PcapBlock(Device):
+class PcapBlock(FastCsDevice):
     active: SignalR[bool]
     arm: SignalRW[bool]
 

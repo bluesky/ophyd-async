@@ -126,6 +126,8 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         self._converter = make_converter(self._datatype)
         self._initial_value = self._converter.write_value(initial_value)
         self._metadata = metadata or SignalMetadata()
+        if enum_cls := get_enum_cls(self._datatype):
+            self._metadata["choices"] = [v.value for v in enum_cls]
         self.set_value(self._initial_value)
 
     def set_value(self, value: SignalDatatypeT):
@@ -198,8 +200,6 @@ class SoftSignalConnector(SignalConnector[SignalDatatypeT]):
             metadata["units"] = self.units
         if self.precision is not None:
             metadata["precision"] = self.precision
-        if enum_cls := get_enum_cls(self.datatype):
-            metadata["choices"] = [v.value for v in enum_cls]
         # Create the backend
         backend_cls = MockSignalBackend if mock else SoftSignalBackend
         self.backend = backend_cls(self.datatype, self.initial_value, metadata)

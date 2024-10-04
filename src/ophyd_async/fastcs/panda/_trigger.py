@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from ophyd_async.core import TriggerLogic, wait_for_value
 
-from ._block import BitMux, PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
+from ._block import BitMux, PcompBlock, PcompDirection, SeqBlock, TimeUnits
 from ._table import SeqTable
 
 
@@ -54,7 +54,7 @@ class PcompInfo(BaseModel):
         ),
         ge=0,
     )
-    direction: PcompDirectionOptions = Field(
+    direction: PcompDirection = Field(
         description=(
             "Specifies which direction the motor counts should be "
             "moving. Pulses won't be sent unless the values are moving in "

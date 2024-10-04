@@ -215,7 +215,7 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
 
     async def locate(self) -> Location:
         """Return the setpoint and readback."""
-        setpoint, readback = asyncio.gather(
+        setpoint, readback = await asyncio.gather(
             self.connect.backend.get_setpoint(), self.get_value()
         )
         return Location(setpoint=setpoint, readback=readback)

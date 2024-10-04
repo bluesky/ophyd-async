@@ -108,7 +108,7 @@ class PandaHDFWriter(DetectorWriter):
             HDFDataset(
                 dataset_name, "/" + dataset_name, [1], multiplier=1, chunk_shape=(1024,)
             )
-            for dataset_name in capture_table["name"]
+            for dataset_name in capture_table.name
         ]
 
         # Warn user if dataset table is empty in PandA

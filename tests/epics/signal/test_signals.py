@@ -658,37 +658,6 @@ async def test_pva_table(ioc: IOC) -> None:
             q.close()
 
 
-async def test_pvi_structure(ioc: IOC) -> None:
-    if ioc.protocol == "ca":
-        # CA can't do structure
-        return
-    # Make and connect the backend
-    backend = await ioc.make_backend(dict, "pvi")
-
-    # Make a monitor queue that will monitor for updates
-    q = MonitorQueue(backend)
-
-    expected = {
-        "width": {
-            "rw": f"{PV_PREFIX}:{ioc.protocol}:width",
-        },
-        "height": {
-            "rw": f"{PV_PREFIX}:{ioc.protocol}:height",
-        },
-    }
-
-    try:
-        # Check datakey
-        with pytest.raises(TypeError):
-            await backend.get_datakey("")
-        # Check initial value
-        await q.assert_updates(expected)
-        await backend.get_value()
-
-    finally:
-        q.close()
-
-
 async def test_pva_ntdarray(ioc: IOC):
     if ioc.protocol == "ca":
         # CA can't do ndarray

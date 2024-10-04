@@ -18,6 +18,9 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
+        # TODO: add Tango support
+        # This has to be first so we make self.pcap
+        connector = PviDeviceConnector(self, uri + "PVI")
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             path_provider=path_provider,
@@ -29,6 +32,5 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
             writer=writer,
             config_sigs=config_sigs,
             name=name,
-            # TODO: add Tango support
-            connector=PviDeviceConnector(self, uri + "PVI"),
+            connector=connector,
         )

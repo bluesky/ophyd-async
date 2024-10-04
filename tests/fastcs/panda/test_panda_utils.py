@@ -2,8 +2,8 @@ import numpy as np
 import yaml
 from bluesky import RunEngine
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DeviceCollector, load_device, save_device
-from ophyd_async.epics.pvi import fill_pvi_entries
+from ophyd_async.core import DeviceCollector, load_device, save_device
+from ophyd_async.epics.pvi._pvi import PviDeviceConnector
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
@@ -20,13 +20,7 @@ async def get_mock_panda():
 
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name)
-
-        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-            await super().connect(mock=mock, timeout=timeout)
+            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDA")
@@ -93,7 +87,6 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
         "pulse.1.width": 0.0,
         "pulse.2.delay": 0.0,
         "pulse.2.width": 0.0,
-        "seq.1.active": False,
         "seq.1.table": {
             "outa1": [False],
             "outa2": [False],
@@ -135,7 +128,6 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
             "time2": [],
             "trigger": [],
         },
-        "seq.2.active": False,
         "seq.2.repeats": 0,
         "seq.2.prescale": 0.0,
         "seq.2.enable": "ZERO",

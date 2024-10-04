@@ -4,11 +4,9 @@ import os
 from pathlib import Path
 from unittest.mock import ANY
 
-import numpy as np
 import pytest
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
     HDFFile,
@@ -20,7 +18,7 @@ from ophyd_async.core import (
 from ophyd_async.core._mock_signal_utils import (
     callback_on_mock_put,
 )
-from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.epics.pvi._pvi import PviDeviceConnector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DatasetTable,
@@ -30,28 +28,20 @@ from ophyd_async.fastcs.panda import (
 
 TABLES = [
     DatasetTable(
-        name=np.array([]),
+        name=[],
         hdf5_type=[],
     ),
     DatasetTable(
-        name=np.array(
-            [
-                "x",
-            ]
-        ),
-        hdf5_type=[
-            PandaHdf5DatasetType.UINT_32,
-        ],
+        name=["x"],
+        hdf5_type=[PandaHdf5DatasetType.UINT_32],
     ),
     DatasetTable(
-        name=np.array(
-            [
-                "x",
-                "y",
-                "y_min",
-                "y_max",
-            ]
-        ),
+        name=[
+            "x",
+            "y",
+            "y_min",
+            "y_max",
+        ],
         hdf5_type=[
             PandaHdf5DatasetType.UINT_32,
             PandaHdf5DatasetType.FLOAT_64,
@@ -65,7 +55,7 @@ TABLES = [
 @pytest.fixture
 async def panda_t():
     class CaptureBlock(Device):
-        test_capture: SignalR
+        test_capture: SignalR[float]
 
     class Panda(CommonPandaBlocks):
         block_a: CaptureBlock
@@ -73,14 +63,7 @@ async def panda_t():
 
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            create_children_from_annotations(self)
-            super().__init__(name)
-
-        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-            await super().connect(mock=mock, timeout=timeout)
+            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
 
     yield Panda
 
@@ -101,7 +84,7 @@ async def mock_panda(panda_t):
     set_mock_value(
         mock_panda.data.datasets,
         DatasetTable(
-            name=np.array([]),
+            name=[],
             hdf5_type=[],
         ),
     )
@@ -115,7 +98,6 @@ async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     dp = StaticPathProvider(fp, tmp_path / mock_panda.name, create_dir_depth=-1)
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
-            prefix="TEST-PANDA",
             path_provider=dp,
             name_provider=lambda: mock_panda.name,
             panda_data_block=mock_panda.data,
@@ -138,11 +120,11 @@ async def test_open_returns_correct_descriptors(
         description = await mock_writer.open()  # to make capturing status not time out
 
         # Check if empty datasets table leads to warning log message
-        if len(table["name"]) == 0:
+        if len(table.name) == 0:
             assert "DATASETS table is empty!" in caplog.text
 
     for key, entry, expected_key in zip(
-        description.keys(), description.values(), table["name"], strict=False
+        description.keys(), description.values(), table.name, strict=False
     ):
         assert key == expected_key
         assert entry == {
@@ -222,9 +204,9 @@ async def test_collect_stream_docs(
     assert type(mock_writer._file) is HDFFile
     assert mock_writer._file._last_emitted == 1
 
-    for i in range(len(table["name"])):
+    for i in range(len(table.name)):
         resource_doc = mock_writer._file._bundles[i].stream_resource_doc
-        name = table["name"][i]
+        name = table.name[i]
 
         assert_resource_document(name=name, resource_doc=resource_doc)
 
@@ -238,7 +220,6 @@ async def test_oserror_when_hdf_dir_does_not_exist(tmp_path, mock_panda):
     )
     async with DeviceCollector(mock=True):
         writer = PandaHDFWriter(
-            prefix="TEST-PANDA",
             path_provider=dp,
             name_provider=lambda: "test-panda",
             panda_data_block=mock_panda.data,

@@ -1,14 +1,13 @@
 import pytest
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
     DeviceVector,
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.epics.pvi import PviDeviceConnector
 
 
 class Block1(Device):
@@ -26,7 +25,7 @@ class Block2(Device):
 
 
 class Block3(Device):
-    device_vector: DeviceVector[Block2] | None
+    device_vector: DeviceVector[Block2]
     device: Block2
     signal_device: Block1
     signal_x: SignalX
@@ -40,16 +39,7 @@ def pvi_test_device_t():
     class TestDevice(Block3, Device):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name)
-
-        async def connect(  # type: ignore
-            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
-        ) -> None:
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-
-            await super().connect(mock=mock)
+            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
 
     yield TestDevice
 
@@ -103,17 +93,7 @@ def pvi_test_device_create_children_from_annotations_t():
     class TestDevice(Block3, Device):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name)
-            create_children_from_annotations(self)
-
-        async def connect(  # type: ignore
-            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
-        ) -> None:
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-
-            await super().connect(mock=mock)
+            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
 
     yield TestDevice
 
@@ -157,21 +137,7 @@ def pvi_test_device_with_device_vectors_t():
     class TestDevice(TestBlock):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            create_children_from_annotations(
-                self,
-                included_optional_fields=("device", "signal_rw"),
-                device_vectors={"device_vector": 2},
-            )
-            super().__init__(name)
-
-        async def connect(  # type: ignore
-            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
-        ) -> None:
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-
-            await super().connect(mock=mock)
+            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
 
     yield TestDevice
 
