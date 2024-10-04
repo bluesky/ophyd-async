@@ -13,11 +13,14 @@ from types import GenericAlias
 from typing import Any, Dict, Literal, Optional, Sequence, Tuple, Type
 from unittest.mock import ANY
 
+import bluesky.plan_stubs as bps
 import numpy as np
 import numpy.typing as npt
 import pytest
 from aioca import CANothing, purge_channel_caches
 from bluesky.protocols import DataKey, Reading
+from bluesky.run_engine import RunEngine
+from ophyd.signal import EpicsSignal
 from typing_extensions import TypedDict
 
 from ophyd_async.core import (
@@ -901,3 +904,21 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
         TypeError, match=f"{ioc.protocol}:float_prec_1 has type float not int"
     ):
         await sig.connect()
+
+
+async def test_can_read_using_ophyd_async_then_ophyd(ioc: IOC):
+    oa_read = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_1"
+    ophyd_read = f"{PV_PREFIX}:{ioc.protocol}:float_prec_0"
+
+    ophyd_async_sig = epics_signal_rw(float, oa_read)
+    await ophyd_async_sig.connect()
+    ophyd_signal = EpicsSignal(ophyd_read)
+    ophyd_signal.wait_for_connection()
+
+    RE = RunEngine()
+
+    def my_plan():
+        yield from bps.rd(ophyd_async_sig)
+        yield from bps.rd(ophyd_signal)
+
+    RE(my_plan())
