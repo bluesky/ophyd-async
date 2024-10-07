@@ -1,25 +1,22 @@
 import pytest
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
-    DeviceCollector,
     PathProvider,
     set_mock_value,
 )
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import advimba
+from ophyd_async.epics.advimba._vimba_io import (
+    VimbaExposeOutMode,
+    VimbaOnOff,
+    VimbaTriggerSource,
+)
 
 
 @pytest.fixture
-async def test_advimba(
-    RE: RunEngine,
-    static_path_provider: PathProvider,
-) -> advimba.VimbaDetector:
-    async with DeviceCollector(mock=True):
-        test_advimba = advimba.VimbaDetector("VIMBA:", static_path_provider)
-
-    return test_advimba
+def test_advimba(ad_standard_det_factory) -> advimba.VimbaDetector:
+    return ad_standard_det_factory(advimba.VimbaDetector)
 
 
 async def test_get_deadtime(
@@ -30,9 +27,9 @@ async def test_get_deadtime(
 
 
 async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
-    set_mock_value(test_advimba.drv.trigger_source, "Freerun")
-    set_mock_value(test_advimba.drv.trigger_mode, "Off")
-    set_mock_value(test_advimba.drv.exposure_mode, "Timed")
+    set_mock_value(test_advimba.drv.trigger_source, VimbaTriggerSource.freerun)
+    set_mock_value(test_advimba.drv.trigger_mode, VimbaOnOff.off)
+    set_mock_value(test_advimba.drv.exposure_mode, VimbaExposeOutMode.timed)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_advimba.controller.prepare(TriggerInfo(number=1, trigger=trig_mode))
@@ -68,7 +65,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
 
 async def test_hints_from_hdf_writer(test_advimba: advimba.VimbaDetector):
-    assert test_advimba.hints == {"fields": ["test_advimba"]}
+    assert test_advimba.hints == {"fields": [test_advimba.name]}
 
 
 async def test_can_read(test_advimba: advimba.VimbaDetector):
@@ -79,16 +76,13 @@ async def test_can_read(test_advimba: advimba.VimbaDetector):
 async def test_decribe_describes_writer_dataset(
     test_advimba: advimba.VimbaDetector, one_shot_trigger_info: TriggerInfo
 ):
-    set_mock_value(test_advimba._writer.hdf.file_path_exists, True)
-    set_mock_value(test_advimba._writer.hdf.capture, True)
-
     assert await test_advimba.describe() == {}
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
     assert await test_advimba.describe() == {
-        "test_advimba": {
-            "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_advimba1": {
+            "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -102,10 +96,8 @@ async def test_can_collect(
     one_shot_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
-    full_file_name = path_info.directory_path / "foo.h5"
-    set_mock_value(test_advimba.hdf.full_file_name, str(full_file_name))
-    set_mock_value(test_advimba._writer.hdf.file_path_exists, True)
-    set_mock_value(test_advimba._writer.hdf.capture, True)
+    full_file_name = path_info.directory_path / f"{path_info.filename}.h5"
+
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
     docs = [(name, doc) async for name, doc in test_advimba.collect_asset_docs(1)]
@@ -113,12 +105,13 @@ async def test_can_collect(
     assert docs[0][0] == "stream_resource"
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "test_advimba"
+    assert stream_resource["data_key"] == "test_advimba1"
     assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,
         "multiplier": 1,
+        "chunk_shape": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
     stream_datum = docs[1][1]
@@ -130,15 +123,13 @@ async def test_can_collect(
 async def test_can_decribe_collect(
     test_advimba: advimba.VimbaDetector, one_shot_trigger_info: TriggerInfo
 ):
-    set_mock_value(test_advimba._writer.hdf.file_path_exists, True)
-    set_mock_value(test_advimba._writer.hdf.capture, True)
     assert (await test_advimba.describe_collect()) == {}
     await test_advimba.stage()
     await test_advimba.prepare(one_shot_trigger_info)
     assert (await test_advimba.describe_collect()) == {
-        "test_advimba": {
-            "source": "mock+ca://VIMBA:HDF1:FullFileName_RBV",
-            "shape": (0, 0),
+        "test_advimba1": {
+            "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
+            "shape": (10, 10),
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

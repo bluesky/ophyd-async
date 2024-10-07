@@ -50,11 +50,14 @@ class ADHDFWriter(DetectorWriter):
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._file = None
-        info = self._path_provider(device_name=self.hdf.name)
+        info = self._path_provider(device_name=self._name_provider())
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
         await self.hdf.create_directory.set(info.create_dir_depth)
+
+        # Make sure we are using chunk auto-sizing
+        await asyncio.gather(self.hdf.chunk_size_auto.set(True))
 
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
@@ -84,6 +87,9 @@ class ADHDFWriter(DetectorWriter):
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
 
+        # Determine number of frames that will be saved per HDF chunk
+        frames_per_chunk = await self.hdf.num_frames_chunks.get_value()
+
         # Add the main data
         self._datasets = [
             HDFDataset(
@@ -92,6 +98,7 @@ class ADHDFWriter(DetectorWriter):
                 shape=detector_shape,
                 dtype_numpy=np_dtype,
                 multiplier=multiplier,
+                chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
         # And all the scalar datasets
@@ -118,6 +125,9 @@ class ADHDFWriter(DetectorWriter):
                             (),
                             np_datatype,
                             multiplier,
+                            # NDAttributes appear to always be configured with
+                            # this chunk size
+                            chunk_shape=(16384,),
                         )
                     )
 

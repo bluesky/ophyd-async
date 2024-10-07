@@ -46,6 +46,9 @@ async def hdf_writer_with_stats(
         hdf = adcore.NDFileHDFIO("HDF:")
         stats = adcore.NDPluginStatsIO("FOO:")
 
+    # Set number of frames per chunk to something reasonable
+    set_mock_value(hdf.num_frames_chunks, 2)
+
     return adcore.ADHDFWriter(
         hdf,
         static_path_provider,
