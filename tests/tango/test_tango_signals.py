@@ -14,7 +14,7 @@ from test_base_device import TestDevice
 from ophyd_async.core import SignalBackend, SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.tango import (
     TangoSignalBackend,
-    tango_signal_auto,
+    __tango_signal_auto,
     tango_signal_r,
     tango_signal_rw,
     tango_signal_w,
@@ -646,7 +646,7 @@ async def test_tango_signal_auto_attrs(
     timeout = 0.2
 
     async def _test_signal(dtype, proxy):
-        signal = await tango_signal_auto(
+        signal = await __tango_signal_auto(
             datatype=dtype,
             trl=source,
             device_proxy=proxy,
@@ -720,7 +720,7 @@ async def test_tango_signal_auto_cmds(
     timeout = 0.2
 
     async def _test_signal(dtype, proxy):
-        signal = await tango_signal_auto(
+        signal = await __tango_signal_auto(
             datatype=dtype,
             trl=source,
             device_proxy=proxy,
@@ -751,7 +751,7 @@ async def test_tango_signal_auto_cmds(
 @pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bool):
     proxy = await DeviceProxy(tango_test_device) if use_proxy else None
-    signal = await tango_signal_auto(
+    signal = await __tango_signal_auto(
         datatype=None,
         trl=tango_test_device + "/" + "clear",
         device_proxy=proxy,
@@ -767,7 +767,7 @@ async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bo
 async def test_tango_signal_auto_badtrl(tango_test_device: str):
     proxy = await DeviceProxy(tango_test_device)
     with pytest.raises(RuntimeError) as exc_info:
-        await tango_signal_auto(
+        await __tango_signal_auto(
             datatype=None,
             trl=tango_test_device + "/" + "badtrl",
             device_proxy=proxy,

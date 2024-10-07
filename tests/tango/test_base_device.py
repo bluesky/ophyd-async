@@ -377,7 +377,6 @@ async def test_with_bluesky(tango_test_device):
 async def test_tango_demo(demo_test_context):
     with demo_test_context:
         detector = TangoDetector(
-            trl="",
             name="detector",
             mover_trl="demo/motor/1",
             counter_trls=["demo/counter/1", "demo/counter/2"],

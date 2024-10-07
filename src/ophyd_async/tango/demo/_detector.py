@@ -3,30 +3,26 @@ import asyncio
 from ophyd_async.core import (
     AsyncStatus,
     DeviceVector,
+    StandardReadable,
 )
-from ophyd_async.tango import TangoReadable
 
 from ._counter import TangoCounter
 from ._mover import TangoMover
 
 
-class TangoDetector(TangoReadable):
-    counters: DeviceVector[TangoCounter]
-    mover: TangoMover
-
-    def __init__(self, trl: str, mover_trl: str, counter_trls: list[str], name=""):
-        super().__init__(trl, name=name)
-
-        # If devices are inferred from type hints, they will be created automatically
-        # during init. If they are created automatically, their trl must be set before
-        # they are connected.
-        self.mover.set_trl(mover_trl)
-        for i, c_trl in enumerate(counter_trls):
-            self.counters[i + 1] = TangoCounter(c_trl)
+class TangoDetector(StandardReadable):
+    def __init__(self, mover_trl: str, counter_trls: list[str], name=""):
+        # A detector device may be composed of tango sub-devices
+        self.mover = TangoMover(mover_trl)
+        self.counters = DeviceVector(
+            {i + 1: TangoCounter(c_trl) for i, c_trl in enumerate(counter_trls)}
+        )
 
         # Define the readables for TangoDetector
         # DeviceVectors are incompatible with AsyncReadable. Ignore until fixed.
         self.add_readables([self.counters, self.mover])  # type: ignore
+
+        super().__init__(name=name)
 
     def set(self, value):
         return self.mover.set(value)

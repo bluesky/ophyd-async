@@ -14,7 +14,11 @@ from ophyd_async.core import (
     DeviceVector,
     Signal,
 )
-from ophyd_async.tango.signal import TangoSignalBackend, make_backend, tango_signal_auto
+from ophyd_async.tango.signal import (
+    TangoSignalBackend,
+    __tango_signal_auto,
+    make_backend,
+)
 from tango import DeviceProxy as DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
@@ -193,7 +197,7 @@ async def _fill_proxy_entries(device: TangoDevice):
         if name not in children:
             full_trl = f"{proxy_trl}/{name}"
             try:
-                auto_signal = await tango_signal_auto(
+                auto_signal = await __tango_signal_auto(
                     trl=full_trl, device_proxy=device.proxy
                 )
                 setattr(device, name, auto_signal)

@@ -128,7 +128,7 @@ def tango_signal_x(
     return SignalX(backend, timeout=timeout, name=name)
 
 
-async def tango_signal_auto(
+async def __tango_signal_auto(
     datatype: type[T] | None = None,
     *,
     trl: str,
