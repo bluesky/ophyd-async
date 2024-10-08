@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.6.1.dev7+ge291396b documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.6.1.dev8+g1559aa0e documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=23336d80"></script>
+    <script src="../_static/documentation_options.js?v=5a317597"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -625,21 +625,21 @@ may change API on minor release numbers before then</p>
 </dl>
 <dl class="py attribute pydantic_field">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.FlyMotorInfo.end_position">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.end_position" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.end_position" title="Link to this definition">#</a></dt>
 <dd><p>Absolute position of the motor once it begins decelerating from desired
 velocity, in EGUs</p>
 </dd></dl>
 
 <dl class="py attribute pydantic_field">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.FlyMotorInfo.start_position">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.start_position" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.start_position" title="Link to this definition">#</a></dt>
 <dd><p>Absolute position of the motor once it finishes accelerating to desired
 velocity, in motor EGUs</p>
 </dd></dl>
 
 <dl class="py attribute pydantic_field">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.FlyMotorInfo.time_for_move">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time_for_move</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.time_for_move" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time_for_move</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"> <span class="pre">[Required]</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.time_for_move" title="Link to this definition">#</a></dt>
 <dd><p>Time taken for the motor to get from start_position to end_position, excluding
 run-up and run-down, in seconds.</p>
 <dl class="field-list simple">
@@ -653,7 +653,7 @@ run-up and run-down, in seconds.</p>
 
 <dl class="py attribute pydantic_field">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.FlyMotorInfo.timeout">
-<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'CALCULATE_TIMEOUT'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CALCULATE_TIMEOUT'</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.timeout" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'CALCULATE_TIMEOUT'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CALCULATE_TIMEOUT'</span></em><a class="headerlink" href="#ophyd_async.epics.motor.FlyMotorInfo.timeout" title="Link to this definition">#</a></dt>
 <dd><p>Maximum time for the complete motor move, including run up and run down.
 Defaults to <a class="reference internal" href="#ophyd_async.epics.motor.FlyMotorInfo.time_for_move" title="ophyd_async.epics.motor.FlyMotorInfo.time_for_move"><code class="xref any py py-obj docutils literal notranslate"><span class="pre">time_for_move</span></code></a> + run up and run down times + 10s.</p>
 </dd></dl>
@@ -662,7 +662,7 @@ Defaults to <a class="reference internal" href="#ophyd_async.epics.motor.FlyMoto
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.motor.</span></span><span class="sig-name descname"><span class="pre">Motor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/motor.html#Motor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.motor.</span></span><span class="sig-name descname"><span class="pre">Motor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/motor.html#Motor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor" title="Link to this definition">#</a></dt>
 <dd><p>Device that moves a motor record</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor.prepare">
