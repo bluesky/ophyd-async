@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import (
     TypeVar,
-    Union,
     get_args,
     get_origin,
     get_type_hints,
@@ -11,7 +10,6 @@ from typing import (
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
-    DeviceVector,
     Signal,
 )
 from ophyd_async.tango.signal import (
@@ -160,28 +158,28 @@ def tango_create_children_from_annotations(
         if name in ("_name", "parent"):
             continue
 
-        device_type, is_optional = _strip_union(device_type)
-        if is_optional and name not in included_optional_fields:
-            continue
+        # device_type, is_optional = _strip_union(device_type)
+        # if is_optional and name not in included_optional_fields:
+        #     continue
+        #
+        # is_device_vector, device_type = _strip_device_vector(device_type)
+        # if is_device_vector:
+        #     n_device_vector = DeviceVector()
+        #     setattr(device, name, n_device_vector)
 
-        is_device_vector, device_type = _strip_device_vector(device_type)
-        if is_device_vector:
-            n_device_vector = DeviceVector()
-            setattr(device, name, n_device_vector)
+        # else:
+        origin = get_origin(device_type)
+        origin = origin if origin else device_type
 
-        else:
-            origin = get_origin(device_type)
-            origin = origin if origin else device_type
+        if issubclass(origin, Signal):
+            type_args = get_args(device_type)
+            datatype = type_args[0] if type_args else None
+            backend = make_backend(datatype=datatype, device_proxy=device.proxy)
+            setattr(device, name, origin(name=name, backend=backend))
 
-            if issubclass(origin, Signal):
-                type_args = get_args(device_type)
-                datatype = type_args[0] if type_args else None
-                backend = make_backend(datatype=datatype, device_proxy=device.proxy)
-                setattr(device, name, origin(name=name, backend=backend))
-
-            elif issubclass(origin, Device) or isinstance(origin, Device):
-                assert callable(origin), f"{origin} is not callable."
-                setattr(device, name, origin())
+        elif issubclass(origin, Device) or isinstance(origin, Device):
+            assert callable(origin), f"{origin} is not callable."
+            setattr(device, name, origin())
 
 
 async def _fill_proxy_entries(device: TangoDevice):
@@ -211,17 +209,17 @@ async def _fill_proxy_entries(device: TangoDevice):
                 raise e
 
 
-def _strip_union(field: T | T) -> tuple[T, bool]:
-    if get_origin(field) is Union:
-        args = get_args(field)
-        is_optional = type(None) in args
-        for arg in args:
-            if arg is not type(None):
-                return arg, is_optional
-    return field, False
-
-
-def _strip_device_vector(field: type[Device]) -> tuple[bool, type[Device]]:
-    if get_origin(field) is DeviceVector:
-        return True, get_args(field)[0]
-    return False, field
+# def _strip_union(field: T | T) -> tuple[T, bool]:
+#     if get_origin(field) is Union:
+#         args = get_args(field)
+#         is_optional = type(None) in args
+#         for arg in args:
+#             if arg is not type(None):
+#                 return arg, is_optional
+#     return field, False
+#
+#
+# def _strip_device_vector(field: type[Device]) -> tuple[bool, type[Device]]:
+#     if get_origin(field) is DeviceVector:
+#         return True, get_args(field)[0]
+#     return False, field
