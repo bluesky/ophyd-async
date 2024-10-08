@@ -67,9 +67,9 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
 
     return adcore.ADHDFWriter(
         hdf,
-        path_provider=static_path_provider,
-        name_provider=lambda: "test",
-        dataset_describer=AsyncMock(),
+        static_path_provider,
+        lambda: "test",
+        AsyncMock(),
     )
 
 

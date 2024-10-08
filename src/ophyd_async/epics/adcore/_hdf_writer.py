@@ -10,17 +10,18 @@ from event_model import DataKey
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
+    DatasetDescriber,
     HDFDataset,
     HDFFile,
+    NameProvider,
+    PathProvider,
     observe_value,
-    set_and_wait_for_value,
     wait_for_value,
 )
 
-from ._core_io import NDFileHDFIO
+from ._core_io import NDArrayBaseIO, NDFileHDFIO
 from ._core_writer import ADWriter
 from ._utils import (
-    FileWriteMode,
     convert_param_dtype_to_np,
     convert_pv_dtype_to_np,
 )
@@ -29,24 +30,37 @@ from ._utils import (
 class ADHDFWriter(ADWriter):
     def __init__(
         self,
-        *args,
+        hdf: NDFileHDFIO,
+        path_provider: PathProvider,
+        name_provider: NameProvider,
+        dataset_describer: DatasetDescriber,
+        *plugins: NDArrayBaseIO,
     ) -> None:
-        super().__init__(*args, file_extension=".h5", mimetype="application/x-hdf5")
-        self.hdf = cast(NDFileHDFIO, self.fileio)
+        super().__init__(
+            hdf,
+            path_provider,
+            name_provider,
+            dataset_describer,
+            ".h5",
+            "application/x-hdf5",
+        )
+        self.hdf = cast(NDFileHDFIO, self._fileio)
 
         self._file: HDFFile | None = None
         self._capture_status: AsyncStatus | None = None
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
-        self._multiplier = 1
+        self._plugins = plugins
+        self._include_file_number = False
+
+    @property
+    def include_file_number(self):
+        return self._include_file_number
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._file = None
-        info = self._path_provider(device_name=self._name_provider())
 
-        # Set the directory creation depth first, since dir creation callback happens
-        # when directory path PV is processed.
-        await self.hdf.create_directory.set(info.create_dir_depth)
+        # Setting HDF writer specific signals
 
         # Make sure we are using chunk auto-sizing
         await asyncio.gather(self.hdf.chunk_size_auto.set(True))
@@ -55,24 +69,17 @@ class ADHDFWriter(ADWriter):
             self.hdf.num_extra_dims.set(0),
             self.hdf.lazy_open.set(True),
             self.hdf.swmr_mode.set(True),
-            # See https://github.com/bluesky/ophyd-async/issues/122
-            self.hdf.file_path.set(str(info.directory_path)),
-            self.hdf.file_name.set(info.filename),
-            self.hdf.file_template.set("%s/%s.h5"),
-            self.hdf.file_write_mode.set(FileWriteMode.stream),
-            # Never use custom xml layout file but use the one defined
-            # in the source code file NDFileHDF5LayoutXML.cpp
             self.hdf.xml_file_name.set(""),
         )
 
-        assert (
-            await self.hdf.file_path_exists.get_value()
-        ), f"File path {info.directory_path} for hdf plugin does not exist"
+        # By default, don't add file number to filename
+        self._filename_template = "%s%s"
+        if self._include_file_number:
+            self._filename_template += "_%6.6d"
 
-        # Overwrite num_capture to go forever
-        await self.hdf.num_capture.set(0)
-        # Wait for it to start, stashing the status that tells us when it finishes
-        self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
+        # Set common AD file plugin params, begin capturing
+        await self.begin_capture()
+
         name = self._name_provider()
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
