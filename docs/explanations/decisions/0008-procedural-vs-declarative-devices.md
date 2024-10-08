@@ -56,7 +56,7 @@ Which do we prefer?
 
 ## Decision
 
-We decided that the declarative approach is to be preferred until we need to write formatted strings. At that point we should drop to an `__init__` method and a for loop. 
+We decided that the declarative approach is to be preferred until we need to write formatted strings. At that point we should drop to an `__init__` method and a for loop. This is not a step towards only supporting the declarative approach and there are no plans to drop the procedural approach.
 
 ## Consequences
 
