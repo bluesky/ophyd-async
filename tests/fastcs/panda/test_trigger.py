@@ -19,7 +19,6 @@ from ophyd_async.fastcs.panda import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
-from ophyd_async.fastcs.panda._table import SeqTrigger
 
 
 @pytest.fixture
@@ -106,8 +105,8 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
     trigger_logic = ScanSpecSeqTableTriggerLogic(mock_panda.seq[1])
     await trigger_logic.prepare(info)
     out = await trigger_logic.seq.table.get_value()
-    assert (out["repeats"] == [1, 1, 1, 5, 1, 1, 1, 5, 1, 1, 1, 5]).all()
-    assert out["trigger"] == [
+    assert (out.repeats == [1, 1, 1, 5, 1, 1, 1, 5, 1, 1, 1, 5, 1]).all()
+    assert out.trigger == [
         SeqTrigger.BITA_0,
         SeqTrigger.BITA_1,
         SeqTrigger.POSA_GT,
@@ -120,10 +119,11 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
         SeqTrigger.BITA_1,
         SeqTrigger.POSA_GT,
         SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
     ]
-    assert (out["position"] == [0, 0, 2, 0, 0, 0, 27, 0, 0, 0, 2, 0]).all()
-    assert (out["time1"] == [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000]).all()
-    assert (out["time2"] == [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000]).all()
+    assert (out.position == [0, 0, 2, 0, 0, 0, 27, 0, 0, 0, 2, 0, 0]).all()
+    assert (out.time1 == [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000, 0]).all()
+    assert (out.time2 == [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000, 0]).all()
 
 
 @pytest.mark.parametrize(

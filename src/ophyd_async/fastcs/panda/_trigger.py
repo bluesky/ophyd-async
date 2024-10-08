@@ -8,7 +8,7 @@ from ophyd_async.core import FlyerController, wait_for_value
 from ophyd_async.epics import motor
 
 from ._block import PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
-from ._table import SeqTable, SeqTableRow, SeqTrigger, seq_table_from_rows
+from ._table import SeqTable, SeqTrigger
 
 
 class SeqTableInfo(BaseModel):
@@ -18,7 +18,7 @@ class SeqTableInfo(BaseModel):
 
 
 class ScanSpecInfo(BaseModel):
-    spec: Spec[motor.Motor] = Field()
+    spec: Spec = Field(default=None)
     deadtime: float = Field()
 
 
@@ -49,12 +49,11 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
         await wait_for_value(self.seq.active, False, timeout=1)
 
 
-class ScanSpecSeqTableTriggerLogic(TriggerLogic[ScanSpecInfo]):
+class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
     def __init__(self, seq: SeqBlock, name="") -> None:
         self.seq = seq
         self.name = name
 
-    @AsyncStatus.wrap
     async def prepare(self, value: ScanSpecInfo):
         await asyncio.gather(
             self.seq.prescale_units.set(TimeUnits.us),
@@ -70,16 +69,11 @@ class ScanSpecSeqTableTriggerLogic(TriggerLogic[ScanSpecInfo]):
         fast_axis = chunk.axes()[len(chunk.axes()) - 2]
         gaps = np.append(gaps, scan_size)
         start = 0
-        rows: SeqTableRow = ()
+        # Wait for GPIO to go low
+        rows = SeqTable.row(trigger=SeqTrigger.BITA_0)
         for gap in gaps:
-            # Wait for GPIO to go low
-            rows += (SeqTableRow(trigger=SeqTrigger.BITA_0),)
             # Wait for GPIO to go high
-            rows += (
-                SeqTableRow(
-                    trigger=SeqTrigger.BITA_1,
-                ),
-            )
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_1)
             # Wait for position
             if chunk.midpoints[fast_axis][gap - 1] > chunk.midpoints[fast_axis][start]:
                 trig = SeqTrigger.POSA_GT
@@ -88,42 +82,38 @@ class ScanSpecSeqTableTriggerLogic(TriggerLogic[ScanSpecInfo]):
             else:
                 trig = SeqTrigger.POSA_LT
                 dir = True
-            rows += (
-                SeqTableRow(
-                    trigger=trig,
-                    position=chunk.lower[fast_axis][start]
-                    / await fast_axis.encoder_res.get_value(),
-                ),
+            rows += SeqTable.row(
+                trigger=trig,
+                position=chunk.lower[fast_axis][start]
+                / await fast_axis.encoder_res.get_value(),
             )
 
             # Time based triggers
-            rows += (
-                SeqTableRow(
-                    repeats=gap - start,
-                    trigger=SeqTrigger.IMMEDIATE,
-                    time1=(chunk.midpoints["DURATION"][0] - value.deadtime) * 10**6,
-                    time2=value.deadtime * 10**6,
-                    outa1=True,
-                    outb1=dir,
-                    outa2=False,
-                    outb2=False,
-                ),
+            rows += SeqTable.row(
+                repeats=gap - start,
+                trigger=SeqTrigger.IMMEDIATE,
+                time1=(chunk.midpoints["DURATION"][0] - value.deadtime) * 10**6,
+                time2=int(value.deadtime * 10**6),
+                outa1=True,
+                outb1=dir,
+                outa2=False,
+                outb2=False,
             )
 
+            # Wait for GPIO to go low
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_0)
+
             start = gap
-        table: SeqTable = seq_table_from_rows(rows)
         await asyncio.gather(
             self.seq.prescale.set(0),
             self.seq.repeats.set(1),
-            self.seq.table.set(table),
+            self.seq.table.set(rows),
         )
 
-    @AsyncStatus.wrap
     async def kickoff(self) -> None:
         await self.seq.enable.set("ONE")
         await wait_for_value(self.seq.active, True, timeout=1)
 
-    @WatchableAsyncStatus.wrap
     async def complete(self) -> None:
         await wait_for_value(self.seq.active, False, timeout=None)
 
@@ -134,7 +124,7 @@ class ScanSpecSeqTableTriggerLogic(TriggerLogic[ScanSpecInfo]):
     def _calculate_gaps(self, chunk: Frames[motor.Motor]):
         inds = np.argwhere(chunk.gap)
         if len(inds) == 0:
-            return len(chunk)
+            return [len(chunk)]
         else:
             return inds
 
