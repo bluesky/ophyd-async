@@ -10,6 +10,7 @@ from typing import (
     Optional,
     TypeVar,
 )
+from unittest.mock import Mock
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
@@ -73,7 +74,7 @@ class Device(HasName):
 
     async def connect(
         self,
-        mock: bool = False,
+        mock: bool | Mock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ):
@@ -89,16 +90,21 @@ class Device(HasName):
             Time to wait before failing with a TimeoutError.
         """
 
+        if mock is True:  # create a new Mock if one not provided
+            mock = Mock()
+
         if (
             self._previous_connect_was_mock is not None
-            and self._previous_connect_was_mock != mock
+            and self._previous_connect_was_mock != isinstance(mock, Mock)
         ):
             raise RuntimeError(
-                f"`connect(mock={mock})` called on a `Device` where the previous "
-                f"connect was `mock={self._previous_connect_was_mock}`. Changing mock "
-                "value between connects is not permitted."
+                "connect(mock) was called with mock evaluating "
+                f"to {bool(mock)} when previous connect had mock "
+                f" evaluate to {self._previous_connect_was_mock}. "
+                "Changing mock value between connects is not permitted."
             )
-        self._previous_connect_was_mock = mock
+
+        self._previous_connect_was_mock = isinstance(mock, Mock)
 
         # If previous connect with same args has started and not errored, can use it
         can_use_previous_connect = self._connect_task and not (
@@ -106,12 +112,16 @@ class Device(HasName):
         )
         if force_reconnect or not can_use_previous_connect:
             # Kick off a connection
-            coros = {
-                name: child_device.connect(
-                    mock, timeout=timeout, force_reconnect=force_reconnect
+            coros = {}
+
+            for child_name, child_device in self.children():
+                # if mock is Mock instance, get child Mock if exists
+                # else pass down boolean
+                child_mock = getattr(mock, child_name, True) if mock else mock
+                coros[child_name] = child_device.connect(
+                    child_mock, timeout=timeout, force_reconnect=force_reconnect
                 )
-                for name, child_device in self.children()
-            }
+
             self._connect_task = asyncio.create_task(wait_for_connection(**coros))
 
         assert self._connect_task, "Connect task not created, this shouldn't happen"

@@ -127,7 +127,7 @@ async def test_device_log_has_correct_name():
     assert device.log.extra["ophyd_async_device_name"] == "device"
 
 
-async def test_device_lazily_connects(RE):
+async def test_device_connect(RE):
     class MockSignalBackendFailingFirst(MockSignalBackend):
         succeed_on_connect = False
 
@@ -178,8 +178,10 @@ async def test_device_refuses_two_connects_differing_on_mock_attribute(RE):
     with pytest.raises(RuntimeError) as exc:
         await motor.connect(mock=True)
     assert str(exc.value) == (
-        "`connect(mock=True)` called on a `Device` where the previous connect was "
-        "`mock=False`. Changing mock value between connects is not permitted."
+        "connect(mock) was called with mock evaluating "
+        "to True when previous connect had mock "
+        " evaluate to False. "
+        "Changing mock value between connects is not permitted."
     )
 
 
@@ -227,8 +229,10 @@ async def test_device_with_device_collector_refuses_to_connect_if_mock_switch():
     with pytest.raises(RuntimeError) as exc:
         await mock_motor.connect(mock=True, timeout=0.01)
     assert str(exc.value) == (
-        "`connect(mock=True)` called on a `Device` where the previous connect was "
-        "`mock=False`. Changing mock value between connects is not permitted."
+        "connect(mock) was called with mock evaluating "
+        "to True when previous connect had mock "
+        " evaluate to False. "
+        "Changing mock value between connects is not permitted."
     )
 
 
