@@ -235,3 +235,11 @@ def one_shot_trigger_info() -> TriggerInfo:
         deadtime=None,
         livetime=None,
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    tango_dir = "tests/tango"
+
+    for item in items:
+        if tango_dir in str(item.fspath):
+            item.add_marker(pytest.mark.forked)
