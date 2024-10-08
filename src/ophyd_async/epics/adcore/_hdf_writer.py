@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 from xml.etree import ElementTree as ET
 
 from bluesky.protocols import Hints, StreamAsset
@@ -10,18 +10,14 @@ from event_model import DataKey
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    DatasetDescriber,
-    DetectorWriter,
     HDFDataset,
     HDFFile,
-    NameProvider,
-    PathProvider,
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
 )
 
-from ._core_io import NDArrayBaseIO, NDFileHDFIO
+from ._core_io import NDFileHDFIO
 from ._core_writer import ADWriter
 from ._utils import (
     FileWriteMode,
@@ -35,15 +31,14 @@ class ADHDFWriter(ADWriter):
         self,
         *args,
     ) -> None:
-        super().__init__(*args)
+        super().__init__(*args, file_extension=".h5", mimetype="application/x-hdf5")
         self.hdf = cast(NDFileHDFIO, self.fileio)
 
-        self._file: Optional[HDFFile] = None
+        self._file: HDFFile | None = None
         self._capture_status: AsyncStatus | None = None
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
         self._multiplier = 1
-
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._file = None

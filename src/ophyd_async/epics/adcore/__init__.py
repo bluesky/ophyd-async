@@ -3,6 +3,7 @@ from ._core_io import (
     DetectorState,
     NDArrayBaseIO,
     NDFileHDFIO,
+    NDFileIO,
     NDPluginStatsIO,
 )
 from ._core_logic import (
@@ -13,6 +14,7 @@ from ._core_logic import (
 )
 from ._hdf_writer import ADHDFWriter
 from ._single_trigger import SingleTriggerDetector
+from ._tiff_writer import ADTIFFWriter
 from ._utils import (
     ADBaseDataType,
     FileWriteMode,
@@ -28,12 +30,14 @@ __all__ = [
     "ADBaseIO",
     "DetectorState",
     "NDArrayBaseIO",
+    "NDFileIO",
     "NDFileHDFIO",
     "NDPluginStatsIO",
     "DEFAULT_GOOD_STATES",
     "ADBaseDatasetDescriber",
     "set_exposure_time_and_acquire_period_if_supplied",
     "start_acquiring_driver_and_ensure_status",
+    "ADTIFFWriter",
     "ADHDFWriter",
     "SingleTriggerDetector",
     "ADBaseDataType",

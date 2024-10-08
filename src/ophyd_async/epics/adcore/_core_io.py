@@ -10,11 +10,6 @@ from ophyd_async.epics.signal import (
 from ._utils import ADBaseDataType, FileWriteMode, ImageMode
 
 
-class Callback(str, Enum):
-    Enable = "Enable"
-    Disable = "Disable"
-
-
 class NDArrayBaseIO(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.unique_id = epics_signal_r(int, prefix + "UniqueId_RBV")
@@ -32,9 +27,7 @@ class NDArrayBaseIO(Device):
 class NDPluginBaseIO(NDArrayBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
-        self.enable_callbacks = epics_signal_rw_rbv(
-            Callback, prefix + "EnableCallbacks"
-        )
+        self.enable_callbacks = epics_signal_rw_rbv(bool, prefix + "EnableCallbacks")
         self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0_RBV")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1_RBV")
@@ -118,6 +111,8 @@ class NDFileIO(NDPluginBaseIO):
         self.file_path_exists = epics_signal_r(bool, prefix + "FilePathExists_RBV")
         self.file_template = epics_signal_rw_rbv(str, prefix + "FileTemplate")
         self.full_file_name = epics_signal_r(str, prefix + "FullFileName_RBV")
+        self.file_number = epics_signal_rw(int, prefix + "FileNumber")
+        self.auto_increment = epics_signal_rw(bool, prefix + "AutoIncrement")
         self.file_write_mode = epics_signal_rw_rbv(
             FileWriteMode, prefix + "FileWriteMode"
         )
