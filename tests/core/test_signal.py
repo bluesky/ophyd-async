@@ -4,7 +4,6 @@ import time
 from asyncio import Event
 from unittest.mock import ANY
 
-import numpy
 import pytest
 from bluesky.protocols import Reading
 
@@ -290,20 +289,13 @@ async def test_create_soft_signal(signal_method, signal_class):
         signal, unused_backend_set = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
     elif signal_method == soft_signal_rw:
         signal = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+    else:
+        raise ValueError(signal_method)
     assert signal.source == f"soft://{SIGNAL_NAME}"
     assert isinstance(signal, signal_class)
-    assert isinstance(signal._backend, SoftSignalBackend)
     await signal.connect()
+    assert isinstance(signal.connect.backend, SoftSignalBackend)
     assert (await signal.get_value()) == INITIAL_VALUE
-
-
-async def test_soft_signal_numpy():
-    float_signal = soft_signal_rw(numpy.float64, numpy.float64(1), "float_signal")
-    int_signal = soft_signal_rw(numpy.int32, numpy.int32(1), "int_signal")
-    await float_signal.connect()
-    await int_signal.connect()
-    assert (await float_signal.describe())["float_signal"]["dtype"] == "number"
-    assert (await int_signal.describe())["int_signal"]["dtype"] == "integer"
 
 
 @pytest.fixture
@@ -376,13 +368,6 @@ async def test_assert_configuration(mock_readable: DummyReadable):
         },
     }
     await assert_configuration(mock_readable, dummy_config_reading)
-
-
-async def test_signal_connect_logs(caplog):
-    caplog.set_level(logging.DEBUG)
-    mock_signal_rw = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
-    await mock_signal_rw.connect(mock=True)
-    assert caplog.text.endswith("Connecting to mock+pva://mock_signal\n")
 
 
 async def test_signal_get_and_set_logging(caplog):

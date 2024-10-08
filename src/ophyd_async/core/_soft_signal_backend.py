@@ -61,7 +61,7 @@ class NDArraySoftConverter(SoftConverter[Array1D]):
     datatype: np.dtype
 
     def write_value(self, value: Any) -> Array1D:
-        return np.array(value or (), dtype=self.datatype)
+        return np.array(() if value is None else value, dtype=self.datatype)
 
 
 @dataclass

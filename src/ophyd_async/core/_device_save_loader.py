@@ -27,11 +27,8 @@ def pydantic_model_abstraction_representer(
     return dumper.represent_data(model.model_dump(mode="python"))
 
 
-class OphydDumper(yaml.Dumper):
-    def represent_data(self, data: Any) -> Any:
-        if isinstance(data, Enum):
-            return self.represent_data(data.value)
-        return super().represent_data(data)
+def enum_representer(dumper: yaml.Dumper, enum: Enum) -> yaml.Node:
+    return dumper.represent_data(enum.value)
 
 
 def get_signal_values(
@@ -145,9 +142,10 @@ def save_to_yaml(phases: Sequence[dict[str, Any]], save_path: str | Path) -> Non
         pydantic_model_abstraction_representer,
         Dumper=yaml.Dumper,
     )
+    yaml.add_multi_representer(Enum, enum_representer, Dumper=yaml.Dumper)
 
     with open(save_path, "w") as file:
-        yaml.dump(phases, file, Dumper=OphydDumper, default_flow_style=False)
+        yaml.dump(phases, file)
 
 
 def load_from_yaml(save_path: str) -> Sequence[dict[str, Any]]:

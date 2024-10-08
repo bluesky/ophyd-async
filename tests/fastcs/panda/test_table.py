@@ -68,18 +68,20 @@ def test_seq_table_validation_errors():
         ),
     ):
         large_seq_table + SeqTable.row()
-    with pytest.raises(
-        ValidationError,
-        match="1 validation error for SeqTable\n  Assertion failed, repeats: "
-        + "expected dtype uint16, got int32",
-    ):
-        row_one = SeqTable.row()
-        wrong_types = {
-            field_name: field_value.astype(np.int32)
-            for field_name, field_value in row_one
-            if isinstance(field_value, np.ndarray)
-        }
-        SeqTable(**wrong_types)
+    # TODO: validation of numpy types disabled until bool -> uint8 CA issue resolved
+    # with pytest.raises(
+    #     ValidationError,
+    #     match="1 validation error for SeqTable\n  Assertion failed, repeats: "
+    #     + "expected dtype uint16, got int32",
+    # ):
+    #     row_one = SeqTable.row()
+    #     wrong_types = {
+    #         field_name: field_value.astype(np.int32)
+    #         if isinstance(field_value, np.ndarray)
+    #         else field_value
+    #         for field_name, field_value in row_one
+    #     }
+    #     SeqTable(**wrong_types)
     with pytest.raises(
         ValidationError,
         match="trigger.0\n  Input should be 'Immediate', 'BITA=0'",

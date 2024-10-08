@@ -73,8 +73,8 @@ class MonitorQueue:
     [
         (int, 0, 43, integer_d, "<i8"),
         (float, 0.0, 43.5, number_d, "<f8"),
-        (str, "", "goodbye", string_d, "|T16"),
-        (MyEnum, MyEnum.a, MyEnum.c, enum_d, "|T16"),
+        (str, "", "goodbye", string_d, "|S40"),
+        (MyEnum, MyEnum.a, MyEnum.c, enum_d, "|S40"),
         (npt.NDArray[np.int8], [], [-8, 3, 44], waveform_d, "|i1"),
         (npt.NDArray[np.uint8], [], [218], waveform_d, "|u1"),
         (npt.NDArray[np.int16], [], [-855], waveform_d, "<i2"),
@@ -85,7 +85,7 @@ class MonitorQueue:
         (npt.NDArray[np.uint64], [], [995444], waveform_d, "<u8"),
         (npt.NDArray[np.float32], [], [1.0], waveform_d, "<f4"),
         (npt.NDArray[np.float64], [], [0.2], waveform_d, "<f8"),
-        (Sequence[str], [], ["nine", "ten"], waveform_d, "|T16"),
+        (Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
         # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
         # (str, "longstr", ls1, ls2, string_d),
         # (str, "longstr2.VAL$", ls1, ls2, string_d),

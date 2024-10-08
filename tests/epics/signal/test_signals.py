@@ -1,6 +1,5 @@
 import asyncio
 import random
-import re
 import string
 import subprocess
 import sys
@@ -531,44 +530,66 @@ class SubsetEnumWrongChoices(SubsetEnum):
 
 
 @pytest.mark.parametrize(
-    "typ, suff, error",
+    "typ, suff, errors",
     [
         (
             BadEnum,
             "enum",
             (
-                "has choices ('Aaa', 'Bbb', 'Ccc'), but <enum 'BadEnum'> "
-                "requested ['Aaa', 'B', 'Ccc'] to be a subset of them"
+                "has choices ('Aaa', 'Bbb', 'Ccc')",
+                "but <enum 'BadEnum'>",
+                "requested ['Aaa', 'B', 'Ccc'] to be strictly equal",
             ),
         ),
         (
             SubsetEnumWrongChoices,
             "enum",
             (
-                "has choices ('Aaa', 'Bbb', 'Ccc'), "
-                "which is not a superset of ('Aaa', 'Bbb', 'Ccc')."
+                "has choices ('Aaa', 'Bbb', 'Ccc')",
+                "but <enum 'SubsetEnumWrongChoices'>",
+                "requested ['Aaa', 'B', 'Ccc'] to be a subset",
             ),
         ),
-        (int, "str", "has type str not int"),
-        (str, "float", "has type float not str"),
-        (str, "stra", "has type [str] not str"),
-        (int, "uint8a", "has type [uint8] not int"),
+        (
+            int,
+            "str",
+            ("with inferred datatype str", "cannot be coerced to int"),
+        ),
+        (
+            str,
+            "float",
+            ("with inferred datatype float", "cannot be coerced to str"),
+        ),
+        (
+            str,
+            "stra",
+            ("with inferred datatype Sequence[str]", "cannot be coerced to str"),
+        ),
+        (
+            int,
+            "uint8a",
+            ("with inferred datatype Array1D[np.uint8]", "cannot be coerced to int"),
+        ),
         (
             float,
             "enum",
+            ("with inferred datatype str", "cannot be coerced to float"),
+        ),
+        (
+            Array1D[np.int32],
+            "float64a",
             (
-                "has choices ('Aaa', 'Bbb', 'Ccc'). "
-                "Use an Enum or SubsetEnum to represent this."
+                "with inferred datatype Array1D[np.float64]",
+                "cannot be coerced to Array1D[np.int32]",
             ),
         ),
-        (Array1D[np.int32], "float64a", "has type [float64] not [int32]"),
     ],
 )
-async def test_backend_wrong_type_errors(ioc: IOC, typ, suff, error):
-    with pytest.raises(
-        TypeError, match=re.escape(f"{PV_PREFIX}:{ioc.protocol}:{suff} {error}")
-    ):
+async def test_backend_wrong_type_errors(ioc: IOC, typ, suff, errors):
+    with pytest.raises(TypeError) as cm:
         await ioc.make_backend(typ, suff)
+    for error in errors:
+        assert error in str(cm.value)
 
 
 async def test_backend_put_enum_string(ioc: IOC) -> None:

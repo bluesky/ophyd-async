@@ -6,25 +6,25 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
-    MockSignalBackend,
+    SignalConnector,
     NotConnected,
     SignalRW,
 )
+from ophyd_async.core._signal import soft_signal_rw
 from ophyd_async.epics.signal import epics_signal_rw
 
 
-class ValueErrorBackend(MockSignalBackend):
+class ValueErrorConnector(SignalConnector):
     def __init__(self, exc_text=""):
         self.exc_text = exc_text
-        super().__init__(datatype=int, initial_backend=None)
 
-    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
+    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
         raise ValueError(self.exc_text)
 
 
 class WorkingDummyChildDevice(Device):
     def __init__(self, name: str = "working_dummy_child_device") -> None:
-        self.working_signal = SignalRW(backend=MockSignalBackend(datatype=int))
+        self.working_signal = soft_signal_rw(int)
         super().__init__(name=name)
 
 
@@ -44,7 +44,7 @@ class ValueErrorDummyChildDevice(Device):
     def __init__(
         self, name: str = "value_error_dummy_child_device", exc_text=""
     ) -> None:
-        self.value_error_signal = SignalRW(backend=ValueErrorBackend(exc_text=exc_text))
+        self.value_error_signal = SignalRW(ValueErrorConnector(exc_text=exc_text))
         super().__init__(name=name)
 
 

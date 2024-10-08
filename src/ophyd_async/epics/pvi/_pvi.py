@@ -150,6 +150,7 @@ class DeviceFiller:
     ):
         basename, number = _strip_number_from_string(name)
         attr = getattr(self._device, name, None)
+        # TODO: support optional devices...
         if basename in self._vector_children:
             # We made the device vectors above, so add to it
             expected_signal_cls = self._vector_cls[basename] or signal_cls

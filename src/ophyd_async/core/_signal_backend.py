@@ -9,7 +9,7 @@ from event_model.documents.event_descriptor import Dtype, Limits
 
 from ._device import DeviceConnector
 from ._table import Table
-from ._utils import Callback, SubsetEnum, T
+from ._utils import Callback, StrictEnum, T
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 Array1D = np.ndarray[tuple[int], np.dtype[DTypeScalar_co]]
@@ -28,9 +28,9 @@ SignalDatatype = (
     | Array1D[np.float32]
     | Array1D[np.float64]
     | np.ndarray
-    | SubsetEnum
+    | StrictEnum
     | Sequence[str]
-    | Sequence[SubsetEnum]
+    | Sequence[StrictEnum]
     | Table
 )
 # TODO: These typevars will not be needed when we drop python 3.11
@@ -39,7 +39,7 @@ SignalDatatype = (
 PrimitiveT = TypeVar("PrimitiveT", bound=Primitive)
 SignalDatatypeT = TypeVar("SignalDatatypeT", bound=SignalDatatype)
 SignalDatatypeV = TypeVar("SignalDatatypeV", bound=SignalDatatype)
-EnumT = TypeVar("EnumT", bound=SubsetEnum)
+EnumT = TypeVar("EnumT", bound=StrictEnum)
 TableT = TypeVar("TableT", bound=Table)
 
 
@@ -117,7 +117,7 @@ def _datakey_dtype(datatype: type[SignalDatatype]) -> Dtype:
         or issubclass(datatype, Table)
     ):
         return "array"
-    elif issubclass(datatype, SubsetEnum):
+    elif issubclass(datatype, StrictEnum):
         return "string"
     elif issubclass(datatype, Primitive):
         return _primitive_dtype[datatype]
@@ -134,7 +134,7 @@ def _datakey_dtype_numpy(
     elif (
         get_origin(datatype) == Sequence
         or datatype is str
-        or issubclass(datatype, SubsetEnum)
+        or issubclass(datatype, StrictEnum)
     ):
         # TODO: use np.dtypes.StringDType when we can use in structured arrays
         # https://github.com/numpy/numpy/issues/25693
@@ -148,7 +148,7 @@ def _datakey_dtype_numpy(
 
 
 def _datakey_shape(value: SignalDatatype) -> list[int]:
-    if type(value) in _primitive_dtype or isinstance(value, SubsetEnum):
+    if type(value) in _primitive_dtype or isinstance(value, StrictEnum):
         return []
     elif isinstance(value, np.ndarray):
         return list(value.shape)

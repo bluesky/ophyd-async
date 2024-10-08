@@ -118,7 +118,7 @@ class Table(BaseModel):
         lengths: dict[int, set[str]] = {}
         for field_name, field_value in self:
             lengths.setdefault(len(field_value), set()).add(field_name)
-        assert len(lengths) == 1, f"Columns should be same length, got {lengths=}"
+        assert len(lengths) <= 1, f"Columns should be same length, got {lengths=}"
         return self
 
     def __len__(self) -> int:

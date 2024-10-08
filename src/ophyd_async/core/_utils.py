@@ -4,11 +4,10 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, EnumType
 from typing import Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
 
 import numpy as np
-from pydantic import BaseModel
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -17,12 +16,19 @@ DEFAULT_TIMEOUT = 10.0
 ErrorText = str | dict[str, Exception]
 
 
-class SubsetEnum(str, Enum):
-    """All members should exist in the Backend, but there may be extras"""
-
-
-class StrictEnum(SubsetEnum):
+class StrictEnum(str, Enum):
     """All members should exist in the Backend, and there will be no extras"""
+
+
+class SubsetEnumType(EnumType):
+    def __call__(self, value, *args, **kwargs):  # type: ignore
+        if isinstance(value, str) and not isinstance(value, self):
+            return value
+        return super().__call__(value, *args, **kwargs)
+
+
+class SubsetEnum(StrictEnum, metaclass=SubsetEnumType):
+    """All members should exist in the Backend, but there may be extras"""
 
 
 CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
@@ -138,7 +144,7 @@ def get_dtype(datatype: type) -> np.dtype:
     return np.dtype(get_args(get_args(datatype)[1])[0])
 
 
-def get_enum_cls(datatype: type | None) -> type[SubsetEnum] | None:
+def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
     """Get the runtime dtype from a numpy ndarray type annotation
 
     >>> import numpy.typing as npt
@@ -149,7 +155,7 @@ def get_enum_cls(datatype: type | None) -> type[SubsetEnum] | None:
     if get_origin(datatype) == Sequence:
         datatype = get_args(datatype)[0]
     if datatype and issubclass(datatype, Enum):
-        if not issubclass(datatype, SubsetEnum):
+        if not issubclass(datatype, StrictEnum):
             raise TypeError(
                 f"{datatype} should inherit from ophyd_async.core.SubsetEnum "
                 "or ophyd_async.core.StrictEnum"
@@ -172,17 +178,6 @@ def get_unique(values: dict[str, T], types: str) -> T:
         diffs = ", ".join(f"{k} has {v}" for k, v in values.items())
         raise TypeError(f"Differing {types}: {diffs}")
     return set_values.pop()
-
-
-# def get_origin_class(annotatation: Any) -> type | None:
-#     while True:
-#         origin = get_origin(annotatation)
-#         if origin is not None:
-#             annotatation = origin
-#         elif isinstance(annotatation, type):
-#             return annotatation
-#         else:
-#             return None
 
 
 async def merge_gathered_dicts(
@@ -219,9 +214,3 @@ def in_micros(t: float) -> int:
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")
     return int(np.ceil(t * 1e6))
-
-
-def is_pydantic_model(datatype) -> bool:
-    while origin := get_origin(datatype):
-        datatype = origin
-    return datatype and issubclass(datatype, BaseModel)
