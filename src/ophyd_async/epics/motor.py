@@ -78,6 +78,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
 
         self.motor_stop = epics_signal_x(prefix + ".STOP")
+        self.encoder_res = epics_signal_rw(float, prefix + ".ERES")
         # Whether set() should complete successfully or not
         self._set_success = True
 
