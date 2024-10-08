@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import AsyncGenerator, AsyncIterator
+from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import cast
 from xml.etree import ElementTree as ET
@@ -9,13 +9,11 @@ from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    AsyncStatus,
     DatasetDescriber,
     HDFDataset,
     HDFFile,
     NameProvider,
     PathProvider,
-    observe_value,
     wait_for_value,
 )
 
@@ -45,16 +43,14 @@ class ADHDFWriter(ADWriter):
             "application/x-hdf5",
         )
         self.hdf = cast(NDFileHDFIO, self._fileio)
-
-        self._file: HDFFile | None = None
-        self._capture_status: AsyncStatus | None = None
+        self._plugins = plugins
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
-        self._plugins = plugins
         self._include_file_number = False
 
     @property
     def include_file_number(self):
+        """Boolean property to toggle AD file number suffix"""
         return self._include_file_number
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
@@ -141,17 +137,6 @@ class ADHDFWriter(ADWriter):
             for ds in self._datasets
         }
         return describe
-
-    async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
-    ) -> AsyncGenerator[int, None]:
-        """Wait until a specific index is ready to be collected"""
-        async for num_captured in observe_value(self.hdf.num_captured, timeout):
-            yield num_captured // self._multiplier
-
-    async def get_indices_written(self) -> int:
-        num_captured = await self.hdf.num_captured.get_value()
-        return num_captured // self._multiplier
 
     async def collect_stream_docs(
         self, indices_written: int
