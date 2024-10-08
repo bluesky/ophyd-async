@@ -25,7 +25,7 @@ async def test_when_prepared_with_energy_then_energy_set_on_detector(detector):
     await detector.prepare(
         EigerTriggerInfo(
             frame_timeout=None,
-            number=1,
+            number_of_triggers=1,
             trigger=DetectorTrigger.internal,
             deadtime=None,
             livetime=None,

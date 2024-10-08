@@ -8,7 +8,7 @@ from ._status import AsyncStatus
 from ._utils import T
 
 
-class TriggerLogic(ABC, Generic[T]):
+class FlyerController(ABC, Generic[T]):
     @abstractmethod
     async def prepare(self, value: T):
         """Move to the start of the flyscan"""
@@ -35,14 +35,14 @@ class StandardFlyer(
 ):
     def __init__(
         self,
-        trigger_logic: TriggerLogic[T],
+        trigger_logic: FlyerController[T],
         name: str = "",
     ):
         self._trigger_logic = trigger_logic
         super().__init__(name=name)
 
     @property
-    def trigger_logic(self) -> TriggerLogic[T]:
+    def trigger_logic(self) -> FlyerController[T]:
         return self._trigger_logic
 
     @AsyncStatus.wrap

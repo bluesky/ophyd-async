@@ -4,7 +4,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DatasetDescriber,
-    DetectorControl,
+    DetectorController,
     set_and_wait_for_value,
 )
 from ophyd_async.epics.adcore._utils import convert_ad_dtype_to_np
@@ -34,7 +34,7 @@ class ADBaseDatasetDescriber(DatasetDescriber):
 
 
 async def set_exposure_time_and_acquire_period_if_supplied(
-    controller: DetectorControl,
+    controller: DetectorController,
     driver: ADBaseIO,
     exposure: float | None = None,
     timeout: float = DEFAULT_TIMEOUT,

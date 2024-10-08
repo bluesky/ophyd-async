@@ -1,6 +1,6 @@
 import asyncio
 
-from ophyd_async.core import DetectorControl, DetectorTrigger
+from ophyd_async.core import DetectorController, DetectorTrigger
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
@@ -22,7 +22,7 @@ EXPOSE_OUT_MODE = {
 }
 
 
-class VimbaController(DetectorControl):
+class VimbaController(DetectorController):
     def __init__(
         self,
         driver: VimbaDriverIO,
@@ -37,7 +37,7 @@ class VimbaController(DetectorControl):
         await asyncio.gather(
             self._drv.trigger_mode.set(TRIGGER_MODE[trigger_info.trigger]),
             self._drv.exposure_mode.set(EXPOSE_OUT_MODE[trigger_info.trigger]),
-            self._drv.num_images.set(trigger_info.number),
+            self._drv.num_images.set(trigger_info.total_number_of_triggers),
             self._drv.image_mode.set(adcore.ImageMode.multiple),
         )
         if trigger_info.livetime is not None and trigger_info.trigger not in [

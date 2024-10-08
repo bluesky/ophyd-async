@@ -230,7 +230,7 @@ def static_path_provider(
 def one_shot_trigger_info() -> TriggerInfo:
     return TriggerInfo(
         frame_timeout=None,
-        number=1,
+        number_of_triggers=1,
         trigger=DetectorTrigger.internal,
         deadtime=None,
         livetime=None,
