@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value, SignalR
-
-
+from ophyd_async.core import DEFAULT_TIMEOUT, SignalR, SignalRW, T, wait_for_value
 
 
 class ADBaseDataType(str, Enum):

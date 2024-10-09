@@ -1,16 +1,13 @@
-from typing import Sequence, cast
-from ophyd_async.core import StandardDetector
-from ophyd_async.core import PathProvider
-from ophyd_async.core import SignalR
+from collections.abc import Sequence
+from typing import cast
 
 from bluesky.protocols import HasHints, Hints
 
+from ophyd_async.core import PathProvider, SignalR, StandardDetector
+
+from ._core_io import ADBaseIO, NDFileHDFIO, NDFileIO
 from ._core_logic import ADBaseController, ADBaseDatasetDescriber
-
 from ._core_writer import ADWriter
-
-from ._core_writer import ADWriter
-from ._core_io import NDFileHDFIO, NDFileIO, ADBaseIO
 from ._hdf_writer import ADHDFWriter
 from ._tiff_writer import ADTIFFWriter
 
@@ -32,11 +29,11 @@ class AreaDetector(StandardDetector, HasHints):
         self,
         prefix: str,
         path_provider: PathProvider,
-        writer_class: type[ADWriter]=ADWriter,
-        writer_suffix: str="",
-        controller_class: type[ADBaseController]=ADBaseController,
-        drv_class: type[ADBaseIO]=ADBaseIO,
-        drv_suffix:str="cam1:",
+        writer_class: type[ADWriter] = ADWriter,
+        writer_suffix: str = "",
+        controller_class: type[ADBaseController] = ADBaseController,
+        drv_class: type[ADBaseIO] = ADBaseIO,
+        drv_suffix: str = "cam1:",
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
         **kwargs,
@@ -59,7 +56,6 @@ class AreaDetector(StandardDetector, HasHints):
     @property
     def controller(self) -> ADBaseController:
         return cast(ADBaseController, self._controller)
-
 
     @property
     def writer(self) -> ADWriter:

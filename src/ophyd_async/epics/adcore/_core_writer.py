@@ -20,8 +20,9 @@ from ophyd_async.core._signal import (
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT
 
-from ._utils import FileWriteMode
 from ._core_io import NDFileIO
+from ._utils import FileWriteMode
+
 
 class ADWriter(DetectorWriter):
     def __init__(
@@ -172,6 +173,3 @@ class ADWriter(DetectorWriter):
     @property
     def hints(self) -> Hints:
         return {"fields": [self._name_provider()]}
-
-
-

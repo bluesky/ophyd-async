@@ -8,12 +8,9 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 from ophyd_async.core._detector import DetectorTrigger, TriggerInfo
-from ophyd_async.core._signal import wait_for_value
-from ophyd_async.core._utils import T
-from ._core_io import DetectorState, ADBaseIO
+
+from ._core_io import ADBaseIO, DetectorState
 from ._utils import ImageMode, convert_ad_dtype_to_np, stop_busy_record
-
-
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
@@ -38,7 +35,6 @@ class ADBaseDatasetDescriber(DatasetDescriber):
 
 
 class ADBaseController(DetectorControl):
-    
     def __init__(
         self,
         driver: ADBaseIO,
@@ -80,7 +76,6 @@ class ADBaseController(DetectorControl):
         # 2 or they will deadlock
         await stop_busy_record(self._driver.acquire, False, timeout=1)
 
-
     async def set_exposure_time_and_acquire_period_if_supplied(
         self,
         exposure: float | None = None,
@@ -105,14 +100,13 @@ class ADBaseController(DetectorControl):
                 self._driver.acquire_period.set(full_frame_time, timeout=timeout),
             )
 
-
     async def start_acquiring_driver_and_ensure_status(self) -> AsyncStatus:
         """
         Start acquiring driver, raising ValueError if the detector is in a bad state.
 
         This sets driver.acquire to True, and waits for it to be True up to a timeout.
-        Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES, and otherwise
-        raises a ValueError.
+        Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES,
+        and otherwise raises a ValueError.
 
         Returns
         -------
@@ -121,7 +115,9 @@ class ADBaseController(DetectorControl):
             subsequent raising (if applicable) due to detector state.
         """
 
-        status = await set_and_wait_for_value(self._driver.acquire, True, timeout=self.frame_timeout)
+        status = await set_and_wait_for_value(
+            self._driver.acquire, True, timeout=self.frame_timeout
+        )
 
         async def complete_acquisition() -> None:
             """NOTE: possible race condition here between the callback from
@@ -130,7 +126,8 @@ class ADBaseController(DetectorControl):
             state = await self._driver.detector_state.get_value()
             if state not in self.good_states:
                 raise ValueError(
-                    f"Final detector state {state} not in valid end states: {self.good_states}"
+                    f"Final detector state {state} not"
+                    "in valid end states: {self.good_states}"
                 )
 
         return AsyncStatus(complete_acquisition())
