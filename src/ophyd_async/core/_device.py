@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 import sys
 from abc import abstractmethod
-from collections.abc import Coroutine, Iterator, Mapping
+from collections.abc import Coroutine, Iterator, Mapping, MutableMapping
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
@@ -14,13 +14,54 @@ from bluesky.run_engine import call_in_bluesky_event_loop
 from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
-class DeviceConnector:
-    # None if connect hasn't started, a Task if it has
-    _task: asyncio.Task | None = None
-    # The value of the mock arg to connect
-    in_mock_mode: bool | None = None
+class DeviceBackend:
+    # TODO: we will add some mechanism of invalidating the cache here later
+    @abstractmethod
+    async def connect(
+        self, mock: bool, timeout: float, force_reconnect: bool
+    ) -> None: ...
 
-    async def __call__(
+
+DeviceBackendT = TypeVar("DeviceBackendT", bound=DeviceBackend)
+
+
+class Device(HasName, Generic[DeviceBackendT]):
+    """Common base class for all Ophyd Async Devices."""
+
+    _name: str = ""
+    #: The parent Device if it exists
+    parent: Device | None = None
+
+    def __init__(
+        self,
+        backend: DeviceBackendT,
+        name: str = "",
+    ) -> None:
+        # None if connect hasn't started, a Task if it has
+        self._connect_task: asyncio.Task | None = None
+        # The value of the mock arg to connect
+        self._connect_mock_arg: bool | None = None
+        self._backend = backend
+        self.set_name(name)
+
+    @cached_property
+    def log(self):
+        return LoggerAdapter(
+            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
+        )
+
+    @property
+    def name(self) -> str:
+        """Return the name of the Device"""
+        return self._name
+
+    def set_name(self, name: str):
+        # Ensure self.log is recreated after a name change
+        if hasattr(self, "log"):
+            del self.log
+        self._name = name
+
+    async def connect(
         self,
         mock: bool = False,
         timeout: float = DEFAULT_TIMEOUT,
@@ -40,113 +81,92 @@ class DeviceConnector:
 
         # If previous connect with same args has started and not errored, can use it
         can_use_previous_connect = (
-            mock is self.in_mock_mode
-            and self._task
-            and not (self._task.done() and self._task.exception())
+            mock is self._connect_mock_arg
+            and self._connect_task
+            and not (self._connect_task.done() and self._connect_task.exception())
         )
         if force_reconnect or not can_use_previous_connect:
-            # Use the connector to make a new connection
-            self.in_mock_mode = mock
-            self._task = asyncio.create_task(
-                self.connect(
+            # Ask the backend to do a new connection
+            self._connect_mock_arg = mock
+            self._connect_task = asyncio.create_task(
+                self._backend.connect(
                     mock=mock, timeout=timeout, force_reconnect=force_reconnect
                 )
             )
-        assert self._task, "Connect task not created, this shouldn't happen"
+        assert self._connect_task, "Connect task not created, this shouldn't happen"
         # Wait for it to complete
-        await self._task
-
-    # TODO: we will add some mechanism of invalidating the cache here later
-    @abstractmethod
-    async def connect(
-        self, mock: bool, timeout: float, force_reconnect: bool
-    ) -> None: ...
+        await self._connect_task
 
 
-class DeviceChildConnector(DeviceConnector):
-    def __init__(self, device: Device):
-        self._device = device
+DeviceT = TypeVar("DeviceT", bound=Device)
+
+
+class DeviceTreeBackend(DeviceBackend):
+    def __init__(self) -> None:
+        self.children: dict[str, Device] = {}
 
     async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
         coros = {
             name: child_device.connect(
                 mock=mock, timeout=timeout, force_reconnect=force_reconnect
             )
-            for name, child_device in self._device.children.items()
+            for name, child_device in self.children.items()
         }
         await wait_for_connection(**coros)
 
 
-DeviceConnectorType = TypeVar("DeviceConnectorType", bound=DeviceConnector)
-
-
-class Device(HasName, Generic[DeviceConnectorType]):
-    """Common base class for all Ophyd Async Devices.
-
-    By default, names and connects all Device children.
-    """
-
-    _name: str = ""
-    #: The parent Device if it exists
-    parent: Device | None = None
-    # The connector to use
-    connect: DeviceConnectorType
-
+class DeviceTree(Device[DeviceTreeBackend]):
     def __init__(
-        self,
-        name: str = "",
-        connector: DeviceConnectorType | None = None,
+        self, backend: DeviceTreeBackend | None = None, name: str = ""
     ) -> None:
-        if connector is None:
-            # TODO: this is ugly, maybe we remove the option to pass None as the
-            # connector so this goes away?
-            connector = cast(DeviceConnectorType, DeviceChildConnector(self))
-        self.connect = connector
-        self.set_name(name)
+        if backend is None:
+            backend = DeviceTreeBackend()
+        super().__init__(backend, name)
 
-    @property
-    def name(self) -> str:
-        """Return the name of the Device"""
-        return self._name
+    def _set_child_name(self, child: Device, child_name: str):
+        child_name = f"{self.name}-{child_name.rstrip('_')}" if self.name else ""
+        child.set_name(child_name)
 
-    @cached_property
-    def log(self):
-        return LoggerAdapter(
-            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
-        )
+    def set_name(self, name: str) -> None:
+        super().set_name(name)
+        for child_name, child in self._backend.children.items():
+            self._set_child_name(child, child_name)
 
-    @property
-    def children(self) -> dict[str, Device]:
-        return {
-            attr_name: attr
-            for attr_name, attr in self.__dict__.items()
-            if attr_name != "parent" and isinstance(attr, Device)
-        }
-
-    def set_name(self, name: str):
-        """Set ``self.name=name`` and each ``self.child.name=name+"-child"``.
-
-        Parameters
-        ----------
-        name:
-            New name to set
-        """
-
-        # Ensure self.log is recreated after a name change
-        if hasattr(self, "log"):
-            del self.log
-
-        self._name = name
-        for attr_name, child in self.children.items():
-            child_name = f"{name}-{attr_name.rstrip('_')}" if name else ""
-            child.set_name(child_name)
+    def __setattr__(self, name: str, child: Device) -> None:
+        if name != "parent" and isinstance(child, Device):
+            self._backend.children[name] = child
             child.parent = self
+            self._set_child_name(child, name)
+        else:
+            super().__setattr__(name, child)
+
+    def __getattr__(self, name: str) -> Device:
+        if name == "_backend":
+            raise AttributeError("Must set backend before adding Device children")
+        child = self._backend.children.get(name, None)
+        if child is None:
+            raise AttributeError(
+                f"'{type(self).__name__}' object has not attribute '{name}'"
+            )
+        else:
+            return child
 
 
-DeviceType = TypeVar("DeviceType", bound=Device)
+class DeviceVectorBackend(DeviceBackend, Generic[DeviceT]):
+    def __init__(self) -> None:
+        self.children: dict[int, DeviceT] = {}
+
+    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
+        coros = {
+            str(name): child_device.connect(
+                mock=mock, timeout=timeout, force_reconnect=force_reconnect
+            )
+            for name, child_device in self.children.items()
+        }
+        await wait_for_connection(**coros)
 
 
-class DeviceVector(Mapping[int, DeviceType], Device):
+class DeviceVector(MutableMapping[int, DeviceT], Device[DeviceVectorBackend[DeviceT]]):
     """
     Defines device components with indices.
 
@@ -157,24 +177,42 @@ class DeviceVector(Mapping[int, DeviceType], Device):
 
     def __init__(
         self,
-        children: Mapping[int, DeviceType],
+        children: Mapping[int, DeviceT],
         name: str = "",
     ) -> None:
-        self._children = children
-        super().__init__(name=name)
+        super().__init__(name=name, backend=DeviceVectorBackend())
+        for child_name, child in children.items():
+            self[child_name] = child
 
-    def __getitem__(self, key: int) -> DeviceType:
-        return self._children[key]
+    def _set_child_name(self, child: Device, key: int):
+        child_name = f"{self.name}-{key}" if self.name else ""
+        child.set_name(child_name)
+
+    def set_name(self, name: str) -> None:
+        super().set_name(name)
+        for child_name, child in self._backend.children.items():
+            self._set_child_name(child, child_name)
+
+    def __getitem__(self, key: int) -> DeviceT:
+        assert isinstance(key, int), f"Expected int, got {key}"
+        return self._backend.children[key]
+
+    def __setitem__(self, key: int, value: DeviceT) -> None:
+        assert isinstance(key, int), f"Expected int, got {key}"
+        assert isinstance(value, Device), f"Expected Device, got {value}"
+        self._backend.children[key] = value
+        value.parent = self
+        self._set_child_name(value, key)
+
+    def __delitem__(self, key: int) -> None:
+        assert isinstance(key, int), f"Expected int, got {key}"
+        del self._backend.children[key]
 
     def __iter__(self) -> Iterator[int]:
-        yield from self._children
+        yield from self._backend.children
 
     def __len__(self) -> int:
-        return len(self._children)
-
-    @property
-    def children(self) -> dict[str, Device]:
-        return {str(key): value for key, value in self.items()}
+        return len(self._backend.children)
 
 
 class DeviceCollector:

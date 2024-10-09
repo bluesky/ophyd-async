@@ -10,11 +10,11 @@ from ophyd_async.core import (
     NotConnected,
     set_mock_value,
 )
-from ophyd_async.core._device import DeviceConnector
+from ophyd_async.core._device import DeviceBackend
 from ophyd_async.epics import motor
 
 
-class CustomConnector(DeviceConnector):
+class CustomConnector(DeviceBackend):
     def __init__(self, error=False):
         self.error = error
         self.connected = False

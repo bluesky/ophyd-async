@@ -7,7 +7,7 @@ from bluesky.protocols import Reading
 from event_model import DataKey
 from event_model.documents.event_descriptor import Dtype, Limits
 
-from ._device import DeviceConnector
+from ._device import DeviceBackend
 from ._table import Table
 from ._utils import Callback, StrictEnum, T
 
@@ -86,7 +86,7 @@ class DisconnectedBackend(SignalBackend):
     set_callback = _fail
 
 
-class SignalConnector(DeviceConnector, Generic[SignalDatatypeT]):
+class SignalConnector(DeviceBackend, Generic[SignalDatatypeT]):
     backend: SignalBackend[SignalDatatypeT] = DisconnectedBackend()
 
     @abstractmethod
