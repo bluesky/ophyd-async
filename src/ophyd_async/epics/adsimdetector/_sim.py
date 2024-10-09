@@ -1,35 +1,56 @@
 from collections.abc import Sequence
 
-from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.core import PathProvider, SignalR
 from ophyd_async.epics import adcore
 
-from ._sim_controller import SimController
 
-
-class SimDetector(StandardDetector):
-    _controller: SimController
-    _writer: adcore.ADHDFWriter
+class SimDetector(adcore.AreaDetector):
 
     def __init__(
         self,
         prefix: str,
         path_provider: PathProvider,
-        drv_suffix="cam1:",
-        hdf_suffix="HDF1:",
+        hdf_suffix:str="HDF1:",
+        drv_suffix:str="cam1:",
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
     ):
-        self.drv = adcore.ADBaseIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
 
         super().__init__(
-            SimController(self.drv),
-            adcore.ADHDFWriter(
-                self.hdf,
-                path_provider,
-                lambda: self.name,
-                adcore.ADBaseDatasetDescriber(self.drv),
-            ),
-            config_sigs=(self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
+            prefix,
+            path_provider,
+            adcore.ADHDFWriter,
+            hdf_suffix,
+            adcore.ADBaseController,
+            adcore.ADBaseIO,
+            drv_suffix=drv_suffix,
             name=name,
+            config_sigs=config_sigs,
         )
+        self.hdf = self._fileio
+
+
+class SimDetectorTIFF(adcore.AreaDetector):
+
+    def __init__(
+        self,
+        prefix: str,
+        path_provider: PathProvider,
+        tiff_suffix:str="TIFF1:",
+        drv_suffix:str="cam1:",
+        name: str = "",
+        config_sigs: Sequence[SignalR] = (),
+    ):
+
+        super().__init__(
+            prefix,
+            path_provider,
+            adcore.ADTIFFWriter,
+            tiff_suffix,
+            adcore.ADBaseController,
+            adcore.ADBaseIO,
+            drv_suffix=drv_suffix,
+            name=name,
+            config_sigs=config_sigs,
+        )
+        self.tiff = self._fileio
