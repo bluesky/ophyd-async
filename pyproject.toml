@@ -16,7 +16,7 @@ dependencies = [
     "numpy<2.0.0",
     "packaging",
     "pint",
-    "bluesky>=1.13.0a3",
+    "bluesky>=1.13.0a4",
     "event_model",
     "p4p",
     "pyyaml",

@@ -100,6 +100,10 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     yield from bps.wait(group="prep")
 
 
+# Collect every 0.5 seconds even if the flyscan is still completing
+_SECONDS_TO_FORCE_COLLECT_AFTER = 0.5
+
+
 def fly_and_collect(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
@@ -116,8 +120,6 @@ def fly_and_collect(
     yield from bps.kickoff(flyer, wait=True)
     for detector in detectors:
         yield from bps.kickoff(detector)
-
-    # collect_while_completing
     group = short_uid(label="complete")
 
     yield from bps.complete(flyer, wait=False, group=group)
@@ -126,18 +128,10 @@ def fly_and_collect(
 
     done = False
     while not done:
-        try:
-            yield from bps.wait(group=group, timeout=0.5)
-        except TimeoutError:
-            pass
-        else:
-            done = True
-        yield from bps.collect(
-            *detectors,
-            return_payload=False,
-            name=stream_name,
+        done = yield from bps.wait(
+            group=group, timeout=_SECONDS_TO_FORCE_COLLECT_AFTER, move_on=True
         )
-    yield from bps.wait(group=group)
+        yield from bps.collect(*detectors, name=stream_name)
 
 
 def fly_and_collect_with_static_pcomp(
