@@ -42,7 +42,7 @@ class ADHDFWriter(ADWriter):
             ".h5",
             "application/x-hdf5",
         )
-        self.hdf = cast(NDFileHDFIO, self._fileio)
+        self.hdf = cast(NDFileHDFIO, self.fileio)
         self._plugins = plugins
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None

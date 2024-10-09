@@ -20,4 +20,4 @@ class ADTIFFWriter(ADWriter):
             ".tiff",
             "multipart/related;type=image/tiff",
         )
-        self.tiff = self._fileio
+        self.tiff = self.fileio
