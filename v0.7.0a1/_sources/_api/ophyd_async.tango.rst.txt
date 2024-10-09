@@ -1,0 +1,60 @@
+.. note::
+
+    Ophyd async is considered experimental until the v1.0 release and
+    may change API on minor release numbers before then
+
+``ophyd_async.tango``
+=====================
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+.. automodule:: ophyd_async.tango
+    :members:
+
+    
+    
+    
+
+    
+    
+    .. rubric:: Members
+
+    .. autosummary::
+        :nosignatures:
+    
+        TangoDevice
+        TangoReadable
+        tango_polling
+        TangoSignalBackend
+        get_python_type
+        get_dtype_extended
+        get_trl_descriptor
+        get_tango_trl
+        infer_python_type
+        infer_signal_character
+        make_backend
+        AttributeProxy
+        CommandProxy
+        ensure_proper_executor
+        tango_signal_r
+        tango_signal_rw
+        tango_signal_w
+        tango_signal_x
+    
+    
