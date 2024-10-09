@@ -1,20 +1,17 @@
-from bluesky.protocols import HasHints, Hints
+from collections.abc import Sequence
 
-from ophyd_async.core import PathProvider, StandardDetector
+from ophyd_async.core import PathProvider, SignalR
 from ophyd_async.epics import adcore
 
 from ._kinetix_controller import KinetixController
 from ._kinetix_io import KinetixDriverIO
 
 
-class KinetixDetector(StandardDetector, HasHints):
+class KinetixDetector(adcore.AreaDetector):
     """
     Ophyd-async implementation of an ADKinetix Detector.
     https://github.com/NSLS-II/ADKinetix
     """
-
-    _controller: KinetixController
-    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -23,22 +20,46 @@ class KinetixDetector(StandardDetector, HasHints):
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
         name="",
+        config_sigs: Sequence[SignalR] = (),
     ):
-        self.drv = KinetixDriverIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
-
         super().__init__(
-            KinetixController(self.drv),
-            adcore.ADHDFWriter(
-                self.hdf,
-                path_provider,
-                lambda: self.name,
-                adcore.ADBaseDatasetDescriber(self.drv),
-            ),
-            config_sigs=(self.drv.acquire_time,),
+            prefix,
+            path_provider,
+            adcore.ADHDFWriter,
+            hdf_suffix,
+            KinetixController,
+            KinetixDriverIO,
+            drv_suffix=drv_suffix,
             name=name,
+            config_sigs=config_sigs,
         )
+        self.hdf = self._fileio
 
-    @property
-    def hints(self) -> Hints:
-        return self._writer.hints
+
+class KinetixDetectorTIFF(adcore.AreaDetector):
+    """
+    Ophyd-async implementation of an ADKinetix Detector.
+    https://github.com/NSLS-II/ADKinetix
+    """
+
+    def __init__(
+        self,
+        prefix: str,
+        path_provider: PathProvider,
+        drv_suffix="cam1:",
+        tiff_suffix="TIFF1:",
+        name="",
+        config_sigs: Sequence[SignalR] = (),
+    ):
+        super().__init__(
+            prefix,
+            path_provider,
+            adcore.ADTIFFWriter,
+            tiff_suffix,
+            KinetixController,
+            KinetixDriverIO,
+            drv_suffix=drv_suffix,
+            name=name,
+            config_sigs=config_sigs,
+        )
+        self.tiff = self._fileio

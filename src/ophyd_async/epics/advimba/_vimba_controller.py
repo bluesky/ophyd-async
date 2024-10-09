@@ -1,8 +1,8 @@
 import asyncio
+from typing import cast
 
-from ophyd_async.core import DetectorControl, DetectorTrigger
+from ophyd_async.core import DetectorTrigger
 from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff, VimbaTriggerSource
@@ -22,42 +22,33 @@ EXPOSE_OUT_MODE = {
 }
 
 
-class VimbaController(DetectorControl):
+class VimbaController(adcore.ADBaseController):
     def __init__(
         self,
         driver: VimbaDriverIO,
     ) -> None:
-        self._drv = driver
-        self._arm_status: AsyncStatus | None = None
+        super().__init__(driver)
+
+    @property
+    def driver(self) -> VimbaDriverIO:
+        return cast(VimbaDriverIO, self._driver)
 
     def get_deadtime(self, exposure: float | None) -> float:
-        return 0.001
+        return 0.00001
 
     async def prepare(self, trigger_info: TriggerInfo):
         await asyncio.gather(
-            self._drv.trigger_mode.set(TRIGGER_MODE[trigger_info.trigger]),
-            self._drv.exposure_mode.set(EXPOSE_OUT_MODE[trigger_info.trigger]),
-            self._drv.num_images.set(trigger_info.number),
-            self._drv.image_mode.set(adcore.ImageMode.multiple),
+            self.driver.trigger_mode.set(TRIGGER_MODE[trigger_info.trigger]),
+            self.driver.exposure_mode.set(EXPOSE_OUT_MODE[trigger_info.trigger]),
+            self.driver.num_images.set(trigger_info.number),
+            self.driver.image_mode.set(adcore.ImageMode.multiple),
         )
         if trigger_info.livetime is not None and trigger_info.trigger not in [
             DetectorTrigger.variable_gate,
             DetectorTrigger.constant_gate,
         ]:
-            await self._drv.acquire_time.set(trigger_info.livetime)
+            await self.driver.acquire_time.set(trigger_info.livetime)
         if trigger_info.trigger != DetectorTrigger.internal:
-            self._drv.trigger_source.set(VimbaTriggerSource.line1)
+            self.driver.trigger_source.set(VimbaTriggerSource.line1)
         else:
-            self._drv.trigger_source.set(VimbaTriggerSource.freerun)
-
-    async def arm(self):
-        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
-            self._drv
-        )
-
-    async def wait_for_idle(self):
-        if self._arm_status:
-            await self._arm_status
-
-    async def disarm(self):
-        await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)
+            self.driver.trigger_source.set(VimbaTriggerSource.freerun)
