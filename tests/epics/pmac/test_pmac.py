@@ -31,16 +31,25 @@ async def sim_y_motor():
     set_mock_value(sim_motor.acceleration_time, 0.5)
     set_mock_value(sim_motor.max_velocity, 5)
     set_mock_value(sim_motor.velocity, 0.5)
-    set_mock_value(sim_motor.output_link, "@asyn(BRICK1.CS3,8)")
+    set_mock_value(sim_motor.output_link, "@asyn(BRICK1,8)")
 
     yield sim_motor
+
+
+@pytest.fixture
+async def sim_pmac():
+    async with DeviceCollector(mock=True):
+        sim_pmac = Pmac("BLxxI-MO-STEP-01", axes_on_brick=[7, 8], name="sim_pmac")
+    set_mock_value(sim_pmac.CsAxisAssignment[8], "Y")
+    set_mock_value(sim_pmac.CsPortAssignment[8], "BRICK1.CS3")
+    yield sim_pmac
 
 
 async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     # Test the generated Trajectory profile from a scanspec
     prefix = "BLxxI-MO-STEP-01"
     async with DeviceCollector(mock=True):
-        pmac = Pmac(prefix, name="sim_pmac")
+        pmac = Pmac(prefix, axes_on_brick=[7, 8], name="sim_pmac")
     spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
     info = PmacTrajInfo(spec=spec)
     trigger_logic = PmacTrajectoryTriggerLogic(pmac)
@@ -122,14 +131,11 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
     await trigger_logic.kickoff()
 
 
-async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor) -> None:
+async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
     # Test the generated Trajectory profile from a scanspec
-    prefix = "BLxxI-MO-STEP-01"
-    async with DeviceCollector(mock=True):
-        pmac = Pmac(prefix, name="sim_pmac")
     spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)
     info = PmacTrajInfo(spec=spec)
-    trigger_logic = PmacTrajectoryTriggerLogic(pmac)
+    trigger_logic = PmacTrajectoryTriggerLogic(sim_pmac)
     await trigger_logic.prepare(info)
     assert await trigger_logic.pmac.positions[9].get_value() == pytest.approx(
         [

@@ -197,8 +197,16 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         # Split "@asyn(PORT,num)" into ["PORT", "num"]
         split = output_link.split("(")[1].rstrip(")").split(",")
         cs_port = split[0].strip()
-        assert "CS" in cs_port, f"{motor.name} not in a CS. It is not a compound motor."
-        cs_index = int(split[1].strip()) - 1
+        if "CS" in cs_port:
+            # Motor is compound
+            cs_index = int(split[1].strip()) - 1
+        else:
+            # Raw Motor, CS 1 to be used - Straight through mapping
+            axis = int(split[1].strip())
+            cs_port = await self.pmac.CsPortAssignment[axis].get_value()
+            cs_axis = await self.pmac.CsAxisAssignment[axis].get_value()
+            cs_index = "ABCUVWXYZ".index(cs_axis)
+
         return cs_port, cs_index
 
     def _calculate_gaps(self, chunk: Frames[motor.Motor]):
