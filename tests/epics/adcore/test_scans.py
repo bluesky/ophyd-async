@@ -19,7 +19,7 @@ from ophyd_async.core import (
     TriggerLogic,
     set_mock_value,
 )
-from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics import adcore
 
 
 class DummyTriggerLogic(TriggerLogic[int]):
@@ -53,11 +53,11 @@ class DummyController(DetectorControl):
 
 
 @pytest.fixture
-def controller(RE) -> adsimdetector.SimController:
+def controller(RE) -> adcore.ADBaseController:
     with DeviceCollector(mock=True):
         drv = adcore.ADBaseIO("DRV")
 
-    return adsimdetector.SimController(drv)
+    return adcore.ADBaseController(drv)
 
 
 @pytest.fixture
@@ -77,7 +77,7 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: adcore.ADHDFWriter,
-    controller: adsimdetector.SimController,
+    controller: adcore.ADBaseController,
 ):
     set_mock_value(writer.hdf.file_path_exists, True)
     detector: StandardDetector[Any] = StandardDetector(

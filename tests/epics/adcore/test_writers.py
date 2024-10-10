@@ -39,6 +39,18 @@ async def hdf_writer(
 
 
 @pytest.fixture
+async def tiff_writer(
+    RE, static_path_provider: StaticPathProvider
+) -> adcore.ADTIFFWriter:
+    async with DeviceCollector(mock=True):
+        tiff = adcore.NDFileIO("TIFF:")
+
+    return adcore.ADTIFFWriter(
+        tiff, static_path_provider, lambda: "test", DummyDatasetDescriber()
+    )
+
+
+@pytest.fixture
 async def hdf_writer_with_stats(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADHDFWriter:
@@ -71,11 +83,17 @@ async def detectors(
     return detectors
 
 
-async def test_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
+async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._file is None
 
     [item async for item in hdf_writer.collect_stream_docs(1)]
     assert hdf_writer._file
+
+
+async def test_tiff_writer_collect_stream_docs(tiff_writer: adcore.ADTIFFWriter):
+    assert tiff_writer._emitted_resource is None
+    [item async for item in tiff_writer.collect_stream_docs(1)]
+    assert tiff_writer._emitted_resource
 
 
 async def test_stats_describe_when_plugin_configured(

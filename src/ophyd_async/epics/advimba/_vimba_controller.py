@@ -34,7 +34,7 @@ class VimbaController(adcore.ADBaseController):
         return cast(VimbaDriverIO, self._driver)
 
     def get_deadtime(self, exposure: float | None) -> float:
-        return 0.00001
+        return 0.001
 
     async def prepare(self, trigger_info: TriggerInfo):
         await asyncio.gather(
