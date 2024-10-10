@@ -1,5 +1,4 @@
 import os
-from builtins import float, len, type
 from collections.abc import Callable
 
 import pytest

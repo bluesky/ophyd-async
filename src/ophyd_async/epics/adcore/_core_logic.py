@@ -5,9 +5,10 @@ from ophyd_async.core import (
     AsyncStatus,
     DatasetDescriber,
     DetectorControl,
+    DetectorTrigger,
+    TriggerInfo,
     set_and_wait_for_value,
 )
-from ophyd_async.core._detector import DetectorTrigger, TriggerInfo
 
 from ._core_io import ADBaseIO, DetectorState
 from ._utils import ImageMode, convert_ad_dtype_to_np, stop_busy_record
