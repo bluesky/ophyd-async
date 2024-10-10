@@ -30,7 +30,7 @@ class AravisController(adcore.ADBaseController):
         return _HIGHEST_POSSIBLE_DEADTIME
 
     async def prepare(self, trigger_info: TriggerInfo):
-        if (num := trigger_info.number) == 0:
+        if trigger_info.total_number_of_triggers == 0:
             image_mode = adcore.ImageMode.continuous
         else:
             image_mode = adcore.ImageMode.multiple
@@ -43,7 +43,7 @@ class AravisController(adcore.ADBaseController):
 
         await asyncio.gather(
             self.driver.trigger_source.set(trigger_source),
-            self.driver.num_images.set(num),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
             self.driver.image_mode.set(image_mode),
         )
 

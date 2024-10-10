@@ -52,7 +52,7 @@ async def test_trigger_mode_set(
     async def trigger_and_complete():
         set_mock_value(test_adpilatus.drv.armed, True)
         await test_adpilatus.controller.prepare(
-            TriggerInfo(number=1, trigger=detector_trigger)
+            TriggerInfo(number_of_triggers=1, trigger=detector_trigger)
         )
         await test_adpilatus.controller.arm()
         await test_adpilatus.controller.wait_for_idle()
@@ -65,7 +65,7 @@ async def test_trigger_mode_set_without_armed_pv(
 ):
     async def trigger_and_complete():
         await test_adpilatus.controller.prepare(
-            TriggerInfo(number=1, trigger=DetectorTrigger.internal)
+            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.internal)
         )
         await test_adpilatus.controller.arm()
         await test_adpilatus.controller.wait_for_idle()
@@ -111,7 +111,7 @@ async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDete
     ):
         await test_adpilatus.prepare(
             TriggerInfo(
-                number=1,
+                number_of_triggers=1,
                 trigger=DetectorTrigger.edge_trigger,
                 deadtime=1.0,
                 livetime=1.0,
@@ -129,7 +129,10 @@ async def test_exposure_time_and_acquire_period_set(
     set_mock_value(test_adpilatus.drv.armed, True)
     await test_adpilatus.prepare(
         TriggerInfo(
-            number=1, trigger=DetectorTrigger.internal, deadtime=1.0, livetime=1.0
+            number_of_triggers=1,
+            trigger=DetectorTrigger.internal,
+            deadtime=1.0,
+            livetime=1.0,
         )
     )
     assert (await test_adpilatus.drv.acquire_time.get_value()) == 1.0
@@ -140,7 +143,9 @@ async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
     pilatus = test_adpilatus.controller
     pilatus_driver = cast(PilatusDriverIO, pilatus.driver)
     set_mock_value(pilatus_driver.armed, True)
-    await pilatus.prepare(TriggerInfo(number=1, trigger=DetectorTrigger.constant_gate))
+    await pilatus.prepare(
+        TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.constant_gate)
+    )
     await pilatus.arm()
     await pilatus.wait_for_idle()
 

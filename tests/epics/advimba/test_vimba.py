@@ -32,7 +32,9 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
     set_mock_value(test_advimba.drv.exposure_mode, VimbaExposeOutMode.timed)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
-        await test_advimba.controller.prepare(TriggerInfo(number=1, trigger=trig_mode))
+        await test_advimba.controller.prepare(
+            TriggerInfo(number_of_triggers=1, trigger=trig_mode)
+        )
         await test_advimba.controller.arm()
         await test_advimba.controller.wait_for_idle()
         # Prevent timeouts

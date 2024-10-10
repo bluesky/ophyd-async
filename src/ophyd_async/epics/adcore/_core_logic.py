@@ -4,7 +4,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DatasetDescriber,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     TriggerInfo,
     set_and_wait_for_value,
@@ -35,7 +35,7 @@ class ADBaseDatasetDescriber(DatasetDescriber):
         return shape
 
 
-class ADBaseController(DetectorControl):
+class ADBaseController(DetectorController):
     def __init__(
         self,
         driver: ADBaseIO,
@@ -61,7 +61,7 @@ class ADBaseController(DetectorControl):
             DEFAULT_TIMEOUT + await self._driver.acquire_time.get_value()
         )
         await asyncio.gather(
-            self._driver.num_images.set(trigger_info.number),
+            self._driver.num_images.set(trigger_info.total_number_of_triggers),
             self._driver.image_mode.set(ImageMode.multiple),
         )
 

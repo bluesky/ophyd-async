@@ -4,7 +4,7 @@ from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     AsyncStatus,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     PathProvider,
     StandardDetector,
@@ -19,7 +19,7 @@ class FooDriver(adcore.ADBaseIO):
         super().__init__(prefix, name)
 
 
-class FooController(DetectorControl):
+class FooController(DetectorController):
     def __init__(self, driver: FooDriver) -> None:
         self._drv = driver
 

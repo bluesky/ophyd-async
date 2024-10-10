@@ -83,7 +83,7 @@ async def test_two_detectors_fly_different_rate(
     two_test_adsimdetectors: list[adsimdetector.SimDetector], RE: RunEngine
 ):
     trigger_info = TriggerInfo(
-        number=15,
+        number_of_triggers=15,
         trigger=DetectorTrigger.internal,
     )
     docs = defaultdict(list)
@@ -374,7 +374,9 @@ def test_detector_with_unnamed_or_disconnected_config_sigs(
 async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
     ad = test_adsimdetector._controller
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
-        await ad.prepare(TriggerInfo(number=1, trigger=DetectorTrigger.internal))
+        await ad.prepare(
+            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.internal)
+        )
         await ad.arm()
         await ad.wait_for_idle()
 
