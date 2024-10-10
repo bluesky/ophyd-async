@@ -118,16 +118,14 @@ class FailingMovable(Movable, Device):
     def _fail(self):
         raise ValueError("This doesn't work")
 
-    async def _set(self, value):
+    @AsyncStatus.wrap
+    async def set(self, value):
         if value:
-            self._fail()
-
-    def set(self, value) -> AsyncStatus:
-        return AsyncStatus(self._set(value))
+            return self._fail()
 
 
 async def test_status_propogates_traceback_under_RE(RE) -> None:
-    expected_call_stack = ["_set", "_fail"]
+    expected_call_stack = ["set", "_fail"]
     d = FailingMovable()
     with pytest.raises(FailedStatus) as ctx:
         RE(bps.mv(d, 3))
@@ -203,3 +201,14 @@ async def test_completed_status():
     with pytest.raises(ValueError):
         await completed_status(ValueError())
     await completed_status()
+
+
+async def test_device_name_in_failure_message_AsyncStatus_wrap(RE):
+    device_name = "MyFailingMovable"
+    d = FailingMovable(name=device_name)
+    with pytest.raises(FailedStatus) as ctx:
+        RE(bps.mv(d, 3))
+    # FailingMovable.set is decorated with @AsyncStatus.wrap
+    # undecorated methods will not print the device name
+    status: AsyncStatus = ctx.value.args[0]
+    assert f"device: {device_name}" in repr(status)
