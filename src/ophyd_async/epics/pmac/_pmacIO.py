@@ -9,7 +9,8 @@ from ..signal import epics_signal_r, epics_signal_rw
 class Pmac(StandardReadable):
     """Device that moves a PMAC Motor record"""
 
-    def __init__(self, prefix: str, name="") -> None:
+    def __init__(self, prefix: str, axes_on_brick: list[int], name: str = "") -> None:
+        self.prefix = prefix
         self.time_array = epics_signal_rw(
             npt.NDArray[np.float64], prefix + ":ProfileTimeArray"
         )
@@ -36,6 +37,12 @@ class Pmac(StandardReadable):
                 )
                 for i, letter in enumerate(cs_letters)
             }
+        )
+        self.CsAxisAssignment = DeviceVector(
+            {i: epics_signal_r(str, f"{prefix}:M{i}:CsAxis_RBV") for i in axes_on_brick}
+        )
+        self.CsPortAssignment = DeviceVector(
+            {i: epics_signal_r(str, f"{prefix}:M{i}:CsPort_RBV") for i in axes_on_brick}
         )
         self.points_to_build = epics_signal_rw(int, prefix + ":ProfilePointsToBuild")
         self.build_profile = epics_signal_rw(bool, prefix + ":ProfileBuild")
