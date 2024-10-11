@@ -2,14 +2,18 @@ import pytest
 from scanspec.specs import Line, fly
 
 from ophyd_async.core import DeviceCollector, set_mock_value
-from ophyd_async.epics import motor
-from ophyd_async.epics.pmac import Pmac, PmacTrajectoryTriggerLogic, PmacTrajInfo
+from ophyd_async.epics.pmac import (
+    Pmac,
+    PmacMotor,
+    PmacTrajectoryTriggerLogic,
+    PmacTrajInfo,
+)
 
 
 @pytest.fixture
 async def sim_x_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = motor.Motor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
+        sim_motor = PmacMotor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
@@ -24,7 +28,7 @@ async def sim_x_motor():
 @pytest.fixture
 async def sim_y_motor():
     async with DeviceCollector(mock=True):
-        sim_motor = motor.Motor("BLxxI-MO-STAGE-01:Y", name="sim_x_motor")
+        sim_motor = PmacMotor("BLxxI-MO-STAGE-01:Y", name="sim_x_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
@@ -32,6 +36,8 @@ async def sim_y_motor():
     set_mock_value(sim_motor.max_velocity, 5)
     set_mock_value(sim_motor.velocity, 0.5)
     set_mock_value(sim_motor.output_link, "@asyn(BRICK1,8)")
+    set_mock_value(sim_motor.CsAxis, "Y")
+    set_mock_value(sim_motor.CsPort, "BRICK1.CS3")
 
     yield sim_motor
 
@@ -39,20 +45,15 @@ async def sim_y_motor():
 @pytest.fixture
 async def sim_pmac():
     async with DeviceCollector(mock=True):
-        sim_pmac = Pmac("BLxxI-MO-STEP-01", axes_on_brick=[7, 8], name="sim_pmac")
-    set_mock_value(sim_pmac.CsAxisAssignment[8], "Y")
-    set_mock_value(sim_pmac.CsPortAssignment[8], "BRICK1.CS3")
+        sim_pmac = Pmac("BLxxI-MO-STEP-01", name="sim_pmac")
     yield sim_pmac
 
 
-async def test_sim_pmac_simple_trajectory(sim_x_motor) -> None:
+async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
     # Test the generated Trajectory profile from a scanspec
-    prefix = "BLxxI-MO-STEP-01"
-    async with DeviceCollector(mock=True):
-        pmac = Pmac(prefix, axes_on_brick=[7, 8], name="sim_pmac")
     spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
     info = PmacTrajInfo(spec=spec)
-    trigger_logic = PmacTrajectoryTriggerLogic(pmac)
+    trigger_logic = PmacTrajectoryTriggerLogic(sim_pmac)
     await trigger_logic.prepare(info)
     assert await trigger_logic.pmac.positions[9].get_value() == pytest.approx(
         [
