@@ -1,3 +1,3 @@
-from ._pvi import PviDeviceConnector
+from ._pvi import PviDeviceBackend
 
-__all__ = ["PviDeviceConnector"]
+__all__ = ["PviDeviceBackend"]

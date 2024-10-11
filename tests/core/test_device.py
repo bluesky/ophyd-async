@@ -9,19 +9,17 @@ from ophyd_async.core import (
     Device,
     DeviceCollector,
     DeviceVector,
-    MockSignalBackend,
     NotConnected,
-    SoftSignalBackend,
     wait_for_connection,
 )
 from ophyd_async.epics import motor
 from ophyd_async.plan_stubs import ensure_connected
-from ophyd_async.sim.demo import SimMotor
 
 
 class DummyBaseDevice(Device):
     def __init__(self) -> None:
         self.connected = False
+        super().__init__()
 
     async def connect(
         self, mock=False, timeout=DEFAULT_TIMEOUT, force_reconnect: bool = False
@@ -33,10 +31,10 @@ class DummyDeviceGroup(Device):
     def __init__(self, name: str) -> None:
         self.child1 = DummyBaseDevice()
         self.child2 = DummyBaseDevice()
-        self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector(
-            {123: DummyBaseDevice()}
-        )
-        self.set_name(name)
+        self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector({
+            123: DummyBaseDevice()
+        })
+        super().__init__(name)
 
 
 @pytest.fixture
@@ -59,8 +57,8 @@ def test_device_children(parent: DummyDeviceGroup):
 def test_device_vector_children():
     parent = DummyDeviceGroup("root")
 
-    device_vector_children = list(parent.dict_with_children.children())
-    assert device_vector_children == [("123", parent.dict_with_children[123])]
+    device_vector_children = list(parent.dict_with_children.items())
+    assert device_vector_children == [(123, parent.dict_with_children[123])]
 
 
 async def test_children_of_device_have_set_names_and_get_connected(
@@ -127,73 +125,16 @@ async def test_device_log_has_correct_name():
     assert device.log.extra["ophyd_async_device_name"] == "device"
 
 
-async def test_device_lazily_connects(RE):
-    class MockSignalBackendFailingFirst(MockSignalBackend):
-        succeed_on_connect = False
-
-        async def connect(self, timeout=DEFAULT_TIMEOUT):
-            if self.succeed_on_connect:
-                self.succeed_on_connect = False
-                await super().connect(timeout=timeout)
-            else:
-                self.succeed_on_connect = True
-                raise RuntimeError("connect fail")
-
-    test_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
-    test_motor.user_setpoint._backend = MockSignalBackendFailingFirst(int)
-
-    with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
-        await test_motor.connect(mock=True)
-
-    assert (
-        test_motor._connect_task
-        and test_motor._connect_task.done()
-        and test_motor._connect_task.exception()
-    )
-
-    RE(ensure_connected(test_motor, mock=True))
-
-    assert (
-        test_motor._connect_task
-        and test_motor._connect_task.done()
-        and not test_motor._connect_task.exception()
-    )
-
-    with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
-        RE(ensure_connected(test_motor, mock=True, force_reconnect=True))
-
-    assert (
-        test_motor._connect_task
-        and test_motor._connect_task.done()
-        and test_motor._connect_task.exception()
-    )
-
-
-async def test_device_refuses_two_connects_differing_on_mock_attribute(RE):
-    motor = SimMotor("motor")
-    assert not motor._connect_task
-    await motor.connect(mock=False)
-    assert isinstance(motor.units._backend, SoftSignalBackend)
-    assert motor._connect_task
-    with pytest.raises(RuntimeError) as exc:
-        await motor.connect(mock=True)
-    assert str(exc.value) == (
-        "`connect(mock=True)` called on a `Device` where the previous connect was "
-        "`mock=False`. Changing mock value between connects is not permitted."
-    )
-
-
 class MotorBundle(Device):
     def __init__(self, name: str) -> None:
         self.X = motor.Motor("BLxxI-MO-TABLE-01:X")
         self.Y = motor.Motor("BLxxI-MO-TABLE-01:Y")
-        self.V: DeviceVector[motor.Motor] = DeviceVector(
-            {
-                0: motor.Motor("BLxxI-MO-TABLE-21:X"),
-                1: motor.Motor("BLxxI-MO-TABLE-21:Y"),
-                2: motor.Motor("BLxxI-MO-TABLE-21:Z"),
-            }
-        )
+        self.V: DeviceVector[motor.Motor] = DeviceVector({
+            0: motor.Motor("BLxxI-MO-TABLE-21:X"),
+            1: motor.Motor("BLxxI-MO-TABLE-21:Y"),
+            2: motor.Motor("BLxxI-MO-TABLE-21:Z"),
+        })
+        super().__init__(name)
 
 
 async def test_device_with_children_lazily_connects(RE):
@@ -202,34 +143,17 @@ async def test_device_with_children_lazily_connects(RE):
     for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
         parentMotor.V.values()
     ):
-        assert device._connect_task is None
+        assert device._connect_cache.task is None
     RE(ensure_connected(parentMotor, mock=True))
 
     for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
         parentMotor.V.values()
     ):
         assert (
-            device._connect_task is not None
-            and device._connect_task.done()
-            and not device._connect_task.exception()
+            device._connect_cache.task is not None
+            and device._connect_cache.task.done()
+            and not device._connect_cache.task.exception()
         )
-
-
-async def test_device_with_device_collector_refuses_to_connect_if_mock_switch():
-    mock_motor = motor.Motor("NONE_EXISTENT")
-    with pytest.raises(NotConnected):
-        await mock_motor.connect(mock=False, timeout=0.01)
-    assert (
-        mock_motor._connect_task is not None
-        and mock_motor._connect_task.done()
-        and mock_motor._connect_task.exception()
-    )
-    with pytest.raises(RuntimeError) as exc:
-        await mock_motor.connect(mock=True, timeout=0.01)
-    assert str(exc.value) == (
-        "`connect(mock=True)` called on a `Device` where the previous connect was "
-        "`mock=False`. Changing mock value between connects is not permitted."
-    )
 
 
 async def test_no_reconnect_signals_if_not_forced():

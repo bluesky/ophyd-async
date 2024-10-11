@@ -179,7 +179,7 @@ async def test_sensor_reading_shows_value(mock_sensor: demo.Sensor):
 async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
     mover_setpoint_mock = get_mock_put(mock_mover.setpoint)
     await mock_mover.setpoint.set(10)
-    mover_setpoint_mock.assert_called_once_with(10, wait=ANY, timeout=ANY)
+    mover_setpoint_mock.assert_called_once_with(10, wait=ANY)
 
     # Assert that velocity is set before move
     mover_velocity_mock = get_mock_put(mock_mover.velocity)
@@ -191,12 +191,10 @@ async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
     await mock_mover.velocity.set(100)
     await mock_mover.setpoint.set(67)
 
-    parent_mock.assert_has_calls(
-        [
-            call.velocity(100, wait=True, timeout=ANY),
-            call.setpoint(67, wait=True, timeout=ANY),
-        ]
-    )
+    parent_mock.assert_has_calls([
+        call.velocity(100, wait=True),
+        call.setpoint(67, wait=True),
+    ])
 
 
 async def test_read_mover(mock_mover: demo.Mover):

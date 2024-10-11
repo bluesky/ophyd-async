@@ -4,10 +4,8 @@ from typing import Generic, TypedDict, TypeVar, get_origin
 
 import numpy as np
 from bluesky.protocols import Reading
-from event_model import DataKey
-from event_model.documents.event_descriptor import Dtype, Limits
+from event_model import DataKey, Dtype, Limits
 
-from ._device import DeviceBackend
 from ._table import Table
 from ._utils import Callback, StrictEnum, T
 
@@ -46,9 +44,23 @@ TableT = TypeVar("TableT", bound=Table)
 class SignalBackend(Generic[SignalDatatypeT]):
     """A read/write/monitor backend for a Signals"""
 
+    def __init__(self, datatype: type[SignalDatatypeT] | None):
+        self.datatype = datatype
+
     @abstractmethod
-    async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None):
-        """Put a value to the PV, if wait then wait for completion for up to timeout"""
+    def source(self, name: str, read: bool) -> str:
+        """Return source of signal.
+
+        Signals may pass a name to the backend, which can be used or discarded.
+        """
+
+    @abstractmethod
+    async def connect(self, timeout: float):
+        """Connect to underlying hardware"""
+
+    @abstractmethod
+    async def put(self, value: SignalDatatypeT | None, wait: bool):
+        """Put a value to the PV, if wait then wait for completion"""
 
     @abstractmethod
     async def get_datakey(self, source: str) -> DataKey:
@@ -70,30 +82,6 @@ class SignalBackend(Generic[SignalDatatypeT]):
     def set_callback(self, callback: Callback[T] | None) -> None:
         """Observe changes to the current value, timestamp and severity"""
 
-
-def _fail(*args, **kwargs):
-    raise RuntimeError(
-        "Signal has not been supplied a backend yet, have you run connect?"
-    )
-
-
-class DisconnectedBackend(SignalBackend):
-    put = _fail
-    get_datakey = _fail
-    get_reading = _fail
-    get_value = _fail
-    get_setpoint = _fail
-    set_callback = _fail
-
-
-class SignalConnector(DeviceBackend, Generic[SignalDatatypeT]):
-    backend: SignalBackend[SignalDatatypeT] = DisconnectedBackend()
-
-    @abstractmethod
-    def source(self, name: str) -> str: ...
-
-
-SignalConnectorT = TypeVar("SignalConnectorT", bound=SignalConnector)
 
 _primitive_dtype: dict[type[Primitive], Dtype] = {
     bool: "boolean",

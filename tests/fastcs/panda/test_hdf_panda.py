@@ -6,20 +6,20 @@ import pytest
 from bluesky import RunEngine
 
 from ophyd_async.core import (
+    StandardFlyer,
     StaticFilenameProvider,
     StaticPathProvider,
+    assert_emitted,
     callback_on_mock_put,
     set_mock_value,
 )
-from ophyd_async.core._flyer import StandardFlyer
-from ophyd_async.core._signal import assert_emitted
 from ophyd_async.fastcs.panda import (
     DatasetTable,
     HDFPanda,
     PandaHdf5DatasetType,
+    StaticSeqTableTriggerLogic,
 )
-from ophyd_async.fastcs.panda._trigger import StaticSeqTableTriggerLogic
-from ophyd_async.plan_stubs._fly import (
+from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
 
@@ -136,8 +136,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     assert data_key_names == ["x", "y"]
     for data_key_name in data_key_names:
         assert (
-            docs["descriptor"][0]["data_keys"][data_key_name]["source"]
-            == "mock+soft://panda-data-hdf_directory"
+            docs["descriptor"][0]["data_keys"][data_key_name]["source"] == "mock+pva://"
         )
 
     # test stream resources
@@ -253,8 +252,7 @@ async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
     assert data_key_names == ["x", "y"]
     for data_key_name in data_key_names:
         assert (
-            docs["descriptor"][0]["data_keys"][data_key_name]["source"]
-            == "mock+soft://panda-data-hdf_directory"
+            docs["descriptor"][0]["data_keys"][data_key_name]["source"] == "mock+pva://"
         )
 
     # test stream resources

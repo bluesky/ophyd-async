@@ -330,7 +330,10 @@ async def test_trigger_logic():
         ("", "config signal must be named before it is passed to the detector"),
         (
             "some-name",
-            ("Signal has not been supplied a backend yet, have you run connect?"),
+            (
+                "config signal some-name-acquire_time must be connected before it is "
+                "passed to the detector"
+            ),
         ),
     ],
 )

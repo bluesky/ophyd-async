@@ -3,9 +3,7 @@ from collections.abc import Callable
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core._detector import StandardDetector
-from ophyd_async.core._device import DeviceCollector
-from ophyd_async.core._mock_signal_utils import set_mock_value
+from ophyd_async.core import DeviceCollector, StandardDetector, set_mock_value
 
 
 @pytest.fixture

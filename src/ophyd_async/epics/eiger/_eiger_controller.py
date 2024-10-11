@@ -4,9 +4,9 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorControl,
     DetectorTrigger,
+    TriggerInfo,
     set_and_wait_for_other_value,
 )
-from ophyd_async.core._detector import TriggerInfo
 
 from ._eiger_io import EigerDriverIO, EigerTriggerMode
 
@@ -44,12 +44,10 @@ class EigerController(DetectorControl):
             self._drv.num_images.set(trigger_info.number),
         ]
         if trigger_info.livetime is not None:
-            coros.extend(
-                [
-                    self._drv.acquire_time.set(trigger_info.livetime),
-                    self._drv.acquire_period.set(trigger_info.livetime),
-                ]
-            )
+            coros.extend([
+                self._drv.acquire_time.set(trigger_info.livetime),
+                self._drv.acquire_period.set(trigger_info.livetime),
+            ])
         await asyncio.gather(*coros)
 
     async def arm(self):

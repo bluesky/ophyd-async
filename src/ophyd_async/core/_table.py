@@ -7,7 +7,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 
-from ophyd_async.core._utils import get_dtype
+from ._utils import get_dtype
 
 TableSubclass = TypeVar("TableSubclass", bound="Table")
 
@@ -57,14 +57,10 @@ class Table(BaseModel):
                 f"type of `Table` as {self}."
             )
 
-        return type(right)(
-            **{
-                field_name: _concat(
-                    getattr(self, field_name), getattr(right, field_name)
-                )
-                for field_name in self.model_fields
-            }
-        )
+        return type(right)(**{
+            field_name: _concat(getattr(self, field_name), getattr(right, field_name))
+            for field_name in self.model_fields
+        })
 
     def __eq__(self, value: object) -> bool:
         return super().__eq__(value)

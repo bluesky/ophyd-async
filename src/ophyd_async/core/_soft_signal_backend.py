@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import asyncio
 import time
 from abc import abstractmethod
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
-from functools import cached_property
 from typing import Any, Generic, get_origin
-from unittest.mock import AsyncMock
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -19,7 +16,6 @@ from ._signal_backend import (
     Primitive,
     PrimitiveT,
     SignalBackend,
-    SignalConnector,
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
@@ -111,104 +107,68 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
 class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     """An backend to a soft Signal, for test signals see ``MockSignalBackend``."""
 
-    _reading: Reading[SignalDatatypeT]
-    _callback: Callback[Reading[SignalDatatypeT]] | None = None
-
     def __init__(
         self,
-        datatype: type[SignalDatatypeT] | None = None,
+        datatype: type[SignalDatatypeT] | None,
         initial_value: SignalDatatypeT | None = None,
-        metadata: SignalMetadata | None = None,
+        units: str | None = None,
+        precision: int | None = None,
     ):
-        # If not specified then default to float
-        self._datatype = datatype or float
         # Create the right converter for the datatype
-        self._converter = make_converter(self._datatype)
-        self._initial_value = self._converter.write_value(initial_value)
-        self._metadata = metadata or SignalMetadata()
-        if enum_cls := get_enum_cls(self._datatype):
-            self._metadata["choices"] = [v.value for v in enum_cls]
-        self.set_value(self._initial_value)
+        self.converter = make_converter(datatype or float)
+        # Add the extra static metadata to the dictionary
+        self.metadata: SignalMetadata = {}
+        if units is not None:
+            self.metadata["units"] = units
+        if precision is not None:
+            self.metadata["precision"] = precision
+        if enum_cls := get_enum_cls(datatype):
+            self.metadata["choices"] = [v.value for v in enum_cls]
+        # Create and set the initial value
+        self.initial_value = self.converter.write_value(initial_value)
+        self.reading: Reading[SignalDatatypeT]
+        self.callback: Callback[Reading[SignalDatatypeT]] | None = None
+        self.set_value(self.initial_value)
+        super().__init__(datatype)
 
     def set_value(self, value: SignalDatatypeT):
-        self._reading = Reading(
+        self.reading = Reading(
             value=value, timestamp=time.monotonic(), alarm_severity=0
         )
-        if self._callback:
-            self._callback(self._reading)
+        if self.callback:
+            self.callback(self.reading)
 
-    async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None) -> None:
+    def source(self, name: str, read: bool) -> str:
+        return f"soft://{name}"
+
+    async def connect(self, timeout: float):
+        pass
+
+    async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
         write_value = (
-            self._converter.write_value(value)
+            self.converter.write_value(value)
             if value is not None
-            else self._initial_value
+            else self.initial_value
         )
         self.set_value(write_value)
 
     async def get_datakey(self, source: str) -> DataKey:
         return make_datakey(
-            self._datatype, self._reading["value"], source, self._metadata
+            self.datatype or float, self.reading["value"], source, self.metadata
         )
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
-        return self._reading
+        return self.reading
 
     async def get_value(self) -> SignalDatatypeT:
-        return self._reading["value"]
+        return self.reading["value"]
 
     async def get_setpoint(self) -> SignalDatatypeT:
         # For a soft signal, the setpoint and readback values are the same.
-        return self._reading["value"]
+        return self.reading["value"]
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback:
-            assert not self._callback, "Cannot set a callback when one is already set"
-            callback(self._reading)
-        self._callback = callback
-
-
-class MockSignalBackend(SoftSignalBackend[SignalDatatypeT]):
-    @cached_property
-    def put_mock(self) -> AsyncMock:
-        return AsyncMock(name="put", spec=Callable)
-
-    @cached_property
-    def put_proceeds(self) -> asyncio.Event:
-        put_proceeds = asyncio.Event()
-        put_proceeds.set()
-        return put_proceeds
-
-    async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None):
-        await self.put_mock(value, wait=wait, timeout=timeout)
-        await super().put(value, wait, timeout)
-
-        if wait:
-            await asyncio.wait_for(self.put_proceeds.wait(), timeout=timeout)
-
-
-@dataclass
-class SoftSignalConnector(SignalConnector[SignalDatatypeT]):
-    datatype: type[SignalDatatypeT]
-    initial_value: SignalDatatypeT | None = None
-    units: str | None = None
-    precision: int | None = None
-
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
-        # Add the extra static metadata to the dictionary
-        metadata: SignalMetadata = {}
-        if self.units is not None:
-            metadata["units"] = self.units
-        if self.precision is not None:
-            metadata["precision"] = self.precision
-        # Create the backend
-        backend_cls = MockSignalBackend if mock else SoftSignalBackend
-        self.backend = backend_cls(self.datatype, self.initial_value, metadata)
-
-    def source(self, name: str) -> str:
-        return f"soft://{name}"
-
-    def set_value(self, value: SignalDatatypeT):
-        assert isinstance(
-            self.backend, SoftSignalBackend
-        ), "Cannot set soft signal value until after connect"
-        self.backend.set_value(value)
+            assert not self.callback, "Cannot set a callback when one is already set"
+            callback(self.reading)
+        self.callback = callback

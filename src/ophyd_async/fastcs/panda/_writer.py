@@ -87,8 +87,7 @@ class PandaHDFWriter(DetectorWriter):
                 shape=list(ds.shape),
                 dtype="array" if ds.shape != [1] else "number",
                 # PandA data should always be written as Float64
-                # Ignore type check until https://github.com/bluesky/event-model/issues/308
-                dtype_numpy="<f8",  # type: ignore
+                dtype_numpy="<f8",
                 external="STREAM:",
             )
             for ds in self._datasets

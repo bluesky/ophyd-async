@@ -8,25 +8,21 @@ from ophyd_async.epics import adcore
 
 
 @pytest.fixture
-async def single_trigger_det_with_stats():
-    stats = adcore.NDPluginStatsIO("PREFIX:STATS", name="stats")
+async def single_trigger_det():
+    stats = adcore.NDPluginStatsIO("PREFIX:STATS:")
     det = adcore.SingleTriggerDetector(
-        drv=adcore.ADBaseIO("PREFIX:DRV"),
+        drv=adcore.ADBaseIO("PREFIX:DRV:"),
         stats=stats,
         read_uncached=[stats.unique_id],
         name="det",
     )
-
-    # Set non-default values to check they are set back
-    # These are using set_mock_value to simulate the backend IOC being setup
-    # in a particular way, rather than values being set by the Ophyd signals
-    yield det, stats
+    yield det
 
 
 async def test_single_trigger_det(
-    single_trigger_det_with_stats: adcore.SingleTriggerDetector, RE: RunEngine
+    single_trigger_det: adcore.SingleTriggerDetector,
+    RE: RunEngine,
 ):
-    single_trigger_det, stats = single_trigger_det_with_stats
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))

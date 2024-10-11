@@ -13,12 +13,10 @@ from ophyd_async.core import (
     SignalR,
     StaticFilenameProvider,
     StaticPathProvider,
+    callback_on_mock_put,
     set_mock_value,
 )
-from ophyd_async.core._mock_signal_utils import (
-    callback_on_mock_put,
-)
-from ophyd_async.epics.pvi._pvi import PviDeviceConnector
+from ophyd_async.epics.pvi import PviDeviceBackend
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DatasetTable,
@@ -63,7 +61,7 @@ async def panda_t():
 
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
+            super().__init__(name, backend=PviDeviceBackend(type(self), prefix + "PVI"))
 
     yield Panda
 

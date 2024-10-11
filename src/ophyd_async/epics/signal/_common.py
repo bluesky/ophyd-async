@@ -3,8 +3,7 @@ from typing import Any, get_args, get_origin
 
 import numpy as np
 
-from ophyd_async.core import SubsetEnum, get_enum_cls
-from ophyd_async.core._utils import get_dtype
+from ophyd_async.core import SubsetEnum, get_dtype, get_enum_cls
 
 
 def get_supported_values(

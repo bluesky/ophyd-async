@@ -101,10 +101,9 @@ class OdinWriter(DetectorWriter):
         return {
             "data": DataKey(
                 source=self._drv.file_name.source,
-                shape=data_shape,
+                shape=list(data_shape),
                 dtype="array",
-                # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
-                dtype_numpy="<u2",  # type: ignore
+                dtype_numpy="<u2",
                 external="STREAM:",
             )
         }

@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
 
-from ._device import Device, DeviceVector
+from ._device import Device, DeviceBase, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal import SignalR
 from ._status import AsyncStatus
@@ -74,14 +74,14 @@ class StandardReadable(
             await sig.unstage().task
 
     async def describe_configuration(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts(
-            [sig.describe_configuration() for sig in self._configurables]
-        )
+        return await merge_gathered_dicts([
+            sig.describe_configuration() for sig in self._configurables
+        ])
 
     async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts(
-            [sig.read_configuration() for sig in self._configurables]
-        )
+        return await merge_gathered_dicts([
+            sig.read_configuration() for sig in self._configurables
+        ])
 
     async def describe(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts([sig.describe() for sig in self._readables])
@@ -150,22 +150,25 @@ class StandardReadable(
         :meth:`HintedSignal.uncached`
         """
 
-        dict_copy = self.__dict__.copy()
+        dict_copy = dict(self.children())
 
         yield
 
         # Set symmetric difference operator gives all newly added keys
-        new_keys = dict_copy.keys() ^ self.__dict__.keys()
-        new_values = [self.__dict__[key] for key in new_keys]
+        new_dict = dict(self.children())
+        new_keys = dict_copy.keys() ^ new_dict.keys()
+        new_values = [new_dict[key] for key in new_keys]
 
         flattened_values = []
         for value in new_values:
             if isinstance(value, DeviceVector):
-                flattened_values.extend(value.children.values())
+                flattened_values.extend(value.values())
             else:
                 flattened_values.append(value)
 
-        new_devices = list(filter(lambda x: isinstance(x, Device), flattened_values))
+        new_devices = list(
+            filter(lambda x: isinstance(x, DeviceBase), flattened_values)
+        )
         self.add_readables(new_devices, wrapper)
 
     def add_readables(

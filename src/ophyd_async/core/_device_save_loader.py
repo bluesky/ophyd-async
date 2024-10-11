@@ -11,7 +11,7 @@ from bluesky.protocols import Location
 from bluesky.utils import Msg
 from pydantic import BaseModel
 
-from ._device import Device
+from ._device import Device, DeviceBase, DeviceVector
 from ._signal import SignalRW
 
 
@@ -71,12 +71,12 @@ def get_signal_values(
         for key, value in zip(selected_signals, selected_values, strict=False)
     }
     # Ignored values place in with value None so we know which ones were ignored
-    named_values.update({key: None for key in ignore})
+    named_values.update(dict.fromkeys(ignore))
     return named_values
 
 
 def walk_rw_signals(
-    device: Device, path_prefix: str | None = ""
+    device: DeviceBase, path_prefix: str | None = ""
 ) -> dict[str, SignalRW[Any]]:
     """Retrieve all SignalRWs from a device.
 
@@ -85,7 +85,7 @@ def walk_rw_signals(
 
     Parameters
     ----------
-    device : Device
+    device : DeviceBase
         Ophyd device to retrieve read-write signals from.
 
     path_prefix : str
@@ -108,7 +108,13 @@ def walk_rw_signals(
         path_prefix = ""
 
     signals: dict[str, SignalRW[Any]] = {}
-    for attr_name, attr in device.children.items():
+    children: dict[str, DeviceBase] = {}
+    if isinstance(device, Device):
+        children.update(device.children())
+    elif isinstance(device, DeviceVector):
+        children.update({str(k): v for k, v in device.items()})
+
+    for attr_name, attr in children.items():
         dot_path = f"{path_prefix}{attr_name}"
         if type(attr) is SignalRW:
             signals[dot_path] = attr

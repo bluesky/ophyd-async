@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 import time
 from asyncio import Event
 from unittest.mock import ANY
@@ -35,41 +36,13 @@ from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
 
-async def test_signal_can_be_given_backend_on_connect():
-    from ophyd_async.core._signal import DISCONNECTED_BACKEND
-
-    sim_signal = SignalR()
-    backend = MockSignalBackend(int)
-    assert sim_signal._backend is DISCONNECTED_BACKEND
-    await sim_signal.connect(mock=False, backend=backend)
-    assert await sim_signal.get_value() == 0
-
-
-async def test_signal_connect_fails_with_different_backend_on_connection():
-    sim_signal = Signal(MockSignalBackend(str))
-
-    with pytest.raises(ValueError) as exc:
-        await sim_signal.connect(mock=True, backend=MockSignalBackend(int))
-    assert str(exc.value) == "Backend at connection different from previous one."
-
-    with pytest.raises(ValueError):
-        await sim_signal.connect(mock=True, backend=SoftSignalBackend(str))
-
-
-async def test_signal_connect_fails_if_different_backend_but_same_by_value():
-    initial_backend = MockSignalBackend(str)
-    sim_signal = Signal(initial_backend)
-
-    with pytest.raises(ValueError) as exc:
-        await sim_signal.connect(mock=False, backend=MockSignalBackend(str))
-    assert str(exc.value) == "Backend at connection different from previous one."
-
-    await sim_signal.connect(mock=False, backend=initial_backend)
+def num_occurrences(substring: str, string: str) -> int:
+    return len(list(re.finditer(re.escape(substring), string)))
 
 
 async def test_signal_connects_to_previous_backend(caplog):
     caplog.set_level(logging.DEBUG)
-    int_mock_backend = MockSignalBackend(int)
+    int_mock_backend = MockSignalBackend(SoftSignalBackend(int))
     original_connect = int_mock_backend.connect
     times_backend_connect_called = 0
 
@@ -82,42 +55,17 @@ async def test_signal_connects_to_previous_backend(caplog):
     int_mock_backend.connect = new_connect
     signal = Signal(int_mock_backend)
     await asyncio.gather(signal.connect(), signal.connect())
-    response = f"Reusing previous connection to {signal.source}"
-    assert response in caplog.text
+    assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 1
     assert times_backend_connect_called == 1
 
 
 async def test_signal_connects_with_force_reconnect(caplog):
     caplog.set_level(logging.DEBUG)
-    signal = Signal(MockSignalBackend(int))
+    signal = Signal(MockSignalBackend(SoftSignalBackend(int)))
     await signal.connect()
-    assert signal._backend.datatype is int
+    assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 1
     await signal.connect(force_reconnect=True)
-    response = f"Connecting to {signal.source}"
-    assert response in caplog.text
-    assert "Reusing previous connection to" not in caplog.text
-
-
-@pytest.mark.parametrize(
-    "first, second",
-    [(True, False), (True, False)],
-)
-async def test_rejects_reconnect_when_connects_have_diff_mock_status(
-    caplog, first, second
-):
-    caplog.set_level(logging.DEBUG)
-    signal = Signal(MockSignalBackend(int))
-    await signal.connect(mock=first)
-    assert signal._backend.datatype is int
-    with pytest.raises(RuntimeError) as exc:
-        await signal.connect(mock=second)
-
-    assert f"`connect(mock={second})` called on a `Signal` where the previous " in str(
-        exc.value
-    )
-
-    response = f"Connecting to {signal.source}"
-    assert response in caplog.text
+    assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 2
 
 
 async def test_signal_lazily_connects(RE):
@@ -132,30 +80,30 @@ async def test_signal_lazily_connects(RE):
                 self.succeed_on_connect = True
                 raise RuntimeError("connect fail")
 
-    signal = SignalRW(MockSignalBackendFailingFirst(int))
+    signal = SignalRW(MockSignalBackendFailingFirst(SoftSignalBackend(int)))
 
     with pytest.raises(RuntimeError, match="connect fail"):
         await signal.connect(mock=False)
 
     assert (
-        signal._connect_task
-        and signal._connect_task.done()
-        and signal._connect_task.exception()
+        signal._connect_cache.task
+        and signal._connect_cache.task.done()
+        and signal._connect_cache.task.exception()
     )
 
     RE(ensure_connected(signal, mock=False))
     assert (
-        signal._connect_task
-        and signal._connect_task.done()
-        and not signal._connect_task.exception()
+        signal._connect_cache.task
+        and signal._connect_cache.task.done()
+        and not signal._connect_cache.task.exception()
     )
 
     with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
         RE(ensure_connected(signal, mock=False, force_reconnect=True))
     assert (
-        signal._connect_task
-        and signal._connect_task.done()
-        and signal._connect_task.exception()
+        signal._connect_cache.task
+        and signal._connect_cache.task.done()
+        and signal._connect_cache.task.exception()
     )
 
 
@@ -286,7 +234,7 @@ async def test_create_soft_signal(signal_method, signal_class):
     SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
     INITIAL_VALUE = "INITIAL"
     if signal_method == soft_signal_r_and_setter:
-        signal, unused_backend_set = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+        signal, _ = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
     elif signal_method == soft_signal_rw:
         signal = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
     else:
@@ -294,7 +242,7 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert signal.source == f"soft://{SIGNAL_NAME}"
     assert isinstance(signal, signal_class)
     await signal.connect()
-    assert isinstance(signal.connect.backend, SoftSignalBackend)
+    assert isinstance(signal._backend, SoftSignalBackend)
     assert (await signal.get_value()) == INITIAL_VALUE
 
 
@@ -354,13 +302,11 @@ async def test_assert_configuration(mock_readable: DummyReadable):
     set_mock_value(mock_readable.mode, "super mode")
     set_mock_value(mock_readable.mode2, "slow mode")
     dummy_config_reading = {
-        "mock_readable-mode": (
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": "super mode",
-            }
-        ),
+        "mock_readable-mode": ({
+            "alarm_severity": 0,
+            "timestamp": ANY,
+            "value": "super mode",
+        }),
         "mock_readable-mode2": {
             "alarm_severity": 0,
             "timestamp": ANY,
@@ -401,17 +347,12 @@ async def test_signal_unknown_datatype():
             pass
 
     err_str = (
-        "Given datatype <class "
+        "Can't make converter for <class "
         "'test_signal.test_signal_unknown_datatype.<locals>.SomeClass'>"
-        " unsupported in %s."
     )
-    with pytest.raises(TypeError, match=err_str % ("PVA",)):
-        epics_signal_rw(SomeClass, "pva://mock_signal", name="mock_signal")
-    with pytest.raises(TypeError, match=err_str % ("CA",)):
-        epics_signal_rw(SomeClass, "ca://mock_signal", name="mock_signal")
-
-    # Any dtype allowed in soft signal
-    signal = soft_signal_rw(SomeClass, SomeClass(), "soft_signal")
-    assert isinstance((await signal.get_value()), SomeClass)
-    await signal.set(1)
-    assert (await signal.get_value()) == 1
+    with pytest.raises(TypeError, match=err_str):
+        await epics_signal_rw(SomeClass, "pva://mock_signal").connect(mock=True)
+    with pytest.raises(TypeError, match=err_str):
+        await epics_signal_rw(SomeClass, "ca://mock_signal").connect(mock=True)
+    with pytest.raises(TypeError, match=err_str):
+        soft_signal_rw(SomeClass)

@@ -5,7 +5,7 @@ from ._detector import (
     StandardDetector,
     TriggerInfo,
 )
-from ._device import Device, DeviceCollector, DeviceVector
+from ._device import Device, DeviceBackend, DeviceBase, DeviceCollector, DeviceVector
 from ._device_save_loader import (
     all_at_once,
     get_signal_values,
@@ -19,6 +19,7 @@ from ._device_save_loader import (
 from ._flyer import StandardFlyer, TriggerLogic
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._log import config_ophyd_async_logging
+from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
     callback_on_mock_put,
     get_mock_put,
@@ -63,17 +64,11 @@ from ._signal import (
 from ._signal_backend import (
     Array1D,
     SignalBackend,
-    SignalConnector,
     SignalDatatype,
     SignalDatatypeT,
     make_datakey,
 )
-from ._soft_signal_backend import (
-    MockSignalBackend,
-    SignalMetadata,
-    SoftSignalBackend,
-    SoftSignalConnector,
-)
+from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
 from ._table import Table
 from ._utils import (
@@ -100,6 +95,8 @@ __all__ = [
     "StandardDetector",
     "TriggerInfo",
     "Device",
+    "DeviceBackend",
+    "DeviceBase",
     "DeviceCollector",
     "DeviceVector",
     "all_at_once",
@@ -157,7 +154,6 @@ __all__ = [
     "wait_for_value",
     "Array1D",
     "SignalBackend",
-    "SignalConnector",
     "make_datakey",
     "StrictEnum",
     "SubsetEnum",
@@ -165,7 +161,6 @@ __all__ = [
     "SignalDatatypeT",
     "SignalMetadata",
     "SoftSignalBackend",
-    "SoftSignalConnector",
     "AsyncStatus",
     "WatchableAsyncStatus",
     "DEFAULT_TIMEOUT",

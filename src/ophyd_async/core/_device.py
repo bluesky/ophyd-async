@@ -2,53 +2,53 @@ from __future__ import annotations
 
 import asyncio
 import sys
-from abc import abstractmethod
 from collections.abc import Coroutine, Iterator, Mapping, MutableMapping
-from functools import cached_property
 from logging import LoggerAdapter, getLogger
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
 
+from ._protocol import Connectable
 from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
-class DeviceBackend:
-    # TODO: we will add some mechanism of invalidating the cache here later
-    @abstractmethod
-    async def connect(
-        self, mock: bool, timeout: float, force_reconnect: bool
-    ) -> None: ...
+class DeviceConnectCache:
+    mock_arg: bool | None = None
+    task: asyncio.Task | None = None
+
+    async def need_connect(self, mock: bool, force_reconnect: bool) -> bool:
+        can_use_previous_connect = (
+            mock is self.mock_arg
+            and self.task
+            and not (self.task.done() and self.task.exception())
+        )
+        if can_use_previous_connect and not force_reconnect:
+            assert self.task, "Connect caching not working"
+            await self.task
+            return False
+        else:
+            return True
+
+    async def do_connect(self, mock: bool, coro: Coroutine) -> None:
+        self.mock_arg = mock
+        self.task = asyncio.create_task(coro)
+        await self.task
 
 
-DeviceBackendT = TypeVar("DeviceBackendT", bound=DeviceBackend)
-
-
-class Device(HasName, Generic[DeviceBackendT]):
+class DeviceBase(HasName, Connectable):
     """Common base class for all Ophyd Async Devices."""
 
     _name: str = ""
     #: The parent Device if it exists
-    parent: Device | None = None
+    parent: DeviceBase | None = None
 
     def __init__(
         self,
-        backend: DeviceBackendT,
         name: str = "",
     ) -> None:
-        # None if connect hasn't started, a Task if it has
-        self._connect_task: asyncio.Task | None = None
-        # The value of the mock arg to connect
-        self._connect_mock_arg: bool | None = None
-        self._backend = backend
+        self._connect_cache = DeviceConnectCache()
         self.set_name(name)
-
-    @cached_property
-    def log(self):
-        return LoggerAdapter(
-            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
-        )
 
     @property
     def name(self) -> str:
@@ -56,55 +56,22 @@ class Device(HasName, Generic[DeviceBackendT]):
         return self._name
 
     def set_name(self, name: str):
-        # Ensure self.log is recreated after a name change
-        if hasattr(self, "log"):
-            del self.log
         self._name = name
-
-    async def connect(
-        self,
-        mock: bool = False,
-        timeout: float = DEFAULT_TIMEOUT,
-        force_reconnect: bool = False,
-    ):
-        """Connect self and all child Devices.
-
-        Contains a timeout that gets propagated to child.connect methods.
-
-        Parameters
-        ----------
-        mock:
-            If True then use ``MockSignalBackend`` for all Signals
-        timeout:
-            Time to wait before failing with a TimeoutError.
-        """
-
-        # If previous connect with same args has started and not errored, can use it
-        can_use_previous_connect = (
-            mock is self._connect_mock_arg
-            and self._connect_task
-            and not (self._connect_task.done() and self._connect_task.exception())
+        # Ensure self.log is recreated after a name change
+        self.log = LoggerAdapter(
+            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
-        if force_reconnect or not can_use_previous_connect:
-            # Ask the backend to do a new connection
-            self._connect_mock_arg = mock
-            self._connect_task = asyncio.create_task(
-                self._backend.connect(
-                    mock=mock, timeout=timeout, force_reconnect=force_reconnect
-                )
-            )
-        assert self._connect_task, "Connect task not created, this shouldn't happen"
-        # Wait for it to complete
-        await self._connect_task
 
 
-DeviceT = TypeVar("DeviceT", bound=Device)
+DeviceBaseT = TypeVar("DeviceBaseT", bound=DeviceBase)
 
 
-class DeviceTreeBackend(DeviceBackend):
-    def __init__(self) -> None:
-        self.children: dict[str, Device] = {}
+class DeviceBackend:
+    def __init__(self, device_type: type[Device]):
+        self.device_type = device_type
+        self.children: dict[str, DeviceBase] = {}
 
+    # TODO: we will add some mechanism of invalidating the cache here later
     async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
         coros = {
             name: child_device.connect(
@@ -115,58 +82,69 @@ class DeviceTreeBackend(DeviceBackend):
         await wait_for_connection(**coros)
 
 
-class DeviceTree(Device[DeviceTreeBackend]):
-    def __init__(
-        self, backend: DeviceTreeBackend | None = None, name: str = ""
-    ) -> None:
-        if backend is None:
-            backend = DeviceTreeBackend()
-        super().__init__(backend, name)
+class Device(DeviceBase):
+    """Common base class for all Ophyd Async Devices."""
 
-    def _set_child_name(self, child: Device, child_name: str):
+    _backend: DeviceBackend
+
+    def __new__(cls, *args, **kwargs):
+        instance = super().__new__(cls)
+        # Need to make the backend first in case any children are
+        # created before the super().__init__ call
+        instance._backend = DeviceBackend(cls)  # noqa: SLF001
+        return instance
+
+    def __init__(self, name: str = "", backend: DeviceBackend | None = None) -> None:
+        if backend:
+            # Copy into the new backend the children that have already been added
+            backend.children.update(self._backend.children)
+            self._backend = backend
+        super().__init__(name)
+
+    def _set_child_name(self, child: DeviceBase, child_name: str):
         child_name = f"{self.name}-{child_name.rstrip('_')}" if self.name else ""
         child.set_name(child_name)
+        child.parent = self
 
-    def set_name(self, name: str) -> None:
+    def set_name(self, name: str):
         super().set_name(name)
         for child_name, child in self._backend.children.items():
             self._set_child_name(child, child_name)
 
-    def __setattr__(self, name: str, child: Device) -> None:
-        if name != "parent" and isinstance(child, Device):
+    def children(self) -> Iterator[tuple[str, DeviceBase]]:
+        yield from self._backend.children.items()
+
+    def __setattr__(self, name: str, child: DeviceBase) -> None:
+        if name != "parent" and isinstance(child, DeviceBase):
             self._backend.children[name] = child
-            child.parent = self
             self._set_child_name(child, name)
         else:
             super().__setattr__(name, child)
 
-    def __getattr__(self, name: str) -> Device:
-        if name == "_backend":
-            raise AttributeError("Must set backend before adding Device children")
+    def __getattr__(self, name: str) -> DeviceBase:
         child = self._backend.children.get(name, None)
         if child is None:
-            raise AttributeError(
-                f"'{type(self).__name__}' object has not attribute '{name}'"
-            )
+            txt = f"'{type(self).__name__}' object has no attribute '{name}'"
+            if name == "_connect_cache":
+                txt += ". Is super().__init__? being called at the end of __init__?"
+            raise AttributeError(txt)
         else:
             return child
 
-
-class DeviceVectorBackend(DeviceBackend, Generic[DeviceT]):
-    def __init__(self) -> None:
-        self.children: dict[int, DeviceT] = {}
-
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
-        coros = {
-            str(name): child_device.connect(
-                mock=mock, timeout=timeout, force_reconnect=force_reconnect
-            )
-            for name, child_device in self.children.items()
-        }
-        await wait_for_connection(**coros)
+    async def connect(
+        self,
+        mock: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+    ):
+        if await self._connect_cache.need_connect(mock, force_reconnect):
+            coro = self._backend.connect(mock, timeout, force_reconnect)
+            await self._connect_cache.do_connect(mock, coro)
+            # Backend might make more children, so make sure they are named
+            self.set_name(self.name)
 
 
-class DeviceVector(MutableMapping[int, DeviceT], Device[DeviceVectorBackend[DeviceT]]):
+class DeviceVector(MutableMapping[int, DeviceBaseT], DeviceBase):
     """
     Defines device components with indices.
 
@@ -177,42 +155,64 @@ class DeviceVector(MutableMapping[int, DeviceT], Device[DeviceVectorBackend[Devi
 
     def __init__(
         self,
-        children: Mapping[int, DeviceT],
+        children: Mapping[int, DeviceBaseT],
         name: str = "",
     ) -> None:
-        super().__init__(name=name, backend=DeviceVectorBackend())
-        for child_name, child in children.items():
-            self[child_name] = child
+        self._children = dict(children)
+        super().__init__(name=name)
 
-    def _set_child_name(self, child: Device, key: int):
-        child_name = f"{self.name}-{key}" if self.name else ""
-        child.set_name(child_name)
+    def _set_child_name(self, child: DeviceBase, index: int):
+        child.set_name(f"{self.name}-{index}" if self.name else "")
 
-    def set_name(self, name: str) -> None:
+    def set_name(self, name: str):
         super().set_name(name)
-        for child_name, child in self._backend.children.items():
-            self._set_child_name(child, child_name)
+        for index, child in self._children.items():
+            self._set_child_name(child, index)
 
-    def __getitem__(self, key: int) -> DeviceT:
-        assert isinstance(key, int), f"Expected int, got {key}"
-        return self._backend.children[key]
+    def __setattr__(self, name: str, child: Device) -> None:
+        if name != "parent" and isinstance(child, DeviceBase):
+            raise AttributeError(
+                "DeviceVector can only have integer named children, "
+                "set via device_vector[i] = child"
+            )
+        else:
+            super().__setattr__(name, child)
 
-    def __setitem__(self, key: int, value: DeviceT) -> None:
+    def __getitem__(self, key: int) -> DeviceBaseT:
         assert isinstance(key, int), f"Expected int, got {key}"
-        assert isinstance(value, Device), f"Expected Device, got {value}"
-        self._backend.children[key] = value
+        return self._children[key]
+
+    def __setitem__(self, key: int, value: DeviceBaseT) -> None:
+        assert isinstance(key, int), f"Expected int, got {key}"
+        assert isinstance(value, DeviceBase), f"Expected Device, got {value}"
+        self._children[key] = value
         value.parent = self
         self._set_child_name(value, key)
 
     def __delitem__(self, key: int) -> None:
         assert isinstance(key, int), f"Expected int, got {key}"
-        del self._backend.children[key]
+        del self._children[key]
 
     def __iter__(self) -> Iterator[int]:
-        yield from self._backend.children
+        yield from self._children
 
     def __len__(self) -> int:
-        return len(self._backend.children)
+        return len(self._children)
+
+    async def connect(
+        self,
+        mock: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+    ):
+        if await self._connect_cache.need_connect(mock, force_reconnect):
+            coros = {
+                str(name): child_device.connect(
+                    mock=mock, timeout=timeout, force_reconnect=force_reconnect
+                )
+                for name, child_device in self._children.items()
+            }
+            await self._connect_cache.do_connect(mock, wait_for_connection(**coros))
 
 
 class DeviceCollector:
@@ -285,7 +285,7 @@ class DeviceCollector:
         # Name and kick off connect for devices
         connect_coroutines: dict[str, Coroutine] = {}
         for name, obj in self._objects_on_exit.items():
-            if name not in self._names_on_enter and isinstance(obj, Device):
+            if name not in self._names_on_enter and isinstance(obj, DeviceBase):
                 if self._set_name and not obj.name:
                     obj.set_name(name)
                 if self._connect:

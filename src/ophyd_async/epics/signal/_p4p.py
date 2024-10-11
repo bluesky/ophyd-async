@@ -4,35 +4,31 @@ import asyncio
 import atexit
 import logging
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
 from math import isnan, nan
 from typing import Any, Generic
 
 import numpy as np
-from event_model import DataKey
-from event_model.documents.event_descriptor import Limits, LimitsRange
+from bluesky.protocols import Reading
+from event_model import DataKey, Limits, LimitsRange
 from p4p import Value
 from p4p.client.asyncio import Context, Subscription
 from pydantic import BaseModel
 
 from ophyd_async.core import (
+    Array1D,
+    Callback,
     NotConnected,
     SignalBackend,
+    SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
+    StrictEnum,
+    Table,
+    get_enum_cls,
     get_unique,
+    make_datakey,
     wait_for_connection,
 )
-from ophyd_async.core._protocol import Reading
-from ophyd_async.core._signal_backend import (
-    Array1D,
-    SignalConnector,
-    SignalDatatype,
-    make_datakey,
-)
-from ophyd_async.core._soft_signal_backend import MockSignalBackend
-from ophyd_async.core._table import Table
-from ophyd_async.core._utils import Callback, StrictEnum, get_enum_cls
 
 from ._common import format_datatype, get_supported_values
 
@@ -97,6 +93,11 @@ class PvaConverter(Generic[SignalDatatypeT]):
     def write_value(self, value: Any) -> Any:
         # The pva library will do the conversion for us
         return value
+
+
+class DisconnectedPvaConverter(PvaConverter):
+    def __getattribute__(self, __name: str) -> Any:
+        raise NotImplementedError("No PV has been set as connect() has not been called")
 
 
 class PvaNDArrayConverter(PvaConverter[SignalDatatypeT]):
@@ -273,71 +274,92 @@ def context() -> Context:
     return _context
 
 
+async def pvget_with_timeout(pv: str, timeout: float) -> Any:
+    try:
+        return await asyncio.wait_for(context().get(pv), timeout=timeout)
+    except asyncio.TimeoutError as exc:
+        logging.debug(f"signal pva://{pv} timed out", exc_info=True)
+        raise NotConnected(f"pva://{pv}") from exc
+
+
+def _pva_request_string(fields: Sequence[str]) -> str:
+    """Converts a list of requested fields into a PVA request string which can be
+    passed to p4p.
+    """
+    return f"field({','.join(fields)})"
+
+
 class PvaSignalBackend(SignalBackend[SignalDatatypeT]):
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,
-        read_pv: str,
-        write_pv: str,
-        initial_values: dict[str, Any],
+        read_pv: str = "",
+        write_pv: str = "",
     ):
-        self._converter = make_converter(datatype, initial_values)
-        self._read_pv = read_pv
-        self._write_pv = write_pv
-        self._initial_values = initial_values
+        self.read_pv = read_pv
+        self.write_pv = write_pv
+        self.converter: PvaConverter = DisconnectedPvaConverter(float)
+        self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
+        super().__init__(datatype)
+
+    def source(self, name: str, read: bool):
+        return f"pva://{self.read_pv if read else self.write_pv}"
+
+    async def _store_initial_value(self, pv: str, timeout: float):
+        self.initial_values[pv] = await pvget_with_timeout(pv, timeout)
+
+    async def connect(self, timeout: float):
+        if self.read_pv != self.write_pv:
+            # Different, need to connect both
+            await wait_for_connection(
+                read_pv=self._store_initial_value(self.read_pv, timeout=timeout),
+                write_pv=self._store_initial_value(self.write_pv, timeout=timeout),
+            )
+        else:
+            # The same, so only need to connect one
+            await self._store_initial_value(self.read_pv, timeout=timeout)
+        self.converter = make_converter(self.datatype, self.initial_values)
 
     def _make_reading(self, value: Any) -> Reading[SignalDatatypeT]:
         ts = value["timeStamp"]
         sv = value["alarm"]["severity"]
         return {
-            "value": self._converter.value(value),
+            "value": self.converter.value(value),
             "timestamp": ts["secondsPastEpoch"] + ts["nanoseconds"] * 1e-9,
             "alarm_severity": -1 if sv > 2 else sv,
         }
 
-    async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None):
+    async def put(self, value: SignalDatatypeT | None, wait: bool):
         if value is None:
-            write_value = self._initial_values[self._write_pv]
+            write_value = self.initial_values[self.write_pv]
         else:
-            write_value = self._converter.write_value(value)
-        coro = context().put(self._write_pv, {"value": write_value}, wait=wait)
-        try:
-            await asyncio.wait_for(coro, timeout)
-        except asyncio.TimeoutError as exc:
-            raise asyncio.TimeoutError(
-                f"pva://{self._write_pv}: Put timed out"
-            ) from exc
+            write_value = self.converter.write_value(value)
+        await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
     async def get_datakey(self, source: str) -> DataKey:
-        value = await context().get(self._read_pv)
-        metadata = _metadata_from_value(self._converter.datatype, value)
+        value = await context().get(self.read_pv)
+        metadata = _metadata_from_value(self.converter.datatype, value)
         return make_datakey(
-            self._converter.datatype, self._converter.value(value), source, metadata
+            self.converter.datatype, self.converter.value(value), source, metadata
         )
-
-    def _pva_request_string(self, fields: Sequence[str]) -> str:
-        """Converts a list of requested fields into a PVA request string which can be
-        passed to p4p.
-        """
-        return f"field({','.join(fields)})"
 
     async def get_reading(self) -> Reading:
-        request = self._pva_request_string(
-            self._converter.value_fields + self._converter.reading_fields
+        request = _pva_request_string(
+            self.converter.value_fields + self.converter.reading_fields
         )
-        value = await context().get(self._read_pv, request=request)
+        value = await context().get(self.read_pv, request=request)
         return self._make_reading(value)
 
     async def get_value(self) -> SignalDatatypeT:
-        request = self._pva_request_string(self._converter.value_fields)
-        value = await context().get(self._read_pv, request=request)
-        return self._converter.value(value)
+        request = _pva_request_string(self.converter.value_fields)
+        value = await context().get(self.read_pv, request=request)
+        return self.converter.value(value)
 
     async def get_setpoint(self) -> SignalDatatypeT:
-        request = self._pva_request_string(self._converter.value_fields)
-        value = await context().get(self._write_pv, request=request)
-        return self._converter.value(value)
+        request = _pva_request_string(self.converter.value_fields)
+        value = await context().get(self.write_pv, request=request)
+        return self.converter.value(value)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback:
@@ -348,58 +370,12 @@ class PvaSignalBackend(SignalBackend[SignalDatatypeT]):
             async def async_callback(v):
                 callback(self._make_reading(v))
 
-            request = self._pva_request_string(
-                self._converter.value_fields + self._converter.reading_fields
+            request = _pva_request_string(
+                self.converter.value_fields + self.converter.reading_fields
             )
             self.subscription = context().monitor(
-                self._read_pv, async_callback, request=request
+                self.read_pv, async_callback, request=request
             )
         elif self.subscription:
             self.subscription.close()
             self.subscription = None
-
-
-async def pvget_with_timeout(pv: str, timeout: float) -> Any:
-    try:
-        return await asyncio.wait_for(context().get(pv), timeout=timeout)
-    except asyncio.TimeoutError as exc:
-        logging.debug(f"signal pva://{pv} timed out", exc_info=True)
-        raise NotConnected(f"pva://{pv}") from exc
-
-
-@dataclass
-class PvaSignalConnector(SignalConnector[SignalDatatypeT]):
-    datatype: type[SignalDatatypeT] | None
-    read_pv: str
-    write_pv: str
-
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
-        if mock:
-            self.backend = MockSignalBackend(self.datatype)
-        else:
-            self.backend = await self.connect_epics(timeout)
-
-    async def connect_epics(self, timeout: float) -> PvaSignalBackend:
-        initial_values: dict[str, Any] = {}
-
-        async def store_initial_value(pv: str):
-            initial_values[pv] = await pvget_with_timeout(pv, timeout)
-
-        if self.read_pv != self.write_pv:
-            # Different, need to connect both
-            await wait_for_connection(
-                read_pv=store_initial_value(self.read_pv),
-                write_pv=store_initial_value(self.write_pv),
-            )
-        else:
-            # The same, so only need to connect one
-            await store_initial_value(self.read_pv)
-        return PvaSignalBackend(
-            self.datatype, self.read_pv, self.write_pv, initial_values
-        )
-
-    def source(self, name: str) -> str:
-        if self.read_pv:
-            return f"pva://{self.read_pv}"
-        else:
-            return f"pvi://{name}"

@@ -3,11 +3,11 @@ import pytest
 from ophyd_async.core import (
     DetectorTrigger,
     PathProvider,
+    TriggerInfo,
     set_mock_value,
 )
-from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import advimba
-from ophyd_async.epics.advimba._vimba_io import (
+from ophyd_async.epics.advimba import (
     VimbaExposeOutMode,
     VimbaOnOff,
     VimbaTriggerSource,

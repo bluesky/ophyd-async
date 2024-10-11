@@ -10,8 +10,7 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     SignalBackend,
-    SignalR,
-    SoftSignalConnector,
+    SoftSignalBackend,
     StrictEnum,
     T,
     soft_signal_rw,
@@ -98,42 +97,39 @@ async def test_soft_signal_backend_get_put_monitor(
     descriptor: Callable[[Any], dict],
     dtype_numpy: str,
 ):
-    connector = SoftSignalConnector(datatype=datatype)
+    backend = SoftSignalBackend(datatype=datatype)
 
-    await connector.connect(False, 1, False)
-    q = MonitorQueue(connector.backend)
+    await backend.connect(1)
+    q = MonitorQueue(backend)
     try:
         # Check descriptor
         source = "soft://test"
         # Add expected dtype_numpy to descriptor
         assert dict(
             source=source, **descriptor(initial_value), dtype_numpy=dtype_numpy
-        ) == await connector.backend.get_datakey(source)
+        ) == await backend.get_datakey(source)
         # Check initial value
         await q.assert_updates(
             pytest.approx(initial_value) if initial_value != "" else initial_value
         )
         # Put to new value and check that
-        await connector.backend.put(put_value)
+        await backend.put(put_value, True)
         await q.assert_updates(pytest.approx(put_value))
     finally:
         q.close()
 
 
 async def test_soft_signal_backend_enum_value_equivalence():
-    connector = SoftSignalConnector(MyEnum)
-    await connector.connect(False, 1, False)
-    soft_backend = connector.backend
+    soft_backend = SoftSignalBackend(MyEnum)
+    await soft_backend.connect(timeout=1)
     assert (await soft_backend.get_value()) is MyEnum.a
-    await soft_backend.put(MyEnum.b)
+    await soft_backend.put(MyEnum.b, True)
     assert (await soft_backend.get_value()) is MyEnum.b
 
 
 async def test_soft_signal_backend_with_numpy_typing():
-    connector = SoftSignalConnector(npt.NDArray[np.float64])
-    await connector.connect(False, 1, False)
-    soft_backend = connector.backend
-
+    soft_backend = SoftSignalBackend(npt.NDArray[np.float64])
+    await soft_backend.connect(timeout=1)
     array = await soft_backend.get_value()
     assert array.shape == (0,)
 
@@ -143,9 +139,8 @@ async def test_soft_signal_descriptor_fails_for_invalid_class():
         def __init__(self) -> None:
             pass
 
-    soft_signal = SignalR(SoftSignalConnector(myClass))
     with pytest.raises(TypeError):
-        await soft_signal.connect()
+        SoftSignalBackend(myClass)
 
 
 async def test_soft_signal_descriptor_with_metadata():

@@ -4,8 +4,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from ophyd_async.fastcs.panda import SeqTable
-from ophyd_async.fastcs.panda._table import SeqTrigger
+from ophyd_async.fastcs.panda import SeqTable, SeqTrigger
 
 
 def test_seq_table_converts_lists():
@@ -225,27 +224,25 @@ def test_seq_table_pva_conversion():
         _assert_col_equal(column1, column2)
 
     dtype = seq_table_from_pva_dict.numpy_dtype()
-    assert dtype == np.dtype(
-        [
-            ("repeats", np.uint16),
-            ("trigger", "|S40"),
-            ("position", np.int32),
-            ("time1", np.uint32),
-            ("outa1", np.bool_),
-            ("outb1", np.bool_),
-            ("outc1", np.bool_),
-            ("outd1", np.bool_),
-            ("oute1", np.bool_),
-            ("outf1", np.bool_),
-            ("time2", np.uint32),
-            ("outa2", np.bool_),
-            ("outb2", np.bool_),
-            ("outc2", np.bool_),
-            ("outd2", np.bool_),
-            ("oute2", np.bool_),
-            ("outf2", np.bool_),
-        ]
-    )
+    assert dtype == np.dtype([
+        ("repeats", np.uint16),
+        ("trigger", "|S40"),
+        ("position", np.int32),
+        ("time1", np.uint32),
+        ("outa1", np.bool_),
+        ("outb1", np.bool_),
+        ("outc1", np.bool_),
+        ("outd1", np.bool_),
+        ("oute1", np.bool_),
+        ("outf1", np.bool_),
+        ("time2", np.uint32),
+        ("outa2", np.bool_),
+        ("outb2", np.bool_),
+        ("outc2", np.bool_),
+        ("outd2", np.bool_),
+        ("oute2", np.bool_),
+        ("outf2", np.bool_),
+    ])
 
     assert np.array_equal(
         seq_table_from_pva_dict.numpy_table(),

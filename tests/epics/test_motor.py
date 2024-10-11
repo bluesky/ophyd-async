@@ -14,8 +14,8 @@ from ophyd_async.core import (
     observe_value,
     set_mock_put_proceeds,
     set_mock_value,
+    soft_signal_rw,
 )
-from ophyd_async.core._signal import soft_signal_rw
 from ophyd_async.epics import motor
 
 # Long enough for multiple asyncio event loop cycles to run so
@@ -127,9 +127,7 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
     class MyTimeout(Exception):
         pass
 
-    def do_timeout(value, wait=False, timeout=None):
-        # Check we were given the right timeout of move_time + DEFAULT_TIMEOUT
-        assert timeout == 10.3
+    def do_timeout(value, wait):
         # Raise custom exception to be clear it bubbles up
         raise MyTimeout()
 

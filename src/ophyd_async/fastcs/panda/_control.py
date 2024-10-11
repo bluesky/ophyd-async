@@ -1,10 +1,10 @@
 from ophyd_async.core import (
+    AsyncStatus,
     DetectorControl,
     DetectorTrigger,
+    TriggerInfo,
     wait_for_value,
 )
-from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.core._status import AsyncStatus
 
 from ._block import PcapBlock
 

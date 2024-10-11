@@ -3,12 +3,13 @@ from contextlib import asynccontextmanager, contextmanager
 from typing import Any
 from unittest.mock import AsyncMock
 
+from ._mock_signal_backend import MockSignalBackend
 from ._signal import Signal
-from ._soft_signal_backend import MockSignalBackend, SignalDatatypeT
+from ._soft_signal_backend import SignalDatatypeT
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    backend = signal.connect.backend  # noqa:SLF001
+    backend = signal._backend  # noqa:SLF001
     assert isinstance(backend, MockSignalBackend), (
         "Expected to receive a `MockSignalBackend`, instead "
         f" received {type(backend)}. "
@@ -143,8 +144,8 @@ def _unset_side_effect_cm(put_mock: AsyncMock):
 
 def callback_on_mock_put(
     signal: Signal[SignalDatatypeT],
-    callback: Callable[[SignalDatatypeT], None]
-    | Callable[[SignalDatatypeT], Awaitable[None]],
+    callback: Callable[[SignalDatatypeT, bool], None]
+    | Callable[[SignalDatatypeT, bool], Awaitable[None]],
 ):
     """For setting a callback when a backend is put to.
 

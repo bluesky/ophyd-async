@@ -25,19 +25,18 @@ from ophyd_async.core import (
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
-@pytest.mark.parametrize("connect_mock_mode", [True, False])
-async def test_mock_signal_backend(connect_mock_mode):
-    mock_signal = SignalRW(MockSignalBackend(datatype=str))
+async def test_mock_signal_backend():
+    mock_signal = SignalRW(SoftSignalBackend(datatype=str))
     # If mock is false it will be handled like a normal signal, otherwise it will
     # initalize a new backend from the one in the line above
-    await mock_signal.connect(mock=connect_mock_mode)
+    await mock_signal.connect(mock=True)
     assert isinstance(mock_signal._backend, MockSignalBackend)
 
     assert await mock_signal._backend.get_value() == ""
-    await mock_signal._backend.put("test")
+    await mock_signal._backend.put("test", True)
     assert await mock_signal._backend.get_value() == "test"
     assert mock_signal._backend.put_mock.call_args_list == [
-        call("test", wait=True, timeout=None),
+        call("test", wait=True),
     ]
 
 
@@ -145,27 +144,25 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
 async def test_get_mock_put():
     mock_signal = epics_signal_rw(str, "READ_PV", "WRITE_PV", name="mock_name")
     await mock_signal.connect(mock=True)
-    await mock_signal.set("test_value", wait=True, timeout=100)
+    await mock_signal.set("test_value", wait=True)
 
     mock = get_mock_put(mock_signal)
-    mock.assert_called_once_with("test_value", wait=True, timeout=100)
+    mock.assert_called_once_with("test_value", wait=True)
 
-    def err_text(text, wait, timeout):
+    def err_text(text, wait):
         return (
-            f"Expected: put('{re.escape(str(text))}', wait={re.escape(str(wait))},"
-            f" timeout={re.escape(str(timeout))})",
-            "Actual: put('test_value', wait=True, timeout=100)",
+            f"Expected: put('{re.escape(str(text))}', wait={re.escape(str(wait))})",
+            "Actual: put('test_value', wait=True)",
         )
 
-    for text, wait, timeout in [
-        ("wrong_name", True, 100),  # name wrong
-        ("test_value", False, 100),  # wait wrong
-        ("test_value", True, 0),  # timeout wrong
-        ("test_value", False, 0),  # wait and timeout wrong
+    for text, wait in [
+        ("wrong_name", True),  # name wrong
+        ("test_value", False),  # wait wrong
+        ("wrong_name", False),  # name and wait wrong
     ]:
         with pytest.raises(AssertionError) as exc:
-            mock.assert_called_once_with(text, wait=wait, timeout=timeout)
-        for err_substr in err_text(text, wait, timeout):
+            mock.assert_called_once_with(text, wait=wait)
+        for err_substr in err_text(text, wait):
             assert err_substr in str(exc.value)
 
 
@@ -186,8 +183,8 @@ async def test_blocks_during_put(mock_signals):
     signal1, signal2 = mock_signals
 
     async with mock_puts_blocked(signal1, signal2):
-        status1 = signal1.set("second_value", wait=True, timeout=1)
-        status2 = signal2.set("second_value", wait=True, timeout=1)
+        status1 = signal1.set("second_value", wait=True, timeout=None)
+        status2 = signal2.set("second_value", wait=True, timeout=None)
         assert await signal1.get_value() == "second_value"
         assert await signal2.get_value() == "second_value"
         assert not status1.done
@@ -206,12 +203,12 @@ async def test_callback_on_mock_put_as_context_manager(mock_signals):
     signal2_callbacks = MagicMock()
     signal1, signal2 = mock_signals
     with callback_on_mock_put(signal1, signal1_callbacks):
-        await signal1.set("second_value", wait=True, timeout=1)
+        await signal1.set("second_value", wait=True)
     with callback_on_mock_put(signal2, signal2_callbacks):
-        await signal2.set("second_value", wait=True, timeout=1)
+        await signal2.set("second_value", wait=True)
 
-    signal1_callbacks.assert_called_once_with("second_value", wait=True, timeout=1)
-    signal2_callbacks.assert_called_once_with("second_value", wait=True, timeout=1)
+    signal1_callbacks.assert_called_once_with("second_value", wait=True)
+    signal2_callbacks.assert_called_once_with("second_value", wait=True)
 
 
 async def test_callback_on_mock_put_not_as_context_manager():
@@ -225,7 +222,6 @@ async def test_callback_on_mock_put_not_as_context_manager():
     assert calls == [
         {
             "_args": (10.0,),
-            "timeout": 10.0,
             "wait": True,
         }
     ]
@@ -236,12 +232,12 @@ async def test_async_callback_on_mock_put(mock_signals):
     signal2_callbacks = AsyncMock()
     signal1, signal2 = mock_signals
     with callback_on_mock_put(signal1, signal1_callbacks):
-        await signal1.set("second_value", wait=True, timeout=1)
+        await signal1.set("second_value", wait=True)
     with callback_on_mock_put(signal2, signal2_callbacks):
-        await signal2.set("second_value", wait=True, timeout=1)
+        await signal2.set("second_value", wait=True)
 
-    signal1_callbacks.assert_awaited_once_with("second_value", wait=True, timeout=1)
-    signal2_callbacks.assert_awaited_once_with("second_value", wait=True, timeout=1)
+    signal1_callbacks.assert_awaited_once_with("second_value", wait=True)
+    signal2_callbacks.assert_awaited_once_with("second_value", wait=True)
 
 
 async def test_callback_on_mock_put_fails_if_args_are_not_correct():
@@ -294,7 +290,7 @@ async def test_set_mock_values_exhausted_passes(mock_signals):
 
 
 async def test_set_mock_values_exhausted_fails(mock_signals):
-    signal1, signal2 = mock_signals
+    signal1, _ = mock_signals
 
     for value_set in (
         iterator := set_mock_values(
@@ -312,17 +308,17 @@ async def test_set_mock_values_exhausted_fails(mock_signals):
 
 
 async def test_reset_mock_put_calls(mock_signals):
-    signal1, signal2 = mock_signals
+    signal1, _ = mock_signals
     await signal1.set("test_value", wait=True, timeout=1)
-    get_mock_put(signal1).assert_called_with("test_value", wait=ANY, timeout=ANY)
+    get_mock_put(signal1).assert_called_with("test_value", wait=ANY)
     reset_mock_put_calls(signal1)
     with pytest.raises(AssertionError) as exc:
-        get_mock_put(signal1).assert_called_with("test_value", wait=ANY, timeout=ANY)
+        get_mock_put(signal1).assert_called_with("test_value", wait=ANY)
     # Replacing spaces because they change between runners
     # (e.g the github actions runner has more)
     assert str(exc.value).replace(" ", "").replace("\n", "") == (
         "expectedcallnotfound."
-        "Expected:put('test_value',wait=<ANY>,timeout=<ANY>)"
+        "Expected:put('test_value',wait=<ANY>)"
         "Actual:notcalled."
     )
 
@@ -333,8 +329,8 @@ async def test_mock_signal_of_soft_signal_backend_receives_intial_value():
             self.my_signal = soft_signal_rw(
                 datatype=int,
                 initial_value=10,
-                name=name,
             )
+            super().__init__(name)
 
     mocked_device = SomeDevice("mocked_device")
     await mocked_device.connect(mock=True)
@@ -349,8 +345,9 @@ async def test_mock_signal_of_soft_signal_backend_receives_metadata():
     class SomeDevice(Device):
         def __init__(self, name):
             self.my_signal = soft_signal_rw(
-                datatype=float, initial_value=1.0, name=name, units="mm", precision=2
+                datatype=float, initial_value=1.0, units="mm", precision=2
             )
+            super().__init__(name)
 
     mocked_device = SomeDevice("mocked_device")
     await mocked_device.connect(mock=True)
@@ -358,21 +355,21 @@ async def test_mock_signal_of_soft_signal_backend_receives_metadata():
     await soft_device.connect(mock=False)
 
     assert await mocked_device.my_signal.describe() == {
-        "mocked_device": {
+        "mocked_device-my_signal": {
             "dtype": "number",
             "dtype_numpy": "<f8",
             "shape": [],
-            "source": "mock+soft://mocked_device",
+            "source": "mock+soft://mocked_device-my_signal",
             "units": "mm",
             "precision": 2,
         }
     }
     assert await soft_device.my_signal.describe() == {
-        "soft_device": {
+        "soft_device-my_signal": {
             "dtype": "number",
             "dtype_numpy": "<f8",
             "shape": [],
-            "source": "soft://soft_device",
+            "source": "soft://soft_device-my_signal",
             "units": "mm",
             "precision": 2,
         }
@@ -383,6 +380,7 @@ async def test_writing_to_soft_signals_in_mock():
     class MyDevice(Device):
         def __init__(self, prefix: str, name: str = ""):
             self.signal, self.backend_put = soft_signal_r_and_setter(int)
+            super().__init__(name)
 
         async def set(self):
             self.backend_put(1)

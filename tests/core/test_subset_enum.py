@@ -6,8 +6,12 @@ from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.signal import epics_signal_rw
 
 # Allow these imports from private modules for tests
-from ophyd_async.epics.signal._aioca import make_converter as ca_make_converter
-from ophyd_async.epics.signal._p4p import make_converter as pva_make_converter
+from ophyd_async.epics.signal._aioca import (
+    make_converter as ca_make_converter,  # noqa: PLC2701
+)
+from ophyd_async.epics.signal._p4p import (
+    make_converter as pva_make_converter,  # noqa: PLC2701
+)
 
 
 class AB(SubsetEnum):

@@ -24,7 +24,7 @@ from ophyd_async.core import (
     observe_value,
     set_mock_value,
 )
-from ophyd_async.epics.pvi._pvi import PviDeviceConnector
+from ophyd_async.epics.pvi import PviDeviceBackend
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
@@ -168,7 +168,7 @@ async def mock_panda():
     class Panda(CommonPandaBlocks):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
+            super().__init__(name, backend=PviDeviceBackend(type(self), prefix + "PVI"))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")

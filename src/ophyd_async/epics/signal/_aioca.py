@@ -1,7 +1,6 @@
 import logging
 import sys
 from collections.abc import Sequence
-from dataclasses import dataclass
 from math import isnan, nan
 from typing import Any, Generic, cast
 
@@ -17,16 +16,15 @@ from aioca import (
     caput,
 )
 from aioca.types import AugmentedValue, Dbr, Format
+from bluesky.protocols import Reading
 from epicscorelibs.ca import dbr
-from event_model import DataKey
-from event_model.documents.event_descriptor import Limits, LimitsRange
+from event_model import DataKey, Limits, LimitsRange
 
 from ophyd_async.core import (
     Array1D,
     Callback,
-    MockSignalBackend,
+    NotConnected,
     SignalBackend,
-    SignalConnector,
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
@@ -35,8 +33,6 @@ from ophyd_async.core import (
     make_datakey,
     wait_for_connection,
 )
-from ophyd_async.core._protocol import Reading
-from ophyd_async.core._utils import NotConnected
 
 from ._common import format_datatype, get_supported_values
 
@@ -98,6 +94,11 @@ class CaConverter(Generic[SignalDatatypeT]):
         # invokes __pos__ operator to return an instance of
         # the builtin base class
         return +value  # type: ignore
+
+
+class DisconnectedCaConverter(CaConverter):
+    def __getattribute__(self, __name: str) -> Any:
+        raise NotImplementedError("No PV has been set as connect() has not been called")
 
 
 class CaArrayConverter(CaConverter[np.ndarray]):
@@ -211,80 +212,6 @@ def make_converter(
     )
 
 
-class CaSignalBackend(SignalBackend[SignalDatatypeT]):
-    def __init__(
-        self,
-        datatype: type[SignalDatatypeT] | None,
-        read_pv: str,
-        write_pv: str,
-        initial_values: dict[str, AugmentedValue],
-    ):
-        self._converter = make_converter(datatype, initial_values)
-        self._read_pv = read_pv
-        self._write_pv = write_pv
-        self._initial_values = initial_values
-        self._subscription: Subscription | None = None
-
-    async def _caget(self, pv: str, format: Format) -> AugmentedValue:
-        return await caget(
-            pv, datatype=self._converter.read_dbr, format=format, timeout=None
-        )
-
-    def _make_reading(self, value: AugmentedValue) -> Reading[SignalDatatypeT]:
-        return {
-            "value": self._converter.value(value),
-            "timestamp": value.timestamp,
-            "alarm_severity": -1 if value.severity > 2 else value.severity,
-        }
-
-    async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None):
-        if value is None:
-            write_value = self._initial_values[self._write_pv]
-        else:
-            write_value = self._converter.write_value(value)
-        await caput(
-            self._write_pv,
-            write_value,
-            datatype=self._converter.write_dbr,
-            wait=wait,
-            timeout=timeout,
-        )
-
-    async def get_datakey(self, source: str) -> DataKey:
-        value = await self._caget(self._read_pv, FORMAT_CTRL)
-        metadata = _metadata_from_augmented_value(value, self._converter.metadata)
-        return make_datakey(
-            self._converter.datatype, self._converter.value(value), source, metadata
-        )
-
-    async def get_reading(self) -> Reading[SignalDatatypeT]:
-        value = await self._caget(self._read_pv, FORMAT_TIME)
-        return self._make_reading(value)
-
-    async def get_value(self) -> SignalDatatypeT:
-        value = await self._caget(self._read_pv, FORMAT_RAW)
-        return self._converter.value(value)
-
-    async def get_setpoint(self) -> SignalDatatypeT:
-        value = await self._caget(self._write_pv, FORMAT_RAW)
-        return self._converter.value(value)
-
-    def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
-        if callback:
-            assert (
-                not self._subscription
-            ), "Cannot set a callback when one is already set"
-            self._subscription = camonitor(
-                self._read_pv,
-                lambda v: callback(self._make_reading(v)),
-                datatype=self._converter.read_dbr,
-                format=FORMAT_TIME,
-            )
-        elif self._subscription:
-            self._subscription.close()
-            self._subscription = None
-
-
 _tried_pyepics = False
 
 
@@ -297,43 +224,96 @@ def _use_pyepics_context_if_imported():
         _tried_pyepics = True
 
 
-@dataclass
-class CaSignalConnector(SignalConnector[SignalDatatypeT]):
-    datatype: type[SignalDatatypeT] | None
-    read_pv: str
-    write_pv: str
+class CaSignalBackend(SignalBackend[SignalDatatypeT]):
+    def __init__(
+        self,
+        datatype: type[SignalDatatypeT] | None,
+        read_pv: str = "",
+        write_pv: str = "",
+    ):
+        self.read_pv = read_pv
+        self.write_pv = write_pv
+        self.converter: CaConverter = DisconnectedCaConverter(float, dbr.DBR_DOUBLE)
+        self.initial_values: dict[str, AugmentedValue] = {}
+        self.subscription: Subscription | None = None
+        super().__init__(datatype)
 
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
-        if mock:
-            self.backend = MockSignalBackend(self.datatype)
-        else:
-            self.backend = await self.connect_epics(timeout)
+    def source(self, name: str, read: bool):
+        return f"ca://{self.read_pv if read else self.write_pv}"
 
-    async def connect_epics(self, timeout: float) -> CaSignalBackend:
+    async def _store_initial_value(self, pv: str, timeout: float):
+        try:
+            self.initial_values[pv] = await caget(
+                pv, format=FORMAT_CTRL, timeout=timeout
+            )
+        except CANothing as exc:
+            logging.debug(f"signal ca://{pv} timed out")
+            raise NotConnected(f"ca://{pv}") from exc
+
+    async def connect(self, timeout: float):
         _use_pyepics_context_if_imported()
-        initial_values: dict[str, AugmentedValue] = {}
-
-        async def store_initial_value(pv: str):
-            try:
-                initial_values[pv] = await caget(
-                    pv, format=FORMAT_CTRL, timeout=timeout
-                )
-            except CANothing as exc:
-                logging.debug(f"signal ca://{pv} timed out")
-                raise NotConnected(f"ca://{pv}") from exc
-
         if self.read_pv != self.write_pv:
             # Different, need to connect both
             await wait_for_connection(
-                read_pv=store_initial_value(self.read_pv),
-                write_pv=store_initial_value(self.write_pv),
+                read_pv=self._store_initial_value(self.read_pv, timeout=timeout),
+                write_pv=self._store_initial_value(self.write_pv, timeout=timeout),
             )
         else:
             # The same, so only need to connect one
-            await store_initial_value(self.read_pv)
-        return CaSignalBackend(
-            self.datatype, self.read_pv, self.write_pv, initial_values
+            await self._store_initial_value(self.read_pv, timeout=timeout)
+        self.converter = make_converter(self.datatype, self.initial_values)
+
+    async def _caget(self, pv: str, format: Format) -> AugmentedValue:
+        return await caget(
+            pv, datatype=self.converter.read_dbr, format=format, timeout=None
         )
 
-    def source(self, name: str) -> str:
-        return f"ca://{self.read_pv}"
+    def _make_reading(self, value: AugmentedValue) -> Reading[SignalDatatypeT]:
+        return {
+            "value": self.converter.value(value),
+            "timestamp": value.timestamp,
+            "alarm_severity": -1 if value.severity > 2 else value.severity,
+        }
+
+    async def put(self, value: SignalDatatypeT | None, wait: bool):
+        if value is None:
+            write_value = self.initial_values[self.write_pv]
+        else:
+            write_value = self.converter.write_value(value)
+        await caput(
+            self.write_pv, write_value, datatype=self.converter.write_dbr, wait=wait
+        )
+
+    async def get_datakey(self, source: str) -> DataKey:
+        value = await self._caget(self.read_pv, FORMAT_CTRL)
+        metadata = _metadata_from_augmented_value(value, self.converter.metadata)
+        return make_datakey(
+            self.converter.datatype, self.converter.value(value), source, metadata
+        )
+
+    async def get_reading(self) -> Reading[SignalDatatypeT]:
+        value = await self._caget(self.read_pv, FORMAT_TIME)
+        return self._make_reading(value)
+
+    async def get_value(self) -> SignalDatatypeT:
+        value = await self._caget(self.read_pv, FORMAT_RAW)
+        return self.converter.value(value)
+
+    async def get_setpoint(self) -> SignalDatatypeT:
+        value = await self._caget(self.write_pv, FORMAT_RAW)
+        return self.converter.value(value)
+
+    def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
+        if callback:
+            assert (
+                not self.subscription
+            ), "Cannot set a callback when one is already set"
+            self.subscription = camonitor(
+                self.read_pv,
+                lambda v: callback(self._make_reading(v)),
+                datatype=self.converter.read_dbr,
+                format=FORMAT_TIME,
+            )
+        elif self.subscription:
+            self.subscription.close()
+            self.subscription = None

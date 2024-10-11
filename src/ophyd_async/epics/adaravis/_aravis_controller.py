@@ -2,12 +2,12 @@ import asyncio
 from typing import Literal
 
 from ophyd_async.core import (
+    AsyncStatus,
     DetectorControl,
     DetectorTrigger,
     TriggerInfo,
     set_and_wait_for_value,
 )
-from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource

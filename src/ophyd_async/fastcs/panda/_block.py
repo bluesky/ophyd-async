@@ -1,19 +1,24 @@
 from ophyd_async.core import (
     Device,
+    DeviceBackend,
     DeviceVector,
     SignalR,
     SignalRW,
     StrictEnum,
     SubsetEnum,
 )
-from ophyd_async.epics.pvi._pvi import PviDeviceConnector
+from ophyd_async.epics.pvi import PviDeviceBackend
 
 from ._table import DatasetTable, SeqTable
 
 
 class FastCsDevice(Device):
-    def __init__(self, uri: str = "", name: str = "") -> None:
-        super().__init__(name=name, connector=PviDeviceConnector(self, uri + "PVI"))
+    def __init__(
+        self, uri: str = "", name: str = "", backend: DeviceBackend | None = None
+    ) -> None:
+        if backend is None:
+            backend = PviDeviceBackend(type(self), uri + "PVI")
+        super().__init__(name=name, backend=backend)
 
 
 class DataBlock(FastCsDevice):

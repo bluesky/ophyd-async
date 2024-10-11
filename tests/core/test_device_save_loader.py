@@ -10,9 +10,11 @@ import yaml
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
+    Array1D,
     Device,
     SignalRW,
     StrictEnum,
+    Table,
     all_at_once,
     get_signal_values,
     load_device,
@@ -22,8 +24,6 @@ from ophyd_async.core import (
     set_signal_values,
     walk_rw_signals,
 )
-from ophyd_async.core._signal_backend import Array1D
-from ophyd_async.core._table import Table
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 

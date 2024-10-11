@@ -12,7 +12,7 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import BaseModel, Field
 
-from ._device import Device, DeviceBackendT
+from ._device import Device, DeviceBackend
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
@@ -137,7 +137,7 @@ class DetectorWriter(ABC):
         """Close writer, blocks until I/O is complete"""
 
 
-class StandardDetector(Device[DeviceBackendT]):
+class StandardDetector(Device):
     """
     Useful detector base class for step and fly scanning detectors.
     Aggregates controller and writer logic together.
@@ -149,7 +149,7 @@ class StandardDetector(Device[DeviceBackendT]):
         writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
-        connector: DeviceBackendT | None = None,
+        backend: DeviceBackend | None = None,
     ) -> None:
         """
         Constructor
@@ -175,7 +175,7 @@ class StandardDetector(Device[DeviceBackendT]):
         self._iterations_completed: int = 0
         self._initial_frame: int
         self._last_frame: int
-        super().__init__(name=name, connector=connector)
+        super().__init__(name=name, backend=backend)
 
     @property
     def controller(self) -> DetectorControl:

@@ -13,8 +13,32 @@ from typing import (
 from bluesky.protocols import HasName, Reading
 from event_model import DataKey
 
+from ._utils import DEFAULT_TIMEOUT
+
 if TYPE_CHECKING:
     from ._status import AsyncStatus
+
+
+@runtime_checkable
+class Connectable(Protocol):
+    @abstractmethod
+    async def connect(
+        self,
+        mock: bool = False,
+        timeout: float = DEFAULT_TIMEOUT,
+        force_reconnect: bool = False,
+    ):
+        """Connect self and all child Devices.
+
+        Contains a timeout that gets propagated to child.connect methods.
+
+        Parameters
+        ----------
+        mock:
+            If True then use ``MockSignalBackend`` for all Signals
+        timeout:
+            Time to wait before failing with a TimeoutError.
+        """
 
 
 @runtime_checkable
@@ -33,7 +57,6 @@ class AsyncReadable(HasName, Protocol):
                          ('channel2',
                          {'value': 16, 'timestamp': 1472493713.539238}))
         """
-        ...
 
     @abstractmethod
     async def describe(self) -> dict[str, DataKey]:
@@ -53,7 +76,6 @@ class AsyncReadable(HasName, Protocol):
                           'dtype': 'number',
                           'shape': []}))
         """
-        ...
 
 
 @runtime_checkable
@@ -63,14 +85,12 @@ class AsyncConfigurable(HasName, Protocol):
         """Same API as ``read`` but for slow-changing fields related to configuration.
         e.g., exposure time. These will typically be read only once per run.
         """
-        ...
 
     @abstractmethod
     async def describe_configuration(self) -> dict[str, DataKey]:
         """Same API as ``describe``, but corresponding to the keys in
         ``read_configuration``.
         """
-        ...
 
 
 @runtime_checkable
@@ -78,12 +98,10 @@ class AsyncPausable(Protocol):
     @abstractmethod
     async def pause(self) -> None:
         """Perform device-specific work when the RunEngine pauses."""
-        ...
 
     @abstractmethod
     async def resume(self) -> None:
         """Perform device-specific work when the RunEngine resumes after a pause."""
-        ...
 
 
 @runtime_checkable
@@ -95,7 +113,6 @@ class AsyncStageable(Protocol):
         It should return a ``Status`` that is marked done when the device is
         done staging.
         """
-        ...
 
     @abstractmethod
     def unstage(self) -> AsyncStatus:
@@ -104,7 +121,6 @@ class AsyncStageable(Protocol):
         It should return a ``Status`` that is marked done when the device is finished
         unstaging.
         """
-        ...
 
 
 C = TypeVar("C", contravariant=True)

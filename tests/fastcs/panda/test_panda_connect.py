@@ -12,7 +12,7 @@ from ophyd_async.core import (
     DeviceVector,
     NotConnected,
 )
-from ophyd_async.epics.pvi import PviDeviceConnector
+from ophyd_async.epics.pvi import PviDeviceBackend
 from ophyd_async.fastcs.panda import (
     PcapBlock,
     PulseBlock,
@@ -56,7 +56,7 @@ async def panda_t():
     class Panda(CommonPandaBlocksNoData):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
+            super().__init__(name, backend=PviDeviceBackend(type(self), prefix + "PVI"))
 
     yield Panda
 
@@ -121,7 +121,7 @@ async def test_panda_with_missing_blocks(panda_pva, panda_t):
     panda = panda_t("PANDAQSRVI:", name="mypanda")
     with pytest.raises(
         RuntimeError,
-        match="mypanda: PVI cannot provision {'pcap'} from {'pulse1': "
+        match="Panda: cannot provision {'pcap'} from PANDAQSRVI:PVI: {'pulse1': "
         + "{'d': 'PANDAQSRVI:PULSE1:PVI'}, 'seq1': {'d': 'PANDAQSRVI:SEQ1:PVI'}}",
     ):
         await panda.connect()
@@ -150,16 +150,16 @@ async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     assert isinstance(panda.pulse[1], PulseBlock)
 
     # others are just Devices
-    assert isinstance(panda.extra, Device)
+    assert isinstance(panda.extra, DeviceVector)
 
     # predefined signals get set up with the correct datatype
-    assert panda.pcap.active.connect.datatype is bool
+    assert panda.pcap.active._backend.datatype is bool
 
     # works with custom datatypes
-    assert panda.seq[1].table.connect.datatype is SeqTable
+    assert panda.seq[1].table._backend.datatype is SeqTable
 
     # others are given the None datatype
-    assert panda.pcap.newsignal.connect.datatype is None
+    assert panda.pcap.newsignal._backend.datatype is None
 
 
 async def test_panda_block_missing_signals(panda_pva, panda_t):

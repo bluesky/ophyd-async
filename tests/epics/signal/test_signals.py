@@ -15,22 +15,22 @@ from unittest.mock import ANY
 
 import numpy as np
 import pytest
-from aioca import CANothing, purge_channel_caches
+from aioca import purge_channel_caches
 from bluesky.protocols import Reading
-from event_model import DataKey
-from event_model.documents.event_descriptor import Limits, LimitsRange
+from event_model import DataKey, Limits, LimitsRange
 
 from ophyd_async.core import (
     Array1D,
     NotConnected,
     SignalBackend,
+    SignalRW,
+    StrictEnum,
     SubsetEnum,
     T,
+    Table,
     load_from_yaml,
     save_to_yaml,
 )
-from ophyd_async.core._table import Table
-from ophyd_async.core._utils import StrictEnum
 from ophyd_async.epics.signal import (
     epics_signal_r,
     epics_signal_rw,
@@ -38,7 +38,7 @@ from ophyd_async.epics.signal import (
     epics_signal_w,
     epics_signal_x,
 )
-from ophyd_async.epics.signal._signal import _epics_signal_connector
+from ophyd_async.epics.signal._signal import _epics_signal_backend  # noqa: PLC2701
 
 RECORDS = str(Path(__file__).parent / "test_records.db")
 PV_PREFIX = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
@@ -55,9 +55,9 @@ class IOC:
         # Calculate the pv
         pv = f"{self.protocol}://{PV_PREFIX}:{self.protocol}:{suff}"
         # Make and connect the backend
-        connector = _epics_signal_connector(typ, pv, pv)
-        await connector.connect(mock=False, timeout=timeout, force_reconnect=False)
-        return connector.backend
+        backend = _epics_signal_backend(typ, pv, pv)
+        await backend.connect(timeout=timeout)
+        return backend
 
 
 # Use a module level fixture per protocol so it's fast to run tests. This means
@@ -180,26 +180,12 @@ async def assert_monitor_then_put(
             datatype if check_type else None,
         )
         # Put to new value and check that
-        await backend.put(put_value)
+        await backend.put(put_value, wait=True)
         await q.assert_updates(
             pytest.approx(put_value), datatype if check_type else None
         )
     finally:
         q.close()
-
-
-async def put_error(
-    ioc: IOC,
-    suffix: str,
-    put_value: T,
-    datatype: type[T] | None = None,
-):
-    backend = await ioc.make_backend(datatype, suffix)
-    # The below will work without error
-    await backend.put(put_value)
-    # Change the name of write_pv to mock disconnection
-    backend.__setattr__("_write_pv", "Disconnect")
-    await backend.put(put_value, timeout=0.1)
 
 
 class MyEnum(StrictEnum):
@@ -467,18 +453,19 @@ async def test_bool_conversion_of_enum(ioc: IOC, suffix: str, tmp_path: Path) ->
 
 async def test_error_raised_on_disconnected_PV(ioc: IOC) -> None:
     if ioc.protocol == "pva":
-        err = asyncio.TimeoutError
-        expected = "pva://Disconnect: Put timed out"
+        expected = "pva://Disconnect"
     elif ioc.protocol == "ca":
-        err = CANothing
-        expected = "Disconnect: User specified timeout on IO operation expired"
-    with pytest.raises(err, match=expected):
-        await put_error(
-            ioc,
-            suffix="bool",
-            put_value=False,
-            datatype=bool,
-        )
+        expected = "ca://Disconnect"
+    else:
+        raise TypeError()
+    backend = await ioc.make_backend(bool, "bool")
+    signal = SignalRW(backend)
+    # The below will work without error
+    await signal.set(False)
+    # Change the name of write_pv to mock disconnection
+    backend.__setattr__("write_pv", "Disconnect")
+    with pytest.raises(asyncio.TimeoutError, match=expected):
+        await signal.set(True, timeout=0.1)
 
 
 class BadEnum(StrictEnum):
@@ -595,19 +582,19 @@ async def test_backend_wrong_type_errors(ioc: IOC, typ, suff, errors):
 async def test_backend_put_enum_string(ioc: IOC) -> None:
     backend = await ioc.make_backend(MyEnum, "enum2")
     # Don't do this in production code, but allow on CLI
-    await backend.put("Ccc")  # type: ignore
+    await backend.put("Ccc", wait=True)  # type: ignore
     assert MyEnum.c == await backend.get_value()
 
 
 async def test_backend_enum_which_doesnt_inherit_string(ioc: IOC) -> None:
     with pytest.raises(TypeError):
         backend = await ioc.make_backend(EnumNoString, "enum2")
-        await backend.put("Aaa")
+        await backend.put("Aaa", wait=True)
 
 
 async def test_backend_get_setpoint(ioc: IOC) -> None:
     backend = await ioc.make_backend(MyEnum, "enum2")
-    await backend.put("Ccc")
+    await backend.put("Ccc", wait=True)
     assert await backend.get_setpoint() == MyEnum.c
 
 
@@ -673,7 +660,7 @@ async def test_pva_table(ioc: IOC) -> None:
             # Check initial value
             await q.assert_updates(approx_table(t or Table, i))
             # Put to new value and check that
-            await backend.put(p)
+            await backend.put(p, wait=True)
             await q.assert_updates(approx_table(t or Table, p))
         finally:
             q.close()
@@ -704,7 +691,7 @@ async def test_pva_ntdarray(ioc: IOC):
             } == await backend.get_datakey("test-source")
             # Check initial value
             await q.assert_updates(pytest.approx(i))
-            await raw_data_backend.put(p.flatten())
+            await raw_data_backend.put(p.flatten(), wait=True)
             await q.assert_updates(pytest.approx(p))
 
 
@@ -716,7 +703,7 @@ async def test_writing_to_ndarray_raises_typeerror(ioc: IOC):
     backend = await ioc.make_backend(np.ndarray, "ntndarray")
 
     with pytest.raises(TypeError):
-        await backend.put(np.zeros((6,), dtype=np.int64))
+        await backend.put(np.zeros((6,), dtype=np.int64), wait=True)
 
 
 async def test_non_existent_errors(ioc: IOC):
@@ -739,29 +726,29 @@ def test_make_backend_fails_for_different_transports():
 
 def test_signal_helpers():
     read_write = epics_signal_rw(int, "ReadWrite")
-    assert read_write.connect.read_pv == "ReadWrite"
-    assert read_write.connect.write_pv == "ReadWrite"
+    assert read_write._backend.read_pv == "ReadWrite"
+    assert read_write._backend.write_pv == "ReadWrite"
 
     read_write_rbv_manual = epics_signal_rw(int, "ReadWrite_RBV", "ReadWrite")
-    assert read_write_rbv_manual.connect.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv_manual.connect.write_pv == "ReadWrite"
+    assert read_write_rbv_manual._backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv_manual._backend.write_pv == "ReadWrite"
 
     read_write_rbv = epics_signal_rw_rbv(int, "ReadWrite")
-    assert read_write_rbv.connect.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv.connect.write_pv == "ReadWrite"
+    assert read_write_rbv._backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv._backend.write_pv == "ReadWrite"
 
     read_write_rbv_suffix = epics_signal_rw_rbv(int, "ReadWrite", read_suffix=":RBV")
-    assert read_write_rbv_suffix.connect.read_pv == "ReadWrite:RBV"
-    assert read_write_rbv_suffix.connect.write_pv == "ReadWrite"
+    assert read_write_rbv_suffix._backend.read_pv == "ReadWrite:RBV"
+    assert read_write_rbv_suffix._backend.write_pv == "ReadWrite"
 
     read = epics_signal_r(int, "Read")
-    assert read.connect.read_pv == "Read"
+    assert read._backend.read_pv == "Read"
 
     write = epics_signal_w(int, "Write")
-    assert write.connect.write_pv == "Write"
+    assert write._backend.write_pv == "Write"
 
     execute = epics_signal_x("Execute")
-    assert execute.connect.write_pv == "Execute"
+    assert execute._backend.write_pv == "Execute"
 
 
 async def test_str_enum_returns_enum(ioc: IOC):

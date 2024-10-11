@@ -2,18 +2,22 @@ import pytest
 
 from ophyd_async.core import (
     Device,
+    DeviceBackend,
     DeviceCollector,
     DeviceVector,
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.pvi import PviDeviceConnector
+from ophyd_async.epics.pvi import PviDeviceBackend
 
 
 class PviDevice(Device):
-    def __init__(self, prefix: str = "", name: str = ""):
-        self._prefix = prefix
-        super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
+    def __init__(
+        self, prefix: str = "", name: str = "", backend: DeviceBackend | None = None
+    ):
+        if backend is None:
+            backend = PviDeviceBackend(type(self), prefix + "PVI")
+        super().__init__(name=name, backend=backend)
 
 
 class Block1(PviDevice):
@@ -47,11 +51,11 @@ async def test_fill_pvi_entries_mock_mode():
     assert isinstance(test_device.device_vector[2], Block2)
 
     # elements of device vectors are typed recursively
-    assert test_device.device_vector[1].signal_rw.connect.datatype is int
+    assert test_device.device_vector[1].signal_rw._backend.datatype is int
     assert isinstance(test_device.device_vector[1].device, Block1)
-    assert test_device.device_vector[1].device.signal_rw.connect.datatype is int  # type: ignore
+    assert test_device.device_vector[1].device.signal_rw._backend.datatype is int  # type: ignore
     assert (
-        test_device.device_vector[1].device.device_vector_signal_rw[1].connect.datatype  # type: ignore
+        test_device.device_vector[1].device.device_vector_signal_rw[1]._backend.datatype  # type: ignore
         is float
     )
 
@@ -60,9 +64,9 @@ async def test_fill_pvi_entries_mock_mode():
     assert isinstance(test_device.device, Block2)
 
     # elements of top level blocks are typed recursively
-    assert test_device.device.signal_rw.connect.datatype is int  # type: ignore
+    assert test_device.device.signal_rw._backend.datatype is int  # type: ignore
     assert isinstance(test_device.device.device, Block1)
-    assert test_device.device.device.signal_rw.connect.datatype is int  # type: ignore
+    assert test_device.device.device.signal_rw._backend.datatype is int  # type: ignore
 
     assert test_device.signal_rw.parent == test_device
     assert test_device.device_vector.parent == test_device
@@ -77,7 +81,7 @@ async def test_fill_pvi_entries_mock_mode():
     )
 
     # top level signals are typed
-    assert test_device.signal_rw.connect.datatype is int
+    assert test_device.signal_rw._backend.datatype is int
 
 
 async def test_device_create_children_from_annotations():

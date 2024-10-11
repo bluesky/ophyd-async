@@ -25,7 +25,7 @@ def get_rec_subclasses(cls: type):
 @pytest.mark.parametrize("cls", list(get_rec_subclasses(adcore.NDArrayBaseIO)))
 async def test_regularly_named_attributes(cls: Device):
     io = cls("")
-    for name, signal in io.children.items():
+    for name, signal in io.children():
         assert isinstance(signal, Signal)
         # Strip off the ca:// prefix and an _RBV suffix
         pv = signal.source.split("://")[-1].split("_RBV")[0]

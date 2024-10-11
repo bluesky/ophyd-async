@@ -5,34 +5,32 @@ from bluesky import plan_stubs as bps
 from bluesky.run_engine import RunEngine, TransitionError
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
     NotConnected,
     set_mock_value,
 )
-from ophyd_async.core._device import DeviceBackend
 from ophyd_async.epics import motor
 
 
-class CustomConnector(DeviceBackend):
-    def __init__(self, error=False):
-        self.error = error
-        self.connected = False
-
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
-        if self.error:
-            raise AttributeError()
-        self.connected = True
+class FailingDevice(Device):
+    async def connect(
+        self, mock: bool = False, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+    ):
+        raise AttributeError()
 
 
 class WorkingDevice(Device):
-    def __init__(self, name: str) -> None:
-        super().__init__(name, connector=CustomConnector())
+    connected = False
 
+    async def connect(
+        self, mock: bool = True, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+    ):
+        self.connected = True
+        return await super().connect(mock=True)
 
-class FailingDevice(Device):
-    def __init__(self, name: str) -> None:
-        super().__init__(name, connector=CustomConnector(error=True))
+    async def set(self, new_position: float): ...
 
 
 async def test_device_collector_handles_top_level_errors(caplog):
@@ -63,14 +61,14 @@ def test_sync_device_connector_no_run_engine_raises_error():
         "https://blueskyproject.io/ophyd-async/main/"
         "user/explanations/event-loop-choice.html for more info."
     )
-    assert not working_device.connect.connected
+    assert not working_device.connected
 
 
 def test_sync_device_connector_run_engine_created_connects(RE):
     with DeviceCollector():
         working_device = WorkingDevice("somename")
 
-    assert working_device.connect.connected
+    assert working_device.connected
 
 
 def test_async_device_connector_run_engine_same_event_loop():

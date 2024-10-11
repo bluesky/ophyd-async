@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 
 from ophyd_async.core import (
-    SignalConnector,
+    SignalBackend,
     SignalDatatypeT,
     SignalR,
     SignalRW,
@@ -31,16 +31,16 @@ class EpicsProtocol(Enum):
 _default_epics_protocol = EpicsProtocol.CA
 
 try:
-    from ._p4p import PvaSignalConnector
+    from ._p4p import PvaSignalBackend
 except ImportError as pva_error:
-    PvaSignalConnector = _make_unavailable_class(pva_error)
+    PvaSignalBackend = _make_unavailable_class(pva_error)
 else:
     _default_epics_protocol = EpicsProtocol.PVA
 
 try:
-    from ._aioca import CaSignalConnector
+    from ._aioca import CaSignalBackend
 except ImportError as ca_error:
-    CaSignalConnector = _make_unavailable_class(ca_error)
+    CaSignalBackend = _make_unavailable_class(ca_error)
 else:
     _default_epics_protocol = EpicsProtocol.CA
 
@@ -57,18 +57,18 @@ def _protocol_pv(pv: str) -> tuple[EpicsProtocol, str]:
     return protocol, pv
 
 
-def _epics_signal_connector(
+def _epics_signal_backend(
     datatype: type[SignalDatatypeT] | None, read_pv: str, write_pv: str
-) -> SignalConnector[SignalDatatypeT]:
-    """Create an epics signal connector."""
+) -> SignalBackend[SignalDatatypeT]:
+    """Create an epics signal backend."""
     r_protocol, r_pv = _protocol_pv(read_pv)
     w_protocol, w_pv = _protocol_pv(write_pv)
     protocol = get_unique({read_pv: r_protocol, write_pv: w_protocol}, "protocols")
     match protocol:
         case EpicsProtocol.CA:
-            return CaSignalConnector(datatype, r_pv, w_pv)
+            return CaSignalBackend(datatype, r_pv, w_pv)
         case EpicsProtocol.PVA:
-            return PvaSignalConnector(datatype, r_pv, w_pv)
+            return PvaSignalBackend(datatype, r_pv, w_pv)
 
 
 def epics_signal_rw(
@@ -88,8 +88,8 @@ def epics_signal_rw(
     write_pv:
         If given, use this PV to write to, otherwise use read_pv
     """
-    connector = _epics_signal_connector(datatype, read_pv, write_pv or read_pv)
-    return SignalRW(connector, name=name)
+    backend = _epics_signal_backend(datatype, read_pv, write_pv or read_pv)
+    return SignalRW(backend, name=name)
 
 
 def epics_signal_rw_rbv(
@@ -124,8 +124,8 @@ def epics_signal_r(
     read_pv:
         The PV to read and monitor
     """
-    connector = _epics_signal_connector(datatype, read_pv, read_pv)
-    return SignalR(connector, name=name)
+    backend = _epics_signal_backend(datatype, read_pv, read_pv)
+    return SignalR(backend, name=name)
 
 
 def epics_signal_w(
@@ -140,8 +140,8 @@ def epics_signal_w(
     write_pv:
         The PV to write to
     """
-    connector = _epics_signal_connector(datatype, write_pv, write_pv)
-    return SignalW(connector, name=name)
+    backend = _epics_signal_backend(datatype, write_pv, write_pv)
+    return SignalW(backend, name=name)
 
 
 def epics_signal_x(write_pv: str, name: str = "") -> SignalX:
@@ -152,5 +152,5 @@ def epics_signal_x(write_pv: str, name: str = "") -> SignalX:
     write_pv:
         The PV to write its initial value to on trigger
     """
-    connector = _epics_signal_connector(None, write_pv, write_pv)
-    return SignalX(connector, name=name)
+    backend = _epics_signal_backend(None, write_pv, write_pv)
+    return SignalX(backend, name=name)

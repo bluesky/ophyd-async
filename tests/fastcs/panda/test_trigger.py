@@ -5,17 +5,17 @@ import pytest
 from pydantic import ValidationError
 
 from ophyd_async.core import DeviceCollector, set_mock_value
-from ophyd_async.epics.pvi._pvi import PviDeviceConnector
+from ophyd_async.epics.pvi import PviDeviceBackend
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
+    PcompDirection,
     PcompInfo,
     SeqTable,
     SeqTableInfo,
+    SeqTrigger,
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
-from ophyd_async.fastcs.panda._block import PcompDirection
-from ophyd_async.fastcs.panda._table import SeqTrigger
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ async def mock_panda():
     class Panda(CommonPandaBlocks):
         def __init__(self, prefix: str, name: str = ""):
             self._prefix = prefix
-            super().__init__(name, connector=PviDeviceConnector(self, prefix + "PVI"))
+            super().__init__(name, backend=PviDeviceBackend(type(self), prefix + "PVI"))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")

@@ -6,19 +6,20 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
-    SignalConnector,
+    SoftSignalBackend,
     NotConnected,
     SignalRW,
 )
-from ophyd_async.core._signal import soft_signal_rw
+from ophyd_async.core import soft_signal_rw
 from ophyd_async.epics.signal import epics_signal_rw
 
 
-class ValueErrorConnector(SignalConnector):
+class ValueErrorBackend(SoftSignalBackend):
     def __init__(self, exc_text=""):
         self.exc_text = exc_text
+        super().__init__(datatype=int)
 
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
+    async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         raise ValueError(self.exc_text)
 
 
@@ -44,7 +45,7 @@ class ValueErrorDummyChildDevice(Device):
     def __init__(
         self, name: str = "value_error_dummy_child_device", exc_text=""
     ) -> None:
-        self.value_error_signal = SignalRW(ValueErrorConnector(exc_text=exc_text))
+        self.value_error_signal = SignalRW(ValueErrorBackend(exc_text=exc_text))
         super().__init__(name=name)
 
 
@@ -55,13 +56,11 @@ class DummyDeviceOneWorkingOneTimeout(Device):
         super().__init__(name=name)
 
 
-ONE_WORKING_ONE_TIMEOUT_OUTPUT = NotConnected(
-    {
-        "timeout_child_device": NotConnected(
-            {"timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL")}
-        )
-    }
-)
+ONE_WORKING_ONE_TIMEOUT_OUTPUT = NotConnected({
+    "timeout_child_device": NotConnected({
+        "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL")
+    })
+})
 
 
 class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
@@ -80,26 +79,20 @@ class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
         super().__init__(name=name)
 
 
-TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = NotConnected(
-    {
-        "timeout_child_device_ca": NotConnected(
-            {
-                "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL"),
-            }
-        ),
-        "timeout_child_device_pva": NotConnected(
-            {"timeout_signal": NotConnected("pva://A_NON_EXISTENT_SIGNAL")}
-        ),
-        "value_error_child_device1": NotConnected(
-            {"value_error_signal": ValueError("Some ValueError text")}
-        ),
-        "value_error_child_device2": NotConnected(
-            {
-                "value_error_signal": ValueError(),
-            }
-        ),
-    }
-)
+TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = NotConnected({
+    "timeout_child_device_ca": NotConnected({
+        "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL"),
+    }),
+    "timeout_child_device_pva": NotConnected({
+        "timeout_signal": NotConnected("pva://A_NON_EXISTENT_SIGNAL")
+    }),
+    "value_error_child_device1": NotConnected({
+        "value_error_signal": ValueError("Some ValueError text")
+    }),
+    "value_error_child_device2": NotConnected({
+        "value_error_signal": ValueError(),
+    }),
+})
 
 
 class DummyDeviceCombiningTopLevelSignalAndSubDevice(Device):
@@ -182,14 +175,12 @@ async def test_error_handling_device_collector(caplog):
             )
             dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
 
-    expected_output = NotConnected(
-        {
-            "dummy_device_two_working_one_timeout_two_value_error": (
-                TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
-            ),
-            "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
-        }
-    )
+    expected_output = NotConnected({
+        "dummy_device_two_working_one_timeout_two_value_error": (
+            TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
+        ),
+        "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
+    })
     assert str(expected_output) == str(e.value)
 
     logs = caplog.get_records("call")

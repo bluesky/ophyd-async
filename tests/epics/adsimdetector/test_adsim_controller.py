@@ -2,8 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import DeviceCollector
-from ophyd_async.core._detector import DetectorTrigger, TriggerInfo
+from ophyd_async.core import DetectorTrigger, DeviceCollector, TriggerInfo
 from ophyd_async.epics import adcore, adsimdetector
 
 
