@@ -108,14 +108,14 @@ async def test_stats_describe_when_plugin_configured(
     assert descriptor == {
         "test": {
             "source": "mock+ca://HDF:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "<u2",
             "external": "STREAM:",
         },
         "mydetector-sum": {
             "source": "mock+ca://HDF:FullFileName_RBV",
-            "shape": (),
+            "shape": [],
             "dtype": "number",
             "dtype_numpy": "<f8",
             "external": "STREAM:",
@@ -124,7 +124,7 @@ async def test_stats_describe_when_plugin_configured(
             "dtype": "number",
             "dtype_numpy": "<f4",
             "external": "STREAM:",
-            "shape": (),
+            "shape": [],
             "source": "mock+ca://HDF:FullFileName_RBV",
         },
     }

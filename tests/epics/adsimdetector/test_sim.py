@@ -231,8 +231,8 @@ async def test_two_detectors_step(
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["testa"]["data"]["testa-drv-acquire_time"] == 0.8
     assert descriptor["configuration"]["testb"]["data"]["testb-drv-acquire_time"] == 1.8
-    assert descriptor["data_keys"]["testa"]["shape"] == (768, 1024)
-    assert descriptor["data_keys"]["testb"]["shape"] == (769, 1025)
+    assert descriptor["data_keys"]["testa"]["shape"] == [768, 1024]
+    assert descriptor["data_keys"]["testb"]["shape"] == [769, 1025]
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
     assert srb["uri"] == "file://localhost" + str(info_b.directory_path / file_name_b)
@@ -260,7 +260,7 @@ async def test_detector_writes_to_file(
 
     descriptor_index = names.index("descriptor")
 
-    assert docs[descriptor_index].get("data_keys").get("test").get("shape") == (20, 10)
+    assert docs[descriptor_index].get("data_keys").get("test").get("shape") == [20, 10]
     assert names == [
         "start",
         "descriptor",
