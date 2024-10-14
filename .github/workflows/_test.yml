@@ -61,8 +61,8 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Comment on failing PR tests
-        run: npx github-actions-ctrf summary report.json --pr-comment --on-fail-only
+      - name: Comment on PR test status
+        run: npx github-actions-ctrf summary report.json --pr-comment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
