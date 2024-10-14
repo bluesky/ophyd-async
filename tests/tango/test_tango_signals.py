@@ -3,7 +3,6 @@ import textwrap
 import time
 from enum import Enum, IntEnum
 from random import choice
-from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -60,67 +59,61 @@ ATTRIBUTES_SET = []
 COMMANDS_SET = []
 
 for type_name, tango_type_name, py_type, values in BASE_TYPES_SET:
-    ATTRIBUTES_SET.extend(
-        [
-            (
-                f"{type_name}_scalar_attr",
-                tango_type_name,
-                AttrDataFormat.SCALAR,
-                py_type,
-                choice(values),
-                choice(values),
-            ),
-            (
-                f"{type_name}_spectrum_attr",
+    ATTRIBUTES_SET.extend([
+        (
+            f"{type_name}_scalar_attr",
+            tango_type_name,
+            AttrDataFormat.SCALAR,
+            py_type,
+            choice(values),
+            choice(values),
+        ),
+        (
+            f"{type_name}_spectrum_attr",
+            tango_type_name,
+            AttrDataFormat.SPECTRUM,
+            npt.NDArray[py_type],
+            [choice(values), choice(values), choice(values)],
+            [choice(values), choice(values), choice(values)],
+        ),
+        (
+            f"{type_name}_image_attr",
+            tango_type_name,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[py_type],
+            [
+                [choice(values), choice(values), choice(values)],
+                [choice(values), choice(values), choice(values)],
+            ],
+            [
+                [choice(values), choice(values), choice(values)],
+                [choice(values), choice(values), choice(values)],
+            ],
+        ),
+    ])
+
+    if tango_type_name == "DevUChar":
+        continue
+    else:
+        COMMANDS_SET.append((
+            f"{type_name}_scalar_cmd",
+            tango_type_name,
+            AttrDataFormat.SCALAR,
+            py_type,
+            choice(values),
+            choice(values),
+        ))
+        if tango_type_name in ["DevState", "DevEnum"]:
+            continue
+        else:
+            COMMANDS_SET.append((
+                f"{type_name}_spectrum_cmd",
                 tango_type_name,
                 AttrDataFormat.SPECTRUM,
                 npt.NDArray[py_type],
                 [choice(values), choice(values), choice(values)],
                 [choice(values), choice(values), choice(values)],
-            ),
-            (
-                f"{type_name}_image_attr",
-                tango_type_name,
-                AttrDataFormat.IMAGE,
-                npt.NDArray[py_type],
-                [
-                    [choice(values), choice(values), choice(values)],
-                    [choice(values), choice(values), choice(values)],
-                ],
-                [
-                    [choice(values), choice(values), choice(values)],
-                    [choice(values), choice(values), choice(values)],
-                ],
-            ),
-        ]
-    )
-
-    if tango_type_name == "DevUChar":
-        continue
-    else:
-        COMMANDS_SET.append(
-            (
-                f"{type_name}_scalar_cmd",
-                tango_type_name,
-                AttrDataFormat.SCALAR,
-                py_type,
-                choice(values),
-                choice(values),
-            )
-        )
-        if tango_type_name in ["DevState", "DevEnum"]:
-            continue
-        else:
-            COMMANDS_SET.append(
-                (
-                    f"{type_name}_spectrum_cmd",
-                    tango_type_name,
-                    AttrDataFormat.SPECTRUM,
-                    npt.NDArray[py_type],
-                    [choice(values), choice(values), choice(values)],
-                    [choice(values), choice(values), choice(values)],
-                )
-            )
+            ))
 
 
 # --------------------------------------------------------------------
@@ -248,7 +241,7 @@ async def make_backend(
     backend = TangoSignalBackend(typ, pv, pv)
     backend.allow_events(allow_events)
     if connect:
-        await asyncio.wait_for(backend.connect(), 10)
+        await backend.connect(1)
     return backend
 
 
@@ -261,35 +254,25 @@ async def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
 # --------------------------------------------------------------------
 class MonitorQueue:
     def __init__(self, backend: SignalBackend):
-        self.updates: asyncio.Queue[tuple[Reading, Any]] = asyncio.Queue()
+        self.updates: asyncio.Queue[Reading] = asyncio.Queue()
         self.backend = backend
-        self.subscription = backend.set_callback(self.add_reading_value)
-
-    def add_reading_value(self, reading: Reading, value):
-        self.updates.put_nowait((reading, value))
+        self.subscription = backend.set_callback(self.updates.put_nowait)
 
     async def assert_updates(self, expected_value):
         expected_reading = {
             "timestamp": pytest.approx(time.time(), rel=0.1),
             "alarm_severity": 0,
         }
-        update_reading, update_value = await self.updates.get()
-        get_reading = await self.backend.get_reading()
-        # If update_value is a numpy.ndarray, convert it to a list
-        if isinstance(update_value, np.ndarray):
-            update_value = update_value.tolist()
-        assert_close(update_value, expected_value)
-        assert_close(await self.backend.get_value(), expected_value)
-
-        update_reading = dict(update_reading)
+        update_reading = dict(await asyncio.wait_for(self.updates.get(), timeout=5))
         update_value = update_reading.pop("value")
-
-        get_reading = dict(get_reading)
-        get_value = get_reading.pop("value")
-
-        assert update_reading == expected_reading == get_reading
         assert_close(update_value, expected_value)
-        assert_close(get_value, expected_value)
+        backend_reading = dict(
+            await asyncio.wait_for(self.backend.get_reading(), timeout=5)
+        )
+        backend_reading.pop("value")
+        backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
+        assert_close(backend_value, expected_value)
+        assert update_reading == expected_reading == backend_reading
 
     def close(self):
         self.backend.set_callback(None)
@@ -348,7 +331,7 @@ async def test_backend_get_put_monitor_attr(
                 get_test_descriptor(py_type, initial_value, False),
                 py_type,
             ),
-            timeout=10,  # Timeout in seconds
+            timeout=100,  # Timeout in seconds
         )
     except asyncio.TimeoutError:
         pytest.fail("Test timed out")

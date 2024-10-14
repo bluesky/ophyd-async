@@ -137,15 +137,15 @@ class MonitorQueue:
             "alarm_severity": 0,
         }
         backend_reading = await asyncio.wait_for(self.backend.get_reading(), timeout=5)
-        reading = await asyncio.wait_for(self.updates.get(), timeout=5)
-        value = reading["value"]
         backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
+        update_reading = await asyncio.wait_for(self.updates.get(), timeout=5)
+        update_value = update_reading["value"]
 
-        assert value == expected_value == backend_value
+        assert update_value == expected_value == backend_value
         if expected_type:
-            assert_types_are_equal(type(value), expected_type, value)
+            assert_types_are_equal(type(update_value), expected_type, update_value)
             assert_types_are_equal(type(backend_value), expected_type, backend_value)
-        assert reading == expected_reading == backend_reading
+        assert update_reading == expected_reading == backend_reading
 
     def close(self):
         self.backend.set_callback(None)

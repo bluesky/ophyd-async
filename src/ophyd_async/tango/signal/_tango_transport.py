@@ -2,7 +2,6 @@ import asyncio
 import functools
 import time
 from abc import abstractmethod
-from asyncio import CancelledError
 from collections.abc import Callable, Coroutine
 from enum import Enum
 from typing import Any, TypeVar, cast
@@ -11,12 +10,11 @@ import numpy as np
 from bluesky.protocols import Descriptor, Reading
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     AsyncStatus,
+    Callback,
     NotConnected,
-    ReadingValueCallback,
     SignalBackend,
-    T,
+    SignalDatatypeT,
     get_dtype,
     get_unique,
     wait_for_connection,
@@ -121,7 +119,7 @@ class TangoProxy:
         """indicates, that this trl already subscribed"""
 
     @abstractmethod
-    def subscribe_callback(self, callback: ReadingValueCallback | None):
+    def subscribe_callback(self, callback: Callback | None):
         """subscribe tango CHANGE event to callback"""
 
     @abstractmethod
@@ -140,7 +138,7 @@ class TangoProxy:
 
 
 class AttributeProxy(TangoProxy):
-    _callback: ReadingValueCallback | None = None
+    _callback: Callback | None = None
     _eid: int | None = None
     _poll_task: asyncio.Task | None = None
     _abs_change: float | None = None
@@ -236,7 +234,7 @@ class AttributeProxy(TangoProxy):
     def has_subscription(self) -> bool:
         return bool(self._callback)
 
-    def subscribe_callback(self, callback: ReadingValueCallback | None):
+    def subscribe_callback(self, callback: Callback | None):
         # If the attribute supports events, then we can subscribe to them
         # If the callback is not a callable, then we raise an error
         if callback is not None and not callable(callback):
@@ -283,21 +281,20 @@ class AttributeProxy(TangoProxy):
             if self._callback is not None:
                 # Call the callback with the last reading
                 try:
-                    self._callback(self._last_reading, self._last_reading["value"])
+                    self._callback(self._last_reading)
                 except TypeError:
                     pass
         self._callback = None
 
     def _event_processor(self, event):
         if not event.err:
-            value = event.attr_value.value
             reading = Reading(
-                value=value,
+                value=event.attr_value.value,
                 timestamp=event.get_date().totime(),
                 alarm_severity=event.attr_value.quality,
             )
             if self._callback is not None:
-                self._callback(reading, value)
+                self._callback(reading)
 
     async def poll(self):
         """
@@ -310,7 +307,7 @@ class AttributeProxy(TangoProxy):
             flag = 0
             # Initial reading
             if self._callback is not None:
-                self._callback(last_reading, last_reading["value"])
+                self._callback(last_reading)
         except Exception as e:
             raise RuntimeError(f"Could not poll the attribute: {e}") from e
 
@@ -325,7 +322,7 @@ class AttributeProxy(TangoProxy):
                     diff = abs(reading["value"] - last_reading["value"])
                     if self._abs_change is not None and diff >= abs(self._abs_change):
                         if self._callback is not None:
-                            self._callback(reading, reading["value"])
+                            self._callback(reading)
                             flag = 0
 
                     elif (
@@ -333,13 +330,13 @@ class AttributeProxy(TangoProxy):
                         and diff >= self._rel_change * abs(last_reading["value"])
                     ):
                         if self._callback is not None:
-                            self._callback(reading, reading["value"])
+                            self._callback(reading)
                             flag = 0
 
                     else:
                         flag = (flag + 1) % 4
                         if flag == 0 and self._callback is not None:
-                            self._callback(reading, reading["value"])
+                            self._callback(reading)
 
                     last_reading = reading.copy()
                     if self._callback is None:
@@ -358,13 +355,13 @@ class AttributeProxy(TangoProxy):
                                 reading["value"], last_reading["value"]
                             ):
                                 if self._callback is not None:
-                                    self._callback(reading, reading["value"])
+                                    self._callback(reading)
                                 else:
                                     break
                         else:
                             if reading["value"] != last_reading["value"]:
                                 if self._callback is not None:
-                                    self._callback(reading, reading["value"])
+                                    self._callback(reading)
                                 else:
                                     break
                         last_reading = reading.copy()
@@ -390,7 +387,7 @@ class AttributeProxy(TangoProxy):
 class CommandProxy(TangoProxy):
     _last_reading: Reading = Reading(value=None, timestamp=0, alarm_severity=0)
 
-    def subscribe_callback(self, callback: ReadingValueCallback | None) -> None:
+    def subscribe_callback(self, callback: Callback | None) -> None:
         raise NotImplementedError("Cannot subscribe to commands")
 
     def unsubscribe_callback(self) -> None:
@@ -584,14 +581,14 @@ def get_trl_descriptor(
 
 
 async def get_tango_trl(
-    full_trl: str, device_proxy: DeviceProxy | TangoProxy | None
+    full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float
 ) -> TangoProxy:
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
     device_trl, trl_name = full_trl.rsplit("/", 1)
     trl_name = trl_name.lower()
     if device_proxy is None:
-        device_proxy = await AsyncDeviceProxy(device_trl)
+        device_proxy = await AsyncDeviceProxy(device_trl, timeout=timeout)
 
     # all attributes can be always accessible with low register
     if isinstance(device_proxy, DeviceProxy):
@@ -620,10 +617,10 @@ async def get_tango_trl(
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
 
-class TangoSignalBackend(SignalBackend[T]):
+class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     def __init__(
         self,
-        datatype: type[T] | None,
+        datatype: type[SignalDatatypeT] | None,
         read_trl: str = "",
         write_trl: str = "",
         device_proxy: DeviceProxy | None = None,
@@ -659,14 +656,14 @@ class TangoSignalBackend(SignalBackend[T]):
             write_trl: self.device_proxy,
         }
 
-    def source(self, name: str) -> str:
-        return self.read_trl
+    def source(self, name: str, read: bool) -> str:
+        return self.read_trl if read else self.write_trl
 
-    async def _connect_and_store_config(self, trl: str) -> None:
+    async def _connect_and_store_config(self, trl: str, timeout: float) -> None:
         if not trl:
             raise RuntimeError(f"trl not set for {self}")
         try:
-            self.proxies[trl] = await get_tango_trl(trl, self.proxies[trl])
+            self.proxies[trl] = await get_tango_trl(trl, self.proxies[trl], timeout)
             if self.proxies[trl] is None:
                 raise NotConnected(f"Not connected to {trl}")
             # Pyright does not believe that self.proxies[trl] is not None despite
@@ -674,27 +671,27 @@ class TangoSignalBackend(SignalBackend[T]):
             await self.proxies[trl].connect()  # type: ignore
             self.trl_configs[trl] = await self.proxies[trl].get_config()  # type: ignore
             self.proxies[trl].support_events = self.support_events  # type: ignore
-        except CancelledError as ce:
-            raise NotConnected(f"Could not connect to {trl}") from ce
+        except TimeoutError as ce:
+            raise NotConnected(f"tango://{trl}") from ce
 
-    async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
+    async def connect(self, timeout: float) -> None:
         if not self.read_trl:
             raise RuntimeError(f"trl not set for {self}")
         if self.read_trl != self.write_trl:
             # Different, need to connect both
             await wait_for_connection(
-                read_trl=self._connect_and_store_config(self.read_trl),
-                write_trl=self._connect_and_store_config(self.write_trl),
+                read_trl=self._connect_and_store_config(self.read_trl, timeout),
+                write_trl=self._connect_and_store_config(self.write_trl, timeout),
             )
         else:
             # The same, so only need to connect one
-            await self._connect_and_store_config(self.read_trl)
+            await self._connect_and_store_config(self.read_trl, timeout)
         self.proxies[self.read_trl].set_polling(*self._polling)  # type: ignore
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
         )
 
-    async def put(self, value: T | None, wait=True, timeout=None) -> None:
+    async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None) -> None:
         if self.proxies[self.write_trl] is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
         self.status = None
@@ -704,28 +701,28 @@ class TangoSignalBackend(SignalBackend[T]):
     async def get_datakey(self, source: str) -> Descriptor:
         return self.descriptor
 
-    async def get_reading(self) -> Reading:
+    async def get_reading(self) -> Reading[SignalDatatypeT]:
         if self.proxies[self.read_trl] is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
         return await self.proxies[self.read_trl].get_reading()  # type: ignore
 
-    async def get_value(self) -> T:
+    async def get_value(self) -> SignalDatatypeT:
         if self.proxies[self.read_trl] is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
         proxy = self.proxies[self.read_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
-        return cast(T, await proxy.get())
+        return cast(SignalDatatypeT, await proxy.get())
 
-    async def get_setpoint(self) -> T:
+    async def get_setpoint(self) -> SignalDatatypeT:
         if self.proxies[self.write_trl] is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
         proxy = self.proxies[self.write_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
-        return cast(T, await proxy.get_w_value())
+        return cast(SignalDatatypeT, await proxy.get_w_value())
 
-    def set_callback(self, callback: ReadingValueCallback | None) -> None:
+    def set_callback(self, callback: Callback | None) -> None:
         if self.proxies[self.read_trl] is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
         if self.support_events is False and self._polling[0] is False:
