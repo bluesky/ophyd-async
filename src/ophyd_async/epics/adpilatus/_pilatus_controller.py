@@ -3,7 +3,7 @@ import asyncio
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     TriggerInfo,
     wait_for_value,
@@ -13,7 +13,7 @@ from ophyd_async.epics import adcore
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
 
-class PilatusController(DetectorControl):
+class PilatusController(DetectorController):
     _supported_trigger_types = {
         DetectorTrigger.internal: PilatusTriggerMode.internal,
         DetectorTrigger.constant_gate: PilatusTriggerMode.ext_enable,
@@ -40,7 +40,9 @@ class PilatusController(DetectorControl):
         await asyncio.gather(
             self._drv.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
             self._drv.num_images.set(
-                999_999 if trigger_info.number == 0 else trigger_info.number
+                999_999
+                if trigger_info.total_number_of_triggers == 0
+                else trigger_info.total_number_of_triggers
             ),
             self._drv.image_mode.set(adcore.ImageMode.multiple),
         )

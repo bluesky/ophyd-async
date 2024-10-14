@@ -28,7 +28,7 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_adkinetix.controller.prepare(
-            TriggerInfo(number=1, trigger=trig_mode)
+            TriggerInfo(number_of_triggers=1, trigger=trig_mode)
         )
         await test_adkinetix.controller.arm()
         await test_adkinetix.controller.wait_for_idle()
@@ -52,7 +52,7 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
 
 
 async def test_hints_from_hdf_writer(test_adkinetix: adkinetix.KinetixDetector):
-    assert test_adkinetix.hints == {"fields": ["test_adkinetix1"]}
+    assert test_adkinetix.hints == {"fields": [test_adkinetix.name]}
 
 
 async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
@@ -63,9 +63,6 @@ async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
 async def test_decribe_describes_writer_dataset(
     test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
-    set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
-    set_mock_value(test_adkinetix._writer.hdf.capture, True)
-
     assert await test_adkinetix.describe() == {}
     await test_adkinetix.stage()
     await test_adkinetix.prepare(one_shot_trigger_info)
@@ -86,10 +83,8 @@ async def test_can_collect(
     one_shot_trigger_info: TriggerInfo,
 ):
     path_info = static_path_provider()
-    full_file_name = path_info.directory_path / "foo.h5"
-    set_mock_value(test_adkinetix.hdf.full_file_name, str(full_file_name))
-    set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
-    set_mock_value(test_adkinetix._writer.hdf.capture, True)
+    full_file_name = path_info.directory_path / f"{path_info.filename}.h5"
+
     await test_adkinetix.stage()
     await test_adkinetix.prepare(one_shot_trigger_info)
     docs = [(name, doc) async for name, doc in test_adkinetix.collect_asset_docs(1)]
@@ -115,8 +110,6 @@ async def test_can_collect(
 async def test_can_decribe_collect(
     test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
-    set_mock_value(test_adkinetix._writer.hdf.file_path_exists, True)
-    set_mock_value(test_adkinetix._writer.hdf.capture, True)
     assert (await test_adkinetix.describe_collect()) == {}
     await test_adkinetix.stage()
     await test_adkinetix.prepare(one_shot_trigger_info)

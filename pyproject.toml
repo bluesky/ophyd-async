@@ -33,10 +33,12 @@ requires-python = ">=3.10"
 ca = ["aioca>=1.6"]
 pva = ["p4p"]
 sim = ["h5py"]
+tango = ["pytango>=10.0.0"]
 dev = [
     "ophyd_async[pva]",
     "ophyd_async[sim]",
     "ophyd_async[ca]",
+    "ophyd_async[tango]",
     "inflection",
     "ipython",
     "ipywidgets",
@@ -55,6 +57,7 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-faulthandler",
+    "pytest-forked",
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",

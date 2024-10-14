@@ -3,14 +3,14 @@ import asyncio
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     TriggerInfo,
 )
 from ophyd_async.epics import adcore
 
 
-class SimController(DetectorControl):
+class SimController(DetectorController):
     def __init__(
         self,
         driver: adcore.ADBaseIO,
@@ -32,7 +32,7 @@ class SimController(DetectorControl):
             DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
         await asyncio.gather(
-            self.driver.num_images.set(trigger_info.number),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
             self.driver.image_mode.set(adcore.ImageMode.multiple),
         )
 

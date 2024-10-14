@@ -220,7 +220,7 @@ def static_path_provider_factory(tmp_path: Path):
 
 @pytest.fixture
 def static_path_provider(
-    static_path_provider_factory: callable,
+    static_path_provider_factory: Callable,
     static_filename_provider: FilenameProvider,
 ):
     return static_path_provider_factory(static_filename_provider)
@@ -230,8 +230,16 @@ def static_path_provider(
 def one_shot_trigger_info() -> TriggerInfo:
     return TriggerInfo(
         frame_timeout=None,
-        number=1,
+        number_of_triggers=1,
         trigger=DetectorTrigger.internal,
         deadtime=None,
         livetime=None,
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    tango_dir = "tests/tango"
+
+    for item in items:
+        if tango_dir in str(item.fspath):
+            item.add_marker(pytest.mark.forked)

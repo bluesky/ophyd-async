@@ -65,6 +65,7 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
     }
     assert parsed_yaml[1] == {
         "data.capture": False,
+        "data.capture_mode": "FIRST_N",
         "data.create_directory": 0,
         "data.flush_period": 0.0,
         "data.hdf_directory": "",

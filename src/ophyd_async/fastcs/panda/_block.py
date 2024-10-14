@@ -21,6 +21,12 @@ class FastCsDevice(Device):
         super().__init__(name=name, backend=backend)
 
 
+class CaptureMode(StrictEnum):
+    FIRST_N = "FIRST_N"
+    LAST_N = "LAST_N"
+    FOREVER = "FOREVER"
+
+
 class DataBlock(FastCsDevice):
     # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
@@ -29,6 +35,7 @@ class DataBlock(FastCsDevice):
     num_captured: SignalR[int]
     create_directory: SignalRW[int]
     directory_exists: SignalR[bool]
+    capture_mode: SignalRW[CaptureMode]
     capture: SignalRW[bool]
     flush_period: SignalRW[float]
     datasets: SignalR[DatasetTable]
