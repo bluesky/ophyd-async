@@ -51,6 +51,6 @@ class PmacMotor(motor.Motor):
     """Device that moves a PMAC Motor record"""
 
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.CsAxis = epics_signal_r(str, f"{prefix}:CsAxis_RBV")
-        self.CsPort = epics_signal_r(str, f"{prefix}:CsPort_RBV")
+        self.cs_axis = epics_signal_r(str, f"{prefix}:CsAxis_RBV")
+        self.cs_port = epics_signal_r(str, f"{prefix}:CsPort_RBV")
         super().__init__(prefix=prefix, name=name)
