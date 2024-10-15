@@ -36,8 +36,8 @@ async def sim_y_motor():
     set_mock_value(sim_motor.max_velocity, 5)
     set_mock_value(sim_motor.velocity, 0.5)
     set_mock_value(sim_motor.output_link, "@asyn(BRICK1,8)")
-    set_mock_value(sim_motor.CsAxis, "Y")
-    set_mock_value(sim_motor.CsPort, "BRICK1.CS3")
+    set_mock_value(sim_motor.cs_axis, "Y")
+    set_mock_value(sim_motor.cs_port, "BRICK1.CS3")
 
     yield sim_motor
 
