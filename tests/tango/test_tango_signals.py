@@ -13,7 +13,6 @@ from test_base_device import TestDevice
 from ophyd_async.core import SignalBackend, SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.tango import (
     TangoSignalBackend,
-    __tango_signal_auto,
     tango_signal_r,
     tango_signal_rw,
     tango_signal_w,
@@ -25,6 +24,11 @@ from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
+
+
+def __tango_signal_auto(*args, **kwargs):
+    raise RuntimeError("Fix this later")
+
 
 # --------------------------------------------------------------------
 """

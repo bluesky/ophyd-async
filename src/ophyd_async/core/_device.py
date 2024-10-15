@@ -116,13 +116,18 @@ class Device(DeviceBase):
 
     def __setattr__(self, name: str, child: DeviceBase) -> None:
         if name != "parent" and isinstance(child, DeviceBase):
+            # names have a trailing underscore if the clash with a bluesky verb,
+            # so strip this off to get it from the backend
+            name = name.rstrip("_")
             self._backend.children[name] = child
             self._set_child_name(child, name)
         else:
             super().__setattr__(name, child)
 
     def __getattr__(self, name: str) -> DeviceBase:
-        child = self._backend.children.get(name, None)
+        # names have a trailing underscore if the clash with a bluesky verb,
+        # so strip this off to get it from the backend
+        child = self._backend.children.get(name.rstrip("_"), None)
         if child is None:
             txt = f"'{type(self).__name__}' object has no attribute '{name}'"
             if name == "_connect_cache":

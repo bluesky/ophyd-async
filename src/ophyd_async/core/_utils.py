@@ -5,7 +5,7 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumType
-from typing import Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
+from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
 
 import numpy as np
 
@@ -214,3 +214,9 @@ def in_micros(t: float) -> int:
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")
     return int(np.ceil(t * 1e6))
+
+
+def get_origin_class(annotatation: Any) -> type | None:
+    origin = get_origin(annotatation) or annotatation
+    if isinstance(origin, type):
+        return origin

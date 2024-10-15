@@ -13,9 +13,10 @@ from ._core_io import ADBaseIO, DetectorState
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
-DEFAULT_GOOD_STATES: frozenset[DetectorState] = frozenset(
-    [DetectorState.Idle, DetectorState.Aborted]
-)
+DEFAULT_GOOD_STATES: frozenset[DetectorState] = frozenset([
+    DetectorState.Idle,
+    DetectorState.Aborted,
+])
 
 
 class ADBaseDatasetDescriber(DatasetDescriber):

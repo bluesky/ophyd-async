@@ -14,9 +14,9 @@ class TangoDetector(StandardReadable):
     def __init__(self, mover_trl: str, counter_trls: list[str], name=""):
         # A detector device may be composed of tango sub-devices
         self.mover = TangoMover(mover_trl)
-        self.counters = DeviceVector(
-            {i + 1: TangoCounter(c_trl) for i, c_trl in enumerate(counter_trls)}
-        )
+        self.counters = DeviceVector({
+            i + 1: TangoCounter(c_trl) for i, c_trl in enumerate(counter_trls)
+        })
 
         # Define the readables for TangoDetector
         # DeviceVectors are incompatible with AsyncReadable. Ignore until fixed.

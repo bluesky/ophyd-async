@@ -176,6 +176,7 @@ class AttributeProxy(TangoProxy):
     async def put(
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
+        # TODO: remove the timeout from this as it is handled at the signal level
         if wait:
             try:
 
@@ -626,7 +627,6 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         device_proxy: DeviceProxy | None = None,
     ):
         self.device_proxy = device_proxy
-        self.datatype = datatype
         self.read_trl = read_trl
         self.write_trl = write_trl
         self.proxies: dict[str, TangoProxy | DeviceProxy | None] = {
@@ -643,6 +643,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
         self.support_events: bool = True
         self.status: AsyncStatus | None = None
+        super().__init__(datatype)
 
     @classmethod
     def datatype_allowed(cls, dtype: Any) -> bool:

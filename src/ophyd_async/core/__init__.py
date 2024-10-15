@@ -6,6 +6,7 @@ from ._detector import (
     TriggerInfo,
 )
 from ._device import Device, DeviceBackend, DeviceBase, DeviceCollector, DeviceVector
+from ._device_filler import DeviceFiller
 from ._device_save_loader import (
     all_at_once,
     get_signal_values,
@@ -99,6 +100,7 @@ __all__ = [
     "DeviceBase",
     "DeviceCollector",
     "DeviceVector",
+    "DeviceFiller",
     "all_at_once",
     "get_signal_values",
     "load_device",
