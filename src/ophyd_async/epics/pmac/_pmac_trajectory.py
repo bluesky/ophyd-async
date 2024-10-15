@@ -1,5 +1,5 @@
 import time
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import numpy.typing as npt
@@ -17,7 +17,7 @@ TICK_S = 0.000001
 
 
 class PmacTrajInfo(BaseModel):
-    spec: Spec = Field(default=None)
+    spec: Spec[PmacMotor | Literal["DURATION"]] = Field(default=None)
 
 
 class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
@@ -201,8 +201,8 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
             cs_index = int(split[1].strip()) - 1
         else:
             # Raw Motor
-            cs_port = await motor.CsPort.get_value()
-            cs_axis = await motor.CsAxis.get_value()
+            cs_port = await motor.cs_port.get_value()
+            cs_axis = await motor.cs_axis.get_value()
             cs_index = "ABCUVWXYZ".index(cs_axis)
 
         return cs_port, cs_index
