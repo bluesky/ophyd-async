@@ -191,10 +191,12 @@ async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
     await mock_mover.velocity.set(100)
     await mock_mover.setpoint.set(67)
 
-    parent_mock.assert_has_calls([
-        call.velocity(100, wait=True),
-        call.setpoint(67, wait=True),
-    ])
+    parent_mock.assert_has_calls(
+        [
+            call.velocity(100, wait=True),
+            call.setpoint(67, wait=True),
+        ]
+    )
 
 
 async def test_read_mover(mock_mover: demo.Mover):

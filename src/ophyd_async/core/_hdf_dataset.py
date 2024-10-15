@@ -48,14 +48,16 @@ class HDFFile:
 
         bundler_composer = ComposeStreamResource()
 
-        uri = urlunparse((
-            "file",
-            self._hostname,
-            str(full_file_name.absolute()),
-            "",
-            "",
-            None,
-        ))
+        uri = urlunparse(
+            (
+                "file",
+                self._hostname,
+                str(full_file_name.absolute()),
+                "",
+                "",
+                None,
+            )
+        )
 
         self._bundles: list[ComposeStreamResourceBundle] = [
             bundler_composer(

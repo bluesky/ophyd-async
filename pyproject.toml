@@ -146,17 +146,17 @@ commands =
 src = ["src", "tests", "system_tests"]
 line-length = 88
 lint.select = [
-    "B",       # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
-    "C4",      # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
-    "E",       # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
-    "F",       # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
-    "W",       # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
-    "I",       # isort - https://docs.astral.sh/ruff/rules/#isort-i
-    "UP",      # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
-    "SLF",     # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
-    "PLC2701",
+    "B",   # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "C4",  # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "E",   # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
+    "F",   # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "W",   # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
+    "I",   # isort - https://docs.astral.sh/ruff/rules/#isort-i
+    "UP",  # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "SLF", # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
+    #    "PLC2701",
 ]
-preview = true
+# preview = true
 
 [tool.ruff.lint.per-file-ignores]
 # By default, private member access is allowed in tests

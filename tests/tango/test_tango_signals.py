@@ -63,61 +63,67 @@ ATTRIBUTES_SET = []
 COMMANDS_SET = []
 
 for type_name, tango_type_name, py_type, values in BASE_TYPES_SET:
-    ATTRIBUTES_SET.extend([
-        (
-            f"{type_name}_scalar_attr",
-            tango_type_name,
-            AttrDataFormat.SCALAR,
-            py_type,
-            choice(values),
-            choice(values),
-        ),
-        (
-            f"{type_name}_spectrum_attr",
-            tango_type_name,
-            AttrDataFormat.SPECTRUM,
-            npt.NDArray[py_type],
-            [choice(values), choice(values), choice(values)],
-            [choice(values), choice(values), choice(values)],
-        ),
-        (
-            f"{type_name}_image_attr",
-            tango_type_name,
-            AttrDataFormat.IMAGE,
-            npt.NDArray[py_type],
-            [
-                [choice(values), choice(values), choice(values)],
-                [choice(values), choice(values), choice(values)],
-            ],
-            [
-                [choice(values), choice(values), choice(values)],
-                [choice(values), choice(values), choice(values)],
-            ],
-        ),
-    ])
-
-    if tango_type_name == "DevUChar":
-        continue
-    else:
-        COMMANDS_SET.append((
-            f"{type_name}_scalar_cmd",
-            tango_type_name,
-            AttrDataFormat.SCALAR,
-            py_type,
-            choice(values),
-            choice(values),
-        ))
-        if tango_type_name in ["DevState", "DevEnum"]:
-            continue
-        else:
-            COMMANDS_SET.append((
-                f"{type_name}_spectrum_cmd",
+    ATTRIBUTES_SET.extend(
+        [
+            (
+                f"{type_name}_scalar_attr",
+                tango_type_name,
+                AttrDataFormat.SCALAR,
+                py_type,
+                choice(values),
+                choice(values),
+            ),
+            (
+                f"{type_name}_spectrum_attr",
                 tango_type_name,
                 AttrDataFormat.SPECTRUM,
                 npt.NDArray[py_type],
                 [choice(values), choice(values), choice(values)],
                 [choice(values), choice(values), choice(values)],
-            ))
+            ),
+            (
+                f"{type_name}_image_attr",
+                tango_type_name,
+                AttrDataFormat.IMAGE,
+                npt.NDArray[py_type],
+                [
+                    [choice(values), choice(values), choice(values)],
+                    [choice(values), choice(values), choice(values)],
+                ],
+                [
+                    [choice(values), choice(values), choice(values)],
+                    [choice(values), choice(values), choice(values)],
+                ],
+            ),
+        ]
+    )
+
+    if tango_type_name == "DevUChar":
+        continue
+    else:
+        COMMANDS_SET.append(
+            (
+                f"{type_name}_scalar_cmd",
+                tango_type_name,
+                AttrDataFormat.SCALAR,
+                py_type,
+                choice(values),
+                choice(values),
+            )
+        )
+        if tango_type_name in ["DevState", "DevEnum"]:
+            continue
+        else:
+            COMMANDS_SET.append(
+                (
+                    f"{type_name}_spectrum_cmd",
+                    tango_type_name,
+                    AttrDataFormat.SPECTRUM,
+                    npt.NDArray[py_type],
+                    [choice(values), choice(values), choice(values)],
+                    [choice(values), choice(values), choice(values)],
+                )
+            )
 
 
 # --------------------------------------------------------------------

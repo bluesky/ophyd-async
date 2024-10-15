@@ -74,14 +74,14 @@ class StandardReadable(
             await sig.unstage().task
 
     async def describe_configuration(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts([
-            sig.describe_configuration() for sig in self._configurables
-        ])
+        return await merge_gathered_dicts(
+            [sig.describe_configuration() for sig in self._configurables]
+        )
 
     async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts([
-            sig.read_configuration() for sig in self._configurables
-        ])
+        return await merge_gathered_dicts(
+            [sig.read_configuration() for sig in self._configurables]
+        )
 
     async def describe(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts([sig.describe() for sig in self._readables])

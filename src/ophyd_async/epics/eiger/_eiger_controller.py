@@ -44,10 +44,12 @@ class EigerController(DetectorController):
             self._drv.num_images.set(trigger_info.total_number_of_triggers),
         ]
         if trigger_info.livetime is not None:
-            coros.extend([
-                self._drv.acquire_time.set(trigger_info.livetime),
-                self._drv.acquire_period.set(trigger_info.livetime),
-            ])
+            coros.extend(
+                [
+                    self._drv.acquire_time.set(trigger_info.livetime),
+                    self._drv.acquire_period.set(trigger_info.livetime),
+                ]
+            )
         await asyncio.gather(*coros)
 
     async def arm(self):

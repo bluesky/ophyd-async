@@ -57,10 +57,14 @@ class Table(BaseModel):
                 f"type of `Table` as {self}."
             )
 
-        return type(right)(**{
-            field_name: _concat(getattr(self, field_name), getattr(right, field_name))
-            for field_name in self.model_fields
-        })
+        return type(right)(
+            **{
+                field_name: _concat(
+                    getattr(self, field_name), getattr(right, field_name)
+                )
+                for field_name in self.model_fields
+            }
+        )
 
     def __eq__(self, value: object) -> bool:
         return super().__eq__(value)

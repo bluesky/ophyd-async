@@ -56,11 +56,13 @@ class DummyDeviceOneWorkingOneTimeout(Device):
         super().__init__(name=name)
 
 
-ONE_WORKING_ONE_TIMEOUT_OUTPUT = NotConnected({
-    "timeout_child_device": NotConnected({
-        "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL")
-    })
-})
+ONE_WORKING_ONE_TIMEOUT_OUTPUT = NotConnected(
+    {
+        "timeout_child_device": NotConnected(
+            {"timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL")}
+        )
+    }
+)
 
 
 class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
@@ -79,20 +81,26 @@ class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
         super().__init__(name=name)
 
 
-TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = NotConnected({
-    "timeout_child_device_ca": NotConnected({
-        "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL"),
-    }),
-    "timeout_child_device_pva": NotConnected({
-        "timeout_signal": NotConnected("pva://A_NON_EXISTENT_SIGNAL")
-    }),
-    "value_error_child_device1": NotConnected({
-        "value_error_signal": ValueError("Some ValueError text")
-    }),
-    "value_error_child_device2": NotConnected({
-        "value_error_signal": ValueError(),
-    }),
-})
+TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = NotConnected(
+    {
+        "timeout_child_device_ca": NotConnected(
+            {
+                "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL"),
+            }
+        ),
+        "timeout_child_device_pva": NotConnected(
+            {"timeout_signal": NotConnected("pva://A_NON_EXISTENT_SIGNAL")}
+        ),
+        "value_error_child_device1": NotConnected(
+            {"value_error_signal": ValueError("Some ValueError text")}
+        ),
+        "value_error_child_device2": NotConnected(
+            {
+                "value_error_signal": ValueError(),
+            }
+        ),
+    }
+)
 
 
 class DummyDeviceCombiningTopLevelSignalAndSubDevice(Device):
@@ -175,12 +183,14 @@ async def test_error_handling_device_collector(caplog):
             )
             dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
 
-    expected_output = NotConnected({
-        "dummy_device_two_working_one_timeout_two_value_error": (
-            TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
-        ),
-        "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
-    })
+    expected_output = NotConnected(
+        {
+            "dummy_device_two_working_one_timeout_two_value_error": (
+                TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
+            ),
+            "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
+        }
+    )
     assert str(expected_output) == str(e.value)
 
     logs = caplog.get_records("call")

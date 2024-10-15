@@ -302,11 +302,13 @@ async def test_assert_configuration(mock_readable: DummyReadable):
     set_mock_value(mock_readable.mode, "super mode")
     set_mock_value(mock_readable.mode2, "slow mode")
     dummy_config_reading = {
-        "mock_readable-mode": ({
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": "super mode",
-        }),
+        "mock_readable-mode": (
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": "super mode",
+            }
+        ),
         "mock_readable-mode2": {
             "alarm_severity": 0,
             "timestamp": ANY,

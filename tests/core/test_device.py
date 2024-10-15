@@ -31,9 +31,9 @@ class DummyDeviceGroup(Device):
     def __init__(self, name: str) -> None:
         self.child1 = DummyBaseDevice()
         self.child2 = DummyBaseDevice()
-        self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector({
-            123: DummyBaseDevice()
-        })
+        self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector(
+            {123: DummyBaseDevice()}
+        )
         super().__init__(name)
 
 
@@ -129,11 +129,13 @@ class MotorBundle(Device):
     def __init__(self, name: str) -> None:
         self.X = motor.Motor("BLxxI-MO-TABLE-01:X")
         self.Y = motor.Motor("BLxxI-MO-TABLE-01:Y")
-        self.V: DeviceVector[motor.Motor] = DeviceVector({
-            0: motor.Motor("BLxxI-MO-TABLE-21:X"),
-            1: motor.Motor("BLxxI-MO-TABLE-21:Y"),
-            2: motor.Motor("BLxxI-MO-TABLE-21:Z"),
-        })
+        self.V: DeviceVector[motor.Motor] = DeviceVector(
+            {
+                0: motor.Motor("BLxxI-MO-TABLE-21:X"),
+                1: motor.Motor("BLxxI-MO-TABLE-21:Y"),
+                2: motor.Motor("BLxxI-MO-TABLE-21:Z"),
+            }
+        )
         super().__init__(name)
 
 
