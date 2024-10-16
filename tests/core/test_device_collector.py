@@ -67,6 +67,16 @@ def test_sync_device_connector_run_engine_created_connects(RE):
     assert working_device.connected
 
 
+def test_connecting_in_plan_raises(RE):
+    def bad_plan():
+        yield from bps.null()
+        with DeviceCollector():
+            working_device = WorkingDevice("somename")  # noqa: F841
+
+    with pytest.raises(RuntimeError, match="Cannot use DeviceConnector inside a plan"):
+        RE(bad_plan())
+
+
 def test_async_device_connector_run_engine_same_event_loop():
     async def set_up_device():
         async with DeviceCollector(mock=True):
