@@ -2,6 +2,7 @@
 
 import time
 from collections import defaultdict
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import cast
 from unittest.mock import patch
@@ -30,6 +31,11 @@ def test_adsimdetector(ad_standard_det_factory):
 
 
 @pytest.fixture
+def test_adsimdetector_tiff(ad_standard_det_factory):
+    return ad_standard_det_factory(adsimdetector.SimDetectorTIFF)
+
+
+@pytest.fixture
 def two_test_adsimdetectors(ad_standard_det_factory):
     deta = ad_standard_det_factory(adsimdetector.SimDetector)
     detb = ad_standard_det_factory(adsimdetector.SimDetector, number=2)
@@ -37,7 +43,7 @@ def two_test_adsimdetectors(ad_standard_det_factory):
     return deta, detb
 
 
-def count_sim(dets: list[adsimdetector.SimDetector], times: int = 1):
+def count_sim(dets: Sequence[adcore.AreaDetector], times: int = 1):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 
     yield from bps.stage_all(*dets)
@@ -46,7 +52,7 @@ def count_sim(dets: list[adsimdetector.SimDetector], times: int = 1):
         read_values = {}
         for det in dets:
             read_values[det] = yield from bps.rd(
-                cast(adcore.ADHDFWriter, det.writer).hdf.num_captured
+                cast(adcore.ADWriter, det.writer).fileio.num_captured
             )
 
         for det in dets:
@@ -55,7 +61,7 @@ def count_sim(dets: list[adsimdetector.SimDetector], times: int = 1):
         yield from bps.sleep(0.2)
         [
             set_mock_value(
-                cast(adcore.ADHDFWriter, det.writer).hdf.num_captured,
+                cast(adcore.ADWriter, det.writer).fileio.num_captured,
                 read_values[det] + 1,
             )
             for det in dets
@@ -150,9 +156,7 @@ async def test_two_detectors_step(
         for det in two_test_adsimdetectors
     ]
 
-    controller_a = cast(
-        adsimdetector.SimController, two_test_adsimdetectors[0].controller
-    )
+    controller_a = cast(adcore.ADBaseController, two_test_adsimdetectors[0].controller)
     writer_a = cast(adcore.ADHDFWriter, two_test_adsimdetectors[0].writer)
     writer_b = cast(adcore.ADHDFWriter, two_test_adsimdetectors[1].writer)
     info_a = writer_a._path_provider(device_name=writer_a._name_provider())
@@ -217,26 +221,37 @@ async def test_two_detectors_step(
     assert event["data"] == {}
 
 
+@pytest.mark.parametrize(
+    "detector_class", [adsimdetector.SimDetector, adsimdetector.SimDetectorTIFF]
+)
 async def test_detector_writes_to_file(
-    RE: RunEngine, test_adsimdetector: adsimdetector.SimDetector, tmp_path: Path
+    RE: RunEngine,
+    ad_standard_det_factory: Callable,
+    detector_class: type[adsimdetector.SimDetector],
+    tmp_path: Path,
 ):
+    test_adsimdetector = ad_standard_det_factory(detector_class)
+
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     set_mock_value(
-        cast(adcore.ADHDFWriter, test_adsimdetector._writer).hdf.file_path_exists, True
+        cast(adcore.ADHDFWriter, test_adsimdetector.writer).fileio.file_path_exists,
+        True,
     )
 
     RE(count_sim([test_adsimdetector], times=3))
 
     assert await cast(
-        adcore.ADHDFWriter, test_adsimdetector.writer
-    ).hdf.file_path.get_value() == str(tmp_path)
+        adcore.ADWriter, test_adsimdetector.writer
+    ).fileio.file_path.get_value() == str(tmp_path)
 
     descriptor_index = names.index("descriptor")
 
-    assert docs[descriptor_index].get("data_keys").get("test_adsim1").get("shape") == (
+    assert docs[descriptor_index].get("data_keys").get(test_adsimdetector.name).get(
+        "shape"
+    ) == (
         10,
         10,
     )

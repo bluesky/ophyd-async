@@ -1,7 +1,6 @@
-from ._sim import SimDetector
-from ._sim_controller import SimController
+from ._sim import SimDetector, SimDetectorTIFF
 
 __all__ = [
     "SimDetector",
-    "SimController",
+    "SimDetectorTIFF",
 ]

@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import Awaitable, Callable
+from typing import cast
 from unittest.mock import patch
 
 import pytest
@@ -10,6 +11,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adpilatus
+from ophyd_async.epics.adpilatus import PilatusController, PilatusDriverIO
 
 
 @pytest.fixture
@@ -18,7 +20,7 @@ def test_adpilatus(ad_standard_det_factory) -> adpilatus.PilatusDetector:
 
 
 async def test_deadtime_overridable(test_adpilatus: adpilatus.PilatusDetector):
-    pilatus_controller = test_adpilatus._controller
+    pilatus_controller = cast(PilatusController, test_adpilatus.controller)
     pilatus_controller._readout_time = adpilatus.PilatusReadoutTime.pilatus2
 
     # deadtime invariant with exposure time
@@ -85,15 +87,16 @@ async def _trigger(
     expected_trigger_mode: adpilatus.PilatusTriggerMode,
     trigger_and_complete: Callable[[], Awaitable],
 ):
+    pilatus_driver = cast(PilatusDriverIO, test_adpilatus.drv)
     # Default TriggerMode
     assert (
-        await test_adpilatus.drv.trigger_mode.get_value()
+        await pilatus_driver.trigger_mode.get_value()
     ) == adpilatus.PilatusTriggerMode.internal
 
     await trigger_and_complete()
 
     # TriggerSource changes
-    assert (await test_adpilatus.drv.trigger_mode.get_value()) == expected_trigger_mode
+    assert (await pilatus_driver.trigger_mode.get_value()) == expected_trigger_mode
 
 
 async def test_hints_from_hdf_writer(test_adpilatus: adpilatus.PilatusDetector):
@@ -137,8 +140,8 @@ async def test_exposure_time_and_acquire_period_set(
 
 
 async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
-    pilatus = test_adpilatus._controller
-    pilatus_driver = pilatus._drv
+    pilatus = test_adpilatus.controller
+    pilatus_driver = cast(PilatusDriverIO, pilatus.driver)
     set_mock_value(pilatus_driver.armed, True)
     await pilatus.prepare(
         TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.constant_gate)
