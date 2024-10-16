@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Decision Flowchart for Creating a New ophyd_async Device &#8212; ophyd-async 0.7.0a2.dev1+g72c61ada documentation</title>
+    <title>Decision Flowchart for Creating a New ophyd_async Device &#8212; ophyd-async 0.7.0a2.dev2+g3e74761b documentation</title>
   
   
   
@@ -40,14 +40,20 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=5b015447"></script>
+    <script src="../_static/documentation_options.js?v=f531ed7c"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'how-to/choose-interfaces-for-devices';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.15.4';
@@ -511,8 +517,8 @@ document.write(`
   <section id="decision-flowchart-for-creating-a-new-ophyd-async-device">
 <h1>Decision Flowchart for Creating a New ophyd_async Device<a class="headerlink" href="#decision-flowchart-for-creating-a-new-ophyd-async-device" title="Link to this heading">#</a></h1>
 <p>This document contains a decision flowchart designed to guide developers through the process of creating a new ophyd_async device in the Ophyd library. It outlines a series of decisions based on the device’s capabilities, such as file writing, reading values from process variables (PVs), and mobility within scans. The flowchart helps in determining the appropriate class inheritance and methods to override for optimal device functionality and integration into the system.</p>
-<div class="mermaid">
-              flowchart TD
+<pre  class="mermaid">
+          flowchart TD
     start([Start]) --&gt; isFileWriting{Is it a File Writing Detector?}
     isFileWriting -- Yes --&gt; useStandardDetector[Use StandardDetector]
     isFileWriting -- No --&gt; producesPVValue{Does it produce a value from a PV you want to read in a scan?}
@@ -520,7 +526,7 @@ document.write(`
     isMovable -- Yes --&gt; useReadableMovable[Use StandardReadable + AsyncMovable + Override set method]
     isMovable -- No --&gt; useReadable[Use StandardReadable]
     producesPVValue -- No --&gt; useDevice[Use Device]
-        </div></section>
+    </pre></section>
 
 
                 </article>
