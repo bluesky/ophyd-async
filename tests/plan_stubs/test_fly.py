@@ -24,7 +24,6 @@ from ophyd_async.core import (
     observe_value,
     set_mock_value,
 )
-from ophyd_async.epics.pvi import PviDeviceConnector
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (

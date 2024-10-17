@@ -1,7 +1,5 @@
 from typing import TypeVar
 
-import pytest
-
 from ophyd_async.core import (
     Device,
     DeviceCollector,

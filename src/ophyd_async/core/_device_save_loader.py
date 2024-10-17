@@ -11,7 +11,7 @@ from bluesky.protocols import Location
 from bluesky.utils import Msg
 from pydantic import BaseModel
 
-from ._device import Device, DeviceVector
+from ._device import Device
 from ._signal import SignalRW
 
 

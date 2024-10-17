@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Generic, NoReturn, TypeVar, get_args, get_origin, get_type_hints
+from typing import Generic, NoReturn, TypeVar, get_args, get_origin, get_type_hints
 
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Signal, SignalX
 from ._signal_backend import SignalBackend
-from ._utils import T, get_origin_class
+from ._utils import get_origin_class
 
 
 def _strip_number_from_string(string: str) -> tuple[str, int | None]:
