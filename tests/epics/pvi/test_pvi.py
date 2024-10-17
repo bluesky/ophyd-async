@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 import pytest
 
 from ophyd_async.core import (
@@ -10,34 +12,21 @@ from ophyd_async.core import (
 from ophyd_async.epics.pvi import PviDeviceConnector
 
 
-class PviDevice(Device):
-    def __init__(
-        self,
-        prefix: str = "",
-        name: str = "",
-        connector: PviDeviceConnector | None = None,
-    ):
-        if connector is None:
-            connector = PviDeviceConnector(prefix + "PVI")
-        connector.create_children_from_annotations(self)
-        super().__init__(name=name, connector=connector)
-
-
-class Block1(PviDevice):
+class Block1(Device):
     device_vector_signal_x: DeviceVector[SignalX]
     device_vector_signal_rw: DeviceVector[SignalRW[float]]
     signal_x: SignalX
     signal_rw: SignalRW[int]
 
 
-class Block2(PviDevice):
+class Block2(Device):
     device_vector: DeviceVector[Block1]
     device: Block1
     signal_x: SignalX
     signal_rw: SignalRW[int]
 
 
-class Block3(PviDevice):
+class Block3(Device):
     device_vector: DeviceVector[Block2]
     device: Block2
     signal_device: Block1
@@ -45,9 +34,28 @@ class Block3(PviDevice):
     signal_rw: SignalRW[int]
 
 
+class Block4(Device):
+    device_vector: DeviceVector[Block1]
+    device: Block1
+    signal_x: SignalX
+    signal_rw: SignalRW[int]
+
+
+DeviceT = TypeVar("DeviceT", bound=Device)
+
+
+def with_pvi_connector(
+    device_type: type[DeviceT], prefix: str, name: str = ""
+) -> DeviceT:
+    connector = PviDeviceConnector(prefix + ":PVI")
+    device = device_type(connector=connector, name=name)
+    connector.create_children_from_annotations(device)
+    return device
+
+
 async def test_fill_pvi_entries_mock_mode():
     async with DeviceCollector(mock=True):
-        test_device = Block3("PREFIX:")
+        test_device = with_pvi_connector(Block3, "PREFIX:")
 
     # device vectors are typed
     assert isinstance(test_device.device_vector[1], Block2)
@@ -92,7 +100,7 @@ async def test_fill_pvi_entries_mock_mode():
 
 
 async def test_device_create_children_from_annotations():
-    device = Block3("PREFIX:")
+    device = with_pvi_connector(Block3, "PREFIX:")
 
     block_2_device = device.device
     block_1_device = device.device.device
@@ -114,23 +122,8 @@ async def test_device_create_children_from_annotations():
     assert device.signal_device is top_block_1_device
 
 
-@pytest.fixture
-def pvi_test_device_with_device_vectors_t():
-    """A fixture since pytest discourages init in test case classes"""
-
-    class TestBlock(PviDevice):
-        device_vector: DeviceVector[Block1]
-        device: Block1
-        signal_x: SignalX
-        signal_rw: SignalRW[int]
-
-    yield TestBlock
-
-
-async def test_device_create_children_from_annotations_with_device_vectors(
-    pvi_test_device_with_device_vectors_t,
-):
-    device = pvi_test_device_with_device_vectors_t("PREFIX:", name="test_device")
+async def test_device_create_children_from_annotations_with_device_vectors():
+    device = with_pvi_connector(Block4, "PREFIX:", name="test_device")
     await device.connect(mock=True)
 
     block_1_device = device.device

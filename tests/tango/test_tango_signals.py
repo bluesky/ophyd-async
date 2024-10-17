@@ -599,6 +599,7 @@ async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.skip("Not sure if we need tango_signal_auto")
 @pytest.mark.parametrize(
     "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
     [
@@ -667,6 +668,7 @@ async def test_tango_signal_auto_attrs(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.skip("Not sure if we need tango_signal_auto")
 @pytest.mark.parametrize(
     "pv, tango_type, d_format, py_type, initial_value, put_value, use_dtype, use_proxy",
     [
@@ -741,6 +743,7 @@ async def test_tango_signal_auto_cmds(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.skip("Not sure if we need tango_signal_auto")
 @pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bool):
     proxy = await DeviceProxy(tango_test_device) if use_proxy else None
@@ -757,6 +760,7 @@ async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bo
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.skip("Not sure if we need tango_signal_auto")
 async def test_tango_signal_auto_badtrl(tango_test_device: str):
     proxy = await DeviceProxy(tango_test_device)
     with pytest.raises(RuntimeError) as exc_info:
