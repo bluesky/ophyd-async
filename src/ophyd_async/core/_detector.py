@@ -4,33 +4,22 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
-from enum import Enum
 from functools import cached_property
-from typing import (
-    Generic,
-)
 
 from bluesky.protocols import (
-    Collectable,
-    Flyable,
-    Preparable,
     Reading,
-    Stageable,
     StreamAsset,
-    Triggerable,
-    WritesStreamAssets,
 )
 from event_model import DataKey
 from pydantic import BaseModel, Field, NonNegativeInt, computed_field
 
-from ._device import Device
-from ._protocol import AsyncConfigurable, AsyncReadable
+from ._device import Device, DeviceConnector
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, T, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
 
 
-class DetectorTrigger(str, Enum):
+class DetectorTrigger(StrictEnum):
     """Type of mechanism for triggering a detector to take frames"""
 
     #: Detector generates internal trigger for given rate
@@ -162,18 +151,7 @@ class DetectorWriter(ABC):
         """Close writer, blocks until I/O is complete"""
 
 
-class StandardDetector(
-    Device,
-    Stageable,
-    AsyncConfigurable,
-    AsyncReadable,
-    Triggerable,
-    Preparable,
-    Flyable,
-    Collectable,
-    WritesStreamAssets,
-    Generic[T],
-):
+class StandardDetector(Device):
     """
     Useful detector base class for step and fly scanning detectors.
     Aggregates controller and writer logic together.
@@ -185,6 +163,7 @@ class StandardDetector(
         writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
+        connector: DeviceConnector | None = None,
     ) -> None:
         """
         Constructor
@@ -213,8 +192,7 @@ class StandardDetector(
         self._completable_frames: int = 0
         self._number_of_triggers_iter: Iterator[int] | None = None
         self._initial_frame: int = 0
-
-        super().__init__(name)
+        super().__init__(name, connector=connector)
 
     @property
     def controller(self) -> DetectorController:

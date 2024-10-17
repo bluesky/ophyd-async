@@ -4,7 +4,7 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from ophyd_async.core import DeviceCollector, get_mock_put, set_mock_value
-from ophyd_async.epics.eiger._odin_io import Odin, OdinWriter, Writing
+from ophyd_async.epics.eiger._odin_io import Odin, OdinWriter, Writing  # noqa: PLC2701
 
 OdinDriverAndWriter = tuple[Odin, OdinWriter]
 
@@ -29,12 +29,8 @@ async def test_when_open_called_then_file_correctly_set(
 
     await writer.open()
 
-    get_mock_put(driver.file_path).assert_called_once_with(
-        expected_path, wait=ANY, timeout=ANY
-    )
-    get_mock_put(driver.file_name).assert_called_once_with(
-        expected_filename, wait=ANY, timeout=ANY
-    )
+    get_mock_put(driver.file_path).assert_called_once_with(expected_path, wait=ANY)
+    get_mock_put(driver.file_name).assert_called_once_with(expected_filename, wait=ANY)
 
 
 async def test_when_open_called_then_all_expected_signals_set(
@@ -43,16 +39,10 @@ async def test_when_open_called_then_all_expected_signals_set(
     driver, writer = odin_driver_and_writer
     await writer.open()
 
-    get_mock_put(driver.data_type).assert_called_once_with(
-        "uint16", wait=ANY, timeout=ANY
-    )
-    get_mock_put(driver.num_to_capture).assert_called_once_with(
-        0, wait=ANY, timeout=ANY
-    )
+    get_mock_put(driver.data_type).assert_called_once_with("uint16", wait=ANY)
+    get_mock_put(driver.num_to_capture).assert_called_once_with(0, wait=ANY)
 
-    get_mock_put(driver.capture).assert_called_once_with(
-        Writing.ON, wait=ANY, timeout=ANY
-    )
+    get_mock_put(driver.capture).assert_called_once_with(Writing.ON, wait=ANY)
 
 
 async def test_given_data_shape_set_when_open_called_then_describe_has_correct_shape(
@@ -70,6 +60,4 @@ async def test_when_closed_then_data_capture_turned_off(
 ):
     driver, writer = odin_driver_and_writer
     await writer.close()
-    get_mock_put(driver.capture).assert_called_once_with(
-        Writing.OFF, wait=ANY, timeout=ANY
-    )
+    get_mock_put(driver.capture).assert_called_once_with(Writing.OFF, wait=ANY)

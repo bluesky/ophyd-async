@@ -1,10 +1,14 @@
-from enum import Enum
-
-from ophyd_async.core import ConfigSignal, DeviceVector, HintedSignal, StandardReadable
+from ophyd_async.core import (
+    ConfigSignal,
+    DeviceVector,
+    HintedSignal,
+    StandardReadable,
+    StrictEnum,
+)
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
-class EnergyMode(str, Enum):
+class EnergyMode(StrictEnum):
     """Energy mode for `Sensor`"""
 
     #: Low energy mode

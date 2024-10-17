@@ -16,12 +16,12 @@ from ophyd_async.epics.adcore import (
 def setup_ndattributes(
     device: NDArrayBaseIO, ndattributes: Sequence[NDAttributePv | NDAttributeParam]
 ):
-    xml_text = ET.Element("Attributes")
+    root = ET.Element("Attributes")
 
     for ndattribute in ndattributes:
         if isinstance(ndattribute, NDAttributeParam):
             ET.SubElement(
-                xml_text,
+                root,
                 "Attribute",
                 name=ndattribute.name,
                 type="PARAM",
@@ -32,7 +32,7 @@ def setup_ndattributes(
             )
         elif isinstance(ndattribute, NDAttributePv):
             ET.SubElement(
-                xml_text,
+                root,
                 "Attribute",
                 name=ndattribute.name,
                 type="EPICS_PV",
@@ -45,7 +45,8 @@ def setup_ndattributes(
                 f"Invalid type for ndattributes: {type(ndattribute)}. "
                 "Expected NDAttributePv or NDAttributeParam."
             )
-    yield from bps.mv(device.nd_attributes_file, xml_text)
+    xml_text = ET.tostring(root, encoding="unicode")
+    yield from bps.abs_set(device.nd_attributes_file, xml_text, wait=True)
 
 
 def setup_ndstats_sum(detector: Device):

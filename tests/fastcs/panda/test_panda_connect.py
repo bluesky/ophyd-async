@@ -1,19 +1,18 @@
 """Used to test setting up signals for a PandA"""
 
 import copy
+from typing import Any
 
 import numpy as np
 import pytest
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
     DeviceVector,
     NotConnected,
 )
-from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
-from ophyd_async.epics.pvi._pvi import _PVIEntry  # noqa
+from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     PcapBlock,
     PulseBlock,
@@ -32,7 +31,7 @@ class DummyDict:
 
 
 class MockPvi:
-    def __init__(self, pvi: dict[str, _PVIEntry]) -> None:
+    def __init__(self, pvi: dict[str, Any]) -> None:
         self.pvi = pvi
 
     def get(self, item: str):
@@ -40,7 +39,7 @@ class MockPvi:
 
 
 class MockCtxt:
-    def __init__(self, pvi: dict[str, _PVIEntry]) -> None:
+    def __init__(self, pvi: dict[str, Any]) -> None:
         self.pvi = copy.copy(pvi)
 
     def get(self, pv: str, timeout: float = 0.0):
@@ -55,16 +54,8 @@ async def panda_t():
         seq: DeviceVector[SeqBlock]
 
     class Panda(CommonPandaBlocksNoData):
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            create_children_from_annotations(self)
-            super().__init__(name)
-
-        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-            await super().connect(mock=mock, timeout=timeout)
+        def __init__(self, uri: str, name: str = ""):
+            super().__init__(name=name, connector=fastcs_connector(self, uri))
 
     yield Panda
 
@@ -72,7 +63,7 @@ async def panda_t():
 @pytest.fixture
 async def mock_panda(panda_t):
     async with DeviceCollector(mock=True):
-        mock_panda = panda_t("PANDAQSRV:", "mock_panda")
+        mock_panda = panda_t("PANDAQSRV:")
 
     assert mock_panda.name == "mock_panda"
     yield mock_panda
@@ -126,13 +117,13 @@ async def test_panda_children_connected(mock_panda):
 
 
 async def test_panda_with_missing_blocks(panda_pva, panda_t):
-    panda = panda_t("PANDAQSRVI:")
-    with pytest.raises(RuntimeError) as exc:
+    panda = panda_t("PANDAQSRVI:", name="mypanda")
+    with pytest.raises(
+        RuntimeError,
+        match="mypanda: cannot provision {'pcap'} from PANDAQSRVI:PVI: {'pulse1': "
+        + "{'d': 'PANDAQSRVI:PULSE1:PVI'}, 'seq1': {'d': 'PANDAQSRVI:SEQ1:PVI'}}",
+    ):
         await panda.connect()
-    assert (
-        str(exc.value)
-        == "sub device `pcap:<class 'typing._ProtocolMeta'>` was not provided by pvi"
-    )
 
 
 async def test_panda_with_extra_blocks_and_signals(panda_pva, panda_t):
@@ -158,16 +149,16 @@ async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     assert isinstance(panda.pulse[1], PulseBlock)
 
     # others are just Devices
-    assert isinstance(panda.extra, Device)
+    assert isinstance(panda.extra, DeviceVector)
 
     # predefined signals get set up with the correct datatype
-    assert panda.pcap.active._backend.datatype is bool
+    assert panda.pcap.active._connector.backend.datatype is bool
 
     # works with custom datatypes
-    assert panda.seq[1].table._backend.datatype is SeqTable
+    assert panda.seq[1].table._connector.backend.datatype is SeqTable
 
     # others are given the None datatype
-    assert panda.pcap.newsignal._backend.datatype is None
+    assert panda.pcap.newsignal._connector.backend.datatype is None
 
 
 async def test_panda_block_missing_signals(panda_pva, panda_t):

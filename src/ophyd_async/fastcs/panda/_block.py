@@ -1,13 +1,16 @@
-from __future__ import annotations
-
-from enum import Enum
-
-from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW, SubsetEnum
+from ophyd_async.core import (
+    Device,
+    DeviceVector,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+    SubsetEnum,
+)
 
 from ._table import DatasetTable, SeqTable
 
 
-class CaptureMode(str, Enum):
+class CaptureMode(StrictEnum):
     FIRST_N = "FIRST_N"
     LAST_N = "LAST_N"
     FOREVER = "FOREVER"
@@ -32,26 +35,28 @@ class PulseBlock(Device):
     width: SignalRW[float]
 
 
-class PcompDirectionOptions(str, Enum):
+class PcompDirection(StrictEnum):
     positive = "Positive"
     negative = "Negative"
     either = "Either"
 
 
-EnableDisableOptions = SubsetEnum["ZERO", "ONE"]
+class BitMux(SubsetEnum):
+    zero = "ZERO"
+    one = "ONE"
 
 
 class PcompBlock(Device):
     active: SignalR[bool]
-    dir: SignalRW[PcompDirectionOptions]
-    enable: SignalRW[EnableDisableOptions]
+    dir: SignalRW[PcompDirection]
+    enable: SignalRW[BitMux]
     pulses: SignalRW[int]
     start: SignalRW[int]
     step: SignalRW[int]
     width: SignalRW[int]
 
 
-class TimeUnits(str, Enum):
+class TimeUnits(StrictEnum):
     min = "min"
     s = "s"
     ms = "ms"
@@ -60,11 +65,11 @@ class TimeUnits(str, Enum):
 
 class SeqBlock(Device):
     table: SignalRW[SeqTable]
-    active: SignalRW[bool]
+    active: SignalR[bool]
     repeats: SignalRW[int]
     prescale: SignalRW[float]
     prescale_units: SignalRW[TimeUnits]
-    enable: SignalRW[EnableDisableOptions]
+    enable: SignalRW[BitMux]
 
 
 class PcapBlock(Device):
