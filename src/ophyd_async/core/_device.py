@@ -29,6 +29,9 @@ class DeviceConnector:
         }
         await wait_for_connection(**coros)
 
+    def create_children_from_annotations(self, device: Device):
+        pass
+
 
 def _setup_child(parent: Device, child_name: str, child: Device):
     child_name = f"{parent.name}-{child_name.rstrip('_')}" if parent.name else ""
@@ -46,7 +49,7 @@ class Device(HasName, Connectable):
     _connect_task: asyncio.Task | None = None
     # Used to check if the previous connect was mocked,
     # if the next mock value differs then we fail
-    _previous_connect_was_mock = None
+    _connect_mock_arg: bool | None = None
 
     def __init__(
         self, name: str = "", connector: DeviceConnector | None = None
@@ -103,11 +106,12 @@ class Device(HasName, Connectable):
             Time to wait before failing with a TimeoutError.
         """
         can_use_previous_connect = (
-            mock is self._previous_connect_was_mock
+            mock is self._connect_mock_arg
             and self._connect_task
             and not (self._connect_task.done() and self._connect_task.exception())
         )
         if force_reconnect or not can_use_previous_connect:
+            self._connect_mock_arg = mock
             coro = self._connector.connect(
                 device=self, mock=mock, timeout=timeout, force_reconnect=force_reconnect
             )

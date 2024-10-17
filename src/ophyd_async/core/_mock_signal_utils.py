@@ -9,7 +9,7 @@ from ._soft_signal_backend import SignalDatatypeT
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    backend = signal._backend  # noqa:SLF001
+    backend = signal._connector.backend  # noqa:SLF001
     assert isinstance(backend, MockSignalBackend), (
         "Expected to receive a `MockSignalBackend`, instead "
         f" received {type(backend)}. "

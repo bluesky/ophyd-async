@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import re
-from typing import Generic, NoReturn, TypeVar, get_args, get_origin, get_type_hints
+from typing import Any, Generic, NoReturn, TypeVar, get_args, get_origin, get_type_hints
 
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Signal, SignalX
 from ._signal_backend import SignalBackend
-from ._utils import get_origin_class
+from ._utils import T, get_origin_class
 
 
 def _strip_number_from_string(string: str) -> tuple[str, int | None]:
@@ -37,15 +37,15 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self._device_connector_type = device_connector_type
         self._vectors: dict[str, DeviceVector] = {}
         self._vector_device_type: dict[str, type[Device] | None] = {}
-        self._signal_backends: dict[str, SignalBackendT] = {}
+        self._signal_backends: dict[str, tuple[SignalBackendT, type[Signal]]] = {}
         self._device_connectors: dict[str, DeviceConnectorT] = {}
         # Get type hints on the class, not the instance
         # https://github.com/python/cpython/issues/124840
         self._annotations = get_type_hints(type(device))
         for name, annotation in self._annotations.items():
             # names have a trailing underscore if the clash with a bluesky verb,
-            # so strip this off to get it from the backend
-            name = name.rstrip("_")
+            # so strip this off to get what the CS will provide
+            stripped_name = name.rstrip("_")
             origin = get_origin_class(annotation)
             if name == "parent" or name.startswith("_") or not origin:
                 # Ignore
@@ -58,7 +58,10 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                         name,
                         f"Expected SignalX or SignalR/W/RW[type], got {annotation}",
                     )
-                self._signal_backends[name] = self.make_child_signal(name, origin)
+                self._signal_backends[stripped_name] = (
+                    self.make_child_signal(name, origin),
+                    origin,
+                )
             elif origin == DeviceVector:
                 # DeviceVector needs a type of device
                 args = get_args(annotation) or [None]
@@ -70,7 +73,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                     )
                 self.make_device_vector(name, child_origin)
             elif issubclass(origin, Device):
-                self._device_connectors[name] = self.make_child_device(name, origin)
+                self._device_connectors[stripped_name] = self.make_child_device(
+                    name, origin
+                )
 
     def unfilled(self) -> set[str]:
         return set(self._device_connectors).union(self._signal_backends)
@@ -112,13 +117,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             return args[0]
 
     def make_child_signal(self, name: str, signal_type: type[Signal]) -> SignalBackendT:
-        basename, number = _strip_number_from_string(name)
-        child = getattr(self._device, name, None)
-        if backend := self._signal_backends.pop(name, None):
+        if name in self._signal_backends:
             # We made it above
-            expected_signal_type = type(child)
+            backend, expected_signal_type = self._signal_backends.pop(name)
         else:
             # We need to make a new one
+            basename, number = _strip_number_from_string(name)
+            child = getattr(self._device, name, None)
             backend = self._signal_backend_type(self.get_datatype(name))
             signal = signal_type(backend)
             if basename in self._vectors and isinstance(number, int):
@@ -145,7 +150,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         child = getattr(self._device, name, None)
         if connector := self._device_connectors.pop(name, None):
             # We made it above
-            pass
+            return connector
         elif basename in self._vectors and isinstance(number, int):
             # We need to add a new entry to an existing DeviceVector
             vector_device_type = self._vector_device_type[basename] or device_type
@@ -153,13 +158,16 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 vector_device_type, Device
             ), f"{vector_device_type} is not a Device"
             connector = self._device_connector_type()
-            self._vectors[basename][number] = vector_device_type(connector=connector)
+            device = vector_device_type(connector=connector)
+            self._vectors[basename][number] = device
         elif child is None:
             # We need to add a new child to the top level Device
             connector = self._device_connector_type()
-            setattr(self._device, name, device_type(connector=connector))
+            device = device_type(connector=connector)
+            setattr(self._device, name, device)
         else:
             self._raise(name, f"Cannot make child as it would shadow {child}")
+        connector.create_children_from_annotations(device)
         return connector
 
     def make_soft_device_vector_entries(self, num: int):

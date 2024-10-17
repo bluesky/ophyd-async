@@ -242,7 +242,7 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert signal.source == f"soft://{SIGNAL_NAME}"
     assert isinstance(signal, signal_class)
     await signal.connect()
-    assert isinstance(signal._backend, SoftSignalBackend)
+    assert isinstance(signal._connector.backend, SoftSignalBackend)
     assert (await signal.get_value()) == INITIAL_VALUE
 
 

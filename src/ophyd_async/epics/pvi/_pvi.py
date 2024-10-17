@@ -53,8 +53,8 @@ class PviDeviceConnector(DeviceConnector):
             self._filler.make_device_vectors(list(entries))
             for name, entry in entries.items():
                 if set(entry) == {"d"}:
-                    backend = self._filler.make_child_device(name)
-                    backend.pvi_pv = entry["d"]
+                    connector = self._filler.make_child_device(name)
+                    connector.pvi_pv = entry["d"]
                 else:
                     signal_type, read_pv, write_pv = _get_signal_details(entry)
                     backend = self._filler.make_child_signal(name, signal_type)

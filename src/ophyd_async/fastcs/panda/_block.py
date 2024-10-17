@@ -6,20 +6,8 @@ from ophyd_async.core import (
     StrictEnum,
     SubsetEnum,
 )
-from ophyd_async.epics.pvi import PviDeviceConnector
 
 from ._table import DatasetTable, SeqTable
-
-
-class FastCsDevice(Device):
-    def __init__(
-        self, uri: str = "", name: str = "", connector: PviDeviceConnector | None = None
-    ) -> None:
-        if connector is None:
-            assert uri, "Either uri or connector must be provided"
-            connector = PviDeviceConnector(uri + "PVI")
-        connector.create_children_from_annotations(self)
-        super().__init__(name=name, connector=connector)
 
 
 class CaptureMode(StrictEnum):
@@ -28,7 +16,7 @@ class CaptureMode(StrictEnum):
     FOREVER = "FOREVER"
 
 
-class DataBlock(FastCsDevice):
+class DataBlock(Device):
     # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
     hdf_file_name: SignalRW[str]
@@ -42,7 +30,7 @@ class DataBlock(FastCsDevice):
     datasets: SignalR[DatasetTable]
 
 
-class PulseBlock(FastCsDevice):
+class PulseBlock(Device):
     delay: SignalRW[float]
     width: SignalRW[float]
 
@@ -58,7 +46,7 @@ class BitMux(SubsetEnum):
     one = "ONE"
 
 
-class PcompBlock(FastCsDevice):
+class PcompBlock(Device):
     active: SignalR[bool]
     dir: SignalRW[PcompDirection]
     enable: SignalRW[BitMux]
@@ -75,7 +63,7 @@ class TimeUnits(StrictEnum):
     us = "us"
 
 
-class SeqBlock(FastCsDevice):
+class SeqBlock(Device):
     table: SignalRW[SeqTable]
     active: SignalR[bool]
     repeats: SignalRW[int]
@@ -84,7 +72,7 @@ class SeqBlock(FastCsDevice):
     enable: SignalRW[BitMux]
 
 
-class PcapBlock(FastCsDevice):
+class PcapBlock(Device):
     active: SignalR[bool]
     arm: SignalRW[bool]
 

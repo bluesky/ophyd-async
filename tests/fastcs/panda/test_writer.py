@@ -16,13 +16,13 @@ from ophyd_async.core import (
     callback_on_mock_put,
     set_mock_value,
 )
+from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DatasetTable,
     PandaHdf5DatasetType,
     PandaHDFWriter,
 )
-from ophyd_async.fastcs.panda._block import FastCsDevice
 
 TABLES = [
     DatasetTable(
@@ -55,9 +55,12 @@ async def panda_t():
     class CaptureBlock(Device):
         test_capture: SignalR[float]
 
-    class Panda(CommonPandaBlocks, FastCsDevice):
+    class Panda(CommonPandaBlocks):
         block_a: CaptureBlock
         block_b: CaptureBlock
+
+        def __init__(self, uri: str, name: str = ""):
+            super().__init__(name=name, connector=fastcs_connector(self, uri))
 
     yield Panda
 

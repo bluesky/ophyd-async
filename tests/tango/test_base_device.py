@@ -326,7 +326,7 @@ async def test_set_trl(tango_test_device):
     values, description = await describe_class(tango_test_device)
     test_device = TestTangoReadable(name="test_device")
 
-    test_device._backend.trl = tango_test_device
+    test_device._connector.trl = tango_test_device
     await test_device.connect()
 
     assert test_device.name == "test_device"
@@ -342,12 +342,12 @@ async def test_connect_proxy(tango_test_device, proxy: bool | None):
         test_device = TestTangoReadable(trl=tango_test_device)
         test_device.proxy = None
         await test_device.connect()
-        assert isinstance(test_device._backend.proxy, tango._tango.DeviceProxy)
+        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     elif proxy:
         proxy = await AsyncDeviceProxy(tango_test_device)
         test_device = TestTangoReadable(device_proxy=proxy)
         await test_device.connect()
-        assert isinstance(test_device._backend.proxy, tango._tango.DeviceProxy)
+        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     else:
         proxy = None
         test_device = TestTangoReadable(device_proxy=proxy)

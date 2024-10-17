@@ -726,29 +726,29 @@ def test_make_backend_fails_for_different_transports():
 
 def test_signal_helpers():
     read_write = epics_signal_rw(int, "ReadWrite")
-    assert read_write._backend.read_pv == "ReadWrite"
-    assert read_write._backend.write_pv == "ReadWrite"
+    assert read_write._connector.backend.read_pv == "ReadWrite"
+    assert read_write._connector.backend.write_pv == "ReadWrite"
 
     read_write_rbv_manual = epics_signal_rw(int, "ReadWrite_RBV", "ReadWrite")
-    assert read_write_rbv_manual._backend.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv_manual._backend.write_pv == "ReadWrite"
+    assert read_write_rbv_manual._connector.backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv_manual._connector.backend.write_pv == "ReadWrite"
 
     read_write_rbv = epics_signal_rw_rbv(int, "ReadWrite")
-    assert read_write_rbv._backend.read_pv == "ReadWrite_RBV"
-    assert read_write_rbv._backend.write_pv == "ReadWrite"
+    assert read_write_rbv._connector.backend.read_pv == "ReadWrite_RBV"
+    assert read_write_rbv._connector.backend.write_pv == "ReadWrite"
 
     read_write_rbv_suffix = epics_signal_rw_rbv(int, "ReadWrite", read_suffix=":RBV")
-    assert read_write_rbv_suffix._backend.read_pv == "ReadWrite:RBV"
-    assert read_write_rbv_suffix._backend.write_pv == "ReadWrite"
+    assert read_write_rbv_suffix._connector.backend.read_pv == "ReadWrite:RBV"
+    assert read_write_rbv_suffix._connector.backend.write_pv == "ReadWrite"
 
     read = epics_signal_r(int, "Read")
-    assert read._backend.read_pv == "Read"
+    assert read._connector.backend.read_pv == "Read"
 
     write = epics_signal_w(int, "Write")
-    assert write._backend.write_pv == "Write"
+    assert write._connector.backend.write_pv == "Write"
 
     execute = epics_signal_x("Execute")
-    assert execute._backend.write_pv == "Execute"
+    assert execute._connector.backend.write_pv == "Execute"
 
 
 async def test_str_enum_returns_enum(ioc: IOC):

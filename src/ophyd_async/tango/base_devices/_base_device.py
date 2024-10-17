@@ -41,15 +41,14 @@ class TangoDevice(Device):
         device_proxy: DeviceProxy | None = None,
         name: str = "",
     ) -> None:
-        super().__init__(
-            name=name,
-            connector=TangoDeviceConnector(
-                trl=trl,
-                device_proxy=device_proxy,
-                polling=self._polling,
-                signal_polling=self._signal_polling,
-            ),
+        connector = TangoDeviceConnector(
+            trl=trl,
+            device_proxy=device_proxy,
+            polling=self._polling,
+            signal_polling=self._signal_polling,
         )
+        connector.create_children_from_annotations(self)
+        super().__init__(name=name, connector=connector)
 
 
 def tango_polling(

@@ -6,14 +6,15 @@ import pytest
 
 from ophyd_async.core import DetectorTrigger, Device, DeviceCollector, TriggerInfo
 from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import CommonPandaBlocks, PandaPcapController
-from ophyd_async.fastcs.panda._block import FastCsDevice
 
 
 @pytest.fixture
 async def mock_panda():
-    class Panda(CommonPandaBlocks, FastCsDevice):
-        pass
+    class Panda(CommonPandaBlocks):
+        def __init__(self, uri: str, name: str = ""):
+            super().__init__(name=name, connector=fastcs_connector(self, uri))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDACONTROLLER:", name="mock_panda")

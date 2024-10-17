@@ -30,12 +30,12 @@ async def test_mock_signal_backend():
     # If mock is false it will be handled like a normal signal, otherwise it will
     # initalize a new backend from the one in the line above
     await mock_signal.connect(mock=True)
-    assert isinstance(mock_signal._backend, MockSignalBackend)
+    assert isinstance(mock_signal._connector.backend, MockSignalBackend)
 
-    assert await mock_signal._backend.get_value() == ""
-    await mock_signal._backend.put("test", True)
-    assert await mock_signal._backend.get_value() == "test"
-    assert mock_signal._backend.put_mock.call_args_list == [
+    assert await mock_signal._connector.backend.get_value() == ""
+    await mock_signal._connector.backend.put("test", True)
+    assert await mock_signal._connector.backend.get_value() == "test"
+    assert mock_signal._connector.backend.put_mock.call_args_list == [
         call("test", wait=True),
     ]
 
@@ -64,25 +64,25 @@ async def test_set_mock_value():
     mock_signal = SignalRW(SoftSignalBackend(int))
     await mock_signal.connect(mock=True)
     assert await mock_signal.get_value() == 0
-    assert mock_signal._backend
-    assert await mock_signal._backend.get_value() == 0
+    assert mock_signal._connector.backend
+    assert await mock_signal._connector.backend.get_value() == 0
     set_mock_value(mock_signal, 10)
     assert await mock_signal.get_value() == 10
-    assert await mock_signal._backend.get_value() == 10
+    assert await mock_signal._connector.backend.get_value() == 10
 
 
 async def test_set_mock_put_proceeds():
     mock_signal = SignalW(SoftSignalBackend(str))
     await mock_signal.connect(mock=True)
 
-    assert isinstance(mock_signal._backend, MockSignalBackend)
+    assert isinstance(mock_signal._connector.backend, MockSignalBackend)
 
-    assert mock_signal._backend.put_proceeds.is_set() is True
+    assert mock_signal._connector.backend.put_proceeds.is_set() is True
 
     set_mock_put_proceeds(mock_signal, False)
-    assert mock_signal._backend.put_proceeds.is_set() is False
+    assert mock_signal._connector.backend.put_proceeds.is_set() is False
     set_mock_put_proceeds(mock_signal, True)
-    assert mock_signal._backend.put_proceeds.is_set() is True
+    assert mock_signal._connector.backend.put_proceeds.is_set() is True
 
 
 async def test_set_mock_put_proceeds_timeout():
@@ -91,21 +91,21 @@ async def test_set_mock_put_proceeds_timeout():
 
     set_mock_put_proceeds(mock_signal, False)
 
-    with pytest.raises(asyncio.exceptions.TimeoutError):
-        await mock_signal.set("test", wait=True, timeout=1)
+    with pytest.raises(asyncio.TimeoutError):
+        await mock_signal.set("test", wait=True, timeout=0.1)
 
 
 async def test_put_proceeds_timeout():
     mock_signal = SignalW(SoftSignalBackend(str))
     await mock_signal.connect(mock=True)
-    assert isinstance(mock_signal._backend, MockSignalBackend)
+    assert isinstance(mock_signal._connector.backend, MockSignalBackend)
 
-    assert mock_signal._backend.put_proceeds.is_set() is True
+    assert mock_signal._connector.backend.put_proceeds.is_set() is True
 
     set_mock_put_proceeds(mock_signal, False)
-    assert mock_signal._backend.put_proceeds.is_set() is False
+    assert mock_signal._connector.backend.put_proceeds.is_set() is False
     set_mock_put_proceeds(mock_signal, True)
-    assert mock_signal._backend.put_proceeds.is_set() is True
+    assert mock_signal._connector.backend.put_proceeds.is_set() is True
 
 
 async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
@@ -194,8 +194,8 @@ async def test_blocks_during_put(mock_signals):
 
     assert status1.done
     assert status2.done
-    assert await signal1._backend.get_value() == "second_value"
-    assert await signal2._backend.get_value() == "second_value"
+    assert await signal1._connector.backend.get_value() == "second_value"
+    assert await signal2._connector.backend.get_value() == "second_value"
 
 
 async def test_callback_on_mock_put_as_context_manager(mock_signals):
@@ -401,8 +401,8 @@ async def test_writing_to_soft_signals_in_mock():
 async def test_when_put_mock_called_with_typo_then_fails_but_calling_directly_passes():
     mock_signal = SignalRW(SoftSignalBackend(int))
     await mock_signal.connect(mock=True)
-    assert isinstance(mock_signal._backend, MockSignalBackend)
-    mock = mock_signal._backend.put_mock
+    assert isinstance(mock_signal._connector.backend, MockSignalBackend)
+    mock = mock_signal._connector.backend.put_mock
     with pytest.raises(AttributeError):
         mock.asssert_called_once()  # Note typo here is deliberate!
     await mock()

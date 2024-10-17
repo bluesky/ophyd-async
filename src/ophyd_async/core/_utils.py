@@ -4,7 +4,7 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
-from enum import Enum, EnumType
+from enum import Enum, EnumMeta
 from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
 
 import numpy as np
@@ -20,7 +20,7 @@ class StrictEnum(str, Enum):
     """All members should exist in the Backend, and there will be no extras"""
 
 
-class SubsetEnumType(EnumType):
+class SubsetEnumType(EnumMeta):
     def __call__(self, value, *args, **kwargs):  # type: ignore
         if isinstance(value, str) and not isinstance(value, self):
             return value
