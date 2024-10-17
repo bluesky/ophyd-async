@@ -83,7 +83,7 @@ class Signal(DeviceBase, Generic[SignalDatatypeT]):
         if await self._connect_cache.need_connect(mock, force_reconnect):
             self.log.debug(f"Connecting to {self.source}")
             if mock:
-                self._backend = MockSignalBackend(self._init_backend)
+                self._backend = MockSignalBackend(self._init_backend, mock)
             else:
                 self._backend = self._init_backend
             await self._connect_cache.do_connect(mock, self._backend.connect(timeout))
