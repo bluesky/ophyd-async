@@ -616,6 +616,7 @@ async def set_and_wait_for_other_value(
     match_value: S | Callable[[S], bool],
     timeout: float = DEFAULT_TIMEOUT,
     set_timeout: float | None = None,
+    wait_for_set_completion: bool = True,
 ):
     """Set a signal and monitor another signal until it has the specified value.
 
@@ -636,6 +637,8 @@ async def set_and_wait_for_other_value(
         How long to wait for the signal to have the value
     set_timeout:
         How long to wait for the set to complete
+    wait_for_set_completion:
+        This will wait for set completion #More info in TBD
 
     Notes
     -----
@@ -660,7 +663,11 @@ async def set_and_wait_for_other_value(
                     break
 
         try:
-            await asyncio.wait_for(_wait_for_value(), timeout)
+            status = asyncio.wait_for(_wait_for_value(), timeout)
+            if wait_for_set_completion:
+                await status
+            else:
+                return status
         except asyncio.TimeoutError as e:
             raise TimeoutError(
                 f"{match_signal.name} didn't match {match_value} in {timeout}s"
@@ -673,6 +680,7 @@ async def set_and_wait_for_value(
     match_value: T | Callable[[T], bool] | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: float | None = None,
+    wait_for_set_completion: bool = True,
 ):
     """Set a signal and monitor it until it has that value.
 
@@ -694,7 +702,8 @@ async def set_and_wait_for_value(
         How long to wait for the signal to have the value
     status_timeout:
         How long the returned Status will wait for the set to complete
-
+    wait_for_set_completion:
+        This will wait for set completion #More info in TBD
     Notes
     -----
     Example usage::
@@ -705,5 +714,11 @@ async def set_and_wait_for_value(
         match_value = value
 
     await set_and_wait_for_other_value(
-        signal, value, signal, match_value, timeout, status_timeout
+        signal,
+        value,
+        signal,
+        match_value,
+        timeout,
+        status_timeout,
+        wait_for_set_completion,
     )

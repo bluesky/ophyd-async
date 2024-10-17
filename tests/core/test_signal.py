@@ -32,6 +32,7 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_value,
 )
+from ophyd_async.core._signal import observe_signals_values
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -280,6 +281,33 @@ async def test_wait_for_value_with_funcion():
     assert await time_taken_by(wait_for_value(signal, less_than_42, timeout=2)) < 0.1
 
 
+async def test_set_and_wait_for_value(): ...
+
+
+async def set_signal_value(signal_1: SignalRW, signal_2: SignalRW):
+    set_mock_value(signal_1, 123)
+    set_mock_value(signal_2, 323)
+    set_mock_value(signal_1, 1)
+    set_mock_value(signal_2, 2)
+
+
+async def test_observe_values():
+    signal_1 = epics_signal_rw(float, read_pv="pva://signal_1", name="signal_1")
+    signal_2 = epics_signal_rw(float, read_pv="pva://signal_2", name="signal_2")
+    await signal_1.connect(mock=True)
+    await signal_2.connect(mock=True)
+    output: str = ""
+    t = asyncio.create_task(set_signal_value(signal_1, signal_2))
+    async for signal, value in observe_signals_values(signal_1, signal_2):
+        if signal is signal_1 and value == 1:
+            output += "Hello_from_1"
+        elif signal is signal_2 and value == 2:
+            output += "Hello_from_2"
+            break
+    await t
+    assert output == "Hello_from_1Hello_from_2"
+
+
 @pytest.mark.parametrize(
     "signal_method,signal_class",
     [(soft_signal_r_and_setter, SignalR), (soft_signal_rw, SignalRW)],
@@ -296,6 +324,9 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert isinstance(signal._backend, SoftSignalBackend)
     await signal.connect()
     assert (await signal.get_value()) == INITIAL_VALUE
+
+
+# write code to add two numbers
 
 
 async def test_soft_signal_numpy():
