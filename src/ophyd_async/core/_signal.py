@@ -4,6 +4,7 @@ import asyncio
 import functools
 from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
 from typing import Any, Generic, cast
+from unittest.mock import Mock
 
 from bluesky.protocols import (
     Locatable,
@@ -75,7 +76,7 @@ class Signal(DeviceBase, Generic[SignalDatatypeT]):
 
     async def connect(
         self,
-        mock: bool = False,
+        mock: Mock | bool = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ):

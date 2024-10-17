@@ -5,6 +5,7 @@ import sys
 from collections.abc import Coroutine, Iterator, Mapping, MutableMapping
 from logging import LoggerAdapter, getLogger
 from typing import Any, TypeVar
+from unittest.mock import Mock
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop
@@ -17,9 +18,9 @@ class DeviceConnectCache:
     mock_arg: bool | None = None
     task: asyncio.Task | None = None
 
-    async def need_connect(self, mock: bool, force_reconnect: bool) -> bool:
+    async def need_connect(self, mock: bool | Mock, force_reconnect: bool) -> bool:
         can_use_previous_connect = (
-            mock is self.mock_arg
+            bool(mock) is self.mock_arg
             and self.task
             and not (self.task.done() and self.task.exception())
         )
@@ -30,8 +31,8 @@ class DeviceConnectCache:
         else:
             return True
 
-    async def do_connect(self, mock: bool, coro: Coroutine) -> None:
-        self.mock_arg = mock
+    async def do_connect(self, mock: bool | Mock, coro: Coroutine) -> None:
+        self.mock_arg = bool(mock)
         self.task = asyncio.create_task(coro)
         await self.task
 
@@ -72,13 +73,15 @@ class DeviceBackend:
         self.children: dict[str, DeviceBase] = {}
 
     # TODO: we will add some mechanism of invalidating the cache here later
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
-        coros = {
-            name: child_device.connect(
-                mock=mock, timeout=timeout, force_reconnect=force_reconnect
+    async def connect(
+        self, mock: bool | Mock, timeout: float, force_reconnect: bool
+    ) -> None:
+        coros = {}
+        for name, child_device in self.children.items():
+            child_mock = getattr(mock, name) if mock else mock  # either Mock or False
+            coros[name] = child_device.connect(
+                mock=child_mock, timeout=timeout, force_reconnect=force_reconnect
             )
-            for name, child_device in self.children.items()
-        }
         await wait_for_connection(**coros)
 
 
@@ -138,11 +141,13 @@ class Device(DeviceBase):
 
     async def connect(
         self,
-        mock: bool = False,
+        mock: bool | Mock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ):
         if await self._connect_cache.need_connect(mock, force_reconnect):
+            if mock is True:
+                mock = Mock()  # create a new Mock if one not provided
             coro = self._backend.connect(mock, timeout, force_reconnect)
             await self._connect_cache.do_connect(mock, coro)
             # Backend might make more children, so make sure they are named
