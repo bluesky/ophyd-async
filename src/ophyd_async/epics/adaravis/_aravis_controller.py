@@ -5,10 +5,12 @@ from ophyd_async.core import (
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
-    set_and_wait_for_value,
 )
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
+from ophyd_async.epics.adcore._core_logic import (
+    start_acquiring_driver_and_ensure_status,
+)
 
 from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
 
@@ -48,7 +50,7 @@ class AravisController(DetectorController):
         )
 
     async def arm(self):
-        self._arm_status = await set_and_wait_for_value(self._drv.acquire, True)
+        self._arm_status = await start_acquiring_driver_and_ensure_status(self._drv)
 
     async def wait_for_idle(self):
         if self._arm_status:
