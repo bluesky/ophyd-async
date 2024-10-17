@@ -4,7 +4,7 @@ from typing import Annotated
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from typing_extensions import TypedDict
 
@@ -51,13 +51,7 @@ PydanticNp1DArrayBool = Annotated[
     ),
     Field(default_factory=lambda: np.array([], dtype=np.bool_)),
 ]
-TriggerStr = Annotated[
-    np.ndarray[tuple[int], np.dtype[np.unicode_]],
-    NpArrayPydanticAnnotation.factory(
-        data_type=np.unicode_, dimensions=1, strict_data_typing=False
-    ),
-    Field(default_factory=lambda: np.array([], dtype=np.dtype("<U32"))),
-]
+TriggerStr = Annotated[Sequence[SeqTrigger], Field(default_factory=list)]
 
 
 class SeqTable(Table):
@@ -101,35 +95,7 @@ class SeqTable(Table):
         oute2: bool = False,
         outf2: bool = False,
     ) -> "SeqTable":
-        if isinstance(trigger, SeqTrigger):
-            trigger = trigger.value
-        return super().row(**locals())
-
-    @field_validator("trigger", mode="before")
-    @classmethod
-    def trigger_to_np_array(cls, trigger_column):
-        """
-        The user can provide a list of SeqTrigger enum elements instead of a numpy str.
-        """
-        if isinstance(trigger_column, Sequence) and all(
-            isinstance(trigger, SeqTrigger) for trigger in trigger_column
-        ):
-            trigger_column = np.array(
-                [trigger.value for trigger in trigger_column], dtype=np.dtype("<U32")
-            )
-        elif isinstance(trigger_column, Sequence) or isinstance(
-            trigger_column, np.ndarray
-        ):
-            for trigger in trigger_column:
-                SeqTrigger(
-                    trigger
-                )  # To check all the given strings are actually `SeqTrigger`s
-        else:
-            raise ValueError(
-                "Expected a numpy array or a sequence of `SeqTrigger`, got "
-                f"{type(trigger_column)}."
-            )
-        return trigger_column
+        return Table.row(**locals())
 
     @model_validator(mode="after")
     def validate_max_length(self) -> "SeqTable":

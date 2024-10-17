@@ -3,8 +3,9 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator, AsyncIterator, Callable, Sequence
+from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
 from enum import Enum
+from functools import cached_property
 from typing import (
     Generic,
 )
@@ -20,7 +21,7 @@ from bluesky.protocols import (
     WritesStreamAssets,
 )
 from event_model import DataKey
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, NonNegativeInt, computed_field
 
 from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
@@ -45,8 +46,16 @@ class DetectorTrigger(str, Enum):
 class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
-    #: Number of triggers that will be sent, 0 means infinite
-    number: int = Field(ge=0)
+    #: Number of triggers that will be sent, (0 means infinite) Can be:
+    #  - A single integer or
+    #  - A list of integers for multiple triggers
+    # Example for tomography: TriggerInfo(number=[2,3,100,3])
+    #:     This would trigger:
+    #:     - 2 times for dark field images
+    #:     - 3 times for initial flat field images
+    #:     - 100 times for projections
+    #:     - 3 times for final flat field images
+    number_of_triggers: NonNegativeInt | list[NonNegativeInt]
     #: Sort of triggers that will be sent
     trigger: DetectorTrigger = Field(default=DetectorTrigger.internal)
     #: What is the minimum deadtime between triggers
@@ -60,13 +69,18 @@ class TriggerInfo(BaseModel):
     #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
     #: but publish 2 indices, and describe() will show a shape of (5, h, w)
     multiplier: int = 1
-    #: The number of times the detector can go through a complete cycle of kickoff and
-    #: complete without needing to re-arm. This is important for detectors where the
-    #: process of arming is expensive in terms of time
-    iteration: int = 1
+
+    @computed_field
+    @cached_property
+    def total_number_of_triggers(self) -> int:
+        return (
+            sum(self.number_of_triggers)
+            if isinstance(self.number_of_triggers, list)
+            else self.number_of_triggers
+        )
 
 
-class DetectorControl(ABC):
+class DetectorController(ABC):
     """
     Classes implementing this interface should hold the logic for
     arming and disarming a detector
@@ -167,7 +181,7 @@ class StandardDetector(
 
     def __init__(
         self,
-        controller: DetectorControl,
+        controller: DetectorController,
         writer: DetectorWriter,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
@@ -192,14 +206,18 @@ class StandardDetector(
         # For kickoff
         self._watchers: list[Callable] = []
         self._fly_status: WatchableAsyncStatus | None = None
-        self._fly_start: float
-        self._iterations_completed: int = 0
-        self._intial_frame: int
-        self._last_frame: int
+        self._fly_start: float | None = None
+        self._frames_to_complete: int = 0
+        # Represents the total number of frames that will have been completed at the
+        # end of the next `complete`.
+        self._completable_frames: int = 0
+        self._number_of_triggers_iter: Iterator[int] | None = None
+        self._initial_frame: int = 0
+
         super().__init__(name)
 
     @property
-    def controller(self) -> DetectorControl:
+    def controller(self) -> DetectorController:
         return self._controller
 
     @property
@@ -208,7 +226,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        # Disarm the detector, stop filewriting.
+        # Disarm the detector, stop file writing.
         await self._check_config_sigs()
         await asyncio.gather(self.writer.close(), self.controller.disarm())
         self._trigger_info = None
@@ -251,7 +269,7 @@ class StandardDetector(
         if self._trigger_info is None:
             await self.prepare(
                 TriggerInfo(
-                    number=1,
+                    number_of_triggers=1,
                     trigger=DetectorTrigger.internal,
                     deadtime=None,
                     livetime=None,
@@ -301,8 +319,12 @@ class StandardDetector(
                 f"but trigger logic provides only {value.deadtime}s"
             )
         self._trigger_info = value
+        self._number_of_triggers_iter = iter(
+            self._trigger_info.number_of_triggers
+            if isinstance(self._trigger_info.number_of_triggers, list)
+            else [self._trigger_info.number_of_triggers]
+        )
         self._initial_frame = await self.writer.get_indices_written()
-        self._last_frame = self._initial_frame + self._trigger_info.number
         self._describe, _ = await asyncio.gather(
             self.writer.open(value.multiplier), self.controller.prepare(value)
         )
@@ -312,35 +334,50 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        assert self._trigger_info, "Prepare must be called before kickoff!"
-        if self._iterations_completed >= self._trigger_info.iteration:
-            raise Exception(f"Kickoff called more than {self._trigger_info.iteration}")
-        self._iterations_completed += 1
+        if self._trigger_info is None or self._number_of_triggers_iter is None:
+            raise RuntimeError("Prepare must be called before kickoff!")
+        try:
+            self._frames_to_complete = next(self._number_of_triggers_iter)
+            self._completable_frames += self._frames_to_complete
+        except StopIteration as err:
+            raise RuntimeError(
+                f"Kickoff called more than the configured number of "
+                f"{self._trigger_info.total_number_of_triggers} iteration(s)!"
+            ) from err
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
         assert self._trigger_info
-        async for index in self.writer.observe_indices_written(
+        indices_written = self.writer.observe_indices_written(
             self._trigger_info.frame_timeout
             or (
                 DEFAULT_TIMEOUT
                 + (self._trigger_info.livetime or 0)
                 + (self._trigger_info.deadtime or 0)
             )
-        ):
-            yield WatcherUpdate(
-                name=self.name,
-                current=index,
-                initial=self._initial_frame,
-                target=self._trigger_info.number,
-                unit="",
-                precision=0,
-                time_elapsed=time.monotonic() - self._fly_start,
-            )
-            if index >= self._trigger_info.number:
-                break
-        if self._iterations_completed == self._trigger_info.iteration:
-            await self.controller.wait_for_idle()
+        )
+        try:
+            async for index in indices_written:
+                yield WatcherUpdate(
+                    name=self.name,
+                    current=index,
+                    initial=self._initial_frame,
+                    target=self._frames_to_complete,
+                    unit="",
+                    precision=0,
+                    time_elapsed=time.monotonic() - self._fly_start
+                    if self._fly_start
+                    else None,
+                )
+                if index >= self._frames_to_complete:
+                    break
+        finally:
+            await indices_written.aclose()
+            if self._completable_frames >= self._trigger_info.total_number_of_triggers:
+                self._completable_frames = 0
+                self._frames_to_complete = 0
+                self._number_of_triggers_iter = None
+                await self.controller.wait_for_idle()
 
     async def describe_collect(self) -> dict[str, DataKey]:
         return self._describe

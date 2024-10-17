@@ -12,7 +12,7 @@ from typing import (
 )
 
 from bluesky.protocols import HasName
-from bluesky.run_engine import call_in_bluesky_event_loop
+from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
 from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
@@ -224,6 +224,11 @@ class DeviceCollector:
         await self._on_exit()
 
     def __exit__(self, type_, value, traceback):
+        if in_bluesky_event_loop():
+            raise RuntimeError(
+                "Cannot use DeviceConnector inside a plan, instead use "
+                "`yield from ophyd_async.plan_stubs.ensure_connected(device)`"
+            )
         self._objects_on_exit = self._caller_locals()
         try:
             fut = call_in_bluesky_event_loop(self._on_exit())

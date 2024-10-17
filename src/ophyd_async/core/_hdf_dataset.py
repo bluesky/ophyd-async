@@ -20,6 +20,8 @@ class HDFDataset:
     dtype_numpy: str = ""
     multiplier: int = 1
     swmr: bool = False
+    # Represents explicit chunk size written to disk.
+    chunk_shape: tuple[int, ...] = ()
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
@@ -66,6 +68,7 @@ class HDFFile:
                     "dataset": ds.dataset,
                     "swmr": ds.swmr,
                     "multiplier": ds.multiplier,
+                    "chunk_shape": ds.chunk_shape,
                 },
                 uid=None,
                 validate=True,

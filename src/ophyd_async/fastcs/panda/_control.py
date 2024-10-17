@@ -1,7 +1,7 @@
 import asyncio
 
 from ophyd_async.core import (
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     wait_for_value,
 )
@@ -11,7 +11,7 @@ from ophyd_async.core._status import AsyncStatus
 from ._block import PcapBlock
 
 
-class PandaPcapController(DetectorControl):
+class PandaPcapController(DetectorController):
     def __init__(self, pcap: PcapBlock) -> None:
         self.pcap = pcap
         self._arm_status: AsyncStatus | None = None

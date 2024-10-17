@@ -38,7 +38,7 @@ async def test_panda_controller_not_filled_blocks():
     with patch("ophyd_async.fastcs.panda._control.wait_for_value", return_value=None):
         with pytest.raises(AttributeError) as exc:
             await pandaController.prepare(
-                TriggerInfo(number=1, trigger=DetectorTrigger.constant_gate)
+                TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.constant_gate)
             )
             await pandaController.arm()
     assert ("'PcapBlock' object has no attribute 'arm'") in str(exc.value)
@@ -48,7 +48,7 @@ async def test_panda_controller_arm_disarm(mock_panda):
     pandaController = PandaPcapController(mock_panda.pcap)
     with patch("ophyd_async.fastcs.panda._control.wait_for_value", return_value=None):
         await pandaController.prepare(
-            TriggerInfo(number=1, trigger=DetectorTrigger.constant_gate)
+            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.constant_gate)
         )
         await pandaController.arm()
         await pandaController.wait_for_idle()
@@ -59,5 +59,5 @@ async def test_panda_controller_wrong_trigger():
     pandaController = PandaPcapController(None)
     with pytest.raises(AssertionError):
         await pandaController.prepare(
-            TriggerInfo(number=1, trigger=DetectorTrigger.internal)
+            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.internal)
         )

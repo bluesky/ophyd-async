@@ -17,7 +17,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._block import DataBlock
+from ._block import CaptureMode, DataBlock
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -58,7 +58,7 @@ class PandaHDFWriter(DetectorWriter):
             self.panda_data_block.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
-            self.panda_data_block.num_capture.set(0),
+            self.panda_data_block.capture_mode.set(CaptureMode.FOREVER),
         )
 
         # Make sure that directory exists or has been created.
@@ -105,7 +105,11 @@ class PandaHDFWriter(DetectorWriter):
 
         capture_table = await self.panda_data_block.datasets.get_value()
         self._datasets = [
-            HDFDataset(dataset_name, "/" + dataset_name, [1], multiplier=1)
+            # TODO: Update chunk size to read signal once available in IOC
+            # Currently PandA IOC sets chunk size to 1024 points per chunk
+            HDFDataset(
+                dataset_name, "/" + dataset_name, [1], multiplier=1, chunk_shape=(1024,)
+            )
             for dataset_name in capture_table["name"]
         ]
 

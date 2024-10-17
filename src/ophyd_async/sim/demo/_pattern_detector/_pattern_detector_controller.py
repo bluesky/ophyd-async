@@ -1,12 +1,12 @@
 import asyncio
 
-from ophyd_async.core import DetectorControl, PathProvider
+from ophyd_async.core import DetectorController, PathProvider
 from ophyd_async.core._detector import TriggerInfo
 
 from ._pattern_generator import PatternGenerator
 
 
-class PatternDetectorController(DetectorControl):
+class PatternDetectorController(DetectorController):
     def __init__(
         self,
         pattern_generator: PatternGenerator,
@@ -32,7 +32,9 @@ class PatternDetectorController(DetectorControl):
         assert self.period
         self.task = asyncio.create_task(
             self._coroutine_for_image_writing(
-                self._trigger_info.livetime, self.period, self._trigger_info.number
+                self._trigger_info.livetime,
+                self.period,
+                self._trigger_info.total_number_of_triggers,
             )
         )
 

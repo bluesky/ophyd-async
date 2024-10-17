@@ -4,7 +4,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DatasetDescriber,
-    DetectorControl,
+    DetectorController,
     set_and_wait_for_value,
 )
 from ophyd_async.core._signal import wait_for_value
@@ -35,7 +35,7 @@ class ADBaseDatasetDescriber(DatasetDescriber):
 
 
 async def set_exposure_time_and_acquire_period_if_supplied(
-    controller: DetectorControl,
+    controller: DetectorController,
     driver: ADBaseIO,
     exposure: float | None = None,
     timeout: float = DEFAULT_TIMEOUT,

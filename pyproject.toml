@@ -33,10 +33,12 @@ requires-python = ">=3.10"
 ca = ["aioca>=1.6"]
 pva = ["p4p"]
 sim = ["h5py"]
+tango = ["pytango>=10.0.0"]
 dev = [
     "ophyd_async[pva]",
     "ophyd_async[sim]",
     "ophyd_async[ca]",
+    "ophyd_async[tango]",
     "black",
     "flake8",
     "flake8-isort",
@@ -59,6 +61,7 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-faulthandler",
+    "pytest-forked",
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
@@ -109,6 +112,7 @@ markers = [
     "adsim: require the ADsim IOC to be running",
 ]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
