@@ -47,6 +47,10 @@ def get_mock_put(signal: Signal) -> AsyncMock:
     return _get_mock_signal_backend(signal).put_mock
 
 
+def get_mock(signal: Signal) -> AsyncMock:
+    return _get_mock_signal_backend(signal).mock
+
+
 def reset_mock_put_calls(signal: Signal):
     backend = _get_mock_signal_backend(signal)
     backend.put_mock.reset_mock()
