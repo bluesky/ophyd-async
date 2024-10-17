@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
+from collections.abc import AsyncGenerator, Awaitable, Callable, Iterator, Mapping
 from typing import Any, Generic, cast
 
 from bluesky.protocols import (
@@ -14,7 +14,7 @@ from bluesky.protocols import (
 )
 from event_model import DataKey
 
-from ._device import DeviceBase
+from ._device import Device, DeviceConnector
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import (
     AsyncConfigurable,
@@ -47,8 +47,29 @@ def _add_timeout(func):
     return wrapper
 
 
-class Signal(DeviceBase, Generic[SignalDatatypeT]):
+class SignalConnector(DeviceConnector):
+    def __init__(self, backend: SignalBackend):
+        self.backend = self._init_backend = backend
+
+    async def connect(
+        self,
+        device: Device,
+        mock: bool,
+        timeout: float,
+        force_reconnect: bool,
+    ):
+        if mock:
+            self.backend = MockSignalBackend(self._init_backend)
+        else:
+            self.backend = self._init_backend
+        device.log.debug(f"Connecting to {self.backend.source(device.name, read=True)}")
+        await self.backend.connect(timeout)
+
+
+class Signal(Device, Generic[SignalDatatypeT]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
+
+    _connector: SignalConnector
 
     def __init__(
         self,
@@ -56,36 +77,21 @@ class Signal(DeviceBase, Generic[SignalDatatypeT]):
         timeout: float | None = DEFAULT_TIMEOUT,
         name: str = "",
     ) -> None:
-        super().__init__(name=name)
+        super().__init__(name=name, connector=SignalConnector(backend))
         self._timeout = timeout
-        self._init_backend = self._backend = backend
 
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
-        return self._backend.source(self.name, read=True)
+        return self._connector.backend.source(self.name, read=True)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name != "parent" and isinstance(value, DeviceBase):
+        if name != "parent" and isinstance(value, Device):
             raise AttributeError(
                 f"Cannot add Device or Signal {value} as a child of Signal {self}, "
                 "make a subclass of Device instead"
             )
         return super().__setattr__(name, value)
-
-    async def connect(
-        self,
-        mock: bool = False,
-        timeout: float = DEFAULT_TIMEOUT,
-        force_reconnect: bool = False,
-    ):
-        if await self._connect_cache.need_connect(mock, force_reconnect):
-            self.log.debug(f"Connecting to {self.source}")
-            if mock:
-                self._backend = MockSignalBackend(self._init_backend)
-            else:
-                self._backend = self._init_backend
-            await self._connect_cache.do_connect(mock, self._backend.connect(timeout))
 
 
 class _SignalCache(Generic[SignalDatatypeT]):
@@ -158,11 +164,11 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
             assert self._cache, f"{self.source} not being monitored"
             return self._cache
         else:
-            return self._backend
+            return self._connector.backend
 
     def _get_cache(self) -> _SignalCache:
         if not self._cache:
-            self._cache = _SignalCache(self._backend, self)
+            self._cache = _SignalCache(self._connector.backend, self)
         return self._cache
 
     def _del_cache(self, needed: bool):
@@ -178,7 +184,7 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
     @_add_timeout
     async def describe(self) -> dict[str, DataKey]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._backend.get_datakey(self.source)}
+        return {self.name: await self._connector.backend.get_datakey(self.source)}
 
     @_add_timeout
     async def get_value(self, cached: bool | None = None) -> SignalDatatypeT:
@@ -223,9 +229,9 @@ class SignalW(Signal[SignalDatatypeT], Movable):
         """Set the value and return a status saying when it's done"""
         if timeout == CALCULATE_TIMEOUT:
             timeout = self._timeout
-        source = self._backend.source(self.name, read=False)
+        source = self._connector.backend.source(self.name, read=False)
         self.log.debug(f"Putting value {value} to backend at source {source}")
-        await _wait_for(self._backend.put(value, wait=wait), timeout, source)
+        await _wait_for(self._connector.backend.put(value, wait=wait), timeout, source)
         self.log.debug(f"Successfully put value {value} to backend at source {source}")
 
 
@@ -236,7 +242,7 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
     async def locate(self) -> Location:
         """Return the setpoint and readback."""
         setpoint, readback = await asyncio.gather(
-            self._backend.get_setpoint(), self._backend_or_cache().get_value()
+            self._connector.backend.get_setpoint(), self._backend_or_cache().get_value()
         )
         return Location(setpoint=setpoint, readback=readback)
 
@@ -251,9 +257,9 @@ class SignalX(Signal):
         """Trigger the action and return a status saying when it's done"""
         if timeout == CALCULATE_TIMEOUT:
             timeout = self._timeout
-        source = self._backend.source(self.name, read=False)
+        source = self._connector.backend.source(self.name, read=False)
         self.log.debug(f"Putting default value to backend at source {source}")
-        await _wait_for(self._backend.put(None, wait=wait), timeout, source)
+        await _wait_for(self._connector.backend.put(None, wait=wait), timeout, source)
         self.log.debug(f"Successfully put default value to backend at source {source}")
 
 

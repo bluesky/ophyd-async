@@ -16,13 +16,13 @@ from ophyd_async.core import (
     callback_on_mock_put,
     set_mock_value,
 )
-from ophyd_async.epics.pvi import PviDeviceBackend
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DatasetTable,
     PandaHdf5DatasetType,
     PandaHDFWriter,
 )
+from ophyd_async.fastcs.panda._block import FastCsDevice
 
 TABLES = [
     DatasetTable(
@@ -55,13 +55,9 @@ async def panda_t():
     class CaptureBlock(Device):
         test_capture: SignalR[float]
 
-    class Panda(CommonPandaBlocks):
+    class Panda(CommonPandaBlocks, FastCsDevice):
         block_a: CaptureBlock
         block_b: CaptureBlock
-
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            super().__init__(name, backend=PviDeviceBackend(type(self), prefix + "PVI"))
 
     yield Panda
 

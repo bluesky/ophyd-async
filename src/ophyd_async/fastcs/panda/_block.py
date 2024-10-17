@@ -1,24 +1,25 @@
 from ophyd_async.core import (
     Device,
-    DeviceBackend,
     DeviceVector,
     SignalR,
     SignalRW,
     StrictEnum,
     SubsetEnum,
 )
-from ophyd_async.epics.pvi import PviDeviceBackend
+from ophyd_async.epics.pvi import PviDeviceConnector
 
 from ._table import DatasetTable, SeqTable
 
 
 class FastCsDevice(Device):
     def __init__(
-        self, uri: str = "", name: str = "", backend: DeviceBackend | None = None
+        self, uri: str = "", name: str = "", connector: PviDeviceConnector | None = None
     ) -> None:
-        if backend is None:
-            backend = PviDeviceBackend(type(self), uri + "PVI")
-        super().__init__(name=name, backend=backend)
+        if connector is None:
+            assert uri, "Either uri or connector must be provided"
+            connector = PviDeviceConnector(uri + "PVI")
+        connector.create_children_from_annotations(self)
+        super().__init__(name=name, connector=connector)
 
 
 class CaptureMode(StrictEnum):

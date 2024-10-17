@@ -5,7 +5,7 @@ from ._detector import (
     StandardDetector,
     TriggerInfo,
 )
-from ._device import Device, DeviceBackend, DeviceBase, DeviceCollector, DeviceVector
+from ._device import Device, DeviceCollector, DeviceConnector, DeviceVector
 from ._device_filler import DeviceFiller
 from ._device_save_loader import (
     all_at_once,
@@ -96,8 +96,7 @@ __all__ = [
     "StandardDetector",
     "TriggerInfo",
     "Device",
-    "DeviceBackend",
-    "DeviceBase",
+    "DeviceConnector",
     "DeviceCollector",
     "DeviceVector",
     "DeviceFiller",

@@ -2,22 +2,25 @@ import pytest
 
 from ophyd_async.core import (
     Device,
-    DeviceBackend,
     DeviceCollector,
     DeviceVector,
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.pvi import PviDeviceBackend
+from ophyd_async.epics.pvi import PviDeviceConnector
 
 
 class PviDevice(Device):
     def __init__(
-        self, prefix: str = "", name: str = "", backend: DeviceBackend | None = None
+        self,
+        prefix: str = "",
+        name: str = "",
+        connector: PviDeviceConnector | None = None,
     ):
-        if backend is None:
-            backend = PviDeviceBackend(type(self), prefix + "PVI")
-        super().__init__(name=name, backend=backend)
+        if connector is None:
+            connector = PviDeviceConnector(prefix + "PVI")
+        connector.create_children_from_annotations(self)
+        super().__init__(name=name, connector=connector)
 
 
 class Block1(PviDevice):

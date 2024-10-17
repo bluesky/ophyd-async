@@ -3,7 +3,6 @@ import yaml
 from bluesky import RunEngine
 
 from ophyd_async.core import DeviceCollector, load_device, save_device
-from ophyd_async.epics.pvi import PviDeviceBackend
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
@@ -12,15 +11,12 @@ from ophyd_async.fastcs.panda import (
     TimeUnits,
     phase_sorter,
 )
+from ophyd_async.fastcs.panda._block import FastCsDevice
 
 
 async def get_mock_panda():
-    class Panda(CommonPandaBlocks):
+    class Panda(CommonPandaBlocks, FastCsDevice):
         data: DataBlock
-
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            super().__init__(name, backend=PviDeviceBackend(type(self), prefix + "PVI"))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDA")

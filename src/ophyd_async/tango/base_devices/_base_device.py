@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from ophyd_async.core import Device, DeviceBackend, DeviceFiller
+from ophyd_async.core import Device, DeviceConnector, DeviceFiller
 from ophyd_async.tango.signal import (
     TangoSignalBackend,
     infer_python_type,
@@ -43,8 +43,7 @@ class TangoDevice(Device):
     ) -> None:
         super().__init__(
             name=name,
-            backend=TangoDeviceBackend(
-                type(self),
+            connector=TangoDeviceConnector(
                 trl=trl,
                 device_proxy=device_proxy,
                 polling=self._polling,
@@ -93,28 +92,29 @@ def tango_polling(
     return decorator
 
 
-class TangoDeviceBackend(DeviceBackend):
+class TangoDeviceConnector(DeviceConnector):
     def __init__(
         self,
-        device_type: type[Device],
         trl: str | None,
         device_proxy: DeviceProxy | None,
         polling: tuple[bool, float, float | None, float | None],
         signal_polling: dict[str, tuple[bool, float, float, float]],
     ) -> None:
-        super().__init__(device_type)
         self.trl = trl
         self.proxy = device_proxy
         self._polling = polling
         self._signal_polling = signal_polling
+
+    def create_children_from_annotations(self, device: Device):
         self._filler = DeviceFiller(
-            children=self.children,
-            device_type=device_type,
+            device=device,
             signal_backend_type=TangoSignalBackend,
-            device_backend_type=TangoDeviceBackend,
+            device_connector_type=type(self),
         )
 
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
+    async def connect(
+        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
+    ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector
             self._filler.make_soft_device_vector_entries(2)
@@ -148,7 +148,7 @@ class TangoDeviceBackend(DeviceBackend):
             # Check that all the requested children have been created
             if unfilled := self._filler.unfilled():
                 raise RuntimeError(
-                    f"{self.device_type.__name__}: cannot provision {unfilled} from "
+                    f"{device.name}: cannot provision {unfilled} from "
                     f"{self.trl}: {children}"
                 )
-        return await super().connect(mock, timeout, force_reconnect)
+        return await super().connect(device, mock, timeout, force_reconnect)

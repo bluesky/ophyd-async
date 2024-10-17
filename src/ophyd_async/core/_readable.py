@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
 
-from ._device import Device, DeviceBase, DeviceVector
+from ._device import Device, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal import SignalR
 from ._status import AsyncStatus
@@ -166,9 +166,7 @@ class StandardReadable(
             else:
                 flattened_values.append(value)
 
-        new_devices = list(
-            filter(lambda x: isinstance(x, DeviceBase), flattened_values)
-        )
+        new_devices = list(filter(lambda x: isinstance(x, Device), flattened_values))
         self.add_readables(new_devices, wrapper)
 
     def add_readables(

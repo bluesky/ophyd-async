@@ -12,7 +12,6 @@ from ophyd_async.core import (
     DeviceVector,
     NotConnected,
 )
-from ophyd_async.epics.pvi import PviDeviceBackend
 from ophyd_async.fastcs.panda import (
     PcapBlock,
     PulseBlock,
@@ -20,6 +19,7 @@ from ophyd_async.fastcs.panda import (
     SeqTable,
     SeqTrigger,
 )
+from ophyd_async.fastcs.panda._block import FastCsDevice
 
 
 class DummyDict:
@@ -53,10 +53,8 @@ async def panda_t():
         pulse: DeviceVector[PulseBlock]
         seq: DeviceVector[SeqBlock]
 
-    class Panda(CommonPandaBlocksNoData):
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            super().__init__(name, backend=PviDeviceBackend(type(self), prefix + "PVI"))
+    class Panda(CommonPandaBlocksNoData, FastCsDevice):
+        pass
 
     yield Panda
 

@@ -86,24 +86,24 @@ async def test_signal_lazily_connects(RE):
         await signal.connect(mock=False)
 
     assert (
-        signal._connect_cache.task
-        and signal._connect_cache.task.done()
-        and signal._connect_cache.task.exception()
+        signal._connect_task
+        and signal._connect_task.done()
+        and signal._connect_task.exception()
     )
 
     RE(ensure_connected(signal, mock=False))
     assert (
-        signal._connect_cache.task
-        and signal._connect_cache.task.done()
-        and not signal._connect_cache.task.exception()
+        signal._connect_task
+        and signal._connect_task.done()
+        and not signal._connect_task.exception()
     )
 
     with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
         RE(ensure_connected(signal, mock=False, force_reconnect=True))
     assert (
-        signal._connect_cache.task
-        and signal._connect_cache.task.done()
-        and signal._connect_cache.task.exception()
+        signal._connect_task
+        and signal._connect_task.done()
+        and signal._connect_task.exception()
     )
 
 

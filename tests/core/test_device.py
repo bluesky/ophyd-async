@@ -145,16 +145,16 @@ async def test_device_with_children_lazily_connects(RE):
     for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
         parentMotor.V.values()
     ):
-        assert device._connect_cache.task is None
+        assert device._connect_task is None
     RE(ensure_connected(parentMotor, mock=True))
 
     for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
         parentMotor.V.values()
     ):
         assert (
-            device._connect_cache.task is not None
-            and device._connect_cache.task.done()
-            and not device._connect_cache.task.exception()
+            device._connect_task is not None
+            and device._connect_task.done()
+            and not device._connect_task.exception()
         )
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ophyd_async.core import (
     Device,
-    DeviceBackend,
+    DeviceConnector,
     DeviceFiller,
     Signal,
     SignalR,
@@ -29,18 +29,20 @@ def _get_signal_details(entry: dict[str, str]) -> tuple[type[Signal], str, str]:
             raise TypeError(f"Can't process entry {entry}")
 
 
-class PviDeviceBackend(DeviceBackend):
-    def __init__(self, device_type: type[Device], pvi_pv: str = "") -> None:
-        super().__init__(device_type)
+class PviDeviceConnector(DeviceConnector):
+    def __init__(self, pvi_pv: str = "") -> None:
         self.pvi_pv = pvi_pv
+
+    def create_children_from_annotations(self, device: Device):
         self._filler = DeviceFiller(
-            children=self.children,
-            device_type=device_type,
+            device=device,
             signal_backend_type=PvaSignalBackend,
-            device_backend_type=PviDeviceBackend,
+            device_connector_type=type(self),
         )
 
-    async def connect(self, mock: bool, timeout: float, force_reconnect: bool) -> None:
+    async def connect(
+        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
+    ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector
             self._filler.make_soft_device_vector_entries(2)
@@ -61,7 +63,7 @@ class PviDeviceBackend(DeviceBackend):
             # Check that all the requested children have been created
             if unfilled := self._filler.unfilled():
                 raise RuntimeError(
-                    f"{self.device_type.__name__}: cannot provision {unfilled} from "
+                    f"{device.name}: cannot provision {unfilled} from "
                     f"{self.pvi_pv}: {entries}"
                 )
-        return await super().connect(mock, timeout, force_reconnect)
+        return await super().connect(device, mock, timeout, force_reconnect)

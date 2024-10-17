@@ -1,10 +1,10 @@
 import bluesky.plan_stubs as bps
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DeviceBase, wait_for_connection
+from ophyd_async.core import DEFAULT_TIMEOUT, Device, wait_for_connection
 
 
 def ensure_connected(
-    *devices: DeviceBase,
+    *devices: Device,
     mock: bool = False,
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
