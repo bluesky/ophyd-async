@@ -7,13 +7,20 @@ from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, S
 from functools import cached_property
 
 from bluesky.protocols import (
+    Collectable,
+    Flyable,
+    Preparable,
     Reading,
+    Stageable,
     StreamAsset,
+    Triggerable,
+    WritesStreamAssets,
 )
 from event_model import DataKey
 from pydantic import BaseModel, Field, NonNegativeInt, computed_field
 
 from ._device import Device, DeviceConnector
+from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
@@ -151,7 +158,17 @@ class DetectorWriter(ABC):
         """Close writer, blocks until I/O is complete"""
 
 
-class StandardDetector(Device):
+class StandardDetector(
+    Device,
+    Stageable,
+    AsyncConfigurable,
+    AsyncReadable,
+    Triggerable,
+    Preparable,
+    Flyable,
+    Collectable,
+    WritesStreamAssets,
+):
     """
     Useful detector base class for step and fly scanning detectors.
     Aggregates controller and writer logic together.

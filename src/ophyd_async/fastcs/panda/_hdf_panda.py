@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
-from ophyd_async.epics.pvi import PviDeviceConnector
+from ophyd_async.fastcs.core import fastcs_connector
 
 from ._block import CommonPandaBlocks
 from ._control import PandaPcapController
@@ -18,10 +18,8 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
-        # TODO: add Tango support
         # This has to be first so we make self.pcap
-        connector = PviDeviceConnector(uri + "PVI")
-        connector.create_children_from_annotations(self)
+        connector = fastcs_connector(self, uri)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             path_provider=path_provider,
