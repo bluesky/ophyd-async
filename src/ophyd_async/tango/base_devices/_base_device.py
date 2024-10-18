@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TypeVar
+from unittest.mock import Mock
 
 from ophyd_async.core import Device, DeviceConnector, DeviceFiller
 from ophyd_async.tango.signal import (
@@ -114,7 +115,7 @@ class TangoDeviceConnector(DeviceConnector):
         )
 
     async def connect(
-        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
+        self, device: Device, mock: bool | Mock, timeout: float, force_reconnect: bool
     ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector

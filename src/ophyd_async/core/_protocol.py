@@ -16,6 +16,8 @@ from event_model import DataKey
 from ._utils import DEFAULT_TIMEOUT
 
 if TYPE_CHECKING:
+    from unittest.mock import Mock
+
     from ._status import AsyncStatus
 
 
@@ -24,7 +26,7 @@ class Connectable(Protocol):
     @abstractmethod
     async def connect(
         self,
-        mock: bool = False,
+        mock: bool | Mock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ):
