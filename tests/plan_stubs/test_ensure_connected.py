@@ -1,7 +1,7 @@
 import pytest
 
 from ophyd_async.core import Device, NotConnected, soft_signal_rw
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
 

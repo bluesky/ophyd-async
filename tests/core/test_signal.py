@@ -32,7 +32,7 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_value,
 )
-from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
 
