@@ -2,12 +2,12 @@ import asyncio
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncStatus,
     DetectorController,
     DetectorTrigger,
+    TriggerInfo,
     wait_for_value,
 )
-from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode

@@ -29,7 +29,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
     position: SignalRW[float]
     velocity: SignalRW[float]
     state: SignalR[DevState]
-    _stop: SignalX
+    stop_: SignalX
 
     def __init__(self, trl: str | None = "", name=""):
         super().__init__(trl, name=name)
@@ -74,4 +74,4 @@ class TangoMover(TangoReadable, Movable, Stoppable):
 
     def stop(self, success: bool = True) -> AsyncStatus:
         self._set_success = success
-        return self._stop.trigger()
+        return self.stop_.trigger()

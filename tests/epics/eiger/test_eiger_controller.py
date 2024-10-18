@@ -4,13 +4,12 @@ from pytest import fixture, raises
 
 from ophyd_async.core import (
     DeviceCollector,
+    TriggerInfo,
     callback_on_mock_put,
     get_mock_put,
     set_mock_value,
 )
-from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.epics.eiger._eiger_controller import EigerController
-from ophyd_async.epics.eiger._eiger_io import EigerDriverIO
+from ophyd_async.epics.eiger import EigerController, EigerDriverIO
 
 DriverAndController = tuple[EigerDriverIO, EigerController]
 
@@ -58,7 +57,7 @@ async def test_when_arm_with_no_exposure_then_arm_set_correctly(
     await controller.prepare(TriggerInfo(number_of_triggers=10))
     await controller.arm()
     await controller.wait_for_idle()
-    get_mock_put(driver.arm).assert_called_once_with(1, wait=ANY, timeout=ANY)
+    get_mock_put(driver.arm).assert_called_once_with(1, wait=ANY)
 
 
 async def test_when_arm_with_number_of_images_then_number_of_images_set_correctly(
@@ -70,7 +69,7 @@ async def test_when_arm_with_number_of_images_then_number_of_images_set_correctl
     await controller.arm()
     await controller.wait_for_idle()
     get_mock_put(driver.num_images).assert_called_once_with(
-        test_number_of_images, wait=ANY, timeout=ANY
+        test_number_of_images, wait=ANY
     )
 
 
@@ -78,7 +77,7 @@ async def test_when_arm_with_number_of_images_then_number_of_images_set_correctl
 async def test_given_detector_fails_to_go_ready_when_arm_called_then_fails(
     eiger_driver_and_controller_no_arm: DriverAndController,
 ):
-    driver, controller = eiger_driver_and_controller_no_arm
+    _, controller = eiger_driver_and_controller_no_arm
     with raises(TimeoutError):
         await controller.prepare(TriggerInfo(number_of_triggers=10))
         await controller.arm()
@@ -90,13 +89,13 @@ async def test_when_disarm_called_on_controller_then_disarm_called_on_driver(
 ):
     driver, controller = eiger_driver_and_controller
     await controller.disarm()
-    get_mock_put(driver.disarm).assert_called_once_with(1, wait=ANY, timeout=ANY)
+    get_mock_put(driver.disarm).assert_called_once_with(1, wait=ANY)
 
 
 async def test_when_get_deadtime_called_then_returns_expected_deadtime(
     eiger_driver_and_controller: DriverAndController,
 ):
-    driver, controller = eiger_driver_and_controller
+    _, controller = eiger_driver_and_controller
     assert controller.get_deadtime(0) == 0.0001
 
 

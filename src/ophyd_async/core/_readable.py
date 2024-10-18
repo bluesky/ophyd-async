@@ -150,19 +150,19 @@ class StandardReadable(
         :meth:`HintedSignal.uncached`
         """
 
-        dict_copy = self.__dict__.copy()
+        dict_copy = dict(self.children())
 
         yield
 
         # Set symmetric difference operator gives all newly added keys
-        new_keys = dict_copy.keys() ^ self.__dict__.keys()
-        new_values = [self.__dict__[key] for key in new_keys]
+        new_dict = dict(self.children())
+        new_keys = dict_copy.keys() ^ new_dict.keys()
+        new_values = [new_dict[key] for key in new_keys]
 
         flattened_values = []
         for value in new_values:
             if isinstance(value, DeviceVector):
-                children = value.children()
-                flattened_values.extend([x[1] for x in children])
+                flattened_values.extend(value.values())
             else:
                 flattened_values.append(value)
 

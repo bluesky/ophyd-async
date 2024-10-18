@@ -9,13 +9,12 @@ from ophyd_async.core import (
     CALCULATE_TIMEOUT,
     AsyncStatus,
     DeviceCollector,
-    MockSignalBackend,
-    SignalRW,
     callback_on_mock_put,
     mock_puts_blocked,
     observe_value,
     set_mock_put_proceeds,
     set_mock_value,
+    soft_signal_rw,
 )
 from ophyd_async.epics import motor
 
@@ -128,9 +127,7 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
     class MyTimeout(Exception):
         pass
 
-    def do_timeout(value, wait=False, timeout=None):
-        # Check we were given the right timeout of move_time + DEFAULT_TIMEOUT
-        assert timeout == 10.3
+    def do_timeout(value, wait):
         # Raise custom exception to be clear it bubbles up
         raise MyTimeout()
 
@@ -278,7 +275,8 @@ async def test_prepare(
     set_mock_value(sim_motor.low_limit_travel, -10)
     set_mock_value(sim_motor.high_limit_travel, 20)
     set_mock_value(sim_motor.max_velocity, 10)
-    fake_set_signal = SignalRW(MockSignalBackend(float))
+    fake_set_signal = soft_signal_rw(float)
+    await fake_set_signal.connect()
 
     async def wait_for_set(_):
         async for value in observe_value(fake_set_signal, timeout=1):

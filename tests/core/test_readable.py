@@ -116,17 +116,9 @@ def test_standard_readable_add_children_cm_device_vector():
     mock_d1 = MagicMock(spec=SignalR)
     mock_d2 = MagicMock(spec=SignalR)
     mock_d3 = MagicMock(spec=SignalR)
-    vector_mock = MagicMock(spec=DeviceVector)
-    vector_mock.children = MagicMock()
-    vector_mock.children.return_value = iter(
-        [
-            ("a", mock_d1),
-            ("b", mock_d2),
-            ("c", mock_d3),
-        ]
-    )
+    vector = DeviceVector({1: mock_d1, 2: mock_d2, 3: mock_d3})
     with sr.add_children_as_readables():
-        sr.a = vector_mock
+        sr.a = vector
 
     # Can't use assert_called_once_with() as the order of items returned from
     # internal dict comprehension is not guaranteed

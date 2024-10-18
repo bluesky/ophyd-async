@@ -1,57 +1,43 @@
-import inspect
-from enum import Enum
+from collections.abc import Sequence
+from typing import Any, get_args, get_origin
 
-from typing_extensions import TypedDict
+import numpy as np
 
-from ophyd_async.core import RuntimeSubsetEnum
-
-common_meta = {
-    "units",
-    "precision",
-}
-
-
-class LimitPair(TypedDict):
-    high: float | None
-    low: float | None
-
-
-class Limits(TypedDict):
-    alarm: LimitPair
-    control: LimitPair
-    display: LimitPair
-    warning: LimitPair
+from ophyd_async.core import SubsetEnum, get_dtype, get_enum_cls
 
 
 def get_supported_values(
     pv: str,
-    datatype: type[str] | None,
-    pv_choices: tuple[str, ...],
+    datatype: type,
+    pv_choices: Sequence[str],
 ) -> dict[str, str]:
-    if inspect.isclass(datatype) and issubclass(datatype, RuntimeSubsetEnum):
-        if not set(datatype.choices).issubset(set(pv_choices)):
-            raise TypeError(
-                f"{pv} has choices {pv_choices}, "
-                f"which is not a superset of {str(datatype)}."
-            )
-        return {x: x or "_" for x in pv_choices}
-    elif inspect.isclass(datatype) and issubclass(datatype, Enum):
-        if not issubclass(datatype, str):
-            raise TypeError(
-                f"{pv} is type Enum but {datatype} does not inherit from String."
-            )
-
-        choices = tuple(v.value for v in datatype)
+    enum_cls = get_enum_cls(datatype)
+    if not enum_cls:
+        raise TypeError(f"{datatype} is not an Enum")
+    choices = [v.value for v in enum_cls]
+    error_msg = f"{pv} has choices {pv_choices}, but {datatype} requested {choices} "
+    if issubclass(enum_cls, SubsetEnum):
+        if not set(choices).issubset(pv_choices):
+            raise TypeError(error_msg + "to be a subset of them.")
+    else:
         if set(choices) != set(pv_choices):
-            raise TypeError(
-                f"{pv} has choices {pv_choices}, "
-                f"which do not match {datatype}, which has {choices}."
-            )
-        return {x: datatype(x) if x else "_" for x in pv_choices}
-    elif datatype is None or datatype is str:
-        return {x: x or "_" for x in pv_choices}
+            raise TypeError(error_msg + "to be strictly equal to them.")
 
-    raise TypeError(
-        f"{pv} has choices {pv_choices}. "
-        "Use an Enum or SubsetEnum to represent this."
-    )
+    # Take order from the pv choices
+    supported_values = {x: x for x in pv_choices}
+    # But override those that we specify via the datatype
+    for v in enum_cls:
+        supported_values[v.value] = v
+    return supported_values
+
+
+def format_datatype(datatype: Any) -> str:
+    if get_origin(datatype) is np.ndarray and get_args(datatype)[0] == tuple[int]:
+        dtype = get_dtype(datatype)
+        return f"Array1D[np.{dtype.name}]"
+    elif get_origin(datatype) is Sequence:
+        return f"Sequence[{get_args(datatype)[0].__name__}]"
+    elif isinstance(datatype, type):
+        return datatype.__name__
+    else:
+        return str(datatype)
