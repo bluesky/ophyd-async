@@ -132,13 +132,13 @@ async def wait_for_connection(**coros: Awaitable[None]):
 def get_dtype(datatype: type) -> np.dtype:
     """Get the runtime dtype from a numpy ndarray type annotation
 
-    >>> import numpy.typing as npt
+    >>> from ophyd_async.core import Array1D
     >>> import numpy as np
-    >>> get_dtype(npt.NDArray[np.int8])
+    >>> get_dtype(Array1D[np.int8])
     dtype('int8')
     """
     if not get_origin(datatype) == np.ndarray:
-        raise TypeError(f"Expected np.ndarray, got {datatype}")
+        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
     # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
     # so extract numpy.float64 from it
     return np.dtype(get_args(get_args(datatype)[1])[0])
