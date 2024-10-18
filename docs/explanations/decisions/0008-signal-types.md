@@ -46,4 +46,3 @@ Clients will be expected to understand:
 - Pydantic BaseModels
 
 All of the above have sensible `dtype_numpy` fields, but `Table` will give a structured row-wise `dtype_numpy`, while the data will be serialized in a column-wise fashion.
-
