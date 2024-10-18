@@ -15,6 +15,7 @@ from ophyd_async.core import (
     assert_reading,
     assert_value,
     callback_on_mock_put,
+    get_mock,
     get_mock_put,
     set_mock_value,
 )
@@ -190,11 +191,33 @@ async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
 
     await mock_mover.velocity.set(100)
     await mock_mover.setpoint.set(67)
-
     parent_mock.assert_has_calls(
         [
             call.velocity(100, wait=True),
             call.setpoint(67, wait=True),
+        ]
+    )
+
+
+async def test_mock_with_Mock():
+    mock = Mock()
+    async with DeviceCollector(mock=mock):
+        mock_mover = demo.Mover("BLxxI-MO-TABLE-01:Y:")
+
+    assert get_mock(mock_mover) is mock
+    assert get_mock(mock_mover.setpoint) is mock.setpoint
+    assert get_mock_put(mock_mover.setpoint) is mock.setpoint.put
+    await mock_mover.setpoint.set(10)
+    get_mock_put(mock_mover.setpoint).assert_called_once_with(10, wait=ANY)
+
+    await mock_mover.velocity.set(100)
+    await mock_mover.setpoint.set(67)
+
+    assert mock_mover.mock is mock
+    mock.assert_has_calls(
+        [
+            call.velocity.put(100, wait=True),
+            call.setpoint.put(67, wait=True),
         ]
     )
 

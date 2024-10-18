@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import Callable
 from functools import cached_property
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from bluesky.protocols import Descriptor, Reading
 
@@ -13,7 +13,11 @@ from ._utils import Callback
 class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     """Signal backend for testing, created by ``Device.connect(mock=True)``."""
 
-    def __init__(self, initial_backend: SignalBackend[SignalDatatypeT]) -> None:
+    def __init__(
+        self,
+        initial_backend: SignalBackend[SignalDatatypeT],
+        mock: bool | Mock = True,
+    ) -> None:
         if isinstance(initial_backend, MockSignalBackend):
             raise ValueError("Cannot make a MockSignalBackend for a MockSignalBackend")
 
@@ -27,6 +31,11 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
             self.soft_backend = SoftSignalBackend(
                 datatype=self.initial_backend.datatype
             )
+
+        # use existing Mock if provided
+        self.mock = Mock() if isinstance(mock, bool) else mock
+        self.mock.attach_mock(AsyncMock(name="put", spec=Callable), "put")
+
         super().__init__(datatype=self.initial_backend.datatype)
 
     def set_value(self, value: SignalDatatypeT):
@@ -40,7 +49,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
     @cached_property
     def put_mock(self) -> AsyncMock:
-        return AsyncMock(name="put", spec=Callable)
+        return self.mock.put
 
     @cached_property
     def put_proceeds(self) -> asyncio.Event:
