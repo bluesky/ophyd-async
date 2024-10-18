@@ -23,7 +23,7 @@ from ophyd_async.core import (
     assert_emitted,
     observe_value,
 )
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.epics.core import epics_signal_rw
 
 
 class TriggerState(StrictEnum):

@@ -7,7 +7,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.pvi import PviDeviceConnector
+from ophyd_async.epics.core import PviDeviceConnector
 
 
 class Block1(Device):
