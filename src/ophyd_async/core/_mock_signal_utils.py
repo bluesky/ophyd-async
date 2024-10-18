@@ -1,7 +1,9 @@
 from collections.abc import Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager, contextmanager
-from unittest.mock import AsyncMock
+from typing import Any
+from unittest.mock import AsyncMock, Mock
 
+from ._device import Device
 from ._mock_signal_backend import MockSignalBackend
 from ._signal import Signal, SignalR
 from ._soft_signal_backend import SignalDatatypeT
@@ -44,6 +46,12 @@ async def mock_puts_blocked(*signals: Signal):
 def get_mock_put(signal: Signal) -> AsyncMock:
     """Get the mock associated with the put call on the signal."""
     return _get_mock_signal_backend(signal).put_mock
+
+
+def get_mock(device: Device | Signal) -> Mock:
+    if isinstance(device, Signal):
+        return _get_mock_signal_backend(device).mock
+    return device.mock
 
 
 def reset_mock_put_calls(signal: Signal):

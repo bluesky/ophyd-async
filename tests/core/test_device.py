@@ -193,21 +193,24 @@ async def test_device_with_children_lazily_connects(RE):
         )
 
 
-async def test_no_reconnect_signals_if_not_forced():
+@pytest.mark.parametrize("use_Mock", [False, True])
+async def test_no_reconnect_signals_if_not_forced(use_Mock):
     parent = DummyDeviceGroup("parent")
+
+    connect_mock_arg = Mock() if use_Mock else True
 
     async def inner_connect(mock, timeout, force_reconnect):
         parent.child1.connected = True
 
     parent.child1.connect = Mock(side_effect=inner_connect)
-    await parent.connect(mock=True, timeout=0.01)
+    await parent.connect(mock=connect_mock_arg, timeout=0.01)
     assert parent.child1.connected
     assert parent.child1.connect.call_count == 1
-    await parent.connect(mock=True, timeout=0.01)
+    await parent.connect(mock=connect_mock_arg, timeout=0.01)
     assert parent.child1.connected
     assert parent.child1.connect.call_count == 1
 
     for count in range(2, 10):
-        await parent.connect(mock=True, timeout=0.01, force_reconnect=True)
+        await parent.connect(mock=connect_mock_arg, timeout=0.01, force_reconnect=True)
         assert parent.child1.connected
         assert parent.child1.connect.call_count == count
