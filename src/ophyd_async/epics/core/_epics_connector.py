@@ -22,7 +22,8 @@ def fill_backend_with_prefix(
     prefix: str, backend: EpicsSignalBackend, annotations: list[Any]
 ):
     unhandled = []
-    while annotation := annotations.pop(0):
+    while annotations:
+        annotation = annotations.pop(0)
         if isinstance(annotation, EpicsSignalSuffix):
             backend.read_pv = prefix + annotation.read_suffix
             backend.write_pv = prefix + (

@@ -104,21 +104,22 @@ class TangoDeviceConnector(DeviceConnector):
         self._signal_polling = signal_polling
 
     def create_children_from_annotations(self, device: Device):
-        if not hasattr(self, "_filler"):
-            self._filler = DeviceFiller(
+        if not hasattr(self, "filler"):
+            self.filler = DeviceFiller(
                 device=device,
                 signal_backend_type=TangoSignalBackend,
-                device_connector_type=type(self),
+                device_connector_type=TangoDeviceConnector,
             )
-            list(self._filler.create_devices_from_annotations(filled=False))
-            list(self._filler.create_signals_from_annotations(filled=False))
+            list(self.filler.create_devices_from_annotations(filled=False))
+            list(self.filler.create_signals_from_annotations(filled=False))
+            self.filler.check_created()
 
     async def connect(
         self, device: Device, mock: bool, timeout: float, force_reconnect: bool
     ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector
-            self._filler.create_device_vector_entries_to_mock(2)
+            self.filler.create_device_vector_entries_to_mock(2)
         else:
             if self.trl and self.proxy is None:
                 self.proxy = await AsyncDeviceProxy(self.trl)
@@ -137,7 +138,7 @@ class TangoDeviceConnector(DeviceConnector):
                 full_trl = f"{self.trl}/{name}"
                 signal_type = await infer_signal_type(full_trl, self.proxy)
                 if signal_type:
-                    backend = self._filler.fill_child_signal(name, signal_type)
+                    backend = self.filler.fill_child_signal(name, signal_type)
                     backend.datatype = await infer_python_type(full_trl, self.proxy)
                     backend.set_trl(full_trl)
                     if polling := self._signal_polling.get(name, ()):
@@ -146,10 +147,6 @@ class TangoDeviceConnector(DeviceConnector):
                     elif self._polling[0]:
                         backend.set_polling(*self._polling)
                         backend.allow_events(False)
-            # Check that all the requested children have been created
-            if unfilled := self._filler.unfilled():
-                raise RuntimeError(
-                    f"{device.name}: cannot provision {unfilled} from "
-                    f"{self.trl}: {children}"
-                )
+            # Check that all the requested children have been filled
+            self.filler.check_filled(f"{self.trl}: {children}")
         return await super().connect(device, mock, timeout, force_reconnect)
