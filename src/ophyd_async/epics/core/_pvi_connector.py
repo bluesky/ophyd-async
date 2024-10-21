@@ -9,10 +9,9 @@ from ophyd_async.core import (
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.signal import (
-    PvaSignalBackend,
-    pvget_with_timeout,
-)
+
+from ._epics_connector import fill_backend_with_prefix
+from ._p4p import PvaSignalBackend, pvget_with_timeout
 
 
 def _get_signal_details(entry: dict[str, str]) -> tuple[type[Signal], str, str]:
@@ -30,43 +29,46 @@ def _get_signal_details(entry: dict[str, str]) -> tuple[type[Signal], str, str]:
 
 
 class PviDeviceConnector(DeviceConnector):
-    def __init__(self, pvi_pv: str = "") -> None:
+    def __init__(self, prefix: str = "", pvi_pv: str = "") -> None:
+        self.prefix = prefix
         self.pvi_pv = pvi_pv
 
     def create_children_from_annotations(self, device: Device):
-        if not hasattr(self, "_filler"):
-            self._filler = DeviceFiller(
+        if not hasattr(self, "filler"):
+            self.filler = DeviceFiller(
                 device=device,
                 signal_backend_type=PvaSignalBackend,
-                device_connector_type=type(self),
+                device_connector_type=PviDeviceConnector,
             )
-            list(self._filler.create_devices_from_annotations(filled=False))
-            list(self._filler.create_signals_from_annotations(filled=False))
+            # Devices will be created with unfilled PviDeviceConnectors
+            list(self.filler.create_devices_from_annotations(filled=False))
+            # Signals can be filled in with EpicsSignalSuffix and checked at runtime
+            for backend, annotations in self.filler.create_signals_from_annotations(
+                filled=False
+            ):
+                fill_backend_with_prefix(self.prefix, backend, annotations)
+            self.filler.check_created()
 
     async def connect(
         self, device: Device, mock: bool, timeout: float, force_reconnect: bool
     ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector
-            self._filler.create_device_vector_entries_to_mock(2)
+            self.filler.create_device_vector_entries_to_mock(2)
         else:
             pvi_structure = await pvget_with_timeout(self.pvi_pv, timeout)
             entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
             # Ensure we have device vectors for everything that should be there
-            self._filler.ensure_device_vectors(list(entries))
+            self.filler.ensure_device_vectors(list(entries))
             for name, entry in entries.items():
                 if set(entry) == {"d"}:
-                    connector = self._filler.fill_child_device(name)
+                    connector = self.filler.fill_child_device(name)
                     connector.pvi_pv = entry["d"]
                 else:
                     signal_type, read_pv, write_pv = _get_signal_details(entry)
-                    backend = self._filler.fill_child_signal(name, signal_type)
+                    backend = self.filler.fill_child_signal(name, signal_type)
                     backend.read_pv = read_pv
                     backend.write_pv = write_pv
-            # Check that all the requested children have been created
-            if unfilled := self._filler.unfilled():
-                raise RuntimeError(
-                    f"{device.name}: cannot provision {unfilled} from "
-                    f"{self.pvi_pv}: {entries}"
-                )
+            # Check that all the requested children have been filled
+            self.filler.check_filled(f"{self.pvi_pv}: {entries}")
         return await super().connect(device, mock, timeout, force_reconnect)

@@ -1,8 +1,19 @@
 from __future__ import annotations
 
 import re
+from abc import abstractmethod
 from collections.abc import Iterator, Sequence
-from typing import Any, Generic, NewType, NoReturn, TypeVar, get_args, get_type_hints
+from typing import (
+    Any,
+    Generic,
+    NewType,
+    NoReturn,
+    Protocol,
+    TypeVar,
+    get_args,
+    get_type_hints,
+    runtime_checkable,
+)
 
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Signal, SignalX
@@ -39,6 +50,12 @@ def _get_datatype(annotation: Any) -> type | None:
 
 def _logical(name: UniqueName) -> LogicalName:
     return LogicalName(name.rstrip("_"))
+
+
+@runtime_checkable
+class DeviceAnnotation(Protocol):
+    @abstractmethod
+    def __call__(self, parent: Device, child: Device): ...
 
 
 class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
@@ -126,8 +143,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             else:
                 self._uncreated_devices[name] = origin
 
-    def uncreated(self) -> Sequence[str]:
-        return sorted(self._uncreated_signals)
+    def check_created(self):
+        uncreated = sorted(set(self._uncreated_signals).union(self._uncreated_devices))
+        if uncreated:
+            raise RuntimeError(
+                f"{self._device.name}: {uncreated} have not been created yet"
+            )
 
     def create_signals_from_annotations(
         self,
@@ -140,8 +161,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield backend, extras
             signal = child_type(backend)
             for anno in extras:
-                assert isinstance(callable, anno), anno
-                anno(signal)
+                assert isinstance(anno, DeviceAnnotation), anno
+                anno(self._device, signal)
             setattr(self._device, name, signal)
             dest = self._filled_backends if filled else self._unfilled_backends
             dest[_logical(name)] = (backend, child_type)
@@ -157,8 +178,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield connector, extras
             device = child_type(connector=connector)
             for anno in extras:
-                assert isinstance(callable, anno), anno
-                anno(device)
+                assert isinstance(anno, DeviceAnnotation), anno
+                anno(self._device, device)
             setattr(self._device, name, device)
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
@@ -175,8 +196,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 else:
                     self._raise(name, f"Can't make {cls}")
 
-    def unfilled(self) -> Sequence[str]:
-        return sorted(set(self._unfilled_connectors).union(self._unfilled_backends))
+    def check_filled(self, source: str):
+        unfilled = sorted(set(self._unfilled_connectors).union(self._unfilled_backends))
+        if unfilled:
+            raise RuntimeError(
+                f"{self._device.name}: cannot provision {unfilled} from {source}"
+            )
 
     def ensure_device_vectors(self, names: list[str]):
         basenames: dict[LogicalName, set[int]] = {}
@@ -197,7 +222,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 if hasattr(self._device, basename):
                     self._raise(
                         basename,
-                        f"Cannot make child as it would shadow {getattr(self._device, basename)}",
+                        "Cannot make child as it would shadow "
+                        f"{getattr(self._device, basename)}",
                     )
                 setattr(self._device, basename, DeviceVector({}))
 

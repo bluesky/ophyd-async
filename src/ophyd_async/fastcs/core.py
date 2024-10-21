@@ -1,5 +1,5 @@
 from ophyd_async.core import Device, DeviceConnector
-from ophyd_async.epics.pvi import PviDeviceConnector
+from ophyd_async.epics.core import PviDeviceConnector
 
 
 def fastcs_connector(device: Device, uri: str) -> DeviceConnector:
