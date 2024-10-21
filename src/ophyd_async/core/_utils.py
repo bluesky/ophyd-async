@@ -226,8 +226,6 @@ def in_micros(t: float) -> int:
 
 
 def get_origin_class(annotatation: Any) -> type | None:
-    if get_origin(annotatation) is Annotated:
-        annotatation = annotatation.__origin__
     origin = get_origin(annotatation) or annotatation
     if isinstance(origin, type):
         return origin

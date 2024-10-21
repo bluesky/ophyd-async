@@ -47,7 +47,6 @@ class TangoDevice(Device):
             polling=self._polling,
             signal_polling=self._signal_polling,
         )
-        connector.create_children_from_annotations(self)
         super().__init__(name=name, connector=connector)
 
 
@@ -105,18 +104,21 @@ class TangoDeviceConnector(DeviceConnector):
         self._signal_polling = signal_polling
 
     def create_children_from_annotations(self, device: Device):
-        self._filler = DeviceFiller(
-            device=device,
-            signal_backend_type=TangoSignalBackend,
-            device_connector_type=type(self),
-        )
+        if not hasattr(self, "_filler"):
+            self._filler = DeviceFiller(
+                device=device,
+                signal_backend_type=TangoSignalBackend,
+                device_connector_type=type(self),
+            )
+            list(self._filler.create_devices_from_annotations(filled=False))
+            list(self._filler.create_signals_from_annotations(filled=False))
 
     async def connect(
         self, device: Device, mock: bool, timeout: float, force_reconnect: bool
     ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector
-            self._filler.make_soft_device_vector_entries(2)
+            self._filler.create_device_vector_entries_to_mock(2)
         else:
             if self.trl and self.proxy is None:
                 self.proxy = await AsyncDeviceProxy(self.trl)
@@ -135,7 +137,7 @@ class TangoDeviceConnector(DeviceConnector):
                 full_trl = f"{self.trl}/{name}"
                 signal_type = await infer_signal_type(full_trl, self.proxy)
                 if signal_type:
-                    backend = self._filler.make_child_signal(name, signal_type)
+                    backend = self._filler.fill_child_signal(name, signal_type)
                     backend.datatype = await infer_python_type(full_trl, self.proxy)
                     backend.set_trl(full_trl)
                     if polling := self._signal_polling.get(name, ()):

@@ -34,30 +34,33 @@ class PviDeviceConnector(DeviceConnector):
         self.pvi_pv = pvi_pv
 
     def create_children_from_annotations(self, device: Device):
-        self._filler = DeviceFiller(
-            device=device,
-            signal_backend_type=PvaSignalBackend,
-            device_connector_type=type(self),
-        )
+        if not hasattr(self, "_filler"):
+            self._filler = DeviceFiller(
+                device=device,
+                signal_backend_type=PvaSignalBackend,
+                device_connector_type=type(self),
+            )
+            list(self._filler.create_devices_from_annotations(filled=False))
+            list(self._filler.create_signals_from_annotations(filled=False))
 
     async def connect(
         self, device: Device, mock: bool, timeout: float, force_reconnect: bool
     ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector
-            self._filler.make_soft_device_vector_entries(2)
+            self._filler.create_device_vector_entries_to_mock(2)
         else:
             pvi_structure = await pvget_with_timeout(self.pvi_pv, timeout)
             entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
             # Ensure we have device vectors for everything that should be there
-            self._filler.make_device_vectors(list(entries))
+            self._filler.ensure_device_vectors(list(entries))
             for name, entry in entries.items():
                 if set(entry) == {"d"}:
-                    connector = self._filler.make_child_device(name)
+                    connector = self._filler.fill_child_device(name)
                     connector.pvi_pv = entry["d"]
                 else:
                     signal_type, read_pv, write_pv = _get_signal_details(entry)
-                    backend = self._filler.make_child_signal(name, signal_type)
+                    backend = self._filler.fill_child_signal(name, signal_type)
                     backend.read_pv = read_pv
                     backend.write_pv = write_pv
             # Check that all the requested children have been created

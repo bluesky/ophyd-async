@@ -31,17 +31,22 @@ class EpicsDeviceConnector(DeviceConnector):
         self.prefix = prefix
 
     def create_children_from_annotations(self, device: Device):
-        self._filler = DeviceFiller(device, signal_backend_type=CaSignalBackend, device_connector_type=DeviceConnector)
-        for backend, annotations in self._filler.make_signals_from_annotations():
+        self._filler = DeviceFiller(
+            device,
+            signal_backend_type=CaSignalBackend,
+            device_connector_type=DeviceConnector,
+        )
+        for backend, annotations in self._filler.create_signals_from_annotations():
             unhandled = []
-            while annotation := annotations.pop(None):
+            while annotation := annotations.pop(0):
                 if isinstance(annotation, EpicsSignalSuffix):
-                    backend.read_pv = 
-
-
-
-
-        return super().create_children_from_annotations(device)
+                    backend.read_pv = self.prefix + annotation.read_suffix
+                    backend.write_pv = self.prefix + (
+                        annotation.write_suffix or annotation.read_suffix
+                    )
+                else:
+                    unhandled.append(annotation)
+            annotations.extend(unhandled)
 
     def connect(
         self, device: Device, mock: bool, timeout: float, force_reconnect: bool
