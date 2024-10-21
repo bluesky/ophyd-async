@@ -11,7 +11,7 @@ from ophyd_async.core import (
 )
 
 from ._epics_connector import fill_backend_with_prefix
-from ._p4p import PvaSignalBackend, pvget_with_timeout
+from ._signal import PvaSignalBackend, pvget_with_timeout
 
 
 def _get_signal_details(entry: dict[str, str]) -> tuple[type[Signal], str, str]:
@@ -29,9 +29,9 @@ def _get_signal_details(entry: dict[str, str]) -> tuple[type[Signal], str, str]:
 
 
 class PviDeviceConnector(DeviceConnector):
-    def __init__(self, prefix: str = "", pvi_pv: str = "") -> None:
+    def __init__(self, prefix: str = "") -> None:
         self.prefix = prefix
-        self.pvi_pv = pvi_pv
+        self.pvi_pv = pvi_pv + "PVI"
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):

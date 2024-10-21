@@ -4,8 +4,10 @@ from ophyd_async.core import (
     HintedSignal,
     StandardReadable,
     StrictEnum,
+    SignalR, SignalRW,
 )
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+from typing import Annotated as A
+from ophyd_async.epics.core import PvSuffix, epics_signal_r, epics_signal_rw, EpicsDevice
 
 
 class EnergyMode(StrictEnum):
@@ -17,18 +19,16 @@ class EnergyMode(StrictEnum):
     high = "High Energy"
 
 
-class Sensor(StandardReadable):
+class Sensor(StandardReadable, EpicsDevice):
     """A demo sensor that produces a scalar value based on X and Y Movers"""
+    value: A[SignalR[float], PvSuffix("Value")]
+    mode: A[SignalRW[EnergyMode], PvSuffix("Mode")]
 
     def __init__(self, prefix: str, name="") -> None:
-        # Define some signals
-        with self.add_children_as_readables(HintedSignal):
-            self.value = epics_signal_r(float, prefix + "Value")
-        with self.add_children_as_readables(ConfigSignal):
-            self.mode = epics_signal_rw(EnergyMode, prefix + "Mode")
-
-        super().__init__(name=name)
-
+        super().__init__(prefix, name)
+        self.add_readables([self.value], HintedSignal)
+        self.add_readables([self.mode], ConfigSignal)
+        
 
 class SensorGroup(StandardReadable):
     def __init__(self, prefix: str, name: str = "", sensor_count: int = 3) -> None:

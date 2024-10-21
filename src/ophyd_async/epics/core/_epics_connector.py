@@ -9,7 +9,7 @@ from ._signal import EpicsSignalBackend, get_signal_backend_type, split_protocol
 
 
 @dataclass
-class EpicsSignalSuffix:
+class PvSuffix:
     read_suffix: str
     write_suffix: str | None = None
 
@@ -24,7 +24,7 @@ def fill_backend_with_prefix(
     unhandled = []
     while annotations:
         annotation = annotations.pop(0)
-        if isinstance(annotation, EpicsSignalSuffix):
+        if isinstance(annotation, PvSuffix):
             backend.read_pv = prefix + annotation.read_suffix
             backend.write_pv = prefix + (
                 annotation.write_suffix or annotation.read_suffix

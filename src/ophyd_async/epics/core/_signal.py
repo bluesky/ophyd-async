@@ -34,9 +34,12 @@ def _make_unavailable_class(error: Exception) -> type[EpicsSignalBackend]:
 
 
 try:
-    from ._p4p import PvaSignalBackend
+    from ._p4p import PvaSignalBackend, pvget_with_timeout
 except ImportError as pva_error:
     PvaSignalBackend = _make_unavailable_class(pva_error)
+
+    async def pvget_with_timeout(pv: str, timeout: float):
+        raise NotImplementedError("Transport not available") from pva_error
 else:
     _default_epics_protocol = EpicsProtocol.PVA
 
