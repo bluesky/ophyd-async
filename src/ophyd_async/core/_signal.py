@@ -463,31 +463,10 @@ async def observe_value(
         async for value in observe_value(sig):
             do_something_with(value)
     """
-
-    q: asyncio.Queue[T | Status] = asyncio.Queue()
-    if timeout is None:
-        get_value = q.get
-    else:
-
-        async def get_value():
-            return await asyncio.wait_for(q.get(), timeout)
-
-    if done_status is not None:
-        done_status.add_callback(q.put_nowait)
-
-    signal.subscribe_value(q.put_nowait)
-    try:
-        while True:
-            item = await get_value()
-            if done_status and item is done_status:
-                if exc := done_status.exception():
-                    raise exc
-                else:
-                    break
-            else:
-                yield cast(T, item)
-    finally:
-        signal.clear_sub(q.put_nowait)
+    async for _, value in observe_signals_values(
+        signal, timeout=timeout, done_status=done_status
+    ):
+        yield value
 
 
 async def observe_signals_values(
