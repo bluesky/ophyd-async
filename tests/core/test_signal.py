@@ -328,7 +328,7 @@ async def test_observe_values_raises_exception():
     done_status = AsyncStatus(coroutine())
     with pytest.raises(ValueError, match="Test exception"):
         async for sig, _ in observe_signals_values(
-            signal_1, signal_2, timeout=1, done_status=done_status
+            signal_1, signal_2, done_status=done_status
         ):
             signal_changed.add(sig)
             if len(signal_changed) == 2:
