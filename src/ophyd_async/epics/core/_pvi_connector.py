@@ -30,8 +30,9 @@ def _get_signal_details(entry: dict[str, str]) -> tuple[type[Signal], str, str]:
 
 class PviDeviceConnector(DeviceConnector):
     def __init__(self, prefix: str = "") -> None:
+        # TODO: what happens if we get a leading "pva://" here?
         self.prefix = prefix
-        self.pvi_pv = pvi_pv + "PVI"
+        self.pvi_pv = prefix + "PVI"
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):

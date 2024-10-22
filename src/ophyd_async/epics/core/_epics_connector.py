@@ -14,7 +14,7 @@ class PvSuffix:
     write_suffix: str | None = None
 
     @classmethod
-    def rbv(cls, write_suffix: str, rbv_suffix: str = "_RBV") -> EpicsSignalSuffix:
+    def rbv(cls, write_suffix: str, rbv_suffix: str = "_RBV") -> PvSuffix:
         return cls(write_suffix + rbv_suffix, write_suffix)
 
 
@@ -41,13 +41,13 @@ class EpicsDeviceConnector(DeviceConnector):
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
-            protocol, _ = split_protocol_from_pv(self.prefix)
+            protocol, prefix = split_protocol_from_pv(self.prefix)
             self.filler = DeviceFiller(
                 device,
                 signal_backend_type=get_signal_backend_type(protocol),
                 device_connector_type=DeviceConnector,
             )
             for backend, annotations in self.filler.create_signals_from_annotations():
-                fill_backend_with_prefix(self.prefix, backend, annotations)
+                fill_backend_with_prefix(prefix, backend, annotations)
 
             list(self.filler.create_devices_from_annotations())
