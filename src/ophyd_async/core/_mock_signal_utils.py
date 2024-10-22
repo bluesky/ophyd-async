@@ -3,19 +3,17 @@ from contextlib import asynccontextmanager, contextmanager
 from typing import Any
 from unittest.mock import AsyncMock, Mock
 
-from ._device import Device
+from ._device import Device, _device_mocks
 from ._mock_signal_backend import MockSignalBackend
-from ._signal import Signal
+from ._signal import Signal, _mock_signal_backends
 from ._soft_signal_backend import SignalDatatypeT
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    backend = signal._connector.backend  # noqa:SLF001
-    assert isinstance(backend, MockSignalBackend), (
-        "Expected to receive a `MockSignalBackend`, instead "
-        f" received {type(backend)}. "
-    )
-    return backend
+    assert (
+        signal in _mock_signal_backends
+    ), "No `MockSignalBackend` registered for signal."
+    return _mock_signal_backends[signal]
 
 
 def set_mock_value(signal: Signal[SignalDatatypeT], value: SignalDatatypeT):
@@ -51,7 +49,7 @@ def get_mock_put(signal: Signal) -> AsyncMock:
 def get_mock(device: Device | Signal) -> Mock:
     if isinstance(device, Signal):
         return _get_mock_signal_backend(device).mock
-    return device.mock
+    return _device_mocks[device]
 
 
 def reset_mock_put_calls(signal: Signal):

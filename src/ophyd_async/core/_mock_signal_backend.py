@@ -16,7 +16,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     def __init__(
         self,
         initial_backend: SignalBackend[SignalDatatypeT],
-        mock: bool | Mock = True,
+        mock: Mock,
     ) -> None:
         if isinstance(initial_backend, MockSignalBackend):
             raise ValueError("Cannot make a MockSignalBackend for a MockSignalBackend")
@@ -33,7 +33,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
             )
 
         # use existing Mock if provided
-        self.mock = Mock() if isinstance(mock, bool) else mock
+        self.mock = mock
         self.mock.attach_mock(AsyncMock(name="put", spec=Callable), "put")
 
         super().__init__(datatype=self.initial_backend.datatype)

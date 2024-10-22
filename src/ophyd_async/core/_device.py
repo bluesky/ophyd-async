@@ -13,6 +13,8 @@ from bluesky.run_engine import call_in_bluesky_event_loop
 from ._protocol import Connectable
 from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
+_device_mocks: dict[Device, Mock] = {}
+
 
 class DeviceConnector:
     async def connect(
@@ -56,7 +58,6 @@ class Device(HasName, Connectable):
         self, name: str = "", connector: DeviceConnector | None = None
     ) -> None:
         self._connector = connector or DeviceConnector()
-        self.mock = None
         self.set_name(name)
 
     @property
@@ -107,16 +108,18 @@ class Device(HasName, Connectable):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
+        uses_mock = bool(mock)
         can_use_previous_connect = (
-            bool(mock) is self._connect_mock_arg
+            uses_mock is self._connect_mock_arg
             and self._connect_task
             and not (self._connect_task.done() and self._connect_task.exception())
         )
         if mock is True:
             mock = Mock()  # create a new Mock if one not provided
-        self.mock = mock
         if force_reconnect or not can_use_previous_connect:
-            self._connect_mock_arg = bool(mock)
+            self._connect_mock_arg = uses_mock
+            if self._connect_mock_arg:
+                _device_mocks[self] = mock
             coro = self._connector.connect(
                 device=self, mock=mock, timeout=timeout, force_reconnect=force_reconnect
             )
@@ -125,6 +128,10 @@ class Device(HasName, Connectable):
         assert self._connect_task, "Connect task not created, this shouldn't happen"
         # Wait for it to complete
         await self._connect_task
+
+    def __hash__(self):
+        # to allow Devices to be used as dict keys
+        return hash(id(self))
 
 
 DeviceT = TypeVar("DeviceT", bound=Device)
@@ -179,6 +186,9 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
     def children(self) -> Iterator[tuple[str, Device]]:
         for key, child in self._children.items():
             yield str(key), child
+
+    def __hash__(self):  # to allow DeviceVector to be used as dict keys
+        return hash(id(self))
 
 
 class DeviceCollector:
