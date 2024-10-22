@@ -33,6 +33,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core._signal import observe_signals_values
+from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -295,14 +296,43 @@ async def test_observe_values():
     await signal_1.connect(mock=True)
     await signal_2.connect(mock=True)
     signal_changed: set[Signal] = set()
-    t = asyncio.create_task(set_signal_value(signal_1, signal_2))
-    async for sig, value in observe_signals_values(signal_1, signal_2):
-        if sig is signal_1 and value == 1:
+    done: bool = False
+
+    async def coroutine():
+        while not done:
+            await asyncio.sleep(0.1)
+
+    done_status = AsyncStatus(coroutine())
+    async for sig, _ in observe_signals_values(
+        signal_1, signal_2, timeout=1, done_status=done_status
+    ):
+        signal_changed.add(sig)
+        if len(signal_changed) == 2:
+            done = True
+    assert signal_changed == {signal_1, signal_2}
+
+
+async def test_observe_values_raises_exception():
+    signal_1 = epics_signal_rw(float, read_pv="pva://signal_1", name="signal_1")
+    signal_2 = epics_signal_rw(float, read_pv="pva://signal_2", name="signal_2")
+    await signal_1.connect(mock=True)
+    await signal_2.connect(mock=True)
+    signal_changed: set[Signal] = set()
+    done: bool = False
+
+    async def coroutine():
+        while not done:
+            await asyncio.sleep(0.1)
+        raise ValueError("Test exception")
+
+    done_status = AsyncStatus(coroutine())
+    with pytest.raises(ValueError, match="Test exception"):
+        async for sig, _ in observe_signals_values(
+            signal_1, signal_2, timeout=1, done_status=done_status
+        ):
             signal_changed.add(sig)
-        elif sig is signal_2 and value == 2:
-            signal_changed.add(sig)
-            break
-    await t
+            if len(signal_changed) == 2:
+                done = True
     assert signal_changed == {signal_1, signal_2}
 
 

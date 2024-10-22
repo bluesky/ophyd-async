@@ -545,7 +545,7 @@ async def observe_signals_values(
                 else:
                     break
             else:
-                yield item  # type: ignore
+                yield cast(tuple[SignalR[T], T], item)
     finally:
         for signal, cb in cbs.items():
             signal.clear_sub(cb)
@@ -652,7 +652,7 @@ async def set_and_wait_for_other_value(
     # Get the initial value from the monitor to make sure we've created it
     current_value = await anext(values_gen)
 
-    set_signal.set(set_value, timeout=set_timeout)
+    status = set_signal.set(set_value, timeout=set_timeout)
 
     # If the value was the same as before no need to wait for it to change
     if current_value != match_value:
@@ -663,7 +663,7 @@ async def set_and_wait_for_other_value(
                     break
 
         try:
-            status = AsyncStatus(asyncio.wait_for(_wait_for_value(), timeout))
+            await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
             return status
