@@ -129,10 +129,6 @@ class Device(HasName, Connectable):
         # Wait for it to complete
         await self._connect_task
 
-    def __hash__(self):
-        # to allow Devices to be used as dict keys
-        return hash(id(self))
-
 
 DeviceT = TypeVar("DeviceT", bound=Device)
 
@@ -187,7 +183,7 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         for key, child in self._children.items():
             yield str(key), child
 
-    def __hash__(self):  # to allow DeviceVector to be used as dict keys
+    def __hash__(self):  # to allow DeviceVector to be used as dict keys and in sets
         return hash(id(self))
 
 
