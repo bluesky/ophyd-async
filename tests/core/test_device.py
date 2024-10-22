@@ -10,6 +10,7 @@ from ophyd_async.core import (
     DeviceCollector,
     DeviceVector,
     NotConnected,
+    soft_signal_rw,
     wait_for_connection,
 )
 from ophyd_async.epics import motor
@@ -40,6 +41,18 @@ class DummyDeviceGroup(Device):
 @pytest.fixture
 def parent() -> DummyDeviceGroup:
     return DummyDeviceGroup("parent")
+
+
+class DeviceWithNamedChild(Device):
+    def __init__(self, name: str = "") -> None:
+        super().__init__(name)
+        self.child = soft_signal_rw(int, name="foo")
+
+
+def test_device_signal_naming():
+    device = DeviceWithNamedChild("bar")
+    assert device.name == "bar"
+    assert device.child.name == "foo"
 
 
 def test_device_children(parent: DummyDeviceGroup):

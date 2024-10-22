@@ -33,12 +33,6 @@ class DeviceConnector:
         pass
 
 
-def _setup_child(parent: Device, child_name: str, child: Device):
-    child_name = f"{parent.name}-{child_name.rstrip('_')}" if parent.name else ""
-    child.set_name(child_name)
-    child.parent = parent
-
-
 class Device(HasName, Connectable):
     """Common base class for all Ophyd Async Devices."""
 
@@ -81,7 +75,8 @@ class Device(HasName, Connectable):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
         for child_name, child in self.children():
-            _setup_child(self, child_name, child)
+            child_name = f"{self.name}-{child_name.rstrip('_')}" if self.name else ""
+            child.set_name(child_name)
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name == "parent":
@@ -91,7 +86,7 @@ class Device(HasName, Connectable):
                     f"it is already a child of {self.parent}"
                 )
         elif isinstance(value, Device):
-            _setup_child(self, name, value)
+            value.parent = self
         return super().__setattr__(name, value)
 
     async def connect(
@@ -165,7 +160,7 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         assert isinstance(key, int), f"Expected int, got {key}"
         assert isinstance(value, Device), f"Expected Device, got {value}"
         self._children[key] = value
-        _setup_child(self, str(key), value)
+        value.parent = self
 
     def __delitem__(self, key: int) -> None:
         assert isinstance(key, int), f"Expected int, got {key}"
