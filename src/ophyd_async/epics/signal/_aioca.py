@@ -281,7 +281,11 @@ class CaSignalBackend(SignalBackend[SignalDatatypeT]):
         else:
             write_value = self.converter.write_value(value)
         await caput(
-            self.write_pv, write_value, datatype=self.converter.write_dbr, wait=wait
+            self.write_pv,
+            write_value,
+            datatype=self.converter.write_dbr,
+            wait=wait,
+            timeout=None,
         )
 
     async def get_datakey(self, source: str) -> DataKey:
