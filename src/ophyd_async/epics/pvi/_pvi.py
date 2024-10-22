@@ -66,4 +66,6 @@ class PviDeviceConnector(DeviceConnector):
                     f"{device.name}: cannot provision {unfilled} from "
                     f"{self.pvi_pv}: {entries}"
                 )
+        # Set the name of the device to name all children
+        device.set_name(device.name)
         return await super().connect(device, mock, timeout, force_reconnect)

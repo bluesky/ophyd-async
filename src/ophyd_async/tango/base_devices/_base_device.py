@@ -150,4 +150,6 @@ class TangoDeviceConnector(DeviceConnector):
                     f"{device.name}: cannot provision {unfilled} from "
                     f"{self.trl}: {children}"
                 )
+        # Set the name of the device to name all children
+        device.set_name(device.name)
         return await super().connect(device, mock, timeout, force_reconnect)
