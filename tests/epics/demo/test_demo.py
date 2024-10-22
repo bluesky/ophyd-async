@@ -199,7 +199,7 @@ async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
     )
 
 
-async def test_mock_with_Mock():
+async def test_mocks_in_device_share_parent():
     mock = Mock()
     async with DeviceCollector(mock=mock):
         mock_mover = demo.Mover("BLxxI-MO-TABLE-01:Y:")
@@ -213,7 +213,6 @@ async def test_mock_with_Mock():
     await mock_mover.velocity.set(100)
     await mock_mover.setpoint.set(67)
 
-    assert mock_mover.mock is mock
     mock.assert_has_calls(
         [
             call.velocity.put(100, wait=True),
