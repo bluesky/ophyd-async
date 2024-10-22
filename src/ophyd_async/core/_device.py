@@ -85,7 +85,7 @@ class Device(HasName, Connectable):
                     f"Cannot set the parent of {self} to be {value}: "
                     f"it is already a child of {self.parent}"
                 )
-        elif isinstance(value, Device):
+        elif not name.startswith("_") and isinstance(value, Device):
             value.parent = self
         return super().__setattr__(name, value)
 

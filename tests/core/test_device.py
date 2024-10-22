@@ -13,6 +13,7 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_connection,
 )
+from ophyd_async.core._signal import SignalRW
 from ophyd_async.epics import motor
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -53,6 +54,21 @@ def test_device_signal_naming():
     device = DeviceWithNamedChild("bar")
     assert device.name == "bar"
     assert device.child.name == "foo"
+
+
+class DeviceWithPrivateSignalReference(Device):
+    def __init__(self, signal: SignalRW[int]) -> None:
+        self._private_signal = signal
+        super().__init__()
+
+    def get_source(self) -> str:
+        return self._private_signal.source
+
+
+def test_device_with_private_signals_allowed():
+    device = DeviceWithNamedChild("bar")
+    private_device = DeviceWithPrivateSignalReference(device.child)
+    assert device.child.source == private_device.get_source()
 
 
 def test_device_children(parent: DummyDeviceGroup):
