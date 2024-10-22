@@ -128,7 +128,11 @@ class _SignalCache(Generic[SignalDatatypeT]):
         for function, want_value in self._listeners.items():
             self._notify(function, want_value)
 
-    def _notify(self, function: Callback, want_value: bool):
+    def _notify(
+        self,
+        function: Callback[dict[str, Reading[SignalDatatypeT]] | SignalDatatypeT],
+        want_value: bool,
+    ):
         assert self._reading, "Monitor not working"
         if want_value:
             function(self._reading["value"])

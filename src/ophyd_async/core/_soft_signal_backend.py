@@ -27,6 +27,9 @@ from ._utils import Callback, get_dtype, get_enum_cls
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
+    # This is Any -> SignalDatatypeT because we support coercing
+    # value types to SignalDatatype to allow people to do things like
+    # SignalRW[Enum].set("enum value")
     @abstractmethod
     def write_value(self, value: Any) -> SignalDatatypeT: ...
 

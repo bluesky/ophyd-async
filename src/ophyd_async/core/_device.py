@@ -84,7 +84,13 @@ class Device(HasName, Connectable):
             _setup_child(self, child_name, child)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name != "parent" and isinstance(value, Device):
+        if name == "parent":
+            if self.parent not in (value, None):
+                raise TypeError(
+                    f"Cannot set the parent of {self} to be {value}: "
+                    f"it is already a child of {self.parent}"
+                )
+        elif isinstance(value, Device):
             _setup_child(self, name, value)
         return super().__setattr__(name, value)
 
