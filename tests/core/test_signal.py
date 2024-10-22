@@ -285,8 +285,6 @@ async def test_set_and_wait_for_value(): ...
 
 
 async def set_signal_value(signal_1: SignalRW, signal_2: SignalRW):
-    set_mock_value(signal_1, 123)
-    set_mock_value(signal_2, 323)
     set_mock_value(signal_1, 1)
     set_mock_value(signal_2, 2)
 
@@ -296,16 +294,26 @@ async def test_observe_values():
     signal_2 = epics_signal_rw(float, read_pv="pva://signal_2", name="signal_2")
     await signal_1.connect(mock=True)
     await signal_2.connect(mock=True)
-    output: str = ""
+    signal_changed: set[Signal] = set()
     t = asyncio.create_task(set_signal_value(signal_1, signal_2))
-    async for signal, value in observe_signals_values(signal_1, signal_2):
-        if signal is signal_1 and value == 1:
-            output += "Hello_from_1"
-        elif signal is signal_2 and value == 2:
-            output += "Hello_from_2"
+    async for sig, value in observe_signals_values(signal_1, signal_2):
+        if sig is signal_1 and value == 1:
+            signal_changed.add(sig)
+        elif sig is signal_2 and value == 2:
+            signal_changed.add(sig)
             break
     await t
-    assert output == "Hello_from_1Hello_from_2"
+    assert signal_changed == {signal_1, signal_2}
+
+
+async def test_observe_values_with_time_out():
+    signal_1 = epics_signal_rw(float, read_pv="pva://signal_1", name="signal_1")
+    signal_2 = epics_signal_rw(float, read_pv="pva://signal_2", name="signal_2")
+    await signal_1.connect(mock=True)
+    await signal_2.connect(mock=True)
+    with pytest.raises(asyncio.TimeoutError):
+        async for _, _ in observe_signals_values(signal_1, signal_2, timeout=0.1):
+            ...
 
 
 @pytest.mark.parametrize(

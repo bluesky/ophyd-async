@@ -20,7 +20,7 @@ from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
-from ._status import AsyncStatus
+from ._status import AsyncStatus, completed_status
 from ._utils import CALCULATE_TIMEOUT, DEFAULT_TIMEOUT, CalculatableTimeout, Callback, T
 
 S = TypeVar("S")
@@ -617,7 +617,7 @@ async def set_and_wait_for_other_value(
     timeout: float = DEFAULT_TIMEOUT,
     set_timeout: float | None = None,
     wait_for_set_completion: bool = True,
-):
+) -> AsyncStatus:
     """Set a signal and monitor another signal until it has the specified value.
 
     This function sets a set_signal to a specified set_value and waits for
@@ -663,15 +663,15 @@ async def set_and_wait_for_other_value(
                     break
 
         try:
-            status = asyncio.wait_for(_wait_for_value(), timeout)
+            status = AsyncStatus(asyncio.wait_for(_wait_for_value(), timeout))
             if wait_for_set_completion:
                 await status
-            else:
-                return status
+            return status
         except asyncio.TimeoutError as e:
             raise TimeoutError(
                 f"{match_signal.name} didn't match {match_value} in {timeout}s"
             ) from e
+    return completed_status()
 
 
 async def set_and_wait_for_value(
@@ -681,7 +681,7 @@ async def set_and_wait_for_value(
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: float | None = None,
     wait_for_set_completion: bool = True,
-):
+) -> AsyncStatus:
     """Set a signal and monitor it until it has that value.
 
     Useful for busy record, or other Signals with pattern:
@@ -713,7 +713,7 @@ async def set_and_wait_for_value(
     if match_value is None:
         match_value = value
 
-    await set_and_wait_for_other_value(
+    return await set_and_wait_for_other_value(
         signal,
         value,
         signal,
