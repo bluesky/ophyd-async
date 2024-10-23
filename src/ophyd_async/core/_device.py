@@ -58,7 +58,11 @@ class Device(HasName, Connectable):
 
     def children(self) -> Iterator[tuple[str, Device]]:
         for attr_name, attr in self.__dict__.items():
-            if attr_name != "parent" and isinstance(attr, Device):
+            if (
+                attr_name != "parent"
+                and not attr_name.startswith("_")
+                and isinstance(attr, Device)
+            ):
                 yield attr_name, attr
 
     def set_name(self, name: str):

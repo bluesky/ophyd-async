@@ -67,8 +67,10 @@ class DeviceWithPrivateSignalReference(Device):
 
 def test_device_with_private_signals_allowed():
     device = DeviceWithNamedChild("bar")
+    assert dict(device.children()) == {"child": device.child}
     private_device = DeviceWithPrivateSignalReference(device.child)
     assert device.child.source == private_device.get_source()
+    assert dict(private_device.children()) == {}
 
 
 def test_device_children(parent: DummyDeviceGroup):
