@@ -6,7 +6,18 @@ from unittest.mock import ANY
 
 import numpy
 import pytest
+from bluesky import Msg
 from bluesky.protocols import Reading
+from bluesky.run_engine import call_in_bluesky_event_loop
+from bluesky.suspenders import (
+    SuspendBoolHigh,
+    SuspendBoolLow,
+    SuspendCeil,
+    SuspendFloor,
+    SuspendInBand,
+    SuspendOutBand,
+    SuspendWhenOutsideBand,
+)
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -407,6 +418,33 @@ async def test_subscription_logs(caplog):
     assert "Closing subscription on source" in caplog.text
 
 
+async def test_signal_subscription_run_false():
+    mock_signal_no_notify = epics_signal_rw(
+        int, "mock_signal_no_notify", name="mock_signal_no_notify"
+    )
+    mock_signal_notify = epics_signal_rw(
+        int, "mock_signal_notify", name="mock_signal_notify"
+    )
+    await mock_signal_no_notify.connect(mock=True)
+    await mock_signal_notify.connect(mock=True)
+
+    callbacks_called = set()
+
+    def __my_callback(reading):
+        for name in reading.keys():
+            callbacks_called.add(name)
+
+    mock_signal_no_notify.subscribe(__my_callback, run=False)
+    mock_signal_notify.subscribe(__my_callback, run=True)
+    mock_signal_no_notify.set(1)
+    mock_signal_notify.set(1)
+    assert "mock_signal_no_notify" not in callbacks_called
+    assert "mock_signal_notify" in callbacks_called
+    # run=False callback gets delayed until next update of the value by the backend
+    set_mock_value(mock_signal_no_notify, 2)
+    assert "mock_signal_no_notify" in callbacks_called
+
+
 async def test_signal_unknown_datatype():
     class SomeClass:
         def __init__(self):
@@ -430,3 +468,58 @@ async def test_signal_unknown_datatype():
     assert isinstance((await signal.get_value()), SomeClass)
     await signal.set(1)
     assert (await signal.get_value()) == 1
+
+
+@pytest.mark.parametrize(
+    "klass,sc_args,start_val,fail_val,resume_val,wait_time",
+    [
+        (SuspendBoolHigh, (), 0, 1, 0, 0.2),
+        (SuspendBoolLow, (), 1, 0, 1, 0.2),
+        (SuspendFloor, (0.5,), 1, 0, 1, 0.2),
+        (SuspendCeil, (0.5,), 0, 1, 0, 0.2),
+        (SuspendWhenOutsideBand, (0.5, 1.5), 1, 0, 1, 0.2),
+        ((SuspendInBand, True), (0.5, 1.5), 1, 0, 1, 0.2),  # renamed to WhenOutsideBand
+        ((SuspendOutBand, True), (0.5, 1.5), 0, 1, 0, 0.2),
+    ],
+)  # deprecated
+async def test_bluesky_suspenders(
+    klass, sc_args, start_val, fail_val, resume_val, wait_time, RE
+):
+    sleep_time = 0.2
+    fail_time = 0.1
+    resume_time = 0.5
+    signal = epics_signal_rw(int, "mock_signal")
+    await signal.connect(mock=True)
+    try:
+        klass, deprecated = klass
+    except TypeError:
+        deprecated = False
+    if deprecated:
+        with pytest.warns(UserWarning):
+            suspender = klass(signal, *sc_args, sleep=wait_time)
+    else:
+        suspender = klass(signal, *sc_args, sleep=wait_time)
+
+    RE.install_suspender(suspender)
+
+    await signal.set(start_val)
+
+    async def _set_after_time():
+        await asyncio.sleep(fail_time)
+        await signal.set(fail_val)
+        await asyncio.sleep(resume_time - fail_time)
+        await signal.set(resume_val)
+
+    start = time.time()
+
+    # loop = RE.loop
+
+    call_in_bluesky_event_loop(_set_after_time())
+    # task = RE.loop.create_task(_set_after_time())
+
+    RE([Msg("checkpoint"), Msg("sleep", None, sleep_time)])
+
+    stop = time.time()
+    delta = stop - start
+    # await task
+    assert delta >= resume_time + sleep_time + wait_time

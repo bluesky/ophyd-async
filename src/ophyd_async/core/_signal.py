@@ -123,6 +123,7 @@ class _SignalCache(Generic[T]):
         self._valid = asyncio.Event()
         self._reading: Reading | None = None
         self._value: T | None = None
+        self._drop_next_notification: set[Callback] = set()
 
         self.backend = backend
         signal.log.debug(f"Making subscription on source {signal.source}")
@@ -154,13 +155,18 @@ class _SignalCache(Generic[T]):
             self._notify(function, want_value)
 
     def _notify(self, function: Callback, want_value: bool):
+        if function in self._drop_next_notification:
+            self._drop_next_notification.discard(function)
+            return
         if want_value:
             function(self._value)
         else:
             function({self._signal.name: self._reading})
 
-    def subscribe(self, function: Callback, want_value: bool) -> None:
+    def subscribe(self, function: Callback, run: bool, want_value: bool) -> None:
         self._listeners[function] = want_value
+        if not run:
+            self._drop_next_notification.add(function)
         if self._valid.is_set():
             self._notify(function, want_value)
 
@@ -215,13 +221,15 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
         self.log.debug(f"get_value() on source {self.source} returned {value}")
         return value
 
-    def subscribe_value(self, function: Callback[T]):
+    def subscribe_value(self, function: Callback[T], run: bool = True):
         """Subscribe to updates in value of a device"""
-        self._get_cache().subscribe(function, want_value=True)
+        self._get_cache().subscribe(function, run=run, want_value=True)
 
-    def subscribe(self, function: Callback[dict[str, Reading]]) -> None:
+    def subscribe(
+        self, function: Callback[dict[str, Reading]], run: bool = True
+    ) -> None:
         """Subscribe to updates in the reading"""
-        self._get_cache().subscribe(function, want_value=False)
+        self._get_cache().subscribe(function, run=run, want_value=False)
 
     def clear_sub(self, function: Callback) -> None:
         """Remove a subscription."""
