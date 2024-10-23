@@ -1,8 +1,8 @@
+from collections.abc import Sequence
 from enum import Enum
 
-from bluesky.protocols import Hints
-
-from ophyd_async.core import PathProvider, StandardDetector
+from ophyd_async.core import PathProvider
+from ophyd_async.core._signal import SignalR
 from ophyd_async.epics import adcore
 
 from ._pilatus_controller import PilatusController
@@ -23,36 +23,57 @@ class PilatusReadoutTime(float, Enum):
     pilatus3 = 0.95e-3
 
 
-class PilatusDetector(StandardDetector):
+class PilatusDetector(adcore.AreaDetector):
     """A Pilatus StandardDetector writing HDF files"""
-
-    _controller: PilatusController
-    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
         prefix: str,
         path_provider: PathProvider,
-        readout_time: PilatusReadoutTime = PilatusReadoutTime.pilatus3,
         drv_suffix: str = "cam1:",
         hdf_suffix: str = "HDF1:",
         name: str = "",
+        config_sigs: Sequence[SignalR] = (),
+        readout_time: PilatusReadoutTime = PilatusReadoutTime.pilatus3,
     ):
-        self.drv = PilatusDriverIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
-
         super().__init__(
-            PilatusController(self.drv, readout_time=readout_time.value),
-            adcore.ADHDFWriter(
-                self.hdf,
-                path_provider,
-                lambda: self.name,
-                adcore.ADBaseDatasetDescriber(self.drv),
-            ),
-            config_sigs=(self.drv.acquire_time,),
+            prefix,
+            path_provider,
+            adcore.ADHDFWriter,
+            hdf_suffix,
+            PilatusController,
+            PilatusDriverIO,
+            drv_suffix=drv_suffix,
             name=name,
+            config_sigs=config_sigs,
+            readout_time=readout_time,
         )
+        self.hdf = self._fileio
 
-    @property
-    def hints(self) -> Hints:
-        return self._writer.hints
+
+class PilatusDetectorTIFF(adcore.AreaDetector):
+    """A Pilatus StandardDetector writing HDF files"""
+
+    def __init__(
+        self,
+        prefix: str,
+        path_provider: PathProvider,
+        drv_suffix: str = "cam1:",
+        tiff_suffix: str = "TIFF1:",
+        name: str = "",
+        config_sigs: Sequence[SignalR] = (),
+        readout_time: PilatusReadoutTime = PilatusReadoutTime.pilatus3,
+    ):
+        super().__init__(
+            prefix,
+            path_provider,
+            adcore.ADTIFFWriter,
+            tiff_suffix,
+            PilatusController,
+            PilatusDriverIO,
+            drv_suffix=drv_suffix,
+            name=name,
+            config_sigs=config_sigs,
+            readout_time=readout_time,
+        )
+        self.tiff = self._fileio
