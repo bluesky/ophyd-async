@@ -407,6 +407,33 @@ async def test_subscription_logs(caplog):
     assert "Closing subscription on source" in caplog.text
 
 
+async def test_signal_subscription_run_false():
+    mock_signal_no_notify = epics_signal_rw(
+        int, "mock_signal_no_notify", name="mock_signal_no_notify"
+    )
+    mock_signal_notify = epics_signal_rw(
+        int, "mock_signal_notify", name="mock_signal_notify"
+    )
+    await mock_signal_no_notify.connect(mock=True)
+    await mock_signal_notify.connect(mock=True)
+
+    callbacks_called = set()
+
+    def __my_callback(reading):
+        for name in reading.keys():
+            callbacks_called.add(name)
+
+    mock_signal_no_notify.subscribe(__my_callback, run=False)
+    mock_signal_notify.subscribe(__my_callback, run=True)
+    mock_signal_no_notify.set(1)
+    mock_signal_notify.set(1)
+    assert "mock_signal_no_notify" not in callbacks_called
+    assert "mock_signal_notify" in callbacks_called
+    # run=False callback gets delayed until next update of the value by the backend
+    set_mock_value(mock_signal_no_notify, 2)
+    assert "mock_signal_no_notify" in callbacks_called
+
+
 async def test_signal_unknown_datatype():
     class SomeClass:
         def __init__(self):
