@@ -183,7 +183,6 @@ async def test_set_and_wait_for_value_same_set_as_read():
 
     async def check_set_and_wait():
         await set_and_wait_for_value(signal, 1, timeout=0.1)
-        await wait_for_value(signal, 1, timeout=0.1)
 
     await asyncio.gather(wait_and_set_proceeds(), check_set_and_wait())
     assert await signal.get_value() == 1
@@ -207,8 +206,6 @@ async def test_set_and_wait_for_value_different_set_and_read():
         await set_and_wait_for_other_value(
             set_signal, 1, match_signal, "test", timeout=100
         )
-        await wait_for_value(set_signal, 1, timeout=100)
-        await wait_for_value(match_signal, "test", timeout=100)
 
     await asyncio.gather(wait_and_set_read(), check_set_and_wait())
     assert await set_signal.get_value() == 1
@@ -280,9 +277,6 @@ async def test_wait_for_value_with_funcion():
     set_mock_value(signal, 41)
     assert 0.2 < await t < 1.0
     assert await time_taken_by(wait_for_value(signal, less_than_42, timeout=2)) < 0.1
-
-
-async def test_set_and_wait_for_value(): ...
 
 
 async def set_signal_value(signal_1: SignalRW, signal_2: SignalRW):
@@ -362,9 +356,6 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert isinstance(signal._backend, SoftSignalBackend)
     await signal.connect()
     assert (await signal.get_value()) == INITIAL_VALUE
-
-
-# write code to add two numbers
 
 
 async def test_soft_signal_numpy():
