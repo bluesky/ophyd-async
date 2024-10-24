@@ -5,9 +5,11 @@ from functools import partial
 import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import Movable
+from bluesky.utils import FailedStatus
 
 from ophyd_async.core import (
     AsyncStatus,
+    Device,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
@@ -197,3 +199,20 @@ async def test_watchableasyncstatus_times_out(RE):
         await asyncio.sleep(0.01)
     assert not st.success
     assert isinstance(st.exception(), asyncio.TimeoutError)
+
+
+async def test_device_name_in_failure_message_WatchableAsyncStatus_wrap(RE):
+    class FailingWatchableMovable(Movable, Device):
+        @WatchableAsyncStatus.wrap
+        async def set(self, value) -> AsyncIterator:
+            yield WatcherUpdate(0, 0, value)
+            raise ValueError("This doesn't work")
+
+    device_name = "MyFailingMovable"
+    d = FailingWatchableMovable(name=device_name)
+    with pytest.raises(FailedStatus) as ctx:
+        RE(bps.mv(d, 3))
+    # FailingMovable.set is decorated with @AsyncStatus.wrap
+    # undecorated methods will not print the device name
+    status: AsyncStatus = ctx.value.args[0]
+    assert f"device: {device_name}" in repr(status)
