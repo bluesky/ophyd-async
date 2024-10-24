@@ -1,14 +1,13 @@
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    ConfigSignal,
     DeviceVector,
-    HintedSignal,
     SignalR,
     SignalRW,
     StandardReadable,
     StrictEnum,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 
@@ -24,13 +23,8 @@ class EnergyMode(StrictEnum):
 class Sensor(StandardReadable, EpicsDevice):
     """A demo sensor that produces a scalar value based on X and Y Movers"""
 
-    value: A[SignalR[float], PvSuffix("Value")]
-    mode: A[SignalRW[EnergyMode], PvSuffix("Mode")]
-
-    def __init__(self, prefix: str, name="") -> None:
-        super().__init__(prefix=prefix, name=name)
-        self.add_readables([self.value], HintedSignal)
-        self.add_readables([self.mode], ConfigSignal)
+    value: A[SignalR[float], PvSuffix("Value"), Format.HINTED_SIGNAL]
+    mode: A[SignalRW[EnergyMode], PvSuffix("Mode"), Format.CONFIG_SIGNAL]
 
 
 class SensorGroup(StandardReadable):

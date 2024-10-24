@@ -25,10 +25,16 @@ class EpicsProtocol(Enum):
 _default_epics_protocol = EpicsProtocol.CA
 
 
+def _make_unavailable_function(error: Exception):
+    def transport_not_available(*args, **kwargs):
+        raise NotImplementedError("Transport not available") from error
+
+    return transport_not_available
+
+
 def _make_unavailable_class(error: Exception) -> type[EpicsSignalBackend]:
     class TransportNotAvailable(EpicsSignalBackend):
-        def __init__(*args, **kwargs):
-            raise NotImplementedError("Transport not available") from error
+        __init__ = _make_unavailable_function(error)
 
     return TransportNotAvailable
 
@@ -37,9 +43,7 @@ try:
     from ._p4p import PvaSignalBackend, pvget_with_timeout
 except ImportError as pva_error:
     PvaSignalBackend = _make_unavailable_class(pva_error)
-
-    async def pvget_with_timeout(pv: str, timeout: float):
-        raise NotImplementedError("Transport not available") from pva_error
+    pvget_with_timeout = _make_unavailable_function(pva_error)
 else:
     _default_epics_protocol = EpicsProtocol.PVA
 
