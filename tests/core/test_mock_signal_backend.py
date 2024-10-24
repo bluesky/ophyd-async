@@ -135,10 +135,7 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
     exc_msgs.append(str(exc.value))
 
     for msg in exc_msgs:
-        assert msg == (
-            "Expected to receive a `MockSignalBackend`, instead "
-            f" received {SoftSignalBackend}. "
-        )
+        assert msg == "No `MockSignalBackend` registered for signal."
 
 
 async def test_get_mock_put():
