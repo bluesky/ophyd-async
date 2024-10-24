@@ -104,6 +104,7 @@ def fly_and_collect(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
     detectors: list[StandardDetector],
+    flush_period: float = 0.5,
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
 
@@ -116,8 +117,6 @@ def fly_and_collect(
     yield from bps.kickoff(flyer, wait=True)
     for detector in detectors:
         yield from bps.kickoff(detector)
-
-    # collect_while_completing
     group = short_uid(label="complete")
 
     yield from bps.complete(flyer, wait=False, group=group)
@@ -126,18 +125,8 @@ def fly_and_collect(
 
     done = False
     while not done:
-        try:
-            yield from bps.wait(group=group, timeout=0.5)
-        except TimeoutError:
-            pass
-        else:
-            done = True
-        yield from bps.collect(
-            *detectors,
-            return_payload=False,
-            name=stream_name,
-        )
-    yield from bps.wait(group=group)
+        done = yield from bps.wait(group=group, timeout=flush_period, move_on=True)
+        yield from bps.collect(*detectors, name=stream_name)
 
 
 def fly_and_collect_with_static_pcomp(
