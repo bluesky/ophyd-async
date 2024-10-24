@@ -103,7 +103,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 def fly_and_collect(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     flush_period: float = 0.5,
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
