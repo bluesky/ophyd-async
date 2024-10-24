@@ -97,7 +97,13 @@ addopts = """
     --doctest-glob="*.rst" --doctest-glob="*.md" --ignore=docs/examples
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
-filterwarnings = "error"
+filterwarnings = [
+    "error",
+    "ignore:Use `ophyd_async.epics.core` instead of `ophyd_async.epics.signal` and `pvi`:DeprecationWarning",
+    "ignore:Use `StandardReadableFormat.CONFIG_SIGNAL` instead of `ConfigSignal`:DeprecationWarning",
+    "ignore:Use `StandardReadableFormat.HINTED_SIGNAL` instead of `HintedSignal`:DeprecationWarning",
+    "ignore:Use `StandardReadableFormat.HINTED_UNCACHED_SIGNAL` instead of `HintedSignal.uncached`:DeprecationWarning",
+]
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
 log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
