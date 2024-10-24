@@ -5,7 +5,15 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
+from typing import (
+    Any,
+    Generic,
+    Literal,
+    ParamSpec,
+    TypeVar,
+    get_args,
+    get_origin,
+)
 
 import numpy as np
 

@@ -12,8 +12,8 @@ from ophyd_async.core import (
     DeviceCollector,
     StaticPathProvider,
 )
+from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
-from ophyd_async.epics.signal import epics_signal_rw
 
 SAVE_PATH = "/tmp"
 

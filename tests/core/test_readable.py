@@ -1,5 +1,3 @@
-from inspect import ismethod
-from typing import get_type_hints
 from unittest.mock import MagicMock
 
 import pytest
@@ -9,13 +7,13 @@ from ophyd_async.core import (
     AsyncConfigurable,
     AsyncReadable,
     AsyncStageable,
-    ConfigSignal,
     Device,
     DeviceVector,
     HintedSignal,
     MockSignalBackend,
     SignalR,
     StandardReadable,
+    StandardReadableFormat,
     soft_signal_r_and_setter,
 )
 
@@ -144,81 +142,97 @@ def test_standard_readable_add_children_cm_filters_non_devices():
     assert set(mock.call_args.args[0]) == {sr.a, sr.b}
 
 
+def assert_sr_has_attrs(sr: StandardReadable, expected_attrs: dict[str, tuple]):
+    attrs_to_check = (
+        "_describe_config_funcs",
+        "_read_config_funcs",
+        "_describe_funcs",
+        "_read_funcs",
+        "_stageables",
+        "_has_hints",
+    )
+    actual = {attr: getattr(sr, attr) for attr in attrs_to_check}
+    expected = {attr: expected_attrs.get(attr, ()) for attr in attrs_to_check}
+    assert actual == expected
+
+
+signal_r = MagicMock(spec=SignalR)
+async_readable = MagicMock(spec=AsyncReadable)
+async_configurable = MagicMock(spec=AsyncConfigurable)
+async_stageable = MagicMock(spec=AsyncStageable)
+has_hints = MagicMock(spec=HasHints)
+
+
 @pytest.mark.parametrize(
-    "readable, expected_attr",
+    "readable, expected_attrs",
     [
-        (SignalR, "_readables"),
-        (AsyncReadable, "_readables"),
-        (AsyncConfigurable, "_configurables"),
-        (AsyncStageable, "_stageables"),
-        (HasHints, "_has_hints"),
+        (
+            signal_r,
+            {
+                "_read_funcs": (signal_r.read,),
+                "_describe_funcs": (signal_r.describe,),
+                "_stageables": (signal_r,),
+            },
+        ),
+        (
+            async_readable,
+            {
+                "_read_funcs": (async_readable.read,),
+                "_describe_funcs": (async_readable.describe,),
+            },
+        ),
+        (
+            async_configurable,
+            {
+                "_read_config_funcs": (async_configurable.read_configuration,),
+                "_describe_config_funcs": (async_configurable.describe_configuration,),
+            },
+        ),
+        (async_stageable, {"_stageables": (async_stageable,)}),
+        (has_hints, {"_has_hints": (has_hints,)}),
     ],
 )
 def test_standard_readable_add_readables_adds_to_expected_attrs(
-    readable, expected_attr
+    readable, expected_attrs: dict[str, tuple]
 ):
     sr = StandardReadable()
-
-    r1 = MagicMock(spec=readable)
-    readables = [r1]
-
-    sr.add_readables(readables)
-
-    assert getattr(sr, expected_attr) == (r1,)
+    sr.add_readables([readable])
+    assert_sr_has_attrs(sr, expected_attrs)
 
 
-@pytest.mark.parametrize(
-    "wrapper, expected_attrs",
-    [
-        (HintedSignal, ["_readables", "_has_hints", "_stageables"]),
-        (HintedSignal.uncached, ["_readables", "_has_hints"]),
-        (ConfigSignal, ["_configurables"]),
-    ],
-)
-def test_standard_readable_add_readables_adds_wrapped_to_expected_attr(
-    wrapper, expected_attrs: list[str]
-):
+def test_standard_readable_config_signal():
+    signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
-
-    r1 = MagicMock(spec=SignalR)
-    readables = [r1]
-
-    sr.add_readables(readables, wrapper=wrapper)
-
-    for expected_attr in expected_attrs:
-        saved = getattr(sr, expected_attr)
-        assert len(saved) == 1
-        if ismethod(wrapper):
-            # Convert a classmethod into its Class type. Relies on type hinting!
-            wrapper = get_type_hints(wrapper)["return"]
-        assert isinstance(saved[0], wrapper)
+    sr.add_readables([signal_r], StandardReadableFormat.CONFIG_SIGNAL)
+    assert sr._describe_config_funcs == (signal_r.describe,)
+    assert sr._read_config_funcs == (signal_r.read,)
 
 
-def test_standard_readable_set_readable_signals__raises_deprecated():
+def test_standard_readable_hinted_signal():
+    signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
+    sr.add_readables([signal_r], StandardReadableFormat.HINTED_SIGNAL)
+    assert sr._describe_funcs == (signal_r.describe,)
+    assert sr._read_funcs == (signal_r.read,)
+    assert sr._stageables == (signal_r,)
+    assert sr._has_hints[0].device == signal_r
 
-    with pytest.deprecated_call():
-        sr.set_readable_signals(())
 
-
-@pytest.mark.filterwarnings("ignore:Migrate to ")
-def test_standard_readable_set_readable_signals():
+def test_standard_readable_uncached_signal():
+    signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
+    sr.add_readables([signal_r], StandardReadableFormat.UNCACHED_SIGNAL)
+    assert sr._describe_funcs == (signal_r.describe,)
+    assert sr._read_funcs[0].signal == signal_r
 
-    readable = MagicMock(spec=SignalR)
-    configurable = MagicMock(spec=SignalR)
-    readable_uncached = MagicMock(spec=SignalR)
 
-    sr.set_readable_signals(
-        read=(readable,), config=(configurable,), read_uncached=(readable_uncached,)
-    )
-
-    assert len(sr._readables) == 2
-    assert all(isinstance(x, HintedSignal) for x in sr._readables)
-    assert len(sr._configurables) == 1
-    assert all(isinstance(x, ConfigSignal) for x in sr._configurables)
-    assert len(sr._stageables) == 1
-    assert all(isinstance(x, HintedSignal) for x in sr._stageables)
+def test_standard_readable_hinted_uncached_signal():
+    signal_r = MagicMock(spec=SignalR)
+    sr = StandardReadable()
+    sr.add_readables([signal_r], StandardReadableFormat.HINTED_UNCACHED_SIGNAL)
+    assert sr._describe_funcs == (signal_r.describe,)
+    assert sr._read_funcs[0].signal == signal_r
+    assert sr._has_hints[0].device == signal_r
 
 
 def test_standard_readable_add_children_multi_nested():

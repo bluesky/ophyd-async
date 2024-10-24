@@ -28,10 +28,10 @@ class SingleTriggerDetector(StandardReadable, Triggerable):
 
         self.add_readables(
             [self.drv.array_counter, *read_uncached],
-            wrapper=HintedSignal.uncached,
+            HintedSignal.uncached,  # type: ignore
         )
 
-        self.add_readables([self.drv.acquire_time], wrapper=ConfigSignal)
+        self.add_readables([self.drv.acquire_time], ConfigSignal)
 
         super().__init__(name=name)
 
