@@ -1,7 +1,6 @@
 import asyncio
 
-from ophyd_async.core import DetectorController, PathProvider
-from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core import DetectorController, PathProvider, TriggerInfo
 
 from ._pattern_generator import PatternGenerator
 

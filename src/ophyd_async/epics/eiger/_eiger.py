@@ -1,7 +1,6 @@
 from pydantic import Field
 
-from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector
-from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
 
 from ._eiger_controller import EigerController
 from ._eiger_io import EigerDriverIO

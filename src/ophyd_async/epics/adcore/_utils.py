@@ -1,11 +1,16 @@
 from dataclasses import dataclass
-from enum import Enum
 
-from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value
-from ophyd_async.core._signal import SignalR
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    SignalDatatypeT,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+    wait_for_value,
+)
 
 
-class ADBaseDataType(str, Enum):
+class ADBaseDataType(StrictEnum):
     Int8 = "Int8"
     UInt8 = "UInt8"
     Int16 = "Int16"
@@ -73,25 +78,25 @@ def convert_param_dtype_to_np(datatype: str) -> str:
     return np_datatype
 
 
-class FileWriteMode(str, Enum):
+class FileWriteMode(StrictEnum):
     single = "Single"
     capture = "Capture"
     stream = "Stream"
 
 
-class ImageMode(str, Enum):
+class ImageMode(StrictEnum):
     single = "Single"
     multiple = "Multiple"
     continuous = "Continuous"
 
 
-class NDAttributeDataType(str, Enum):
+class NDAttributeDataType(StrictEnum):
     INT = "INT"
     DOUBLE = "DOUBLE"
     STRING = "STRING"
 
 
-class NDAttributePvDbrType(str, Enum):
+class NDAttributePvDbrType(StrictEnum):
     DBR_SHORT = "DBR_SHORT"
     DBR_ENUM = "DBR_ENUM"
     DBR_INT = "DBR_INT"
@@ -122,8 +127,8 @@ class NDAttributeParam:
 
 
 async def stop_busy_record(
-    signal: SignalRW[T],
-    value: T,
+    signal: SignalRW[SignalDatatypeT],
+    value: SignalDatatypeT,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: float | None = None,
 ) -> None:

@@ -4,7 +4,7 @@ record(ao, "$(IOC_NAME=PANDAQSRV):PULSE1:DELAY")
     # Add to PULSE1:PVI PVA structure
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):PULSE1:PVI": {
-            "pvi.delay.rw": {
+            "value.delay.rw": {
                 "+channel": "NAME",
                 "+type": "plain"
             }
@@ -20,7 +20,7 @@ $(EXCLUDE_WIDTH=)    field(EGU,  "us")
 $(EXCLUDE_WIDTH=)    info(Q:group, {
 $(EXCLUDE_WIDTH=)        # Add to PULSE1:PVI PVA structure
 $(EXCLUDE_WIDTH=)        "$(IOC_NAME=PANDAQSRV):PULSE1:PVI": {
-$(EXCLUDE_WIDTH=)            "pvi.width.rw": {
+$(EXCLUDE_WIDTH=)            "value.width.rw": {
 $(EXCLUDE_WIDTH=)                "+channel": "NAME",
 $(EXCLUDE_WIDTH=)                "+type": "plain"
 $(EXCLUDE_WIDTH=)            }
@@ -35,7 +35,7 @@ record(bi, "$(IOC_NAME=PANDAQSRV):SEQ1:ACTIVE")
     field(PINI, "YES")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
-            "pvi.active.r": {
+            "value.active.r": {
                 "+channel": "NAME",
                 "+type": "plain"
             }
@@ -48,7 +48,7 @@ record(longin, "$(IOC_NAME=PANDAQSRV):SEQ1:REPEATS")
     field(PINI, "YES")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
-            "pvi.repeats.rw": {
+            "value.repeats.rw": {
                 "+channel": "NAME",
                 "+type": "plain"
             }
@@ -61,7 +61,7 @@ record(ai, "$(IOC_NAME=PANDAQSRV):SEQ1:PRESCALE")
     field(PINI, "YES")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
-            "pvi.prescale.rw": {
+            "value.prescale.rw": {
                 "+channel": "NAME",
                 "+type": "plain"
             }
@@ -82,7 +82,7 @@ record(mbbi, "$(IOC_NAME=PANDAQSRV):SEQ1:PRESCALE:UNITS")
     field(PINI, "YES")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
-            "pvi.prescale_units.rw": {
+            "value.prescale_units.rw": {
                 "+channel": "NAME",
                 "+type": "plain"
             }
@@ -95,7 +95,7 @@ record(stringout, "$(IOC_NAME=PANDAQSRV):SEQ1:ENABLE")
     field(PINI, "YES")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
-            "pvi.enable.rw": {
+            "value.enable.rw": {
                 "+channel": "NAME",
                 "+type": "plain"
             }
@@ -103,32 +103,7 @@ record(stringout, "$(IOC_NAME=PANDAQSRV):SEQ1:ENABLE")
     })
 }
 
-record(bi, "$(IOC_NAME=PANDAQSRV):PCAP:ACTIVE")
-{
-    field(ZNAM,  "0")
-    field(ONAM,  "1")
-    field(PINI, "YES")
-    info(Q:group, {
-        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
-            "pvi.active.r": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}
 
-record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:ARM")
-{
-    info(Q:group, {
-        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
-            "pvi.arm.rw": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}
 
 record(waveform, "BOOL:PLEASE")
 {
@@ -147,7 +122,7 @@ record(stringin, "$(IOC_NAME=PANDAQSRV):PULSE1:_PVI")
     field(VAL,  "$(IOC_NAME=PANDAQSRV):PULSE1:PVI")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):PVI": {
-            "pvi.pulse1.d": {
+            "value.pulse1.d": {
                 "+channel": "VAL",
                 "+type": "plain"
             }
@@ -444,14 +419,14 @@ record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:OUTF2")
     })
 }
 
-# Again, SEQ1:TABLE is QSRV only, so need to make a fake PV to put it in 
+# Again, SEQ1:TABLE is QSRV only, so need to make a fake PV to put it in
 # SEQ1:PVI
 record(stringin, "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE:_PVI")
 {
     field(VAL,  "$(IOC_NAME=PANDAQSRV):SEQ1:TABLE")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
-            "pvi.table.rw": {
+            "value.table.rw": {
                 "+channel": "VAL",
                 "+type": "plain",
                 "+putorder":17
@@ -466,7 +441,7 @@ record(stringin, "$(IOC_NAME=PANDAQSRV):SEQ1:_PVI")
     field(VAL,  "$(IOC_NAME=PANDAQSRV):SEQ1:PVI")
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):PVI": {
-            "pvi.seq1.d": {
+            "value.seq1.d": {
                 "+channel": "VAL",
                 "+type": "plain",
                 "+putorder":18
@@ -527,11 +502,13 @@ record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ1:STRTABLE:COL2")
 }
 
 
-$(EXCLUDE_PCAP=)record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:ARM")
+$(EXCLUDE_PCAP=)record(bo, "$(IOC_NAME=PANDAQSRV):PCAP:ARM")
 $(EXCLUDE_PCAP=){
+$(EXCLUDE_PCAP=)    field(ZNAM,  "NO")
+$(EXCLUDE_PCAP=)    field(ONAM,  "YES")
 $(EXCLUDE_PCAP=)    info(Q:group, {
 $(EXCLUDE_PCAP=)        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
-$(EXCLUDE_PCAP=)            "pvi.arm.x": {
+$(EXCLUDE_PCAP=)            "value.arm.rw": {
 $(EXCLUDE_PCAP=)                "+channel": "NAME",
 $(EXCLUDE_PCAP=)                "+type": "plain"
 $(EXCLUDE_PCAP=)            }
@@ -539,11 +516,27 @@ $(EXCLUDE_PCAP=)        }
 $(EXCLUDE_PCAP=)    })
 $(EXCLUDE_PCAP=)}
 
+$(EXCLUDE_PCAP=)record(bi, "$(IOC_NAME=PANDAQSRV):PCAP:ACTIVE")
+$(EXCLUDE_PCAP=){
+$(EXCLUDE_PCAP=)    field(ZNAM,  "0")
+$(EXCLUDE_PCAP=)    field(ONAM,  "1")
+$(EXCLUDE_PCAP=)    field(PINI, "YES")
+$(EXCLUDE_PCAP=)    info(Q:group, {
+$(EXCLUDE_PCAP=)        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
+$(EXCLUDE_PCAP=)            "value.active.r": {
+$(EXCLUDE_PCAP=)                "+channel": "NAME",
+$(EXCLUDE_PCAP=)                "+type": "plain"
+$(EXCLUDE_PCAP=)            }
+$(EXCLUDE_PCAP=)        }
+$(EXCLUDE_PCAP=)    })
+$(EXCLUDE_PCAP=)}
+
+
 $(INCLUDE_EXTRA_SIGNAL=#)record(ao, "$(IOC_NAME=PANDAQSRV):PCAP:NEWSIGNAL")
 $(INCLUDE_EXTRA_SIGNAL=#){
 $(INCLUDE_EXTRA_SIGNAL=#)    info(Q:group, {
 $(INCLUDE_EXTRA_SIGNAL=#)        "$(IOC_NAME=PANDAQSRV):PCAP:PVI": {
-$(INCLUDE_EXTRA_SIGNAL=#)            "pvi.newsignal.x": {
+$(INCLUDE_EXTRA_SIGNAL=#)            "value.newsignal.x": {
 $(INCLUDE_EXTRA_SIGNAL=#)                "+channel": "NAME",
 $(INCLUDE_EXTRA_SIGNAL=#)                "+type": "plain"
 $(INCLUDE_EXTRA_SIGNAL=#)            }
@@ -558,7 +551,7 @@ $(EXCLUDE_PCAP=){
 $(EXCLUDE_PCAP=)    field(VAL,  "$(IOC_NAME=PANDAQSRV):PCAP:PVI")
 $(EXCLUDE_PCAP=)    info(Q:group, {
 $(EXCLUDE_PCAP=)        "$(IOC_NAME=PANDAQSRV):PVI": {
-$(EXCLUDE_PCAP=)            "pvi.pcap.d": {
+$(EXCLUDE_PCAP=)            "value.pcap.d": {
 $(EXCLUDE_PCAP=)                "+channel": "VAL",
 $(EXCLUDE_PCAP=)                "+type": "plain"
 $(EXCLUDE_PCAP=)            }
@@ -571,7 +564,7 @@ $(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA1:ARM")
 $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):EXTRA1:PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "pvi.arm.x": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.arm.x": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "NAME",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
@@ -585,7 +578,7 @@ $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    field(VAL,  "$(IOC_NAME=PANDAQSRV):EXTRA1:PVI")
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "pvi.extra1.d": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.extra1.d": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "VAL",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
@@ -597,7 +590,7 @@ $(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA2:ARM")
 $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):EXTRA2:PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "pvi.arm.x": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.arm.x": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "NAME",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
@@ -611,7 +604,7 @@ $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    field(VAL,  "$(IOC_NAME=PANDAQSRV):EXTRA2:PVI")
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "pvi.extra2.d": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.extra2.d": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "VAL",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
