@@ -1,6 +1,8 @@
+import warnings
 from collections.abc import Awaitable, Callable, Generator, Sequence
 from contextlib import contextmanager
 from enum import Enum
+from typing import cast
 
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
@@ -13,10 +15,26 @@ from ._utils import merge_gathered_dicts
 
 
 class StandardReadableFormat(Enum):
+    """Declare how a `Device` should contribute to the `StandardReadable` verbs."""
+
+    #: Detect which verbs the child supports and contribute to:
+    #:
+    #: - ``read()``, ``describe()`` if it is `bluesky.protocols.Readable`
+    #: - ``read_configuration()``, ``describe_configuration()`` if it is
+    #:   `bluesky.protocols.Configurable`
+    #: - ``stage()``, ``unstage()`` if it is `bluesky.protocols.Stageable`
+    #: - ``hints`` if it `bluesky.protocols.HasHints`
     CHILD = "CHILD"
+    #: Contribute the `Signal` value to ``read_configuration()`` and
+    #: ``describe_configuration()``
     CONFIG_SIGNAL = "CONFIG_SIGNAL"
+    #: Contribute the monitored `Signal` value to ``read()`` and ``describe()``` and
+    #: put the signal name in ``hints``
     HINTED_SIGNAL = "HINTED_SIGNAL"
+    #: Contribute the uncached `Signal` value to ``read()`` and ``describe()```
     UNCACHED_SIGNAL = "UNCACHED_SIGNAL"
+    #: Contribute the uncached `Signal` value to ``read()`` and ``describe()``` and
+    #: put the signal name in ``hints``
     HINTED_UNCACHED_SIGNAL = "HINTED_UNCACHED_SIGNAL"
 
     def __call__(self, parent: Device, child: Device):
@@ -26,9 +44,31 @@ class StandardReadableFormat(Enum):
 
 
 # Back compat
-ConfigSignal = StandardReadableFormat.CONFIG_SIGNAL
-HintedSignal = StandardReadableFormat.HINTED_SIGNAL
-HintedSignal.uncached = StandardReadableFormat.HINTED_UNCACHED_SIGNAL  # type: ignore
+class _WarningMatcher:
+    def __init__(self, name: str, target: StandardReadableFormat):
+        self._name = name
+        self._target = target
+
+    def __eq__(self, value: object) -> bool:
+        warnings.warn(
+            DeprecationWarning(
+                f"Use `StandardReadableFormat.{self._target.name}` "
+                f"instead of `{self._name}`"
+            ),
+            stacklevel=2,
+        )
+        return value == self._target
+
+
+def _compat_format(name: str, target: StandardReadableFormat) -> StandardReadableFormat:
+    return cast(StandardReadableFormat, _WarningMatcher(name, target))
+
+
+ConfigSignal = _compat_format("ConfigSignal", StandardReadableFormat.CONFIG_SIGNAL)
+HintedSignal = _compat_format("HintedSignal", StandardReadableFormat.HINTED_SIGNAL)
+HintedSignal.uncached = _compat_format(  # type: ignore
+    "HintedSignal.uncached", StandardReadableFormat.HINTED_UNCACHED_SIGNAL
+)
 
 
 class StandardReadable(
@@ -112,27 +152,13 @@ class StandardReadable(
     @contextmanager
     def add_children_as_readables(
         self,
-        wrapper: StandardReadableFormat = StandardReadableFormat.CHILD,
+        format: StandardReadableFormat = StandardReadableFormat.CHILD,
     ) -> Generator[None, None, None]:
-        """Context manager to wrap adding Devices
+        """Context manager that calls `add_readables` on child Devices added within.
 
-        Add Devices to this class instance inside the Context Manager to automatically
-        add them to the correct fields, based on the Device's interfaces.
-
-        The provided wrapper class will be applied to all Devices and can be used to
-        specify their behaviour.
-
-        Parameters
-        ----------
-        wrapper:
-            Wrapper class to apply to all Devices created inside the context manager.
-
-        See Also
-        --------
-        :func:`~StandardReadable.add_readables`
-        :class:`ConfigSignal`
-        :class:`HintedSignal`
-        :meth:`HintedSignal.uncached`
+        Scans ``self.children()`` on entry and exit to context manager, and calls
+        `add_readables` on any that are added with the provided
+        `StandardReadableFormat`.
         """
 
         dict_copy = dict(self.children())
@@ -152,38 +178,34 @@ class StandardReadable(
                 flattened_values.append(value)
 
         new_devices = list(filter(lambda x: isinstance(x, Device), flattened_values))
-        self.add_readables(new_devices, wrapper)
+        self.add_readables(new_devices, format)
 
     def add_readables(
         self,
         devices: Sequence[Device],
-        wrapper: StandardReadableFormat = StandardReadableFormat.CHILD,
+        format: StandardReadableFormat = StandardReadableFormat.CHILD,
     ) -> None:
-        """Add the given devices to the lists of known Devices
+        """Add devices to contribute to various bluesky verbs.
 
-        Add the provided Devices to the relevant fields, based on the Signal's
-        interfaces.
+        Use output from the given devices to contribute to the verbs of the following
+        interfaces:
 
-        The provided wrapper class will be applied to all Devices and can be used to
-        specify their behaviour.
+        - `bluesky.protocols.Readable`
+        - `bluesky.protocols.Configurable`
+        - `bluesky.protocols.Stageable`
+        - `bluesky.protocols.HasHints`
 
         Parameters
         ----------
         devices:
             The devices to be added
-        wrapper:
-            Wrapper class to apply to all Devices created inside the context manager.
-
-        See Also
-        --------
-        :func:`~StandardReadable.add_children_as_readables`
-        :class:`ConfigSignal`
-        :class:`HintedSignal`
-        :meth:`HintedSignal.uncached`
+        format:
+            Determines which of the devices functions are added to which verb as per the
+            `StandardReadableFormat` documentation
         """
 
         for device in devices:
-            match wrapper:
+            match format:
                 case StandardReadableFormat.CHILD:
                     if isinstance(device, AsyncConfigurable):
                         self._describe_config_funcs += (device.describe_configuration,)
