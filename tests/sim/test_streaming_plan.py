@@ -4,6 +4,7 @@ from bluesky import plans as bp
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import assert_emitted
+from ophyd_async.plan_stubs import ensure_connected
 from ophyd_async.sim.demo import PatternDetector
 
 
@@ -20,7 +21,11 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: PatternDetect
 
     RE.subscribe(append_and_print)
 
-    RE(bp.count([sim_pattern_detector], num=1))
+    def plan():
+        yield from ensure_connected(sim_pattern_detector, mock=True)
+        yield from bp.count([sim_pattern_detector], num=1)
+
+    RE(plan())
 
     # NOTE - double resource because double stream
     assert names == [
@@ -38,8 +43,13 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: PatternDetect
 
 async def test_plan(RE: RunEngine, sim_pattern_detector: PatternDetector):
     docs = defaultdict(list)
-    RE(bp.count([sim_pattern_detector]), lambda name, doc: docs[name].append(doc))
+
+    def plan():
+        yield from ensure_connected(sim_pattern_detector, mock=True)
+        yield from bp.count([sim_pattern_detector])
+
+    RE(plan(), lambda name, doc: docs[name].append(doc))
+
     assert_emitted(
         docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, event=1, stop=1
     )
-    await sim_pattern_detector.writer.close()

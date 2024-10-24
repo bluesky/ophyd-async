@@ -1,6 +1,7 @@
+from collections.abc import Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, Callable, Iterable
-from unittest.mock import Mock
+from typing import Any
+from unittest.mock import AsyncMock
 
 from ._mock_signal_backend import MockSignalBackend
 from ._signal import Signal
@@ -41,7 +42,7 @@ async def mock_puts_blocked(*signals: Signal):
         set_mock_put_proceeds(signal, True)
 
 
-def get_mock_put(signal: Signal) -> Mock:
+def get_mock_put(signal: Signal) -> AsyncMock:
     """Get the mock associated with the put call on the signal."""
     return _get_mock_signal_backend(signal).put_mock
 
@@ -136,12 +137,14 @@ def set_mock_values(
 
 
 @contextmanager
-def _unset_side_effect_cm(put_mock: Mock):
+def _unset_side_effect_cm(put_mock: AsyncMock):
     yield
     put_mock.side_effect = None
 
 
-def callback_on_mock_put(signal: Signal[T], callback: Callable[[T], None]):
+def callback_on_mock_put(
+    signal: Signal[T], callback: Callable[[T], None] | Callable[[T], Awaitable[None]]
+):
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being

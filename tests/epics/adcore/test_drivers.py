@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from ophyd_async.core import (
-    DetectorControl,
+    DetectorController,
     DeviceCollector,
     get_mock_put,
     set_mock_value,
@@ -23,13 +23,13 @@ def driver(RE) -> adcore.ADBaseIO:
 
 @pytest.fixture
 async def controller(RE, driver: adcore.ADBaseIO) -> Mock:
-    controller = Mock(spec=DetectorControl)
+    controller = Mock(spec=DetectorController)
     controller.get_deadtime.return_value = TEST_DEADTIME
     return controller
 
 
 async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_exposure_supplied(  # noqa: E501
-    controller: DetectorControl,
+    controller: DetectorController,
     driver: adcore.ADBaseIO,
 ):
     put_exposure = get_mock_put(driver.acquire_time)
@@ -50,7 +50,7 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_
     ],
 )
 async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
-    controller: DetectorControl,
+    controller: DetectorController,
     driver: adcore.ADBaseIO,
     exposure: float,
     expected_exposure: float,

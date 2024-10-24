@@ -1,19 +1,20 @@
 import asyncio
+from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
-from typing import AsyncGenerator, AsyncIterator, Dict, List, Optional
 from xml.etree import ElementTree as ET
 
-from bluesky.protocols import DataKey, Hints, StreamAsset
+from bluesky.protocols import Hints, StreamAsset
+from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
+    DatasetDescriber,
     DetectorWriter,
     HDFDataset,
     HDFFile,
     NameProvider,
     PathProvider,
-    ShapeProvider,
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
@@ -22,7 +23,6 @@ from ophyd_async.core import (
 from ._core_io import NDArrayBaseIO, NDFileHDFIO
 from ._utils import (
     FileWriteMode,
-    convert_ad_dtype_to_np,
     convert_param_dtype_to_np,
     convert_pv_dtype_to_np,
 )
@@ -34,27 +34,30 @@ class ADHDFWriter(DetectorWriter):
         hdf: NDFileHDFIO,
         path_provider: PathProvider,
         name_provider: NameProvider,
-        shape_provider: ShapeProvider,
+        dataset_describer: DatasetDescriber,
         *plugins: NDArrayBaseIO,
     ) -> None:
         self.hdf = hdf
         self._path_provider = path_provider
         self._name_provider = name_provider
-        self._shape_provider = shape_provider
+        self._dataset_describer = dataset_describer
 
         self._plugins = plugins
-        self._capture_status: Optional[AsyncStatus] = None
-        self._datasets: List[HDFDataset] = []
-        self._file: Optional[HDFFile] = None
+        self._capture_status: AsyncStatus | None = None
+        self._datasets: list[HDFDataset] = []
+        self._file: HDFFile | None = None
         self._multiplier = 1
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._file = None
-        info = self._path_provider(device_name=self.hdf.name)
+        info = self._path_provider(device_name=self._name_provider())
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
         await self.hdf.create_directory.set(info.create_dir_depth)
+
+        # Make sure we are using chunk auto-sizing
+        await asyncio.gather(self.hdf.chunk_size_auto.set(True))
 
         await asyncio.gather(
             self.hdf.num_extra_dims.set(0),
@@ -79,24 +82,23 @@ class ADHDFWriter(DetectorWriter):
         # Wait for it to start, stashing the status that tells us when it finishes
         self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
         name = self._name_provider()
-        detector_shape = tuple(await self._shape_provider())
+        detector_shape = await self._dataset_describer.shape()
+        np_dtype = await self._dataset_describer.np_datatype()
         self._multiplier = multiplier
         outer_shape = (multiplier,) if multiplier > 1 else ()
-        frame_shape = detector_shape[:-1] if len(detector_shape) > 0 else []
-        dtype_numpy = (
-            convert_ad_dtype_to_np(detector_shape[-1])
-            if len(detector_shape) > 0
-            else ""
-        )
+
+        # Determine number of frames that will be saved per HDF chunk
+        frames_per_chunk = await self.hdf.num_frames_chunks.get_value()
 
         # Add the main data
         self._datasets = [
             HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
-                shape=frame_shape,
-                dtype_numpy=dtype_numpy,
+                shape=detector_shape,
+                dtype_numpy=np_dtype,
                 multiplier=multiplier,
+                chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
         # And all the scalar datasets
@@ -123,6 +125,9 @@ class ADHDFWriter(DetectorWriter):
                             (),
                             np_datatype,
                             multiplier,
+                            # NDAttributes appear to always be configured with
+                            # this chunk size
+                            chunk_shape=(16384,),
                         )
                     )
 
@@ -131,7 +136,7 @@ class ADHDFWriter(DetectorWriter):
                 source=self.hdf.full_file_name.source,
                 shape=outer_shape + tuple(ds.shape),
                 dtype="array" if ds.shape else "number",
-                dtype_numpy=ds.dtype_numpy,
+                dtype_numpy=ds.dtype_numpy,  # type: ignore
                 external="STREAM:",
             )
             for ds in self._datasets

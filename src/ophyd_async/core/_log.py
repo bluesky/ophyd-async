@@ -29,7 +29,7 @@ class ColoredFormatterWithDeviceName(colorlog.ColoredFormatter):
     def format(self, record):
         message = super().format(record)
         if hasattr(record, "ophyd_async_device_name"):
-            message = f"[{record.ophyd_async_device_name}]{message}"
+            message = f"[{record.ophyd_async_device_name}]{message}"  # type: ignore
         return message
 
 
@@ -39,6 +39,8 @@ def _validate_level(level) -> int:
         levelno = level
     elif isinstance(level, str):
         levelno = logging.getLevelName(level)
+    else:
+        raise TypeError(f"Level {level!r} is not an int or str")
 
     if isinstance(levelno, int):
         return levelno

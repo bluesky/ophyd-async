@@ -64,7 +64,7 @@ def test_auto_increment_path_provider(static_filename_provider, tmp_path):
         static_filename_provider, tmp_path, num_calls_per_inc=3, increment=2
     )
 
-    for i in range(3):
+    for _ in range(3):
         info = auto_inc_path_provider()
         assert os.path.basename(info.directory_path) == "00000"
     info = auto_inc_path_provider()

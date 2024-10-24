@@ -4,22 +4,25 @@ from __future__ import annotations
 
 from enum import Enum
 
+
+def _make_unavailable_class(error: Exception) -> type:
+    class TransportNotAvailable:
+        def __init__(*args, **kwargs):
+            raise NotImplementedError("Transport not available") from error
+
+    return TransportNotAvailable
+
+
 try:
     from ._aioca import CaSignalBackend
 except ImportError as ca_error:
-
-    class CaSignalBackend:  # type: ignore
-        def __init__(*args, ca_error=ca_error, **kwargs):
-            raise NotImplementedError("CA support not available") from ca_error
+    CaSignalBackend = _make_unavailable_class(ca_error)
 
 
 try:
     from ._p4p import PvaSignalBackend
 except ImportError as pva_error:
-
-    class PvaSignalBackend:  # type: ignore
-        def __init__(*args, pva_error=pva_error, **kwargs):
-            raise NotImplementedError("PVA support not available") from pva_error
+    PvaSignalBackend = _make_unavailable_class(pva_error)
 
 
 class _EpicsTransport(Enum):

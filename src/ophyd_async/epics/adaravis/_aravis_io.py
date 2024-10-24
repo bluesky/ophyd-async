@@ -38,6 +38,7 @@ class AravisDriverIO(adcore.ADBaseIO):
             AravisTriggerMode, prefix + "TriggerMode"
         )
         self.trigger_source = epics_signal_rw_rbv(
-            AravisTriggerSource, prefix + "TriggerSource"
+            AravisTriggerSource,  # type: ignore
+            prefix + "TriggerSource",
         )
         super().__init__(prefix, name=name)

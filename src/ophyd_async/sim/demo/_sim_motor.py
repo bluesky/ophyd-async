@@ -63,10 +63,11 @@ class SimMotor(StandardReadable, Movable, Stoppable):
             await asyncio.sleep(0.1)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, new_position: float):
+    async def set(self, value: float):
         """
         Asynchronously move the motor to a new position.
         """
+        new_position = value
         # Make sure any existing move tasks are stopped
         await self.stop()
         old_position, units, velocity = await asyncio.gather(

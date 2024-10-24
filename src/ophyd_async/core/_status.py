@@ -3,8 +3,13 @@
 import asyncio
 import functools
 import time
+from collections.abc import AsyncIterator, Callable, Coroutine
 from dataclasses import asdict, replace
-from typing import AsyncIterator, Awaitable, Callable, Generic, Type, TypeVar, cast
+from typing import (
+    Generic,
+    TypeVar,
+    cast,
+)
 
 from bluesky.protocols import Status
 
@@ -18,7 +23,7 @@ WAS = TypeVar("WAS", bound="WatchableAsyncStatus")
 class AsyncStatusBase(Status):
     """Convert asyncio awaitable to bluesky Status interface"""
 
-    def __init__(self, awaitable: Awaitable):
+    def __init__(self, awaitable: Coroutine | asyncio.Task):
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
@@ -77,8 +82,10 @@ class AsyncStatusBase(Status):
 
 
 class AsyncStatus(AsyncStatusBase):
+    """Convert asyncio awaitable to bluesky Status interface"""
+
     @classmethod
-    def wrap(cls: Type[AS], f: Callable[P, Awaitable]) -> Callable[P, AS]:
+    def wrap(cls: type[AS], f: Callable[P, Coroutine]) -> Callable[P, AS]:
         """Wrap an async function in an AsyncStatus."""
 
         @functools.wraps(f)
@@ -122,7 +129,7 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
     @classmethod
     def wrap(
-        cls: Type[WAS],
+        cls: type[WAS],
         f: Callable[P, AsyncIterator[WatcherUpdate[T]]],
     ) -> Callable[P, WAS]:
         """Wrap an AsyncIterator in a WatchableAsyncStatus."""
@@ -132,3 +139,10 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
             return cls(f(*args, **kwargs))
 
         return cast(Callable[P, WAS], wrap_f)
+
+
+@AsyncStatus.wrap
+async def completed_status(exception: Exception | None = None):
+    if exception:
+        raise exception
+    return None

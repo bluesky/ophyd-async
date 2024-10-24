@@ -2,22 +2,17 @@
 
 import asyncio
 import sys
+from collections.abc import Coroutine, Generator, Iterator
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
 from typing import (
     Any,
-    Coroutine,
-    Dict,
-    Generator,
-    Iterator,
     Optional,
-    Set,
-    Tuple,
     TypeVar,
 )
 
 from bluesky.protocols import HasName
-from bluesky.run_engine import call_in_bluesky_event_loop
+from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
 from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
@@ -32,7 +27,7 @@ class Device(HasName):
     #: The parent Device if it exists
     parent: Optional["Device"] = None
     # None if connect hasn't started, a Task if it has
-    _connect_task: Optional[asyncio.Task] = None
+    _connect_task: asyncio.Task | None = None
 
     # Used to check if the previous connect was mocked,
     # if the next mock value differs then we fail
@@ -52,7 +47,7 @@ class Device(HasName):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
-    def children(self) -> Iterator[Tuple[str, "Device"]]:
+    def children(self) -> Iterator[tuple[str, "Device"]]:
         for attr_name, attr in self.__dict__.items():
             if attr_name != "parent" and isinstance(attr, Device):
                 yield attr_name, attr
@@ -127,7 +122,7 @@ class Device(HasName):
 VT = TypeVar("VT", bound=Device)
 
 
-class DeviceVector(Dict[int, VT], Device):
+class DeviceVector(dict[int, VT], Device):
     """
     Defines device components with indices.
 
@@ -136,7 +131,7 @@ class DeviceVector(Dict[int, VT], Device):
     :class:`~ophyd_async.epics.demo.DynamicSensorGroup`
     """
 
-    def children(self) -> Generator[Tuple[str, Device], None, None]:
+    def children(self) -> Generator[tuple[str, Device], None, None]:
         for attr_name, attr in self.items():
             if isinstance(attr, Device):
                 yield str(attr_name), attr
@@ -182,8 +177,8 @@ class DeviceCollector:
         self._connect = connect
         self._mock = mock
         self._timeout = timeout
-        self._names_on_enter: Set[str] = set()
-        self._objects_on_exit: Dict[str, Any] = {}
+        self._names_on_enter: set[str] = set()
+        self._objects_on_exit: dict[str, Any] = {}
 
     def _caller_locals(self):
         """Walk up until we find a stack frame that doesn't have us as self"""
@@ -195,6 +190,9 @@ class DeviceCollector:
             caller_frame = tb.tb_frame
             while caller_frame.f_locals.get("self", None) is self:
                 caller_frame = caller_frame.f_back
+                assert (
+                    caller_frame
+                ), "No previous frame to the one with self in it, this shouldn't happen"
             return caller_frame.f_locals
 
     def __enter__(self) -> "DeviceCollector":
@@ -207,7 +205,7 @@ class DeviceCollector:
 
     async def _on_exit(self) -> None:
         # Name and kick off connect for devices
-        connect_coroutines: Dict[str, Coroutine] = {}
+        connect_coroutines: dict[str, Coroutine] = {}
         for name, obj in self._objects_on_exit.items():
             if name not in self._names_on_enter and isinstance(obj, Device):
                 if self._set_name and not obj.name:
@@ -226,13 +224,18 @@ class DeviceCollector:
         await self._on_exit()
 
     def __exit__(self, type_, value, traceback):
+        if in_bluesky_event_loop():
+            raise RuntimeError(
+                "Cannot use DeviceConnector inside a plan, instead use "
+                "`yield from ophyd_async.plan_stubs.ensure_connected(device)`"
+            )
         self._objects_on_exit = self._caller_locals()
         try:
             fut = call_in_bluesky_event_loop(self._on_exit())
-        except RuntimeError:
+        except RuntimeError as e:
             raise NotConnected(
                 "Could not connect devices. Is the bluesky event loop running? See "
                 "https://blueskyproject.io/ophyd-async/main/"
                 "user/explanations/event-loop-choice.html for more info."
-            )
+            ) from e
         return fut

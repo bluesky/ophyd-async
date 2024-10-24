@@ -1,6 +1,7 @@
+from collections.abc import Sequence
 from enum import Enum
 from os import path
-from typing import Any, Dict, List, Sequence
+from typing import Any
 from unittest.mock import patch
 
 import numpy as np
@@ -8,6 +9,8 @@ import numpy.typing as npt
 import pytest
 import yaml
 from bluesky.run_engine import RunEngine
+from pydantic import BaseModel, Field
+from pydantic_numpy.typing import NpNDArrayFp16, NpNDArrayInt32
 
 from ophyd_async.core import (
     Device,
@@ -54,6 +57,16 @@ class MyEnum(str, Enum):
     three = "three"
 
 
+class SomePvaPydanticModel(BaseModel):
+    some_int_field: int = Field(default=1)
+    some_pydantic_numpy_field_float: NpNDArrayFp16 = Field(
+        default_factory=lambda: np.array([1, 2, 3])
+    )
+    some_pydantic_numpy_field_int: NpNDArrayInt32 = Field(
+        default_factory=lambda: np.array([1, 2, 3])
+    )
+
+
 class DummyDeviceGroupAllTypes(Device):
     def __init__(self, name: str):
         self.pv_int: SignalRW = epics_signal_rw(int, "PV1")
@@ -73,6 +86,9 @@ class DummyDeviceGroupAllTypes(Device):
         self.pv_array_float64 = epics_signal_rw(npt.NDArray[np.float64], "PV14")
         self.pv_array_npstr = epics_signal_rw(npt.NDArray[np.str_], "PV15")
         self.pv_array_str = epics_signal_rw(Sequence[str], "PV16")
+        self.pv_protocol_device_abstraction = epics_signal_rw(
+            SomePvaPydanticModel, "pva://PV17"
+        )
 
 
 @pytest.fixture
@@ -90,7 +106,7 @@ async def device_all_types() -> DummyDeviceGroupAllTypes:
 
 
 # Dummy function to check different phases save properly
-def sort_signal_by_phase(values: Dict[str, Any]) -> List[Dict[str, Any]]:
+def sort_signal_by_phase(values: dict[str, Any]) -> list[dict[str, Any]]:
     phase_1 = {"child1.sig1": values["child1.sig1"]}
     phase_2 = {"child2.sig1": values["child2.sig1"]}
     return [phase_1, phase_2]
@@ -99,7 +115,7 @@ def sort_signal_by_phase(values: Dict[str, Any]) -> List[Dict[str, Any]]:
 async def test_enum_yaml_formatting(tmp_path):
     enums = [EnumTest.VAL1, EnumTest.VAL2]
     save_to_yaml(enums, path.join(tmp_path, "test_file.yaml"))
-    with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
+    with open(path.join(tmp_path, "test_file.yaml")) as file:
         saved_enums = yaml.load(file, yaml.Loader)
     # check that save/load reduces from enum to str
     assert all(isinstance(value, str) for value in saved_enums)
@@ -155,6 +171,7 @@ async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
     await device_all_types.pv_array_str.set(
         ["one", "two", "three"],
     )
+    await device_all_types.pv_protocol_device_abstraction.set(SomePvaPydanticModel())
 
     # Create save plan from utility functions
     def save_my_device():
@@ -166,7 +183,7 @@ async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
     RE(save_my_device())
 
     actual_file_path = path.join(tmp_path, "test_file.yaml")
-    with open(actual_file_path, "r") as actual_file:
+    with open(actual_file_path) as actual_file:
         with open("tests/test_data/test_yaml_save.yml") as expected_file:
             assert actual_file.read() == expected_file.read()
 
@@ -206,7 +223,7 @@ async def test_save_device(RE: RunEngine, device, tmp_path):
 
     RE(save_my_device())
 
-    with open(path.join(tmp_path, "test_file.yaml"), "r") as file:
+    with open(path.join(tmp_path, "test_file.yaml")) as file:
         yaml_content = yaml.load(file, yaml.Loader)[0]
         assert len(yaml_content) == 4
         assert yaml_content["child1.sig1"] == "test_string"
@@ -227,7 +244,7 @@ async def test_yaml_formatting(RE: RunEngine, device, tmp_path):
     await device.child2.sig1.set(table_pv)
     RE(save_device(device, file_path, sorter=sort_signal_by_phase))
 
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         expected = """\
 - child1.sig1: test_string
 - child2.sig1:

@@ -14,6 +14,7 @@ from ophyd_async.fastcs.panda import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
+from ophyd_async.fastcs.panda._table import SeqTrigger
 
 
 @pytest.fixture
@@ -38,8 +39,11 @@ async def mock_panda():
 
 async def test_seq_table_trigger_logic(mock_panda):
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    seq_table = SeqTable(
-        outa1=np.array([1, 2, 3, 4, 5]), outa2=np.array([1, 2, 3, 4, 5])
+    seq_table = (
+        SeqTable.row(outa1=True, outa2=True)
+        + SeqTable.row(outa1=False, outa2=False)
+        + SeqTable.row(outa1=True, outa2=False)
+        + SeqTable.row(outa1=False, outa2=True)
     )
     seq_table_info = SeqTableInfo(sequence_table=seq_table, repeats=1)
 
@@ -75,13 +79,22 @@ async def test_pcomp_trigger_logic(mock_panda):
     ["kwargs", "error_msg"],
     [
         (
-            {"sequence_table": {}, "repeats": 0, "prescale_as_us": -1},
+            {
+                "sequence_table_factory": lambda: SeqTable.row(outc2=1),
+                "repeats": 0,
+                "prescale_as_us": -1,
+            },
             "Input should be greater than or equal to 0 "
             "[type=greater_than_equal, input_value=-1, input_type=int]",
         ),
         (
             {
-                "sequence_table": SeqTable(outc2=np.array([1, 0, 1, 0], dtype=bool)),
+                "sequence_table_factory": lambda: (
+                    SeqTable.row(outc2=True)
+                    + SeqTable.row(outc2=False)
+                    + SeqTable.row(outc2=True)
+                    + SeqTable.row(outc2=False)
+                ),
                 "repeats": -1,
             },
             "Input should be greater than or equal to 0 "
@@ -89,15 +102,60 @@ async def test_pcomp_trigger_logic(mock_panda):
         ),
         (
             {
-                "sequence_table": SeqTable(outc2=1),
+                "sequence_table_factory": lambda: 1,
                 "repeats": 1,
             },
-            "Input should be an instance of ndarray "
-            "[type=is_instance_of, input_value=1, input_type=int]",
+            "Input should be a valid dictionary or instance of SeqTable "
+            "[type=model_type, input_value=1, input_type=int]",
         ),
     ],
 )
 def test_malformed_seq_table_info(kwargs, error_msg):
     with pytest.raises(ValidationError) as exc:
-        SeqTableInfo(**kwargs)
+        SeqTableInfo(sequence_table=kwargs.pop("sequence_table_factory")(), **kwargs)
     assert error_msg in str(exc.value)
+
+
+def test_malformed_trigger_in_seq_table():
+    def full_seq_table(trigger):
+        return SeqTable(
+            repeats=np.array([1], dtype=np.int32),
+            trigger=trigger,
+            position=np.array([1], dtype=np.int32),
+            time1=np.array([1], dtype=np.int32),
+            outa1=np.array([1], dtype=np.bool_),
+            outb1=np.array([1], dtype=np.bool_),
+            outc1=np.array([1], dtype=np.bool_),
+            outd1=np.array([1], dtype=np.bool_),
+            oute1=np.array([1], dtype=np.bool_),
+            outf1=np.array([1], dtype=np.bool_),
+            time2=np.array([1], dtype=np.int32),
+            outa2=np.array([1], dtype=np.bool_),
+            outb2=np.array([1], dtype=np.bool_),
+            outc2=np.array([1], dtype=np.bool_),
+            outd2=np.array([1], dtype=np.bool_),
+            oute2=np.array([1], dtype=np.bool_),
+            outf2=np.array([1], dtype=np.bool_),
+        )
+
+    for attempted_table in [
+        np.array(["A"], dtype="U32"),
+        np.array(["Immediate"], dtype="U32"),
+        {"Immediate"},
+    ]:
+        with pytest.raises(ValidationError) as exc:
+            full_seq_table(attempted_table)
+        assert "Input should be an instance of Sequence" in str(exc)
+
+    with pytest.raises(ValidationError) as exc:
+        full_seq_table(["A"])
+    assert (
+        "Input should be 'Immediate', 'BITA=0', 'BITA=1', 'BITB=0', 'BITB=1', "
+        "'BITC...' [type=enum, input_value='A', input_type=str]"
+    ) in str(exc)
+
+    # Pydantic is able to infer type from these
+    table = full_seq_table([SeqTrigger.IMMEDIATE])
+    assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]
+    table = full_seq_table(["Immediate"])
+    assert table.trigger == ["Immediate"] == [SeqTrigger.IMMEDIATE]

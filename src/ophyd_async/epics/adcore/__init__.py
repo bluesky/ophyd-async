@@ -7,7 +7,7 @@ from ._core_io import (
 )
 from ._core_logic import (
     DEFAULT_GOOD_STATES,
-    ADBaseShapeProvider,
+    ADBaseDatasetDescriber,
     set_exposure_time_and_acquire_period_if_supplied,
     start_acquiring_driver_and_ensure_status,
 )
@@ -31,7 +31,7 @@ __all__ = [
     "NDFileHDFIO",
     "NDPluginStatsIO",
     "DEFAULT_GOOD_STATES",
-    "ADBaseShapeProvider",
+    "ADBaseDatasetDescriber",
     "set_exposure_time_and_acquire_period_if_supplied",
     "start_acquiring_driver_and_ensure_status",
     "ADHDFWriter",

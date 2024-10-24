@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type
-
 from ophyd_async.core import (
     SignalBackend,
     SignalR,
@@ -19,7 +17,7 @@ from ._epics_transport import _EpicsTransport
 _default_epics_transport = _EpicsTransport.ca
 
 
-def _transport_pv(pv: str) -> Tuple[_EpicsTransport, str]:
+def _transport_pv(pv: str) -> tuple[_EpicsTransport, str]:
     split = pv.split("://", 1)
     if len(split) > 1:
         # We got something like pva://mydevice, so use specified comms mode
@@ -32,7 +30,7 @@ def _transport_pv(pv: str) -> Tuple[_EpicsTransport, str]:
 
 
 def _epics_signal_backend(
-    datatype: Optional[Type[T]], read_pv: str, write_pv: str
+    datatype: type[T] | None, read_pv: str, write_pv: str
 ) -> SignalBackend[T]:
     """Create an epics signal backend."""
     r_transport, r_pv = _transport_pv(read_pv)
@@ -42,7 +40,7 @@ def _epics_signal_backend(
 
 
 def epics_signal_rw(
-    datatype: Type[T], read_pv: str, write_pv: Optional[str] = None, name: str = ""
+    datatype: type[T], read_pv: str, write_pv: str | None = None, name: str = ""
 ) -> SignalRW[T]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs
 
@@ -60,7 +58,7 @@ def epics_signal_rw(
 
 
 def epics_signal_rw_rbv(
-    datatype: Type[T], write_pv: str, read_suffix: str = "_RBV", name: str = ""
+    datatype: type[T], write_pv: str, read_suffix: str = "_RBV", name: str = ""
 ) -> SignalRW[T]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv
 
@@ -76,7 +74,7 @@ def epics_signal_rw_rbv(
     return epics_signal_rw(datatype, f"{write_pv}{read_suffix}", write_pv, name)
 
 
-def epics_signal_r(datatype: Type[T], read_pv: str, name: str = "") -> SignalR[T]:
+def epics_signal_r(datatype: type[T], read_pv: str, name: str = "") -> SignalR[T]:
     """Create a `SignalR` backed by 1 EPICS PV
 
     Parameters
@@ -90,7 +88,7 @@ def epics_signal_r(datatype: Type[T], read_pv: str, name: str = "") -> SignalR[T
     return SignalR(backend, name=name)
 
 
-def epics_signal_w(datatype: Type[T], write_pv: str, name: str = "") -> SignalW[T]:
+def epics_signal_w(datatype: type[T], write_pv: str, name: str = "") -> SignalW[T]:
     """Create a `SignalW` backed by 1 EPICS PVs
 
     Parameters

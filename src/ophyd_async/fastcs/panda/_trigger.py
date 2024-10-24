@@ -1,9 +1,8 @@
 import asyncio
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ophyd_async.core import TriggerLogic, wait_for_value
+from ophyd_async.core import FlyerController, wait_for_value
 
 from ._block import PcompBlock, PcompDirectionOptions, SeqBlock, TimeUnits
 from ._table import SeqTable
@@ -15,7 +14,7 @@ class SeqTableInfo(BaseModel):
     prescale_as_us: float = Field(default=1, ge=0)  # microseconds
 
 
-class StaticSeqTableTriggerLogic(TriggerLogic[SeqTableInfo]):
+class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
     def __init__(self, seq: SeqBlock) -> None:
         self.seq = seq
 
@@ -64,7 +63,7 @@ class PcompInfo(BaseModel):
     )
 
 
-class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
+class StaticPcompTriggerLogic(FlyerController[PcompInfo]):
     def __init__(self, pcomp: PcompBlock) -> None:
         self.pcomp = pcomp
 
@@ -82,7 +81,7 @@ class StaticPcompTriggerLogic(TriggerLogic[PcompInfo]):
         await self.pcomp.enable.set("ONE")
         await wait_for_value(self.pcomp.active, True, timeout=1)
 
-    async def complete(self, timeout: Optional[float] = None) -> None:
+    async def complete(self, timeout: float | None = None) -> None:
         await wait_for_value(self.pcomp.active, False, timeout=timeout)
 
     async def stop(self):

@@ -1,6 +1,6 @@
 .. note::
 
-   Ophyd async is included on a provisional basis until the v1.0 release and 
+   Ophyd async is included on a provisional basis until the v1.0 release and
    may change API on minor release numbers before then
 
 Write Tests for Devices
@@ -35,7 +35,7 @@ Mock Utility Functions
 
 Mock signals behave as simply as possible, holding a sensible default value when initialized and retaining any value (in memory) to which they are set. This model breaks down in the case of read-only signals, which cannot be set because there is an expectation of some external device setting them in the real world. There is a utility function, ``set_mock_value``, to mock-set values for mock signals, including read-only ones.
 
-In addition this example also utilizes helper functions like ``assert_reading`` and ``assert_value`` to ensure the validity of device readings and values. For more information see: :doc:`API.core<../generated/ophyd_async.core>`
+In addition this example also utilizes helper functions like ``assert_reading`` and ``assert_value`` to ensure the validity of device readings and values. For more information see: :doc:`API.core<../_api/ophyd_async.core>`
 
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: test_sensor_reading_shows_value

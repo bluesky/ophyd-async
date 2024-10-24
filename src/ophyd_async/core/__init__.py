@@ -1,5 +1,5 @@
 from ._detector import (
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     DetectorWriter,
     StandardDetector,
@@ -16,7 +16,7 @@ from ._device_save_loader import (
     set_signal_values,
     walk_rw_signals,
 )
-from ._flyer import StandardFlyer, TriggerLogic
+from ._flyer import FlyerController, StandardFlyer
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
@@ -33,11 +33,11 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
+    DatasetDescriber,
     FilenameProvider,
     NameProvider,
     PathInfo,
     PathProvider,
-    ShapeProvider,
     StaticFilenameProvider,
     StaticPathProvider,
     UUIDFilenameProvider,
@@ -61,13 +61,18 @@ from ._signal import (
     soft_signal_rw,
     wait_for_value,
 )
-from ._signal_backend import RuntimeSubsetEnum, SignalBackend, SubsetEnum
+from ._signal_backend import (
+    RuntimeSubsetEnum,
+    SignalBackend,
+    SubsetEnum,
+)
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
-from ._status import AsyncStatus, WatchableAsyncStatus
+from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
+from ._table import Table
 from ._utils import (
+    CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
-    CalculateTimeout,
     NotConnected,
     ReadingValueCallback,
     T,
@@ -75,11 +80,12 @@ from ._utils import (
     get_dtype,
     get_unique,
     in_micros,
+    is_pydantic_model,
     wait_for_connection,
 )
 
 __all__ = [
-    "DetectorControl",
+    "DetectorController",
     "DetectorTrigger",
     "DetectorWriter",
     "StandardDetector",
@@ -96,7 +102,7 @@ __all__ = [
     "set_signal_values",
     "walk_rw_signals",
     "StandardFlyer",
-    "TriggerLogic",
+    "FlyerController",
     "HDFDataset",
     "HDFFile",
     "config_ophyd_async_logging",
@@ -117,7 +123,7 @@ __all__ = [
     "NameProvider",
     "PathInfo",
     "PathProvider",
-    "ShapeProvider",
+    "DatasetDescriber",
     "StaticFilenameProvider",
     "StaticPathProvider",
     "UUIDFilenameProvider",
@@ -149,13 +155,16 @@ __all__ = [
     "WatchableAsyncStatus",
     "DEFAULT_TIMEOUT",
     "CalculatableTimeout",
-    "CalculateTimeout",
+    "CALCULATE_TIMEOUT",
     "NotConnected",
     "ReadingValueCallback",
+    "Table",
     "T",
     "WatcherUpdate",
     "get_dtype",
     "get_unique",
     "in_micros",
+    "is_pydantic_model",
     "wait_for_connection",
+    "completed_status",
 ]

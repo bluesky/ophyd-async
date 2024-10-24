@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 
 from ophyd_async.core import (
@@ -28,7 +26,7 @@ class Block2(Device):
 
 
 class Block3(Device):
-    device_vector: Optional[DeviceVector[Block2]]
+    device_vector: DeviceVector[Block2] | None
     device: Block2
     signal_device: Block1
     signal_x: SignalX
@@ -44,7 +42,7 @@ def pvi_test_device_t():
             self._prefix = prefix
             super().__init__(name)
 
-        async def connect(
+        async def connect(  # type: ignore
             self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
         ) -> None:
             await fill_pvi_entries(
@@ -67,9 +65,9 @@ async def test_fill_pvi_entries_mock_mode(pvi_test_device_t):
     # elements of device vectors are typed recursively
     assert test_device.device_vector[1].signal_rw._backend.datatype is int
     assert isinstance(test_device.device_vector[1].device, Block1)
-    assert test_device.device_vector[1].device.signal_rw._backend.datatype is int
+    assert test_device.device_vector[1].device.signal_rw._backend.datatype is int  # type: ignore
     assert (
-        test_device.device_vector[1].device.device_vector_signal_rw[1]._backend.datatype
+        test_device.device_vector[1].device.device_vector_signal_rw[1]._backend.datatype  # type: ignore
         is float
     )
 
@@ -78,9 +76,9 @@ async def test_fill_pvi_entries_mock_mode(pvi_test_device_t):
     assert isinstance(test_device.device, Block2)
 
     # elements of top level blocks are typed recursively
-    assert test_device.device.signal_rw._backend.datatype is int
+    assert test_device.device.signal_rw._backend.datatype is int  # type: ignore
     assert isinstance(test_device.device.device, Block1)
-    assert test_device.device.device.signal_rw._backend.datatype is int
+    assert test_device.device.device.signal_rw._backend.datatype is int  # type: ignore
 
     assert test_device.signal_rw.parent == test_device
     assert test_device.device_vector.parent == test_device
@@ -108,7 +106,7 @@ def pvi_test_device_create_children_from_annotations_t():
             super().__init__(name)
             create_children_from_annotations(self)
 
-        async def connect(
+        async def connect(  # type: ignore
             self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
         ) -> None:
             await fill_pvi_entries(
@@ -152,9 +150,9 @@ def pvi_test_device_with_device_vectors_t():
 
     class TestBlock(Device):
         device_vector: DeviceVector[Block1]
-        device: Optional[Block1]
+        device: Block1 | None
         signal_x: SignalX
-        signal_rw: Optional[SignalRW[int]]
+        signal_rw: SignalRW[int] | None
 
     class TestDevice(TestBlock):
         def __init__(self, prefix: str, name: str = ""):
@@ -166,7 +164,7 @@ def pvi_test_device_with_device_vectors_t():
             )
             super().__init__(name)
 
-        async def connect(
+        async def connect(  # type: ignore
             self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
         ) -> None:
             await fill_pvi_entries(

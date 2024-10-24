@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 from ophyd_async.core import DEFAULT_TIMEOUT, SignalRW, T, wait_for_value
 from ophyd_async.core._signal import SignalR
@@ -51,8 +50,8 @@ def convert_pv_dtype_to_np(datatype: str) -> str:
     else:
         try:
             np_datatype = convert_ad_dtype_to_np(_pvattribute_to_ad_datatype[datatype])
-        except KeyError:
-            raise ValueError(f"Invalid dbr type {datatype}")
+        except KeyError as e:
+            raise ValueError(f"Invalid dbr type {datatype}") from e
     return np_datatype
 
 
@@ -69,8 +68,8 @@ def convert_param_dtype_to_np(datatype: str) -> str:
             np_datatype = convert_ad_dtype_to_np(
                 _paramattribute_to_ad_datatype[datatype]
             )
-        except KeyError:
-            raise ValueError(f"Invalid datatype {datatype}")
+        except KeyError as e:
+            raise ValueError(f"Invalid datatype {datatype}") from e
     return np_datatype
 
 
@@ -126,7 +125,7 @@ async def stop_busy_record(
     signal: SignalRW[T],
     value: T,
     timeout: float = DEFAULT_TIMEOUT,
-    status_timeout: Optional[float] = None,
+    status_timeout: float | None = None,
 ) -> None:
     await signal.set(value, wait=False, timeout=status_timeout)
     await wait_for_value(signal, value, timeout=timeout)

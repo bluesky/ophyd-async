@@ -1,6 +1,6 @@
 import asyncio
+from collections.abc import AsyncIterator
 from functools import partial
-from typing import AsyncIterator
 
 import bluesky.plan_stubs as bps
 import pytest
@@ -96,7 +96,7 @@ class ASTestDeviceTimeoutSet(ASTestDevice):
 
 class ASTestDeviceIteratorSet(ASTestDevice):
     def __init__(
-        self, name: str = "", values=[1, 2, 3, 4, 5], complete_set: bool = True
+        self, name: str = "", values=(1, 2, 3, 4, 5), complete_set: bool = True
     ) -> None:
         self.values = values
         self.complete_set = complete_set

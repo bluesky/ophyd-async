@@ -7,7 +7,7 @@ import pytest
 from bluesky.protocols import Movable, Status
 from bluesky.utils import FailedStatus
 
-from ophyd_async.core import AsyncStatus, Device
+from ophyd_async.core import AsyncStatus, Device, completed_status
 
 
 async def test_async_status_success():
@@ -148,8 +148,17 @@ async def test_status_propogates_traceback_under_RE(RE) -> None:
 
 async def test_async_status_exception_timeout():
     st = AsyncStatus(asyncio.sleep(0.1))
-    with pytest.raises(Exception):
-        st.exception(timeout=1.0)
+    try:
+        with pytest.raises(
+            ValueError,
+            match=(
+                "cannot honour any timeout other than 0 in an asynchronous function"
+            ),
+        ):
+            st.exception(timeout=1.0)
+    finally:
+        if not st.done:
+            st.task.cancel()
 
 
 @pytest.fixture
@@ -188,3 +197,9 @@ def test_asyncstatus_wraps_bare_func_with_args_kwargs(loop):
         assert test_result == 12
 
     loop.run_until_complete(do_test())
+
+
+async def test_completed_status():
+    with pytest.raises(ValueError):
+        await completed_status(ValueError())
+    await completed_status()

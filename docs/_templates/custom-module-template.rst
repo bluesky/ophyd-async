@@ -1,72 +1,42 @@
 .. note::
 
-    Ophyd async is included on a provisional basis until the v1.0 release and 
+    Ophyd async is considered experimental until the v1.0 release and
     may change API on minor release numbers before then
 
-{{ fullname | escape | underline}}
+{{ ('``' + fullname + '``') | underline }}
+
+{%- set filtered_members = [] %}
+{%- for item in members %}
+    {%- if item in functions + classes + exceptions + attributes %}
+        {% set _ = filtered_members.append(item) %}
+    {%- endif %}
+{%- endfor %}
 
 .. automodule:: {{ fullname }}
+    :members:
 
-   {% block attributes %}
-   {% if attributes %}
-   .. rubric:: Module attributes
+    {% block modules %}
+    {% if modules %}
+    .. rubric:: Submodules
 
-   .. autosummary::
-      :toctree:
-   {% for item in attributes %}
-      {{ item }}
-   {%- endfor %}
-   {% endif %}
-   {% endblock %}
+    .. autosummary::
+        :toctree:
+        :template: custom-module-template.rst
+        :recursive:
+    {% for item in modules %}
+        {{ item }}
+    {%- endfor %}
+    {% endif %}
+    {% endblock %}
 
-   {% block functions %}
-   {% if functions %}
-   .. rubric:: {{ _('Functions') }}
+    {% block members %}
+    {% if filtered_members %}
+    .. rubric:: Members
 
-   .. autosummary::
-      :toctree:
-      :nosignatures:
-   {% for item in functions %}
-      {{ item }}
-   {%- endfor %}
-   {% endif %}
-   {% endblock %}
-
-   {% block classes %}
-   {% if classes %}
-   .. rubric:: {{ _('Classes') }}
-
-   .. autosummary::
-      :toctree:
-      :template: custom-class-template.rst
-      :nosignatures:
-   {% for item in classes %}
-      {{ item }}
-   {%- endfor %}
-   {% endif %}
-   {% endblock %}
-
-   {% block exceptions %}
-   {% if exceptions %}
-   .. rubric:: {{ _('Exceptions') }}
-
-   .. autosummary::
-      :toctree:
-      :nosignatures:
-   {% for item in exceptions %}
-      {{ item }}
-   {%- endfor %}
-   {% endif %}
-   {% endblock %}
-
-{% block modules %}
-{% if modules %}
-.. autosummary::
-   :toctree:
-   :template: custom-module-template.rst
-   :recursive:
-{% for item in modules %}
-   {{ item }}
-{%- endfor %}
-{% endif %}
-{% endblock %}
+    .. autosummary::
+        :nosignatures:
+    {% for item in filtered_members %}
+        {{ item }}
+    {%- endfor %}
+    {% endif %}
+    {% endblock %}

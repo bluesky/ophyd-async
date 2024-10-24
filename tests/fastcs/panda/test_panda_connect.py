@@ -1,7 +1,6 @@
 """Used to test setting up signals for a PandA"""
 
 import copy
-from typing import Dict
 
 import numpy as np
 import pytest
@@ -33,7 +32,7 @@ class DummyDict:
 
 
 class MockPvi:
-    def __init__(self, pvi: Dict[str, _PVIEntry]) -> None:
+    def __init__(self, pvi: dict[str, _PVIEntry]) -> None:
         self.pvi = pvi
 
     def get(self, item: str):
@@ -41,7 +40,7 @@ class MockPvi:
 
 
 class MockCtxt:
-    def __init__(self, pvi: Dict[str, _PVIEntry]) -> None:
+    def __init__(self, pvi: dict[str, _PVIEntry]) -> None:
         self.pvi = copy.copy(pvi)
 
     def get(self, pv: str, timeout: float = 0.0):
@@ -115,6 +114,7 @@ async def test_panda_children_connected(mock_panda):
         oute2=np.array([1, 0, 1, 0]).astype(np.bool_),
         outf2=np.array([1, 0, 0, 0]).astype(np.bool_),
     )
+
     await mock_panda.pulse[1].delay.set(20.0)
     await mock_panda.seq[1].table.set(table)
 
