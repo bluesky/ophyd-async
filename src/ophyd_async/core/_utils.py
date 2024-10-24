@@ -6,7 +6,6 @@ from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
 from typing import (
-    Annotated,
     Any,
     Generic,
     Literal,
