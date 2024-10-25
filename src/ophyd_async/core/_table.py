@@ -117,10 +117,7 @@ class Table(BaseModel):
                 expected_dtype = get_dtype(field_value.annotation)
                 # Convert to correct dtype, but only if we don't lose precision
                 # as a result
-                try:
-                    cast_value = np.array(data_value, dtype=expected_dtype)
-                except OverflowError as e:
-                    raise AssertionError(f"{field_name}: {e}") from e
+                cast_value = np.array(data_value).astype(expected_dtype)
                 assert np.array_equal(data_value, cast_value), (
                     f"{field_name}: Cannot cast {data_value} to {expected_dtype} "
                     "without losing precision"

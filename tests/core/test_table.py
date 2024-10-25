@@ -22,7 +22,7 @@ class MyTable(Table):
         ),
         (
             {"bool": np.array([1], dtype=np.uint8), "uint": [-3], "str": [""]},
-            "uint: Python integer -3 out of bounds for uint32",
+            "uint: Cannot cast [-3] to uint32 without losing precision",
         ),
         (
             {"bool": [0], "uint": np.array([1.8], dtype=np.float64), "str": [""]},
