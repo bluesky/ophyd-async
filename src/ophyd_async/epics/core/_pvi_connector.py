@@ -15,8 +15,10 @@ from ophyd_async.core import (
 from ._epics_connector import fill_backend_with_prefix
 from ._signal import PvaSignalBackend, pvget_with_timeout
 
+Entry = dict[str, str]
 
-def _get_signal_details(entry: dict[str, str]) -> tuple[type[Signal], str, str]:
+
+def _get_signal_details(entry: Entry) -> tuple[type[Signal], str, str]:
     match entry:
         case {"r": read_pv}:
             return SignalR, read_pv, read_pv
@@ -52,6 +54,16 @@ class PviDeviceConnector(DeviceConnector):
                 fill_backend_with_prefix(self.prefix, backend, annotations)
             self.filler.check_created()
 
+    def _fill_child(self, name: str, entry: Entry, vector_index: int | None = None):
+        if set(entry) == {"d"}:
+            connector = self.filler.fill_child_device(name, vector_index=vector_index)
+            connector.pvi_pv = entry["d"]
+        else:
+            signal_type, read_pv, write_pv = _get_signal_details(entry)
+            backend = self.filler.fill_child_signal(name, signal_type, vector_index)
+            backend.read_pv = read_pv
+            backend.write_pv = write_pv
+
     async def connect(
         self, device: Device, mock: bool | Mock, timeout: float, force_reconnect: bool
     ) -> None:
@@ -60,18 +72,19 @@ class PviDeviceConnector(DeviceConnector):
             self.filler.create_device_vector_entries_to_mock(2)
         else:
             pvi_structure = await pvget_with_timeout(self.pvi_pv, timeout)
-            entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
-            # Ensure we have device vectors for everything that should be there
-            self.filler.ensure_device_vectors(list(entries))
+            entries: dict[str, Entry | list[Entry | None]] = pvi_structure[
+                "value"
+            ].todict()
+            # Fill based on what PVI gives us
             for name, entry in entries.items():
-                if set(entry) == {"d"}:
-                    connector = self.filler.fill_child_device(name)
-                    connector.pvi_pv = entry["d"]
+                if isinstance(entry, dict):
+                    # This is a child
+                    self._fill_child(name, entry)
                 else:
-                    signal_type, read_pv, write_pv = _get_signal_details(entry)
-                    backend = self.filler.fill_child_signal(name, signal_type)
-                    backend.read_pv = read_pv
-                    backend.write_pv = write_pv
+                    # This is a DeviceVector of children
+                    for i, e in enumerate(entry):
+                        if e:
+                            self._fill_child(name, e, i)
             # Check that all the requested children have been filled
             self.filler.check_filled(f"{self.pvi_pv}: {entries}")
         # Set the name of the device to name all children
