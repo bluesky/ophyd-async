@@ -10,10 +10,11 @@ from ophyd_async.core import (
     DeviceCollector,
     DeviceVector,
     NotConnected,
+    Reference,
+    SignalRW,
     soft_signal_rw,
     wait_for_connection,
 )
-from ophyd_async.core._signal import SignalRW
 from ophyd_async.epics import motor
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -32,7 +33,7 @@ class DummyBaseDevice(Device):
 class DummyDeviceGroup(Device):
     def __init__(self, name: str) -> None:
         self.child1 = DummyBaseDevice()
-        self.child2 = DummyBaseDevice()
+        self._child2 = DummyBaseDevice()
         self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector(
             {123: DummyBaseDevice()}
         )
@@ -56,32 +57,35 @@ def test_device_signal_naming():
     assert device.child.name == "foo"
 
 
-class DeviceWithPrivateSignalReference(Device):
-    def __init__(self, signal: SignalRW[int]) -> None:
-        self._private_signal = signal
-        super().__init__()
+class DeviceWithRefToSignal(Device):
+    def __init__(self, signal: SignalRW[int]):
+        self.signal_ref = Reference(signal)
+        super().__init__(name="bat")
 
     def get_source(self) -> str:
-        return self._private_signal.source
+        return self.signal_ref().source
 
 
-def test_device_with_private_signals_allowed():
-    device = DeviceWithNamedChild("bar")
+def test_device_with_signal_ref_does_not_rename():
+    device = DeviceWithNamedChild()
+    device.set_name("bar")
     assert dict(device.children()) == {"child": device.child}
-    private_device = DeviceWithPrivateSignalReference(device.child)
+    private_device = DeviceWithRefToSignal(device.child)
     assert device.child.source == private_device.get_source()
     assert dict(private_device.children()) == {}
+    assert device.name == "bar"
+    assert device.child.name == "bar-child"
+    assert private_device.name == "bat"
 
 
 def test_device_children(parent: DummyDeviceGroup):
-    names = ["child1", "child2", "dict_with_children"]
+    names = ["child1", "_child2", "dict_with_children"]
     for idx, (name, child) in enumerate(parent.children()):
         assert name == names[idx]
-        assert (
-            type(child) is DummyBaseDevice
-            if name.startswith("child")
-            else type(child) is DeviceVector
+        expected_type = (
+            DeviceVector if name == "dict_with_children" else DummyBaseDevice
         )
+        assert type(child) is expected_type
         assert child.parent == parent
 
 
@@ -97,7 +101,7 @@ async def test_children_of_device_have_set_names_and_get_connected(
 ):
     assert parent.name == "parent"
     assert parent.child1.name == "parent-child1"
-    assert parent.child2.name == "parent-child2"
+    assert parent._child2.name == "parent-child2"
     assert parent.dict_with_children.name == "parent-dict_with_children"
     assert parent.dict_with_children[123].name == "parent-dict_with_children-123"
 
@@ -113,7 +117,7 @@ async def test_device_with_device_collector():
 
     assert parent.name == "parent"
     assert parent.child1.name == "parent-child1"
-    assert parent.child2.name == "parent-child2"
+    assert parent._child2.name == "parent-child2"
     assert parent.dict_with_children.name == "parent-dict_with_children"
     assert parent.dict_with_children[123].name == "parent-dict_with_children-123"
     assert parent.child1.connected

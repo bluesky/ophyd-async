@@ -20,14 +20,14 @@ class StrictEnum(str, Enum):
     """All members should exist in the Backend, and there will be no extras"""
 
 
-class SubsetEnumType(EnumMeta):
+class SubsetEnumMeta(EnumMeta):
     def __call__(self, value, *args, **kwargs):  # type: ignore
         if isinstance(value, str) and not isinstance(value, self):
             return value
         return super().__call__(value, *args, **kwargs)
 
 
-class SubsetEnum(StrictEnum, metaclass=SubsetEnumType):
+class SubsetEnum(StrictEnum, metaclass=SubsetEnumMeta):
     """All members should exist in the Backend, but there may be extras"""
 
 
@@ -152,7 +152,7 @@ def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
     >>> get_dtype(npt.NDArray[np.int8])
     dtype('int8')
     """
-    if get_origin(datatype) == Sequence:
+    if get_origin(datatype) is Sequence:
         datatype = get_args(datatype)[0]
     if datatype and issubclass(datatype, Enum):
         if not issubclass(datatype, StrictEnum):
@@ -220,3 +220,27 @@ def get_origin_class(annotatation: Any) -> type | None:
     origin = get_origin(annotatation) or annotatation
     if isinstance(origin, type):
         return origin
+
+
+class Reference(Generic[T]):
+    """Hide an object behind a reference.
+
+    Used to opt out of the naming/parent-child relationship of `Device`.
+
+    For example::
+
+        class DeviceWithRefToSignal(Device):
+            def __init__(self, signal: SignalRW[int]):
+                self.signal_ref = Reference(signal)
+                super().__init__()
+
+            def set(self, value) -> AsyncStatus:
+                return self.signal_ref().set(value + 1)
+
+    """
+
+    def __init__(self, obj: T):
+        self._obj = obj
+
+    def __call__(self) -> T:
+        return self._obj

@@ -19,7 +19,7 @@ def test_seq_table_converts_lists():
 
 
 def test_seq_table_validation_errors():
-    with pytest.raises(ValidationError, match="81 validation errors for SeqTable"):
+    with pytest.raises(ValidationError, match="17 validation errors for SeqTable"):
         SeqTable(
             repeats=0,
             trigger=SeqTrigger.IMMEDIATE,

@@ -14,6 +14,26 @@ from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
 
 
 class DeviceConnector:
+    """Defines how a `Device` should be connected and type hints processed."""
+
+    def create_children_from_annotations(self, device: Device):
+        """Used when children can be created from introspecting the hardware.
+
+        Some control systems allow introspection of a device to determine what
+        children it has. To allow this to work nicely with typing we add these
+        hints to the Device like so::
+
+            my_signal: SignalRW[int]
+            my_device: MyDevice
+
+        This method will be run during ``Device.__init__``, and is responsible
+        for turning all of those type hints into real Signal and Device instances.
+
+        Subsequent runs of this function should do nothing, to allow it to be
+        called early in Devices that need to pass references to their children
+        during ``__init__``.
+        """
+
     async def connect(
         self,
         device: Device,
@@ -21,6 +41,12 @@ class DeviceConnector:
         timeout: float,
         force_reconnect: bool,
     ):
+        """Used during ``Device.connect``.
+
+        This is called when a previous connect has not been done, or has been
+        done in a different mock more. It should connect the Device and all its
+        children.
+        """
         coros = {
             name: child_device.connect(
                 mock=mock, timeout=timeout, force_reconnect=force_reconnect
@@ -28,9 +54,6 @@ class DeviceConnector:
             for name, child_device in device.children()
         }
         await wait_for_connection(**coros)
-
-    def create_children_from_annotations(self, device: Device):
-        pass
 
 
 class Device(HasName, Connectable):
@@ -41,8 +64,8 @@ class Device(HasName, Connectable):
     parent: Device | None = None
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
-    # Used to check if the previous connect was mocked,
-    # if the next mock value differs then we fail
+    # If not None, then this is the mock arg of the previous connect
+    # to let us know if we can reuse an existing connection
     _connect_mock_arg: bool | None = None
 
     def __init__(
@@ -58,11 +81,7 @@ class Device(HasName, Connectable):
 
     def children(self) -> Iterator[tuple[str, Device]]:
         for attr_name, attr in self.__dict__.items():
-            if (
-                attr_name != "parent"
-                and not attr_name.startswith("_")
-                and isinstance(attr, Device)
-            ):
+            if attr_name != "parent" and isinstance(attr, Device):
                 yield attr_name, attr
 
     def set_name(self, name: str):
@@ -79,7 +98,7 @@ class Device(HasName, Connectable):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
         for child_name, child in self.children():
-            child_name = f"{self.name}-{child_name.rstrip('_')}" if self.name else ""
+            child_name = f"{self.name}-{child_name.strip('_')}" if self.name else ""
             child.set_name(child_name)
 
     def __setattr__(self, name: str, value: Any) -> None:
@@ -89,7 +108,7 @@ class Device(HasName, Connectable):
                     f"Cannot set the parent of {self} to be {value}: "
                     f"it is already a child of {self.parent}"
                 )
-        elif not name.startswith("_") and isinstance(value, Device):
+        elif isinstance(value, Device):
             value.parent = self
         return super().__setattr__(name, value)
 
@@ -153,21 +172,20 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
                 "DeviceVector can only have integer named children, "
                 "set via device_vector[i] = child"
             )
-        else:
-            super().__setattr__(name, child)
+        super().__setattr__(name, child)
 
     def __getitem__(self, key: int) -> DeviceT:
-        assert isinstance(key, int), f"Expected int, got {key}"
         return self._children[key]
 
     def __setitem__(self, key: int, value: DeviceT) -> None:
+        # Check the types on entry to dict to make sure we can't accidentally
+        # make a non-integer named child
         assert isinstance(key, int), f"Expected int, got {key}"
         assert isinstance(value, Device), f"Expected Device, got {value}"
         self._children[key] = value
         value.parent = self
 
     def __delitem__(self, key: int) -> None:
-        assert isinstance(key, int), f"Expected int, got {key}"
         del self._children[key]
 
     def __iter__(self) -> Iterator[int]:

@@ -107,8 +107,10 @@ class TangoDeviceConnector(DeviceConnector):
     def create_children_from_annotations(self, device: Device):
         self._filler = DeviceFiller(
             device=device,
-            signal_backend_type=TangoSignalBackend,
-            device_connector_type=type(self),
+            signal_backend_factory=TangoSignalBackend,
+            device_connector_factory=lambda: TangoDeviceConnector(
+                None, None, (False, 0.1, None, None), {}
+            ),
         )
 
     async def connect(

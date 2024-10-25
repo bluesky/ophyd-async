@@ -99,8 +99,8 @@ async def test_pcomp_trigger_logic(mock_panda):
                 "sequence_table_factory": lambda: 1,
                 "repeats": 1,
             },
-            "Input should be a valid dictionary or instance of SeqTable "
-            "[type=model_type, input_value=1, input_type=int]",
+            "Assertion failed, Cannot construct Table from 1 "
+            "[type=assertion_error, input_value=1, input_type=int]",
         ),
     ],
 )

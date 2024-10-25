@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Annotated, TypeVar, get_origin
+from typing import Annotated, Any, TypeVar, get_origin
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -22,7 +22,14 @@ def _concat(value1, value2):
 class Table(BaseModel):
     """An abstraction of a Table of str to numpy array."""
 
-    # Allow extra so we can use this as a generic Table
+    # You can use Table in 2 ways:
+    # 1. Table(**whatever_pva_gives_us) when pvi adds a Signal to a Device that is not
+    #    type hinted
+    # 2. MyTable(**whatever_pva_gives_us) where the Signal is type hinted
+    #
+    # For 1 we want extra="allow" so it is passed through as is. There are no base class
+    # fields, only "extra" fields, so they must be allowed. For 2 we want extra="forbid"
+    # so it is strictly checked against the BaseModel we are supplied.
     model_config = ConfigDict(extra="allow")
 
     @classmethod
@@ -91,27 +98,35 @@ class Table(BaseModel):
         assert array is not None
         return array
 
-    # TODO: would like to do this validation, but too strict for CA which returns
-    # bool arrays as uint8 arrays
-    # @model_validator(mode="before")
-    # @classmethod
-    # def validate_array_dtypes(cls, data: Any) -> Any:
-    #     if isinstance(data, dict):
-    #         data_dict = data
-    #     elif isinstance(data, Table):
-    #         data_dict = data.model_dump()
-    #     else:
-    #         assert False, f"Cannot construct Table from {data}"
-    #     for field_name, field_value in cls.model_fields.items():
-    #         if get_origin(field_value.annotation) is np.ndarray:
-    #             data_value = data_dict.get(field_name, None)
-    #             if isinstance(data_value, np.ndarray) and field_value.annotation:
-    #                 expected_dtype = get_dtype(field_value.annotation)
-    #                 assert data_value.dtype == expected_dtype, (
-    #                     f"{field_name}: expected dtype {expected_dtype}, "
-    #                     f"got {data_value.dtype}"
-    #                 )
-    #     return data
+    @model_validator(mode="before")
+    @classmethod
+    def validate_array_dtypes(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            data_dict = data
+        elif isinstance(data, Table):
+            data_dict = data.model_dump()
+        else:
+            raise AssertionError(f"Cannot construct Table from {data}")
+        for field_name, field_value in cls.model_fields.items():
+            if (
+                get_origin(field_value.annotation) is np.ndarray
+                and field_value.annotation
+                and field_name in data_dict
+            ):
+                data_value = data_dict[field_name]
+                expected_dtype = get_dtype(field_value.annotation)
+                # Convert to correct dtype, but only if we don't lose precision
+                # as a result
+                try:
+                    cast_value = np.array(data_value, dtype=expected_dtype)
+                except OverflowError as e:
+                    raise AssertionError(f"{field_name}: {e}") from e
+                assert np.array_equal(data_value, cast_value), (
+                    f"{field_name}: Cannot cast {data_value} to {expected_dtype} "
+                    "without losing precision"
+                )
+                data_dict[field_name] = cast_value
+        return data_dict
 
     @model_validator(mode="after")
     def validate_lengths(self) -> Table:

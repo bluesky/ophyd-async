@@ -38,6 +38,8 @@ class Connectable(Protocol):
             If True then use ``MockSignalBackend`` for all Signals
         timeout:
             Time to wait before failing with a TimeoutError.
+        force_reconnect:
+            Reconnect even if previous connect was successful.
         """
 
 

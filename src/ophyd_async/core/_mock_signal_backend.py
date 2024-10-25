@@ -58,8 +58,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         return await self.soft_backend.get_reading()
 
     async def get_value(self) -> SignalDatatypeT:
-        v = await self.soft_backend.get_value()
-        return v
+        return await self.soft_backend.get_value()
 
     async def get_setpoint(self) -> SignalDatatypeT:
         return await self.soft_backend.get_setpoint()

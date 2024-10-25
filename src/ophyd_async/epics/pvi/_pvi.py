@@ -36,8 +36,8 @@ class PviDeviceConnector(DeviceConnector):
     def create_children_from_annotations(self, device: Device):
         self._filler = DeviceFiller(
             device=device,
-            signal_backend_type=PvaSignalBackend,
-            device_connector_type=type(self),
+            signal_backend_factory=PvaSignalBackend,
+            device_connector_factory=PviDeviceConnector,
         )
 
     async def connect(

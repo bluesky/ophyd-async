@@ -13,13 +13,13 @@ from ._writer import PandaHDFWriter
 class HDFPanda(CommonPandaBlocks, StandardDetector):
     def __init__(
         self,
-        uri: str,
+        prefix: str,
         path_provider: PathProvider,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
         # This has to be first so we make self.pcap
-        connector = fastcs_connector(self, uri)
+        connector = fastcs_connector(self, prefix)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             path_provider=path_provider,

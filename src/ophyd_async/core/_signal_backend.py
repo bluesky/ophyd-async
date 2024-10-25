@@ -12,6 +12,7 @@ from ._utils import Callback, StrictEnum, T
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 Array1D = np.ndarray[tuple[int], np.dtype[DTypeScalar_co]]
 Primitive = bool | int | float | str
+# NOTE: if you change this union then update the docs to match
 SignalDatatype = (
     Primitive
     | Array1D[np.bool_]
@@ -120,7 +121,7 @@ def _datakey_dtype_numpy(
         # The value already has a dtype, use that
         return value.dtype
     elif (
-        get_origin(datatype) == Sequence
+        get_origin(datatype) is Sequence
         or datatype is str
         or issubclass(datatype, StrictEnum)
     ):

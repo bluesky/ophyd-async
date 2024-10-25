@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 import re
-from typing import Generic, NoReturn, TypeVar, get_args, get_origin, get_type_hints
+from collections.abc import Callable
+from typing import (
+    Generic,
+    NoReturn,
+    TypeVar,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Signal, SignalX
-from ._signal_backend import SignalBackend
+from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import get_origin_class
 
 
@@ -29,12 +37,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def __init__(
         self,
         device: Device,
-        signal_backend_type: type[SignalBackendT],
-        device_connector_type: type[DeviceConnectorT],
+        signal_backend_factory: Callable[[type[SignalDatatype] | None], SignalBackendT],
+        device_connector_factory: Callable[[], DeviceConnectorT],
     ):
         self._device = device
-        self._signal_backend_type = signal_backend_type
-        self._device_connector_type = device_connector_type
+        self._signal_backend_factory = signal_backend_factory
+        self._device_connector_factory = device_connector_factory
         self._vectors: dict[str, DeviceVector] = {}
         self._vector_device_type: dict[str, type[Device] | None] = {}
         self._signal_backends: dict[str, tuple[SignalBackendT, type[Signal]]] = {}
@@ -101,7 +109,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 # DeviceVector needs a type of device
                 self.make_device_vector(basename, None)
 
-    def get_datatype(self, name: str) -> type | None:
+    def get_datatype(self, name: str) -> type[SignalDatatype] | None:
         # Get dtype from SignalRW[dtype] or DeviceVector[SignalRW[dtype]]
         basename, _ = _strip_number_from_string(name)
         if basename in self._vectors:
@@ -124,7 +132,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We need to make a new one
             basename, number = _strip_number_from_string(name)
             child = getattr(self._device, name, None)
-            backend = self._signal_backend_type(self.get_datatype(name))
+            backend = self._signal_backend_factory(self.get_datatype(name))
             signal = signal_type(backend)
             if basename in self._vectors and isinstance(number, int):
                 # We need to add a new entry to an existing DeviceVector
@@ -157,12 +165,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             assert issubclass(
                 vector_device_type, Device
             ), f"{vector_device_type} is not a Device"
-            connector = self._device_connector_type()
+            connector = self._device_connector_factory()
             device = vector_device_type(connector=connector)
             self._vectors[basename][number] = device
         elif child is None:
             # We need to add a new child to the top level Device
-            connector = self._device_connector_type()
+            connector = self._device_connector_factory()
             device = device_type(connector=connector)
             setattr(self._device, name, device)
         else:
