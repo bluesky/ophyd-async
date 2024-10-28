@@ -1,24 +1,24 @@
 import time
-from typing import AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from collections.abc import AsyncGenerator, AsyncIterator, Sequence
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky.protocols import DataKey, StreamAsset
+from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, compose_stream_resource
+from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncReadable,
     AsyncStatus,
-    DetectorControl,
+    DetectorController,
     DetectorWriter,
     DeviceCollector,
+    FlyerController,
     SignalR,
     StandardDetector,
     StandardFlyer,
-    TriggerLogic,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
@@ -42,12 +42,12 @@ class DummyWriter(DetectorWriter):
         self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
-        self._file: Optional[ComposeStreamResourceBundle] = None
+        self._file: ComposeStreamResourceBundle | None = None
         self._last_emitted = 0
         self.index = 0
         self.observe_indices_written_timeout_log = []
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         return {
             self._name: DataKey(
                 source="soft://some-source",
@@ -106,7 +106,7 @@ class DummyWriter(DetectorWriter):
 class MockDetector(StandardDetector):
     def __init__(
         self,
-        controller: DetectorControl,
+        controller: DetectorController,
         writer: DetectorWriter,
         config_sigs: Sequence[AsyncReadable] = [],
         name: str = "",
@@ -116,6 +116,7 @@ class MockDetector(StandardDetector):
     @WatchableAsyncStatus.wrap
     async def complete(self):
         assert self._trigger_info
+        assert self._fly_start
         self.writer.increment_index()
         async for index in self.writer.observe_indices_written(
             self._trigger_info.frame_timeout
@@ -129,12 +130,15 @@ class MockDetector(StandardDetector):
                 name=self.name,
                 current=index,
                 initial=self._initial_frame,
-                target=self._trigger_info.number,
+                target=self._trigger_info.number_of_triggers,
                 unit="",
                 precision=0,
                 time_elapsed=time.monotonic() - self._fly_start,
             )
-            if index >= self._trigger_info.number:
+            if (
+                isinstance(self._trigger_info.number_of_triggers, int)
+                and index >= self._trigger_info.number_of_triggers
+            ):
                 break
 
 
@@ -151,12 +155,12 @@ async def detectors(RE: RunEngine) -> tuple[MockDetector, MockDetector]:
         return writers[1].dummy_signal.set(1)
 
     detector_1 = MockDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
     )
     detector_2 = MockDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
     )
@@ -186,11 +190,11 @@ async def mock_panda():
 class MockFlyer(StandardFlyer):
     def __init__(
         self,
-        trigger_logic: TriggerLogic,
+        trigger_logic: FlyerController,
         configuration_signals: Sequence[SignalR] = ...,
         name: str = "",
     ):
-        super().__init__(trigger_logic, configuration_signals, name)
+        super().__init__(trigger_logic, name)
 
     @AsyncStatus.wrap
     async def kickoff(self) -> None:
@@ -207,7 +211,7 @@ class MockFlyer(StandardFlyer):
 async def seq_flyer(mock_panda):
     # Make flyer
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    flyer = MockFlyer(trigger_logic, [], name="flyer")
+    flyer = MockFlyer(trigger_logic, name="flyer")
 
     return flyer
 
@@ -216,7 +220,7 @@ async def seq_flyer(mock_panda):
 async def pcomp_flyer(mock_panda):
     # Make flyer
     trigger_logic = StaticPcompTriggerLogic(mock_panda.pcomp[1])
-    flyer = MockFlyer(trigger_logic, [], name="flyer")
+    flyer = MockFlyer(trigger_logic, name="flyer")
 
     return flyer
 
@@ -250,7 +254,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
     shutter_time = 0.004
 
     trigger_logic = StaticSeqTableTriggerLogic(mock_panda.seq[1])
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(*detector_list, flyer)
@@ -264,7 +268,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         )
 
         for detector in detector_list:
-            detector.controller.disarm.assert_called_once  # type: ignore
+            detector.controller.disarm.assert_called_once()  # type: ignore
 
         yield from bps.open_run()
         yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)

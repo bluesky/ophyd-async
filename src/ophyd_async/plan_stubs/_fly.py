@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
@@ -20,7 +18,7 @@ from ophyd_async.fastcs.panda import (
 
 def prepare_static_pcomp_flyer_and_detectors(
     flyer: StandardFlyer[PcompInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     pcomp_info: PcompInfo,
     trigger_info: TriggerInfo,
 ):
@@ -39,14 +37,13 @@ def prepare_static_pcomp_flyer_and_detectors(
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     flyer: StandardFlyer[SeqTableInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     number_of_frames: int,
     exposure: float,
     shutter_time: float,
     repeats: int = 1,
     period: float = 0.0,
-    frame_timeout: Optional[float] = None,
-    iteration: int = 1,
+    frame_timeout: float | None = None,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
 
@@ -64,12 +61,11 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
 
     trigger_info = TriggerInfo(
-        number=number_of_frames * repeats,
+        number_of_triggers=number_of_frames * repeats,
         trigger=DetectorTrigger.constant_gate,
         deadtime=deadtime,
         livetime=exposure,
         frame_timeout=frame_timeout,
-        iteration=iteration,
     )
     trigger_time = number_of_frames * (exposure + deadtime)
     pre_delay = max(period - 2 * shutter_time - trigger_time, 0)
@@ -107,7 +103,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 def fly_and_collect(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
 
@@ -147,7 +143,7 @@ def fly_and_collect(
 def fly_and_collect_with_static_pcomp(
     stream_name: str,
     flyer: StandardFlyer[PcompInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     number_of_pulses: int,
     pulse_width: int,
     rising_edge_step: int,
@@ -173,7 +169,7 @@ def fly_and_collect_with_static_pcomp(
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo],
-    detectors: List[StandardDetector],
+    detectors: list[StandardDetector],
     number_of_frames: int,
     exposure: float,
     shutter_time: float,

@@ -2,7 +2,7 @@ import asyncio
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     set_and_wait_for_other_value,
 )
@@ -18,14 +18,14 @@ EIGER_TRIGGER_MODE_MAP = {
 }
 
 
-class EigerController(DetectorControl):
+class EigerController(DetectorController):
     def __init__(
         self,
         driver: EigerDriverIO,
     ) -> None:
         self._drv = driver
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         # See https://media.dectris.com/filer_public/30/14/3014704e-5f3b-43ba-8ccf-8ef720e60d2a/240202_usermanual_eiger2.pdf
         return 0.0001
 
@@ -41,7 +41,7 @@ class EigerController(DetectorControl):
             self._drv.trigger_mode.set(
                 EIGER_TRIGGER_MODE_MAP[trigger_info.trigger].value
             ),
-            self._drv.num_images.set(trigger_info.number),
+            self._drv.num_images.set(trigger_info.total_number_of_triggers),
         ]
         if trigger_info.livetime is not None:
             coros.extend(

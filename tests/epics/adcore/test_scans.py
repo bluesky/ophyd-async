@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import bluesky.plan_stubs as bps
@@ -10,19 +10,19 @@ from bluesky import RunEngine
 
 from ophyd_async.core import (
     AsyncStatus,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     DeviceCollector,
+    FlyerController,
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    TriggerLogic,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
 
 
-class DummyTriggerLogic(TriggerLogic[int]):
+class DummyTriggerLogic(FlyerController[int]):
     def __init__(self): ...
 
     async def prepare(self, value: int):
@@ -35,7 +35,7 @@ class DummyTriggerLogic(TriggerLogic[int]):
     async def stop(self): ...
 
 
-class DummyController(DetectorControl):
+class DummyController(DetectorController):
     def __init__(self) -> None: ...
     async def prepare(self, trigger_info: TriggerInfo):
         return AsyncStatus(asyncio.sleep(0.01))
@@ -97,14 +97,17 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     controller = DummyController()
     set_mock_value(writer.hdf.file_path_exists, True)
 
-    detector: StandardDetector[Optional[TriggerInfo]] = StandardDetector(
+    detector: StandardDetector[TriggerInfo | None] = StandardDetector(
         controller, writer
     )
     trigger_logic = DummyTriggerLogic()
 
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
-        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+        number_of_triggers=1,
+        trigger=DetectorTrigger.constant_gate,
+        deadtime=2,
+        livetime=2,
     )
 
     def flying_plan():

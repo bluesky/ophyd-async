@@ -1,10 +1,10 @@
-import inspect
+from collections.abc import Sequence
 from enum import Enum
-from typing import Annotated, Sequence
+from typing import Annotated
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from typing_extensions import TypedDict
 
@@ -38,26 +38,20 @@ class SeqTrigger(str, Enum):
 
 
 PydanticNp1DArrayInt32 = Annotated[
-    np.ndarray[tuple[int], np.int32],
+    np.ndarray[tuple[int], np.dtype[np.int32]],
     NpArrayPydanticAnnotation.factory(
         data_type=np.int32, dimensions=1, strict_data_typing=False
     ),
     Field(default_factory=lambda: np.array([], np.int32)),
 ]
 PydanticNp1DArrayBool = Annotated[
-    np.ndarray[tuple[int], np.bool_],
+    np.ndarray[tuple[int], np.dtype[np.bool_]],
     NpArrayPydanticAnnotation.factory(
         data_type=np.bool_, dimensions=1, strict_data_typing=False
     ),
     Field(default_factory=lambda: np.array([], dtype=np.bool_)),
 ]
-TriggerStr = Annotated[
-    np.ndarray[tuple[int], np.unicode_],
-    NpArrayPydanticAnnotation.factory(
-        data_type=np.unicode_, dimensions=1, strict_data_typing=False
-    ),
-    Field(default_factory=lambda: np.array([], dtype=np.dtype("<U32"))),
-]
+TriggerStr = Annotated[Sequence[SeqTrigger], Field(default_factory=list)]
 
 
 class SeqTable(Table):
@@ -80,7 +74,7 @@ class SeqTable(Table):
     outf2: PydanticNp1DArrayBool
 
     @classmethod
-    def row(
+    def row(  # type: ignore
         cls,
         *,
         repeats: int = 1,
@@ -101,41 +95,7 @@ class SeqTable(Table):
         oute2: bool = False,
         outf2: bool = False,
     ) -> "SeqTable":
-        sig = inspect.signature(cls.row)
-        kwargs = {k: v for k, v in locals().items() if k in sig.parameters}
-
-        if isinstance(kwargs["trigger"], SeqTrigger):
-            kwargs["trigger"] = kwargs["trigger"].value
-        elif isinstance(kwargs["trigger"], str):
-            SeqTrigger(kwargs["trigger"])
-
-        return Table.row(cls, **kwargs)
-
-    @field_validator("trigger", mode="before")
-    @classmethod
-    def trigger_to_np_array(cls, trigger_column):
-        """
-        The user can provide a list of SeqTrigger enum elements instead of a numpy str.
-        """
-        if isinstance(trigger_column, Sequence) and all(
-            isinstance(trigger, SeqTrigger) for trigger in trigger_column
-        ):
-            trigger_column = np.array(
-                [trigger.value for trigger in trigger_column], dtype=np.dtype("<U32")
-            )
-        elif isinstance(trigger_column, Sequence) or isinstance(
-            trigger_column, np.ndarray
-        ):
-            for trigger in trigger_column:
-                SeqTrigger(
-                    trigger
-                )  # To check all the given strings are actually `SeqTrigger`s
-        else:
-            raise ValueError(
-                "Expected a numpy array or a sequence of `SeqTrigger`, got "
-                f"{type(trigger_column)}."
-            )
-        return trigger_column
+        return Table.row(**locals())
 
     @model_validator(mode="after")
     def validate_max_length(self) -> "SeqTable":

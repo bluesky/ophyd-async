@@ -1,7 +1,6 @@
 import asyncio
 import subprocess
 from collections import defaultdict
-from typing import Dict
 from unittest.mock import ANY, Mock, call, patch
 
 import pytest
@@ -218,7 +217,7 @@ async def test_read_mover(mock_mover: demo.Mover):
 
 async def test_set_velocity(mock_mover: demo.Mover) -> None:
     v = mock_mover.velocity
-    q: asyncio.Queue[Dict[str, Reading]] = asyncio.Queue()
+    q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["mock_mover-velocity"]["value"] == 1.0
     await v.set(2.0)
@@ -229,7 +228,7 @@ async def test_set_velocity(mock_mover: demo.Mover) -> None:
     assert q.empty()
 
 
-async def test_mover_disconncted():
+async def test_mover_disconnected():
     with pytest.raises(NotConnected):
         async with DeviceCollector(timeout=0.1):
             m = demo.Mover("ca://PRE:", name="mover")

@@ -1,11 +1,10 @@
 import asyncio
-from typing import FrozenSet, Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     DatasetDescriber,
-    DetectorControl,
+    DetectorController,
     set_and_wait_for_value,
 )
 from ophyd_async.epics.adcore._utils import convert_ad_dtype_to_np
@@ -14,7 +13,7 @@ from ._core_io import ADBaseIO, DetectorState
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
-DEFAULT_GOOD_STATES: FrozenSet[DetectorState] = frozenset(
+DEFAULT_GOOD_STATES: frozenset[DetectorState] = frozenset(
     [DetectorState.Idle, DetectorState.Aborted]
 )
 
@@ -35,7 +34,7 @@ class ADBaseDatasetDescriber(DatasetDescriber):
 
 
 async def set_exposure_time_and_acquire_period_if_supplied(
-    controller: DetectorControl,
+    controller: DetectorController,
     driver: ADBaseIO,
     exposure: float | None = None,
     timeout: float = DEFAULT_TIMEOUT,
@@ -66,7 +65,7 @@ async def set_exposure_time_and_acquire_period_if_supplied(
 
 async def start_acquiring_driver_and_ensure_status(
     driver: ADBaseIO,
-    good_states: Set[DetectorState] = set(DEFAULT_GOOD_STATES),
+    good_states: frozenset[DetectorState] = frozenset(DEFAULT_GOOD_STATES),
     timeout: float = DEFAULT_TIMEOUT,
 ) -> AsyncStatus:
     """

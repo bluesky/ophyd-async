@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
 from ophyd_async.epics import adcore
@@ -30,6 +30,6 @@ class SimDetector(StandardDetector):
                 lambda: self.name,
                 adcore.ADBaseDatasetDescriber(self.drv),
             ),
-            config_sigs=config_sigs,
+            config_sigs=(self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
             name=name,
         )

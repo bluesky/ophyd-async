@@ -1,26 +1,28 @@
 import time
+from collections.abc import AsyncGenerator, AsyncIterator, Sequence
 from enum import Enum
-from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional, Sequence
+from typing import Any
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
 import pytest
-from bluesky.protocols import DataKey, StreamAsset
+from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, compose_stream_resource
+from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource
 from pydantic import ValidationError
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
     DetectorWriter,
+    FlyerController,
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
-    TriggerLogic,
     observe_value,
 )
+from ophyd_async.core._signal import assert_emitted
 from ophyd_async.epics.signal import epics_signal_rw
 
 
@@ -31,7 +33,7 @@ class TriggerState(str, Enum):
     stopping = "stopping"
 
 
-class DummyTriggerLogic(TriggerLogic[int]):
+class DummyTriggerLogic(FlyerController[int]):
     def __init__(self):
         self.state = TriggerState.null
 
@@ -54,11 +56,11 @@ class DummyWriter(DetectorWriter):
         self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
-        self._file: Optional[ComposeStreamResourceBundle] = None
+        self._file: ComposeStreamResourceBundle | None = None
         self._last_emitted = 0
         self.index = 0
 
-    async def open(self, multiplier: int = 1) -> Dict[str, DataKey]:
+    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         return {
             self._name: DataKey(
                 source="soft://some-source",
@@ -124,12 +126,12 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
         return writers[1].dummy_signal.set(1)
 
     detector_1: StandardDetector[Any] = StandardDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_1),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
     )
     detector_2: StandardDetector[Any] = StandardDetector(
-        Mock(spec=DetectorControl, get_deadtime=lambda num: num, arm=dummy_arm_2),
+        Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
     )
@@ -137,22 +139,151 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     return (detector_1, detector_2)
 
 
+@pytest.mark.parametrize(
+    "number_of_triggers", [[1, 2, 3, 4], [2, 3, 100, 3], [1, 1, 1, 1]]
+)
 async def test_hardware_triggered_flyable(
-    RE: RunEngine, detectors: tuple[StandardDetector]
+    RE: RunEngine, detectors: tuple[StandardDetector], number_of_triggers: list[int]
 ):
-    names = []
-    docs = []
+    docs = {}
 
     def append_and_print(name, doc):
-        names.append(name)
-        docs.append(doc)
+        if name not in docs:
+            docs[name] = []
+        docs[name] += [doc]
 
     RE.subscribe(append_and_print)
 
     trigger_logic = DummyTriggerLogic()
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
+
+    def flying_plan():
+        yield from bps.stage_all(*detectors, flyer)
+        assert flyer._trigger_logic.state == TriggerState.stopping
+
+        # move the flyer to the correct place, before fly scanning.
+        # Prepare the flyer first to get the trigger info for the detectors
+        yield from bps.prepare(flyer, 1, wait=True)
+
+        # prepare detectors second.
+        for detector in detectors:
+            yield from bps.prepare(
+                detector,
+                TriggerInfo(
+                    number_of_triggers=number_of_triggers,
+                    trigger=DetectorTrigger.constant_gate,
+                    deadtime=2,
+                    livetime=2,
+                ),
+                wait=True,
+            )
+
+        assert flyer._trigger_logic.state == TriggerState.preparing
+        for detector in detectors:
+            detector.controller.disarm.assert_called_once()  # type: ignore
+
+        yield from bps.open_run()
+        yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
+        frames_completed: int = 0
+        for frames in number_of_triggers:
+            yield from bps.kickoff(flyer)
+            for detector in detectors:
+                yield from bps.kickoff(detector)
+
+            yield from bps.complete(flyer, wait=False, group="complete")
+            for detector in detectors:
+                yield from bps.complete(detector, wait=False, group="complete")
+
+            assert flyer._trigger_logic.state == TriggerState.null
+
+            # Manually increment the index as if a frame was taken
+            frames_completed += frames
+            for detector in detectors:
+                yield from bps.abs_set(detector.writer.dummy_signal, frames_completed)
+                detector.writer.index = frames_completed
+            done = False
+            while not done:
+                try:
+                    yield from bps.wait(group="complete", timeout=0.5)
+                except TimeoutError:
+                    pass
+                else:
+                    done = True
+
+                    yield from bps.collect(
+                        *detectors,
+                        return_payload=False,
+                        name="main_stream",
+                    )
+            yield from bps.wait(group="complete")
+
+        for detector in detectors:
+            # ensure _completable_frames are reset after completion
+            assert detector._completable_frames == 0
+
+        yield from bps.close_run()
+
+        yield from bps.unstage_all(flyer, *detectors)
+        for detector in detectors:
+            assert detector.controller.disarm.called  # type: ignore
+        assert trigger_logic.state == TriggerState.stopping
+
+    # fly scan
+    RE(flying_plan())
+
+    assert_emitted(
+        docs,
+        start=1,
+        descriptor=1,
+        stream_resource=2,
+        stream_datum=2 * len(number_of_triggers),
+        stop=1,
+    )
+    # test stream datum
+    seq_numbers: list = []
+    frame_completed: int = 0
+    last_frame_collected: int = 0
+    for frame in number_of_triggers:
+        frame_completed += frame
+        seq_numbers.extend([(last_frame_collected, frame_completed)] * 2)
+        last_frame_collected = frame_completed
+    for index, stream_datum in enumerate(docs["stream_datum"]):
+        assert stream_datum["descriptor"] == docs["descriptor"][0]["uid"]
+        assert stream_datum["seq_nums"] == {
+            "start": seq_numbers[index][0] + 1,
+            "stop": seq_numbers[index][1] + 1,
+        }
+        assert stream_datum["indices"] == {
+            "start": seq_numbers[index][0],
+            "stop": seq_numbers[index][1],
+        }
+        assert stream_datum["stream_resource"] in [
+            sd["uid"].split("/")[0] for sd in docs["stream_datum"]
+        ]
+
+
+@pytest.mark.parametrize(
+    "number_of_triggers,invoke_extra_kickoff_before_complete",
+    [
+        (10, True),
+        ([10], True),
+        (10, False),
+        ([10], False),
+    ],
+)
+async def test_hardware_triggered_flyable_too_many_kickoffs(
+    RE: RunEngine,
+    detectors: tuple[StandardDetector],
+    number_of_triggers: int | list[int],
+    invoke_extra_kickoff_before_complete: bool,
+):
+    trigger_logic = DummyTriggerLogic()
+    flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
-        number=1, trigger=DetectorTrigger.constant_gate, deadtime=2, livetime=2
+        number_of_triggers=number_of_triggers,
+        trigger=DetectorTrigger.constant_gate,
+        deadtime=2,
+        livetime=2,
     )
 
     def flying_plan():
@@ -171,71 +302,59 @@ async def test_hardware_triggered_flyable(
                 wait=True,
             )
 
-        assert flyer._trigger_logic.state == TriggerState.preparing
-        for detector in detectors:
-            detector.controller.disarm.assert_called_once  # type: ignore
-
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
 
         yield from bps.kickoff(flyer)
         for detector in detectors:
             yield from bps.kickoff(detector)
-
+            # Perform an additional kickoff
+            if invoke_extra_kickoff_before_complete:
+                yield from bps.kickoff(detector)
         yield from bps.complete(flyer, wait=False, group="complete")
         for detector in detectors:
             yield from bps.complete(detector, wait=False, group="complete")
+
         assert flyer._trigger_logic.state == TriggerState.null
 
-        # Manually incremenet the index as if a frame was taken
+        # Manually increment the index as if a frame was taken
         for detector in detectors:
-            detector.writer.index += 1
-
-        done = False
-        while not done:
-            try:
-                yield from bps.wait(group="complete", timeout=0.5)
-            except TimeoutError:
-                pass
-            else:
-                done = True
-            yield from bps.collect(
-                *detectors,
-                return_payload=False,
-                name="main_stream",
+            yield from bps.abs_set(
+                detector.writer.dummy_signal, trigger_info.total_number_of_triggers
             )
+            detector.writer.index = trigger_info.total_number_of_triggers
+
         yield from bps.wait(group="complete")
+
+        yield from bps.collect(
+            *detectors,
+            return_payload=False,
+            name="main_stream",
+        )
+
+        for detector in detectors:
+            # Since we set number of iterations to 1 (default),
+            # make sure it gets reset on complete
+            assert detector._completable_frames == 0
+            assert detector._frames_to_complete == 0
+            assert detector._number_of_triggers_iter is None
+            assert detector.controller.wait_for_idle.called  # type: ignore
+
+            # This is an additional kickoff
+            # Ensuring stop iteration is called if kickoff is invoked after complete
+            if not invoke_extra_kickoff_before_complete:
+                yield from bps.kickoff(detector)
         yield from bps.close_run()
 
         yield from bps.unstage_all(flyer, *detectors)
-        for detector in detectors:
-            assert detector.controller.disarm.called  # type: ignore
-        assert trigger_logic.state == TriggerState.stopping
 
     # fly scan
-    RE(flying_plan())
-
-    assert names == [
-        "start",
-        "descriptor",
-        "stream_resource",
-        "stream_datum",
-        "stream_resource",
-        "stream_datum",
-        "stop",
-    ]
-
-
-# To do: Populate configuration signals
-async def test_describe_configuration():
-    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
-    assert await flyer.describe_configuration() == {}
-
-
-# To do: Populate configuration signals
-async def test_read_configuration():
-    flyer = StandardFlyer(DummyTriggerLogic(), [], name="flyer")
-    assert await flyer.read_configuration() == {}
+    if invoke_extra_kickoff_before_complete:
+        match_msg = "Kickoff called more than the configured number"
+    else:
+        match_msg = "Prepare must be called before kickoff!"
+    with pytest.raises(Exception, match=match_msg):
+        RE(flying_plan())
 
 
 @pytest.mark.parametrize(
@@ -243,7 +362,7 @@ async def test_read_configuration():
     [
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": DetectorTrigger.constant_gate,
                 "deadtime": 2,
                 "livetime": 2,
@@ -254,7 +373,7 @@ async def test_read_configuration():
         ),
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": "constant_gate",
                 "deadtime": 2,
                 "livetime": -1,
@@ -264,7 +383,7 @@ async def test_read_configuration():
         ),
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": DetectorTrigger.internal,
                 "deadtime": 2,
                 "livetime": 1,
@@ -275,7 +394,7 @@ async def test_read_configuration():
         ),
         (
             {
-                "number": 1,
+                "number_of_triggers": 1,
                 "trigger": "not_in_enum",
                 "deadtime": 2,
                 "livetime": 1,
@@ -283,6 +402,27 @@ async def test_read_configuration():
             },
             "Input should be 'internal', 'edge_trigger', 'constant_gate' or "
             "'variable_gate' [type=enum, input_value='not_in_enum', input_type=str]",
+        ),
+        (
+            {
+                "number_of_triggers": -100,
+                "trigger": "constant_gate",
+                "deadtime": 2,
+                "livetime": 1,
+            },
+            "number_of_triggers.constrained-int\n  Input should be greater than or "
+            "equal to 0 [type=greater_than_equal, input_value=-100, input_type=int]",
+        ),
+        (
+            {
+                "number_of_triggers": [1, 1, 1, 1, -100],
+                "trigger": "constant_gate",
+                "deadtime": 2,
+                "livetime": 1,
+            },
+            "number_of_triggers.list[constrained-int].4\n"
+            "  Input should be greater than or equal to 0 [type=greater_than_equal,"
+            " input_value=-100, input_type=int]\n",
         ),
     ],
 )

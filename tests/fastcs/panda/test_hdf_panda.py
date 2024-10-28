@@ -1,5 +1,4 @@
 import os
-from typing import Dict
 from unittest.mock import ANY
 
 import bluesky.plan_stubs as bps
@@ -92,7 +91,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     exposure = 1
 
     trigger_logic = StaticSeqTableTriggerLogic(mock_hdf_panda.seq[1])
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
+    flyer = StandardFlyer(trigger_logic, name="flyer")
 
     def flying_plan():
         yield from bps.stage_all(mock_hdf_panda, flyer)
@@ -135,7 +134,8 @@ async def test_hdf_panda_hardware_triggered_flyable(
             )
         yield from bps.wait(group="complete")
         yield from bps.close_run()
-
+        # Verify that _completable_frames is reset to 0 after the final complete.
+        assert mock_hdf_panda._completable_frames == 0
         yield from bps.unstage_all(flyer, mock_hdf_panda)
         yield from bps.wait_for([lambda: mock_hdf_panda.controller.disarm()])
 
@@ -147,7 +147,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     )
 
     # test descriptor
-    data_key_names: Dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
+    data_key_names: dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
     assert data_key_names == ["x", "y"]
     for data_key_name in data_key_names:
         assert (
@@ -157,145 +157,22 @@ async def test_hdf_panda_hardware_triggered_flyable(
 
     # test stream resources
     for dataset_name, stream_resource, data_key_name in zip(
-        ("x", "y"), docs["stream_resource"], data_key_names
+        ("x", "y"), docs["stream_resource"], data_key_names, strict=False
     ):
-
-        def assert_resource_document():
-            assert stream_resource == {
-                "run_start": docs["start"][0]["uid"],
-                "uid": ANY,
-                "data_key": data_key_name,
-                "mimetype": "application/x-hdf5",
-                "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
-                "parameters": {
-                    "dataset": f"/{dataset_name}",
-                    "swmr": False,
-                    "multiplier": 1,
-                },
-            }
-            assert "test-panda.h5" in stream_resource["uri"]
-
-        assert_resource_document()
-
-    # test stream datum
-    for stream_datum in docs["stream_datum"]:
-        assert stream_datum["descriptor"] == docs["descriptor"][0]["uid"]
-        assert stream_datum["seq_nums"] == {
-            "start": 1,
-            "stop": 2,
+        assert stream_resource == {
+            "run_start": docs["start"][0]["uid"],
+            "uid": ANY,
+            "data_key": data_key_name,
+            "mimetype": "application/x-hdf5",
+            "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
+            "parameters": {
+                "dataset": f"/{dataset_name}",
+                "swmr": False,
+                "multiplier": 1,
+                "chunk_shape": (1024,),
+            },
         }
-        assert stream_datum["indices"] == {
-            "start": 0,
-            "stop": 1,
-        }
-        assert stream_datum["stream_resource"] in [
-            sd["uid"].split("/")[0] for sd in docs["stream_datum"]
-        ]
-
-
-async def test_hdf_panda_hardware_triggered_flyable_with_iterations(
-    RE: RunEngine,
-    mock_hdf_panda,
-    tmp_path,
-):
-    docs = {}
-
-    def append_and_print(name, doc):
-        if name not in docs:
-            docs[name] = []
-        docs[name] += [doc]
-
-    RE.subscribe(append_and_print)
-
-    shutter_time = 0.004
-    exposure = 1
-
-    trigger_logic = StaticSeqTableTriggerLogic(mock_hdf_panda.seq[1])
-    flyer = StandardFlyer(trigger_logic, [], name="flyer")
-
-    def flying_plan():
-        iteration = 2
-        yield from bps.stage_all(mock_hdf_panda, flyer)
-        yield from bps.open_run()
-        yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(  # noqa: E501
-            flyer,
-            [mock_hdf_panda],
-            number_of_frames=1,
-            exposure=exposure,
-            shutter_time=shutter_time,
-            iteration=iteration,
-        )
-
-        yield from bps.declare_stream(mock_hdf_panda, name="main_stream", collect=True)
-
-        for i in range(iteration):
-            set_mock_value(flyer.trigger_logic.seq.active, 1)
-            yield from bps.kickoff(flyer, wait=True)
-            yield from bps.kickoff(mock_hdf_panda)
-
-            yield from bps.complete(flyer, wait=False, group="complete")
-            yield from bps.complete(mock_hdf_panda, wait=False, group="complete")
-
-            # Manually incremenet the index as if a frame was taken
-            set_mock_value(mock_hdf_panda.data.num_captured, 1)
-            set_mock_value(flyer.trigger_logic.seq.active, 0)
-
-            done = False
-            while not done:
-                try:
-                    yield from bps.wait(group="complete", timeout=0.5)
-                except TimeoutError:
-                    pass
-                else:
-                    done = True
-                yield from bps.collect(
-                    mock_hdf_panda,
-                    return_payload=False,
-                    name="main_stream",
-                )
-            yield from bps.wait(group="complete")
-        yield from bps.close_run()
-
-        yield from bps.unstage_all(flyer, mock_hdf_panda)
-        yield from bps.wait_for([lambda: mock_hdf_panda.controller.disarm()])
-
-    # fly scan
-    RE(flying_plan())
-
-    assert_emitted(
-        docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, stop=1
-    )
-
-    # test descriptor
-    data_key_names: Dict[str, str] = docs["descriptor"][0]["object_keys"]["panda"]
-    assert data_key_names == ["x", "y"]
-    for data_key_name in data_key_names:
-        assert (
-            docs["descriptor"][0]["data_keys"][data_key_name]["source"]
-            == "mock+soft://panda-data-hdf_directory"
-        )
-
-    # test stream resources
-    for dataset_name, stream_resource, data_key_name in zip(
-        ("x", "y"), docs["stream_resource"], data_key_names
-    ):
-
-        def assert_resource_document():
-            assert stream_resource == {
-                "run_start": docs["start"][0]["uid"],
-                "uid": ANY,
-                "data_key": data_key_name,
-                "mimetype": "application/x-hdf5",
-                "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
-                "parameters": {
-                    "dataset": f"/{dataset_name}",
-                    "swmr": False,
-                    "multiplier": 1,
-                },
-            }
-            assert "test-panda.h5" in stream_resource["uri"]
-
-        assert_resource_document()
+        assert "test-panda.h5" in stream_resource["uri"]
 
     # test stream datum
     for stream_datum in docs["stream_datum"]:

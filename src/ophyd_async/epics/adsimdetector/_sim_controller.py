@@ -1,9 +1,8 @@
 import asyncio
-from typing import Set
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DetectorControl,
+    DetectorController,
     DetectorTrigger,
 )
 from ophyd_async.core._detector import TriggerInfo
@@ -11,18 +10,18 @@ from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 
-class SimController(DetectorControl):
+class SimController(DetectorController):
     def __init__(
         self,
         driver: adcore.ADBaseIO,
-        good_states: Set[adcore.DetectorState] = set(adcore.DEFAULT_GOOD_STATES),
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
     ) -> None:
         self.driver = driver
         self.good_states = good_states
         self.frame_timeout: float
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float) -> float:
+    def get_deadtime(self, exposure: float | None) -> float:
         return 0.002
 
     async def prepare(self, trigger_info: TriggerInfo):
@@ -33,7 +32,7 @@ class SimController(DetectorControl):
             DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
         await asyncio.gather(
-            self.driver.num_images.set(trigger_info.number),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
             self.driver.image_mode.set(adcore.ImageMode.multiple),
         )
 
