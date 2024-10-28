@@ -929,7 +929,7 @@ async def test_can_read_using_ophyd_async_then_ophyd(ioc: IOC):
     ophyd_async_sig = epics_signal_rw(float, oa_read)
     await ophyd_async_sig.connect()
     ophyd_signal = EpicsSignal(ophyd_read)
-    ophyd_signal.wait_for_connection()
+    ophyd_signal.wait_for_connection(timeout=5)
 
     RE = RunEngine()
 
