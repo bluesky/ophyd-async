@@ -136,7 +136,9 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
 
     def set_value(self, value: SignalDatatypeT):
         self.reading = Reading(
-            value=value, timestamp=time.monotonic(), alarm_severity=0
+            value=self.converter.write_value(value),
+            timestamp=time.monotonic(),
+            alarm_severity=0,
         )
         if self.callback:
             self.callback(self.reading)
@@ -148,11 +150,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         pass
 
     async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
-        write_value = (
-            self.converter.write_value(value)
-            if value is not None
-            else self.initial_value
-        )
+        write_value = self.initial_value if value is None else value
         self.set_value(write_value)
 
     async def get_datakey(self, source: str) -> DataKey:

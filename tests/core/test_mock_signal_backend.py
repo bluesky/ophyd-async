@@ -1,6 +1,5 @@
 import asyncio
 import re
-from itertools import repeat
 from unittest.mock import ANY, AsyncMock, MagicMock, call
 
 import pytest
@@ -279,7 +278,7 @@ async def test_set_mock_values_exhausted_passes(mock_signals):
 
     iterator = set_mock_values(
         signal2,
-        repeat(iter(["second_value", "third_value"]), 6),
+        ["second_value", "third_value"] * 3,
         require_all_consumed=False,
     )
     calls = 0

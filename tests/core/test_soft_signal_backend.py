@@ -163,3 +163,16 @@ async def test_soft_signal_descriptor_with_no_metadata_not_passed():
     datakey = await soft_signal.describe()
     assert not hasattr(datakey[""], "units")
     assert not hasattr(datakey[""], "precision")
+
+
+async def test_soft_signal_coerces_numpy_types():
+    soft_signal = soft_signal_rw(float)
+    await soft_signal.connect()
+    assert await soft_signal.get_value() == 0.0
+    assert type(await soft_signal.get_value()) is float
+    await soft_signal.set(np.float64(1.1))
+    assert await soft_signal.get_value() == 1.1
+    assert type(await soft_signal.get_value()) is float
+    soft_signal._connector.backend.set_value(np.float64(2.2))
+    assert await soft_signal.get_value() == 2.2
+    assert type(await soft_signal.get_value()) is float

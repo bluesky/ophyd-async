@@ -1,10 +1,9 @@
 from collections.abc import Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any
 from unittest.mock import AsyncMock
 
 from ._mock_signal_backend import MockSignalBackend
-from ._signal import Signal
+from ._signal import Signal, SignalR
 from ._soft_signal_backend import SignalDatatypeT
 
 
@@ -59,8 +58,8 @@ class _SetValuesIterator:
 
     def __init__(
         self,
-        signal: Signal,
-        values: Iterable[Any],
+        signal: SignalR[SignalDatatypeT],
+        values: Iterable[SignalDatatypeT],
         require_all_consumed: bool = False,
     ):
         self.signal = signal
@@ -99,8 +98,8 @@ class _SetValuesIterator:
 
 
 def set_mock_values(
-    signal: Signal,
-    values: Iterable[Any],
+    signal: SignalR[SignalDatatypeT],
+    values: Iterable[SignalDatatypeT],
     require_all_consumed: bool = False,
 ) -> _SetValuesIterator:
     """Iterator to set a signal to a sequence of values, optionally repeating the
