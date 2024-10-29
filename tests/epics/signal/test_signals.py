@@ -13,11 +13,14 @@ from types import GenericAlias
 from typing import Any, Literal
 from unittest.mock import ANY
 
+import bluesky.plan_stubs as bps
 import numpy as np
 import pytest
 from aioca import purge_channel_caches
 from bluesky.protocols import Reading
+from bluesky.run_engine import RunEngine
 from event_model import DataKey, Limits, LimitsRange
+from ophyd.signal import EpicsSignal
 
 from ophyd_async.core import (
     Array1D,
@@ -897,3 +900,21 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
         ".* cannot be coerced to int",
     ):
         await sig.connect()
+
+
+async def test_can_read_using_ophyd_async_then_ophyd(ioc: IOC):
+    oa_read = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_1"
+    ophyd_read = f"{PV_PREFIX}:{ioc.protocol}:float_prec_0"
+
+    ophyd_async_sig = epics_signal_rw(float, oa_read)
+    await ophyd_async_sig.connect()
+    ophyd_signal = EpicsSignal(ophyd_read)
+    ophyd_signal.wait_for_connection(timeout=5)
+
+    RE = RunEngine()
+
+    def my_plan():
+        yield from bps.rd(ophyd_async_sig)
+        yield from bps.rd(ophyd_signal)
+
+    RE(my_plan())
