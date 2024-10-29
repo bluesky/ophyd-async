@@ -131,3 +131,29 @@ class MyDevice(Device):
 ```
 ## Arbitrary `BaseModel`s not supported, pending use cases for them
 The `Table` type has been suitable for everything we have seen so far, if you need an arbitrary `BaseModel` subclass then please make an issue
+## Child `Device`s set parent on attach, and can't be public children of more than one parent
+```python
+class SourceDevice(Device):
+    def __init__(self, name: str = ""):
+        self.signal = soft_signal_rw(int)
+        super().__init__(name=name)
+
+# old
+class ReferenceDevice(Device):
+    def __init__(self, signal: SignalRW[int], name: str = ""):
+        self.signal = signal
+        super().__init__(name=name)
+
+    def set(self, value) -> AsyncStatus:
+        return self.signal.set(value + 1)
+# new
+from ophyd_async.core import Reference
+
+class ReferenceDevice(Device):
+    def __init__(self, signal: SignalRW[int], name: str = ""):
+        self._signal_ref = Reference(signal)
+        super().__init__(name=name)
+
+    def set(self, value) -> AsyncStatus:
+        return self._signal_ref().set(value + 1)
+```
