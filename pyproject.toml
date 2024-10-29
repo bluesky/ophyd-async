@@ -17,7 +17,7 @@ dependencies = [
     "packaging",
     "pint",
     "bluesky>=1.13",
-    "event-model @ git+https://github.com/bluesky/event-model@main",
+    "event-model>=1.22.1",
     "p4p>=4.2.0a3",
     "pyyaml",
     "colorlog",
