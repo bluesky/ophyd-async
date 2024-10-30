@@ -188,9 +188,6 @@ if not switcher_exists:
 # will fix the switcher at the end of the docs workflow, but never gets a chance
 # to complete as the docs build warns and fails.
 html_theme_options = {
-    "logo": {
-        "text": project,
-    },
     "use_edit_page_button": True,
     "github_url": f"https://github.com/{github_user}/{github_repo}",
     "icon_links": [
@@ -230,8 +227,8 @@ html_show_sphinx = False
 html_show_copyright = False
 
 # Logo
-html_logo = "images/bluesky_ophyd_logo.svg"
-html_favicon = "images/ophyd_favicon.svg"
+html_logo = "images/ophyd-async-logo.svg"
+html_favicon = "images/ophyd-favicon.svg"
 
 # If False and a module has the __all__ attribute set, autosummary documents
 # every member listed in __all__ and no others. Default is True
