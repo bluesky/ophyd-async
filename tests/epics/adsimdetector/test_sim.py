@@ -52,7 +52,7 @@ def count_sim(dets: list[adsimdetector.SimDetector], times: int = 1):
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
 
-        yield from bps.sleep(0.2)
+        yield from bps.sleep(1.0)
         [
             set_mock_value(
                 cast(adcore.ADHDFWriter, det.writer).hdf.num_captured,
