@@ -13,12 +13,12 @@ classifiers = [
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
     "networkx>=2.0",
-    "numpy<2.0.0",
+    "numpy",
     "packaging",
     "pint",
-    "bluesky>=1.13.0a3",
-    "event_model",
-    "p4p",
+    "bluesky>=1.13",
+    "event-model>=1.22.1",
+    "p4p>=4.2.0a3",
     "pyyaml",
     "colorlog",
     "pydantic>=2.0",
@@ -39,10 +39,6 @@ dev = [
     "ophyd_async[sim]",
     "ophyd_async[ca]",
     "ophyd_async[tango]",
-    "black",
-    "flake8",
-    "flake8-isort",
-    "Flake8-pyproject",
     "inflection",
     "ipython",
     "ipywidgets",
@@ -150,15 +146,17 @@ commands =
 src = ["src", "tests", "system_tests"]
 line-length = 88
 lint.select = [
-    "B",   # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
-    "C4",  # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
-    "E",   # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
-    "F",   # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
-    "W",   # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
-    "I",   # isort - https://docs.astral.sh/ruff/rules/#isort-i
-    "UP",  # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
-    "SLF", # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
+    "B",       # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "C4",      # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "E",       # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
+    "F",       # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "W",       # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
+    "I",       # isort - https://docs.astral.sh/ruff/rules/#isort-i
+    "UP",      # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "SLF",     # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
+    "PLC2701", # private import - https://docs.astral.sh/ruff/rules/import-private-name/
 ]
+lint.preview = true # so that preview mode PLC2701 is enabled
 
 [tool.ruff.lint.per-file-ignores]
 # By default, private member access is allowed in tests

@@ -5,7 +5,8 @@ from ._detector import (
     StandardDetector,
     TriggerInfo,
 )
-from ._device import Device, DeviceCollector, DeviceVector
+from ._device import Device, DeviceCollector, DeviceConnector, DeviceVector
+from ._device_filler import DeviceFiller
 from ._device_save_loader import (
     all_at_once,
     get_signal_values,
@@ -62,9 +63,11 @@ from ._signal import (
     wait_for_value,
 )
 from ._signal_backend import (
-    RuntimeSubsetEnum,
+    Array1D,
     SignalBackend,
-    SubsetEnum,
+    SignalDatatype,
+    SignalDatatypeT,
+    make_datakey,
 )
 from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
@@ -73,14 +76,17 @@ from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
+    Callback,
     NotConnected,
-    ReadingValueCallback,
+    Reference,
+    StrictEnum,
+    SubsetEnum,
     T,
     WatcherUpdate,
     get_dtype,
+    get_enum_cls,
     get_unique,
     in_micros,
-    is_pydantic_model,
     wait_for_connection,
 )
 
@@ -91,8 +97,10 @@ __all__ = [
     "StandardDetector",
     "TriggerInfo",
     "Device",
+    "DeviceConnector",
     "DeviceCollector",
     "DeviceVector",
+    "DeviceFiller",
     "all_at_once",
     "get_signal_values",
     "load_device",
@@ -146,25 +154,30 @@ __all__ = [
     "soft_signal_r_and_setter",
     "soft_signal_rw",
     "wait_for_value",
-    "RuntimeSubsetEnum",
+    "Array1D",
     "SignalBackend",
+    "make_datakey",
+    "StrictEnum",
     "SubsetEnum",
+    "SignalDatatype",
+    "SignalDatatypeT",
     "SignalMetadata",
     "SoftSignalBackend",
     "AsyncStatus",
     "WatchableAsyncStatus",
     "DEFAULT_TIMEOUT",
     "CalculatableTimeout",
+    "Callback",
     "CALCULATE_TIMEOUT",
     "NotConnected",
-    "ReadingValueCallback",
+    "Reference",
     "Table",
     "T",
     "WatcherUpdate",
     "get_dtype",
+    "get_enum_cls",
     "get_unique",
     "in_micros",
-    "is_pydantic_model",
     "wait_for_connection",
     "completed_status",
 ]

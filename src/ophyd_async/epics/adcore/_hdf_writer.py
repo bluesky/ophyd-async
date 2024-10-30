@@ -134,9 +134,9 @@ class ADHDFWriter(DetectorWriter):
         describe = {
             ds.data_key: DataKey(
                 source=self.hdf.full_file_name.source,
-                shape=outer_shape + tuple(ds.shape),
+                shape=list(outer_shape + tuple(ds.shape)),
                 dtype="array" if ds.shape else "number",
-                dtype_numpy=ds.dtype_numpy,  # type: ignore
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
             for ds in self._datasets

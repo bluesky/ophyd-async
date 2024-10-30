@@ -5,12 +5,11 @@ from enum import Enum, IntEnum
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import numpy as np
-import numpy.typing as npt
 import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import DeviceCollector, HintedSignal, SignalRW, T
+from ophyd_async.core import Array1D, DeviceCollector, HintedSignal, SignalRW, T
 from ophyd_async.tango import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
@@ -176,7 +175,7 @@ class TestDevice(Device):
 class TestTangoReadable(TangoReadable):
     __test__ = False
     justvalue: SignalRW[int]
-    array: SignalRW[npt.NDArray[float]]
+    array: SignalRW[Array1D[np.float64]]
     limitedvalue: SignalRW[float]
 
     def __init__(
@@ -325,16 +324,9 @@ async def test_connect(tango_test_device):
 @pytest.mark.asyncio
 async def test_set_trl(tango_test_device):
     values, description = await describe_class(tango_test_device)
-
-    # async with DeviceCollector():
-    #     test_device = TestTangoReadable(trl=tango_test_device)
     test_device = TestTangoReadable(name="test_device")
 
-    with pytest.raises(ValueError) as excinfo:
-        test_device.set_trl(0)
-    assert "TRL must be a string." in str(excinfo.value)
-
-    test_device.set_trl(tango_test_device)
+    test_device._connector.trl = tango_test_device
     await test_device.connect()
 
     assert test_device.name == "test_device"
@@ -350,12 +342,12 @@ async def test_connect_proxy(tango_test_device, proxy: bool | None):
         test_device = TestTangoReadable(trl=tango_test_device)
         test_device.proxy = None
         await test_device.connect()
-        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
+        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     elif proxy:
         proxy = await AsyncDeviceProxy(tango_test_device)
         test_device = TestTangoReadable(device_proxy=proxy)
         await test_device.connect()
-        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
+        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     else:
         proxy = None
         test_device = TestTangoReadable(device_proxy=proxy)

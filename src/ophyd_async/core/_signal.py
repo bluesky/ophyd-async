@@ -2,128 +2,105 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from collections.abc import AsyncGenerator, Callable, Mapping
-from typing import Any, Generic, TypeVar, cast
+from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
+from typing import Any, Generic, cast
 
 from bluesky.protocols import (
     Locatable,
     Location,
     Movable,
-    Reading,
     Status,
     Subscribable,
 )
 from event_model import DataKey
 
-from ._device import Device
+from ._device import Device, DeviceConnector
 from ._mock_signal_backend import MockSignalBackend
-from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
-from ._signal_backend import SignalBackend
-from ._soft_signal_backend import SignalMetadata, SoftSignalBackend
+from ._protocol import (
+    AsyncConfigurable,
+    AsyncReadable,
+    AsyncStageable,
+    Reading,
+)
+from ._signal_backend import (
+    SignalBackend,
+    SignalDatatypeT,
+    SignalDatatypeV,
+)
+from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus
 from ._utils import CALCULATE_TIMEOUT, DEFAULT_TIMEOUT, CalculatableTimeout, Callback, T
 
-S = TypeVar("S")
+
+async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except asyncio.TimeoutError as e:
+        raise asyncio.TimeoutError(source) from e
 
 
 def _add_timeout(func):
     @functools.wraps(func)
     async def wrapper(self: Signal, *args, **kwargs):
-        return await asyncio.wait_for(func(self, *args, **kwargs), self._timeout)
+        return await _wait_for(func(self, *args, **kwargs), self._timeout, self.source)
 
     return wrapper
 
 
-def _fail(*args, **kwargs):
-    raise RuntimeError("Signal has not been supplied a backend yet")
-
-
-class DisconnectedBackend(SignalBackend):
-    source = connect = put = get_datakey = get_reading = get_value = get_setpoint = (
-        set_callback
-    ) = _fail
-
-
-DISCONNECTED_BACKEND = DisconnectedBackend()
-
-
-class Signal(Device, Generic[T]):
-    """A Device with the concept of a value, with R, RW, W and X flavours"""
-
-    def __init__(
-        self,
-        backend: SignalBackend[T] = DISCONNECTED_BACKEND,
-        timeout: float | None = DEFAULT_TIMEOUT,
-        name: str = "",
-    ) -> None:
-        self._timeout = timeout
-        self._backend = backend
-        super().__init__(name)
+class SignalConnector(DeviceConnector):
+    def __init__(self, backend: SignalBackend):
+        self.backend = self._init_backend = backend
 
     async def connect(
         self,
-        mock=False,
-        timeout=DEFAULT_TIMEOUT,
-        force_reconnect: bool = False,
-        backend: SignalBackend[T] | None = None,
+        device: Device,
+        mock: bool,
+        timeout: float,
+        force_reconnect: bool,
     ):
-        if backend:
-            if (
-                self._backend is not DISCONNECTED_BACKEND
-                and backend is not self._backend
-            ):
-                raise ValueError("Backend at connection different from previous one.")
-
-            self._backend = backend
-        if (
-            self._previous_connect_was_mock is not None
-            and self._previous_connect_was_mock != mock
-        ):
-            raise RuntimeError(
-                f"`connect(mock={mock})` called on a `Signal` where the previous "
-                f"connect was `mock={self._previous_connect_was_mock}`. Changing mock "
-                "value between connects is not permitted."
-            )
-        self._previous_connect_was_mock = mock
-
-        if mock and not issubclass(type(self._backend), MockSignalBackend):
-            # Using a soft backend, look to the initial value
-            self._backend = MockSignalBackend(initial_backend=self._backend)
-
-        if self._backend is None:
-            raise RuntimeError("`connect` called on signal without backend")
-
-        can_use_previous_connection: bool = self._connect_task is not None and not (
-            self._connect_task.done() and self._connect_task.exception()
-        )
-
-        if force_reconnect or not can_use_previous_connection:
-            self.log.debug(f"Connecting to {self.source}")
-            self._connect_task = asyncio.create_task(
-                self._backend.connect(timeout=timeout)
-            )
+        if mock:
+            self.backend = MockSignalBackend(self._init_backend)
         else:
-            self.log.debug(f"Reusing previous connection to {self.source}")
-        assert (
-            self._connect_task
-        ), "this assert is for type analysis and will never fail"
-        await self._connect_task
+            self.backend = self._init_backend
+        device.log.debug(f"Connecting to {self.backend.source(device.name, read=True)}")
+        await self.backend.connect(timeout)
+
+
+class Signal(Device, Generic[SignalDatatypeT]):
+    """A Device with the concept of a value, with R, RW, W and X flavours"""
+
+    _connector: SignalConnector
+
+    def __init__(
+        self,
+        backend: SignalBackend[SignalDatatypeT],
+        timeout: float | None = DEFAULT_TIMEOUT,
+        name: str = "",
+    ) -> None:
+        super().__init__(name=name, connector=SignalConnector(backend))
+        self._timeout = timeout
 
     @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
-        return self._backend.source(self.name)
+        return self._connector.backend.source(self.name, read=True)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name != "parent" and isinstance(value, Device):
+            raise AttributeError(
+                f"Cannot add Device or Signal {value} as a child of Signal {self}, "
+                "make a subclass of Device instead"
+            )
+        return super().__setattr__(name, value)
 
 
-class _SignalCache(Generic[T]):
-    def __init__(self, backend: SignalBackend[T], signal: Signal):
+class _SignalCache(Generic[SignalDatatypeT]):
+    def __init__(self, backend: SignalBackend[SignalDatatypeT], signal: Signal):
         self._signal = signal
         self._staged = False
         self._listeners: dict[Callback, bool] = {}
         self._valid = asyncio.Event()
-        self._reading: Reading | None = None
-        self._value: T | None = None
-
+        self._reading: Reading[SignalDatatypeT] | None = None
         self.backend = backend
         signal.log.debug(f"Making subscription on source {signal.source}")
         backend.set_callback(self._callback)
@@ -132,30 +109,33 @@ class _SignalCache(Generic[T]):
         self.backend.set_callback(None)
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
-    async def get_reading(self) -> Reading:
+    async def get_reading(self) -> Reading[SignalDatatypeT]:
         await self._valid.wait()
         assert self._reading is not None, "Monitor not working"
         return self._reading
 
-    async def get_value(self) -> T:
-        await self._valid.wait()
-        assert self._value is not None, "Monitor not working"
-        return self._value
+    async def get_value(self) -> SignalDatatypeT:
+        reading = await self.get_reading()
+        return reading["value"]
 
-    def _callback(self, reading: Reading, value: T):
+    def _callback(self, reading: Reading[SignalDatatypeT]):
         self._signal.log.debug(
             f"Updated subscription: reading of source {self._signal.source} changed"
             f"from {self._reading} to {reading}"
         )
         self._reading = reading
-        self._value = value
         self._valid.set()
         for function, want_value in self._listeners.items():
             self._notify(function, want_value)
 
-    def _notify(self, function: Callback, want_value: bool):
+    def _notify(
+        self,
+        function: Callback[dict[str, Reading[SignalDatatypeT]] | SignalDatatypeT],
+        want_value: bool,
+    ):
+        assert self._reading, "Monitor not working"
         if want_value:
-            function(self._value)
+            function(self._reading["value"])
         else:
             function({self._signal.name: self._reading})
 
@@ -173,12 +153,14 @@ class _SignalCache(Generic[T]):
         return self._staged or bool(self._listeners)
 
 
-class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
+class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribable):
     """Signal that can be read from and monitored"""
 
     _cache: _SignalCache | None = None
 
-    def _backend_or_cache(self, cached: bool | None) -> _SignalCache | SignalBackend:
+    def _backend_or_cache(
+        self, cached: bool | None = None
+    ) -> _SignalCache | SignalBackend:
         # If cached is None then calculate it based on whether we already have a cache
         if cached is None:
             cached = self._cache is not None
@@ -186,11 +168,11 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
             assert self._cache, f"{self.source} not being monitored"
             return self._cache
         else:
-            return self._backend
+            return self._connector.backend
 
     def _get_cache(self) -> _SignalCache:
         if not self._cache:
-            self._cache = _SignalCache(self._backend, self)
+            self._cache = _SignalCache(self._connector.backend, self)
         return self._cache
 
     def _del_cache(self, needed: bool):
@@ -206,16 +188,16 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
     @_add_timeout
     async def describe(self) -> dict[str, DataKey]:
         """Return a single item dict with the descriptor in it"""
-        return {self.name: await self._backend.get_datakey(self.source)}
+        return {self.name: await self._connector.backend.get_datakey(self.source)}
 
     @_add_timeout
-    async def get_value(self, cached: bool | None = None) -> T:
+    async def get_value(self, cached: bool | None = None) -> SignalDatatypeT:
         """The current value"""
         value = await self._backend_or_cache(cached).get_value()
         self.log.debug(f"get_value() on source {self.source} returned {value}")
         return value
 
-    def subscribe_value(self, function: Callback[T]):
+    def subscribe_value(self, function: Callback[SignalDatatypeT]):
         """Subscribe to updates in value of a device"""
         self._get_cache().subscribe(function, want_value=True)
 
@@ -238,84 +220,82 @@ class SignalR(Signal[T], AsyncReadable, AsyncStageable, Subscribable):
         self._del_cache(self._get_cache().set_staged(False))
 
 
-class SignalW(Signal[T], Movable):
+class SignalW(Signal[SignalDatatypeT], Movable):
     """Signal that can be set"""
 
-    def set(
-        self, value: T, wait=True, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
-    ) -> AsyncStatus:
+    @AsyncStatus.wrap
+    async def set(
+        self,
+        value: SignalDatatypeT,
+        wait=True,
+        timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
+    ) -> None:
         """Set the value and return a status saying when it's done"""
-        if timeout is CALCULATE_TIMEOUT:
+        if timeout == CALCULATE_TIMEOUT:
             timeout = self._timeout
-
-        async def do_set():
-            self.log.debug(f"Putting value {value} to backend at source {self.source}")
-            await self._backend.put(value, wait=wait, timeout=timeout)
-            self.log.debug(
-                f"Successfully put value {value} to backend at source {self.source}"
-            )
-
-        return AsyncStatus(do_set())
+        source = self._connector.backend.source(self.name, read=False)
+        self.log.debug(f"Putting value {value} to backend at source {source}")
+        await _wait_for(self._connector.backend.put(value, wait=wait), timeout, source)
+        self.log.debug(f"Successfully put value {value} to backend at source {source}")
 
 
-class SignalRW(SignalR[T], SignalW[T], Locatable):
+class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
     """Signal that can be both read and set"""
 
+    @_add_timeout
     async def locate(self) -> Location:
-        location: Location = {
-            "setpoint": await self._backend.get_setpoint(),
-            "readback": await self.get_value(),
-        }
-        return location
+        """Return the setpoint and readback."""
+        setpoint, readback = await asyncio.gather(
+            self._connector.backend.get_setpoint(), self._backend_or_cache().get_value()
+        )
+        return Location(setpoint=setpoint, readback=readback)
 
 
 class SignalX(Signal):
     """Signal that puts the default value"""
 
-    def trigger(
+    @AsyncStatus.wrap
+    async def trigger(
         self, wait=True, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
-    ) -> AsyncStatus:
+    ) -> None:
         """Trigger the action and return a status saying when it's done"""
-        if timeout is CALCULATE_TIMEOUT:
+        if timeout == CALCULATE_TIMEOUT:
             timeout = self._timeout
-        coro = self._backend.put(None, wait=wait, timeout=timeout)
-        return AsyncStatus(coro)
+        source = self._connector.backend.source(self.name, read=False)
+        self.log.debug(f"Putting default value to backend at source {source}")
+        await _wait_for(self._connector.backend.put(None, wait=wait), timeout, source)
+        self.log.debug(f"Successfully put default value to backend at source {source}")
 
 
 def soft_signal_rw(
-    datatype: type[T] | None = None,
-    initial_value: T | None = None,
+    datatype: type[SignalDatatypeT],
+    initial_value: SignalDatatypeT | None = None,
     name: str = "",
     units: str | None = None,
     precision: int | None = None,
-) -> SignalRW[T]:
+) -> SignalRW[SignalDatatypeT]:
     """Creates a read-writable Signal with a SoftSignalBackend.
     May pass metadata, which are propagated into describe.
     """
-    metadata = SignalMetadata(units=units, precision=precision)
-    signal = SignalRW(
-        SoftSignalBackend(datatype, initial_value, metadata=metadata),
-        name=name,
-    )
+    backend = SoftSignalBackend(datatype, initial_value, units, precision)
+    signal = SignalRW(backend=backend, name=name)
     return signal
 
 
 def soft_signal_r_and_setter(
-    datatype: type[T] | None = None,
-    initial_value: T | None = None,
+    datatype: type[SignalDatatypeT],
+    initial_value: SignalDatatypeT | None = None,
     name: str = "",
     units: str | None = None,
     precision: int | None = None,
-) -> tuple[SignalR[T], Callable[[T], None]]:
+) -> tuple[SignalR[SignalDatatypeT], Callable[[SignalDatatypeT], None]]:
     """Returns a tuple of a read-only Signal and a callable through
     which the signal can be internally modified within the device.
     May pass metadata, which are propagated into describe.
     Use soft_signal_rw if you want a device that is externally modifiable
     """
-    metadata = SignalMetadata(units=units, precision=precision)
-    backend = SoftSignalBackend(datatype, initial_value, metadata=metadata)
-    signal = SignalR(backend, name=name)
-
+    backend = SoftSignalBackend(datatype, initial_value, units, precision)
+    signal = SignalR(backend=backend, name=name)
     return (signal, backend.set_value)
 
 
@@ -330,7 +310,7 @@ def _generate_assert_error_msg(name: str, expected_result, actual_result) -> str
     )
 
 
-async def assert_value(signal: SignalR[T], value: Any) -> None:
+async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
     """Assert a signal's value and compare it an expected signal.
 
     Parameters
@@ -440,8 +420,10 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
 
 
 async def observe_value(
-    signal: SignalR[T], timeout: float | None = None, done_status: Status | None = None
-) -> AsyncGenerator[T, None]:
+    signal: SignalR[SignalDatatypeT],
+    timeout: float | None = None,
+    done_status: Status | None = None,
+) -> AsyncGenerator[SignalDatatypeT, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
     Parameters
@@ -464,7 +446,7 @@ async def observe_value(
             do_something_with(value)
     """
 
-    q: asyncio.Queue[T | Status] = asyncio.Queue()
+    q: asyncio.Queue[SignalDatatypeT | Status] = asyncio.Queue()
     if timeout is None:
         get_value = q.get
     else:
@@ -485,24 +467,26 @@ async def observe_value(
                 else:
                     break
             else:
-                yield cast(T, item)
+                yield cast(SignalDatatypeT, item)
     finally:
         signal.clear_sub(q.put_nowait)
 
 
-class _ValueChecker(Generic[T]):
-    def __init__(self, matcher: Callable[[T], bool], matcher_name: str):
-        self._last_value: T | None = None
+class _ValueChecker(Generic[SignalDatatypeT]):
+    def __init__(self, matcher: Callable[[SignalDatatypeT], bool], matcher_name: str):
+        self._last_value: SignalDatatypeT | None = None
         self._matcher = matcher
         self._matcher_name = matcher_name
 
-    async def _wait_for_value(self, signal: SignalR[T]):
+    async def _wait_for_value(self, signal: SignalR[SignalDatatypeT]):
         async for value in observe_value(signal):
             self._last_value = value
             if self._matcher(value):
                 return
 
-    async def wait_for_value(self, signal: SignalR[T], timeout: float | None):
+    async def wait_for_value(
+        self, signal: SignalR[SignalDatatypeT], timeout: float | None
+    ):
         try:
             await asyncio.wait_for(self._wait_for_value(signal), timeout)
         except asyncio.TimeoutError as e:
@@ -513,8 +497,8 @@ class _ValueChecker(Generic[T]):
 
 
 async def wait_for_value(
-    signal: SignalR[T],
-    match: T | Callable[[T], bool],
+    signal: SignalR[SignalDatatypeT],
+    match: SignalDatatypeT | Callable[[SignalDatatypeT], bool],
     timeout: float | None,
 ):
     """Wait for a signal to have a matching value.
@@ -548,10 +532,10 @@ async def wait_for_value(
 
 
 async def set_and_wait_for_other_value(
-    set_signal: SignalW[T],
-    set_value: T,
-    read_signal: SignalR[S],
-    read_value: S,
+    set_signal: SignalW[SignalDatatypeT],
+    set_value: SignalDatatypeT,
+    read_signal: SignalR[SignalDatatypeV],
+    read_value: SignalDatatypeV,
     timeout: float = DEFAULT_TIMEOUT,
     set_timeout: float | None = None,
 ) -> AsyncStatus:
@@ -608,8 +592,8 @@ async def set_and_wait_for_other_value(
 
 
 async def set_and_wait_for_value(
-    signal: SignalRW[T],
-    value: T,
+    signal: SignalRW[SignalDatatypeT],
+    value: SignalDatatypeT,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: float | None = None,
 ) -> AsyncStatus:
