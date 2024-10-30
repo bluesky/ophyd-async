@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 from collections.abc import Callable, Sequence
 from typing import Any
@@ -67,10 +68,16 @@ class MonitorQueue:
         self.backend.set_callback(None)
 
 
+# Can be removed once numpy >=2 is pinned.
+default_int_type = (
+    "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
+)
+
+
 @pytest.mark.parametrize(
     "datatype, initial_value, put_value, descriptor, dtype_numpy",
     [
-        (int, 0, 43, integer_d, "<i8"),
+        (int, 0, 43, integer_d, default_int_type),
         (float, 0.0, 43.5, number_d, "<f8"),
         (str, "", "goodbye", string_d, "|S40"),
         (MyEnum, MyEnum.a, MyEnum.c, enum_d, "|S40"),
