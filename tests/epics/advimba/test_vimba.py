@@ -108,7 +108,9 @@ async def test_can_collect(
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
     assert stream_resource["data_key"] == "test_advimba1"
-    assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
+    assert stream_resource["uri"] == "file://localhost/" + str(full_file_name).lstrip(
+        "/"
+    )
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,
