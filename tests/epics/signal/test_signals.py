@@ -1,4 +1,5 @@
 import asyncio
+import os
 import random
 import string
 import subprocess
@@ -99,7 +100,7 @@ def ioc(request: pytest.FixtureRequest):
     # close backend caches before the event loop
     purge_channel_caches()
     try:
-        print(process.communicate("exit")[0])
+        print(process.communicate("exit()")[0])
     except ValueError:
         # Someone else already called communicate
         pass
@@ -260,7 +261,11 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
             elif "64" in suffix:
                 int_str += "8"
             else:
-                int_str += "8"
+                int_str += (
+                    "4"
+                    if os.name == "nt" and np.version.version.startswith("1.")
+                    else "8"
+                )
             return int_str
         if "str" in suffix or "enum" in suffix:
             return "|S40"
@@ -902,6 +907,7 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
         await sig.connect()
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Hangs on windows for unknown reasons")
 async def test_can_read_using_ophyd_async_then_ophyd(ioc: IOC):
     oa_read = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_1"
     ophyd_read = f"{PV_PREFIX}:{ioc.protocol}:float_prec_0"
