@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/ophyd-async.svg)](https://pypi.org/project/ophyd-async)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://choosealicense.com/licenses/bsd-3-clause)
 
-# ophyd-async
+# ![ophyd-async](https://raw.githubusercontent.com/bluesky/ophyd-async/main/docs/images/ophyd-async-logo.svg)
 
 Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango.
 
