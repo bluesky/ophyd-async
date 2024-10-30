@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ophyd_async.core import Device, _log, config_ophyd_async_logging
+from ophyd_async.core import Device, _log, config_ophyd_async_logging  # noqa: PLC2701
 
 # Allow this importing of _log for now to test the internal interface
 # But this needs resolving.
@@ -60,7 +60,7 @@ def test_config_ophyd_async_logging_removes_extra_handlers():
 
 
 # Full format looks like:
-#'[test_device][W 240501 13:28:08.937 test_log:35] here is a warning\n'
+# '[test_device][W 240501 13:28:08.937 test_log:35] here is a warning\n'
 def test_logger_adapter_ophyd_async_device():
     log_buffer = io.StringIO()
     log_stream = logging.StreamHandler(stream=log_buffer)

@@ -2,11 +2,11 @@ import asyncio
 from typing import Literal
 
 from ophyd_async.core import (
+    AsyncStatus,
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
 )
-from ophyd_async.core._status import AsyncStatus
 from ophyd_async.epics import adcore
 
 from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
@@ -70,7 +70,7 @@ class AravisController(DetectorController):
                 f"use {trigger}"
             )
         if trigger == DetectorTrigger.internal:
-            return AravisTriggerMode.off, "Freerun"
+            return AravisTriggerMode.off, AravisTriggerSource.freerun
         else:
             return (AravisTriggerMode.on, f"Line{self.gpio_number}")  # type: ignore
 

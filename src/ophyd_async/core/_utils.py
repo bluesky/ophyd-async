@@ -2,23 +2,33 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Generic, Literal, ParamSpec, TypeVar, get_origin
+from enum import Enum, EnumMeta
+from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
 
 import numpy as np
-from bluesky.protocols import Reading
-from pydantic import BaseModel
 
 T = TypeVar("T")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
-
-#: A function that will be called with the Reading and value when the
-#: monitor updates
-ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
 ErrorText = str | dict[str, Exception]
+
+
+class StrictEnum(str, Enum):
+    """All members should exist in the Backend, and there will be no extras"""
+
+
+class SubsetEnumMeta(EnumMeta):
+    def __call__(self, value, *args, **kwargs):  # type: ignore
+        if isinstance(value, str) and not isinstance(value, self):
+            return value
+        return super().__call__(value, *args, **kwargs)
+
+
+class SubsetEnum(StrictEnum, metaclass=SubsetEnumMeta):
+    """All members should exist in the Backend, but there may be extras"""
 
 
 CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
@@ -119,7 +129,22 @@ async def wait_for_connection(**coros: Awaitable[None]):
         raise NotConnected(exceptions)
 
 
-def get_dtype(typ: type) -> np.dtype | None:
+def get_dtype(datatype: type) -> np.dtype:
+    """Get the runtime dtype from a numpy ndarray type annotation
+
+    >>> from ophyd_async.core import Array1D
+    >>> import numpy as np
+    >>> get_dtype(Array1D[np.int8])
+    dtype('int8')
+    """
+    if not get_origin(datatype) == np.ndarray:
+        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
+    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
+    # so extract numpy.float64 from it
+    return np.dtype(get_args(get_args(datatype)[1])[0])
+
+
+def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
     """Get the runtime dtype from a numpy ndarray type annotation
 
     >>> import numpy.typing as npt
@@ -127,11 +152,15 @@ def get_dtype(typ: type) -> np.dtype | None:
     >>> get_dtype(npt.NDArray[np.int8])
     dtype('int8')
     """
-    if getattr(typ, "__origin__", None) == np.ndarray:
-        # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
-        # so extract numpy.float64 from it
-        return np.dtype(typ.__args__[1].__args__[0])  # type: ignore
-    return None
+    if get_origin(datatype) is Sequence:
+        datatype = get_args(datatype)[0]
+    if datatype and issubclass(datatype, Enum):
+        if not issubclass(datatype, StrictEnum):
+            raise TypeError(
+                f"{datatype} should inherit from .SubsetEnum "
+                "or ophyd_async.core.StrictEnum"
+            )
+        return datatype
 
 
 def get_unique(values: dict[str, T], types: str) -> T:
@@ -187,7 +216,31 @@ def in_micros(t: float) -> int:
     return int(np.ceil(t * 1e6))
 
 
-def is_pydantic_model(datatype) -> bool:
-    while origin := get_origin(datatype):
-        datatype = origin
-    return datatype and issubclass(datatype, BaseModel)
+def get_origin_class(annotatation: Any) -> type | None:
+    origin = get_origin(annotatation) or annotatation
+    if isinstance(origin, type):
+        return origin
+
+
+class Reference(Generic[T]):
+    """Hide an object behind a reference.
+
+    Used to opt out of the naming/parent-child relationship of `Device`.
+
+    For example::
+
+        class DeviceWithRefToSignal(Device):
+            def __init__(self, signal: SignalRW[int]):
+                self.signal_ref = Reference(signal)
+                super().__init__()
+
+            def set(self, value) -> AsyncStatus:
+                return self.signal_ref().set(value + 1)
+
+    """
+
+    def __init__(self, obj: T):
+        self._obj = obj
+
+    def __call__(self) -> T:
+        return self._obj

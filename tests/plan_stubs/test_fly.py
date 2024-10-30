@@ -24,8 +24,8 @@ from ophyd_async.core import (
     observe_value,
     set_mock_value,
 )
-from ophyd_async.epics.pvi import fill_pvi_entries
 from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     StaticPcompTriggerLogic,
@@ -170,15 +170,8 @@ async def detectors(RE: RunEngine) -> tuple[MockDetector, MockDetector]:
 @pytest.fixture
 async def mock_panda():
     class Panda(CommonPandaBlocks):
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            super().__init__(name)
-
-        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-            await super().connect(mock, timeout)
+        def __init__(self, uri: str, name: str = ""):
+            super().__init__(name=name, connector=fastcs_connector(self, uri))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")

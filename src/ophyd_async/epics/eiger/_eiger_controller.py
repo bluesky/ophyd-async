@@ -4,9 +4,9 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorController,
     DetectorTrigger,
+    TriggerInfo,
     set_and_wait_for_other_value,
 )
-from ophyd_async.core._detector import TriggerInfo
 
 from ._eiger_io import EigerDriverIO, EigerTriggerMode
 

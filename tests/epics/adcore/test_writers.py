@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
 import pytest
@@ -8,11 +9,11 @@ from ophyd_async.core import (
     PathProvider,
     StandardDetector,
     StaticPathProvider,
+    set_mock_value,
 )
-from ophyd_async.core._mock_signal_utils import set_mock_value
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
-from ophyd_async.epics.signal._signal import epics_signal_r
-from ophyd_async.plan_stubs._nd_attributes import setup_ndattributes, setup_ndstats_sum
+from ophyd_async.epics.signal import epics_signal_r
+from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
 
 
 class DummyDatasetDescriber(DatasetDescriber):
@@ -107,14 +108,14 @@ async def test_stats_describe_when_plugin_configured(
     assert descriptor == {
         "test": {
             "source": "mock+ca://HDF:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "<u2",
             "external": "STREAM:",
         },
         "mydetector-sum": {
             "source": "mock+ca://HDF:FullFileName_RBV",
-            "shape": (),
+            "shape": [],
             "dtype": "number",
             "dtype_numpy": "<f8",
             "external": "STREAM:",
@@ -123,7 +124,7 @@ async def test_stats_describe_when_plugin_configured(
             "dtype": "number",
             "dtype_numpy": "<f4",
             "external": "STREAM:",
-            "shape": (),
+            "shape": [],
             "source": "mock+ca://HDF:FullFileName_RBV",
         },
     }
@@ -160,7 +161,8 @@ async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
         detector.set_name(type(detector).__name__)
         RE(setup_ndstats_sum(detector))
         xml = await detector.hdf.nd_attributes_file.get_value()
-        for element in xml:
+        root = ET.fromstring(xml)
+        for element in root:
             assert str(element.tag) == "Attribute"
             assert element.attrib == {
                 "name": f"{detector.name}-sum",
@@ -189,7 +191,8 @@ async def test_nd_attributes_plan_stub(RE, detectors):
             dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
         )
         RE(setup_ndattributes(detector.hdf, [pv, param]))
-        xml = await detector.hdf.nd_attributes_file.get_value()
+        text = await detector.hdf.nd_attributes_file.get_value()
+        xml = ET.fromstring(text)
         assert xml[0].tag == "Attribute"
         assert xml[0].attrib == {
             "name": "Temperature",

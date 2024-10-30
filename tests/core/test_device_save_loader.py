@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from enum import Enum
 from os import path
 from typing import Any
 from unittest.mock import patch
@@ -9,13 +8,13 @@ import numpy.typing as npt
 import pytest
 import yaml
 from bluesky.run_engine import RunEngine
-from pydantic import BaseModel, Field
-from pydantic_numpy.typing import NpNDArrayFp16, NpNDArrayInt32
 
 from ophyd_async.core import (
+    Array1D,
     Device,
-    SignalR,
     SignalRW,
+    StrictEnum,
+    Table,
     all_at_once,
     get_signal_values,
     load_device,
@@ -28,43 +27,41 @@ from ophyd_async.core import (
 from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw
 
 
-class DummyChildDevice(Device):
-    def __init__(self) -> None:
-        self.sig1: SignalRW = epics_signal_rw(str, "Value1")
-        self.sig2: SignalR = epics_signal_r(str, "Value2")
-
-
-class EnumTest(str, Enum):
+class EnumTest(StrictEnum):
     VAL1 = "val1"
     VAL2 = "val2"
 
 
+class DummyChildDevice(Device):
+    def __init__(self) -> None:
+        self.str_sig = epics_signal_rw(str, "StrSignal")
+        super().__init__()
+
+
 class DummyDeviceGroup(Device):
     def __init__(self, name: str):
-        self.child1: DummyChildDevice = DummyChildDevice()
-        self.child2: DummyChildDevice = DummyChildDevice()
-        self.parent_sig1: SignalRW = epics_signal_rw(str, "ParentValue1")
-        self.parent_sig2: SignalR = epics_signal_r(
+        self.child1 = DummyChildDevice()
+        self.child2 = DummyChildDevice()
+        self.str_sig = epics_signal_rw(str, "ParentValue1")
+        self.parent_sig2 = epics_signal_r(
             int, "ParentValue2"
         )  # Ensure only RW are found
-        self.parent_sig3: SignalRW = epics_signal_rw(str, "ParentValue3")
-        self.position: npt.NDArray[np.int32]
+        self.table_sig = epics_signal_rw(Table, "TableSignal")
+        self.array_sig = epics_signal_rw(Array1D[np.uint32], "ArraySignal")
+        self.enum_sig = epics_signal_rw(EnumTest, "EnumSignal")
+        super().__init__(name)
 
 
-class MyEnum(str, Enum):
+class MyEnum(StrictEnum):
     one = "one"
     two = "two"
     three = "three"
 
 
-class SomePvaPydanticModel(BaseModel):
-    some_int_field: int = Field(default=1)
-    some_pydantic_numpy_field_float: NpNDArrayFp16 = Field(
-        default_factory=lambda: np.array([1, 2, 3])
-    )
-    some_pydantic_numpy_field_int: NpNDArrayInt32 = Field(
-        default_factory=lambda: np.array([1, 2, 3])
-    )
+class SomeTable(Table):
+    some_float: Array1D[np.float64]
+    some_int: Array1D[np.int32]
+    some_enum: Sequence[MyEnum]
 
 
 class DummyDeviceGroupAllTypes(Device):
@@ -86,9 +83,8 @@ class DummyDeviceGroupAllTypes(Device):
         self.pv_array_float64 = epics_signal_rw(npt.NDArray[np.float64], "PV14")
         self.pv_array_npstr = epics_signal_rw(npt.NDArray[np.str_], "PV15")
         self.pv_array_str = epics_signal_rw(Sequence[str], "PV16")
-        self.pv_protocol_device_abstraction = epics_signal_rw(
-            SomePvaPydanticModel, "pva://PV17"
-        )
+        self.pv_protocol_device_abstraction = epics_signal_rw(Table, "pva://PV17")
+        super().__init__(name)
 
 
 @pytest.fixture
@@ -107,9 +103,14 @@ async def device_all_types() -> DummyDeviceGroupAllTypes:
 
 # Dummy function to check different phases save properly
 def sort_signal_by_phase(values: dict[str, Any]) -> list[dict[str, Any]]:
-    phase_1 = {"child1.sig1": values["child1.sig1"]}
-    phase_2 = {"child2.sig1": values["child2.sig1"]}
-    return [phase_1, phase_2]
+    phase_1 = {"child1.str_sig": values["child1.str_sig"]}
+    phase_2 = {"child2.str_sig": values["child2.str_sig"]}
+    phase_3 = {
+        key: value
+        for key, value in values.items()
+        if key not in phase_1 and key not in phase_2
+    }
+    return [phase_1, phase_2, phase_3]
 
 
 async def test_enum_yaml_formatting(tmp_path):
@@ -123,7 +124,9 @@ async def test_enum_yaml_formatting(tmp_path):
     assert saved_enums == enums
 
 
-async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
+async def test_save_device_all_types(
+    RE: RunEngine, device_all_types: DummyDeviceGroupAllTypes, tmp_path
+):
     # Populate fake device with PV's...
     await device_all_types.pv_int.set(1)
     await device_all_types.pv_float.set(1.234)
@@ -171,7 +174,13 @@ async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
     await device_all_types.pv_array_str.set(
         ["one", "two", "three"],
     )
-    await device_all_types.pv_protocol_device_abstraction.set(SomePvaPydanticModel())
+    await device_all_types.pv_protocol_device_abstraction.set(
+        SomeTable(
+            some_float=np.arange(3, dtype=np.float64),
+            some_int=np.arange(3),
+            some_enum=[MyEnum.one, MyEnum.two, MyEnum.three],
+        )
+    )
 
     # Create save plan from utility functions
     def save_my_device():
@@ -185,39 +194,40 @@ async def test_save_device_all_types(RE: RunEngine, device_all_types, tmp_path):
     actual_file_path = path.join(tmp_path, "test_file.yaml")
     with open(actual_file_path) as actual_file:
         with open("tests/test_data/test_yaml_save.yml") as expected_file:
-            assert actual_file.read() == expected_file.read()
+            assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
 
 
-async def test_save_device(RE: RunEngine, device, tmp_path):
+async def test_save_device(RE: RunEngine, device: DummyDeviceGroup, tmp_path):
     # Populate fake device with PV's...
-    await device.child1.sig1.set("test_string")
+    await device.child1.str_sig.set("test_string")
     # Test tables PVs
     table_pv = {"VAL1": np.array([1, 1, 1, 1, 1]), "VAL2": np.array([1, 1, 1, 1, 1])}
-    await device.child2.sig1.set(table_pv)
-
-    # Test enum PVs
-    await device.parent_sig3.set(EnumTest.VAL1)
+    array_pv = np.array([2, 2, 2, 2, 2])
+    await device.array_sig.set(array_pv)
+    await device.table_sig.set(table_pv)
+    await device.enum_sig.set(EnumTest.VAL2)
 
     # Create save plan from utility functions
     def save_my_device():
         signalRWs = walk_rw_signals(device)
 
         assert list(signalRWs.keys()) == [
-            "child1.sig1",
-            "child2.sig1",
-            "parent_sig1",
-            "parent_sig3",
+            "child1.str_sig",
+            "child2.str_sig",
+            "str_sig",
+            "table_sig",
+            "array_sig",
+            "enum_sig",
         ]
         assert all(isinstance(signal, SignalRW) for signal in list(signalRWs.values()))
 
-        values = yield from get_signal_values(signalRWs, ignore=["parent_sig1"])
-
-        assert values == {
-            "child1.sig1": "test_string",
-            "child2.sig1": table_pv,
-            "parent_sig3": "val1",
-            "parent_sig1": None,
-        }
+        values = yield from get_signal_values(signalRWs, ignore=["str_sig"])
+        assert np.array_equal(values["array_sig"], array_pv)
+        assert values["enum_sig"] == "val2"
+        assert values["table_sig"] == Table(**table_pv)
+        assert values["str_sig"] is None
+        assert values["child1.str_sig"] == "test_string"
+        assert values["child2.str_sig"] == ""
 
         save_to_yaml([values], path.join(tmp_path, "test_file.yaml"))
 
@@ -225,60 +235,74 @@ async def test_save_device(RE: RunEngine, device, tmp_path):
 
     with open(path.join(tmp_path, "test_file.yaml")) as file:
         yaml_content = yaml.load(file, yaml.Loader)[0]
-        assert len(yaml_content) == 4
-        assert yaml_content["child1.sig1"] == "test_string"
-        assert np.array_equal(
-            yaml_content["child2.sig1"]["VAL1"], np.array([1, 1, 1, 1, 1])
-        )
-        assert np.array_equal(
-            yaml_content["child2.sig1"]["VAL2"], np.array([1, 1, 1, 1, 1])
-        )
-        assert yaml_content["parent_sig3"] == "val1"
-        assert yaml_content["parent_sig1"] is None
+        assert yaml_content["child1.str_sig"] == "test_string"
+        assert yaml_content["child2.str_sig"] == ""
+        assert np.array_equal(yaml_content["table_sig"]["VAL1"], table_pv["VAL1"])
+        assert np.array_equal(yaml_content["table_sig"]["VAL2"], table_pv["VAL2"])
+        assert np.array_equal(yaml_content["array_sig"], array_pv)
+        assert yaml_content["enum_sig"] == "val2"
+        assert yaml_content["str_sig"] is None
 
 
-async def test_yaml_formatting(RE: RunEngine, device, tmp_path):
+async def test_yaml_formatting(RE: RunEngine, device: DummyDeviceGroup, tmp_path):
     file_path = path.join(tmp_path, "test_file.yaml")
-    await device.child1.sig1.set("test_string")
-    table_pv = {"VAL1": np.array([1, 2, 3, 4, 5]), "VAL2": np.array([6, 7, 8, 9, 10])}
-    await device.child2.sig1.set(table_pv)
+    await device.child1.str_sig.set("test_string")
+    table = {"VAL1": np.array([1, 2, 3, 4, 5]), "VAL2": np.array([6, 7, 8, 9, 10])}
+    await device.array_sig.set(np.array([11, 12, 13, 14, 15]))
+    await device.table_sig.set(table)
+    await device.enum_sig.set(EnumTest.VAL2)
     RE(save_device(device, file_path, sorter=sort_signal_by_phase))
 
     with open(file_path) as file:
         expected = """\
-- child1.sig1: test_string
-- child2.sig1:
+- child1.str_sig: test_string
+- child2.str_sig: ''
+- array_sig: [11, 12, 13, 14, 15]
+  enum_sig: val2
+  str_sig: ''
+  table_sig:
     VAL1: [1, 2, 3, 4, 5]
     VAL2: [6, 7, 8, 9, 10]
 """
+        # assert False, file.read()
         assert file.read() == expected
 
 
-async def test_load_from_yaml(RE: RunEngine, device, tmp_path):
+async def test_load_from_yaml(RE: RunEngine, device: DummyDeviceGroup, tmp_path):
     file_path = path.join(tmp_path, "test_file.yaml")
 
     array = np.array([1, 1, 1, 1, 1])
-    await device.child1.sig1.set("initial_string")
-    await device.child2.sig1.set(array)
-    await device.parent_sig1.set(None)
+    table = {"VAL1": np.array([1, 2, 3, 4, 5]), "VAL2": np.array([6, 7, 8, 9, 10])}
+    await device.child1.str_sig.set("initial_string")
+    await device.array_sig.set(array)
+    await device.str_sig.set(None)
+    await device.enum_sig.set(EnumTest.VAL2)
+    await device.table_sig.set(table)
     RE(save_device(device, file_path, sorter=sort_signal_by_phase))
 
     values = load_from_yaml(file_path)
-    assert values[0]["child1.sig1"] == "initial_string"
-    assert np.array_equal(values[1]["child2.sig1"], array)
+    assert values[0]["child1.str_sig"] == "initial_string"
+    assert values[1]["child2.str_sig"] == ""
+    assert values[2]["str_sig"] == ""
+    assert values[2]["enum_sig"] == "val2"
+    assert np.array_equal(values[2]["array_sig"], array)
+    assert np.array_equal(values[2]["table_sig"]["VAL1"], table["VAL1"])
+    assert np.array_equal(values[2]["table_sig"]["VAL2"], table["VAL2"])
 
 
-async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path):
+async def test_set_signal_values_restores_value(
+    RE: RunEngine, device: DummyDeviceGroup, tmp_path
+):
     file_path = path.join(tmp_path, "test_file.yaml")
 
-    await device.child1.sig1.set("initial_string")
-    await device.child2.sig1.set(np.array([1, 1, 1, 1, 1]))
+    await device.str_sig.set("initial_string")
+    await device.array_sig.set(np.array([1, 1, 1, 1, 1]))
     RE(save_device(device, file_path, sorter=sort_signal_by_phase))
 
-    await device.child1.sig1.set("changed_string")
-    await device.child2.sig1.set(np.array([2, 2, 2, 2, 2]))
-    string_value = await device.child1.sig1.get_value()
-    array_value = await device.child2.sig1.get_value()
+    await device.str_sig.set("changed_string")
+    await device.array_sig.set(np.array([2, 2, 2, 2, 2]))
+    string_value = await device.str_sig.get_value()
+    array_value = await device.array_sig.get_value()
     assert string_value == "changed_string"
     assert np.array_equal(array_value, np.array([2, 2, 2, 2, 2]))
 
@@ -287,8 +311,8 @@ async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path)
 
     RE(set_signal_values(signals_to_set, values))
 
-    string_value = await device.child1.sig1.get_value()
-    array_value = await device.child2.sig1.get_value()
+    string_value = await device.str_sig.get_value()
+    array_value = await device.array_sig.get_value()
     assert string_value == "initial_string"
     assert np.array_equal(array_value, np.array([1, 1, 1, 1, 1]))
 
@@ -297,7 +321,10 @@ async def test_set_signal_values_restores_value(RE: RunEngine, device, tmp_path)
 @patch("ophyd_async.core._device_save_loader.walk_rw_signals")
 @patch("ophyd_async.core._device_save_loader.set_signal_values")
 async def test_load_device(
-    mock_set_signal_values, mock_walk_rw_signals, mock_load_from_yaml, device
+    mock_set_signal_values,
+    mock_walk_rw_signals,
+    mock_load_from_yaml,
+    device: DummyDeviceGroup,
 ):
     RE = RunEngine()
     RE(load_device(device, "path"))
@@ -306,22 +333,22 @@ async def test_load_device(
     mock_set_signal_values.assert_called_once()
 
 
-async def test_set_signal_values_skips_ignored_values(device):
+async def test_set_signal_values_skips_ignored_values(device: DummyDeviceGroup):
     RE = RunEngine()
     array = np.array([1, 1, 1, 1, 1])
 
-    await device.child1.sig1.set("initial_string")
-    await device.child2.sig1.set(array)
-    await device.parent_sig1.set(None)
+    await device.child1.str_sig.set("initial_string")
+    await device.array_sig.set(array)
+    await device.str_sig.set(None)
 
     signals_of_device = walk_rw_signals(device)
-    values_to_set = [{"child1.sig1": None, "child2.sig1": np.array([2, 3, 4])}]
+    values_to_set = [{"child1.str_sig": None, "array_sig": np.array([2, 3, 4])}]
 
     RE(set_signal_values(signals_of_device, values_to_set))
 
-    assert np.all(await device.child2.sig1.get_value() == np.array([2, 3, 4]))
-    assert await device.child1.sig1.get_value() == "initial_string"
+    assert np.all(await device.array_sig.get_value() == np.array([2, 3, 4]))
+    assert await device.child1.str_sig.get_value() == "initial_string"
 
 
 def test_all_at_once_sorter():
-    assert all_at_once({"child1.sig1": 0}) == [{"child1.sig1": 0}]
+    assert all_at_once({"child1.str_sig": 0}) == [{"child1.str_sig": 0}]

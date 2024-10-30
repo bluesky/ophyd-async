@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
-from enum import Enum
 
 from bluesky.protocols import StreamAsset
 from event_model import DataKey
@@ -12,6 +11,7 @@ from ophyd_async.core import (
     DeviceVector,
     NameProvider,
     PathProvider,
+    StrictEnum,
     observe_value,
     set_and_wait_for_value,
 )
@@ -22,7 +22,7 @@ from ophyd_async.epics.signal import (
 )
 
 
-class Writing(str, Enum):
+class Writing(StrictEnum):
     ON = "ON"
     OFF = "OFF"
 
@@ -101,10 +101,10 @@ class OdinWriter(DetectorWriter):
         return {
             "data": DataKey(
                 source=self._drv.file_name.source,
-                shape=data_shape,
+                shape=list(data_shape),
                 dtype="array",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
-                dtype_numpy="<u2",  # type: ignore
+                dtype_numpy="<u2",
                 external="STREAM:",
             )
         }

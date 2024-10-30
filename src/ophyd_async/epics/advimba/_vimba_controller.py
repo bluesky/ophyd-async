@@ -1,8 +1,11 @@
 import asyncio
 
-from ophyd_async.core import DetectorController, DetectorTrigger
-from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.core._status import AsyncStatus
+from ophyd_async.core import (
+    AsyncStatus,
+    DetectorController,
+    DetectorTrigger,
+    TriggerInfo,
+)
 from ophyd_async.epics import adcore
 
 from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff, VimbaTriggerSource
