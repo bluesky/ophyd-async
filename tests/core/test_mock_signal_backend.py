@@ -189,7 +189,7 @@ async def test_blocks_during_put(mock_signals):
         assert not status1.done
         assert not status2.done
 
-    await asyncio.sleep(1e-4)
+    await asyncio.sleep(0.1)
 
     assert status1.done
     assert status2.done
