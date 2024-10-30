@@ -4,8 +4,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from ophyd_async.fastcs.panda import SeqTable
-from ophyd_async.fastcs.panda._table import SeqTrigger
+from ophyd_async.fastcs.panda import SeqTable, SeqTrigger
 
 
 def test_seq_table_converts_lists():
@@ -20,7 +19,7 @@ def test_seq_table_converts_lists():
 
 
 def test_seq_table_validation_errors():
-    with pytest.raises(ValidationError, match="81 validation errors for SeqTable"):
+    with pytest.raises(ValidationError, match="17 validation errors for SeqTable"):
         SeqTable(
             repeats=0,
             trigger=SeqTrigger.IMMEDIATE,
@@ -42,53 +41,56 @@ def test_seq_table_validation_errors():
         )
 
     large_seq_table = SeqTable(
-        repeats=np.zeros(4095, dtype=np.int32),
-        trigger=["Immediate"] * 4095,
-        position=np.zeros(4095, dtype=np.int32),
-        time1=np.zeros(4095, dtype=np.int32),
-        outa1=np.zeros(4095, dtype=np.bool_),
-        outb1=np.zeros(4095, dtype=np.bool_),
-        outc1=np.zeros(4095, dtype=np.bool_),
-        outd1=np.zeros(4095, dtype=np.bool_),
-        oute1=np.zeros(4095, dtype=np.bool_),
-        outf1=np.zeros(4095, dtype=np.bool_),
-        time2=np.zeros(4095, dtype=np.int32),
-        outa2=np.zeros(4095, dtype=np.bool_),
-        outb2=np.zeros(4095, dtype=np.bool_),
-        outc2=np.zeros(4095, dtype=np.bool_),
-        outd2=np.zeros(4095, dtype=np.bool_),
-        oute2=np.zeros(4095, dtype=np.bool_),
-        outf2=np.zeros(4095, dtype=np.bool_),
+        repeats=np.zeros(4096, dtype=np.uint16),
+        trigger=[SeqTrigger.IMMEDIATE] * 4096,
+        position=np.zeros(4096, dtype=np.int32),
+        time1=np.zeros(4096, dtype=np.uint32),
+        outa1=np.zeros(4096, dtype=np.bool_),
+        outb1=np.zeros(4096, dtype=np.bool_),
+        outc1=np.zeros(4096, dtype=np.bool_),
+        outd1=np.zeros(4096, dtype=np.bool_),
+        oute1=np.zeros(4096, dtype=np.bool_),
+        outf1=np.zeros(4096, dtype=np.bool_),
+        time2=np.zeros(4096, dtype=np.uint32),
+        outa2=np.zeros(4096, dtype=np.bool_),
+        outb2=np.zeros(4096, dtype=np.bool_),
+        outc2=np.zeros(4096, dtype=np.bool_),
+        outd2=np.zeros(4096, dtype=np.bool_),
+        oute2=np.zeros(4096, dtype=np.bool_),
+        outf2=np.zeros(4096, dtype=np.bool_),
     )
     with pytest.raises(
         ValidationError,
         match=(
             "1 validation error for SeqTable\n  "
-            "Assertion failed, Length 4096 not in range."
+            "Assertion failed, Length 4097 is too long."
         ),
     ):
         large_seq_table + SeqTable.row()
+    # TODO: validation of numpy types disabled until bool -> uint8 CA issue resolved
+    # with pytest.raises(
+    #     ValidationError,
+    #     match="1 validation error for SeqTable\n  Assertion failed, repeats: "
+    #     + "expected dtype uint16, got int32",
+    # ):
+    #     row_one = SeqTable.row()
+    #     wrong_types = {
+    #         field_name: field_value.astype(np.int32)
+    #         if isinstance(field_value, np.ndarray)
+    #         else field_value
+    #         for field_name, field_value in row_one
+    #     }
+    #     SeqTable(**wrong_types)
     with pytest.raises(
         ValidationError,
-        match="12 validation errors for SeqTable",
-    ):
-        row_one = SeqTable.row()
-        wrong_types = {
-            field_name: field_value.astype(np.unicode_)
-            for field_name, field_value in row_one
-            if isinstance(field_value, np.ndarray)
-        }
-        SeqTable(**wrong_types)
-    with pytest.raises(
-        TypeError,
-        match="Row column should be numpy arrays or sequence of string `Enum`",
+        match="trigger.0\n  Input should be 'Immediate', 'BITA=0'",
     ):
         SeqTable.row(trigger="A")
 
 
 def test_seq_table_pva_conversion():
     pva_dict = {
-        "repeats": np.array([1, 2, 3, 4], dtype=np.int32),
+        "repeats": np.array([1, 2, 3, 4], dtype=np.uint16),
         "trigger": [
             SeqTrigger.IMMEDIATE,
             SeqTrigger.IMMEDIATE,
@@ -96,14 +98,14 @@ def test_seq_table_pva_conversion():
             SeqTrigger.IMMEDIATE,
         ],
         "position": np.array([1, 2, 3, 4], dtype=np.int32),
-        "time1": np.array([1, 0, 1, 0], dtype=np.int32),
+        "time1": np.array([1, 0, 1, 0], dtype=np.uint32),
         "outa1": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outb1": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outc1": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outd1": np.array([1, 0, 1, 0], dtype=np.bool_),
         "oute1": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outf1": np.array([1, 0, 1, 0], dtype=np.bool_),
-        "time2": np.array([1, 2, 3, 4], dtype=np.int32),
+        "time2": np.array([1, 2, 3, 4], dtype=np.uint32),
         "outa2": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outb2": np.array([1, 0, 1, 0], dtype=np.bool_),
         "outc2": np.array([1, 0, 1, 0], dtype=np.bool_),
@@ -221,50 +223,20 @@ def test_seq_table_pva_conversion():
     ):
         _assert_col_equal(column1, column2)
 
-    assert np.array_equal(
-        seq_table_from_pva_dict.numpy_columns(),
-        [
-            np.array([1, 2, 3, 4], dtype=np.int32),
-            np.array(
-                [
-                    "Immediate",
-                    "Immediate",
-                    "BITC=0",
-                    "Immediate",
-                ],
-                dtype="<U14",
-            ),
-            np.array([1, 2, 3, 4], dtype=np.int32),
-            np.array([1, 0, 1, 0], dtype=np.int32),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([1, 2, 3, 4], dtype=np.int32),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-            np.array([True, False, True, False], dtype=np.bool_),
-        ],
-    )
     dtype = seq_table_from_pva_dict.numpy_dtype()
     assert dtype == np.dtype(
         [
-            ("repeats", np.int32),
-            ("trigger", "<U14"),
+            ("repeats", np.uint16),
+            ("trigger", "|S40"),
             ("position", np.int32),
-            ("time1", np.int32),
+            ("time1", np.uint32),
             ("outa1", np.bool_),
             ("outb1", np.bool_),
             ("outc1", np.bool_),
             ("outd1", np.bool_),
             ("oute1", np.bool_),
             ("outf1", np.bool_),
-            ("time2", np.int32),
+            ("time2", np.uint32),
             ("outa2", np.bool_),
             ("outb2", np.bool_),
             ("outc2", np.bool_),
@@ -364,17 +336,17 @@ def test_seq_table_takes_trigger_enum_row():
     table = SeqTable.row(trigger=SeqTrigger.BITA_0)
     assert table.trigger[0] == SeqTrigger.BITA_0
     table = SeqTable(
-        repeats=np.array([1], dtype=np.int32),
+        repeats=np.array([1], dtype=np.uint16),
         trigger=[SeqTrigger.BITA_0],
         position=np.array([1], dtype=np.int32),
-        time1=np.array([1], dtype=np.int32),
+        time1=np.array([1], dtype=np.uint32),
         outa1=np.array([1], dtype=np.bool_),
         outb1=np.array([1], dtype=np.bool_),
         outc1=np.array([1], dtype=np.bool_),
         outd1=np.array([1], dtype=np.bool_),
         oute1=np.array([1], dtype=np.bool_),
         outf1=np.array([1], dtype=np.bool_),
-        time2=np.array([1], dtype=np.int32),
+        time2=np.array([1], dtype=np.uint32),
         outa2=np.array([1], dtype=np.bool_),
         outb2=np.array([1], dtype=np.bool_),
         outc2=np.array([1], dtype=np.bool_),

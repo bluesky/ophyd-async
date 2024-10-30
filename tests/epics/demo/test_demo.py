@@ -179,7 +179,7 @@ async def test_sensor_reading_shows_value(mock_sensor: demo.Sensor):
 async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
     mover_setpoint_mock = get_mock_put(mock_mover.setpoint)
     await mock_mover.setpoint.set(10)
-    mover_setpoint_mock.assert_called_once_with(10, wait=ANY, timeout=ANY)
+    mover_setpoint_mock.assert_called_once_with(10, wait=ANY)
 
     # Assert that velocity is set before move
     mover_velocity_mock = get_mock_put(mock_mover.velocity)
@@ -193,8 +193,8 @@ async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
 
     parent_mock.assert_has_calls(
         [
-            call.velocity(100, wait=True, timeout=ANY),
-            call.setpoint(67, wait=True, timeout=ANY),
+            call.velocity(100, wait=True),
+            call.setpoint(67, wait=True),
         ]
     )
 
@@ -250,19 +250,17 @@ async def test_sensor_disconnected(caplog):
 
 
 async def test_read_sensor(mock_sensor: demo.Sensor):
-    mock_sensor.stage()
     assert (await mock_sensor.read())["mock_sensor-value"]["value"] == 0
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.low
     desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
-    assert desc["choices"] == ("Low Energy", "High Energy")  # type: ignore
+    assert desc["choices"] == ["Low Energy", "High Energy"]
     set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.high
-    await mock_sensor.unstage()
 
 
 async def test_sensor_in_plan(RE: RunEngine, mock_sensor: demo.Sensor):

@@ -1,6 +1,6 @@
 import pytest
 
-from ophyd_async.core import Device, MockSignalBackend, NotConnected, SignalRW
+from ophyd_async.core import Device, NotConnected, soft_signal_rw
 from ophyd_async.epics.signal import epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -24,7 +24,7 @@ def test_ensure_connected(RE):
 
     assert isinstance(device1.signal._connect_task.exception(), NotConnected)
 
-    device1.signal = SignalRW(MockSignalBackend(str))
+    device1.signal = soft_signal_rw(str)
     RE(connect())
     assert device1.signal._connect_task.exception() is None
 

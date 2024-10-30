@@ -1,10 +1,9 @@
-from enum import Enum
-
+from ophyd_async.core import StrictEnum
 from ophyd_async.epics import adcore
 from ophyd_async.epics.signal import epics_signal_rw_rbv
 
 
-class VimbaPixelFormat(str, Enum):
+class VimbaPixelFormat(StrictEnum):
     internal = "Mono8"
     ext_enable = "Mono12"
     ext_trigger = "Ext. Trigger"
@@ -12,7 +11,7 @@ class VimbaPixelFormat(str, Enum):
     alignment = "Alignment"
 
 
-class VimbaConvertFormat(str, Enum):
+class VimbaConvertFormat(StrictEnum):
     none = "None"
     mono8 = "Mono8"
     mono16 = "Mono16"
@@ -20,7 +19,7 @@ class VimbaConvertFormat(str, Enum):
     rgb16 = "RGB16"
 
 
-class VimbaTriggerSource(str, Enum):
+class VimbaTriggerSource(StrictEnum):
     freerun = "Freerun"
     line1 = "Line1"
     line2 = "Line2"
@@ -30,17 +29,17 @@ class VimbaTriggerSource(str, Enum):
     action1 = "Action1"
 
 
-class VimbaOverlap(str, Enum):
+class VimbaOverlap(StrictEnum):
     off = "Off"
     prev_frame = "PreviousFrame"
 
 
-class VimbaOnOff(str, Enum):
+class VimbaOnOff(StrictEnum):
     on = "On"
     off = "Off"
 
 
-class VimbaExposeOutMode(str, Enum):
+class VimbaExposeOutMode(StrictEnum):
     timed = "Timed"  # Use ExposureTime PV
     trigger_width = "TriggerWidth"  # Expose for length of high signal
 

@@ -1,21 +1,12 @@
 from __future__ import annotations
 
-from typing import (
-    TypeVar,
-    get_args,
-    get_origin,
-    get_type_hints,
-)
+from typing import TypeVar
 
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    Device,
-    Signal,
-)
+from ophyd_async.core import Device, DeviceConnector, DeviceFiller
 from ophyd_async.tango.signal import (
     TangoSignalBackend,
-    __tango_signal_auto,
-    make_backend,
+    infer_python_type,
+    infer_signal_type,
 )
 from tango import DeviceProxy as DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
@@ -50,64 +41,14 @@ class TangoDevice(Device):
         device_proxy: DeviceProxy | None = None,
         name: str = "",
     ) -> None:
-        self.trl = trl if trl else ""
-        self.proxy = device_proxy
-        tango_create_children_from_annotations(self)
-        super().__init__(name=name)
-
-    def set_trl(self, trl: str):
-        """Set the Tango resource locator."""
-        if not isinstance(trl, str):
-            raise ValueError("TRL must be a string.")
-        self.trl = trl
-
-    async def connect(
-        self,
-        mock: bool = False,
-        timeout: float = DEFAULT_TIMEOUT,
-        force_reconnect: bool = False,
-    ):
-        if self.trl and self.proxy is None:
-            self.proxy = await AsyncDeviceProxy(self.trl)
-        elif self.proxy and not self.trl:
-            self.trl = self.proxy.name()
-
-        # Set the trl of the signal backends
-        for child in self.children():
-            if isinstance(child[1], Signal):
-                if isinstance(child[1]._backend, TangoSignalBackend):  # noqa: SLF001
-                    resource_name = child[0].lstrip("_")
-                    read_trl = f"{self.trl}/{resource_name}"
-                    child[1]._backend.set_trl(read_trl, read_trl)  # noqa: SLF001
-
-        if self.proxy is not None:
-            self.register_signals()
-            await _fill_proxy_entries(self)
-
-        # set_name should be called again to propagate the new signal names
-        self.set_name(self.name)
-
-        # Set the polling configuration
-        if self._polling[0]:
-            for child in self.children():
-                child_type = type(child[1])
-                if issubclass(child_type, Signal):
-                    if isinstance(child[1]._backend, TangoSignalBackend):  # noqa: SLF001  # type: ignore
-                        child[1]._backend.set_polling(*self._polling)  # noqa: SLF001  # type: ignore
-                        child[1]._backend.allow_events(False)  # noqa: SLF001  # type: ignore
-        if self._signal_polling:
-            for signal_name, polling in self._signal_polling.items():
-                if hasattr(self, signal_name):
-                    attr = getattr(self, signal_name)
-                    if isinstance(attr._backend, TangoSignalBackend):  # noqa: SLF001
-                        attr._backend.set_polling(*polling)  # noqa: SLF001
-                        attr._backend.allow_events(False)  # noqa: SLF001
-
-        await super().connect(mock=mock, timeout=timeout)
-
-    # Users can override this method to register new signals
-    def register_signals(self):
-        pass
+        connector = TangoDeviceConnector(
+            trl=trl,
+            device_proxy=device_proxy,
+            polling=self._polling,
+            signal_polling=self._signal_polling,
+        )
+        connector.create_children_from_annotations(self)
+        super().__init__(name=name, connector=connector)
 
 
 def tango_polling(
@@ -150,76 +91,67 @@ def tango_polling(
     return decorator
 
 
-def tango_create_children_from_annotations(
-    device: TangoDevice, included_optional_fields: tuple[str, ...] = ()
-):
-    """Initialize blocks at __init__ of `device`."""
-    for name, device_type in get_type_hints(type(device)).items():
-        if name in ("_name", "parent"):
-            continue
+class TangoDeviceConnector(DeviceConnector):
+    def __init__(
+        self,
+        trl: str | None,
+        device_proxy: DeviceProxy | None,
+        polling: tuple[bool, float, float | None, float | None],
+        signal_polling: dict[str, tuple[bool, float, float, float]],
+    ) -> None:
+        self.trl = trl
+        self.proxy = device_proxy
+        self._polling = polling
+        self._signal_polling = signal_polling
 
-        # device_type, is_optional = _strip_union(device_type)
-        # if is_optional and name not in included_optional_fields:
-        #     continue
-        #
-        # is_device_vector, device_type = _strip_device_vector(device_type)
-        # if is_device_vector:
-        #     n_device_vector = DeviceVector()
-        #     setattr(device, name, n_device_vector)
+    def create_children_from_annotations(self, device: Device):
+        self._filler = DeviceFiller(
+            device=device,
+            signal_backend_factory=TangoSignalBackend,
+            device_connector_factory=lambda: TangoDeviceConnector(
+                None, None, (False, 0.1, None, None), {}
+            ),
+        )
 
-        # else:
-        origin = get_origin(device_type)
-        origin = origin if origin else device_type
+    async def connect(
+        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
+    ) -> None:
+        if mock:
+            # Make 2 entries for each DeviceVector
+            self._filler.make_soft_device_vector_entries(2)
+        else:
+            if self.trl and self.proxy is None:
+                self.proxy = await AsyncDeviceProxy(self.trl)
+            elif self.proxy and not self.trl:
+                self.trl = self.proxy.name()
+            else:
+                raise TypeError("Neither proxy nor trl supplied")
 
-        if issubclass(origin, Signal):
-            type_args = get_args(device_type)
-            datatype = type_args[0] if type_args else None
-            backend = make_backend(datatype=datatype, device_proxy=device.proxy)
-            setattr(device, name, origin(name=name, backend=backend))
-
-        elif issubclass(origin, Device) or isinstance(origin, Device):
-            assert callable(origin), f"{origin} is not callable."
-            setattr(device, name, origin())
-
-
-async def _fill_proxy_entries(device: TangoDevice):
-    if device.proxy is None:
-        raise RuntimeError(f"Device proxy is not connected for {device.name}")
-    proxy_trl = device.trl
-    children = [name.lstrip("_") for name, _ in device.children()]
-    proxy_attributes = list(device.proxy.get_attribute_list())
-    proxy_commands = list(device.proxy.get_command_list())
-    combined = proxy_attributes + proxy_commands
-
-    for name in combined:
-        if name not in children:
-            full_trl = f"{proxy_trl}/{name}"
-            try:
-                auto_signal = await __tango_signal_auto(
-                    trl=full_trl, device_proxy=device.proxy
+            children = sorted(
+                set()
+                .union(self.proxy.get_attribute_list())
+                .union(self.proxy.get_command_list())
+            )
+            for name in children:
+                # TODO: strip attribute name
+                full_trl = f"{self.trl}/{name}"
+                signal_type = await infer_signal_type(full_trl, self.proxy)
+                if signal_type:
+                    backend = self._filler.make_child_signal(name, signal_type)
+                    backend.datatype = await infer_python_type(full_trl, self.proxy)
+                    backend.set_trl(full_trl)
+                    if polling := self._signal_polling.get(name, ()):
+                        backend.set_polling(*polling)
+                        backend.allow_events(False)
+                    elif self._polling[0]:
+                        backend.set_polling(*self._polling)
+                        backend.allow_events(False)
+            # Check that all the requested children have been created
+            if unfilled := self._filler.unfilled():
+                raise RuntimeError(
+                    f"{device.name}: cannot provision {unfilled} from "
+                    f"{self.trl}: {children}"
                 )
-                setattr(device, name, auto_signal)
-            except RuntimeError as e:
-                if "Commands with different in and out dtypes" in str(e):
-                    print(
-                        f"Skipping {name}. Commands with different in and out dtypes"
-                        f" are not supported."
-                    )
-                    continue
-                raise e
-
-
-# def _strip_union(field: T | T) -> tuple[T, bool]:
-#     if get_origin(field) is Union:
-#         args = get_args(field)
-#         is_optional = type(None) in args
-#         for arg in args:
-#             if arg is not type(None):
-#                 return arg, is_optional
-#     return field, False
-#
-#
-# def _strip_device_vector(field: type[Device]) -> tuple[bool, type[Device]]:
-#     if get_origin(field) is DeviceVector:
-#         return True, get_args(field)[0]
-#     return False, field
+        # Set the name of the device to name all children
+        device.set_name(device.name)
+        return await super().connect(device, mock, timeout, force_reconnect)

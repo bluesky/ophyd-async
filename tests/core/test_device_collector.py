@@ -15,14 +15,18 @@ from ophyd_async.epics import motor
 
 
 class FailingDevice(Device):
-    async def connect(self, mock: bool = False, timeout=DEFAULT_TIMEOUT):
+    async def connect(
+        self, mock: bool = False, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+    ):
         raise AttributeError()
 
 
 class WorkingDevice(Device):
     connected = False
 
-    async def connect(self, mock: bool = True, timeout=DEFAULT_TIMEOUT):
+    async def connect(
+        self, mock: bool = True, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+    ):
         self.connected = True
         return await super().connect(mock=True)
 

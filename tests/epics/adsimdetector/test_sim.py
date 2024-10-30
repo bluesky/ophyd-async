@@ -201,8 +201,8 @@ async def test_two_detectors_step(
     assert descriptor["configuration"]["test_adsim2"]["data"][
         "test_adsim2-drv-acquire_time"
     ] == pytest.approx(1.8)
-    assert descriptor["data_keys"]["test_adsim1"]["shape"] == (10, 10)
-    assert descriptor["data_keys"]["test_adsim2"]["shape"] == (11, 11)
+    assert descriptor["data_keys"]["test_adsim1"]["shape"] == [10, 10]
+    assert descriptor["data_keys"]["test_adsim2"]["shape"] == [11, 11]
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
     assert (
@@ -236,10 +236,10 @@ async def test_detector_writes_to_file(
 
     descriptor_index = names.index("descriptor")
 
-    assert docs[descriptor_index].get("data_keys").get("test_adsim1").get("shape") == (
+    assert docs[descriptor_index].get("data_keys").get("test_adsim1").get("shape") == [
         10,
         10,
-    )
+    ]
     assert names == [
         "start",
         "descriptor",
@@ -312,8 +312,8 @@ async def test_trigger_logic():
         (
             "some-name",
             (
-                "config signal some-name-acquire_time must be connected "
-                "before it is passed to the detector"
+                "config signal some-name-acquire_time must be connected before it is "
+                "passed to the detector"
             ),
         ),
     ],

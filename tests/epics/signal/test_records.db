@@ -184,7 +184,7 @@ record(waveform, "$(P)longstr") {
 record(lsi, "$(P)longstr2") {
   field(SIZV, "80")
   field(INP, {const:"a string that is just longer than forty characters"})
-  field(PINI, "YES")  
+  field(PINI, "YES")
 }
 
 record(waveform, "$(P)table:labels") {
@@ -325,30 +325,6 @@ record(waveform, "$(P)ntndarray:data")
                 +trigger:"*",
             },
             "": {+type:"meta", +channel:"SEVR"}
-        }
-    })
-}
-
-record(ao, "$(P)width")
-{
-    info(Q:group, {
-        "$(P)pvi": {
-            "pvi.width.rw": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
-        }
-    })
-}
-
-record(ao, "$(P)height")
-{
-    info(Q:group, {
-        "$(P)pvi": {
-            "pvi.height.rw": {
-                "+channel": "NAME",
-                "+type": "plain"
-            }
         }
     })
 }

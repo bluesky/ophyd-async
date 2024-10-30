@@ -1,14 +1,13 @@
-import pytest
+from typing import TypeVar
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
     DeviceVector,
     SignalRW,
     SignalX,
 )
-from ophyd_async.epics.pvi import create_children_from_annotations, fill_pvi_entries
+from ophyd_async.epics.pvi import PviDeviceConnector
 
 
 class Block1(Device):
@@ -26,48 +25,50 @@ class Block2(Device):
 
 
 class Block3(Device):
-    device_vector: DeviceVector[Block2] | None
+    device_vector: DeviceVector[Block2]
     device: Block2
     signal_device: Block1
     signal_x: SignalX
     signal_rw: SignalRW[int]
 
 
-@pytest.fixture
-def pvi_test_device_t():
-    """A fixture since pytest discourages init in test case classes"""
-
-    class TestDevice(Block3, Device):
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            super().__init__(name)
-
-        async def connect(  # type: ignore
-            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
-        ) -> None:
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-
-            await super().connect(mock=mock)
-
-    yield TestDevice
+class Block4(Device):
+    device_vector: DeviceVector[Block1]
+    device: Block1
+    signal_x: SignalX
+    signal_rw: SignalRW[int]
 
 
-async def test_fill_pvi_entries_mock_mode(pvi_test_device_t):
+DeviceT = TypeVar("DeviceT", bound=Device)
+
+
+def with_pvi_connector(
+    device_type: type[DeviceT], prefix: str, name: str = ""
+) -> DeviceT:
+    connector = PviDeviceConnector(prefix + ":PVI")
+    device = device_type(connector=connector, name=name)
+    connector.create_children_from_annotations(device)
+    return device
+
+
+async def test_fill_pvi_entries_mock_mode():
     async with DeviceCollector(mock=True):
-        test_device = pvi_test_device_t("PREFIX:")
+        test_device = with_pvi_connector(Block3, "PREFIX:")
 
     # device vectors are typed
     assert isinstance(test_device.device_vector[1], Block2)
     assert isinstance(test_device.device_vector[2], Block2)
 
     # elements of device vectors are typed recursively
-    assert test_device.device_vector[1].signal_rw._backend.datatype is int
+    assert test_device.device_vector[1].signal_rw._connector.backend.datatype is int
     assert isinstance(test_device.device_vector[1].device, Block1)
-    assert test_device.device_vector[1].device.signal_rw._backend.datatype is int  # type: ignore
     assert (
-        test_device.device_vector[1].device.device_vector_signal_rw[1]._backend.datatype  # type: ignore
+        test_device.device_vector[1].device.signal_rw._connector.backend.datatype is int
+    )  # type: ignore
+    assert (
+        test_device.device_vector[1]
+        .device.device_vector_signal_rw[1]
+        ._connector.backend.datatype  # type: ignore
         is float
     )
 
@@ -76,9 +77,9 @@ async def test_fill_pvi_entries_mock_mode(pvi_test_device_t):
     assert isinstance(test_device.device, Block2)
 
     # elements of top level blocks are typed recursively
-    assert test_device.device.signal_rw._backend.datatype is int  # type: ignore
+    assert test_device.device.signal_rw._connector.backend.datatype is int  # type: ignore
     assert isinstance(test_device.device.device, Block1)
-    assert test_device.device.device.signal_rw._backend.datatype is int  # type: ignore
+    assert test_device.device.device.signal_rw._connector.backend.datatype is int  # type: ignore
 
     assert test_device.signal_rw.parent == test_device
     assert test_device.device_vector.parent == test_device
@@ -93,48 +94,23 @@ async def test_fill_pvi_entries_mock_mode(pvi_test_device_t):
     )
 
     # top level signals are typed
-    assert test_device.signal_rw._backend.datatype is int
+    assert test_device.signal_rw._connector.backend.datatype is int
 
 
-@pytest.fixture
-def pvi_test_device_create_children_from_annotations_t():
-    """A fixture since pytest discourages init in test case classes"""
-
-    class TestDevice(Block3, Device):
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            super().__init__(name)
-            create_children_from_annotations(self)
-
-        async def connect(  # type: ignore
-            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
-        ) -> None:
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-
-            await super().connect(mock=mock)
-
-    yield TestDevice
-
-
-async def test_device_create_children_from_annotations(
-    pvi_test_device_create_children_from_annotations_t,
-):
-    device = pvi_test_device_create_children_from_annotations_t("PREFIX:")
+async def test_device_create_children_from_annotations():
+    device = with_pvi_connector(Block3, "PREFIX:")
 
     block_2_device = device.device
     block_1_device = device.device.device
     top_block_1_device = device.signal_device
 
-    # The create_children_from_annotations has only made blocks,
-    # not signals or device vectors
+    # The create_children_from_annotations has made blocks all the way down
     assert isinstance(block_2_device, Block2)
     assert isinstance(block_1_device, Block1)
     assert isinstance(top_block_1_device, Block1)
-    assert not hasattr(device, "signal_x")
-    assert not hasattr(device, "signal_rw")
-    assert not hasattr(top_block_1_device, "signal_rw")
+    assert hasattr(device, "signal_x")
+    assert hasattr(device, "signal_rw")
+    assert hasattr(top_block_1_device, "signal_rw")
 
     await device.connect(mock=True)
 
@@ -144,58 +120,24 @@ async def test_device_create_children_from_annotations(
     assert device.signal_device is top_block_1_device
 
 
-@pytest.fixture
-def pvi_test_device_with_device_vectors_t():
-    """A fixture since pytest discourages init in test case classes"""
+async def test_device_create_children_from_annotations_with_device_vectors():
+    device = with_pvi_connector(Block4, "PREFIX:", name="test_device")
+    await device.connect(mock=True)
 
-    class TestBlock(Device):
-        device_vector: DeviceVector[Block1]
-        device: Block1 | None
-        signal_x: SignalX
-        signal_rw: SignalRW[int] | None
-
-    class TestDevice(TestBlock):
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            create_children_from_annotations(
-                self,
-                included_optional_fields=("device", "signal_rw"),
-                device_vectors={"device_vector": 2},
-            )
-            super().__init__(name)
-
-        async def connect(  # type: ignore
-            self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT
-        ) -> None:
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-
-            await super().connect(mock=mock)
-
-    yield TestDevice
-
-
-async def test_device_create_children_from_annotations_with_device_vectors(
-    pvi_test_device_with_device_vectors_t,
-):
-    device = pvi_test_device_with_device_vectors_t("PREFIX:", name="test_device")
+    block_1_device = device.device
+    block_2_device_vector = device.device_vector
 
     assert device.device_vector[1].name == "test_device-device_vector-1"
     assert device.device_vector[2].name == "test_device-device_vector-2"
-    block_1_device = device.device
-    block_2_device_vector = device.device_vector
 
     # create_children_from_annotiations should have made DeviceVectors
     # and an optional Block, but no signals
     assert hasattr(device, "device_vector")
-    assert not hasattr(device, "signal_rw")
+    assert hasattr(device, "signal_rw")
     assert isinstance(block_2_device_vector, DeviceVector)
     assert isinstance(block_2_device_vector[1], Block1)
     assert len(device.device_vector) == 2
     assert isinstance(block_1_device, Block1)
-
-    await device.connect(mock=True)
 
     # The memory addresses have not changed
     assert device.device is block_1_device
