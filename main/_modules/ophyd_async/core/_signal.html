@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../../../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -464,131 +464,108 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Locatable</span><span class="p">,</span>
     <span class="n">Location</span><span class="p">,</span>
     <span class="n">Movable</span><span class="p">,</span>
-    <span class="n">Reading</span><span class="p">,</span>
     <span class="n">Status</span><span class="p">,</span>
     <span class="n">Subscribable</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">event_model</span> <span class="kn">import</span> <span class="n">DataKey</span>
 
-<span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span>
+<span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
 <span class="kn">from</span> <span class="nn">._mock_signal_backend</span> <span class="kn">import</span> <span class="n">MockSignalBackend</span>
-<span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span>
-<span class="kn">from</span> <span class="nn">._signal_backend</span> <span class="kn">import</span> <span class="n">SignalBackend</span>
-<span class="kn">from</span> <span class="nn">._soft_signal_backend</span> <span class="kn">import</span> <span class="n">SignalMetadata</span><span class="p">,</span> <span class="n">SoftSignalBackend</span>
+<span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncConfigurable</span><span class="p">,</span>
+    <span class="n">AsyncReadable</span><span class="p">,</span>
+    <span class="n">AsyncStageable</span><span class="p">,</span>
+    <span class="n">Reading</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">._signal_backend</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SignalBackend</span><span class="p">,</span>
+    <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">SignalDatatypeV</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">._soft_signal_backend</span> <span class="kn">import</span> <span class="n">SoftSignalBackend</span>
 <span class="kn">from</span> <span class="nn">._status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">CalculatableTimeout</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">T</span>
 
-<span class="n">S</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">_wait_for</span><span class="p">(</span><span class="n">coro</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
 
 <span class="k">def</span> <span class="nf">_add_timeout</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Signal</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">_wait_for</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">wrapper</span>
 
 
-<span class="k">def</span> <span class="nf">_fail</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Signal has not been supplied a backend yet&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SignalConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span> <span class="o">=</span> <span class="n">backend</span>
 
-
-<span class="k">class</span> <span class="nc">DisconnectedBackend</span><span class="p">(</span><span class="n">SignalBackend</span><span class="p">):</span>
-    <span class="n">source</span> <span class="o">=</span> <span class="n">connect</span> <span class="o">=</span> <span class="n">put</span> <span class="o">=</span> <span class="n">get_datakey</span> <span class="o">=</span> <span class="n">get_reading</span> <span class="o">=</span> <span class="n">get_value</span> <span class="o">=</span> <span class="n">get_setpoint</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">set_callback</span>
-    <span class="p">)</span> <span class="o">=</span> <span class="n">_fail</span>
-
-
-<span class="n">DISCONNECTED_BACKEND</span> <span class="o">=</span> <span class="n">DisconnectedBackend</span><span class="p">()</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
+        <span class="n">mock</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">mock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">MockSignalBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span>
+        <span class="n">device</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Signal">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Signal">[docs]</a>
-<span class="k">class</span> <span class="nc">Signal</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="k">class</span> <span class="nc">Signal</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A Device with the concept of a value, with R, RW, W and X flavours&quot;&quot;&quot;</span>
+
+    <span class="n">_connector</span><span class="p">:</span> <span class="n">SignalConnector</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="n">DISCONNECTED_BACKEND</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">SignalConnector</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">backend</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">mock</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-        <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="k">if</span> <span class="n">backend</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DISCONNECTED_BACKEND</span>
-                <span class="ow">and</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
-            <span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Backend at connection different from previous one.&quot;</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">backend</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span> <span class="o">!=</span> <span class="n">mock</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;`connect(mock=</span><span class="si">{</span><span class="n">mock</span><span class="si">}</span><span class="s2">)` called on a `Signal` where the previous &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;connect was `mock=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span><span class="si">}</span><span class="s2">`. Changing mock &quot;</span>
-                <span class="s2">&quot;value between connects is not permitted.&quot;</span>
-            <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_previous_connect_was_mock</span> <span class="o">=</span> <span class="n">mock</span>
-
-        <span class="k">if</span> <span class="n">mock</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">),</span> <span class="n">MockSignalBackend</span><span class="p">):</span>
-            <span class="c1"># Using a soft backend, look to the initial value</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">MockSignalBackend</span><span class="p">(</span><span class="n">initial_backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;`connect` called on signal without backend&quot;</span><span class="p">)</span>
-
-        <span class="n">can_use_previous_connection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span>
-        <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">force_reconnect</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">can_use_previous_connection</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reusing previous connection to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span>
-        <span class="p">),</span> <span class="s2">&quot;this assert is for type analysis and will never fail&quot;</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_task</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Like ca://PV_PREFIX:SIGNAL, or &quot;&quot; if not set&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;parent&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Device</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot add Device or Signal </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> as a child of Signal </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="s2">&quot;make a subclass of Device instead&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
 
 
-<span class="k">class</span> <span class="nc">_SignalCache</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_SignalCache</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span> <span class="o">=</span> <span class="n">signal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_staged</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Callback</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">:</span> <span class="n">Reading</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">:</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
         <span class="n">signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Making subscription on source </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">backend</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
@@ -597,30 +574,33 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Closing subscription on source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Monitor not working&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Monitor not working&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
+        <span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reading</span><span class="p">:</span> <span class="n">Reading</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reading</span><span class="p">:</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Updated subscription: reading of source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> changed&quot;</span>
             <span class="sa">f</span><span class="s2">&quot;from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">reading</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span> <span class="o">=</span> <span class="n">reading</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">function</span><span class="p">,</span> <span class="n">want_value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_notify</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">want_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_notify</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]</span> <span class="o">|</span> <span class="n">SignalDatatypeT</span><span class="p">],</span>
+        <span class="n">want_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">,</span> <span class="s2">&quot;Monitor not working&quot;</span>
         <span class="k">if</span> <span class="n">want_value</span><span class="p">:</span>
-            <span class="n">function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="p">)</span>
+            <span class="n">function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">function</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">})</span>
 
@@ -640,12 +620,14 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="SignalR">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR">[docs]</a>
-<span class="k">class</span> <span class="nc">SignalR</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">Subscribable</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SignalR</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">Subscribable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be read from and monitored&quot;&quot;&quot;</span>
 
     <span class="n">_cache</span><span class="p">:</span> <span class="n">_SignalCache</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_backend_or_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SignalCache</span> <span class="o">|</span> <span class="n">SignalBackend</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_backend_or_cache</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SignalCache</span> <span class="o">|</span> <span class="n">SignalBackend</span><span class="p">:</span>
         <span class="c1"># If cached is None then calculate it based on whether we already have a cache</span>
         <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -653,11 +635,11 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> not being monitored&quot;</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span>
 
     <span class="k">def</span> <span class="nf">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SignalCache</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">_SignalCache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">_SignalCache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span>
 
     <span class="k">def</span> <span class="nf">_del_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">needed</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
@@ -678,13 +660,13 @@ window.addEventListener("load", () => mermaid.run());
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a single item dict with the descriptor in it&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)}</span></div>
 
 
 <div class="viewcode-block" id="SignalR.get_value">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.get_value">[docs]</a>
     <span class="nd">@_add_timeout</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The current value&quot;&quot;&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend_or_cache</span><span class="p">(</span><span class="n">cached</span><span class="p">)</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;get_value() on source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> returned </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -693,7 +675,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="SignalR.subscribe_value">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">subscribe_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="nf">subscribe_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to updates in value of a device&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
@@ -732,41 +714,44 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="SignalW">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalW">[docs]</a>
-<span class="k">class</span> <span class="nc">SignalW</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Movable</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SignalW</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Movable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be set&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SignalW.set">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalW.set">[docs]</a>
-    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
+        <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value and return a status saying when it&#39;s done&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
-
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">do_set</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Putting value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Successfully put value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">do_set</span><span class="p">())</span></div>
+        <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Putting value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">_wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">),</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully put value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </div>
 
 
 
 <div class="viewcode-block" id="SignalRW">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalRW">[docs]</a>
-<span class="k">class</span> <span class="nc">SignalRW</span><span class="p">(</span><span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Locatable</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SignalRW</span><span class="p">(</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Locatable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be both read and set&quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="SignalRW.locate">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalRW.locate">[docs]</a>
+    <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">locate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Location</span><span class="p">:</span>
-        <span class="n">location</span><span class="p">:</span> <span class="n">Location</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;setpoint&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">get_setpoint</span><span class="p">(),</span>
-            <span class="s2">&quot;readback&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="n">location</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the setpoint and readback.&quot;&quot;&quot;</span>
+        <span class="n">setpoint</span><span class="p">,</span> <span class="n">readback</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_setpoint</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend_or_cache</span><span class="p">()</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Location</span><span class="p">(</span><span class="n">setpoint</span><span class="o">=</span><span class="n">setpoint</span><span class="p">,</span> <span class="n">readback</span><span class="o">=</span><span class="n">readback</span><span class="p">)</span></div>
+</div>
 
 
 
@@ -777,14 +762,17 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="SignalX.trigger">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalX.trigger">[docs]</a>
-    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Trigger the action and return a status saying when it&#39;s done&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
-        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span></div>
+        <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Putting default value to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">_wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">),</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully put default value to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </div>
 
 
@@ -792,20 +780,17 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="soft_signal_rw">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.soft_signal_rw">[docs]</a>
 <span class="k">def</span> <span class="nf">soft_signal_rw</span><span class="p">(</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">initial_value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">initial_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a read-writable Signal with a SoftSignalBackend.</span>
 <span class="sd">    May pass metadata, which are propagated into describe.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">metadata</span> <span class="o">=</span> <span class="n">SignalMetadata</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
-    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalRW</span><span class="p">(</span>
-        <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">),</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalRW</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">signal</span></div>
 
 
@@ -813,21 +798,19 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="soft_signal_r_and_setter">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.soft_signal_r_and_setter">[docs]</a>
 <span class="k">def</span> <span class="nf">soft_signal_r_and_setter</span><span class="p">(</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">initial_value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">initial_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a tuple of a read-only Signal and a callable through</span>
 <span class="sd">    which the signal can be internally modified within the device.</span>
 <span class="sd">    May pass metadata, which are propagated into describe.</span>
 <span class="sd">    Use soft_signal_rw if you want a device that is externally modifiable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">metadata</span> <span class="o">=</span> <span class="n">SignalMetadata</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
-    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">)</span></div>
 
 
@@ -845,7 +828,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="assert_value">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.assert_value">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">assert_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">assert_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert a signal&#39;s value and compare it an expected signal.</span>
 
 <span class="sd">    Parameters</span>
@@ -967,8 +950,10 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="observe_value">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.observe_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">observe_value</span><span class="p">(</span>
-    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">done_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">done_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscribe to the value of a signal so it can be iterated from.</span>
 
 <span class="sd">    Parameters</span>
@@ -991,7 +976,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            do_something_with(value)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">q</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">T</span> <span class="o">|</span> <span class="n">Status</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="n">q</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="n">Status</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">get_value</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1012,25 +997,27 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">cast</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">cast</span><span class="p">(</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">signal</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span></div>
 
 
 
-<span class="k">class</span> <span class="nc">_ValueChecker</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matcher</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">matcher_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">class</span> <span class="nc">_ValueChecker</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matcher</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">matcher_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_matcher</span> <span class="o">=</span> <span class="n">matcher</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span> <span class="o">=</span> <span class="n">matcher_name</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matcher</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
                 <span class="k">return</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_value</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span> <span class="n">timeout</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1043,8 +1030,8 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="wait_for_value">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.wait_for_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_value</span><span class="p">(</span>
-    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
-    <span class="n">match</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">match</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for a signal to have a matching value.</span>
@@ -1081,10 +1068,10 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="set_and_wait_for_other_value">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_other_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">set_and_wait_for_other_value</span><span class="p">(</span>
-    <span class="n">set_signal</span><span class="p">:</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
-    <span class="n">set_value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
-    <span class="n">read_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">S</span><span class="p">],</span>
-    <span class="n">read_value</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span>
+    <span class="n">set_signal</span><span class="p">:</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">set_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">read_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeV</span><span class="p">],</span>
+    <span class="n">read_value</span><span class="p">:</span> <span class="n">SignalDatatypeV</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">set_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
@@ -1144,8 +1131,8 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="set_and_wait_for_value">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span> <span class="nf">set_and_wait_for_value</span><span class="p">(</span>
-    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
-    <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">status_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -593,7 +593,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
         <span class="k">pass</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -603,13 +603,11 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
         <span class="n">panda_data_block</span><span class="p">:</span> <span class="n">DataBlock</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span> <span class="o">=</span> <span class="n">panda_data_block</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -667,8 +665,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
                 <span class="n">shape</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
                 <span class="c1"># PandA data should always be written as Float64</span>
-                <span class="c1"># Ignore type check until https://github.com/bluesky/event-model/issues/308</span>
-                <span class="n">dtype_numpy</span><span class="o">=</span><span class="s2">&quot;&lt;f8&quot;</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">dtype_numpy</span><span class="o">=</span><span class="s2">&quot;&lt;f8&quot;</span><span class="p">,</span>
                 <span class="n">external</span><span class="o">=</span><span class="s2">&quot;STREAM:&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span>
@@ -688,7 +685,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
             <span class="n">HDFDataset</span><span class="p">(</span>
                 <span class="n">dataset_name</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">chunk_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,)</span>
             <span class="p">)</span>
-            <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">capture_table</span><span class="o">.</span><span class="n">name</span>
         <span class="p">]</span>
 
         <span class="c1"># Warn user if dataset table is empty in PandA</span>
@@ -756,12 +753,10 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
-
-        <span class="n">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># This has to be first so we make self.pcap</span>
+        <span class="n">connector</span> <span class="o">=</span> <span class="n">fastcs_connector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
         <span class="n">controller</span> <span class="o">=</span> <span class="n">PandaPcapController</span><span class="p">(</span><span class="n">pcap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="p">)</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="n">PandaHDFWriter</span><span class="p">(</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
             <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
             <span class="n">name_provider</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
             <span class="n">panda_data_block</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
@@ -771,19 +766,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
             <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">mock</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-        <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="c1"># TODO: this doesn&#39;t support caching</span>
-        <span class="c1"># https://github.com/bluesky/ophyd-async/issues/472</span>
-        <span class="k">await</span> <span class="n">fill_pvi_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">+</span> <span class="s2">&quot;PVI&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">mock</span><span class="o">=</span><span class="n">mock</span><span class="p">)</span>
-        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
-            <span class="n">mock</span><span class="o">=</span><span class="n">mock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="o">=</span><span class="n">force_reconnect</span>
+            <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">,</span>
         <span class="p">)</span>
 </pre></div>
 </div>

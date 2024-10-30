@@ -8,6 +8,9 @@
         
         
         
+        
+        
+        
 
 .. automodule:: ophyd_async.epics.advimba
     :members:
@@ -26,5 +29,8 @@
         VimbaDetector
         VimbaController
         VimbaDriverIO
+        VimbaExposeOutMode
+        VimbaOnOff
+        VimbaTriggerSource
     
     

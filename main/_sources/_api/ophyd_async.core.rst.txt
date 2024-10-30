@@ -80,6 +80,10 @@
         
         
         
+        
+        
+        
+        
 
 .. automodule:: ophyd_async.core
     :members:
@@ -100,8 +104,10 @@
         DetectorWriter
         StandardDetector
         Device
+        DeviceConnector
         DeviceCollector
         DeviceVector
+        DeviceFiller
         all_at_once
         get_signal_values
         load_device
@@ -155,19 +161,21 @@
         soft_signal_r_and_setter
         soft_signal_rw
         wait_for_value
-        RuntimeSubsetEnum
         SignalBackend
+        make_datakey
+        StrictEnum
         SubsetEnum
         SignalMetadata
         SoftSignalBackend
         AsyncStatus
         WatchableAsyncStatus
         NotConnected
+        Reference
         WatcherUpdate
         get_dtype
+        get_enum_cls
         get_unique
         in_micros
-        is_pydantic_model
         wait_for_connection
         completed_status
     

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.signal._signal &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>ophyd_async.epics.signal._signal &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../../../../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -464,48 +464,83 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SignalBackend</span><span class="p">,</span>
+    <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">SignalW</span><span class="p">,</span>
     <span class="n">SignalX</span><span class="p">,</span>
-    <span class="n">T</span><span class="p">,</span>
     <span class="n">get_unique</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">._epics_transport</span> <span class="kn">import</span> <span class="n">_EpicsTransport</span>
 
-<span class="n">_default_epics_transport</span> <span class="o">=</span> <span class="n">_EpicsTransport</span><span class="o">.</span><span class="n">ca</span>
+<span class="k">def</span> <span class="nf">_make_unavailable_class</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">TransportNotAvailable</span><span class="p">:</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Transport not available&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">error</span>
+
+    <span class="k">return</span> <span class="n">TransportNotAvailable</span>
 
 
-<span class="k">def</span> <span class="nf">_transport_pv</span><span class="p">(</span><span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">_EpicsTransport</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="k">class</span> <span class="nc">EpicsProtocol</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">CA</span> <span class="o">=</span> <span class="s2">&quot;ca&quot;</span>
+    <span class="n">PVA</span> <span class="o">=</span> <span class="s2">&quot;pva&quot;</span>
+
+
+<span class="n">_default_epics_protocol</span> <span class="o">=</span> <span class="n">EpicsProtocol</span><span class="o">.</span><span class="n">CA</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">._p4p</span> <span class="kn">import</span> <span class="n">PvaSignalBackend</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">pva_error</span><span class="p">:</span>
+    <span class="n">PvaSignalBackend</span> <span class="o">=</span> <span class="n">_make_unavailable_class</span><span class="p">(</span><span class="n">pva_error</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">_default_epics_protocol</span> <span class="o">=</span> <span class="n">EpicsProtocol</span><span class="o">.</span><span class="n">PVA</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">._aioca</span> <span class="kn">import</span> <span class="n">CaSignalBackend</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ca_error</span><span class="p">:</span>
+    <span class="n">CaSignalBackend</span> <span class="o">=</span> <span class="n">_make_unavailable_class</span><span class="p">(</span><span class="n">ca_error</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">_default_epics_protocol</span> <span class="o">=</span> <span class="n">EpicsProtocol</span><span class="o">.</span><span class="n">CA</span>
+
+
+<span class="k">def</span> <span class="nf">_protocol_pv</span><span class="p">(</span><span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">EpicsProtocol</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
     <span class="n">split</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;://&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="c1"># We got something like pva://mydevice, so use specified comms mode</span>
-        <span class="n">transport_str</span><span class="p">,</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">split</span>
-        <span class="n">transport</span> <span class="o">=</span> <span class="n">_EpicsTransport</span><span class="p">[</span><span class="n">transport_str</span><span class="p">]</span>
+        <span class="n">scheme</span><span class="p">,</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">split</span>
+        <span class="n">protocol</span> <span class="o">=</span> <span class="n">EpicsProtocol</span><span class="p">(</span><span class="n">scheme</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># No comms mode specified, use the default</span>
-        <span class="n">transport</span> <span class="o">=</span> <span class="n">_default_epics_transport</span>
-    <span class="k">return</span> <span class="n">transport</span><span class="p">,</span> <span class="n">pv</span>
+        <span class="n">protocol</span> <span class="o">=</span> <span class="n">_default_epics_protocol</span>
+    <span class="k">return</span> <span class="n">protocol</span><span class="p">,</span> <span class="n">pv</span>
 
 
 <span class="k">def</span> <span class="nf">_epics_signal_backend</span><span class="p">(</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an epics signal backend.&quot;&quot;&quot;</span>
-    <span class="n">r_transport</span><span class="p">,</span> <span class="n">r_pv</span> <span class="o">=</span> <span class="n">_transport_pv</span><span class="p">(</span><span class="n">read_pv</span><span class="p">)</span>
-    <span class="n">w_transport</span><span class="p">,</span> <span class="n">w_pv</span> <span class="o">=</span> <span class="n">_transport_pv</span><span class="p">(</span><span class="n">write_pv</span><span class="p">)</span>
-    <span class="n">transport</span> <span class="o">=</span> <span class="n">get_unique</span><span class="p">({</span><span class="n">read_pv</span><span class="p">:</span> <span class="n">r_transport</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">w_transport</span><span class="p">},</span> <span class="s2">&quot;transports&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">transport</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">r_pv</span><span class="p">,</span> <span class="n">w_pv</span><span class="p">)</span>
+    <span class="n">r_protocol</span><span class="p">,</span> <span class="n">r_pv</span> <span class="o">=</span> <span class="n">_protocol_pv</span><span class="p">(</span><span class="n">read_pv</span><span class="p">)</span>
+    <span class="n">w_protocol</span><span class="p">,</span> <span class="n">w_pv</span> <span class="o">=</span> <span class="n">_protocol_pv</span><span class="p">(</span><span class="n">write_pv</span><span class="p">)</span>
+    <span class="n">protocol</span> <span class="o">=</span> <span class="n">get_unique</span><span class="p">({</span><span class="n">read_pv</span><span class="p">:</span> <span class="n">r_protocol</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">w_protocol</span><span class="p">},</span> <span class="s2">&quot;protocols&quot;</span><span class="p">)</span>
+    <span class="k">match</span> <span class="n">protocol</span><span class="p">:</span>
+        <span class="k">case</span> <span class="n">EpicsProtocol</span><span class="o">.</span><span class="n">CA</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CaSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">r_pv</span><span class="p">,</span> <span class="n">w_pv</span><span class="p">)</span>
+        <span class="k">case</span> <span class="n">EpicsProtocol</span><span class="o">.</span><span class="n">PVA</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">PvaSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">r_pv</span><span class="p">,</span> <span class="n">w_pv</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="epics_signal_rw">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.signal.html#ophyd_async.epics.signal.epics_signal_rw">[docs]</a>
 <span class="k">def</span> <span class="nf">epics_signal_rw</span><span class="p">(</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalRW` backed by 1 or 2 EPICS PVs</span>
 
 <span class="sd">    Parameters</span>
@@ -525,8 +560,11 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="epics_signal_rw_rbv">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.signal.html#ophyd_async.epics.signal.epics_signal_rw_rbv">[docs]</a>
 <span class="k">def</span> <span class="nf">epics_signal_rw_rbv</span><span class="p">(</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">read_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_RBV&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">read_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_RBV&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv</span>
 
 <span class="sd">    Parameters</span>
@@ -544,7 +582,9 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="epics_signal_r">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.signal.html#ophyd_async.epics.signal.epics_signal_r">[docs]</a>
-<span class="k">def</span> <span class="nf">epics_signal_r</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">epics_signal_r</span><span class="p">(</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalR` backed by 1 EPICS PV</span>
 
 <span class="sd">    Parameters</span>
@@ -561,7 +601,9 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="epics_signal_w">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.signal.html#ophyd_async.epics.signal.epics_signal_w">[docs]</a>
-<span class="k">def</span> <span class="nf">epics_signal_w</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">epics_signal_w</span><span class="p">(</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalW` backed by 1 EPICS PVs</span>
 
 <span class="sd">    Parameters</span>
@@ -586,7 +628,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    write_pv:</span>
 <span class="sd">        The PV to write its initial value to on trigger</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span> <span class="o">=</span> <span class="n">_epics_signal_backend</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_epics_signal_backend</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SignalX</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 </pre></div>

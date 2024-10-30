@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device_save_loader &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>ophyd_async.core._device_save_loader &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../../../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -489,11 +489,8 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_data</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;python&quot;</span><span class="p">))</span>
 
 
-<span class="k">class</span> <span class="nc">OphydDumper</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">represent_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">represent_data</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">represent_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">enum_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">:</span> <span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="p">,</span> <span class="n">enum</span><span class="p">:</span> <span class="n">Enum</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">yaml</span><span class="o">.</span><span class="n">Node</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_data</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_signal_values">
@@ -538,7 +535,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">selected_signals</span><span class="p">,</span> <span class="n">selected_values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="p">}</span>
     <span class="c1"># Ignored values place in with value None so we know which ones were ignored</span>
-    <span class="n">named_values</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">})</span>
+    <span class="n">named_values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">ignore</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">named_values</span></div>
 
 
@@ -578,6 +575,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">path_prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
     <span class="n">signals</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
     <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
         <span class="n">dot_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">is</span> <span class="n">SignalRW</span><span class="p">:</span>
@@ -615,9 +613,10 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">pydantic_model_abstraction_representer</span><span class="p">,</span>
         <span class="n">Dumper</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">yaml</span><span class="o">.</span><span class="n">add_multi_representer</span><span class="p">(</span><span class="n">Enum</span><span class="p">,</span> <span class="n">enum_representer</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">OphydDumper</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
 
 
 

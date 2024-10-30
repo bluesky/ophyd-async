@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.pvi &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
+    <title>ophyd_async.fastcs.core &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -49,7 +49,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async.epics.pvi';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async.fastcs.core';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -59,8 +59,8 @@
     <link rel="icon" href="../_static/ophyd_favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.epics.signal" href="ophyd_async.epics.signal.html" />
-    <link rel="prev" title="ophyd_async.epics.motor" href="ophyd_async.epics.motor.html" />
+    <link rel="next" title="ophyd_async.fastcs.odin" href="ophyd_async.fastcs.odin.html" />
+    <link rel="prev" title="ophyd_async.fastcs" href="ophyd_async.fastcs.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -414,7 +414,7 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="ophyd_async.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="ophyd_async.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
@@ -424,12 +424,12 @@
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.demo.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.eiger.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.pvi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.pvi.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.pvi</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.signal.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="ophyd_async.fastcs.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.fastcs.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.fastcs.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.fastcs.odin.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.fastcs.panda.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
 </ul>
@@ -487,9 +487,9 @@
     <li class="breadcrumb-item"><a href="ophyd_async.html" class="nav-link"><code class="docutils literal notranslate"><span class="pre">ophyd_async</span></code></a></li>
     
     
-    <li class="breadcrumb-item"><a href="ophyd_async.epics.html" class="nav-link"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a></li>
+    <li class="breadcrumb-item"><a href="ophyd_async.fastcs.html" class="nav-link"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.pvi</span></code></span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></span></li>
   </ul>
 </nav>
 </div>
@@ -511,12 +511,12 @@
 <p>Ophyd async is considered experimental until the v1.0 release and
 may change API on minor release numbers before then</p>
 </div>
-<section id="module-ophyd_async.epics.pvi">
-<span id="ophyd-async-epics-pvi"></span><h1><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.pvi</span></code><a class="headerlink" href="#module-ophyd_async.epics.pvi" title="Link to this heading">#</a></h1>
+<section id="module-ophyd_async.fastcs.core">
+<span id="ophyd-async-fastcs-core"></span><h1><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code><a class="headerlink" href="#module-ophyd_async.fastcs.core" title="Link to this heading">#</a></h1>
 <p class="rubric">Members</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PviDeviceConnector</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fastcs_connector</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -535,20 +535,20 @@ may change API on minor release numbers before then</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.epics.motor.html"
+       href="ophyd_async.fastcs.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.epics.signal.html"
+       href="ophyd_async.fastcs.odin.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -567,7 +567,7 @@ may change API on minor release numbers before then</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/_api/ophyd_async.epics.pvi.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/_api/ophyd_async.fastcs.core.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -582,7 +582,7 @@ may change API on minor release numbers before then</p>
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/_api/ophyd_async.epics.pvi.rst.txt">
+    <a href="../_sources/_api/ophyd_async.fastcs.core.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

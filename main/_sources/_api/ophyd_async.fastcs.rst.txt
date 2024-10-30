@@ -18,6 +18,7 @@
         :template: custom-module-template.rst
         :recursive:
     
+        ophyd_async.fastcs.core
         ophyd_async.fastcs.odin
         ophyd_async.fastcs.panda
     

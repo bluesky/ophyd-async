@@ -22,7 +22,6 @@
         
         
         
-        
 
 .. automodule:: ophyd_async.fastcs.panda
     :members:
@@ -40,17 +39,16 @@
     
         CommonPandaBlocks
         DataBlock
-        EnableDisableOptions
+        BitMux
         PcapBlock
         PcompBlock
-        PcompDirectionOptions
+        PcompDirection
         PulseBlock
         SeqBlock
         TimeUnits
         HDFPanda
         PandaHDFWriter
         PandaPcapController
-        DatasetTable
         PandaHdf5DatasetType
         SeqTrigger
         StaticPcompTriggerLogic

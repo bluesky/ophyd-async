@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>Index &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="_static/documentation_options.js?v=90949d10"></script>
+    <script src="_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -430,6 +430,7 @@ window.addEventListener("load", () => mermaid.run());
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async.fastcs.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.odin.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.panda.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
 </ul>
@@ -558,14 +559,14 @@ window.addEventListener("load", () => mermaid.run());
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Device.connect">connect() (ophyd_async.core.Device method)</a>
 
       <ul>
-        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.connect">(ophyd_async.core.SignalBackend method)</a>
+        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceConnector.connect">(ophyd_async.core.DeviceConnector method)</a>
 </li>
-        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SoftSignalBackend.connect">(ophyd_async.core.SoftSignalBackend method)</a>
+        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.connect">(ophyd_async.core.SignalBackend method)</a>
 </li>
       </ul></li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger.constant_gate">constant_gate (ophyd_async.core.DetectorTrigger attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async.epics.pvi.html#ophyd_async.epics.pvi.create_children_from_annotations">create_children_from_annotations() (in module ophyd_async.epics.pvi)</a>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceConnector.create_children_from_annotations">create_children_from_annotations() (ophyd_async.core.DeviceConnector method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -573,10 +574,6 @@ window.addEventListener("load", () => mermaid.run());
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.datatype">datatype (ophyd_async.core.SignalBackend attribute)</a>
-</li>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.datatype_allowed">datatype_allowed() (ophyd_async.core.SignalBackend class method)</a>
-</li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.deadtime">deadtime (ophyd_async.core.TriggerInfo attribute)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.describe">describe() (ophyd_async.core.SignalR method)</a>
@@ -585,15 +582,17 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.DetectorState">DetectorState (class in ophyd_async.epics.adcore)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger">DetectorTrigger (class in ophyd_async.core)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter">DetectorWriter (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Device">Device (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceCollector">DeviceCollector (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceConnector">DeviceConnector (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceVector">DeviceVector (class in ophyd_async.core)</a>
 </li>
@@ -631,12 +630,10 @@ window.addEventListener("load", () => mermaid.run());
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_api/ophyd_async.epics.pvi.html#ophyd_async.epics.pvi.fill_pvi_entries">fill_pvi_entries() (in module ophyd_async.epics.pvi)</a>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.fly_and_collect">fly_and_collect() (in module ophyd_async.plan_stubs)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.fly_and_collect">fly_and_collect() (in module ophyd_async.plan_stubs)</a>
-</li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.frame_timeout">frame_timeout (ophyd_async.core.TriggerInfo attribute)</a>
 </li>
   </ul></td>
@@ -651,22 +648,18 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_dtype">get_dtype() (in module ophyd_async.core)</a>
 </li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_enum_cls">get_enum_cls() (in module ophyd_async.core)</a>
+</li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.get_indices_written">get_indices_written() (ophyd_async.core.DetectorWriter method)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_mock_put">get_mock_put() (in module ophyd_async.core)</a>
 </li>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_reading">get_reading() (ophyd_async.core.SignalBackend method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.get_setpoint">get_setpoint() (ophyd_async.core.MockSignalBackend method)</a>
-
-      <ul>
-        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_setpoint">(ophyd_async.core.SignalBackend method)</a>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_reading">get_reading() (ophyd_async.core.SignalBackend method)</a>
 </li>
-        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SoftSignalBackend.get_setpoint">(ophyd_async.core.SoftSignalBackend method)</a>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_setpoint">get_setpoint() (ophyd_async.core.SignalBackend method)</a>
 </li>
-      </ul></li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_signal_values">get_signal_values() (in module ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_unique">get_unique() (in module ophyd_async.core)</a>
@@ -731,6 +724,8 @@ window.addEventListener("load", () => mermaid.run());
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.load_from_yaml">load_from_yaml() (in module ophyd_async.core)</a>
 </li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalRW.locate">locate() (ophyd_async.core.SignalRW method)</a>
+</li>
       <li><a href="_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.EnergyMode.low">low (ophyd_async.epics.demo.EnergyMode attribute)</a>
 </li>
   </ul></td>
@@ -775,6 +770,8 @@ window.addEventListener("load", () => mermaid.run());
 </li>
         <li><a href="_api/ophyd_async.fastcs.html#module-ophyd_async.fastcs">ophyd_async.fastcs</a>
 </li>
+        <li><a href="_api/ophyd_async.fastcs.core.html#module-ophyd_async.fastcs.core">ophyd_async.fastcs.core</a>
+</li>
         <li><a href="_api/ophyd_async.fastcs.odin.html#module-ophyd_async.fastcs.odin">ophyd_async.fastcs.odin</a>
 </li>
         <li><a href="_api/ophyd_async.fastcs.panda.html#module-ophyd_async.fastcs.panda">ophyd_async.fastcs.panda</a>
@@ -817,8 +814,6 @@ window.addEventListener("load", () => mermaid.run());
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.NotConnected">NotConnected</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.number_of_triggers">number_of_triggers (ophyd_async.core.TriggerInfo attribute)</a>
-</li>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.numpy_columns">numpy_columns() (ophyd_async.core.Table method)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.numpy_dtype">numpy_dtype() (ophyd_async.core.Table method)</a>
 </li>
@@ -906,8 +901,6 @@ window.addEventListener("load", () => mermaid.run());
         <li><a href="_api/ophyd_async.epics.demo.html#module-ophyd_async.epics.demo">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ophyd_async.epics.eiger
 
@@ -915,6 +908,8 @@ window.addEventListener("load", () => mermaid.run());
         <li><a href="_api/ophyd_async.epics.eiger.html#module-ophyd_async.epics.eiger">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ophyd_async.epics.motor
 
@@ -941,6 +936,13 @@ window.addEventListener("load", () => mermaid.run());
 
       <ul>
         <li><a href="_api/ophyd_async.fastcs.html#module-ophyd_async.fastcs">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.fastcs.core
+
+      <ul>
+        <li><a href="_api/ophyd_async.fastcs.core.html#module-ophyd_async.fastcs.core">module</a>
 </li>
       </ul></li>
       <li>
@@ -1034,7 +1036,7 @@ window.addEventListener("load", () => mermaid.run());
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.row">row() (ophyd_async.core.Table static method)</a>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Reference">Reference (class in ophyd_async.core)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1072,16 +1074,12 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.set_signal_values">set_signal_values() (in module ophyd_async.core)</a>
 </li>
-      <li><a href="_api/ophyd_async.tango.html#ophyd_async.tango.TangoDevice.set_trl">set_trl() (ophyd_async.tango.TangoDevice method)</a>
-</li>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SoftSignalBackend.set_value">set_value() (ophyd_async.core.SoftSignalBackend method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Signal">Signal (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend">SignalBackend (class in ophyd_async.core)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR">SignalR (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalRW">SignalRW (class in ophyd_async.core)</a>
@@ -1110,9 +1108,13 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo.start_position">start_position (ophyd_async.epics.motor.FlyMotorInfo attribute)</a>
 </li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StrictEnum">StrictEnum (class in ophyd_async.core)</a>
+</li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe">subscribe() (ophyd_async.core.SignalR method)</a>
 </li>
       <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value">subscribe_value() (ophyd_async.core.SignalR method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SubsetEnum">SubsetEnum (class in ophyd_async.core)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1164,12 +1166,14 @@ window.addEventListener("load", () => mermaid.run());
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.validate_arrays">validate_arrays() (ophyd_async.core.Table method)</a>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.validate_array_dtypes">validate_array_dtypes() (ophyd_async.core.Table class method)</a>
 </li>
-      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger.variable_gate">variable_gate (ophyd_async.core.DetectorTrigger attribute)</a>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.validate_lengths">validate_lengths() (ophyd_async.core.Table method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger.variable_gate">variable_gate (ophyd_async.core.DetectorTrigger attribute)</a>
+</li>
       <li><a href="_api/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaDetector">VimbaDetector (class in ophyd_async.epics.advimba)</a>
 </li>
       <li><a href="_api/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaDriverIO">VimbaDriverIO (class in ophyd_async.epics.advimba)</a>

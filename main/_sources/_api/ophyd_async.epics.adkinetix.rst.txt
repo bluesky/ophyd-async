@@ -8,6 +8,7 @@
         
         
         
+        
 
 .. automodule:: ophyd_async.epics.adkinetix
     :members:
@@ -26,5 +27,6 @@
         KinetixDetector
         KinetixController
         KinetixDriverIO
+        KinetixTriggerMode
     
     

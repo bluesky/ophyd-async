@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.base_devices._base_device &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>ophyd_async.tango.base_devices._base_device &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../../../../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -462,22 +462,13 @@ window.addEventListener("load", () => mermaid.run());
   <h1>Source code for ophyd_async.tango.base_devices._base_device</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">TypeVar</span><span class="p">,</span>
-    <span class="n">get_args</span><span class="p">,</span>
-    <span class="n">get_origin</span><span class="p">,</span>
-    <span class="n">get_type_hints</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-    <span class="n">Device</span><span class="p">,</span>
-    <span class="n">Signal</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span><span class="p">,</span> <span class="n">DeviceFiller</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.tango.signal</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">TangoSignalBackend</span><span class="p">,</span>
-    <span class="n">__tango_signal_auto</span><span class="p">,</span>
-    <span class="n">make_backend</span><span class="p">,</span>
+    <span class="n">infer_python_type</span><span class="p">,</span>
+    <span class="n">infer_signal_type</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">tango</span> <span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">DeviceProxy</span>
 <span class="kn">from</span> <span class="nn">tango.asyncio</span> <span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
@@ -514,67 +505,14 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="o">=</span> <span class="n">trl</span> <span class="k">if</span> <span class="n">trl</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="o">=</span> <span class="n">device_proxy</span>
-        <span class="n">tango_create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-
-<div class="viewcode-block" id="TangoDevice.set_trl">
-<a class="viewcode-back" href="../../../../_api/ophyd_async.tango.html#ophyd_async.tango.TangoDevice.set_trl">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_trl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the Tango resource locator.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trl</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;TRL must be a string.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="o">=</span> <span class="n">trl</span></div>
-
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">mock</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-        <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
-
-        <span class="c1"># Set the trl of the signal backends</span>
-        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Signal</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_backend</span><span class="p">,</span> <span class="n">TangoSignalBackend</span><span class="p">):</span>  <span class="c1"># noqa: SLF001</span>
-                    <span class="n">resource_name</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
-                    <span class="n">read_trl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">resource_name</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="n">child</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">set_trl</span><span class="p">(</span><span class="n">read_trl</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_signals</span><span class="p">()</span>
-            <span class="k">await</span> <span class="n">_fill_proxy_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-        <span class="c1"># set_name should be called again to propagate the new signal names</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-
-        <span class="c1"># Set the polling configuration</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
-                <span class="n">child_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">child</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">child_type</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_backend</span><span class="p">,</span> <span class="n">TangoSignalBackend</span><span class="p">):</span>  <span class="c1"># noqa: SLF001  # type: ignore</span>
-                        <span class="n">child</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">set_polling</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">)</span>  <span class="c1"># noqa: SLF001  # type: ignore</span>
-                        <span class="n">child</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">allow_events</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># noqa: SLF001  # type: ignore</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_polling</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">signal_name</span><span class="p">,</span> <span class="n">polling</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_polling</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_name</span><span class="p">):</span>
-                    <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal_name</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">_backend</span><span class="p">,</span> <span class="n">TangoSignalBackend</span><span class="p">):</span>  <span class="c1"># noqa: SLF001</span>
-                        <span class="n">attr</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">set_polling</span><span class="p">(</span><span class="o">*</span><span class="n">polling</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
-                        <span class="n">attr</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">allow_events</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
-
-        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">mock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-
-    <span class="c1"># Users can override this method to register new signals</span>
-    <span class="k">def</span> <span class="nf">register_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span></div>
+        <span class="n">connector</span> <span class="o">=</span> <span class="n">TangoDeviceConnector</span><span class="p">(</span>
+            <span class="n">trl</span><span class="o">=</span><span class="n">trl</span><span class="p">,</span>
+            <span class="n">device_proxy</span><span class="o">=</span><span class="n">device_proxy</span><span class="p">,</span>
+            <span class="n">polling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">,</span>
+            <span class="n">signal_polling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal_polling</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">connector</span><span class="o">.</span><span class="n">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span></div>
 
 
 
@@ -621,79 +559,70 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
-<span class="k">def</span> <span class="nf">tango_create_children_from_annotations</span><span class="p">(</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">TangoDevice</span><span class="p">,</span> <span class="n">included_optional_fields</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize blocks at __init__ of `device`.&quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">device_type</span> <span class="ow">in</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;_name&quot;</span><span class="p">,</span> <span class="s2">&quot;parent&quot;</span><span class="p">):</span>
-            <span class="k">continue</span>
+<span class="k">class</span> <span class="nc">TangoDeviceConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">polling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">signal_polling</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="o">=</span> <span class="n">trl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="o">=</span> <span class="n">device_proxy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span> <span class="o">=</span> <span class="n">polling</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal_polling</span> <span class="o">=</span> <span class="n">signal_polling</span>
 
-        <span class="c1"># device_type, is_optional = _strip_union(device_type)</span>
-        <span class="c1"># if is_optional and name not in included_optional_fields:</span>
-        <span class="c1">#     continue</span>
-        <span class="c1">#</span>
-        <span class="c1"># is_device_vector, device_type = _strip_device_vector(device_type)</span>
-        <span class="c1"># if is_device_vector:</span>
-        <span class="c1">#     n_device_vector = DeviceVector()</span>
-        <span class="c1">#     setattr(device, name, n_device_vector)</span>
+    <span class="k">def</span> <span class="nf">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">=</span> <span class="n">DeviceFiller</span><span class="p">(</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">signal_backend_factory</span><span class="o">=</span><span class="n">TangoSignalBackend</span><span class="p">,</span>
+            <span class="n">device_connector_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TangoDeviceConnector</span><span class="p">(</span>
+                <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">{}</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
 
-        <span class="c1"># else:</span>
-        <span class="n">origin</span> <span class="o">=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">device_type</span><span class="p">)</span>
-        <span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span> <span class="k">if</span> <span class="n">origin</span> <span class="k">else</span> <span class="n">device_type</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mock</span><span class="p">:</span>
+            <span class="c1"># Make 2 entries for each DeviceVector</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span><span class="o">.</span><span class="n">make_soft_device_vector_entries</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Neither proxy nor trl supplied&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">Signal</span><span class="p">):</span>
-            <span class="n">type_args</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">device_type</span><span class="p">)</span>
-            <span class="n">datatype</span> <span class="o">=</span> <span class="n">type_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">type_args</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="n">datatype</span><span class="o">=</span><span class="n">datatype</span><span class="p">,</span> <span class="n">device_proxy</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">origin</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">))</span>
-
-        <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">Device</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">Device</span><span class="p">):</span>
-            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">origin</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2"> is not callable.&quot;</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">origin</span><span class="p">())</span>
-
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">_fill_proxy_entries</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">TangoDevice</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Device proxy is not connected for </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">proxy_trl</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">trl</span>
-    <span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">()]</span>
-    <span class="n">proxy_attributes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">())</span>
-    <span class="n">proxy_commands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">())</span>
-    <span class="n">combined</span> <span class="o">=</span> <span class="n">proxy_attributes</span> <span class="o">+</span> <span class="n">proxy_commands</span>
-
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">combined</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
-            <span class="n">full_trl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">proxy_trl</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">auto_signal</span> <span class="o">=</span> <span class="k">await</span> <span class="n">__tango_signal_auto</span><span class="p">(</span>
-                    <span class="n">trl</span><span class="o">=</span><span class="n">full_trl</span><span class="p">,</span> <span class="n">device_proxy</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">proxy</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="nb">set</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">())</span>
+                <span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">())</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="c1"># TODO: strip attribute name</span>
+                <span class="n">full_trl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">signal_type</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_signal_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">signal_type</span><span class="p">:</span>
+                    <span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span><span class="o">.</span><span class="n">make_child_signal</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">signal_type</span><span class="p">)</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="k">await</span> <span class="n">infer_python_type</span><span class="p">(</span><span class="n">full_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
+                    <span class="n">backend</span><span class="o">.</span><span class="n">set_trl</span><span class="p">(</span><span class="n">full_trl</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">polling</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_polling</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">()):</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">set_polling</span><span class="p">(</span><span class="o">*</span><span class="n">polling</span><span class="p">)</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">allow_events</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">set_polling</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">)</span>
+                        <span class="n">backend</span><span class="o">.</span><span class="n">allow_events</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="c1"># Check that all the requested children have been created</span>
+            <span class="k">if</span> <span class="n">unfilled</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span><span class="o">.</span><span class="n">unfilled</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: cannot provision </span><span class="si">{</span><span class="n">unfilled</span><span class="si">}</span><span class="s2"> from &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trl</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">children</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">auto_signal</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s2">&quot;Commands with different in and out dtypes&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">. Commands with different in and out dtypes&quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot; are not supported.&quot;</span>
-                    <span class="p">)</span>
-                    <span class="k">continue</span>
-                <span class="k">raise</span> <span class="n">e</span>
-
-
-<span class="c1"># def _strip_union(field: T | T) -&gt; tuple[T, bool]:</span>
-<span class="c1">#     if get_origin(field) is Union:</span>
-<span class="c1">#         args = get_args(field)</span>
-<span class="c1">#         is_optional = type(None) in args</span>
-<span class="c1">#         for arg in args:</span>
-<span class="c1">#             if arg is not type(None):</span>
-<span class="c1">#                 return arg, is_optional</span>
-<span class="c1">#     return field, False</span>
-<span class="c1">#</span>
-<span class="c1">#</span>
-<span class="c1"># def _strip_device_vector(field: type[Device]) -&gt; tuple[bool, type[Device]]:</span>
-<span class="c1">#     if get_origin(field) is DeviceVector:</span>
-<span class="c1">#         return True, get_args(field)[0]</span>
-<span class="c1">#     return False, field</span>
+        <span class="c1"># Set the name of the device to name all children</span>
+        <span class="n">device</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">mock</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">)</span>
 </pre></div>
 
                 </article>

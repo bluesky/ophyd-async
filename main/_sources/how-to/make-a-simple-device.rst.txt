@@ -1,6 +1,6 @@
 .. note::
 
-   Ophyd async is included on a provisional basis until the v1.0 release and 
+   Ophyd async is included on a provisional basis until the v1.0 release and
    may change API on minor release numbers before then
 
 Make a Simple Device
@@ -31,7 +31,7 @@ its Python type, which could be:
 - A primitive (`str`, `int`, `float`)
 - An array (`numpy.typing.NDArray` ie. ``numpy.typing.NDArray[numpy.uint16]`` or ``Sequence[str]``)
 - An enum (`enum.Enum`) which **must** also extend `str`
-    - `str` and ``EnumClass(str, Enum)`` are the only valid ``datatype`` for an enumerated signal.
+    - `str` and ``EnumClass(StrictEnum)`` are the only valid ``datatype`` for an enumerated signal.
 
 The rest of the arguments are PV connection information, in this case the PV suffix.
 
@@ -45,7 +45,7 @@ Finally `super().__init__() <StandardReadable>` is called with:
   without renaming
 
 All signals passed into this init method will be monitored between ``stage()``
-and ``unstage()`` and their cached values returned on ``read()`` and 
+and ``unstage()`` and their cached values returned on ``read()`` and
 ``read_configuration()`` for perfomance.
 
 Movable
@@ -64,7 +64,7 @@ informing watchers of the progress. When it gets to the requested value it
 completes. This co-routine is wrapped in a timeout handler, and passed to an
 `AsyncStatus` which will start executing it as soon as the Run Engine adds a
 callback to it. The ``stop()`` method then pokes a PV if the move needs to be
-interrupted. 
+interrupted.
 
 Assembly
 --------

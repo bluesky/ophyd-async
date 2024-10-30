@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../../../../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -460,9 +460,7 @@ window.addEventListener("load", () => mermaid.run());
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.adcore._core_io</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span>
+<span></span><span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">StrictEnum</span>
 <span class="kn">from</span> <span class="nn">ophyd_async.epics.signal</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">epics_signal_r</span><span class="p">,</span>
     <span class="n">epics_signal_rw</span><span class="p">,</span>
@@ -472,7 +470,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">ADBaseDataType</span><span class="p">,</span> <span class="n">FileWriteMode</span><span class="p">,</span> <span class="n">ImageMode</span>
 
 
-<span class="k">class</span> <span class="nc">Callback</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Callback</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">Enable</span> <span class="o">=</span> <span class="s2">&quot;Enable&quot;</span>
     <span class="n">Disable</span> <span class="o">=</span> <span class="s2">&quot;Disable&quot;</span>
 
@@ -535,7 +533,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="DetectorState">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.DetectorState">[docs]</a>
-<span class="k">class</span> <span class="nc">DetectorState</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">DetectorState</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default set of states of an AreaDetector driver.</span>
 <span class="sd">    See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore</span>
@@ -568,7 +566,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">Compression</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Compression</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">none</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
     <span class="n">nbit</span> <span class="o">=</span> <span class="s2">&quot;N-bit&quot;</span>
     <span class="n">szip</span> <span class="o">=</span> <span class="s2">&quot;szip&quot;</span>

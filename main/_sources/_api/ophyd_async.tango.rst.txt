@@ -47,7 +47,7 @@
         get_trl_descriptor
         get_tango_trl
         infer_python_type
-        infer_signal_character
+        infer_signal_type
         make_backend
         AttributeProxy
         CommandProxy

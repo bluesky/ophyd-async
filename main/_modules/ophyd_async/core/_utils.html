@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../../../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -464,23 +464,39 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">get_origin</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">EnumMeta</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">get_origin</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Reading</span>
-<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 <span class="n">P</span> <span class="o">=</span> <span class="n">ParamSpec</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
 <span class="n">Callback</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
-
-<span class="c1">#: A function that will be called with the Reading and value when the</span>
-<span class="c1">#: monitor updates</span>
-<span class="n">ReadingValueCallback</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Reading</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
 <span class="n">DEFAULT_TIMEOUT</span> <span class="o">=</span> <span class="mf">10.0</span>
 <span class="n">ErrorText</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="StrictEnum">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StrictEnum">[docs]</a>
+<span class="k">class</span> <span class="nc">StrictEnum</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, and there will be no extras&quot;&quot;&quot;</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">SubsetEnumMeta</span><span class="p">(</span><span class="n">EnumMeta</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SubsetEnum">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SubsetEnum">[docs]</a>
+<span class="k">class</span> <span class="nc">SubsetEnum</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">SubsetEnumMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, but there may be extras&quot;&quot;&quot;</span></div>
+
 
 
 <span class="n">CALCULATE_TIMEOUT</span> <span class="o">=</span> <span class="s2">&quot;CALCULATE_TIMEOUT&quot;</span>
@@ -592,7 +608,25 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="get_dtype">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.get_dtype">[docs]</a>
-<span class="k">def</span> <span class="nf">get_dtype</span><span class="p">(</span><span class="n">typ</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">get_dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the runtime dtype from a numpy ndarray type annotation</span>
+
+<span class="sd">    &gt;&gt;&gt; from ophyd_async.core import Array1D</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; get_dtype(Array1D[np.int8])</span>
+<span class="sd">    dtype(&#39;int8&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Array1D[dtype], got </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]</span>
+    <span class="c1"># so extract numpy.float64 from it</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">get_args</span><span class="p">(</span><span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="get_enum_cls">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.get_enum_cls">[docs]</a>
+<span class="k">def</span> <span class="nf">get_enum_cls</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">StrictEnum</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the runtime dtype from a numpy ndarray type annotation</span>
 
 <span class="sd">    &gt;&gt;&gt; import numpy.typing as npt</span>
@@ -600,11 +634,15 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    &gt;&gt;&gt; get_dtype(npt.NDArray[np.int8])</span>
 <span class="sd">    dtype(&#39;int8&#39;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s2">&quot;__origin__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="c1"># datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]</span>
-        <span class="c1"># so extract numpy.float64 from it</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">typ</span><span class="o">.</span><span class="n">__args__</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">__args__</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
-    <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="n">datatype</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> should inherit from .SubsetEnum &quot;</span>
+                <span class="s2">&quot;or ophyd_async.core.StrictEnum&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">datatype</span></div>
 
 
 
@@ -667,10 +705,37 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
-<span class="k">def</span> <span class="nf">is_pydantic_model</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="k">while</span> <span class="n">origin</span> <span class="o">:=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">):</span>
-        <span class="n">datatype</span> <span class="o">=</span> <span class="n">origin</span>
-    <span class="k">return</span> <span class="n">datatype</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">BaseModel</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">get_origin_class</span><span class="p">(</span><span class="n">annotatation</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">annotatation</span><span class="p">)</span> <span class="ow">or</span> <span class="n">annotatation</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">origin</span>
+
+
+<div class="viewcode-block" id="Reference">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Reference">[docs]</a>
+<span class="k">class</span> <span class="nc">Reference</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hide an object behind a reference.</span>
+
+<span class="sd">    Used to opt out of the naming/parent-child relationship of `Device`.</span>
+
+<span class="sd">    For example::</span>
+
+<span class="sd">        class DeviceWithRefToSignal(Device):</span>
+<span class="sd">            def __init__(self, signal: SignalRW[int]):</span>
+<span class="sd">                self.signal_ref = Reference(signal)</span>
+<span class="sd">                super().__init__()</span>
+
+<span class="sd">            def set(self, value) -&gt; AsyncStatus:</span>
+<span class="sd">                return self.signal_ref().set(value + 1)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span> <span class="o">=</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span></div>
+
 </pre></div>
 
                 </article>

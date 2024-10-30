@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._readable &#8212; ophyd-async 0.7.1.dev1+gc91d2831 documentation</title>
+    <title>ophyd_async.core._readable &#8212; ophyd-async 0.7.1.dev2+ga30d8cde documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=90949d10"></script>
+    <script src="../../../_static/documentation_options.js?v=6c1a9f7d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -619,19 +619,19 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        :meth:`HintedSignal.uncached`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">dict_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">dict_copy</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
 
         <span class="k">yield</span>
 
         <span class="c1"># Set symmetric difference operator gives all newly added keys</span>
-        <span class="n">new_keys</span> <span class="o">=</span> <span class="n">dict_copy</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">^</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-        <span class="n">new_values</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">new_keys</span><span class="p">]</span>
+        <span class="n">new_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
+        <span class="n">new_keys</span> <span class="o">=</span> <span class="n">dict_copy</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">^</span> <span class="n">new_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">new_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">new_keys</span><span class="p">]</span>
 
         <span class="n">flattened_values</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_values</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">):</span>
-                <span class="n">children</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
-                <span class="n">flattened_values</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">children</span><span class="p">])</span>
+                <span class="n">flattened_values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">flattened_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
