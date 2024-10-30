@@ -207,11 +207,15 @@ async def test_two_detectors_step(
     assert sdb["stream_resource"] == srb["uid"]
     assert (
         srb["uri"]
-        == "file://localhost" + str(info_b.directory_path / info_b.filename) + ".h5"
+        == "file://localhost/"
+        + str(info_b.directory_path / info_b.filename).lstrip("/")
+        + ".h5"
     )
     assert (
         sra["uri"]
-        == "file://localhost" + str(info_a.directory_path / info_a.filename) + ".h5"
+        == "file://localhost/"
+        + str(info_a.directory_path / info_a.filename).lstrip("/")
+        + ".h5"
     )
 
     assert event["data"] == {}
