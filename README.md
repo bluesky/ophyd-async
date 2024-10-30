@@ -1,7 +1,7 @@
 [![CI](https://github.com/bluesky/ophyd-async/actions/workflows/ci.yml/badge.svg)](https://github.com/bluesky/ophyd-async/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/bluesky/ophyd-async/branch/main/graph/badge.svg)](https://codecov.io/gh/bluesky/ophyd-async)
 [![PyPI](https://img.shields.io/pypi/v/ophyd-async.svg)](https://pypi.org/project/ophyd-async)
-[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://choosealicense.com/licenses/bsd-3-clause)
 
 # ophyd-async
 
@@ -13,7 +13,7 @@ Asynchronous Bluesky hardware abstraction code, compatible with control systems 
 | Documentation |      <https://bluesky.github.io/ophyd-async>      |
 |   Releases    | <https://github.com/bluesky/ophyd-async/releases> |
 
-Ophyd-async is a Python library for asynchronously interfacing with hardware, intended to 
+Ophyd-async is a Python library for asynchronously interfacing with hardware, intended to
 be used as an abstraction layer that enables experiment orchestration and data acquisition code to operate above the specifics of particular devices and control
 systems.
 
