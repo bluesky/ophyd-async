@@ -5,12 +5,15 @@ import sys
 from collections.abc import Coroutine, Iterator, Mapping, MutableMapping
 from logging import LoggerAdapter, getLogger
 from typing import Any, TypeVar
+from unittest.mock import Mock
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
 from ._protocol import Connectable
 from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
+
+_device_mocks: dict[Device, Mock] = {}
 
 
 class DeviceConnector:
@@ -37,7 +40,7 @@ class DeviceConnector:
     async def connect(
         self,
         device: Device,
-        mock: bool,
+        mock: bool | Mock,
         timeout: float,
         force_reconnect: bool,
     ):
@@ -47,12 +50,12 @@ class DeviceConnector:
         done in a different mock more. It should connect the Device and all its
         children.
         """
-        coros = {
-            name: child_device.connect(
-                mock=mock, timeout=timeout, force_reconnect=force_reconnect
+        coros = {}
+        for name, child_device in device.children():
+            child_mock = getattr(mock, name) if mock else mock  # Mock() or False
+            coros[name] = child_device.connect(
+                mock=child_mock, timeout=timeout, force_reconnect=force_reconnect
             )
-            for name, child_device in device.children()
-        }
         await wait_for_connection(**coros)
 
 
@@ -114,7 +117,7 @@ class Device(HasName, Connectable):
 
     async def connect(
         self,
-        mock: bool = False,
+        mock: bool | Mock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ) -> None:
@@ -129,13 +132,18 @@ class Device(HasName, Connectable):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
+        uses_mock = bool(mock)
         can_use_previous_connect = (
-            mock is self._connect_mock_arg
+            uses_mock is self._connect_mock_arg
             and self._connect_task
             and not (self._connect_task.done() and self._connect_task.exception())
         )
+        if mock is True:
+            mock = Mock()  # create a new Mock if one not provided
         if force_reconnect or not can_use_previous_connect:
-            self._connect_mock_arg = mock
+            self._connect_mock_arg = uses_mock
+            if self._connect_mock_arg:
+                _device_mocks[self] = mock
             coro = self._connector.connect(
                 device=self, mock=mock, timeout=timeout, force_reconnect=force_reconnect
             )
@@ -197,6 +205,9 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
     def children(self) -> Iterator[tuple[str, Device]]:
         for key, child in self._children.items():
             yield str(key), child
+
+    def __hash__(self):  # to allow DeviceVector to be used as dict keys and in sets
+        return hash(id(self))
 
 
 class DeviceCollector:

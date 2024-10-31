@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from unittest.mock import Mock
+
 from ophyd_async.core import (
     Device,
     DeviceConnector,
@@ -41,7 +43,7 @@ class PviDeviceConnector(DeviceConnector):
         )
 
     async def connect(
-        self, device: Device, mock: bool, timeout: float, force_reconnect: bool
+        self, device: Device, mock: bool | Mock, timeout: float, force_reconnect: bool
     ) -> None:
         if mock:
             # Make 2 entries for each DeviceVector
