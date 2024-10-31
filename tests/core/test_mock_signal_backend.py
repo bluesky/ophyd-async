@@ -134,9 +134,10 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
     exc_msgs.append(str(exc.value))
 
     for msg in exc_msgs:
-        assert msg == (
-            "Expected to receive a `MockSignalBackend`, instead "
-            f" received {SoftSignalBackend}. "
+        assert re.match(
+            r"Signal <ophyd_async.core._signal.SignalRW object at [0-9a-z]+> "
+            r"not connected in mock mode",
+            msg,
         )
 
 
