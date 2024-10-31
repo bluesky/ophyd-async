@@ -3,7 +3,7 @@ import logging
 import re
 import time
 from asyncio import Event
-from unittest.mock import ANY
+from unittest.mock import ANY, Mock
 
 import pytest
 from bluesky.protocols import Reading
@@ -44,7 +44,7 @@ def num_occurrences(substring: str, string: str) -> int:
 
 async def test_signal_connects_to_previous_backend(caplog):
     caplog.set_level(logging.DEBUG)
-    int_mock_backend = MockSignalBackend(SoftSignalBackend(int))
+    int_mock_backend = MockSignalBackend(SoftSignalBackend(int), Mock())
     original_connect = int_mock_backend.connect
     times_backend_connect_called = 0
 
@@ -63,7 +63,7 @@ async def test_signal_connects_to_previous_backend(caplog):
 
 async def test_signal_connects_with_force_reconnect(caplog):
     caplog.set_level(logging.DEBUG)
-    signal = Signal(MockSignalBackend(SoftSignalBackend(int)))
+    signal = Signal(MockSignalBackend(SoftSignalBackend(int), Mock()))
     await signal.connect()
     assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 1
     await signal.connect(force_reconnect=True)
@@ -82,7 +82,7 @@ async def test_signal_lazily_connects(RE):
                 self.succeed_on_connect = True
                 raise RuntimeError("connect fail")
 
-    signal = SignalRW(MockSignalBackendFailingFirst(SoftSignalBackend(int)))
+    signal = SignalRW(MockSignalBackendFailingFirst(SoftSignalBackend(int), Mock()))
 
     with pytest.raises(RuntimeError, match="connect fail"):
         await signal.connect(mock=False)

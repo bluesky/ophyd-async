@@ -23,6 +23,7 @@ from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
     callback_on_mock_put,
+    get_mock,
     get_mock_put,
     mock_puts_blocked,
     reset_mock_put_calls,
@@ -117,6 +118,7 @@ __all__ = [
     "config_ophyd_async_logging",
     "MockSignalBackend",
     "callback_on_mock_put",
+    "get_mock",
     "get_mock_put",
     "mock_puts_blocked",
     "reset_mock_put_calls",

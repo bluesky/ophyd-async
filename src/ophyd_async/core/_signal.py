@@ -4,6 +4,7 @@ import asyncio
 import functools
 from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
 from typing import Any, Generic, cast
+from unittest.mock import Mock
 
 from bluesky.protocols import (
     Locatable,
@@ -30,6 +31,8 @@ from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, completed_status
 from ._utils import CALCULATE_TIMEOUT, DEFAULT_TIMEOUT, CalculatableTimeout, Callback, T
 
+_mock_signal_backends: dict[Device, MockSignalBackend] = {}
+
 
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
     try:
@@ -53,12 +56,13 @@ class SignalConnector(DeviceConnector):
     async def connect(
         self,
         device: Device,
-        mock: bool,
+        mock: bool | Mock,
         timeout: float,
         force_reconnect: bool,
     ):
         if mock:
-            self.backend = MockSignalBackend(self._init_backend)
+            self.backend = MockSignalBackend(self._init_backend, mock)
+            _mock_signal_backends[device] = self.backend
         else:
             self.backend = self._init_backend
         device.log.debug(f"Connecting to {self.backend.source(device.name, read=True)}")
