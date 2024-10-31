@@ -907,6 +907,12 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(ioc: IOC):
         await sig.connect()
 
 
+async def test_bool_works_for_mismatching_enums(ioc: IOC):
+    pv_name = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:bool"
+    sig = epics_signal_rw(bool, pv_name, pv_name + "_unnamed")
+    await sig.connect()
+
+
 @pytest.mark.skipif(os.name == "nt", reason="Hangs on windows for unknown reasons")
 async def test_can_read_using_ophyd_async_then_ophyd(ioc: IOC):
     oa_read = f"{ioc.protocol}://{PV_PREFIX}:{ioc.protocol}:float_prec_1"
