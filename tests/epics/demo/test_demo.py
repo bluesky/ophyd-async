@@ -293,9 +293,23 @@ async def test_assembly_renaming() -> None:
 
 
 async def test_dynamic_sensor_group_disconnected():
-    with pytest.raises(NotConnected):
+    with pytest.raises(NotConnected) as e:
         async with DeviceCollector(timeout=0.1):
             mock_sensor_group_dynamic = demo.SensorGroup("MOCK:SENSOR:")
+    expected = """
+mock_sensor_group_dynamic: NotConnected:
+    sensors: NotConnected:
+        1: NotConnected:
+            value: NotConnected: ca://MOCK:SENSOR:1:Value
+            mode: NotConnected: ca://MOCK:SENSOR:1:Mode
+        2: NotConnected:
+            value: NotConnected: ca://MOCK:SENSOR:2:Value
+            mode: NotConnected: ca://MOCK:SENSOR:2:Mode
+        3: NotConnected:
+            value: NotConnected: ca://MOCK:SENSOR:3:Value
+            mode: NotConnected: ca://MOCK:SENSOR:3:Mode
+"""
+    assert str(e.value) == expected
 
     assert mock_sensor_group_dynamic.name == "mock_sensor_group_dynamic"
 

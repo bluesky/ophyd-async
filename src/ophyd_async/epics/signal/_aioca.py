@@ -175,16 +175,19 @@ def make_converter(
     if is_array and pv_dbr == dbr.DBR_CHAR and datatype is str:
         # Override waveform of chars to be treated as string
         return CaLongStrConverter()
+    elif not is_array and datatype is bool and pv_dbr == dbr.DBR_ENUM:
+        # Database can't do bools, so are often representated as enums of len 2
+        pv_num_choices = get_unique(
+            {k: len(v.enums) for k, v in values.items()}, "number of choices"
+        )
+        if pv_num_choices != 2:
+            raise TypeError(f"{pv} has {pv_num_choices} choices, can't map to bool")
+        return CaBoolConverter()
     elif not is_array and pv_dbr == dbr.DBR_ENUM:
         pv_choices = get_unique(
             {k: tuple(v.enums) for k, v in values.items()}, "choices"
         )
-        if datatype is bool:
-            # Database can't do bools, so are often representated as enums of len 2
-            if len(pv_choices) != 2:
-                raise TypeError(f"{pv} has {pv_choices=}, can't map to bool")
-            return CaBoolConverter()
-        elif enum_cls := get_enum_cls(datatype):
+        if enum_cls := get_enum_cls(datatype):
             # If explicitly requested then check
             return CaEnumConverter(get_supported_values(pv, enum_cls, pv_choices))
         elif datatype in (None, str):
