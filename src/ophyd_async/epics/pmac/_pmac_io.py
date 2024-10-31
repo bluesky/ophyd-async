@@ -46,6 +46,8 @@ class Pmac(StandardReadable):
         self.profile_cs_name = epics_signal_rw(str, prefix + ":ProfileCsName")
         self.profile_calc_vel = epics_signal_rw(bool, prefix + ":ProfileCalcVel")
 
+        super().__init__(name=name)
+
 
 class PmacMotor(motor.Motor):
     """Device that moves a PMAC Motor record"""
