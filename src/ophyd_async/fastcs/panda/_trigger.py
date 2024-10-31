@@ -93,8 +93,10 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
                 dir = True
             rows += SeqTable.row(
                 trigger=trig,
-                position=chunk.lower[fast_axis][start]
-                / await fast_axis.encoder_res.get_value(),
+                position=int(
+                    chunk.lower[fast_axis][start]
+                    / await fast_axis.encoder_res.get_value()
+                ),
             )
 
             # Time based triggers
