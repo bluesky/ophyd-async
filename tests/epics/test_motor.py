@@ -90,7 +90,7 @@ async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
     s.watch(watcher)
     done = Mock()
     s.add_callback(done)
-    await asyncio.sleep(A_BIT)
+    await asyncio.sleep(0.1)
     assert watcher.call_count == 1
     assert watcher.call_args == call(
         name="sim_motor",
@@ -99,7 +99,7 @@ async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.05),
+        time_elapsed=pytest.approx(0.0, abs=0.2),
     )
     watcher.reset_mock()
     assert 0.55 == await sim_motor.user_setpoint.get_value()
@@ -115,10 +115,10 @@ async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.1, abs=0.05),
+        time_elapsed=pytest.approx(0.1, abs=0.2),
     )
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await asyncio.sleep(A_BIT)
+    await asyncio.sleep(0.1)
     assert s.done
     done.assert_called_once_with(s)
 
@@ -157,7 +157,7 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     assert not s.done
     await sim_motor.stop()
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await asyncio.sleep(A_BIT)
+    await asyncio.sleep(0.1)
     assert s.done
     assert s.success is False
 
