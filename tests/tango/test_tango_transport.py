@@ -244,6 +244,7 @@ async def test_attribute_proxy_put(tango_test_device, attr, wait):
     else:
         if not wait:
             raise AssertionError("If wait is False, put should return a status object")
+    await asyncio.sleep(1.0)
     updated_value = await attr_proxy.get()
     if isinstance(new_value, np.ndarray):
         assert np.all(updated_value == new_value)
@@ -284,6 +285,7 @@ async def test_attribute_proxy_get_w_value(tango_test_device, attr, new_value):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
     await attr_proxy.put(new_value)
+    await asyncio.sleep(1.0)
     attr_proxy_value = await attr_proxy.get()
     if isinstance(new_value, np.ndarray):
         assert np.all(attr_proxy_value == new_value)

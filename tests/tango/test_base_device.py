@@ -384,7 +384,7 @@ async def test_tango_demo(demo_test_context):
         RE(bp.count(list(detector.counters.values())))
 
         set_status = detector.set(1.0)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1.0)
         stop_status = detector.stop()
         await set_status
         await stop_status
