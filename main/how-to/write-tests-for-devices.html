@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Write Tests for Devices &#8212; ophyd-async 0.8.0a2.dev1+g078de143 documentation</title>
+    <title>Write Tests for Devices &#8212; ophyd-async 0.8.0a2.dev2+g0df62ddd documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=f33165f4"></script>
+    <script src="../_static/documentation_options.js?v=f28ac87c"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a2.dev1+g078de143 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a2.dev1+g078de143 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a2.dev2+g0df62ddd documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a2.dev2+g0df62ddd documentation - Home"/>
   
   
 </a></div>
@@ -551,13 +551,10 @@ may change API on minor release numbers before then</p>
 
     <span class="k">await</span> <span class="n">mock_mover</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">mock_mover</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">67</span><span class="p">)</span>
-
-    <span class="n">parent_mock</span><span class="o">.</span><span class="n">assert_has_calls</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">call</span><span class="o">.</span><span class="n">velocity</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-            <span class="n">call</span><span class="o">.</span><span class="n">setpoint</span><span class="p">(</span><span class="mi">67</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">parent_mock</span><span class="o">.</span><span class="n">mock_calls</span> <span class="o">==</span> <span class="p">[</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">velocity</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">setpoint</span><span class="p">(</span><span class="mi">67</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
 </pre></div>
 </div>
 <p>There are several other test utility functions:</p>

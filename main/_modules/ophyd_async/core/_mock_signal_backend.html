@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_backend &#8212; ophyd-async 0.8.0a2.dev1+g078de143 documentation</title>
+    <title>ophyd_async.core._mock_signal_backend &#8212; ophyd-async 0.8.0a2.dev2+g0df62ddd documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=f33165f4"></script>
+    <script src="../../../_static/documentation_options.js?v=f28ac87c"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a2.dev1+g078de143 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a2.dev1+g078de143 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a2.dev2+g0df62ddd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a2.dev2+g0df62ddd documentation - Home"/>
   
   
 </a></div>
@@ -461,7 +461,7 @@ window.addEventListener("load", () => mermaid.run());
 <span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
-<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">AsyncMock</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">AsyncMock</span><span class="p">,</span> <span class="n">Mock</span>
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Descriptor</span><span class="p">,</span> <span class="n">Reading</span>
 
@@ -475,7 +475,11 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">class</span> <span class="nc">MockSignalBackend</span><span class="p">(</span><span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal backend for testing, created by ``Device.connect(mock=True)``.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">initial_backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+        <span class="n">mock</span><span class="p">:</span> <span class="n">Mock</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">initial_backend</span><span class="p">,</span> <span class="n">MockSignalBackend</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot make a MockSignalBackend for a MockSignalBackend&quot;</span><span class="p">)</span>
 
@@ -489,6 +493,12 @@ window.addEventListener("load", () => mermaid.run());
             <span class="bp">self</span><span class="o">.</span><span class="n">soft_backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span>
                 <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_backend</span><span class="o">.</span><span class="n">datatype</span>
             <span class="p">)</span>
+
+        <span class="c1"># use existing Mock if provided</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span> <span class="o">=</span> <span class="n">mock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">put_mock</span> <span class="o">=</span> <span class="n">AsyncMock</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;put&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">Callable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">attach_mock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">put_mock</span><span class="p">,</span> <span class="s2">&quot;put&quot;</span><span class="p">)</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_backend</span><span class="o">.</span><span class="n">datatype</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">):</span>
@@ -499,10 +509,6 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span>
-
-    <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">put_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMock</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">AsyncMock</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;put&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">Callable</span><span class="p">)</span>
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span> <span class="nf">put_proceeds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">:</span>
