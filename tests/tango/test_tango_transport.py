@@ -796,9 +796,9 @@ async def test_tango_transport_allow_events(echo_device, allow):
 @pytest.mark.asyncio
 async def test_tango_transport_read_and_write_trl(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
-    trl = device_proxy.dev_name()
-    read_trl = trl + "/" + "readback"
-    write_trl = trl + "/" + "setpoint"
+    # Must use a FQTRL, at least on windows.
+    read_trl = tango_test_device + "/" + "readback"
+    write_trl = tango_test_device + "/" + "setpoint"
 
     # Test with existing proxy
     transport = TangoSignalBackend(float, read_trl, write_trl, device_proxy)
