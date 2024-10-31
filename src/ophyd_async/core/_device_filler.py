@@ -154,8 +154,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         filled=True,
     ) -> Iterator[tuple[SignalBackendT, list[Any]]]:
-        while self._uncreated_signals:
-            name, child_type = self._uncreated_signals.popitem()
+        for name in list(self._uncreated_signals):
+            child_type = self._uncreated_signals.pop(name)
             backend = self._signal_backend_factory(
                 self._signal_datatype[_logical(name)]
             )
@@ -173,8 +173,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         filled=True,
     ) -> Iterator[tuple[DeviceConnectorT, list[Any]]]:
-        while self._uncreated_devices:
-            name, child_type = self._uncreated_devices.popitem()
+        for name in list(self._uncreated_devices):
+            child_type = self._uncreated_devices.pop(name)
             connector = self._device_connector_factory()
             extras = list(self._extras[name])
             yield connector, extras
