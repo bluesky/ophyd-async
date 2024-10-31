@@ -212,16 +212,20 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
         (typeid, specifier)
     ]
     # Some override cases
-    if typeid == "epics:nt/NTEnum:1.0":
+    if datatype is bool and typeid == "epics:nt/NTEnum:1.0":
+        # Database can't do bools, so are often representated as enums of len 2
+        pv_num_choices = get_unique(
+            {k: len(v["value"]["choices"]) for k, v in values.items()},
+            "number of choices",
+        )
+        if pv_num_choices != 2:
+            raise TypeError(f"{pv} has {pv_num_choices} choices, can't map to bool")
+        return PvaEnumBoolConverter()
+    elif typeid == "epics:nt/NTEnum:1.0":
         pv_choices = get_unique(
             {k: tuple(v["value"]["choices"]) for k, v in values.items()}, "choices"
         )
-        if datatype is bool:
-            # Database can't do bools, so are often representated as enums of len 2
-            if len(pv_choices) != 2:
-                raise TypeError(f"{pv} has {pv_choices=}, can't map to bool")
-            return PvaEnumBoolConverter()
-        elif enum_cls := get_enum_cls(datatype):
+        if enum_cls := get_enum_cls(datatype):
             # We were given an enum class, so make class from that
             return PvaEnumConverter(
                 supported_values=get_supported_values(pv, enum_cls, pv_choices)
