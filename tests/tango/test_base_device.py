@@ -290,7 +290,7 @@ def demo_test_context():
             "devices": [{"name": "demo/counter/1"}, {"name": "demo/counter/2"}],
         },
     )
-    yield MultiDeviceTestContext(content)
+    yield MultiDeviceTestContext(content, process=True)
 
 
 # --------------------------------------------------------------------
