@@ -187,7 +187,8 @@ async def test_collect_stream_docs(
             "uid": ANY,
             "data_key": name,
             "mimetype": "application/x-hdf5",
-            "uri": "file://localhost" + str(tmp_path / "mock_panda" / "data.h5"),
+            "uri": "file://localhost/"
+            + str(tmp_path / "mock_panda" / "data.h5").lstrip("/"),
             "parameters": {
                 "dataset": f"/{name}",
                 "swmr": False,
@@ -195,7 +196,7 @@ async def test_collect_stream_docs(
                 "chunk_shape": (1024,),
             },
         }
-        assert "mock_panda/data.h5" in resource_doc["uri"]
+        assert os.path.join("mock_panda", "data.h5") in resource_doc["uri"]
 
     [item async for item in mock_writer.collect_stream_docs(1)]
     assert type(mock_writer._file) is HDFFile
