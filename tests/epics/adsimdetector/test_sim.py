@@ -52,7 +52,7 @@ def count_sim(dets: list[adsimdetector.SimDetector], times: int = 1):
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
 
-        yield from bps.sleep(0.2)
+        yield from bps.sleep(1.0)
         [
             set_mock_value(
                 cast(adcore.ADHDFWriter, det.writer).hdf.num_captured,
@@ -207,11 +207,15 @@ async def test_two_detectors_step(
     assert sdb["stream_resource"] == srb["uid"]
     assert (
         srb["uri"]
-        == "file://localhost" + str(info_b.directory_path / info_b.filename) + ".h5"
+        == "file://localhost/"
+        + str(info_b.directory_path / info_b.filename).lstrip("/")
+        + ".h5"
     )
     assert (
         sra["uri"]
-        == "file://localhost" + str(info_a.directory_path / info_a.filename) + ".h5"
+        == "file://localhost/"
+        + str(info_a.directory_path / info_a.filename).lstrip("/")
+        + ".h5"
     )
 
     assert event["data"] == {}

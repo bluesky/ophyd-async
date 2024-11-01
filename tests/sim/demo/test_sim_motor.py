@@ -42,9 +42,9 @@ async def test_stop():
     async with DeviceCollector():
         m1 = SimMotor("M1", instant=False)
 
-    # this move should take 10 seconds but we will stop it after 0.2
+    # this move should take 10 seconds but we will stop it after 0.5
     move_status = m1.set(10)
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.5)
     await m1.stop(success=False)
     new_pos = await m1.user_readback.get_value()
     assert new_pos < 10

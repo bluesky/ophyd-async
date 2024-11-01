@@ -149,7 +149,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
             "uid": ANY,
             "data_key": data_key_name,
             "mimetype": "application/x-hdf5",
-            "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
+            "uri": "file://localhost/" + str(tmp_path / "test-panda.h5").lstrip("/"),
             "parameters": {
                 "dataset": f"/{dataset_name}",
                 "swmr": False,
