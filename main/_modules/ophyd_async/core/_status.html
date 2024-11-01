@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._status &#8212; ophyd-async 0.8.0a2.dev2+g0df62ddd documentation</title>
+    <title>ophyd_async.core._status &#8212; ophyd-async 0.8.0a2.dev3+gd0e2a9b9 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=f28ac87c"></script>
+    <script src="../../../_static/documentation_options.js?v=3f99ca00"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a2.dev2+g0df62ddd documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a2.dev2+g0df62ddd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a2.dev3+gd0e2a9b9 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a2.dev3+gd0e2a9b9 documentation - Home"/>
   
   
 </a></div>
@@ -473,6 +473,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Status</span>
 
+<span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span>
 <span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="n">Watcher</span>
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">WatcherUpdate</span>
 
@@ -483,13 +484,14 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">class</span> <span class="nc">AsyncStatusBase</span><span class="p">(</span><span class="n">Status</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert asyncio awaitable to bluesky Status interface&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">awaitable</span><span class="p">:</span> <span class="n">Coroutine</span> <span class="o">|</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">awaitable</span><span class="p">:</span> <span class="n">Coroutine</span> <span class="o">|</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">awaitable</span><span class="p">,</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">awaitable</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">awaitable</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_callbacks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callback</span><span class="p">[</span><span class="n">Status</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="k">def</span> <span class="fm">__await__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="fm">__await__</span><span class="p">()</span>
@@ -536,7 +538,11 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;done&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;pending&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, task: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">get_coro</span><span class="p">()</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+        <span class="n">device_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;device: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2">, &quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">device_str</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;task: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">get_coro</span><span class="p">()</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+        <span class="p">)</span>
 
     <span class="fm">__str__</span> <span class="o">=</span> <span class="fm">__repr__</span>
 
@@ -554,7 +560,11 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">wrap_f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AS</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">args</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Device</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
         <span class="c1"># type is actually functools._Wrapped[P, Awaitable, P, AS]</span>
         <span class="c1"># but functools._Wrapped is not necessarily available</span>
@@ -568,11 +578,13 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">class</span> <span class="nc">WatchableAsyncStatus</span><span class="p">(</span><span class="n">AsyncStatusBase</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert AsyncIterator of WatcherUpdates to bluesky Status interface.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Watcher</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_update</span><span class="p">:</span> <span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_notify_watchers_from</span><span class="p">(</span><span class="n">iterator</span><span class="p">))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_notify_watchers_from</span><span class="p">(</span><span class="n">iterator</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_notify_watchers_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="n">T</span><span class="p">]]):</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
@@ -606,7 +618,11 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">wrap_f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WAS</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">args</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Device</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">WAS</span><span class="p">],</span> <span class="n">wrap_f</span><span class="p">)</span></div>
 </div>
