@@ -218,7 +218,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif vector_index:
             # We need to add a new entry to a DeviceVector
             vector = self._ensure_device_vector(name)
-            backend = self._signal_backend_factory(self._signal_datatype[name])
+            backend = self._signal_backend_factory(self._signal_datatype.get(name))
             expected_signal_type = self._vector_device_type[name] or signal_type
             vector[vector_index] = signal_type(backend)
         elif child := getattr(self._device, name, None):

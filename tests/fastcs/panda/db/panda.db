@@ -560,11 +560,11 @@ $(EXCLUDE_PCAP=)    })
 $(EXCLUDE_PCAP=)}
 
 
-$(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA1:ARM")
+$(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA1:SIG1")
 $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):EXTRA1:PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "value.arm.x": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.sig[1].x": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "NAME",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
@@ -586,11 +586,11 @@ $(INCLUDE_EXTRA_BLOCK=#)        }
 $(INCLUDE_EXTRA_BLOCK=#)    })
 $(INCLUDE_EXTRA_BLOCK=#)}
 
-$(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA2:ARM")
+$(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA2:SIG1")
 $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):EXTRA2:PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "value.arm.x": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.sig[1].x": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "NAME",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
