@@ -10,9 +10,7 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    ConfigSignal,
     DeviceCollector,
-    HintedSignal,
     MockSignalBackend,
     NotConnected,
     Signal,
@@ -32,6 +30,7 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_value,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -280,9 +279,9 @@ class DummyReadable(StandardReadable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        with self.add_children_as_readables(HintedSignal):
+        with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.value = epics_signal_r(float, prefix + "Value")
-        with self.add_children_as_readables(ConfigSignal):
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.mode = epics_signal_rw(str, prefix + "Mode")
             self.mode2 = epics_signal_rw(str, prefix + "Mode2")
         # Set name and signals for read() and read_configuration()

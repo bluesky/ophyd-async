@@ -930,3 +930,8 @@ async def test_can_read_using_ophyd_async_then_ophyd(ioc: IOC):
         yield from bps.rd(ophyd_signal)
 
     RE(my_plan())
+
+
+def test_signal_module_emits_deprecation_warning():
+    with pytest.deprecated_call():
+        import ophyd_async.epics.signal  # noqa: F401

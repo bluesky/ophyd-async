@@ -7,15 +7,24 @@ from ophyd_async.core import (
     AsyncConfigurable,
     AsyncReadable,
     AsyncStageable,
+    ConfigSignal,
     Device,
     DeviceVector,
     HintedSignal,
     MockSignalBackend,
     SignalR,
     StandardReadable,
-    StandardReadableFormat,
     soft_signal_r_and_setter,
+    soft_signal_rw,
 )
+from ophyd_async.core import StandardReadableFormat as Format
+
+
+@pytest.mark.parametrize("wrapper", [HintedSignal, HintedSignal.uncached, ConfigSignal])
+def test_standard_readable_wrappers_raise_deprecation_warning(wrapper):
+    sr = StandardReadable()
+    with pytest.deprecated_call():
+        sr.add_readables([soft_signal_rw(int)], wrapper)
 
 
 def test_standard_readable_hints():
@@ -203,7 +212,7 @@ def test_standard_readable_add_readables_adds_to_expected_attrs(
 def test_standard_readable_config_signal():
     signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
-    sr.add_readables([signal_r], StandardReadableFormat.CONFIG_SIGNAL)
+    sr.add_readables([signal_r], Format.CONFIG_SIGNAL)
     assert sr._describe_config_funcs == (signal_r.describe,)
     assert sr._read_config_funcs == (signal_r.read,)
 
@@ -211,7 +220,7 @@ def test_standard_readable_config_signal():
 def test_standard_readable_hinted_signal():
     signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
-    sr.add_readables([signal_r], StandardReadableFormat.HINTED_SIGNAL)
+    sr.add_readables([signal_r], Format.HINTED_SIGNAL)
     assert sr._describe_funcs == (signal_r.describe,)
     assert sr._read_funcs == (signal_r.read,)
     assert sr._stageables == (signal_r,)
@@ -221,7 +230,7 @@ def test_standard_readable_hinted_signal():
 def test_standard_readable_uncached_signal():
     signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
-    sr.add_readables([signal_r], StandardReadableFormat.UNCACHED_SIGNAL)
+    sr.add_readables([signal_r], Format.UNCACHED_SIGNAL)
     assert sr._describe_funcs == (signal_r.describe,)
     assert sr._read_funcs[0].signal == signal_r
 
@@ -229,7 +238,7 @@ def test_standard_readable_uncached_signal():
 def test_standard_readable_hinted_uncached_signal():
     signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
-    sr.add_readables([signal_r], StandardReadableFormat.HINTED_UNCACHED_SIGNAL)
+    sr.add_readables([signal_r], Format.HINTED_UNCACHED_SIGNAL)
     assert sr._describe_funcs == (signal_r.describe,)
     assert sr._read_funcs[0].signal == signal_r
     assert sr._has_hints[0].device == signal_r
@@ -238,7 +247,7 @@ def test_standard_readable_hinted_uncached_signal():
 def test_standard_readable_add_children_multi_nested():
     inner = StandardReadable()
     outer = StandardReadable()
-    with inner.add_children_as_readables(HintedSignal):
+    with inner.add_children_as_readables(Format.HINTED_SIGNAL):
         inner.a, _ = soft_signal_r_and_setter(float, initial_value=5.0)
         inner.b, _ = soft_signal_r_and_setter(float, initial_value=6.0)
     with outer.add_children_as_readables():

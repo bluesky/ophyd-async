@@ -2,7 +2,7 @@ import warnings
 from collections.abc import Awaitable, Callable, Generator, Sequence
 from contextlib import contextmanager
 from enum import Enum
-from typing import cast
+from typing import Any, cast
 
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
@@ -65,8 +65,8 @@ def _compat_format(name: str, target: StandardReadableFormat) -> StandardReadabl
 
 
 ConfigSignal = _compat_format("ConfigSignal", StandardReadableFormat.CONFIG_SIGNAL)
-HintedSignal = _compat_format("HintedSignal", StandardReadableFormat.HINTED_SIGNAL)
-HintedSignal.uncached = _compat_format(  # type: ignore
+HintedSignal: Any = _compat_format("HintedSignal", StandardReadableFormat.HINTED_SIGNAL)
+HintedSignal.uncached = _compat_format(
     "HintedSignal.uncached", StandardReadableFormat.HINTED_UNCACHED_SIGNAL
 )
 
