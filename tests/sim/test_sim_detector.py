@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 
 import bluesky.plans as bp
@@ -44,6 +45,8 @@ def test_writes_pattern_to_file(
         docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, event=1, stop=1
     )
     path = docs["stream_resource"][0]["uri"].split("://localhost")[-1]
+    if os.name == "nt":
+        path = path.lstrip("/")
     h5file = h5py.File(path)
     assert list(h5file["/entry"]) == ["data", "sum"]
     assert list(h5file["/entry/sum"]) == [44540.0]

@@ -135,7 +135,7 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
 
     for msg in exc_msgs:
         assert re.match(
-            r"Signal <ophyd_async.core._signal.SignalRW object at [0-9a-z]+> "
+            r"Signal <ophyd_async.core._signal.SignalRW object at [0-9a-zA-Z]+> "
             r"not connected in mock mode",
             msg,
         )
@@ -190,7 +190,7 @@ async def test_blocks_during_put(mock_signals):
         assert not status1.done
         assert not status2.done
 
-    await asyncio.sleep(1e-4)
+    await asyncio.sleep(0.1)
 
     assert status1.done
     assert status2.done

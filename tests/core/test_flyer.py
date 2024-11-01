@@ -1,3 +1,4 @@
+import asyncio
 import time
 from collections.abc import AsyncGenerator, AsyncIterator, Sequence
 from typing import Any
@@ -355,6 +356,9 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         match_msg = "Prepare must be called before kickoff!"
     with pytest.raises(Exception, match=match_msg):
         RE(flying_plan())
+
+    # Try explicitly letting event loop clean up tasks...?
+    await asyncio.sleep(1.0)
 
 
 @pytest.mark.parametrize(
