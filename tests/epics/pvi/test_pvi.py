@@ -1,4 +1,8 @@
+from typing import Annotated as A
 from typing import TypeVar
+
+import pytest
+from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     Device,
@@ -6,15 +10,21 @@ from ophyd_async.core import (
     DeviceVector,
     SignalRW,
     SignalX,
+    StandardReadable,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import PviDeviceConnector
 
 
-class Block1(Device):
+class Block1(Device, HasHints):
     device_vector_signal_x: DeviceVector[SignalX]
     device_vector_signal_rw: DeviceVector[SignalRW[float]]
     signal_x: SignalX
     signal_rw: SignalRW[int]
+
+    @property
+    def hints(self) -> Hints:
+        return {}
 
 
 class Block2(Device):
@@ -32,9 +42,9 @@ class Block3(Device):
     signal_rw: SignalRW[int]
 
 
-class Block4(Device):
+class Block4(StandardReadable):
     device_vector: DeviceVector[Block1]
-    device: Block1
+    device: A[Block1, Format.CHILD]
     signal_x: SignalX
     signal_rw: SignalRW[int]
 
@@ -125,6 +135,7 @@ async def test_device_create_children_from_annotations_with_device_vectors():
     await device.connect(mock=True)
 
     block_1_device = device.device
+    assert block_1_device in device._has_hints
     block_2_device_vector = device.device_vector
 
     assert device.device_vector[1].name == "test_device-device_vector-1"
@@ -142,3 +153,21 @@ async def test_device_create_children_from_annotations_with_device_vectors():
     # The memory addresses have not changed
     assert device.device is block_1_device
     assert device.device_vector is block_2_device_vector
+
+
+class NoSignalType(Device):
+    a: SignalRW
+
+
+class NoSignalTypeInVector(Device):
+    a: DeviceVector[SignalRW]
+
+
+@pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector])
+async def test_no_type_annotation_blocks(cls):
+    with pytest.raises(TypeError) as cm:
+        with_pvi_connector(cls, "PREFIX:")
+    assert str(cm.value) == (
+        f"{cls.__name__}.a: Expected SignalX or SignalR/W/RW[type], "
+        "got <class 'ophyd_async.core._signal.SignalRW'>"
+    )
