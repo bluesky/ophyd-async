@@ -18,18 +18,17 @@ def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
 
 
 async def test_when_open_called_then_file_correctly_set(
-    odin_driver_and_writer: OdinDriverAndWriter,
+    odin_driver_and_writer: OdinDriverAndWriter, tmp_path: Path
 ):
     driver, writer = odin_driver_and_writer
     path_info = writer._path_provider.return_value
-    expected_path = "/tmp"
     expected_filename = "filename.h5"
-    path_info.directory_path = Path(expected_path)
+    path_info.directory_path = tmp_path
     path_info.filename = expected_filename
 
     await writer.open()
 
-    get_mock_put(driver.file_path).assert_called_once_with(expected_path, wait=ANY)
+    get_mock_put(driver.file_path).assert_called_once_with(str(tmp_path), wait=ANY)
     get_mock_put(driver.file_name).assert_called_once_with(expected_filename, wait=ANY)
 
 
