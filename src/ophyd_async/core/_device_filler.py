@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from abc import abstractmethod
 from collections.abc import Callable, Iterator, Sequence
 from typing import (
@@ -10,6 +9,7 @@ from typing import (
     NoReturn,
     Protocol,
     TypeVar,
+    cast,
     get_args,
     get_type_hints,
     runtime_checkable,
@@ -26,19 +26,6 @@ DeviceConnectorT = TypeVar("DeviceConnectorT", bound=DeviceConnector)
 UniqueName = NewType("UniqueName", str)
 # Logical name without trailing underscore, the name in the control system
 LogicalName = NewType("LogicalName", str)
-
-
-def _strip_number_from_string(string: str) -> tuple[str, int | None]:
-    """Return ("pulse", 1) from "pulse1"."""
-    match = re.match(r"(.*?)(\d*)$", string)
-    assert match
-
-    name = match.group(1)
-    number = match.group(2) or None
-    if number is None:
-        return name, None
-    else:
-        return name, int(number)
 
 
 def _get_datatype(annotation: Any) -> type | None:
@@ -187,14 +174,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             dest[_logical(name)] = connector
 
     def create_device_vector_entries_to_mock(self, num: int):
-        for basename, cls in self._vector_device_type.items():
+        for name, cls in self._vector_device_type.items():
             assert cls, "Shouldn't happen"
-            for i in range(num):
-                name = f"{basename}{i + 1}"
+            for i in range(1, num + 1):
                 if issubclass(cls, Signal):
-                    self.fill_child_signal(name, cls)
+                    self.fill_child_signal(name, cls, i)
                 elif issubclass(cls, Device):
-                    self.fill_child_device(name, cls)
+                    self.fill_child_device(name, cls, i)
                 else:
                     self._raise(name, f"Can't make {cls}")
 
@@ -205,33 +191,23 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 f"{self._device.name}: cannot provision {unfilled} from {source}"
             )
 
-    def ensure_device_vectors(self, names: list[str]):
-        basenames: dict[LogicalName, set[int]] = {}
-        for name in names:
-            basename, number = _strip_number_from_string(name)
-            if number is not None:
-                basenames.setdefault(LogicalName(basename), set()).add(number)
-        for basename, numbers in basenames.items():
-            # If contiguous numbers starting at 1 then it's a device vector
-            length = len(numbers)
-            if (
-                length > 1
-                and numbers == set(range(1, length + 1))
-                and basename not in self._vector_device_type
-            ):
-                # We have no type hints, so use whatever we are told
-                self._vector_device_type[basename] = None
-                if hasattr(self._device, basename):
-                    self._raise(
-                        basename,
-                        "Cannot make child as it would shadow "
-                        f"{getattr(self._device, basename)}",
-                    )
-                setattr(self._device, basename, DeviceVector({}))
+    def _ensure_device_vector(self, name: LogicalName) -> DeviceVector:
+        if not hasattr(self._device, name):
+            # We have no type hints, so use whatever we are told
+            self._vector_device_type[name] = None
+            setattr(self._device, name, DeviceVector({}))
+        vector = getattr(self._device, name)
+        if not isinstance(vector, DeviceVector):
+            self._raise(name, f"Expected DeviceVector, got {vector}")
+        return vector
 
-    def fill_child_signal(self, name: str, signal_type: type[Signal]) -> SignalBackendT:
-        basename, number = _strip_number_from_string(name)
-        child = getattr(self._device, name, None)
+    def fill_child_signal(
+        self,
+        name: str,
+        signal_type: type[Signal],
+        vector_index: int | None = None,
+    ) -> SignalBackendT:
+        name = cast(LogicalName, name)
         if name in self._unfilled_backends:
             # We made it above
             backend, expected_signal_type = self._unfilled_backends.pop(name)
@@ -239,18 +215,20 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             backend, expected_signal_type = self._filled_backends[name]
-        elif basename in self._vector_device_type and isinstance(number, int):
-            # We need to add a new entry to an existing DeviceVector
-            backend = self._signal_backend_factory(self._signal_datatype[basename])
-            expected_signal_type = self._vector_device_type[basename] or signal_type
-            getattr(self._device, basename)[number] = signal_type(backend)
-        elif child is None:
+        elif vector_index:
+            # We need to add a new entry to a DeviceVector
+            vector = self._ensure_device_vector(name)
+            backend = self._signal_backend_factory(self._signal_datatype[name])
+            expected_signal_type = self._vector_device_type[name] or signal_type
+            vector[vector_index] = signal_type(backend)
+        elif child := getattr(self._device, name, None):
+            # There is an existing child, so raise
+            self._raise(name, f"Cannot make child as it would shadow {child}")
+        else:
             # We need to add a new child to the top level Device
             backend = self._signal_backend_factory(None)
             expected_signal_type = signal_type
             setattr(self._device, name, signal_type(backend))
-        else:
-            self._raise(name, f"Cannot make child as it would shadow {child}")
         if signal_type is not expected_signal_type:
             self._raise(
                 name,
@@ -259,10 +237,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         return backend
 
     def fill_child_device(
-        self, name: str, device_type: type[Device] = Device
+        self,
+        name: str,
+        device_type: type[Device] = Device,
+        vector_index: int | None = None,
     ) -> DeviceConnectorT:
-        basename, number = _strip_number_from_string(name)
-        child = getattr(self._device, name, None)
+        name = cast(LogicalName, name)
         if name in self._unfilled_connectors:
             # We made it above
             connector = self._unfilled_connectors.pop(name)
@@ -270,20 +250,20 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
-        elif basename in self._vector_device_type and isinstance(number, int):
-            # We need to add a new entry to an existing DeviceVector
-            vector_device_type = self._vector_device_type[basename] or device_type
+        elif vector_index:
+            # We need to add a new entry to a DeviceVector
+            vector = self._ensure_device_vector(name)
+            vector_device_type = self._vector_device_type[name] or device_type
             assert issubclass(
                 vector_device_type, Device
             ), f"{vector_device_type} is not a Device"
             connector = self._device_connector_factory()
-            getattr(self._device, basename)[number] = vector_device_type(
-                connector=connector
-            )
-        elif child is None:
+            vector[vector_index] = vector_device_type(connector=connector)
+        elif child := getattr(self._device, name, None):
+            # There is an existing child, so raise
+            self._raise(name, f"Cannot make child as it would shadow {child}")
+        else:
             # We need to add a new child to the top level Device
             connector = self._device_connector_factory()
             setattr(self._device, name, device_type(connector=connector))
-        else:
-            self._raise(name, f"Cannot make child as it would shadow {child}")
         return connector

@@ -122,8 +122,9 @@ async def test_panda_with_missing_blocks(panda_pva, panda_t):
     with pytest.raises(
         RuntimeError,
         match=re.escape(
-            "mypanda: cannot provision ['pcap'] from PANDAQSRVI:PVI: {'pulse1': "
-            "{'d': 'PANDAQSRVI:PULSE1:PVI'}, 'seq1': {'d': 'PANDAQSRVI:SEQ1:PVI'}}"
+            "mypanda: cannot provision ['pcap'] from PANDAQSRVI:PVI: "
+            "{'pulse': [None, {'d': 'PANDAQSRVI:PULSE1:PVI'}],"
+            " 'seq': [None, {'d': 'PANDAQSRVI:SEQ1:PVI'}]}"
         ),
     ):
         await panda.connect()
