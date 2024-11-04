@@ -1,6 +1,6 @@
 from ophyd_async.core import StrictEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.signal import epics_signal_rw_rbv
+from ophyd_async.epics.core import epics_signal_rw_rbv
 
 
 class VimbaPixelFormat(StrictEnum):

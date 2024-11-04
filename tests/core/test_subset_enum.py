@@ -3,13 +3,13 @@ from p4p import Value as P4PValue
 from p4p.nt import NTEnum
 
 from ophyd_async.core import SubsetEnum
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.epics.core import epics_signal_rw
 
 # Allow these imports from private modules for tests
-from ophyd_async.epics.signal._aioca import (
+from ophyd_async.epics.core._aioca import (
     make_converter as ca_make_converter,  # noqa: PLC2701
 )
-from ophyd_async.epics.signal._p4p import (
+from ophyd_async.epics.core._p4p import (
     make_converter as pva_make_converter,  # noqa: PLC2701
 )
 

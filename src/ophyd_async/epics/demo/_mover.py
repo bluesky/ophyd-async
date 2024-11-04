@@ -8,15 +8,14 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
-    ConfigSignal,
     Device,
-    HintedSignal,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
 )
-from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw, epics_signal_x
+from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_x
 
 
 class Mover(StandardReadable, Movable, Stoppable):
@@ -24,9 +23,9 @@ class Mover(StandardReadable, Movable, Stoppable):
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
-        with self.add_children_as_readables(HintedSignal):
+        with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.readback = epics_signal_r(float, prefix + "Readback")
-        with self.add_children_as_readables(ConfigSignal):
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.velocity = epics_signal_rw(float, prefix + "Velocity")
             self.units = epics_signal_r(str, prefix + "Readback.EGU")
         self.setpoint = epics_signal_rw(float, prefix + "Setpoint")

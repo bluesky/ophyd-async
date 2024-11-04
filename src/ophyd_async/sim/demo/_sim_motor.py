@@ -6,8 +6,6 @@ from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
     AsyncStatus,
-    ConfigSignal,
-    HintedSignal,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
@@ -15,6 +13,7 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 
 
 class SimMotor(StandardReadable, Movable, Stoppable):
@@ -28,11 +27,11 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         - instant: bool: whether to move instantly, or with a delay
         """
         # Define some signals
-        with self.add_children_as_readables(HintedSignal):
+        with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.user_readback, self._user_readback_set = soft_signal_r_and_setter(
                 float, 0
             )
-        with self.add_children_as_readables(ConfigSignal):
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.velocity = soft_signal_rw(float, 0 if instant else 1.0)
             self.units = soft_signal_rw(str, "mm")
         self.user_setpoint = soft_signal_rw(float, 0)

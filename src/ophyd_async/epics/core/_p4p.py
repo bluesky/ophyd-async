@@ -18,7 +18,6 @@ from ophyd_async.core import (
     Array1D,
     Callback,
     NotConnected,
-    SignalBackend,
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
@@ -30,7 +29,7 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 
-from ._common import format_datatype, get_supported_values
+from ._util import EpicsSignalBackend, format_datatype, get_supported_values
 
 
 def _limits_from_value(value: Any) -> Limits:
@@ -293,19 +292,17 @@ def _pva_request_string(fields: Sequence[str]) -> str:
     return f"field({','.join(fields)})"
 
 
-class PvaSignalBackend(SignalBackend[SignalDatatypeT]):
+class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
     ):
-        self.read_pv = read_pv
-        self.write_pv = write_pv
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
-        super().__init__(datatype)
+        super().__init__(datatype, read_pv, write_pv)
 
     def source(self, name: str, read: bool):
         return f"pva://{self.read_pv if read else self.write_pv}"

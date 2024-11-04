@@ -75,6 +75,7 @@ class Device(HasName, Connectable):
         self, name: str = "", connector: DeviceConnector | None = None
     ) -> None:
         self._connector = connector or DeviceConnector()
+        self._connector.create_children_from_annotations(self)
         self.set_name(name)
 
     @property

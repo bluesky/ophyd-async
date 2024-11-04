@@ -7,8 +7,6 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
-    ConfigSignal,
-    HintedSignal,
     SignalR,
     SignalRW,
     SignalX,
@@ -17,6 +15,7 @@ from ophyd_async.core import (
     observe_value,
     wait_for_value,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango import TangoReadable, tango_polling
 from tango import DevState
 
@@ -33,8 +32,8 @@ class TangoMover(TangoReadable, Movable, Stoppable):
 
     def __init__(self, trl: str | None = "", name=""):
         super().__init__(trl, name=name)
-        self.add_readables([self.position], HintedSignal)
-        self.add_readables([self.velocity], ConfigSignal)
+        self.add_readables([self.position], Format.HINTED_SIGNAL)
+        self.add_readables([self.velocity], Format.CONFIG_SIGNAL)
         self._set_success = True
 
     @WatchableAsyncStatus.wrap
