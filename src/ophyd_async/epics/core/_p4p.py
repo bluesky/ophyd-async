@@ -149,7 +149,15 @@ class PvaEnumBoolConverter(PvaConverter[bool]):
 
 class PvaTableConverter(PvaConverter[Table]):
     def value(self, value) -> Table:
-        return self.datatype(**value["value"].todict())
+        raw_table = value["value"].todict()
+
+        combined_table_dict = {}
+        for key in raw_table:
+            combined_table_dict[key] = []
+            for access_level in raw_table[key]:
+                combined_table_dict[key].extend(raw_table[key][access_level])
+
+        return self.datatype(**combined_table_dict)
 
     def write_value(self, value: BaseModel | dict[str, Any]) -> Any:
         if isinstance(value, self.datatype):
