@@ -66,7 +66,6 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
         self.name = name
 
     async def prepare(self, value: ScanSpecInfo):
-        await self.seq.prescale_units.set(TimeUnits.us)
         await self.seq.enable.set(BitMux.zero)
         path = Path(value.spec.calculate())
         chunk = path.consume()
@@ -75,8 +74,10 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
             gaps = np.delete(gaps, 0)
         scan_size = len(chunk)
 
-        fast_axis = chunk.axes()[len(chunk.axes()) - 2]
         gaps = np.append(gaps, scan_size)
+        fast_axis = chunk.axes()[len(chunk.axes()) - 2]
+        # Get the resolution from the PandA Encoder?
+        resolution = await fast_axis.encoder_res.get_value()
         start = 0
         # Wait for GPIO to go low
         rows = SeqTable.row(trigger=SeqTrigger.BITA_0)
@@ -84,17 +85,20 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
             # Wait for GPIO to go high
             rows += SeqTable.row(trigger=SeqTrigger.BITA_1)
             # Wait for position
-            if chunk.midpoints[fast_axis][gap - 1] > chunk.midpoints[fast_axis][start]:
+            if (
+                chunk.midpoints[fast_axis][gap - 1] * resolution
+                > chunk.midpoints[fast_axis][start] * resolution
+            ):
                 trig = SeqTrigger.POSA_GT
-                dir = False
+                dir = False if resolution > 0 else True
 
             else:
                 trig = SeqTrigger.POSA_LT
-                dir = True
+                dir = True if resolution > 0 else False
             rows += SeqTable.row(
                 trigger=trig,
                 position=int(
-                    chunk.lower[fast_axis][start]
+                    chunk.midpoints[fast_axis][start]
                     / await fast_axis.encoder_res.get_value()
                 ),
             )
@@ -108,7 +112,7 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
                 outa1=True,
                 outb1=dir,
                 outa2=False,
-                outb2=False,
+                outb2=dir,
             )
 
             # Wait for GPIO to go low
@@ -116,7 +120,8 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
 
             start = gap
         await asyncio.gather(
-            self.seq.prescale.set(0),
+            self.seq.prescale.set(1.0),
+            self.seq.prescale_units.set(TimeUnits.us),
             self.seq.repeats.set(1),
             self.seq.table.set(rows),
         )

@@ -79,7 +79,7 @@ async def sim_x_motor():
     async with init_devices(mock=True):
         sim_motor = motor.Motor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
 
-    set_mock_value(sim_motor.encoder_res, 0.2)
+    set_mock_value(sim_motor.encoder_res, 0.02)
 
     yield sim_motor
 
@@ -116,7 +116,7 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
         SeqTrigger.IMMEDIATE,
         SeqTrigger.BITA_0,
     ]
-    assert (out.position == [0, 0, 2, 0, 0, 0, 27, 0, 0, 0, 2, 0, 0]).all()
+    assert (out.position == [0, 0, 50, 0, 0, 0, 250, 0, 0, 0, 50, 0, 0]).all()
     assert (out.time1 == [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000, 0]).all()
     assert (out.time2 == [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000, 0]).all()
 
