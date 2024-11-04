@@ -1,7 +1,6 @@
 import numpy as np
-import numpy.typing as npt
 
-from ophyd_async.core import DeviceVector, StandardReadable
+from ophyd_async.core import Array1D, DeviceVector, StandardReadable
 from ophyd_async.epics import motor
 
 from ..signal import epics_signal_r, epics_signal_rw
@@ -12,14 +11,14 @@ class Pmac(StandardReadable):
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self.time_array = epics_signal_rw(
-            npt.NDArray[np.float64], prefix + ":ProfileTimeArray"
+            Array1D[np.float64], prefix + ":ProfileTimeArray"
         )
         cs_letters = "ABCUVWXYZ"
         # 1 indexed CS axes so we can index into them from the compound motor input link
         self.positions = DeviceVector(
             {
                 i + 1: epics_signal_rw(
-                    npt.NDArray[np.float64], f"{prefix}:{letter}:Positions"
+                    Array1D[np.float64], f"{prefix}:{letter}:Positions"
                 )
                 for i, letter in enumerate(cs_letters)
             }
@@ -33,7 +32,7 @@ class Pmac(StandardReadable):
         self.velocities = DeviceVector(
             {
                 i + 1: epics_signal_rw(
-                    npt.NDArray[np.float64], f"{prefix}:{letter}:Velocities"
+                    Array1D[np.float64], f"{prefix}:{letter}:Velocities"
                 )
                 for i, letter in enumerate(cs_letters)
             }
