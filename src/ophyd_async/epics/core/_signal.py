@@ -14,13 +14,7 @@ from ophyd_async.core import (
     get_unique,
 )
 
-
-def _make_unavailable_class(error: Exception) -> type:
-    class TransportNotAvailable:
-        def __init__(*args, **kwargs):
-            raise NotImplementedError("Transport not available") from error
-
-    return TransportNotAvailable
+from ._util import EpicsSignalBackend
 
 
 class EpicsProtocol(Enum):
@@ -30,10 +24,26 @@ class EpicsProtocol(Enum):
 
 _default_epics_protocol = EpicsProtocol.CA
 
+
+def _make_unavailable_function(error: Exception):
+    def transport_not_available(*args, **kwargs):
+        raise NotImplementedError("Transport not available") from error
+
+    return transport_not_available
+
+
+def _make_unavailable_class(error: Exception) -> type[EpicsSignalBackend]:
+    class TransportNotAvailable(EpicsSignalBackend):
+        __init__ = _make_unavailable_function(error)
+
+    return TransportNotAvailable
+
+
 try:
-    from ._p4p import PvaSignalBackend
+    from ._p4p import PvaSignalBackend, pvget_with_timeout
 except ImportError as pva_error:
     PvaSignalBackend = _make_unavailable_class(pva_error)
+    pvget_with_timeout = _make_unavailable_function(pva_error)
 else:
     _default_epics_protocol = EpicsProtocol.PVA
 
@@ -45,7 +55,7 @@ else:
     _default_epics_protocol = EpicsProtocol.CA
 
 
-def _protocol_pv(pv: str) -> tuple[EpicsProtocol, str]:
+def split_protocol_from_pv(pv: str) -> tuple[EpicsProtocol, str]:
     split = pv.split("://", 1)
     if len(split) > 1:
         # We got something like pva://mydevice, so use specified comms mode
@@ -57,18 +67,23 @@ def _protocol_pv(pv: str) -> tuple[EpicsProtocol, str]:
     return protocol, pv
 
 
+def get_signal_backend_type(protocol: EpicsProtocol) -> type[EpicsSignalBackend]:
+    match protocol:
+        case EpicsProtocol.CA:
+            return CaSignalBackend
+        case EpicsProtocol.PVA:
+            return PvaSignalBackend
+
+
 def _epics_signal_backend(
     datatype: type[SignalDatatypeT] | None, read_pv: str, write_pv: str
 ) -> SignalBackend[SignalDatatypeT]:
     """Create an epics signal backend."""
-    r_protocol, r_pv = _protocol_pv(read_pv)
-    w_protocol, w_pv = _protocol_pv(write_pv)
+    r_protocol, r_pv = split_protocol_from_pv(read_pv)
+    w_protocol, w_pv = split_protocol_from_pv(write_pv)
     protocol = get_unique({read_pv: r_protocol, write_pv: w_protocol}, "protocols")
-    match protocol:
-        case EpicsProtocol.CA:
-            return CaSignalBackend(datatype, r_pv, w_pv)
-        case EpicsProtocol.PVA:
-            return PvaSignalBackend(datatype, r_pv, w_pv)
+    signal_backend_type = get_signal_backend_type(protocol)
+    return signal_backend_type(datatype, r_pv, w_pv)
 
 
 def epics_signal_rw(

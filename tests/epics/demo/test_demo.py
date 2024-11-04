@@ -264,9 +264,12 @@ async def test_sensor_disconnected(caplog):
     logs = caplog.get_records("call")
     logs = [log for log in logs if "_signal" not in log.pathname]
     assert len(logs) == 2
+    messages = {log.message for log in logs}
 
-    assert logs[0].message == ("signal ca://PRE:Value timed out")
-    assert logs[1].message == ("signal ca://PRE:Mode timed out")
+    assert messages == {
+        "signal ca://PRE:Value timed out",
+        "signal ca://PRE:Mode timed out",
+    }
     assert s.name == "sensor"
 
 

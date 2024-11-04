@@ -1,12 +1,7 @@
-from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    AsyncStatus,
-    ConfigSignal,
-    HintedSignal,
-    SignalR,
-    SignalRW,
-    SignalX,
-)
+from typing import Annotated as A
+
+from ophyd_async.core import DEFAULT_TIMEOUT, AsyncStatus, SignalR, SignalRW, SignalX
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango import TangoReadable, tango_polling
 
 
@@ -16,15 +11,10 @@ from ophyd_async.tango import TangoReadable, tango_polling
 class TangoCounter(TangoReadable):
     # Enter the name and type of the signals you want to use
     # If type is None or Signal, the type will be inferred from the Tango device
-    counts: SignalR[int]
-    sample_time: SignalRW[float]
+    counts: A[SignalR[int], Format.HINTED_SIGNAL]
+    sample_time: A[SignalRW[float], Format.CONFIG_SIGNAL]
     start: SignalX
     reset_: SignalX
-
-    def __init__(self, trl: str | None = "", name=""):
-        super().__init__(trl, name=name)
-        self.add_readables([self.counts], HintedSignal)
-        self.add_readables([self.sample_time], ConfigSignal)
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
