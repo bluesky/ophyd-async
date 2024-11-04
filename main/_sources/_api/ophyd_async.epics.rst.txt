@@ -24,10 +24,10 @@
         ophyd_async.epics.adpilatus
         ophyd_async.epics.adsimdetector
         ophyd_async.epics.advimba
+        ophyd_async.epics.core
         ophyd_async.epics.demo
         ophyd_async.epics.eiger
         ophyd_async.epics.motor
-        ophyd_async.epics.pvi
         ophyd_async.epics.signal
     
     

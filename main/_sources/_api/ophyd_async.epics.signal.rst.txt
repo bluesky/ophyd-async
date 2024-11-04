@@ -5,14 +5,6 @@
 
 ``ophyd_async.epics.signal``
 ============================
-        
-        
-        
-        
-        
-        
-        
-        
 
 .. automodule:: ophyd_async.epics.signal
     :members:
@@ -22,19 +14,5 @@
     
 
     
-    
-    .. rubric:: Members
-
-    .. autosummary::
-        :nosignatures:
-    
-        get_supported_values
-        PvaSignalBackend
-        pvget_with_timeout
-        epics_signal_r
-        epics_signal_rw
-        epics_signal_rw_rbv
-        epics_signal_w
-        epics_signal_x
     
     

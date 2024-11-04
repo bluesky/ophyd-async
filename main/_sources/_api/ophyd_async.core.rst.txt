@@ -84,7 +84,6 @@
         
         
         
-        
 
 .. automodule:: ophyd_async.core
     :members:
@@ -145,9 +144,8 @@
         StaticPathProvider
         UUIDFilenameProvider
         YMDPathProvider
-        ConfigSignal
-        HintedSignal
         StandardReadable
+        StandardReadableFormat
         Signal
         SignalR
         SignalRW

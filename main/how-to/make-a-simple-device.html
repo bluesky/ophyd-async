@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a Simple Device &#8212; ophyd-async 0.8.0a3.dev1+gca56f74e documentation</title>
+    <title>Make a Simple Device &#8212; ophyd-async 0.8.0a3.dev2+g32afe3d7 documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=efafca39"></script>
+    <script src="../_static/documentation_options.js?v=d5384555"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a3.dev1+gca56f74e documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a3.dev1+gca56f74e documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a3.dev2+g32afe3d7 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a3.dev2+g32afe3d7 documentation - Home"/>
   
   
 </a></div>
@@ -480,25 +480,19 @@ may change API on minor release numbers before then</p>
 <h1>Make a Simple Device<a class="headerlink" href="#make-a-simple-device" title="Link to this heading">#</a></h1>
 <p>To make a simple device, you need to subclass from the
 <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> class, create some <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> instances, and optionally implement
-other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.14.dev44+g59c87bb8)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
-<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.14.dev44+g59c87bb8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
+other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.14.dev46+g8ad45bf5)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.14.dev46+g8ad45bf5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
 <p>The rest of this guide will show examples from <code class="docutils literal notranslate"><span class="pre">src/ophyd_async/epics/demo/__init__.py</span></code></p>
 <section id="readable">
 <h2>Readable<a class="headerlink" href="#readable" title="Link to this heading">#</a></h2>
-<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.14.dev44+g59c87bb8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
+<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.14.dev46+g8ad45bf5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
 define some signals, then tell the superclass which signals should contribute to
 <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo sensor that produces a scalar value based on X and Y Movers&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Define some signals</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">HintedSignal</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Value&quot;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">ConfigSignal</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">EnergyMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Mode&quot;</span><span class="p">)</span>
-
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>First some Signals are constructed and stored on the Device. Each one is passed
@@ -537,9 +531,9 @@ and implement some addition protocols:</p>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Define some signals</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">HintedSignal</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">readback</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Readback&quot;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">ConfigSignal</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Velocity&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Readback.EGU&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Setpoint&quot;</span><span class="p">)</span>
@@ -598,7 +592,7 @@ and implement some addition protocols:</p>
         <span class="k">await</span> <span class="n">status</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.14.dev44+g59c87bb8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>. This
+<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.14.dev46+g8ad45bf5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>. This
 creates a <a class="reference external" href="https://docs.python.org/3/glossary.html#term-coroutine" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">coroutine</span></code></a> <code class="docutils literal notranslate"><span class="pre">do_set()</span></code> which gets the old position, units and
 precision in parallel, sets the setpoint, then observes the readback value,
 informing watchers of the progress. When it gets to the requested value it
