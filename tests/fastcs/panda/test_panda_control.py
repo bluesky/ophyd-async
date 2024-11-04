@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import DetectorTrigger, Device, DeviceCollector, TriggerInfo
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import CommonPandaBlocks, PandaPcapController
 

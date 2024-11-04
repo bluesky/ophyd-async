@@ -94,7 +94,8 @@ reportMissingImports = false  # Ignore missing stubs in imported modules
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
 addopts = """
     --tb=native -vv --strict-markers --doctest-modules
-    --doctest-glob="*.rst" --doctest-glob="*.md" --ignore=docs/examples
+    --doctest-glob="*.rst" --doctest-glob="*.md"
+    --ignore=docs/examples --ignore=src/ophyd_async/epics/signal.py
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"

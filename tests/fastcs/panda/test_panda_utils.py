@@ -3,7 +3,7 @@ import yaml
 from bluesky import RunEngine
 
 from ophyd_async.core import DeviceCollector, load_device, save_device
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,

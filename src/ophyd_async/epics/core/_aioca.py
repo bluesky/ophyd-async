@@ -24,7 +24,6 @@ from ophyd_async.core import (
     Array1D,
     Callback,
     NotConnected,
-    SignalBackend,
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
@@ -34,7 +33,7 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 
-from ._common import format_datatype, get_supported_values
+from ._util import EpicsSignalBackend, format_datatype, get_supported_values
 
 
 def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
@@ -227,19 +226,17 @@ def _use_pyepics_context_if_imported():
         _tried_pyepics = True
 
 
-class CaSignalBackend(SignalBackend[SignalDatatypeT]):
+class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
     ):
-        self.read_pv = read_pv
-        self.write_pv = write_pv
         self.converter: CaConverter = DisconnectedCaConverter(float, dbr.DBR_DOUBLE)
         self.initial_values: dict[str, AugmentedValue] = {}
         self.subscription: Subscription | None = None
-        super().__init__(datatype)
+        super().__init__(datatype, read_pv, write_pv)
 
     def source(self, name: str, read: bool):
         return f"ca://{self.read_pv if read else self.write_pv}"

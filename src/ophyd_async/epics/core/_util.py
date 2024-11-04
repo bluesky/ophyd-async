@@ -3,7 +3,13 @@ from typing import Any, get_args, get_origin
 
 import numpy as np
 
-from ophyd_async.core import SubsetEnum, get_dtype, get_enum_cls
+from ophyd_async.core import (
+    SignalBackend,
+    SignalDatatypeT,
+    SubsetEnum,
+    get_dtype,
+    get_enum_cls,
+)
 
 
 def get_supported_values(
@@ -41,3 +47,15 @@ def format_datatype(datatype: Any) -> str:
         return datatype.__name__
     else:
         return str(datatype)
+
+
+class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
+    def __init__(
+        self,
+        datatype: type[SignalDatatypeT] | None,
+        read_pv: str = "",
+        write_pv: str = "",
+    ):
+        self.read_pv = read_pv
+        self.write_pv = write_pv
+        super().__init__(datatype)

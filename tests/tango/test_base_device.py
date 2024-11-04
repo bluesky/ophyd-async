@@ -1,6 +1,7 @@
 import asyncio
 import time
 from enum import Enum, IntEnum
+from typing import Annotated as A
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -9,7 +10,8 @@ import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import Array1D, DeviceCollector, HintedSignal, SignalRW, T
+from ophyd_async.core import Array1D, DeviceCollector, SignalRW, T
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
@@ -23,7 +25,6 @@ from tango import (
     CmdArgType,
     DevState,
 )
-from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
@@ -174,20 +175,9 @@ class TestDevice(Device):
 # --------------------------------------------------------------------
 class TestTangoReadable(TangoReadable):
     __test__ = False
-    justvalue: SignalRW[int]
-    array: SignalRW[Array1D[np.float64]]
-    limitedvalue: SignalRW[float]
-
-    def __init__(
-        self,
-        trl: str | None = None,
-        device_proxy: SyncDeviceProxy | None = None,
-        name: str = "",
-    ) -> None:
-        super().__init__(trl, device_proxy, name=name)
-        self.add_readables(
-            [self.justvalue, self.array, self.limitedvalue], HintedSignal.uncached
-        )
+    justvalue: A[SignalRW[int], Format.HINTED_UNCACHED_SIGNAL]
+    array: A[SignalRW[Array1D[np.float64]], Format.HINTED_UNCACHED_SIGNAL]
+    limitedvalue: A[SignalRW[float], Format.HINTED_UNCACHED_SIGNAL]
 
 
 # --------------------------------------------------------------------
