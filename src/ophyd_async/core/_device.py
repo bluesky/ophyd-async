@@ -35,10 +35,10 @@ class DeviceConnector:
         during ``__init__``.
         """
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    def connect_mock(self, device: Device, mock: LazyMock):
         # Connect serially, no errors to gather up as in mock mode
         for name, child_device in device.children():
-            await child_device.connect(mock=mock.child(name))
+            assert not child_device.connect(mock=mock.child(name))
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Used during ``Device.connect``.
@@ -123,12 +123,12 @@ class Device(HasName, Connectable):
         # Avoid the super call as this happens a lot
         return object.__setattr__(self, name, value)
 
-    async def connect(
+    def connect(
         self,
         mock: bool | LazyMock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
-    ) -> None:
+    ) -> asyncio.Task | None:
         """Connect self and all child Devices.
 
         Contains a timeout that gets propagated to child.connect methods.
@@ -148,7 +148,7 @@ class Device(HasName, Connectable):
             elif not self._mock:
                 # Make one
                 self._mock = LazyMock()
-            await self._connector.connect_mock(self, self._mock)
+            self._connector.connect_mock(self, self._mock)
         else:
             # Try to cache the connect in real mode
             can_use_previous_connect = (
@@ -162,7 +162,7 @@ class Device(HasName, Connectable):
                 self._connect_task = asyncio.create_task(coro)
             assert self._connect_task, "Connect task not created, this shouldn't happen"
             # Wait for it to complete
-            await self._connect_task
+            return self._connect_task
 
 
 _not_device_attrs = {

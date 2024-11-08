@@ -58,7 +58,7 @@ class SignalConnector(DeviceConnector):
     def __init__(self, backend: SignalBackend):
         self.backend = self._init_backend = backend
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    def connect_mock(self, device: Device, mock: LazyMock):
         self.backend = MockSignalBackend(self._init_backend, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):

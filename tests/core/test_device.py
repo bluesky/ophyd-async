@@ -177,9 +177,9 @@ class MotorBundle(Device):
 
 async def test_many_individual_device_connects_not_slow():
     start = time.time()
-    for i in range(100):
+    for i in range(5000):
         bundle = MotorBundle(f"bundle{i}")
-        await bundle.connect(mock=True)
+        bundle.connect(mock=True)
     duration = time.time() - start
     assert duration < 1
 
