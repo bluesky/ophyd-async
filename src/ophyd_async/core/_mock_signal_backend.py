@@ -1,13 +1,13 @@
 import asyncio
 from collections.abc import Callable
 from functools import cached_property
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 from bluesky.protocols import Descriptor, Reading
 
 from ._signal_backend import SignalBackend, SignalDatatypeT
 from ._soft_signal_backend import SoftSignalBackend
-from ._utils import Callback
+from ._utils import Callback, LazyMock
 
 
 class MockSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -16,7 +16,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     def __init__(
         self,
         initial_backend: SignalBackend[SignalDatatypeT],
-        mock: Mock,
+        mock: LazyMock,
     ) -> None:
         if isinstance(initial_backend, MockSignalBackend):
             raise ValueError("Cannot make a MockSignalBackend for a MockSignalBackend")
@@ -34,10 +34,13 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
         # use existing Mock if provided
         self.mock = mock
-        self.put_mock = AsyncMock(name="put", spec=Callable)
-        self.mock.attach_mock(self.put_mock, "put")
-
         super().__init__(datatype=self.initial_backend.datatype)
+
+    @cached_property
+    def put_mock(self) -> AsyncMock:
+        put_mock = AsyncMock(name="put", spec=Callable)
+        self.mock().attach_mock(put_mock, "put")
+        return put_mock
 
     def set_value(self, value: SignalDatatypeT):
         self.soft_backend.set_value(value)
@@ -46,7 +49,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         return f"mock+{self.initial_backend.source(name, read)}"
 
     async def connect(self, timeout: float) -> None:
-        pass
+        raise RuntimeError("It is not possible to connect a MockSignalBackend")
 
     @cached_property
     def put_proceeds(self) -> asyncio.Event:

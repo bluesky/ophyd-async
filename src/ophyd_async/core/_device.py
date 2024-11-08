@@ -3,17 +3,15 @@ from __future__ import annotations
 import asyncio
 import sys
 from collections.abc import Coroutine, Iterator, Mapping, MutableMapping
+from functools import cached_property
 from logging import LoggerAdapter, getLogger
-from typing import Any, TypeVar
-from unittest.mock import Mock
+from typing import Any, Literal, TypeVar
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
 from ._protocol import Connectable
-from ._utils import DEFAULT_TIMEOUT, NotConnected, wait_for_connection
-
-_device_mocks: dict[Device, Mock] = {}
+from ._utils import DEFAULT_TIMEOUT, LazyMock, NotConnected, wait_for_connection
 
 
 class DeviceConnector:
@@ -37,25 +35,23 @@ class DeviceConnector:
         during ``__init__``.
         """
 
-    async def connect(
-        self,
-        device: Device,
-        mock: bool | Mock,
-        timeout: float,
-        force_reconnect: bool,
-    ):
+    async def connect_mock(self, device: Device, mock: LazyMock):
+        # Connect serially, no errors to gather up as in mock mode
+        for name, child_device in device.children():
+            await child_device.connect(mock=mock.child(name))
+
+    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Used during ``Device.connect``.
 
         This is called when a previous connect has not been done, or has been
         done in a different mock more. It should connect the Device and all its
         children.
         """
-        coros = {}
-        for name, child_device in device.children():
-            child_mock = getattr(mock, name) if mock else mock  # Mock() or False
-            coros[name] = child_device.connect(
-                mock=child_mock, timeout=timeout, force_reconnect=force_reconnect
-            )
+        # Connect in parallel, gathering up NotConnected errors
+        coros = {
+            name: child_device.connect(timeout=timeout, force_reconnect=force_reconnect)
+            for name, child_device in device.children()
+        }
         await wait_for_connection(**coros)
 
 
@@ -67,9 +63,11 @@ class Device(HasName, Connectable):
     parent: Device | None = None
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
-    # If not None, then this is the mock arg of the previous connect
-    # to let us know if we can reuse an existing connection
-    _connect_mock_arg: bool | None = None
+    _mock: (
+        None  # If we have never connected
+        | LazyMock  # The mock if we have connected in mock mode
+        | Literal[False]  # If we have not connected in mock mode
+    ) = None
 
     def __init__(
         self, name: str = "", connector: DeviceConnector | None = None
@@ -83,10 +81,18 @@ class Device(HasName, Connectable):
         """Return the name of the Device"""
         return self._name
 
+    @cached_property
+    def _child_devices(self) -> dict[str, Device]:
+        return {}
+
     def children(self) -> Iterator[tuple[str, Device]]:
-        for attr_name, attr in self.__dict__.items():
-            if attr_name != "parent" and isinstance(attr, Device):
-                yield attr_name, attr
+        yield from self._child_devices.items()
+
+    @cached_property
+    def log(self) -> LoggerAdapter:
+        return LoggerAdapter(
+            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
+        )
 
     def set_name(self, name: str):
         """Set ``self.name=name`` and each ``self.child.name=name+"-child"``.
@@ -97,10 +103,9 @@ class Device(HasName, Connectable):
             New name to set
         """
         self._name = name
-        # Ensure self.log is recreated after a name change
-        self.log = LoggerAdapter(
-            getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
-        )
+        # Ensure logger is recreated after a name change
+        if "log" in self.__dict__:
+            del self.log
         for child_name, child in self.children():
             child_name = f"{self.name}-{child_name.strip('_')}" if self.name else ""
             child.set_name(child_name)
@@ -112,13 +117,15 @@ class Device(HasName, Connectable):
                     f"Cannot set the parent of {self} to be {value}: "
                     f"it is already a child of {self.parent}"
                 )
-        elif isinstance(value, Device):
+        elif name not in _not_device_attrs and isinstance(value, Device):
             value.parent = self
-        return super().__setattr__(name, value)
+            self._child_devices[name] = value
+        # Avoid the super call as this happens a lot
+        return object.__setattr__(self, name, value)
 
     async def connect(
         self,
-        mock: bool | Mock = False,
+        mock: bool | LazyMock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ) -> None:
@@ -133,26 +140,39 @@ class Device(HasName, Connectable):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
-        uses_mock = bool(mock)
-        can_use_previous_connect = (
-            uses_mock is self._connect_mock_arg
-            and self._connect_task
-            and not (self._connect_task.done() and self._connect_task.exception())
-        )
-        if mock is True:
-            mock = Mock()  # create a new Mock if one not provided
-        if force_reconnect or not can_use_previous_connect:
-            self._connect_mock_arg = uses_mock
-            if self._connect_mock_arg:
-                _device_mocks[self] = mock
-            coro = self._connector.connect(
-                device=self, mock=mock, timeout=timeout, force_reconnect=force_reconnect
+        if mock:
+            # Always connect in mock mode serially
+            if isinstance(mock, LazyMock):
+                # Use the provided mock
+                self._mock = mock
+            elif not self._mock:
+                # Make one
+                self._mock = LazyMock()
+            await self._connector.connect_mock(self, self._mock)
+        else:
+            # Try to cache the connect in real mode
+            can_use_previous_connect = (
+                self._mock is False
+                and self._connect_task
+                and not (self._connect_task.done() and self._connect_task.exception())
             )
-            self._connect_task = asyncio.create_task(coro)
+            if force_reconnect or not can_use_previous_connect:
+                self._mock = False
+                coro = self._connector.connect_real(self, timeout, force_reconnect)
+                self._connect_task = asyncio.create_task(coro)
+            assert self._connect_task, "Connect task not created, this shouldn't happen"
+            # Wait for it to complete
+            await self._connect_task
 
-        assert self._connect_task, "Connect task not created, this shouldn't happen"
-        # Wait for it to complete
-        await self._connect_task
+
+_not_device_attrs = {
+    "_name",
+    "_children",
+    "_connector",
+    "_timeout",
+    "_mock",
+    "_connect_task",
+}
 
 
 DeviceT = TypeVar("DeviceT", bound=Device)

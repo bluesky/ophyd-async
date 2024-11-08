@@ -10,6 +10,7 @@ from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DeviceCollector,
+    LazyMock,
     NotConnected,
     assert_emitted,
     assert_reading,
@@ -198,9 +199,10 @@ async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
 
 
 async def test_mocks_in_device_share_parent():
-    mock = Mock()
-    async with DeviceCollector(mock=mock):
-        mock_mover = demo.Mover("BLxxI-MO-TABLE-01:Y:")
+    lm = LazyMock()
+    mock_mover = demo.Mover("BLxxI-MO-TABLE-01:Y:")
+    await mock_mover.connect(mock=lm)
+    mock = lm()
 
     assert get_mock(mock_mover) is mock
     assert get_mock(mock_mover.setpoint) is mock.setpoint
