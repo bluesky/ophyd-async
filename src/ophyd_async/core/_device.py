@@ -153,7 +153,7 @@ class Device(HasName, Connectable):
         else:
             # Try to cache the connect in real mode
             can_use_previous_connect = (
-                self._mock is False
+                self._mock is None
                 and self._connect_task
                 and not (self._connect_task.done() and self._connect_task.exception())
             )
