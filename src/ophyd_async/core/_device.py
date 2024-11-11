@@ -5,7 +5,7 @@ import sys
 from collections.abc import Coroutine, Iterator, Mapping, MutableMapping
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
-from typing import Any, Literal, TypeVar
+from typing import Any, TypeVar
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
@@ -63,11 +63,8 @@ class Device(HasName, Connectable):
     parent: Device | None = None
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
-    _mock: (
-        None  # If we have never connected
-        | LazyMock  # The mock if we have connected in mock mode
-        | Literal[False]  # If we have not connected in mock mode
-    ) = None
+    # The mock if we have connected in mock mode
+    _mock: LazyMock | None = None
 
     def __init__(
         self, name: str = "", connector: DeviceConnector | None = None
@@ -111,16 +108,20 @@ class Device(HasName, Connectable):
             child.set_name(child_name)
 
     def __setattr__(self, name: str, value: Any) -> None:
+        # Bear in mind that this function is called *a lot*, so
+        # we need to make sure nothing expensive happens in it...
         if name == "parent":
             if self.parent not in (value, None):
                 raise TypeError(
                     f"Cannot set the parent of {self} to be {value}: "
                     f"it is already a child of {self.parent}"
                 )
+        # ...hence not doing an isinstance check for attributes we
+        # know not to be Devices
         elif name not in _not_device_attrs and isinstance(value, Device):
             value.parent = self
             self._child_devices[name] = value
-        # Avoid the super call as this happens a lot
+        # ...and avoiding the super call as we know it resolves to `object`
         return object.__setattr__(self, name, value)
 
     async def connect(
@@ -157,7 +158,7 @@ class Device(HasName, Connectable):
                 and not (self._connect_task.done() and self._connect_task.exception())
             )
             if force_reconnect or not can_use_previous_connect:
-                self._mock = False
+                self._mock = None
                 coro = self._connector.connect_real(self, timeout, force_reconnect)
                 self._connect_task = asyncio.create_task(coro)
             assert self._connect_task, "Connect task not created, this shouldn't happen"

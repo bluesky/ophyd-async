@@ -175,11 +175,16 @@ class MotorBundle(Device):
         super().__init__(name)
 
 
-async def test_many_individual_device_connects_not_slow():
+@pytest.mark.parametrize("parallel", (False, True))
+async def test_many_individual_device_connects_not_slow(parallel):
     start = time.time()
-    for i in range(100):
-        bundle = MotorBundle(f"bundle{i}")
-        await bundle.connect(mock=True)
+    bundles = [MotorBundle(f"bundle{i}") for i in range(200)]
+    if parallel:
+        for bundle in bundles:
+            await bundle.connect(mock=True)
+    else:
+        coros = {bundle.name: bundle.connect(mock=True) for bundle in bundles}
+        await wait_for_connection(**coros)
     duration = time.time() - start
     assert duration < 1
 
