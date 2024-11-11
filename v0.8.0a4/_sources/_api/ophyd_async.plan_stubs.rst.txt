@@ -1,0 +1,36 @@
+.. note::
+
+    Ophyd async is considered experimental until the v1.0 release and
+    may change API on minor release numbers before then
+
+``ophyd_async.plan_stubs``
+==========================
+        
+        
+        
+        
+        
+        
+
+.. automodule:: ophyd_async.plan_stubs
+    :members:
+
+    
+    
+    
+
+    
+    
+    .. rubric:: Members
+
+    .. autosummary::
+        :nosignatures:
+    
+        fly_and_collect
+        prepare_static_seq_table_flyer_and_detectors_with_same_trigger
+        time_resolved_fly_and_collect_with_static_seq_table
+        ensure_connected
+        setup_ndattributes
+        setup_ndstats_sum
+    
+    
