@@ -1,4 +1,5 @@
 import asyncio
+import time
 import traceback
 from unittest.mock import Mock
 
@@ -174,43 +175,50 @@ class MotorBundle(Device):
         super().__init__(name)
 
 
+@pytest.mark.parametrize("parallel", (False, True))
+async def test_many_individual_device_connects_not_slow(parallel):
+    start = time.time()
+    bundles = [MotorBundle(f"bundle{i}") for i in range(100)]
+    if parallel:
+        for bundle in bundles:
+            await bundle.connect(mock=True)
+    else:
+        coros = {bundle.name: bundle.connect(mock=True) for bundle in bundles}
+        await wait_for_connection(**coros)
+    duration = time.time() - start
+    assert duration < 1
+
+
 async def test_device_with_children_lazily_connects(RE):
     parentMotor = MotorBundle("parentMotor")
 
     for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
         parentMotor.V.values()
     ):
-        assert device._connect_task is None
+        assert device._mock is None
     RE(ensure_connected(parentMotor, mock=True))
 
     for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
         parentMotor.V.values()
     ):
-        assert (
-            device._connect_task is not None
-            and device._connect_task.done()
-            and not device._connect_task.exception()
-        )
+        assert device._mock is not None
 
 
-@pytest.mark.parametrize("use_Mock", [False, True])
-async def test_no_reconnect_signals_if_not_forced(use_Mock):
+async def test_no_reconnect_signals_if_not_forced():
     parent = DummyDeviceGroup("parent")
 
-    connect_mock_arg = Mock() if use_Mock else True
-
-    async def inner_connect(mock, timeout, force_reconnect):
+    async def inner_connect(mock=False, timeout=None, force_reconnect=False):
         parent.child1.connected = True
 
     parent.child1.connect = Mock(side_effect=inner_connect)
-    await parent.connect(mock=connect_mock_arg, timeout=0.01)
+    await parent.connect(mock=False, timeout=0.01)
     assert parent.child1.connected
     assert parent.child1.connect.call_count == 1
-    await parent.connect(mock=connect_mock_arg, timeout=0.01)
+    await parent.connect(mock=False, timeout=0.01)
     assert parent.child1.connected
     assert parent.child1.connect.call_count == 1
 
     for count in range(2, 10):
-        await parent.connect(mock=connect_mock_arg, timeout=0.01, force_reconnect=True)
+        await parent.connect(mock=False, timeout=0.01, force_reconnect=True)
         assert parent.child1.connected
         assert parent.child1.connect.call_count == count

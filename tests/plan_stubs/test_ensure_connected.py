@@ -31,8 +31,8 @@ def test_ensure_connected(RE):
     device2 = MyDevice("PREFIX2", name="device2")
 
     def connect_with_mocking():
-        assert device2.signal._connect_task is None
+        assert device2.signal._mock is None
         yield from ensure_connected(device2, mock=True, timeout=0.1)
-        assert device2.signal._connect_task.done()
+        assert device2.signal._mock is not None
 
     RE(connect_with_mocking())

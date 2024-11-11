@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from typing import TypeVar
-from unittest.mock import Mock
 
 from ophyd_async.core import Device, DeviceConnector, DeviceFiller
+from ophyd_async.core._utils import LazyMock
 from ophyd_async.tango.signal import (
     TangoSignalBackend,
     infer_python_type,
@@ -117,41 +117,42 @@ class TangoDeviceConnector(DeviceConnector):
             list(self.filler.create_signals_from_annotations(filled=False))
             self.filler.check_created()
 
-    async def connect(
-        self, device: Device, mock: bool | Mock, timeout: float, force_reconnect: bool
-    ) -> None:
-        if mock:
-            # Make 2 entries for each DeviceVector
-            self.filler.create_device_vector_entries_to_mock(2)
-        else:
-            if self.trl and self.proxy is None:
-                self.proxy = await AsyncDeviceProxy(self.trl)
-            elif self.proxy and not self.trl:
-                self.trl = self.proxy.name()
-            else:
-                raise TypeError("Neither proxy nor trl supplied")
-
-            children = sorted(
-                set()
-                .union(self.proxy.get_attribute_list())
-                .union(self.proxy.get_command_list())
-            )
-            for name in children:
-                # TODO: strip attribute name
-                full_trl = f"{self.trl}/{name}"
-                signal_type = await infer_signal_type(full_trl, self.proxy)
-                if signal_type:
-                    backend = self.filler.fill_child_signal(name, signal_type)
-                    backend.datatype = await infer_python_type(full_trl, self.proxy)
-                    backend.set_trl(full_trl)
-                    if polling := self._signal_polling.get(name, ()):
-                        backend.set_polling(*polling)
-                        backend.allow_events(False)
-                    elif self._polling[0]:
-                        backend.set_polling(*self._polling)
-                        backend.allow_events(False)
-            # Check that all the requested children have been filled
-            self.filler.check_filled(f"{self.trl}: {children}")
+    async def connect_mock(self, device: Device, mock: LazyMock):
+        # Make 2 entries for each DeviceVector
+        self.filler.create_device_vector_entries_to_mock(2)
         # Set the name of the device to name all children
         device.set_name(device.name)
-        return await super().connect(device, mock, timeout, force_reconnect)
+        return await super().connect_mock(device, mock)
+
+    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
+        if self.trl and self.proxy is None:
+            self.proxy = await AsyncDeviceProxy(self.trl)
+        elif self.proxy and not self.trl:
+            self.trl = self.proxy.name()
+        else:
+            raise TypeError("Neither proxy nor trl supplied")
+
+        children = sorted(
+            set()
+            .union(self.proxy.get_attribute_list())
+            .union(self.proxy.get_command_list())
+        )
+        for name in children:
+            # TODO: strip attribute name
+            full_trl = f"{self.trl}/{name}"
+            signal_type = await infer_signal_type(full_trl, self.proxy)
+            if signal_type:
+                backend = self.filler.fill_child_signal(name, signal_type)
+                backend.datatype = await infer_python_type(full_trl, self.proxy)
+                backend.set_trl(full_trl)
+                if polling := self._signal_polling.get(name, ()):
+                    backend.set_polling(*polling)
+                    backend.allow_events(False)
+                elif self._polling[0]:
+                    backend.set_polling(*self._polling)
+                    backend.allow_events(False)
+        # Check that all the requested children have been filled
+        self.filler.check_filled(f"{self.trl}: {children}")
+        # Set the name of the device to name all children
+        device.set_name(device.name)
+        return await super().connect_real(device, timeout, force_reconnect)

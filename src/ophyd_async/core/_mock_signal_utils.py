@@ -2,17 +2,26 @@ from collections.abc import Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager, contextmanager
 from unittest.mock import AsyncMock, Mock
 
-from ._device import Device, _device_mocks
+from ._device import Device
 from ._mock_signal_backend import MockSignalBackend
-from ._signal import Signal, SignalR, _mock_signal_backends
+from ._signal import Signal, SignalConnector, SignalR
 from ._soft_signal_backend import SignalDatatypeT
+from ._utils import LazyMock
+
+
+def get_mock(device: Device | Signal) -> Mock:
+    mock = device._mock  # noqa: SLF001
+    assert isinstance(mock, LazyMock), f"Device {device} not connected in mock mode"
+    return mock()
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    assert (
-        signal in _mock_signal_backends
+    connector = signal._connector  # noqa: SLF001
+    assert isinstance(connector, SignalConnector), f"Expected Signal, got {signal}"
+    assert isinstance(
+        connector.backend, MockSignalBackend
     ), f"Signal {signal} not connected in mock mode"
-    return _mock_signal_backends[signal]
+    return connector.backend
 
 
 def set_mock_value(signal: Signal[SignalDatatypeT], value: SignalDatatypeT):
@@ -43,12 +52,6 @@ async def mock_puts_blocked(*signals: Signal):
 def get_mock_put(signal: Signal) -> AsyncMock:
     """Get the mock associated with the put call on the signal."""
     return _get_mock_signal_backend(signal).put_mock
-
-
-def get_mock(device: Device | Signal) -> Mock:
-    if isinstance(device, Signal):
-        return _get_mock_signal_backend(device).mock
-    return _device_mocks[device]
 
 
 def reset_mock_put_calls(signal: Signal):
