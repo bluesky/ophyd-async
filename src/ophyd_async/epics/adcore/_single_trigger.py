@@ -19,7 +19,8 @@ class SingleTriggerDetector(StandardReadable, Triggerable):
         **plugins: NDPluginBaseIO,
     ) -> None:
         self.drv = drv
-        self.__dict__.update(plugins)
+        for k, v in plugins.items():
+            setattr(self, k, v)
 
         self.add_readables(
             [self.drv.array_counter, *read_uncached],

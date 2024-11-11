@@ -1,13 +1,11 @@
-from unittest.mock import Mock
-
 import bluesky.plan_stubs as bps
 
-from ophyd_async.core import DEFAULT_TIMEOUT, Device, wait_for_connection
+from ophyd_async.core import DEFAULT_TIMEOUT, Device, LazyMock, wait_for_connection
 
 
 def ensure_connected(
     *devices: Device,
-    mock: bool | Mock = False,
+    mock: bool | LazyMock = False,
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):

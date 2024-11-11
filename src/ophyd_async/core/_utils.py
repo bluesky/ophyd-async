@@ -14,6 +14,7 @@ from typing import (
     get_args,
     get_origin,
 )
+from unittest.mock import Mock
 
 import numpy as np
 
@@ -120,20 +121,29 @@ async def wait_for_connection(**coros: Awaitable[None]):
 
     Expected kwargs should be a mapping of names to coroutine tasks to execute.
     """
-    results = await asyncio.gather(*coros.values(), return_exceptions=True)
-    exceptions = {}
-
-    for name, result in zip(coros, results, strict=False):
-        if isinstance(result, Exception):
-            exceptions[name] = result
-            if not isinstance(result, NotConnected):
-                logging.exception(
-                    f"device `{name}` raised unexpected exception "
-                    f"{type(result).__name__}",
-                    exc_info=result,
-                )
+    exceptions: dict[str, Exception] = {}
+    if len(coros) == 1:
+        # Single device optimization
+        name, coro = coros.popitem()
+        try:
+            await coro
+        except Exception as e:
+            exceptions[name] = e
+    else:
+        # Use gather to connect in parallel
+        results = await asyncio.gather(*coros.values(), return_exceptions=True)
+        for name, result in zip(coros, results, strict=False):
+            if isinstance(result, Exception):
+                exceptions[name] = result
 
     if exceptions:
+        for name, exception in exceptions.items():
+            if not isinstance(exception, NotConnected):
+                logging.exception(
+                    f"device `{name}` raised unexpected exception "
+                    f"{type(exception).__name__}",
+                    exc_info=exception,
+                )
         raise NotConnected(exceptions)
 
 
@@ -252,3 +262,38 @@ class Reference(Generic[T]):
 
     def __call__(self) -> T:
         return self._obj
+
+
+class LazyMock:
+    """A lazily created Mock to be used when connecting in mock mode.
+
+    Creating Mocks is reasonably expensive when each Device (and Signal)
+    requires its own, and the tree is only used when ``Signal.set()`` is
+    called. This class allows a tree of lazily connected Mocks to be
+    constructed so that when the leaf is created, so are its parents.
+    Any calls to the child are then accessible from the parent mock.
+
+    >>> parent = LazyMock()
+    >>> child = parent.child("child")
+    >>> child_mock = child()
+    >>> child_mock()  # doctest: +ELLIPSIS
+    <Mock name='mock.child()' id='...'>
+    >>> parent_mock = parent()
+    >>> parent_mock.mock_calls
+    [call.child()]
+    """
+
+    def __init__(self, name: str = "", parent: LazyMock | None = None) -> None:
+        self.parent = parent
+        self.name = name
+        self._mock: Mock | None = None
+
+    def child(self, name: str) -> LazyMock:
+        return LazyMock(name, self)
+
+    def __call__(self) -> Mock:
+        if self._mock is None:
+            self._mock = Mock(spec=object)
+            if self.parent is not None:
+                self.parent().attach_mock(self._mock, self.name)
+        return self._mock
