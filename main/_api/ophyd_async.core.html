@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.8.0a4.dev1+gf8fae433 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.8.0a4.dev2+g3d9f508d documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=436f8970"></script>
+    <script src="../_static/documentation_options.js?v=4e8f97d9"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a4.dev1+gf8fae433 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a4.dev1+gf8fae433 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a4.dev2+g3d9f508d documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a4.dev2+g3d9f508d documentation - Home"/>
   
   
 </a></div>
@@ -726,31 +726,34 @@ may change API on minor release numbers before then</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a></p></td>
 <td><p>Convert AsyncIterator of WatcherUpdates to bluesky Status interface.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotConnected</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
+<td><p>A lazily created Mock to be used when connecting in mock mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotConnected</span></code></a></p></td>
 <td><p>Exception to be raised if a <a class="reference internal" href="#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> is cancelled</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
 <td><p>Hide an object behind a reference.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.WatcherUpdate" title="ophyd_async.core.WatcherUpdate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatcherUpdate</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.WatcherUpdate" title="ophyd_async.core.WatcherUpdate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatcherUpdate</span></code></a></p></td>
 <td><p>A dataclass such that, when expanded, it provides the kwargs for a watcher</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
 <td><p>If all values are the same, return that value, otherwise raise TypeError</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
 <td><p>Converts between a positive number of seconds and an equivalent number of microseconds.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
 <td><p>Call many underlying signals, accumulating exceptions and returning them</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">completed_status</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">completed_status</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -1114,7 +1117,7 @@ but publish 2 indices, and describe() will show a shape of (5, h, w)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Device.connect">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock" title="(in Python v3.13)"><span class="pre">Mock</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device.html#Device.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Device.connect" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device.html#Device.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Device.connect" title="Link to this definition">#</a></dt>
 <dd><p>Connect self and all child Devices.</p>
 <p>Contains a timeout that gets propagated to child.connect methods.</p>
 <dl class="field-list simple">
@@ -1152,8 +1155,8 @@ during <code class="docutils literal notranslate"><span class="pre">__init__</sp
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.DeviceConnector.connect">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock" title="(in Python v3.13)"><span class="pre">Mock</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_device.html#DeviceConnector.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceConnector.connect" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.core.DeviceConnector.connect_real">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect_real</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_device.html#DeviceConnector.connect_real"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceConnector.connect_real" title="Link to this definition">#</a></dt>
 <dd><p>Used during <code class="docutils literal notranslate"><span class="pre">Device.connect</span></code>.</p>
 <p>This is called when a previous connect has not been done, or has been
 done in a different mock more. It should connect the Device and all its
@@ -1430,7 +1433,7 @@ microseconds, which are configured separately, not as part of ‘datefmt’.)</p
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">MockSignalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><span class="pre">SignalBackend</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock" title="(in Python v3.13)"><span class="pre">Mock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_mock_signal_backend.html#MockSignalBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockSignalBackend" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">MockSignalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><span class="pre">SignalBackend</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_mock_signal_backend.html#MockSignalBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockSignalBackend" title="Link to this definition">#</a></dt>
 <dd><p>Signal backend for testing, created by <code class="docutils literal notranslate"><span class="pre">Device.connect(mock=True)</span></code>.</p>
 </dd></dl>
 
@@ -2002,6 +2005,27 @@ callable then value will be checked for equality with match.</p></li>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.LazyMock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">LazyMock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_utils.html#LazyMock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.LazyMock" title="Link to this definition">#</a></dt>
+<dd><p>A lazily created Mock to be used when connecting in mock mode.</p>
+<p>Creating Mocks is reasonably expensive when each Device (and Signal)
+requires its own, and the tree is only used when <code class="docutils literal notranslate"><span class="pre">Signal.set()</span></code> is
+called. This class allows a tree of lazily connected Mocks to be
+constructed so that when the leaf is created, so are its parents.
+Any calls to the child are then accessible from the parent mock.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parent</span> <span class="o">=</span> <span class="n">LazyMock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;child&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child_mock</span> <span class="o">=</span> <span class="n">child</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child_mock</span><span class="p">()</span>  
+<span class="go">&lt;Mock name=&#39;mock.child()&#39; id=&#39;...&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parent_mock</span> <span class="o">=</span> <span class="n">parent</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parent_mock</span><span class="o">.</span><span class="n">mock_calls</span>
+<span class="go">[call.child()]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py exception">
 <dt class="sig sig-object py" id="ophyd_async.core.NotConnected">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">NotConnected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_utils.html#NotConnected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.NotConnected" title="Link to this definition">#</a></dt>
@@ -2230,7 +2254,7 @@ number of microseconds.</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceConnector"><code class="docutils literal notranslate"><span class="pre">DeviceConnector</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceConnector.create_children_from_annotations"><code class="docutils literal notranslate"><span class="pre">DeviceConnector.create_children_from_annotations()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceConnector.connect"><code class="docutils literal notranslate"><span class="pre">DeviceConnector.connect()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceConnector.connect_real"><code class="docutils literal notranslate"><span class="pre">DeviceConnector.connect_real()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceCollector"><code class="docutils literal notranslate"><span class="pre">DeviceCollector</span></code></a></li>
@@ -2325,6 +2349,7 @@ number of microseconds.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.WatchableAsyncStatus.wrap"><code class="docutils literal notranslate"><span class="pre">WatchableAsyncStatus.wrap()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.LazyMock"><code class="docutils literal notranslate"><span class="pre">LazyMock</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.NotConnected"><code class="docutils literal notranslate"><span class="pre">NotConnected</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Reference"><code class="docutils literal notranslate"><span class="pre">Reference</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Table"><code class="docutils literal notranslate"><span class="pre">Table</span></code></a><ul class="nav section-nav flex-column">

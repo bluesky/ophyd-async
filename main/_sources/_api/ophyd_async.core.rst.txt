@@ -84,6 +84,7 @@
         
         
         
+        
 
 .. automodule:: ophyd_async.core
     :members:
@@ -169,6 +170,7 @@
         SoftSignalBackend
         AsyncStatus
         WatchableAsyncStatus
+        LazyMock
         NotConnected
         Reference
         WatcherUpdate

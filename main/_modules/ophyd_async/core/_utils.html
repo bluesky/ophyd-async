@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.8.0a4.dev1+gf8fae433 documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.8.0a4.dev2+g3d9f508d documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=436f8970"></script>
+    <script src="../../../_static/documentation_options.js?v=4e8f97d9"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a4.dev1+gf8fae433 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a4.dev1+gf8fae433 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a4.dev2+g3d9f508d documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a4.dev2+g3d9f508d documentation - Home"/>
   
   
 </a></div>
@@ -474,6 +474,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">get_args</span><span class="p">,</span>
     <span class="n">get_origin</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">Mock</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -594,20 +595,29 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="sd">    Expected kwargs should be a mapping of names to coroutine tasks to execute.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">return_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">exceptions</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">coros</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
-            <span class="n">exceptions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">NotConnected</span><span class="p">):</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;device `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` raised unexpected exception &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">exc_info</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
-                <span class="p">)</span>
+    <span class="n">exceptions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coros</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Single device optimization</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">coro</span> <span class="o">=</span> <span class="n">coros</span><span class="o">.</span><span class="n">popitem</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">coro</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Use gather to connect in parallel</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">return_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">coros</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+                <span class="n">exceptions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
 
     <span class="k">if</span> <span class="n">exceptions</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">exception</span> <span class="ow">in</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">NotConnected</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;device `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` raised unexpected exception &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">exc_info</span><span class="o">=</span><span class="n">exception</span><span class="p">,</span>
+                <span class="p">)</span>
         <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span></div>
 
 
@@ -741,6 +751,44 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span></div>
+
+
+
+<div class="viewcode-block" id="LazyMock">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.LazyMock">[docs]</a>
+<span class="k">class</span> <span class="nc">LazyMock</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A lazily created Mock to be used when connecting in mock mode.</span>
+
+<span class="sd">    Creating Mocks is reasonably expensive when each Device (and Signal)</span>
+<span class="sd">    requires its own, and the tree is only used when ``Signal.set()`` is</span>
+<span class="sd">    called. This class allows a tree of lazily connected Mocks to be</span>
+<span class="sd">    constructed so that when the leaf is created, so are its parents.</span>
+<span class="sd">    Any calls to the child are then accessible from the parent mock.</span>
+
+<span class="sd">    &gt;&gt;&gt; parent = LazyMock()</span>
+<span class="sd">    &gt;&gt;&gt; child = parent.child(&quot;child&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; child_mock = child()</span>
+<span class="sd">    &gt;&gt;&gt; child_mock()  # doctest: +ELLIPSIS</span>
+<span class="sd">    &lt;Mock name=&#39;mock.child()&#39; id=&#39;...&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; parent_mock = parent()</span>
+<span class="sd">    &gt;&gt;&gt; parent_mock.mock_calls</span>
+<span class="sd">    [call.child()]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">LazyMock</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span><span class="p">:</span> <span class="n">Mock</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LazyMock</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">LazyMock</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mock</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">attach_mock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span></div>
 
 </pre></div>
 
