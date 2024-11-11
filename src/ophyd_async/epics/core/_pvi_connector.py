@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from unittest.mock import Mock
-
 from ophyd_async.core import (
     Device,
     DeviceConnector,
@@ -11,6 +9,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalX,
 )
+from ophyd_async.core._utils import LazyMock
 
 from ._epics_connector import fill_backend_with_prefix
 from ._signal import PvaSignalBackend, pvget_with_timeout
@@ -64,29 +63,29 @@ class PviDeviceConnector(DeviceConnector):
             backend.read_pv = read_pv
             backend.write_pv = write_pv
 
-    async def connect(
-        self, device: Device, mock: bool | Mock, timeout: float, force_reconnect: bool
-    ) -> None:
-        if mock:
-            # Make 2 entries for each DeviceVector
-            self.filler.create_device_vector_entries_to_mock(2)
-        else:
-            pvi_structure = await pvget_with_timeout(self.pvi_pv, timeout)
-            entries: dict[str, Entry | list[Entry | None]] = pvi_structure[
-                "value"
-            ].todict()
-            # Fill based on what PVI gives us
-            for name, entry in entries.items():
-                if isinstance(entry, dict):
-                    # This is a child
-                    self._fill_child(name, entry)
-                else:
-                    # This is a DeviceVector of children
-                    for i, e in enumerate(entry):
-                        if e:
-                            self._fill_child(name, e, i)
-            # Check that all the requested children have been filled
-            self.filler.check_filled(f"{self.pvi_pv}: {entries}")
+    async def connect_mock(self, device: Device, mock: LazyMock):
+        self.filler.create_device_vector_entries_to_mock(2)
         # Set the name of the device to name all children
         device.set_name(device.name)
-        return await super().connect(device, mock, timeout, force_reconnect)
+        return await super().connect_mock(device, mock)
+
+    async def connect_real(
+        self, device: Device, timeout: float, force_reconnect: bool
+    ) -> None:
+        pvi_structure = await pvget_with_timeout(self.pvi_pv, timeout)
+        entries: dict[str, Entry | list[Entry | None]] = pvi_structure["value"].todict()
+        # Fill based on what PVI gives us
+        for name, entry in entries.items():
+            if isinstance(entry, dict):
+                # This is a child
+                self._fill_child(name, entry)
+            else:
+                # This is a DeviceVector of children
+                for i, e in enumerate(entry):
+                    if e:
+                        self._fill_child(name, e, i)
+        # Check that all the requested children have been filled
+        self.filler.check_filled(f"{self.pvi_pv}: {entries}")
+        # Set the name of the device to name all children
+        device.set_name(device.name)
+        return await super().connect_real(device, timeout, force_reconnect)

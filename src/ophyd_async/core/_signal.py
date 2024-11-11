@@ -4,7 +4,6 @@ import asyncio
 import functools
 from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
 from typing import Any, Generic, cast
-from unittest.mock import Mock
 
 from bluesky.protocols import (
     Locatable,
@@ -30,9 +29,14 @@ from ._signal_backend import (
 )
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus
-from ._utils import CALCULATE_TIMEOUT, DEFAULT_TIMEOUT, CalculatableTimeout, Callback, T
-
-_mock_signal_backends: dict[Device, MockSignalBackend] = {}
+from ._utils import (
+    CALCULATE_TIMEOUT,
+    DEFAULT_TIMEOUT,
+    CalculatableTimeout,
+    Callback,
+    LazyMock,
+    T,
+)
 
 
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
@@ -54,26 +58,28 @@ class SignalConnector(DeviceConnector):
     def __init__(self, backend: SignalBackend):
         self.backend = self._init_backend = backend
 
-    async def connect(
-        self,
-        device: Device,
-        mock: bool | Mock,
-        timeout: float,
-        force_reconnect: bool,
-    ):
-        if mock:
-            self.backend = MockSignalBackend(self._init_backend, mock)
-            _mock_signal_backends[device] = self.backend
-        else:
-            self.backend = self._init_backend
+    async def connect_mock(self, device: Device, mock: LazyMock):
+        self.backend = MockSignalBackend(self._init_backend, mock)
+
+    async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
+        self.backend = self._init_backend
         device.log.debug(f"Connecting to {self.backend.source(device.name, read=True)}")
         await self.backend.connect(timeout)
+
+
+class _ChildrenNotAllowed(dict[str, Device]):
+    def __setitem__(self, key: str, value: Device) -> None:
+        raise AttributeError(
+            f"Cannot add Device or Signal child {key}={value} of Signal, "
+            "make a subclass of Device instead"
+        )
 
 
 class Signal(Device, Generic[SignalDatatypeT]):
     """A Device with the concept of a value, with R, RW, W and X flavours"""
 
     _connector: SignalConnector
+    _child_devices = _ChildrenNotAllowed()  # type: ignore
 
     def __init__(
         self,
@@ -88,14 +94,6 @@ class Signal(Device, Generic[SignalDatatypeT]):
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
         return self._connector.backend.source(self.name, read=True)
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name != "parent" and isinstance(value, Device):
-            raise AttributeError(
-                f"Cannot add Device or Signal {value} as a child of Signal {self}, "
-                "make a subclass of Device instead"
-            )
-        return super().__setattr__(name, value)
 
 
 class _SignalCache(Generic[SignalDatatypeT]):

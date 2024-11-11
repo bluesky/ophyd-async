@@ -9,11 +9,7 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     DeviceCollector,
-    MockSignalBackend,
-    NotConnected,
-    Signal,
     SignalR,
     SignalRW,
     SoftSignalBackend,
@@ -32,78 +28,42 @@ from ophyd_async.core import (
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
-from ophyd_async.plan_stubs import ensure_connected
 
 
 def num_occurrences(substring: str, string: str) -> int:
     return len(list(re.finditer(re.escape(substring), string)))
 
 
+def test_cannot_add_child_to_signal():
+    signal = soft_signal_rw(str)
+    with pytest.raises(
+        AttributeError,
+        match="Cannot add Device or Signal child foo=<.*> of Signal, "
+        "make a subclass of Device instead",
+    ):
+        signal.foo = signal
+
+
 async def test_signal_connects_to_previous_backend(caplog):
     caplog.set_level(logging.DEBUG)
-    int_mock_backend = MockSignalBackend(SoftSignalBackend(int), Mock())
-    original_connect = int_mock_backend.connect
-    times_backend_connect_called = 0
-
-    async def new_connect(timeout=1):
-        nonlocal times_backend_connect_called
-        times_backend_connect_called += 1
-        await asyncio.sleep(0.1)
-        await original_connect(timeout=timeout)
-
-    int_mock_backend.connect = new_connect
-    signal = Signal(int_mock_backend)
-    await asyncio.gather(signal.connect(), signal.connect())
+    signal = soft_signal_rw(int)
+    mock_connect = Mock(side_effect=signal._connector.backend.connect)
+    signal._connector.backend.connect = mock_connect
+    await signal.connect()
+    assert mock_connect.call_count == 1
     assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 1
-    assert times_backend_connect_called == 1
+    await asyncio.gather(signal.connect(), signal.connect(), signal.connect())
+    assert mock_connect.call_count == 1
+    assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 1
 
 
 async def test_signal_connects_with_force_reconnect(caplog):
     caplog.set_level(logging.DEBUG)
-    signal = Signal(MockSignalBackend(SoftSignalBackend(int), Mock()))
+    signal = soft_signal_rw(int)
     await signal.connect()
     assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 1
     await signal.connect(force_reconnect=True)
     assert num_occurrences(f"Connecting to {signal.source}", caplog.text) == 2
-
-
-async def test_signal_lazily_connects(RE):
-    class MockSignalBackendFailingFirst(MockSignalBackend):
-        succeed_on_connect = False
-
-        async def connect(self, timeout=DEFAULT_TIMEOUT):
-            if self.succeed_on_connect:
-                self.succeed_on_connect = False
-                await super().connect(timeout=timeout)
-            else:
-                self.succeed_on_connect = True
-                raise RuntimeError("connect fail")
-
-    signal = SignalRW(MockSignalBackendFailingFirst(SoftSignalBackend(int), Mock()))
-
-    with pytest.raises(RuntimeError, match="connect fail"):
-        await signal.connect(mock=False)
-
-    assert (
-        signal._connect_task
-        and signal._connect_task.done()
-        and signal._connect_task.exception()
-    )
-
-    RE(ensure_connected(signal, mock=False))
-    assert (
-        signal._connect_task
-        and signal._connect_task.done()
-        and not signal._connect_task.exception()
-    )
-
-    with pytest.raises(NotConnected, match="RuntimeError: connect fail"):
-        RE(ensure_connected(signal, mock=False, force_reconnect=True))
-    assert (
-        signal._connect_task
-        and signal._connect_task.done()
-        and signal._connect_task.exception()
-    )
 
 
 async def time_taken_by(coro) -> float:

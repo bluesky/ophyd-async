@@ -4,6 +4,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any, Generic, get_origin
 
 import numpy as np
@@ -90,6 +91,7 @@ class TableSoftConverter(SoftConverter[TableT]):
             raise TypeError(f"Cannot convert {value} to {self.datatype}")
 
 
+@lru_cache
 def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     enum_cls = get_enum_cls(datatype)
     if datatype == Sequence[str]:
