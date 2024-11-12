@@ -319,7 +319,7 @@ class SomeClass:
     ],
 )
 async def test_signal_unknown_datatype(datatype, err):
-    err_str = err % datatype
+    err_str = re.escape(err % datatype)
     with pytest.raises(TypeError, match=err_str):
         await epics_signal_rw(datatype, "pva://mock_signal").connect(mock=True)
     with pytest.raises(TypeError, match=err_str):
