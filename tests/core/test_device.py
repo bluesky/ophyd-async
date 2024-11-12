@@ -117,10 +117,15 @@ async def test_device_with_device_collector():
         parent = DummyDeviceGroup("parent")
 
     assert parent.name == "parent"
+    assert parent.parent is None
     assert parent.child1.name == "parent-child1"
+    assert parent.child1.parent == parent
     assert parent._child2.name == "parent-child2"
+    assert parent._child2.parent == parent
     assert parent.dict_with_children.name == "parent-dict_with_children"
+    assert parent.dict_with_children.parent == parent
     assert parent.dict_with_children[123].name == "parent-dict_with_children-123"
+    assert parent.dict_with_children[123].parent == parent.dict_with_children
     assert parent.child1.connected
     assert parent.dict_with_children[123].connected
 
