@@ -193,7 +193,8 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         children: Mapping[int, DeviceT],
         name: str = "",
     ) -> None:
-        self._children = dict(children)
+        self._children: dict[int, DeviceT] = {}
+        self.update(children)
         super().__init__(name=name)
 
     def __setattr__(self, name: str, child: Any) -> None:
