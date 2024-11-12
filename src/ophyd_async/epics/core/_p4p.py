@@ -188,6 +188,7 @@ _datatype_converter_from_typeid: dict[
     ("epics:nt/NTScalarArray:1.0", "as"): (Sequence[str], PvaConverter),
     ("epics:nt/NTTable:1.0", "S"): (Table, PvaTableConverter),
     ("epics:nt/NTNDArray:1.0", "v"): (np.ndarray, PvaNDArrayConverter),
+    ("epics:nt/NTNDArray:1.0", "U"): (np.ndarray, PvaNDArrayConverter),
 }
 
 
