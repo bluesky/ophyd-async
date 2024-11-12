@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from ophyd_async.core import Device, NotConnected, soft_signal_rw
@@ -36,3 +38,13 @@ def test_ensure_connected(RE):
         assert device2.signal._mock is not None
 
     RE(connect_with_mocking())
+
+
+def test_ensure_connected_fails_for_non_unique_device_names(RE):
+    d1 = Device()
+    d2 = Device()
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape(f"Devices do not have unique names ({d1}, {d2})"),
+    ):
+        RE(ensure_connected(d1, d2))
