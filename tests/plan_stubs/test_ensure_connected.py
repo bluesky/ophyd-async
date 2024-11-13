@@ -41,10 +41,12 @@ def test_ensure_connected(RE):
 
 
 def test_ensure_connected_fails_for_non_unique_device_names(RE):
-    d1 = Device()
-    d2 = Device()
+    d1 = Device("dupe")
+    d2 = Device("dupe")
+    d3 = Device("ok")
+    non_unique = {d1: "dupe", d2: "dupe"}
     with pytest.raises(
-        RuntimeError,
-        match=re.escape(f"Devices do not have unique names ({d1}, {d2})"),
+        ValueError,
+        match=re.escape(f"Devices do not have unique names {non_unique}"),
     ):
-        RE(ensure_connected(d1, d2))
+        RE(ensure_connected(d1, d2, d3))

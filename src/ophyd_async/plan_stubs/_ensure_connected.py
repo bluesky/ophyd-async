@@ -11,8 +11,12 @@ def ensure_connected(
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):
-    if len(devices) != len({device.name for device in devices}):
-        raise RuntimeError(f"Devices do not have unique names {devices}")
+    device_names = [device.name for device in devices]
+    non_unique = {
+        device: device.name for device in devices if device_names.count(device.name) > 1
+    }
+    if non_unique:
+        raise ValueError(f"Devices do not have unique names {non_unique}")
 
     def connect_devices() -> Awaitable[None]:
         coros = {
