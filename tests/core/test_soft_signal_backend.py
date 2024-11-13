@@ -5,11 +5,11 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 import numpy as np
-import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    Array1D,
     SignalBackend,
     SoftSignalBackend,
     StrictEnum,
@@ -81,20 +81,17 @@ default_int_type = (
         (float, 0.0, 43.5, number_d, "<f8"),
         (str, "", "goodbye", string_d, "|S40"),
         (MyEnum, MyEnum.a, MyEnum.c, enum_d, "|S40"),
-        (npt.NDArray[np.int8], [], [-8, 3, 44], waveform_d, "|i1"),
-        (npt.NDArray[np.uint8], [], [218], waveform_d, "|u1"),
-        (npt.NDArray[np.int16], [], [-855], waveform_d, "<i2"),
-        (npt.NDArray[np.uint16], [], [5666], waveform_d, "<u2"),
-        (npt.NDArray[np.int32], [], [-2], waveform_d, "<i4"),
-        (npt.NDArray[np.uint32], [], [1022233], waveform_d, "<u4"),
-        (npt.NDArray[np.int64], [], [-3], waveform_d, "<i8"),
-        (npt.NDArray[np.uint64], [], [995444], waveform_d, "<u8"),
-        (npt.NDArray[np.float32], [], [1.0], waveform_d, "<f4"),
-        (npt.NDArray[np.float64], [], [0.2], waveform_d, "<f8"),
+        (Array1D[np.int8], [], [-8, 3, 44], waveform_d, "|i1"),
+        (Array1D[np.uint8], [], [218], waveform_d, "|u1"),
+        (Array1D[np.int16], [], [-855], waveform_d, "<i2"),
+        (Array1D[np.uint16], [], [5666], waveform_d, "<u2"),
+        (Array1D[np.int32], [], [-2], waveform_d, "<i4"),
+        (Array1D[np.uint32], [], [1022233], waveform_d, "<u4"),
+        (Array1D[np.int64], [], [-3], waveform_d, "<i8"),
+        (Array1D[np.uint64], [], [995444], waveform_d, "<u8"),
+        (Array1D[np.float32], [], [1.0], waveform_d, "<f4"),
+        (Array1D[np.float64], [], [0.2], waveform_d, "<f8"),
         (Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
-        # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
-        # (str, "longstr", ls1, ls2, string_d),
-        # (str, "longstr2.VAL$", ls1, ls2, string_d),
     ],
 )
 async def test_soft_signal_backend_get_put_monitor(
@@ -135,7 +132,7 @@ async def test_soft_signal_backend_enum_value_equivalence():
 
 
 async def test_soft_signal_backend_with_numpy_typing():
-    soft_backend = SoftSignalBackend(npt.NDArray[np.float64])
+    soft_backend = SoftSignalBackend(Array1D[np.float64])
     await soft_backend.connect(timeout=1)
     array = await soft_backend.get_value()
     assert array.shape == (0,)
