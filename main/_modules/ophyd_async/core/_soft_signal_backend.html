@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._soft_signal_backend &#8212; ophyd-async 0.8.0a5.dev1+ge00fd083 documentation</title>
+    <title>ophyd_async.core._soft_signal_backend &#8212; ophyd-async 0.8.0a5.dev2+gf0d95655 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=bedaba05"></script>
+    <script src="../../../_static/documentation_options.js?v=4b09be0a"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a5.dev1+ge00fd083 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a5.dev1+ge00fd083 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a5.dev2+gf0d95655 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a5.dev2+gf0d95655 documentation - Home"/>
   
   
 </a></div>
@@ -465,7 +465,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">get_origin</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">get_origin</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">Reading</span>
@@ -518,7 +518,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">NDArraySoftConverter</span><span class="p">(</span><span class="n">SoftConverter</span><span class="p">[</span><span class="n">Array1D</span><span class="p">]):</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array1D</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(()</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">)</span>
@@ -558,7 +558,11 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="n">SequenceStrSoftConverter</span><span class="p">()</span>
     <span class="k">elif</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">==</span> <span class="n">Sequence</span> <span class="ow">and</span> <span class="n">enum_cls</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SequenceEnumSoftConverter</span><span class="p">(</span><span class="n">enum_cls</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">NDArraySoftConverter</span><span class="p">()</span>
     <span class="k">elif</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">SignalDatatype</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Array1D[dtype], got </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">NDArraySoftConverter</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">))</span>
     <span class="k">elif</span> <span class="n">enum_cls</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">EnumSoftConverter</span><span class="p">(</span><span class="n">enum_cls</span><span class="p">)</span>

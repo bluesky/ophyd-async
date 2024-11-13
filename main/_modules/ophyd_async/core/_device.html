@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device &#8212; ophyd-async 0.8.0a5.dev1+ge00fd083 documentation</title>
+    <title>ophyd_async.core._device &#8212; ophyd-async 0.8.0a5.dev2+gf0d95655 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=bedaba05"></script>
+    <script src="../../../_static/documentation_options.js?v=4b09be0a"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a5.dev1+ge00fd083 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a5.dev1+ge00fd083 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a5.dev2+gf0d95655 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a5.dev2+gf0d95655 documentation - Home"/>
   
   
 </a></div>
@@ -502,8 +502,14 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">connect_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">LazyMock</span><span class="p">):</span>
         <span class="c1"># Connect serially, no errors to gather up as in mock mode</span>
+        <span class="n">exceptions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child_device</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
-            <span class="k">await</span> <span class="n">child_device</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">mock</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">child_device</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">mock</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="k">if</span> <span class="n">exceptions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="o">.</span><span class="n">with_other_exceptions_logged</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DeviceConnector.connect_real">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DeviceConnector.connect_real">[docs]</a>
