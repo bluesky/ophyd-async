@@ -173,6 +173,30 @@ async def test_error_handling_value_errors(caplog):
         assert f"signal {protocol}://A_NON_EXISTENT_SIGNAL timed out" in messages
 
 
+class BadDatatypeDevice(Device):
+    def __init__(self, name: str = "") -> None:
+        self.sig = epics_signal_rw(object, "", "")
+        super().__init__(name)
+
+
+async def test_error_handling_device_collector_mock():
+    with pytest.raises(NotConnected) as e:
+        async with DeviceCollector(mock=True):
+            device = BadDatatypeDevice()
+            device2 = BadDatatypeDevice()
+    expected_output = NotConnected(
+        {
+            "device": NotConnected(
+                {"sig": TypeError(f"Can't make converter for {object}")}
+            ),
+            "device2": NotConnected(
+                {"sig": TypeError(f"Can't make converter for {object}")}
+            ),
+        }
+    )
+    assert str(expected_output) == str(e.value)
+
+
 async def test_error_handling_device_collector(caplog):
     caplog.set_level(10)
     with pytest.raises(NotConnected) as e:

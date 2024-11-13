@@ -24,7 +24,6 @@
   pv_array_int32: [-2147483648, 2147483647, 0, 1, 2, 3, 4]
   pv_array_int64: [-9223372036854775808, 9223372036854775807, 0, 1, 2, 3, 4]
   pv_array_int8: [-128, 127, 0, 1, 2, 3, 4]
-  pv_array_npstr: [one, two, three]
   pv_array_str:
     - one
     - two

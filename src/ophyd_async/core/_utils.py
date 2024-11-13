@@ -2,18 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable, Iterable, Sequence
+from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import (
-    Any,
-    Generic,
-    Literal,
-    ParamSpec,
-    TypeVar,
-    get_args,
-    get_origin,
-)
+from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
 from unittest.mock import Mock
 
 import numpy as np
@@ -22,7 +14,7 @@ T = TypeVar("T")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
-ErrorText = str | dict[str, Exception]
+ErrorText = str | Mapping[str, Exception]
 
 
 class StrictEnum(str, Enum):
@@ -100,6 +92,19 @@ class NotConnected(Exception):
     def __str__(self) -> str:
         return self.format_error_string(indent="")
 
+    @classmethod
+    def with_other_exceptions_logged(
+        cls, exceptions: Mapping[str, Exception]
+    ) -> NotConnected:
+        for name, exception in exceptions.items():
+            if not isinstance(exception, NotConnected):
+                logging.exception(
+                    f"device `{name}` raised unexpected exception "
+                    f"{type(exception).__name__}",
+                    exc_info=exception,
+                )
+        return NotConnected(exceptions)
+
 
 @dataclass(frozen=True)
 class WatcherUpdate(Generic[T]):
@@ -137,14 +142,7 @@ async def wait_for_connection(**coros: Awaitable[None]):
                 exceptions[name] = result
 
     if exceptions:
-        for name, exception in exceptions.items():
-            if not isinstance(exception, NotConnected):
-                logging.exception(
-                    f"device `{name}` raised unexpected exception "
-                    f"{type(exception).__name__}",
-                    exc_info=exception,
-                )
-        raise NotConnected(exceptions)
+        raise NotConnected.with_other_exceptions_logged(exceptions)
 
 
 def get_dtype(datatype: type) -> np.dtype:
