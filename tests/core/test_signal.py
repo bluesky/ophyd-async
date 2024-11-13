@@ -5,6 +5,8 @@ import time
 from asyncio import Event
 from unittest.mock import ANY, Mock
 
+import numpy as np
+import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
 
@@ -362,21 +364,35 @@ async def test_subscription_logs(caplog):
     assert "Closing subscription on source" in caplog.text
 
 
-async def test_signal_unknown_datatype():
-    class SomeClass:
-        def __init__(self):
-            self.some_attribute = "some_attribute"
+class SomeClass:
+    def __init__(self):
+        self.some_attribute = "some_attribute"
 
-        def some_function(self):
-            pass
+    def some_function(self):
+        pass
 
-    err_str = (
-        "Can't make converter for <class "
-        "'test_signal.test_signal_unknown_datatype.<locals>.SomeClass'>"
-    )
+
+@pytest.mark.parametrize(
+    "datatype,err",
+    [
+        (SomeClass, "Can't make converter for %s"),
+        (object, "Can't make converter for %s"),
+        (dict, "Can't make converter for %s"),
+        (npt.NDArray[np.float64], "Expected Array1D[dtype], got %s"),
+    ],
+)
+async def test_signal_unknown_datatype(datatype, err):
+    err_str = re.escape(err % datatype)
     with pytest.raises(TypeError, match=err_str):
-        await epics_signal_rw(SomeClass, "pva://mock_signal").connect(mock=True)
+        await epics_signal_rw(datatype, "pva://mock_signal").connect(mock=True)
     with pytest.raises(TypeError, match=err_str):
-        await epics_signal_rw(SomeClass, "ca://mock_signal").connect(mock=True)
+        await epics_signal_rw(datatype, "ca://mock_signal").connect(mock=True)
     with pytest.raises(TypeError, match=err_str):
-        soft_signal_rw(SomeClass)
+        soft_signal_rw(datatype)
+
+
+async def test_soft_signal_ndarray_can_change_dtype():
+    sig = soft_signal_rw(np.ndarray)
+    for dtype in (np.int32, np.float64):
+        await sig.set(np.arange(4, dtype=dtype))
+        assert (await sig.get_value()).dtype == dtype

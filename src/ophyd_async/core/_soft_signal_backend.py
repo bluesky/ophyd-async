@@ -5,7 +5,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Generic, get_origin
+from typing import Any, Generic, get_args, get_origin
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -58,7 +58,7 @@ class SequenceEnumSoftConverter(SoftConverter[Sequence[EnumT]]):
 
 @dataclass
 class NDArraySoftConverter(SoftConverter[Array1D]):
-    datatype: np.dtype
+    datatype: np.dtype | None = None
 
     def write_value(self, value: Any) -> Array1D:
         return np.array(() if value is None else value, dtype=self.datatype)
@@ -98,7 +98,11 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
         return SequenceStrSoftConverter()
     elif get_origin(datatype) == Sequence and enum_cls:
         return SequenceEnumSoftConverter(enum_cls)
+    elif datatype is np.ndarray:
+        return NDArraySoftConverter()
     elif get_origin(datatype) == np.ndarray:
+        if datatype not in get_args(SignalDatatype):
+            raise TypeError(f"Expected Array1D[dtype], got {datatype}")
         return NDArraySoftConverter(get_dtype(datatype))
     elif enum_cls:
         return EnumSoftConverter(enum_cls)

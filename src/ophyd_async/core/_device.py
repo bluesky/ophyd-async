@@ -37,8 +37,14 @@ class DeviceConnector:
 
     async def connect_mock(self, device: Device, mock: LazyMock):
         # Connect serially, no errors to gather up as in mock mode
+        exceptions: dict[str, Exception] = {}
         for name, child_device in device.children():
-            await child_device.connect(mock=mock.child(name))
+            try:
+                await child_device.connect(mock=mock.child(name))
+            except Exception as e:
+                exceptions[name] = e
+        if exceptions:
+            raise NotConnected.with_other_exceptions_logged(exceptions)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Used during ``Device.connect``.

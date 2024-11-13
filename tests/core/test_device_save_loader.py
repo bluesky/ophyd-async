@@ -4,7 +4,6 @@ from typing import Any
 from unittest.mock import patch
 
 import numpy as np
-import numpy.typing as npt
 import pytest
 import yaml
 from bluesky.run_engine import RunEngine
@@ -71,17 +70,16 @@ class DummyDeviceGroupAllTypes(Device):
         self.pv_str: SignalRW = epics_signal_rw(str, "PV2")
         self.pv_enum_str: SignalRW = epics_signal_rw(MyEnum, "PV3")
         self.pv_enum: SignalRW = epics_signal_rw(MyEnum, "PV4")
-        self.pv_array_int8 = epics_signal_rw(npt.NDArray[np.int8], "PV5")
-        self.pv_array_uint8 = epics_signal_rw(npt.NDArray[np.uint8], "PV6")
-        self.pv_array_int16 = epics_signal_rw(npt.NDArray[np.int16], "PV7")
-        self.pv_array_uint16 = epics_signal_rw(npt.NDArray[np.uint16], "PV8")
-        self.pv_array_int32 = epics_signal_rw(npt.NDArray[np.int32], "PV9")
-        self.pv_array_uint32 = epics_signal_rw(npt.NDArray[np.uint32], "PV10")
-        self.pv_array_int64 = epics_signal_rw(npt.NDArray[np.int64], "PV11")
-        self.pv_array_uint64 = epics_signal_rw(npt.NDArray[np.uint64], "PV12")
-        self.pv_array_float32 = epics_signal_rw(npt.NDArray[np.float32], "PV13")
-        self.pv_array_float64 = epics_signal_rw(npt.NDArray[np.float64], "PV14")
-        self.pv_array_npstr = epics_signal_rw(npt.NDArray[np.str_], "PV15")
+        self.pv_array_int8 = epics_signal_rw(Array1D[np.int8], "PV5")
+        self.pv_array_uint8 = epics_signal_rw(Array1D[np.uint8], "PV6")
+        self.pv_array_int16 = epics_signal_rw(Array1D[np.int16], "PV7")
+        self.pv_array_uint16 = epics_signal_rw(Array1D[np.uint16], "PV8")
+        self.pv_array_int32 = epics_signal_rw(Array1D[np.int32], "PV9")
+        self.pv_array_uint32 = epics_signal_rw(Array1D[np.uint32], "PV10")
+        self.pv_array_int64 = epics_signal_rw(Array1D[np.int64], "PV11")
+        self.pv_array_uint64 = epics_signal_rw(Array1D[np.uint64], "PV12")
+        self.pv_array_float32 = epics_signal_rw(Array1D[np.float32], "PV13")
+        self.pv_array_float64 = epics_signal_rw(Array1D[np.float64], "PV14")
         self.pv_array_str = epics_signal_rw(Sequence[str], "PV16")
         self.pv_protocol_device_abstraction = epics_signal_rw(Table, "pva://PV17")
         super().__init__(name)
@@ -168,9 +166,6 @@ async def test_save_device_all_types(
         )
 
         await pv.set(data)
-    await device_all_types.pv_array_npstr.set(
-        np.array(["one", "two", "three"], dtype=np.str_),
-    )
     await device_all_types.pv_array_str.set(
         ["one", "two", "three"],
     )
