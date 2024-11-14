@@ -504,9 +504,9 @@ async def observe_signals_values(
 
     try:
         while True:
-            # # yield here in case something else is filling the queue
-            # # like in test_observe_value_times_out_with_no_external_task()
-            # await asyncio.sleep(0)
+            # yield here in case something else is filling the queue
+            # like in test_observe_value_times_out_with_no_external_task()
+            await asyncio.sleep(0)
             item = await get_value()
             if done_status and item is done_status:
                 if exc := done_status.exception():
