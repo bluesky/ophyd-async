@@ -62,6 +62,13 @@ class NotConnected(Exception):
 
         self._errors = errors
 
+    @property
+    def sub_errors(self) -> Mapping[str, Exception]:
+        if isinstance(self._errors, dict):
+            return self._errors.copy()
+        else:
+            return {}
+
     def _format_sub_errors(self, name: str, error: Exception, indent="") -> str:
         if isinstance(error, NotConnected):
             error_txt = ":" + error.format_error_string(indent + self._indent_width)
