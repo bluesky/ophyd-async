@@ -328,3 +328,9 @@ record(waveform, "$(P)ntndarray:data")
         }
     })
 }
+
+record(calc, "$(P)ticking") {
+  field(INPA, "$(P)ticking")
+  field(CALC, "A+1")
+  field(SCAN, ".1 second")
+}

@@ -27,12 +27,14 @@ from ophyd_async.core import (
     Array1D,
     NotConnected,
     SignalBackend,
+    SignalR,
     SignalRW,
     StrictEnum,
     SubsetEnum,
     T,
     Table,
     load_from_yaml,
+    observe_value,
     save_to_yaml,
 )
 from ophyd_async.epics.core import (
@@ -935,3 +937,21 @@ async def test_can_read_using_ophyd_async_then_ophyd(ioc: IOC):
 def test_signal_module_emits_deprecation_warning():
     with pytest.deprecated_call():
         import ophyd_async.epics.signal  # noqa: F401
+
+
+async def test_observe_ticking_signal_with_busy_loop(ioc: IOC):
+    sig = SignalR(await ioc.make_backend(int, "ticking"))
+    recv = []
+
+    async def watch():
+        async for val in observe_value(sig):
+            time.sleep(0.15)
+            recv.append(val)
+
+    start = time.time()
+    with pytest.raises(asyncio.TimeoutError):
+        await asyncio.wait_for(watch(), timeout=0.2)
+    assert time.time() - start == pytest.approx(0.3, abs=0.05)
+    assert len(recv) == 2
+    # Don't check values as CA and PVA have different algorithms for
+    # dropping updates for slow callbacks
