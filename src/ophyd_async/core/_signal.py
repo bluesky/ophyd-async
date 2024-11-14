@@ -449,12 +449,6 @@ async def observe_value(
     """
 
     q: asyncio.Queue[SignalDatatypeT | Status] = asyncio.Queue()
-    if timeout is None:
-        get_value = q.get
-    else:
-
-        async def get_value():
-            return await asyncio.wait_for(q.get(), timeout)
 
     if done_status is not None:
         done_status.add_callback(q.put_nowait)
@@ -462,7 +456,10 @@ async def observe_value(
     signal.subscribe_value(q.put_nowait)
     try:
         while True:
-            item = await get_value()
+            # yield here in case something else is filling the queue
+            # like in test_observe_value_times_out_with_no_external_task()
+            await asyncio.sleep(0)
+            item = await asyncio.wait_for(q.get(), timeout)
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc
