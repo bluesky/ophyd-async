@@ -91,7 +91,9 @@ async def start_acquiring_driver_and_ensure_status(
         subsequent raising (if applicable) due to detector state.
     """
 
-    status = await set_and_wait_for_value(driver.acquire, True, timeout=timeout)
+    status = await set_and_wait_for_value(
+        driver.acquire, True, timeout=timeout, wait_for_set_completion=False
+    )
 
     async def complete_acquisition() -> None:
         """NOTE: possible race condition here between the callback from
