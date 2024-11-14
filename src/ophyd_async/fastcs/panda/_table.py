@@ -13,7 +13,7 @@ class PandaHdf5DatasetType(StrictEnum):
 
 class DatasetTable(Table):
     name: Sequence[str]
-    hdf5_type: Sequence[PandaHdf5DatasetType]
+    data_type: Sequence[PandaHdf5DatasetType]
 
 
 class SeqTrigger(StrictEnum):
