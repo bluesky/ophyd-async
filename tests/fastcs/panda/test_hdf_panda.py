@@ -47,7 +47,7 @@ async def mock_hdf_panda(tmp_path):
         mock_hdf_panda.data.datasets,
         DatasetTable(
             name=["x", "y"],
-            data_type=[PandaHdf5DatasetType.UINT_32, PandaHdf5DatasetType.FLOAT_64],
+            dtype=[PandaHdf5DatasetType.UINT_32, PandaHdf5DatasetType.FLOAT_64],
         ),
     )
 
