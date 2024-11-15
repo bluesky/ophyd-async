@@ -464,7 +464,7 @@ async def observe_signals_value(
     Parameters
     ----------
     signals:
-        Call subscribe_value on this at the start, and clear_sub on it at the
+        Call subscribe_value on all the signals at the start, and clear_sub on it at the
         end
     timeout:
         If given, how long to wait for each updated value in seconds. If an update
@@ -477,8 +477,11 @@ async def observe_signals_value(
     -----
     Example usage::
 
-        async for value1,value2,value3 in observe_signals_values(sig1,sig2,..):
-            do_something_with(value)
+        async for signal,value in observe_signals_values(sig1,sig2,..):
+            if signal is sig1:
+                do_something_with(value)
+            elif signal is sig2:
+                do_something_else_with(value)
     """
     q: asyncio.Queue[tuple[SignalR[SignalDatatypeT], SignalDatatypeT] | Status] = (
         asyncio.Queue()
@@ -607,6 +610,8 @@ async def set_and_wait_for_other_value(
         How long to wait for the signal to have the value
     set_timeout:
         How long to wait for the set to complete
+    wait_for_set_completion:
+        This will wait for set completion #More info in how-to docs
 
     Notes
     -----
