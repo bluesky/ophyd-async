@@ -945,13 +945,13 @@ async def test_observe_ticking_signal_with_busy_loop(ioc: IOC):
 
     async def watch():
         async for val in observe_value(sig):
-            time.sleep(0.15)
+            time.sleep(0.3)
             recv.append(val)
 
     start = time.time()
     with pytest.raises(asyncio.TimeoutError):
-        await asyncio.wait_for(watch(), timeout=0.2)
-    assert time.time() - start == pytest.approx(0.3, abs=0.05)
+        await asyncio.wait_for(watch(), timeout=0.4)
+    assert time.time() - start == pytest.approx(0.6, abs=0.1)
     assert len(recv) == 2
     # Don't check values as CA and PVA have different algorithms for
     # dropping updates for slow callbacks

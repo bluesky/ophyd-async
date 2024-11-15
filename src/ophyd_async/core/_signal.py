@@ -36,6 +36,7 @@ from ._utils import (
     Callback,
     LazyMock,
     T,
+    wait_for_pending_wakeups,
 )
 
 
@@ -459,7 +460,7 @@ async def observe_value(
             item = await asyncio.wait_for(q.get(), timeout)
             # yield here in case something else is filling the queue
             # like in test_observe_value_times_out_with_no_external_task()
-            await asyncio.sleep(0)
+            await wait_for_pending_wakeups()
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc
