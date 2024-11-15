@@ -594,7 +594,7 @@ async def set_and_wait_for_other_value(
     """Set a signal and monitor another signal until it has the specified value.
 
     This function sets a set_signal to a specified set_value and waits for
-    a read_signal to have the read_value.
+    a match_signal to have the match_value.
 
     Parameters
     ----------
@@ -602,9 +602,9 @@ async def set_and_wait_for_other_value(
         The signal to set
     set_value:
         The value to set it to
-    read_signal:
+    match_signal:
         The signal to monitor
-    read_value:
+    match_value:
         The value to wait for
     timeout:
         How long to wait for the signal to have the value

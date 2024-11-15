@@ -96,9 +96,9 @@ async def test_set_and_wait_for_value_same_set_as_read():
 
 async def test_set_and_wait_for_value_different_set_and_read():
     set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
-    read_signal = epics_signal_r(str, "pva://read", name="read-signal")
+    match_signal = epics_signal_r(str, "pva://read", name="match_signal")
     await set_signal.connect(mock=True)
-    await read_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
 
     do_read_set = Event()
 
@@ -106,12 +106,12 @@ async def test_set_and_wait_for_value_different_set_and_read():
 
     async def wait_and_set_read():
         await do_read_set.wait()
-        set_mock_value(read_signal, "test")
+        set_mock_value(match_signal, "test")
 
     async def check_set_and_wait():
         await (
             await set_and_wait_for_other_value(
-                set_signal, 1, read_signal, "test", timeout=100
+                set_signal, 1, match_signal, "test", timeout=100
             )
         )
 
@@ -121,9 +121,9 @@ async def test_set_and_wait_for_value_different_set_and_read():
 
 async def test_set_and_wait_for_value_different_set_and_read_times_out():
     set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
-    read_signal = epics_signal_r(str, "pva://read", name="read-signal")
+    match_signal = epics_signal_r(str, "pva://read", name="match_signal")
     await set_signal.connect(mock=True)
-    await read_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
 
     do_read_set = Event()
 
@@ -131,12 +131,12 @@ async def test_set_and_wait_for_value_different_set_and_read_times_out():
 
     async def wait_and_set_read():
         await do_read_set.wait()
-        set_mock_value(read_signal, "not_test")
+        set_mock_value(match_signal, "not_test")
 
     async def check_set_and_wait():
         await (
             await set_and_wait_for_other_value(
-                set_signal, 1, read_signal, "test", timeout=0.1
+                set_signal, 1, match_signal, "test", timeout=0.1
             )
         )
 
@@ -227,7 +227,7 @@ async def test_assert_reaading(mock_signal: SignalRW):
     await assert_reading(mock_signal, dummy_reading)
 
 
-async def test_failed_assert_reaading(mock_signal: SignalRW):
+async def test_failed_assert_reading(mock_signal: SignalRW):
     set_mock_value(mock_signal, 888)
     dummy_reading = {
         "mock_signal": Reading({"alarm_severity": 0, "timestamp": ANY, "value": 88})
