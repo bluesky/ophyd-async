@@ -115,7 +115,7 @@ class CaLongStrConverter(CaConverter[str]):
     def __init__(self):
         super().__init__(str, dbr.DBR_CHAR_STR, dbr.DBR_CHAR_STR)
 
-    def write_value_and_dbr(self, value: Any) -> Any:
+    def write_value(self, value: Any) -> Any:
         # Add a null in here as this is what the commandline caput does
         # TODO: this should be in the server so check if it can be pushed to asyn
         return value + "\0"
