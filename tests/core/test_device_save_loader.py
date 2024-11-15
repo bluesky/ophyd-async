@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from os import path
 from typing import Any
 from unittest.mock import patch
@@ -24,6 +23,7 @@ from ophyd_async.core import (
     walk_rw_signals,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+from ophyd_async.epics.testing import ExampleEnum, ExampleTable, PvaDevice
 
 
 class EnumTest(StrictEnum):
@@ -51,40 +51,6 @@ class DummyDeviceGroup(Device):
         super().__init__(name)
 
 
-class MyEnum(StrictEnum):
-    one = "one"
-    two = "two"
-    three = "three"
-
-
-class SomeTable(Table):
-    some_float: Array1D[np.float64]
-    some_int: Array1D[np.int32]
-    some_enum: Sequence[MyEnum]
-
-
-class DummyDeviceGroupAllTypes(Device):
-    def __init__(self, name: str):
-        self.pv_int: SignalRW = epics_signal_rw(int, "PV1")
-        self.pv_float: SignalRW = epics_signal_rw(float, "PV2")
-        self.pv_str: SignalRW = epics_signal_rw(str, "PV2")
-        self.pv_enum_str: SignalRW = epics_signal_rw(MyEnum, "PV3")
-        self.pv_enum: SignalRW = epics_signal_rw(MyEnum, "PV4")
-        self.pv_array_int8 = epics_signal_rw(Array1D[np.int8], "PV5")
-        self.pv_array_uint8 = epics_signal_rw(Array1D[np.uint8], "PV6")
-        self.pv_array_int16 = epics_signal_rw(Array1D[np.int16], "PV7")
-        self.pv_array_uint16 = epics_signal_rw(Array1D[np.uint16], "PV8")
-        self.pv_array_int32 = epics_signal_rw(Array1D[np.int32], "PV9")
-        self.pv_array_uint32 = epics_signal_rw(Array1D[np.uint32], "PV10")
-        self.pv_array_int64 = epics_signal_rw(Array1D[np.int64], "PV11")
-        self.pv_array_uint64 = epics_signal_rw(Array1D[np.uint64], "PV12")
-        self.pv_array_float32 = epics_signal_rw(Array1D[np.float32], "PV13")
-        self.pv_array_float64 = epics_signal_rw(Array1D[np.float64], "PV14")
-        self.pv_array_str = epics_signal_rw(Sequence[str], "PV16")
-        self.pv_protocol_device_abstraction = epics_signal_rw(Table, "pva://PV17")
-        super().__init__(name)
-
-
 @pytest.fixture
 async def device() -> DummyDeviceGroup:
     device = DummyDeviceGroup("parent")
@@ -93,8 +59,8 @@ async def device() -> DummyDeviceGroup:
 
 
 @pytest.fixture
-async def device_all_types() -> DummyDeviceGroupAllTypes:
-    device = DummyDeviceGroupAllTypes("parent")
+async def device_all_types() -> PvaDevice:
+    device = PvaDevice("parent")
     await device.connect(mock=True)
     return device
 
@@ -123,23 +89,23 @@ async def test_enum_yaml_formatting(tmp_path):
 
 
 async def test_save_device_all_types(
-    RE: RunEngine, device_all_types: DummyDeviceGroupAllTypes, tmp_path
+    RE: RunEngine, device_all_types: PvaDevice, tmp_path
 ):
     # Populate fake device with PV's...
-    await device_all_types.pv_int.set(1)
-    await device_all_types.pv_float.set(1.234)
-    await device_all_types.pv_str.set("test_string")
-    await device_all_types.pv_enum_str.set("two")
-    await device_all_types.pv_enum.set(MyEnum.two)
+    await device_all_types.my_int.set(1)
+    await device_all_types.my_float.set(1.234)
+    await device_all_types.my_str.set("test_string")
+    await device_all_types.enum.set(ExampleEnum.b)
+    await device_all_types.enum2.set("Bbb")
     for pv, dtype in {
-        device_all_types.pv_array_int8: np.int8,
-        device_all_types.pv_array_uint8: np.uint8,
-        device_all_types.pv_array_int16: np.int16,
-        device_all_types.pv_array_uint16: np.uint16,
-        device_all_types.pv_array_int32: np.int32,
-        device_all_types.pv_array_uint32: np.uint32,
-        device_all_types.pv_array_int64: np.int64,
-        device_all_types.pv_array_uint64: np.uint64,
+        device_all_types.int8a: np.int8,
+        device_all_types.uint8a: np.uint8,
+        device_all_types.int16a: np.int16,
+        device_all_types.uint16a: np.uint16,
+        device_all_types.int32a: np.int32,
+        device_all_types.uint32a: np.uint32,
+        device_all_types.int64a: np.int64,
+        device_all_types.uint64a: np.uint64,
     }.items():
         await pv.set(
             np.array(
@@ -147,8 +113,8 @@ async def test_save_device_all_types(
             )
         )
     for pv, dtype in {
-        device_all_types.pv_array_float32: np.float32,
-        device_all_types.pv_array_float64: np.float64,
+        device_all_types.float32a: np.float32,
+        device_all_types.float64a: np.float64,
     }.items():
         finfo = np.finfo(dtype)
         data = np.array(
@@ -166,14 +132,16 @@ async def test_save_device_all_types(
         )
 
         await pv.set(data)
-    await device_all_types.pv_array_str.set(
+    await device_all_types.stra.set(
         ["one", "two", "three"],
     )
-    await device_all_types.pv_protocol_device_abstraction.set(
-        SomeTable(
-            some_float=np.arange(3, dtype=np.float64),
-            some_int=np.arange(3),
-            some_enum=[MyEnum.one, MyEnum.two, MyEnum.three],
+    await device_all_types.table.set(
+        ExampleTable(
+            bool=np.array([False, False, True, True], np.bool_),
+            int=np.array([1, 8, -9, 32], np.int32),
+            float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+            str=["Hello", "World", "Foo", "Bar"],
+            enum=[ExampleEnum.a, ExampleEnum.b, ExampleEnum.a, ExampleEnum.c],
         )
     )
 
