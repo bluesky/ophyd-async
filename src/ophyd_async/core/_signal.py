@@ -448,13 +448,13 @@ async def observe_value(
             do_something_with(value)
     """
 
-    async for _, value in observe_signals_values(
+    async for _, value in observe_signals_value(
         signal, timeout=timeout, done_status=done_status
     ):
         yield value
 
 
-async def observe_signals_values(
+async def observe_signals_value(
     *signals: SignalR[SignalDatatypeT],
     timeout: float | None = None,
     done_status: Status | None = None,
