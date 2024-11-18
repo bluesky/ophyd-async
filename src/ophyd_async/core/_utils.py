@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import warnings
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
@@ -298,10 +297,11 @@ class LazyMock:
         return self._mock
 
 
-async def wait_for_pending_wakeups(max_yields=10):
+async def wait_for_pending_wakeups(max_yields=20, raise_if_exceeded=True):
     """Allow any ready asyncio tasks to be woken up.
 
     Used in:
+
     - Tests to allow tasks like ``set()`` to start so that signal
       puts can be tested
     - `observe_value` to allow it to be wrapped in `asyncio.wait_for`
@@ -314,8 +314,5 @@ async def wait_for_pending_wakeups(max_yields=10):
         await asyncio.sleep(0)
         if not loop._ready:  # type: ignore # noqa: SLF001
             return
-    warnings.warn(
-        f"Tasks still scheduling wakeups after {max_yields} yields",
-        RuntimeWarning,
-        stacklevel=2,
-    )
+    if raise_if_exceeded:
+        raise RuntimeError(f"Tasks still scheduling wakeups after {max_yields} yields")

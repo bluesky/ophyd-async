@@ -460,7 +460,7 @@ async def observe_value(
             item = await asyncio.wait_for(q.get(), timeout)
             # yield here in case something else is filling the queue
             # like in test_observe_value_times_out_with_no_external_task()
-            await wait_for_pending_wakeups()
+            await wait_for_pending_wakeups(raise_if_exceeded=False, max_yields=5)
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc
