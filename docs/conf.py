@@ -82,6 +82,8 @@ nitpick_ignore = [
     # builtins
     ("py:class", "NoneType"),
     ("py:class", "'str'"),
+    (r"py:class", r"ophyd_async\.core\..*"),
+    ("py:class", r"ophyd_async\.tango\..*"),  # note this one does not work
     ("py:class", "'float'"),
     ("py:class", "'int'"),
     ("py:class", "'bool'"),
@@ -91,6 +93,7 @@ nitpick_ignore = [
     ("py:class", "typing_extensions.Literal"),
 ]
 
+# autodoc_mock_imports = ["ophyd_async.tango"] # this one also does not work
 # Order the members by the order they appear in the source code
 autodoc_member_order = "bysource"
 
