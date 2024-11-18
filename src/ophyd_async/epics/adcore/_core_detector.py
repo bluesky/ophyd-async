@@ -1,66 +1,70 @@
-from collections.abc import Sequence
-from typing import cast
+from typing import TypeVar
 
-from bluesky.protocols import HasHints, Hints
-
-from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.core import PathProvider
 
 from ._core_io import ADBaseIO, NDFileHDFIO, NDFileIO
-from ._core_logic import ADBaseController, ADBaseDatasetDescriber
+from ._core_logic import ADBaseDatasetDescriber
 from ._core_writer import ADWriter
 from ._hdf_writer import ADHDFWriter
 from ._tiff_writer import ADTIFFWriter
 
-
-def get_io_class_for_writer(writer_class: type[ADWriter]):
-    writer_to_io_map = {
-        ADWriter: NDFileIO,
-        ADHDFWriter: NDFileHDFIO,
-        ADTIFFWriter: NDFileIO,
-    }
-    return writer_to_io_map[writer_class]
+ADBaseIOT = TypeVar("ADBaseIOT", bound=ADBaseIO)
+NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
 
 
-class AreaDetector(StandardDetector, HasHints):
-    _controller: ADBaseController
-    _writer: ADWriter
+def _areadetector_driver_and_fileio(
+    drv_cls: type[ADBaseIOT],
+    fileio_cls: type[NDFileIOT],
+    writer_cls: type[ADWriter],
+    prefix: str,
+    drv_suffix: str,
+    fileio_suffix: str,
+    path_provider: PathProvider,
+) -> tuple[ADBaseIOT, NDFileIOT, ADWriter]:
+    drv = drv_cls(prefix + drv_suffix)
+    fileio = fileio_cls(prefix + fileio_suffix)
 
-    def __init__(
-        self,
-        prefix: str,
-        path_provider: PathProvider,
-        writer_class: type[ADWriter] = ADWriter,
-        writer_suffix: str = "",
-        controller_class: type[ADBaseController] = ADBaseController,
-        drv_class: type[ADBaseIO] = ADBaseIO,
-        drv_suffix: str = "cam1:",
-        name: str = "",
-        config_sigs: Sequence[SignalR] = (),
-        **kwargs,
-    ):
-        self.drv = drv_class(prefix + drv_suffix)
-        self._fileio = get_io_class_for_writer(writer_class)(prefix + writer_suffix)
+    def get_detector_name() -> str:
+        assert drv.parent, "Detector driver hasn't been attached to a detector"
+        return drv.parent.name
 
-        super().__init__(
-            controller_class(self.drv, **kwargs),
-            writer_class(
-                self._fileio,
-                path_provider,
-                lambda: self.name,
-                ADBaseDatasetDescriber(self.drv),
-            ),
-            config_sigs=(self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
-            name=name,
-        )
+    writer = writer_cls(
+        fileio, path_provider, get_detector_name, ADBaseDatasetDescriber(drv)
+    )
+    return drv, fileio, writer
 
-    @property
-    def controller(self) -> ADBaseController:
-        return cast(ADBaseController, self._controller)
 
-    @property
-    def writer(self) -> ADWriter:
-        return cast(ADWriter, self._writer)
+def areadetector_driver_and_hdf(
+    drv_cls: type[ADBaseIOT],
+    prefix: str,
+    drv_suffix: str,
+    fileio_suffix: str,
+    path_provider: PathProvider,
+) -> tuple[ADBaseIOT, NDFileHDFIO, ADWriter]:
+    return _areadetector_driver_and_fileio(
+        drv_cls=drv_cls,
+        fileio_cls=NDFileHDFIO,
+        writer_cls=ADHDFWriter,
+        prefix=prefix,
+        drv_suffix=drv_suffix,
+        fileio_suffix=fileio_suffix,
+        path_provider=path_provider,
+    )
 
-    @property
-    def hints(self) -> Hints:
-        return self._writer.hints
+
+def areadetector_driver_and_tiff(
+    drv_cls: type[ADBaseIOT],
+    prefix: str,
+    drv_suffix: str,
+    fileio_suffix: str,
+    path_provider: PathProvider,
+) -> tuple[ADBaseIOT, NDFileIO, ADWriter]:
+    return _areadetector_driver_and_fileio(
+        drv_cls=drv_cls,
+        fileio_cls=NDFileIO,
+        writer_cls=ADTIFFWriter,
+        prefix=prefix,
+        drv_suffix=drv_suffix,
+        fileio_suffix=fileio_suffix,
+        path_provider=path_provider,
+    )

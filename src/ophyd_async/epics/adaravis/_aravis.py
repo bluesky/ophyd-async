@@ -1,7 +1,8 @@
 from collections.abc import Sequence
-from typing import cast, get_args
+from typing import get_args
 
 from ophyd_async.core import PathProvider
+from ophyd_async.core._detector import StandardDetector
 from ophyd_async.core._signal import SignalR
 from ophyd_async.epics import adcore
 
@@ -9,7 +10,7 @@ from ._aravis_controller import AravisController
 from ._aravis_io import AravisDriverIO
 
 
-class AravisDetector(adcore.AreaDetector):
+class AravisDetector(StandardDetector[AravisController]):
     """
     Ophyd-async implementation of an ADAravis Detector.
     The detector may be configured for an external trigger on a GPIO port,
@@ -22,30 +23,26 @@ class AravisDetector(adcore.AreaDetector):
         path_provider: PathProvider,
         drv_suffix="cam1:",
         hdf_suffix="HDF1:",
-        name="",
         gpio_number: AravisController.GPIO_NUMBER = 1,
         config_sigs: Sequence[SignalR] = (),
+        name="",
     ):
-        super().__init__(
-            prefix,
-            path_provider,
-            adcore.ADHDFWriter,
-            hdf_suffix,
-            AravisController,
-            AravisDriverIO,
+        self.drv, self.hdf, writer = adcore.areadetector_driver_and_hdf(
+            drv_cls=AravisDriverIO,
+            prefix=prefix,
             drv_suffix=drv_suffix,
-            name=name,
-            config_sigs=config_sigs,
-            gpio_number=gpio_number,
+            fileio_suffix=hdf_suffix,
+            path_provider=path_provider,
         )
-        self.hdf = self._fileio
-
-    @property
-    def controller(self) -> AravisController:
-        return cast(AravisController, self._controller)
+        super().__init__(
+            controller=AravisController(self.drv, gpio_number),
+            writer=writer,
+            config_sigs=config_sigs,
+            name=name,
+        )
 
     def get_external_trigger_gpio(self):
-        return self.controller.gpio_number
+        return self._controller.gpio_number
 
     def set_external_trigger_gpio(self, gpio_number: AravisController.GPIO_NUMBER):
         supported_gpio_numbers = get_args(AravisController.GPIO_NUMBER)
@@ -55,10 +52,10 @@ class AravisDetector(adcore.AreaDetector):
                 f"indices: {supported_gpio_numbers} but was asked to "
                 f"use {gpio_number}"
             )
-        self.controller.gpio_number = gpio_number
+        self._controller.gpio_number = gpio_number
 
 
-class AravisDetectorTIFF(adcore.AreaDetector):
+class AravisDetectorTIFF(StandardDetector[AravisController]):
     """
     Ophyd-async implementation of an ADAravis Detector.
     The detector may be configured for an external trigger on a GPIO port,
@@ -70,21 +67,21 @@ class AravisDetectorTIFF(adcore.AreaDetector):
         prefix: str,
         path_provider: PathProvider,
         drv_suffix="cam1:",
-        hdf_suffix="HDF1:",
-        name="",
+        tiff_suffix="TIFF1:",
         gpio_number: AravisController.GPIO_NUMBER = 1,
         config_sigs: Sequence[SignalR] = (),
+        name="",
     ):
-        super().__init__(
-            prefix,
-            path_provider,
-            adcore.ADTIFFWriter,
-            hdf_suffix,
-            AravisController,
-            AravisDriverIO,
+        self.drv, self.tiff, writer = adcore.areadetector_driver_and_tiff(
+            drv_cls=AravisDriverIO,
+            prefix=prefix,
             drv_suffix=drv_suffix,
-            name=name,
-            config_sigs=config_sigs,
-            gpio_number=gpio_number,
+            fileio_suffix=tiff_suffix,
+            path_provider=path_provider,
         )
-        self.tiff = self._fileio
+        super().__init__(
+            controller=AravisController(self.drv, gpio_number),
+            writer=writer,
+            config_sigs=config_sigs,
+            name=name,
+        )
