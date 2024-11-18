@@ -16,7 +16,7 @@ from ophyd_async.epics.core import (
     PvSuffix,
 )
 
-from ._utils import Template, create_ioc_fixture
+from ._utils import TestingIOC
 
 CA_PVA_RECORDS = str(Path(__file__).parent / "test_records.db")
 PVA_RECORDS = str(Path(__file__).parent / "test_records_pva.db")
@@ -36,7 +36,7 @@ class ExampleTable(Table):
     enum: Sequence[ExampleEnum]
 
 
-class CaAndPvaDevice(EpicsDevice):
+class ExampleCaDevice(EpicsDevice):
     my_int: A[SignalRW[int], PvSuffix("int")]
     my_float: A[SignalRW[float], PvSuffix("float")]
     my_str: A[SignalRW[str], PvSuffix("str")]
@@ -54,7 +54,7 @@ class CaAndPvaDevice(EpicsDevice):
     stra: A[SignalRW[Sequence[str]], PvSuffix("stra")]
 
 
-class PvaDevice(CaAndPvaDevice):
+class ExamplePvaDevice(ExampleCaDevice):  # pva can support all signal types that ca can
     int8a: A[SignalRW[Array1D[np.int8]], PvSuffix("int8a")]
     uint16a: A[SignalRW[Array1D[np.uint16]], PvSuffix("uint16a")]
     uint32a: A[SignalRW[Array1D[np.uint32]], PvSuffix("uint32a")]
@@ -64,15 +64,42 @@ class PvaDevice(CaAndPvaDevice):
     ntndarray_data: A[SignalRW[Array1D[np.int64]], PvSuffix("ntndarray:data")]
 
 
-async def connect_example_device(prefix: str, protocol: Literal["ca", "pva"]):
-    device_cls = PvaDevice if protocol == "pva" else CaAndPvaDevice
-    device = device_cls(f"{protocol}://{prefix}")
+async def connect_example_device(
+    ioc: TestingIOC, protocol: Literal["ca", "pva"]
+) -> ExamplePvaDevice | ExampleCaDevice:
+    """Helper function to return a connected example device.
+
+    Parameters
+    ----------
+
+    ioc: TestingIOC
+        TestingIOC configured to provide the records needed for the device
+
+    protocol: Literal["ca", "pva"]
+        The transport protocol of the device
+
+    Returns
+    -------
+    ExamplePvaDevice | ExampleCaDevice
+        a connected EpicsDevice with signals of many EPICS record types
+    """
+    device_cls = ExamplePvaDevice if protocol == "pva" else ExampleCaDevice
+    device = device_cls(f"{protocol}://{ioc.prefix_for(device_cls)}")
     await device.connect()
     return device
 
 
-def create_example_ioc_fixture(prefix: str):
-    return create_ioc_fixture(
-        Template(CA_PVA_RECORDS, f"P={prefix}"),
-        Template(PVA_RECORDS, f"P={prefix}"),
-    )
+def get_example_ioc() -> TestingIOC:
+    """Get TestingIOC instance with the example databases loaded.
+
+    Returns
+    -------
+    TestingIOC
+        instance with test_records.db loaded for ExampleCaDevice and
+        test_records.db and test_records_pva.db loaded for ExamplePvaDevice.
+    """
+    ioc = TestingIOC()
+    ioc.database_for(PVA_RECORDS, ExamplePvaDevice)
+    ioc.database_for(CA_PVA_RECORDS, ExamplePvaDevice)
+    ioc.database_for(CA_PVA_RECORDS, ExampleCaDevice)
+    return ioc

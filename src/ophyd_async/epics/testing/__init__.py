@@ -1,27 +1,24 @@
 from ._example_ioc import (
-    CaAndPvaDevice,
+    CA_PVA_RECORDS,
+    PVA_RECORDS,
+    ExampleCaDevice,
     ExampleEnum,
+    ExamplePvaDevice,
     ExampleTable,
-    PvaDevice,
     connect_example_device,
-    create_example_ioc_fixture,
+    get_example_ioc,
 )
-from ._utils import (
-    Template,
-    create_device_fixture,
-    create_ioc_fixture,
-    make_ioc_from_templates,
-)
+from ._utils import TestingIOC, generate_random_PV_prefix
 
 __all__ = [
-    "CaAndPvaDevice",
+    "CA_PVA_RECORDS",
+    "PVA_RECORDS",
+    "ExampleCaDevice",
     "ExampleEnum",
+    "ExamplePvaDevice",
     "ExampleTable",
-    "PvaDevice",
     "connect_example_device",
-    "create_example_ioc_fixture",
-    "Template",
-    "create_device_fixture",
-    "create_ioc_fixture",
-    "make_ioc_from_templates",
+    "get_example_ioc",
+    "TestingIOC",
+    "generate_random_PV_prefix",
 ]

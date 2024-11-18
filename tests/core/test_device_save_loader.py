@@ -23,7 +23,7 @@ from ophyd_async.core import (
     walk_rw_signals,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
-from ophyd_async.epics.testing import ExampleEnum, ExampleTable, PvaDevice
+from ophyd_async.epics.testing import ExampleEnum, ExamplePvaDevice, ExampleTable
 
 
 class EnumTest(StrictEnum):
@@ -59,8 +59,8 @@ async def device() -> DummyDeviceGroup:
 
 
 @pytest.fixture
-async def device_all_types() -> PvaDevice:
-    device = PvaDevice("parent")
+async def device_all_types() -> ExamplePvaDevice:
+    device = ExamplePvaDevice("parent")
     await device.connect(mock=True)
     return device
 
@@ -89,7 +89,7 @@ async def test_enum_yaml_formatting(tmp_path):
 
 
 async def test_save_device_all_types(
-    RE: RunEngine, device_all_types: PvaDevice, tmp_path
+    RE: RunEngine, device_all_types: ExamplePvaDevice, tmp_path
 ):
     # Populate fake device with PV's...
     await device_all_types.my_int.set(1)

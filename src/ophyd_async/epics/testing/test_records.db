@@ -1,16 +1,16 @@
-record(bo, "$(P)bool") {
+record(bo, "$(device)bool") {
   field(ZNAM, "No")
   field(ONAM, "Yes")
   field(VAL, "1")
   field(PINI, "YES")
 }
 
-record(bo, "$(P)bool_unnamed") {
+record(bo, "$(device)bool_unnamed") {
   field(VAL, "1")
   field(PINI, "YES")
 }
 
-record(longout, "$(P)int") {
+record(longout, "$(device)int") {
   field(LLSV, "MAJOR") # LOLO is alarm
   field(LSV, "MINOR") # LOW is warning
   field(HSV, "MINOR") # HIGH is warning
@@ -27,7 +27,7 @@ record(longout, "$(P)int") {
   field(PINI, "YES")
 }
 
-record(longout, "$(P)partialint") {
+record(longout, "$(device)partialint") {
   field(LLSV, "MAJOR") # LOLO is alarm
   field(HHSV, "MAJOR") # HIHI is alarm
   field(HOPR, "100")
@@ -40,7 +40,7 @@ record(longout, "$(P)partialint") {
   field(PINI, "YES")
 }
 
-record(longout, "$(P)lessint") {
+record(longout, "$(device)lessint") {
   field(HSV, "MINOR") # LOW is warning
   field(LSV, "MINOR") # HIGH is warning
   field(HOPR, "100")
@@ -51,33 +51,33 @@ record(longout, "$(P)lessint") {
   field(PINI, "YES")
 }
 
-record(ao, "$(P)float") {
+record(ao, "$(device)float") {
   field(PREC, "1")
   field(EGU, "mm")
   field(VAL, "3.141")
   field(PINI, "YES")
 }
 
-record(ao, "$(P)float_prec_0") {
+record(ao, "$(device)float_prec_0") {
   field(PREC, "0")
   field(EGU, "mm")
   field(VAL, "3")
   field(PINI, "YES")
 }
 
-record(ao, "$(P)float_prec_1") {
+record(ao, "$(device)float_prec_1") {
   field(PREC, "1")
   field(EGU, "mm")
   field(VAL, "3")
   field(PINI, "YES")
 }
 
-record(stringout, "$(P)str") {
+record(stringout, "$(device)str") {
   field(VAL, "hello")
   field(PINI, "YES")
 }
 
-record(mbbo, "$(P)enum") {
+record(mbbo, "$(device)enum") {
   field(ZRST, "Aaa")
   field(ZRVL, "5")
   field(ONST, "Bbb")
@@ -88,7 +88,7 @@ record(mbbo, "$(P)enum") {
   field(PINI, "YES")
 }
 
-record(mbbo, "$(P)enum2") {
+record(mbbo, "$(device)enum2") {
   field(ZRST, "Aaa")
   field(ONST, "Bbb")
   field(TWST, "Ccc")
@@ -96,56 +96,56 @@ record(mbbo, "$(P)enum2") {
   field(PINI, "YES")
 }
 
-record(waveform, "$(P)uint8a") {
+record(waveform, "$(device)uint8a") {
   field(NELM, "3")
   field(FTVL, "UCHAR")
   field(INP, {const:[0, 255]})
   field(PINI, "YES")
 }
 
-record(waveform, "$(P)int16a") {
+record(waveform, "$(device)int16a") {
   field(NELM, "3")
   field(FTVL, "SHORT")
   field(INP, {const:[-32768, 32767]})
   field(PINI, "YES")
 }
 
-record(waveform, "$(P)int32a") {
+record(waveform, "$(device)int32a") {
   field(NELM, "3")
   field(FTVL, "LONG")
   field(INP, {const:[-2147483648, 2147483647]})
   field(PINI, "YES")
 }
 
-record(waveform, "$(P)float32a") {
+record(waveform, "$(device)float32a") {
   field(NELM, "3")
   field(FTVL, "FLOAT")
   field(INP, {const:[0.000002, -123.123]})
   field(PINI, "YES")
 }
 
-record(waveform, "$(P)float64a") {
+record(waveform, "$(device)float64a") {
   field(NELM, "3")
   field(FTVL, "DOUBLE")
   field(INP, {const:[0.1, -12345678.123]})
   field(PINI, "YES")
 }
 
-record(waveform, "$(P)stra") {
+record(waveform, "$(device)stra") {
   field(NELM, "3")
   field(FTVL, "STRING")
   field(INP, {const:["five", "six", "seven"]})
   field(PINI, "YES")
 }
 
-record(waveform, "$(P)longstr") {
+record(waveform, "$(device)longstr") {
   field(NELM, "80")
   field(FTVL, "CHAR")
   field(INP, {const:"a string that is just longer than forty characters"})
   field(PINI, "YES")
 }
 
-record(lsi, "$(P)longstr2") {
+record(lsi, "$(device)longstr2") {
   field(SIZV, "80")
   field(INP, {const:"a string that is just longer than forty characters"})
   field(PINI, "YES")
