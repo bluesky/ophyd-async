@@ -16,7 +16,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango import TangoReadable, tango_polling
+from ophyd_async.tango.core import TangoReadable, tango_polling
 from tango import DevState
 
 

@@ -2,15 +2,11 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from ophyd_async.core import Device, DeviceConnector, DeviceFiller
-from ophyd_async.core._utils import LazyMock
-from ophyd_async.tango.signal import (
-    TangoSignalBackend,
-    infer_python_type,
-    infer_signal_type,
-)
+from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
 from tango import DeviceProxy as DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
+
+from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
 
 T = TypeVar("T")
 

@@ -2,7 +2,7 @@ from typing import Annotated as A
 
 from ophyd_async.core import DEFAULT_TIMEOUT, AsyncStatus, SignalR, SignalRW, SignalX
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango import TangoReadable, tango_polling
+from ophyd_async.tango.core import TangoReadable, tango_polling
 
 
 # Enable device level polling, useful for servers that do not support events
