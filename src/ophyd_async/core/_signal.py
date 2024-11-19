@@ -28,7 +28,7 @@ from ._signal_backend import (
     SignalDatatypeV,
 )
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus
+from ._status import AsyncStatus, completed_status
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -448,27 +448,79 @@ async def observe_value(
             do_something_with(value)
     """
 
-    q: asyncio.Queue[SignalDatatypeT | Status] = asyncio.Queue()
+    async for _, value in observe_signals_value(
+        signal, timeout=timeout, done_status=done_status
+    ):
+        yield value
+
+
+async def observe_signals_value(
+    *signals: SignalR[SignalDatatypeT],
+    timeout: float | None = None,
+    done_status: Status | None = None,
+) -> AsyncGenerator[tuple[SignalR[SignalDatatypeT], SignalDatatypeT], None]:
+    """Subscribe to the value of a signal so it can be iterated from.
+
+    Parameters
+    ----------
+    signals:
+        Call subscribe_value on all the signals at the start, and clear_sub on it at the
+        end
+    timeout:
+        If given, how long to wait for each updated value in seconds. If an update
+        is not produced in this time then raise asyncio.TimeoutError
+    done_status:
+        If this status is complete, stop observing and make the iterator return.
+        If it raises an exception then this exception will be raised by the iterator.
+
+    Notes
+    -----
+    Example usage::
+
+        async for signal,value in observe_signals_values(sig1,sig2,..):
+            if signal is sig1:
+                do_something_with(value)
+            elif signal is sig2:
+                do_something_else_with(value)
+    """
+    q: asyncio.Queue[tuple[SignalR[SignalDatatypeT], SignalDatatypeT] | Status] = (
+        asyncio.Queue()
+    )
+    if timeout is None:
+        get_value = q.get
+    else:
+
+        async def get_value():
+            return await asyncio.wait_for(q.get(), timeout)
+
+    cbs: dict[SignalR, Callback] = {}
+    for signal in signals:
+
+        def queue_value(value: SignalDatatypeT, signal=signal):
+            q.put_nowait((signal, value))
+
+        cbs[signal] = queue_value
+        signal.subscribe_value(queue_value)
 
     if done_status is not None:
         done_status.add_callback(q.put_nowait)
 
-    signal.subscribe_value(q.put_nowait)
     try:
         while True:
             # yield here in case something else is filling the queue
             # like in test_observe_value_times_out_with_no_external_task()
             await asyncio.sleep(0)
-            item = await asyncio.wait_for(q.get(), timeout)
+            item = await get_value()
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc
                 else:
                     break
             else:
-                yield cast(SignalDatatypeT, item)
+                yield cast(tuple[SignalR[SignalDatatypeT], SignalDatatypeT], item)
     finally:
-        signal.clear_sub(q.put_nowait)
+        for signal, cb in cbs.items():
+            signal.clear_sub(cb)
 
 
 class _ValueChecker(Generic[SignalDatatypeT]):
@@ -533,15 +585,16 @@ async def wait_for_value(
 async def set_and_wait_for_other_value(
     set_signal: SignalW[SignalDatatypeT],
     set_value: SignalDatatypeT,
-    read_signal: SignalR[SignalDatatypeV],
-    read_value: SignalDatatypeV,
+    match_signal: SignalR[SignalDatatypeV],
+    match_value: SignalDatatypeV | Callable[[SignalDatatypeV], bool],
     timeout: float = DEFAULT_TIMEOUT,
     set_timeout: float | None = None,
+    wait_for_set_completion: bool = True,
 ) -> AsyncStatus:
     """Set a signal and monitor another signal until it has the specified value.
 
     This function sets a set_signal to a specified set_value and waits for
-    a read_signal to have the read_value.
+    a match_signal to have the match_value.
 
     Parameters
     ----------
@@ -549,14 +602,16 @@ async def set_and_wait_for_other_value(
         The signal to set
     set_value:
         The value to set it to
-    read_signal:
+    match_signal:
         The signal to monitor
-    read_value:
+    match_value:
         The value to wait for
     timeout:
         How long to wait for the signal to have the value
     set_timeout:
         How long to wait for the set to complete
+    wait_for_set_completion:
+        This will wait for set completion #More info in how-to docs
 
     Notes
     -----
@@ -565,7 +620,7 @@ async def set_and_wait_for_other_value(
         set_and_wait_for_value(device.acquire, 1, device.acquire_rbv, 1)
     """
     # Start monitoring before the set to avoid a race condition
-    values_gen = observe_value(read_signal)
+    values_gen = observe_value(match_signal)
 
     # Get the initial value from the monitor to make sure we've created it
     current_value = await anext(values_gen)
@@ -573,28 +628,33 @@ async def set_and_wait_for_other_value(
     status = set_signal.set(set_value, timeout=set_timeout)
 
     # If the value was the same as before no need to wait for it to change
-    if current_value != read_value:
+    if current_value != match_value:
 
         async def _wait_for_value():
             async for value in values_gen:
-                if value == read_value:
+                if value == match_value:
                     break
 
         try:
             await asyncio.wait_for(_wait_for_value(), timeout)
+            if wait_for_set_completion:
+                await status
+            return status
         except asyncio.TimeoutError as e:
             raise TimeoutError(
-                f"{read_signal.name} didn't match {read_value} in {timeout}s"
+                f"{match_signal.name} didn't match {match_value} in {timeout}s"
             ) from e
 
-    return status
+    return completed_status()
 
 
 async def set_and_wait_for_value(
     signal: SignalRW[SignalDatatypeT],
     value: SignalDatatypeT,
+    match_value: SignalDatatypeT | Callable[[SignalDatatypeT], bool] | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     status_timeout: float | None = None,
+    wait_for_set_completion: bool = True,
 ) -> AsyncStatus:
     """Set a signal and monitor it until it has that value.
 
@@ -609,10 +669,15 @@ async def set_and_wait_for_value(
         The signal to set
     value:
         The value to set it to
+    match_value:
+        The expected value of the signal after the operation.
+        Used to verify that the set operation was successful.
     timeout:
         How long to wait for the signal to have the value
     status_timeout:
         How long the returned Status will wait for the set to complete
+    wait_for_set_completion:
+        This will wait for set completion #More info in how-to docs
 
     Notes
     -----
@@ -620,6 +685,14 @@ async def set_and_wait_for_value(
 
         set_and_wait_for_value(device.acquire, 1)
     """
+    if match_value is None:
+        match_value = value
     return await set_and_wait_for_other_value(
-        signal, value, signal, value, timeout, status_timeout
+        signal,
+        value,
+        signal,
+        match_value,
+        timeout,
+        status_timeout,
+        wait_for_set_completion,
     )
