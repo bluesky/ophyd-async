@@ -1,70 +1,62 @@
-from typing import TypeVar
+from collections.abc import Sequence
+from typing import Generic, TypeVar
 
-from ophyd_async.core import PathProvider
+from ophyd_async.core import PathProvider, StandardDetector
+from ophyd_async.core._detector import DetectorControllerT
+from ophyd_async.core._signal import SignalR
 
-from ._core_io import ADBaseIO, NDFileHDFIO, NDFileIO
+from ._core_io import ADBaseIO, NDFileHDFIO, NDFileIO, NDPluginBaseIO
 from ._core_logic import ADBaseDatasetDescriber
-from ._core_writer import ADWriter
 from ._hdf_writer import ADHDFWriter
 from ._tiff_writer import ADTIFFWriter
 
 ADBaseIOT = TypeVar("ADBaseIOT", bound=ADBaseIO)
 NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
+NDPluginBaseIOT = TypeVar("NDPluginBaseIOT", bound=NDPluginBaseIO)
 
 
-def _areadetector_driver_and_fileio(
-    drv_cls: type[ADBaseIOT],
-    fileio_cls: type[NDFileIOT],
-    writer_cls: type[ADWriter],
-    prefix: str,
-    drv_suffix: str,
-    fileio_suffix: str,
-    path_provider: PathProvider,
-) -> tuple[ADBaseIOT, NDFileIOT, ADWriter]:
-    drv = drv_cls(prefix + drv_suffix)
-    fileio = fileio_cls(prefix + fileio_suffix)
+class AreaDetector(
+    Generic[ADBaseIOT, NDFileIOT, DetectorControllerT],
+    StandardDetector[DetectorControllerT],
+):
+    def __init__(
+        self,
+        drv: ADBaseIOT,
+        controller: DetectorControllerT,
+        fileio: NDFileIOT,
+        path_provider: PathProvider,
+        plugins: dict[str, NDPluginBaseIO],
+        config_sigs: Sequence[SignalR] = (),
+        name: str = "",
+    ):
+        self.drv = drv
+        self.fileio = fileio
+        for name, plugin in plugins.items():
+            setattr(self, name, plugin)
 
-    def get_detector_name() -> str:
-        assert drv.parent, "Detector driver hasn't been attached to a detector"
-        return drv.parent.name
+        def name_provider():
+            return self.name
 
-    writer = writer_cls(
-        fileio, path_provider, get_detector_name, ADBaseDatasetDescriber(drv)
-    )
-    return drv, fileio, writer
+        if isinstance(fileio, NDFileHDFIO):
+            writer = ADHDFWriter(
+                fileio,
+                path_provider,
+                name_provider,
+                ADBaseDatasetDescriber(drv),
+                *plugins.values(),
+            )
+        else:
+            writer = ADTIFFWriter(
+                fileio, path_provider, name_provider, ADBaseDatasetDescriber(drv)
+            )
+        super().__init__(controller, writer, config_sigs, name)
 
-
-def areadetector_driver_and_hdf(
-    drv_cls: type[ADBaseIOT],
-    prefix: str,
-    drv_suffix: str,
-    fileio_suffix: str,
-    path_provider: PathProvider,
-) -> tuple[ADBaseIOT, NDFileHDFIO, ADWriter]:
-    return _areadetector_driver_and_fileio(
-        drv_cls=drv_cls,
-        fileio_cls=NDFileHDFIO,
-        writer_cls=ADHDFWriter,
-        prefix=prefix,
-        drv_suffix=drv_suffix,
-        fileio_suffix=fileio_suffix,
-        path_provider=path_provider,
-    )
-
-
-def areadetector_driver_and_tiff(
-    drv_cls: type[ADBaseIOT],
-    prefix: str,
-    drv_suffix: str,
-    fileio_suffix: str,
-    path_provider: PathProvider,
-) -> tuple[ADBaseIOT, NDFileIO, ADWriter]:
-    return _areadetector_driver_and_fileio(
-        drv_cls=drv_cls,
-        fileio_cls=NDFileIO,
-        writer_cls=ADTIFFWriter,
-        prefix=prefix,
-        drv_suffix=drv_suffix,
-        fileio_suffix=fileio_suffix,
-        path_provider=path_provider,
-    )
+    def get_plugin(
+        self, name: str, plugin_type: type[NDPluginBaseIOT] = NDPluginBaseIO
+    ) -> NDPluginBaseIOT:
+        plugin = getattr(self, name, None)
+        if not isinstance(plugin, plugin_type):
+            raise TypeError(
+                f"Expected {self.name}.{name} to be a {plugin_type}, got {plugin}"
+            )
+        return plugin

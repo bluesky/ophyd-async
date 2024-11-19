@@ -1,4 +1,4 @@
-from ._core_detector import areadetector_driver_and_hdf, areadetector_driver_and_tiff
+from ._core_detector import AreaDetector
 from ._core_io import (
     ADBaseIO,
     DetectorState,
@@ -24,8 +24,7 @@ from ._utils import (
 )
 
 __all__ = [
-    "areadetector_driver_and_hdf",
-    "areadetector_driver_and_tiff",
+    "AreaDetector",
     "ADBaseIO",
     "DetectorState",
     "NDArrayBaseIO",
