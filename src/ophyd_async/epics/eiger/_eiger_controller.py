@@ -55,7 +55,12 @@ class EigerController(DetectorController):
     async def arm(self):
         # TODO: Detector state should be an enum see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
         self._arm_status = set_and_wait_for_other_value(
-            self._drv.arm, 1, self._drv.state, "ready", timeout=DEFAULT_TIMEOUT
+            self._drv.arm,
+            1,
+            self._drv.state,
+            "ready",
+            timeout=DEFAULT_TIMEOUT,
+            wait_for_set_completion=False,
         )
 
     async def wait_for_idle(self):
