@@ -44,7 +44,10 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         velocities: dict[int, npt.NDArray[np.float64]] = {}
         cs_axes: dict[PmacMotor, int] = {}
         time_array: npt.NDArray[np.float64] = np.empty(
-            2 * scan_size + (len(gaps) * 4) + 1, dtype=np.float64
+            2 * scan_size + ((len(gaps) + 1) * 4) + 1, dtype=np.float64
+        )
+        user_array: npt.NDArray[np.int32] = np.empty(
+            2 * scan_size + ((len(gaps) + 1) * 4) + 1, dtype=np.int32
         )
         # Which Axes are in use?
         scan_axes = chunk.axes()
@@ -54,10 +57,10 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                 # Initialise numpy arrays for Positions, velocities and time within dict
                 # for each axis in scan
                 positions[cs_index] = np.empty(
-                    2 * scan_size + (len(gaps) * 4) + 1, dtype=np.float64
+                    2 * scan_size + ((len(gaps) + 1) * 4) + 1, dtype=np.float64
                 )
                 velocities[cs_index] = np.empty(
-                    2 * scan_size + (len(gaps) * 4) + 1, dtype=np.float64
+                    2 * scan_size + ((len(gaps) + 1) * 4) + 1, dtype=np.float64
                 )
                 cs_ports.add(cs_port)
                 cs_axes[axis] = cs_index
@@ -95,6 +98,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                     time_array[profile_start:profile_gap] = np.repeat(
                         chunk.midpoints["DURATION"][start:gap] / (2 * TICK_S), 2
                     )
+                    user_array[profile_start:profile_gap] = 1
             if gap < scan_size:
                 # Create Position, velocity and time arrays for the gap
                 pos_gap, vel_gap, time_gap = await get_gap_profile(chunk, gap)
@@ -109,7 +113,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                         ] = vel_gap[axis]
                     else:
                         time_array[profile_gap : profile_gap + len_gap] = time_gap
-
+                        user_array[profile_gap : profile_gap + len_gap] = 2
                 added_point += len_gap
             start = gap
 
@@ -154,6 +158,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         self.scantime += run_up_time + final_time
         time_array[0] += int(run_up_time / TICK_S)
         time_array[(profile_length)] = int(final_time / TICK_S)
+        user_array[(profile_length)] = 8
         profile_length += 1
 
         for axis in scan_axes:
@@ -169,6 +174,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                 )
             else:
                 await self.pmac.time_array.set(time_array[:profile_length])
+                await self.pmac.user_array.set(user_array[:profile_length])
 
         # MOVE TO START
         for axis in scan_axes:
