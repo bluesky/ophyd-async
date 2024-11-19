@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Device Collector Event-Loop Choice &#8212; ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation</title>
+    <title>set_and_wait_for_other_value &#8212; ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation</title>
   
   
   
@@ -49,7 +49,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/event-loop-choice';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'how-to/use_set_and_wait_for_other_value';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -59,8 +59,8 @@
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Flyscanning" href="flyscanning.html" />
-    <link rel="prev" title="Design Goals" href="design-goals.html" />
+    <link rel="next" title="Write Tests for Devices" href="write-tests-for-devices.html" />
+    <link rel="prev" title="Make a StandardDetector" href="make-a-standard-detector.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -152,14 +152,14 @@
 </li>
 
 
-<li class="nav-item ">
+<li class="nav-item current active">
   <a class="nav-link nav-internal" href="../how-to.html">
     How-to Guides
   </a>
 </li>
 
 
-<li class="nav-item current active">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../explanations.html">
     Explanations
   </a>
@@ -307,14 +307,14 @@
 </li>
 
 
-<li class="nav-item ">
+<li class="nav-item current active">
   <a class="nav-link nav-internal" href="../how-to.html">
     How-to Guides
   </a>
 </li>
 
 
-<li class="nav-item current active">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../explanations.html">
     Explanations
   </a>
@@ -410,21 +410,13 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="decisions.html">Architectural Decision Records</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0001-record-architecture-decisions.html">1. Record architecture decisions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0002-switched-to-python-copier-template.html">2. Adopt python-copier-template for project structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0003-ophyd-async-migration.html">3. Ophyd Async migration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0004-repository-structure.html">4. Repository Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0005-respect-black-line-length.html">5. Respect black line length</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0006-procedural-device-definitions.html">6. Procedural Device Definitions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0007-subpackage-structure.html">7. Sub-package Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0008-signal-types.html">8. Settle on Signal Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decisions/0009-procedural-vs-declarative-devices.html">9. Procedural vs Declarative Devices</a></li>
-</ul>
-</details></li>
-<li class="toctree-l1"><a class="reference internal" href="design-goals.html">Design Goals</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Device Collector Event-Loop Choice</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flyscanning.html">Flyscanning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="choose-interfaces-for-devices.html">Decision Flowchart for Creating a New ophyd_async Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compound-devices.html">Compound Devices Together</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contribute to the project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="make-a-simple-device.html">Make a Simple Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="make-a-standard-detector.html">Make a StandardDetector</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="write-tests-for-devices.html">Write Tests for Devices</a></li>
 </ul>
 </div>
 </nav></div>
@@ -461,9 +453,9 @@
       </a>
     </li>
     
-    <li class="breadcrumb-item"><a href="../explanations.html" class="nav-link">Explanations</a></li>
+    <li class="breadcrumb-item"><a href="../how-to.html" class="nav-link">How-to Guides</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Device Collector Event-Loop Choice</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></span></li>
   </ul>
 </nav>
 </div>
@@ -480,46 +472,46 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="device-collector-event-loop-choice">
-<h1>Device Collector Event-Loop Choice<a class="headerlink" href="#device-collector-event-loop-choice" title="Link to this heading">#</a></h1>
-<p>In a sync context, the ophyd-async <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> requires the bluesky event-loop
-to connect to devices. In an async context, it does not.</p>
-<section id="sync-context">
-<h2>Sync Context<a class="headerlink" href="#sync-context" title="Link to this heading">#</a></h2>
-<p>In a sync context the run-engine must be initialized prior to connecting to devices.
-We enfore usage of the bluesky event-loop in this context.</p>
-<p>The following will fail if <code class="code highlight python docutils literal highlight-python"><span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">()</span></code> has not been called already:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">DeviceCollector</span><span class="p">():</span>
-    <span class="n">device1</span> <span class="o">=</span> <span class="n">Device1</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-    <span class="n">device2</span> <span class="o">=</span> <span class="n">Device2</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-    <span class="n">device3</span> <span class="o">=</span> <span class="n">Device3</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> connects to devices in the event-loop created in the run-engine.</p>
-</section>
-<section id="async-context">
-<h2>Async Context<a class="headerlink" href="#async-context" title="Link to this heading">#</a></h2>
-<p>In an async context device connection is decoupled from the run-engine.
-The following attempts connection to all the devices in the <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code>
-before or after run-engine initialization.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">connection_function</span><span class="p">()</span> <span class="p">:</span>
-    <span class="k">async</span> <span class="k">with</span> <span class="n">DeviceCollector</span><span class="p">():</span>
-        <span class="n">device1</span> <span class="o">=</span> <span class="n">Device1</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-        <span class="n">device2</span> <span class="o">=</span> <span class="n">Device2</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-        <span class="n">device3</span> <span class="o">=</span> <span class="n">Device3</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-
-<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">connection_function</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>The devices will be unable to be used in the run-engine unless they share the same event-loop.
-When the run-engine is initialised it will create a new background event-loop to use if one
-is not passed in with <code class="code highlight python docutils literal highlight-python"><span class="n">RunEngine</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span></code>.</p>
-<p>If the user wants to use devices in the async <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> within the run-engine
-they can either:</p>
+  <section id="set-and-wait-for-other-value">
+<h1><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code><a class="headerlink" href="#set-and-wait-for-other-value" title="Link to this heading">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code> function (defined in <code class="docutils literal notranslate"><span class="pre">_signal.py</span></code>) is a utility designed to:</p>
+<ol class="arabic simple">
+<li><p><strong>Set a signal</strong>.</p></li>
+<li><p><strong>Wait for another signal to reach a specified value (<code class="docutils literal notranslate"><span class="pre">match_value</span></code>)</strong>.</p></li>
+</ol>
+<p>The behavior of the function depends on the value of the <code class="docutils literal notranslate"><span class="pre">wait_for_set_completion</span></code> parameter:</p>
 <ul class="simple">
-<li><p>Run the <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> first and pass the event-loop into the run-engine.</p></li>
-<li><p>Initialize the run-engine first and run the <code class="code highlight python docutils literal highlight-python"><span class="n">DeviceCollector</span></code> using the bluesky event-loop.</p></li>
+<li><p><strong>If <code class="docutils literal notranslate"><span class="pre">wait_for_set_completion</span> <span class="pre">=</span> <span class="pre">True</span></code>:</strong><br />
+The function returns at <strong>1</strong> (see diagram below), which occurs when the “set operation” is complete.</p></li>
+<li><p><strong>If <code class="docutils literal notranslate"><span class="pre">wait_for_set_completion</span> <span class="pre">=</span> <span class="pre">False</span></code>:</strong><br />
+The function returns at <strong>2</strong>, which occurs when the <code class="docutils literal notranslate"><span class="pre">match_signal</span></code> reaches the <code class="docutils literal notranslate"><span class="pre">match_value</span></code>.</p></li>
 </ul>
+<p>In <strong>AreaDetector</strong>, the <code class="docutils literal notranslate"><span class="pre">wait_for_set_completion</span></code> parameter should generally be set to <strong><code class="docutils literal notranslate"><span class="pre">False</span></code></strong>, as the preferred behavior is to return when the <code class="docutils literal notranslate"><span class="pre">match_signal</span></code> achieves the <code class="docutils literal notranslate"><span class="pre">match_value</span></code>.</p>
+<hr class="docutils" />
+<section id="behavior-diagram">
+<h2>Behavior Diagram:<a class="headerlink" href="#behavior-diagram" title="Link to this heading">#</a></h2>
+<p><img alt="wait_for_set_completion" src="../_images/set_and_wait_for_other_value.svg" /></p>
+</section>
+<hr class="docutils" />
+<section id="example-usage">
+<h2>Example Usage<a class="headerlink" href="#example-usage" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example code snippet for using set_and_wait_for_other_value in an AreaDetector driver</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">arm</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">,</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+    <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">wait_for_set_completion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In this <strong>AreaDetector driver</strong>, the function ensures that the detector’s <code class="docutils literal notranslate"><span class="pre">arm_status</span></code> reaches <code class="docutils literal notranslate"><span class="pre">&quot;ready&quot;</span></code> before capturing data. To achieve this:</p>
+<ul class="simple">
+<li><p>The detector is instructed to transition to the “armed” state by setting the driver’s <code class="docutils literal notranslate"><span class="pre">arm</span></code> signal to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p>The function waits until the driver’s <code class="docutils literal notranslate"><span class="pre">state</span></code> signal equals <code class="docutils literal notranslate"><span class="pre">&quot;ready&quot;</span></code>.</p></li>
+</ul>
+<p>This approach ensures that data capture is only initiated once the detector is fully prepared.</p>
 </section>
 </section>
 
@@ -534,20 +526,20 @@ they can either:</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="design-goals.html"
+       href="make-a-standard-detector.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Design Goals</p>
+        <p class="prev-next-title">Make a StandardDetector</p>
       </div>
     </a>
     <a class="right-next"
-       href="flyscanning.html"
+       href="write-tests-for-devices.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Flyscanning</p>
+        <p class="prev-next-title">Write Tests for Devices</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -570,8 +562,8 @@ they can either:</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sync-context">Sync Context</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#async-context">Async Context</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-diagram">Behavior Diagram:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-usage">Example Usage</a></li>
 </ul>
   </nav></div>
 
@@ -579,7 +571,7 @@ they can either:</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/event-loop-choice.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/how-to/use_set_and_wait_for_other_value.md">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -594,7 +586,7 @@ they can either:</p>
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/explanations/event-loop-choice.rst.txt">
+    <a href="../_sources/how-to/use_set_and_wait_for_other_value.md.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

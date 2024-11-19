@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.8.0a5.dev6+g9ea28ad9 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=e8a5d956"></script>
+    <script src="../../../_static/documentation_options.js?v=9364f386"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a5.dev6+g9ea28ad9 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a5.dev6+g9ea28ad9 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation - Home"/>
   
   
 </a></div>
@@ -488,7 +488,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">SignalDatatypeV</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">._soft_signal_backend</span> <span class="kn">import</span> <span class="n">SoftSignalBackend</span>
-<span class="kn">from</span> <span class="nn">._status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span>
+<span class="kn">from</span> <span class="nn">._status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">completed_status</span>
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
@@ -976,27 +976,82 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            do_something_with(value)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">q</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="n">Status</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_signals_value</span><span class="p">(</span>
+        <span class="n">signal</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">done_status</span><span class="o">=</span><span class="n">done_status</span>
+    <span class="p">):</span>
+        <span class="k">yield</span> <span class="n">value</span></div>
+
+
+
+<div class="viewcode-block" id="observe_signals_value">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.observe_signals_value">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">observe_signals_value</span><span class="p">(</span>
+    <span class="o">*</span><span class="n">signals</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">done_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscribe to the value of a signal so it can be iterated from.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signals:</span>
+<span class="sd">        Call subscribe_value on all the signals at the start, and clear_sub on it at the</span>
+<span class="sd">        end</span>
+<span class="sd">    timeout:</span>
+<span class="sd">        If given, how long to wait for each updated value in seconds. If an update</span>
+<span class="sd">        is not produced in this time then raise asyncio.TimeoutError</span>
+<span class="sd">    done_status:</span>
+<span class="sd">        If this status is complete, stop observing and make the iterator return.</span>
+<span class="sd">        If it raises an exception then this exception will be raised by the iterator.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Example usage::</span>
+
+<span class="sd">        async for signal,value in observe_signals_values(sig1,sig2,..):</span>
+<span class="sd">            if signal is sig1:</span>
+<span class="sd">                do_something_with(value)</span>
+<span class="sd">            elif signal is sig2:</span>
+<span class="sd">                do_something_else_with(value)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">q</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">Status</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">get_value</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span>
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">():</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
+
+    <span class="n">cbs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">SignalR</span><span class="p">,</span> <span class="n">Callback</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
+
+        <span class="k">def</span> <span class="nf">queue_value</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">):</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">((</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="n">cbs</span><span class="p">[</span><span class="n">signal</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue_value</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span><span class="n">queue_value</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">done_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">done_status</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span>
 
-    <span class="n">signal</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="c1"># yield here in case something else is filling the queue</span>
             <span class="c1"># like in test_observe_value_times_out_with_no_external_task()</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_value</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">done_status</span> <span class="ow">and</span> <span class="n">item</span> <span class="ow">is</span> <span class="n">done_status</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">exc</span> <span class="o">:=</span> <span class="n">done_status</span><span class="o">.</span><span class="n">exception</span><span class="p">():</span>
                     <span class="k">raise</span> <span class="n">exc</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">cast</span><span class="p">(</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">cast</span><span class="p">(</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">item</span><span class="p">)</span>
     <span class="k">finally</span><span class="p">:</span>
-        <span class="n">signal</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span></div>
+        <span class="k">for</span> <span class="n">signal</span><span class="p">,</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">cbs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
 
 
 
@@ -1067,15 +1122,16 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">async</span> <span class="k">def</span> <span class="nf">set_and_wait_for_other_value</span><span class="p">(</span>
     <span class="n">set_signal</span><span class="p">:</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">set_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
-    <span class="n">read_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeV</span><span class="p">],</span>
-    <span class="n">read_value</span><span class="p">:</span> <span class="n">SignalDatatypeV</span><span class="p">,</span>
+    <span class="n">match_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeV</span><span class="p">],</span>
+    <span class="n">match_value</span><span class="p">:</span> <span class="n">SignalDatatypeV</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeV</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">set_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wait_for_set_completion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a signal and monitor another signal until it has the specified value.</span>
 
 <span class="sd">    This function sets a set_signal to a specified set_value and waits for</span>
-<span class="sd">    a read_signal to have the read_value.</span>
+<span class="sd">    a match_signal to have the match_value.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1083,14 +1139,16 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        The signal to set</span>
 <span class="sd">    set_value:</span>
 <span class="sd">        The value to set it to</span>
-<span class="sd">    read_signal:</span>
+<span class="sd">    match_signal:</span>
 <span class="sd">        The signal to monitor</span>
-<span class="sd">    read_value:</span>
+<span class="sd">    match_value:</span>
 <span class="sd">        The value to wait for</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        How long to wait for the signal to have the value</span>
 <span class="sd">    set_timeout:</span>
 <span class="sd">        How long to wait for the set to complete</span>
+<span class="sd">    wait_for_set_completion:</span>
+<span class="sd">        This will wait for set completion #More info in how-to docs</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1099,7 +1157,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        set_and_wait_for_value(device.acquire, 1, device.acquire_rbv, 1)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Start monitoring before the set to avoid a race condition</span>
-    <span class="n">values_gen</span> <span class="o">=</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">read_signal</span><span class="p">)</span>
+    <span class="n">values_gen</span> <span class="o">=</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">match_signal</span><span class="p">)</span>
 
     <span class="c1"># Get the initial value from the monitor to make sure we&#39;ve created it</span>
     <span class="n">current_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">anext</span><span class="p">(</span><span class="n">values_gen</span><span class="p">)</span>
@@ -1107,21 +1165,24 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">status</span> <span class="o">=</span> <span class="n">set_signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">set_value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">set_timeout</span><span class="p">)</span>
 
     <span class="c1"># If the value was the same as before no need to wait for it to change</span>
-    <span class="k">if</span> <span class="n">current_value</span> <span class="o">!=</span> <span class="n">read_value</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">current_value</span> <span class="o">!=</span> <span class="n">match_value</span><span class="p">:</span>
 
         <span class="k">async</span> <span class="k">def</span> <span class="nf">_wait_for_value</span><span class="p">():</span>
             <span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values_gen</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">read_value</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">match_value</span><span class="p">:</span>
                     <span class="k">break</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">_wait_for_value</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">wait_for_set_completion</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">status</span>
+            <span class="k">return</span> <span class="n">status</span>
         <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">read_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t match </span><span class="si">{</span><span class="n">read_value</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">match_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t match </span><span class="si">{</span><span class="n">match_value</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
             <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
-    <span class="k">return</span> <span class="n">status</span></div>
+    <span class="k">return</span> <span class="n">completed_status</span><span class="p">()</span></div>
 
 
 
@@ -1130,8 +1191,10 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">async</span> <span class="k">def</span> <span class="nf">set_and_wait_for_value</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">match_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">status_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wait_for_set_completion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a signal and monitor it until it has that value.</span>
 
@@ -1146,10 +1209,15 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        The signal to set</span>
 <span class="sd">    value:</span>
 <span class="sd">        The value to set it to</span>
+<span class="sd">    match_value:</span>
+<span class="sd">        The expected value of the signal after the operation.</span>
+<span class="sd">        Used to verify that the set operation was successful.</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        How long to wait for the signal to have the value</span>
 <span class="sd">    status_timeout:</span>
 <span class="sd">        How long the returned Status will wait for the set to complete</span>
+<span class="sd">    wait_for_set_completion:</span>
+<span class="sd">        This will wait for set completion #More info in how-to docs</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1157,8 +1225,16 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="sd">        set_and_wait_for_value(device.acquire, 1)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">match_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">match_value</span> <span class="o">=</span> <span class="n">value</span>
     <span class="k">return</span> <span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
-        <span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">status_timeout</span>
+        <span class="n">signal</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">,</span>
+        <span class="n">signal</span><span class="p">,</span>
+        <span class="n">match_value</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">,</span>
+        <span class="n">status_timeout</span><span class="p">,</span>
+        <span class="n">wait_for_set_completion</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 </pre></div>

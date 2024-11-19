@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.8.0a5.dev6+g9ea28ad9 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=e8a5d956"></script>
+    <script src="../_static/documentation_options.js?v=9364f386"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a5.dev6+g9ea28ad9 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a5.dev6+g9ea28ad9 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation - Home"/>
   
   
 </a></div>
@@ -687,73 +687,76 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.observe_value" title="ophyd_async.core.observe_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe_value</span></code></a></p></td>
 <td><p>Subscribe to the value of a signal so it can be iterated from.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.set_and_wait_for_value" title="ophyd_async.core.set_and_wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_and_wait_for_value</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.observe_signals_value" title="ophyd_async.core.observe_signals_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe_signals_value</span></code></a></p></td>
+<td><p>Subscribe to the value of a signal so it can be iterated from.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.set_and_wait_for_value" title="ophyd_async.core.set_and_wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_and_wait_for_value</span></code></a></p></td>
 <td><p>Set a signal and monitor it until it has that value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.set_and_wait_for_other_value" title="ophyd_async.core.set_and_wait_for_other_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.set_and_wait_for_other_value" title="ophyd_async.core.set_and_wait_for_other_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></p></td>
 <td><p>Set a signal and monitor another signal until it has the specified value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.soft_signal_r_and_setter" title="ophyd_async.core.soft_signal_r_and_setter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_r_and_setter</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.soft_signal_r_and_setter" title="ophyd_async.core.soft_signal_r_and_setter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_r_and_setter</span></code></a></p></td>
 <td><p>Returns a tuple of a read-only Signal and a callable through which the signal can be internally modified within the device.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.soft_signal_rw" title="ophyd_async.core.soft_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_rw</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.soft_signal_rw" title="ophyd_async.core.soft_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_rw</span></code></a></p></td>
 <td><p>Creates a read-writable Signal with a SoftSignalBackend.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_value</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_value</span></code></a></p></td>
 <td><p>Wait for a signal to have a matching value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core.SignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalBackend</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core.SignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalBackend</span></code></a></p></td>
 <td><p>A read/write/monitor backend for a Signals</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_datakey</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_datakey</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrictEnum</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrictEnum</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubsetEnum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubsetEnum</span></code></a></p></td>
 <td><p>All members should exist in the Backend, but there may be extras</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalMetadata</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalMetadata</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend" title="ophyd_async.core.SoftSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend" title="ophyd_async.core.SoftSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a></p></td>
 <td><p>An backend to a soft Signal, for test signals see <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a></p></td>
 <td><p>Convert asyncio awaitable to bluesky Status interface</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a></p></td>
 <td><p>Convert AsyncIterator of WatcherUpdates to bluesky Status interface.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
 <td><p>A lazily created Mock to be used when connecting in mock mode.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotConnected</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotConnected</span></code></a></p></td>
 <td><p>Exception to be raised if a <a class="reference internal" href="#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> is cancelled</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
 <td><p>Hide an object behind a reference.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.WatcherUpdate" title="ophyd_async.core.WatcherUpdate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatcherUpdate</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.WatcherUpdate" title="ophyd_async.core.WatcherUpdate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatcherUpdate</span></code></a></p></td>
 <td><p>A dataclass such that, when expanded, it provides the kwargs for a watcher</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
 <td><p>If all values are the same, return that value, otherwise raise TypeError</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
 <td><p>Converts between a positive number of seconds and an equivalent number of microseconds.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
 <td><p>Call many underlying signals, accumulating exceptions and returning them</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">completed_status</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">completed_status</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -1813,8 +1816,35 @@ If it raises an exception then this exception will be raised by the iterator.</p
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.observe_signals_value">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">observe_signals_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">done_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Status" title="(in bluesky v1.14.dev61+g92d26331)"><span class="pre">Status</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator" title="(in Python v3.13)"><span class="pre">AsyncGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#observe_signals_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.observe_signals_value" title="Link to this definition">#</a></dt>
+<dd><p>Subscribe to the value of a signal so it can be iterated from.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signals</strong> – Call subscribe_value on all the signals at the start, and clear_sub on it at the
+end</p></li>
+<li><p><strong>timeout</strong> – If given, how long to wait for each updated value in seconds. If an update
+is not produced in this time then raise asyncio.TimeoutError</p></li>
+<li><p><strong>done_status</strong> – If this status is complete, stop observing and make the iterator return.
+If it raises an exception then this exception will be raised by the iterator.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">signal</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">observe_signals_values</span><span class="p">(</span><span class="n">sig1</span><span class="p">,</span><span class="n">sig2</span><span class="p">,</span><span class="o">..</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">signal</span> <span class="ow">is</span> <span class="n">sig1</span><span class="p">:</span>
+        <span class="n">do_something_with</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">signal</span> <span class="ow">is</span> <span class="n">sig2</span><span class="p">:</span>
+        <span class="n">do_something_else_with</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.set_and_wait_for_value">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_and_wait_for_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SignalDatatypeT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#set_and_wait_for_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_and_wait_for_value" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_and_wait_for_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SignalDatatypeT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SignalDatatypeT</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_for_set_completion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#set_and_wait_for_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_and_wait_for_value" title="Link to this definition">#</a></dt>
 <dd><p>Set a signal and monitor it until it has that value.</p>
 <dl class="simple">
 <dt>Useful for busy record, or other Signals with pattern:</dt><dd><ul class="simple">
@@ -1829,8 +1859,11 @@ If it raises an exception then this exception will be raised by the iterator.</p
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>signal</strong> – The signal to set</p></li>
 <li><p><strong>value</strong> – The value to set it to</p></li>
+<li><p><strong>match_value</strong> – The expected value of the signal after the operation.
+Used to verify that the set operation was successful.</p></li>
 <li><p><strong>timeout</strong> – How long to wait for the signal to have the value</p></li>
 <li><p><strong>status_timeout</strong> – How long the returned Status will wait for the set to complete</p></li>
+<li><p><strong>wait_for_set_completion</strong> – This will wait for set completion #More info in how-to docs</p></li>
 </ul>
 </dd>
 </dl>
@@ -1843,19 +1876,20 @@ If it raises an exception then this exception will be raised by the iterator.</p
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.set_and_wait_for_other_value">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_and_wait_for_other_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalW" title="ophyd_async.core._signal.SignalW"><span class="pre">SignalW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SignalDatatypeT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeV</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SignalDatatypeV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#set_and_wait_for_other_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_and_wait_for_other_value" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_and_wait_for_other_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalW" title="ophyd_async.core._signal.SignalW"><span class="pre">SignalW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SignalDatatypeT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeV</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SignalDatatypeV</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeV</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_for_set_completion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#set_and_wait_for_other_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_and_wait_for_other_value" title="Link to this definition">#</a></dt>
 <dd><p>Set a signal and monitor another signal until it has the specified value.</p>
 <p>This function sets a set_signal to a specified set_value and waits for
-a read_signal to have the read_value.</p>
+a match_signal to have the match_value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>signal</strong> – The signal to set</p></li>
 <li><p><strong>set_value</strong> – The value to set it to</p></li>
-<li><p><strong>read_signal</strong> – The signal to monitor</p></li>
-<li><p><strong>read_value</strong> – The value to wait for</p></li>
+<li><p><strong>match_signal</strong> – The signal to monitor</p></li>
+<li><p><strong>match_value</strong> – The value to wait for</p></li>
 <li><p><strong>timeout</strong> – How long to wait for the signal to have the value</p></li>
 <li><p><strong>set_timeout</strong> – How long to wait for the set to complete</p></li>
+<li><p><strong>wait_for_set_completion</strong> – This will wait for set completion #More info in how-to docs</p></li>
 </ul>
 </dd>
 </dl>
@@ -2322,6 +2356,7 @@ number of microseconds.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.assert_reading"><code class="docutils literal notranslate"><span class="pre">assert_reading()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.assert_value"><code class="docutils literal notranslate"><span class="pre">assert_value()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.observe_value"><code class="docutils literal notranslate"><span class="pre">observe_value()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.observe_signals_value"><code class="docutils literal notranslate"><span class="pre">observe_signals_value()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_and_wait_for_value"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_value()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_and_wait_for_other_value"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.soft_signal_r_and_setter"><code class="docutils literal notranslate"><span class="pre">soft_signal_r_and_setter()</span></code></a></li>
