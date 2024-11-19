@@ -125,6 +125,30 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
             50000,
         ]
     ).all()
+    assert (
+        await trigger_logic.pmac.user_array.get_value()
+        == [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            8,
+        ]
+    ).all()
     assert await trigger_logic.pmac.points_to_build.get_value() == 19
     assert await sim_x_motor.user_setpoint.get_value() == 0.9875
     assert trigger_logic.scantime == 9.1
@@ -351,6 +375,49 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
             500000,
             500000,
             100000,
+        ]
+    )
+    assert await trigger_logic.pmac.user_array.get_value() == pytest.approx(
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            8,
         ]
     )
     assert await trigger_logic.pmac.points_to_build.get_value() == 39
