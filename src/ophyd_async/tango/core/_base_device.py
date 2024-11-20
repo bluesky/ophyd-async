@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TypeVar
+from dataclasses import dataclass
+from typing import Any, Generic, TypeVar
 
 from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
 from tango import DeviceProxy as DeviceProxy
@@ -28,63 +29,45 @@ class TangoDevice(Device):
 
     trl: str = ""
     proxy: DeviceProxy | None = None
-    _polling: tuple[bool, float, float | None, float | None] = (False, 0.1, None, 0.1)
-    _signal_polling: dict[str, tuple[bool, float, float, float]] = {}
-    _poll_only_annotated_signals: bool = True
 
     def __init__(
         self,
         trl: str | None = None,
         device_proxy: DeviceProxy | None = None,
+        support_events: bool = False,
         name: str = "",
     ) -> None:
         connector = TangoDeviceConnector(
-            trl=trl,
-            device_proxy=device_proxy,
-            polling=self._polling,
-            signal_polling=self._signal_polling,
+            trl=trl, device_proxy=device_proxy, support_events=support_events
         )
         super().__init__(name=name, connector=connector)
 
 
-def tango_polling(
-    polling: tuple[float, float, float]
-    | dict[str, tuple[float, float, float]]
-    | None = None,
-    signal_polling: dict[str, tuple[float, float, float]] | None = None,
+@dataclass
+class TangoPolling(Generic[T]):
+    ophyd_polling_period: float = 0.1
+    abs_change: T | None = None
+    rel_change: T | None = None
+
+
+def fill_backend_with_polling(
+    support_events: bool, backend: TangoSignalBackend, annotations: list[Any]
 ):
-    """
-    Class decorator to configure polling for Tango devices.
-
-    This decorator allows for the configuration of both device-level and signal-level
-    polling for Tango devices. Polling is useful for device servers that do not support
-    event-driven updates.
-
-    Parameters
-    ----------
-    polling : Optional[Union[Tuple[float, float, float],
-              Dict[str, Tuple[float, float, float]]]], optional
-        Device-level polling configuration as a tuple of three floats representing the
-        polling interval, polling timeout, and polling delay. Alternatively,
-        a dictionary can be provided to specify signal-level polling configurations
-        directly.
-    signal_polling : Optional[Dict[str, Tuple[float, float, float]]], optional
-        Signal-level polling configuration as a dictionary where keys are signal names
-        and values are tuples of three floats representing the polling interval, polling
-        timeout, and polling delay.
-    """
-    if isinstance(polling, dict):
-        signal_polling = polling
-        polling = None
-
-    def decorator(cls):
-        if polling is not None:
-            cls._polling = (True, *polling)
-        if signal_polling is not None:
-            cls._signal_polling = {k: (True, *v) for k, v in signal_polling.items()}
-        return cls
-
-    return decorator
+    unhandled = []
+    while annotations:
+        annotation = annotations.pop(0)
+        backend.allow_events(support_events)
+        if isinstance(annotation, TangoPolling):
+            backend.set_polling(
+                not support_events,
+                annotation.ophyd_polling_period,
+                annotation.abs_change,
+                annotation.rel_change,
+            )
+        else:
+            unhandled.append(annotation)
+    annotations.extend(unhandled)
+    # These leftover annotations will now be handled by the iterator
 
 
 class TangoDeviceConnector(DeviceConnector):
@@ -92,13 +75,11 @@ class TangoDeviceConnector(DeviceConnector):
         self,
         trl: str | None,
         device_proxy: DeviceProxy | None,
-        polling: tuple[bool, float, float | None, float | None],
-        signal_polling: dict[str, tuple[bool, float, float, float]],
+        support_events: bool,
     ) -> None:
         self.trl = trl
         self.proxy = device_proxy
-        self._polling = polling
-        self._signal_polling = signal_polling
+        self._support_events = support_events
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
@@ -106,11 +87,14 @@ class TangoDeviceConnector(DeviceConnector):
                 device=device,
                 signal_backend_factory=TangoSignalBackend,
                 device_connector_factory=lambda: TangoDeviceConnector(
-                    None, None, (False, 0.1, None, None), {}
+                    None, None, self._support_events
                 ),
             )
             list(self.filler.create_devices_from_annotations(filled=False))
-            list(self.filler.create_signals_from_annotations(filled=False))
+            for backend, annotations in self.filler.create_signals_from_annotations(
+                filled=False
+            ):
+                fill_backend_with_polling(self._support_events, backend, annotations)
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
@@ -141,12 +125,6 @@ class TangoDeviceConnector(DeviceConnector):
                 backend = self.filler.fill_child_signal(name, signal_type)
                 backend.datatype = await infer_python_type(full_trl, self.proxy)
                 backend.set_trl(full_trl)
-                if polling := self._signal_polling.get(name, ()):
-                    backend.set_polling(*polling)
-                    backend.allow_events(False)
-                elif self._polling[0]:
-                    backend.set_polling(*self._polling)
-                    backend.allow_events(False)
         # Check that all the requested children have been filled
         self.filler.check_filled(f"{self.trl}: {children}")
         # Set the name of the device to name all children

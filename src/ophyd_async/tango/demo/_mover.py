@@ -1,4 +1,5 @@
 import asyncio
+from typing import Annotated as A
 
 from bluesky.protocols import Movable, Stoppable
 
@@ -16,18 +17,17 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoReadable, tango_polling
+from ophyd_async.tango.core import TangoPolling, TangoReadable
 from tango import DevState
 
 
-# Enable device level polling, useful for servers that do not support events
-@tango_polling((0.1, 0.1, 0.1))
 class TangoMover(TangoReadable, Movable, Stoppable):
     # Enter the name and type of the signals you want to use
     # If type is None or Signal, the type will be inferred from the Tango device
-    position: SignalRW[float]
-    velocity: SignalRW[float]
-    state: SignalR[DevState]
+    # Enable device level polling, useful for servers that do not support events
+    position: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
+    velocity: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
+    state: A[SignalR[DevState], TangoPolling(0.1)]
     stop_: SignalX
 
     def __init__(self, trl: str | None = "", name=""):
