@@ -29,6 +29,7 @@
         ophyd_async.epics.eiger
         ophyd_async.epics.motor
         ophyd_async.epics.signal
+        ophyd_async.epics.testing
     
     
 
