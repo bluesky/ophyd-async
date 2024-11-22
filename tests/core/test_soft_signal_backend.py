@@ -19,9 +19,9 @@ from ophyd_async.core import (
 
 
 class MyEnum(StrictEnum):
-    a = "Aaa"
-    b = "Bbb"
-    c = "Ccc"
+    A = "Aaa"
+    B = "Bbb"
+    C = "Ccc"
 
 
 def integer_d(value):
@@ -80,7 +80,7 @@ default_int_type = (
         (int, 0, 43, integer_d, default_int_type),
         (float, 0.0, 43.5, number_d, "<f8"),
         (str, "", "goodbye", string_d, "|S40"),
-        (MyEnum, MyEnum.a, MyEnum.c, enum_d, "|S40"),
+        (MyEnum, MyEnum.A, MyEnum.C, enum_d, "|S40"),
         (Array1D[np.int8], [], [-8, 3, 44], waveform_d, "|i1"),
         (Array1D[np.uint8], [], [218], waveform_d, "|u1"),
         (Array1D[np.int16], [], [-855], waveform_d, "<i2"),
@@ -126,9 +126,9 @@ async def test_soft_signal_backend_get_put_monitor(
 async def test_soft_signal_backend_enum_value_equivalence():
     soft_backend = SoftSignalBackend(MyEnum)
     await soft_backend.connect(timeout=1)
-    assert (await soft_backend.get_value()) is MyEnum.a
-    await soft_backend.put(MyEnum.b, True)
-    assert (await soft_backend.get_value()) is MyEnum.b
+    assert (await soft_backend.get_value()) is MyEnum.A
+    await soft_backend.put(MyEnum.B, True)
+    assert (await soft_backend.get_value()) is MyEnum.B
 
 
 async def test_soft_signal_backend_with_numpy_typing():

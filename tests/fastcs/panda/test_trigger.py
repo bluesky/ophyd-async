@@ -57,7 +57,7 @@ async def test_pcomp_trigger_logic(mock_panda):
         pulse_width=1,
         rising_edge_step=1,
         number_of_pulses=5,
-        direction=PcompDirection.positive,
+        direction=PcompDirection.POSITIVE,
     )
 
     async def set_active(value: bool):
