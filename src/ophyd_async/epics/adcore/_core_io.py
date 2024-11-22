@@ -1,13 +1,15 @@
+import asyncio
 from enum import Enum
 
 from ophyd_async.core import Device
+from ophyd_async.core._providers import DatasetDescriber
 from ophyd_async.epics.signal import (
     epics_signal_r,
     epics_signal_rw,
     epics_signal_rw_rbv,
 )
 
-from ._utils import ADBaseDataType, FileWriteMode, ImageMode
+from ._utils import ADBaseDataType, FileWriteMode, ImageMode, convert_ad_dtype_to_np
 
 
 class NDArrayBaseIO(Device):
@@ -22,6 +24,21 @@ class NDArrayBaseIO(Device):
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
         super().__init__(name=name)
+
+
+class ADBaseDatasetDescriber(DatasetDescriber):
+    def __init__(self, driver: NDArrayBaseIO) -> None:
+        self._driver = driver
+
+    async def np_datatype(self) -> str:
+        return convert_ad_dtype_to_np(await self._driver.data_type.get_value())
+
+    async def shape(self) -> tuple[int, int]:
+        shape = await asyncio.gather(
+            self._driver.array_size_y.get_value(),
+            self._driver.array_size_x.get_value(),
+        )
+        return shape
 
 
 class NDPluginBaseIO(NDArrayBaseIO):

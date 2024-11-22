@@ -1,6 +1,8 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
+from enum import Enum
 from pathlib import Path
+from typing import Generic, TypeVar, get_args
 from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
@@ -20,21 +22,35 @@ from ophyd_async.core._signal import (
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT
 
-from ._core_io import NDFileIO
+# from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
+from ._core_io import ADBaseDatasetDescriber, NDFileIO, NDPluginBaseIO
 from ._utils import FileWriteMode
 
 
-class ADWriter(DetectorWriter):
+class ADWriterFormat(str, Enum):
+    HDF5 = ("HDF1:",)
+    TIFF = ("TIFF1:",)
+
+
+NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
+ADWriterT = TypeVar("ADWriterT", bound="ADWriter")
+
+
+class ADWriter(DetectorWriter, Generic[NDFileIOT]):
+    default_suffix: str = "FILE1:"
+
     def __init__(
         self,
-        fileio: NDFileIO,
+        fileio: NDFileIOT,
         path_provider: PathProvider,
         name_provider: NameProvider,
         dataset_describer: DatasetDescriber,
         file_extension: str = "",
         mimetype: str = "",
+        plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
-        self.fileio = fileio
+        self._plugins = plugins
+        self._fileio = fileio
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._dataset_describer = dataset_describer
@@ -47,37 +63,58 @@ class ADWriter(DetectorWriter):
         self._multiplier = 1
         self._filename_template = "%s%s_%6.6d"
 
+    @classmethod
+    def writer_and_io(
+        cls: type[ADWriterT],
+        prefix: str,
+        path_provider: PathProvider,
+        name_provider: NameProvider,
+        dataset_describer: ADBaseDatasetDescriber,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
+        name: str = "",
+    ) -> tuple[ADWriterT, NDFileIOT]:
+        try:
+            fileio_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
+        except IndexError as err:
+            raise RuntimeError("File IO class for writer not specified!") from err
+
+        fileio = fileio_cls(prefix, name=name)
+        writer = cls(
+            fileio, path_provider, name_provider, dataset_describer, plugins=plugins
+        )
+        return writer, fileio
+
     async def begin_capture(self) -> None:
         info = self._path_provider(device_name=self._name_provider())
 
-        await self.fileio.enable_callbacks.set(True)
+        await self._fileio.enable_callbacks.set(True)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
-        await self.fileio.create_directory.set(info.create_dir_depth)
+        await self._fileio.create_directory.set(info.create_dir_depth)
 
         await asyncio.gather(
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self.fileio.file_path.set(str(info.directory_path)),
-            self.fileio.file_name.set(info.filename),
-            self.fileio.file_write_mode.set(FileWriteMode.stream),
+            self._fileio.file_path.set(str(info.directory_path)),
+            self._fileio.file_name.set(info.filename),
+            self._fileio.file_write_mode.set(FileWriteMode.stream),
             # For non-HDF file writers, use AD file templating mechanism
             # for generating multi-image datasets
-            self.fileio.file_template.set(
+            self._fileio.file_template.set(
                 self._filename_template + self._file_extension
             ),
-            self.fileio.auto_increment.set(True),
-            self.fileio.file_number.set(0),
+            self._fileio.auto_increment.set(True),
+            self._fileio.file_number.set(0),
         )
 
         assert (
-            await self.fileio.file_path_exists.get_value()
+            await self._fileio.file_path_exists.get_value()
         ), f"File path {info.directory_path} for file plugin does not exist!"
 
         # Overwrite num_capture to go forever
-        await self.fileio.num_capture.set(0)
+        await self._fileio.num_capture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes
-        self._capture_status = await set_and_wait_for_value(self.fileio.capture, True)
+        self._capture_status = await set_and_wait_for_value(self._fileio.capture, True)
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
@@ -91,7 +128,7 @@ class ADWriter(DetectorWriter):
         describe = {
             self._name_provider(): DataKey(
                 source=self._name_provider(),
-                shape=tuple(frame_shape),
+                shape=list(frame_shape),
                 dtype="array",
                 dtype_numpy=dtype_numpy,
                 external="STREAM:",
@@ -103,11 +140,11 @@ class ADWriter(DetectorWriter):
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected"""
-        async for num_captured in observe_value(self.fileio.num_captured, timeout):
+        async for num_captured in observe_value(self._fileio.num_captured, timeout):
             yield num_captured // self._multiplier
 
     async def get_indices_written(self) -> int:
-        num_captured = await self.fileio.num_captured.get_value()
+        num_captured = await self._fileio.num_captured.get_value()
         return num_captured // self._multiplier
 
     async def collect_stream_docs(
@@ -115,8 +152,8 @@ class ADWriter(DetectorWriter):
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._emitted_resource:
-                file_path = Path(await self.fileio.file_path.get_value())
-                file_name = await self.fileio.file_name.get_value()
+                file_path = Path(await self._fileio.file_path.get_value())
+                file_name = await self._fileio.file_name.get_value()
                 file_template = file_name + "_{:06d}" + self._file_extension
 
                 frame_shape = await self._dataset_describer.shape()
@@ -164,8 +201,8 @@ class ADWriter(DetectorWriter):
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
-        await self.fileio.capture.set(False, wait=False)
-        await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
+        await self._fileio.capture.set(False, wait=False)
+        await wait_for_value(self._fileio.capture, False, DEFAULT_TIMEOUT)
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status

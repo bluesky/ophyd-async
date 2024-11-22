@@ -1,9 +1,9 @@
 import asyncio
+from typing import Any, Generic, TypeVar, get_args
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    DatasetDescriber,
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
@@ -11,7 +11,7 @@ from ophyd_async.core import (
 )
 
 from ._core_io import ADBaseIO, DetectorState
-from ._utils import ImageMode, convert_ad_dtype_to_np, stop_busy_record
+from ._utils import ImageMode, stop_busy_record
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
@@ -19,26 +19,14 @@ DEFAULT_GOOD_STATES: frozenset[DetectorState] = frozenset(
     [DetectorState.Idle, DetectorState.Aborted]
 )
 
-
-class ADBaseDatasetDescriber(DatasetDescriber):
-    def __init__(self, driver: ADBaseIO) -> None:
-        self._driver = driver
-
-    async def np_datatype(self) -> str:
-        return convert_ad_dtype_to_np(await self._driver.data_type.get_value())
-
-    async def shape(self) -> tuple[int, int]:
-        shape = await asyncio.gather(
-            self._driver.array_size_y.get_value(),
-            self._driver.array_size_x.get_value(),
-        )
-        return shape
+ADBaseIOT = TypeVar("ADBaseIOT", bound=ADBaseIO)
+ADBaseControllerT = TypeVar("ADBaseControllerT", bound="ADBaseController")
 
 
-class ADBaseController(DetectorController):
+class ADBaseController(DetectorController, Generic[ADBaseIOT]):
     def __init__(
         self,
-        driver: ADBaseIO,
+        driver: ADBaseIOT,
         good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
     ) -> None:
         self._driver = driver
@@ -46,14 +34,26 @@ class ADBaseController(DetectorController):
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
 
-    @property
-    def driver(self) -> ADBaseIO:
-        return self._driver
+    @classmethod
+    def controller_and_drv(
+        cls: type[ADBaseControllerT],
+        prefix: str,
+        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        name: str = "",
+    ) -> tuple[ADBaseControllerT, ADBaseIOT]:
+        try:
+            driver_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
+        except IndexError as err:
+            raise RuntimeError("Driver IO class for controller not specified!") from err
+
+        driver = driver_cls(prefix, name=name)
+        controller = cls(driver, good_states=good_states)
+        return controller, driver
 
     def get_deadtime(self, exposure: float | None) -> float:
         return 0.002
 
-    async def prepare(self, trigger_info: TriggerInfo):
+    async def prepare(self, trigger_info: TriggerInfo) -> Any:
         assert (
             trigger_info.trigger == DetectorTrigger.internal
         ), "fly scanning (i.e. external triggering) is not supported for this device"

@@ -1,13 +1,15 @@
 from ._core_detector import AreaDetector
 from ._core_io import (
+    ADBaseDatasetDescriber,
     ADBaseIO,
     DetectorState,
     NDArrayBaseIO,
     NDFileHDFIO,
     NDFileIO,
+    NDPluginBaseIO,
     NDPluginStatsIO,
 )
-from ._core_logic import DEFAULT_GOOD_STATES, ADBaseController, ADBaseDatasetDescriber
+from ._core_logic import DEFAULT_GOOD_STATES, ADBaseController
 from ._core_writer import ADWriter
 from ._hdf_writer import ADHDFWriter
 from ._single_trigger import SingleTriggerDetector
@@ -25,15 +27,16 @@ from ._utils import (
 
 __all__ = [
     "ADBaseIO",
+    "AreaDetector",
     "DetectorState",
     "NDArrayBaseIO",
     "NDFileIO",
     "NDFileHDFIO",
+    "NDPluginBaseIO",
     "NDPluginStatsIO",
     "DEFAULT_GOOD_STATES",
     "ADBaseDatasetDescriber",
     "ADBaseController",
-    "AreaDetector",
     "ADWriter",
     "ADHDFWriter",
     "ADTIFFWriter",

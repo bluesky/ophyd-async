@@ -1,66 +1,52 @@
 from collections.abc import Sequence
-from typing import cast
-
-from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
 
-from ._core_io import ADBaseIO, NDFileHDFIO, NDFileIO
-from ._core_logic import ADBaseController, ADBaseDatasetDescriber
-from ._core_writer import ADWriter
-from ._hdf_writer import ADHDFWriter
-from ._tiff_writer import ADTIFFWriter
+from ._core_io import ADBaseDatasetDescriber, ADBaseIO, NDPluginBaseIO
+from ._core_logic import ADBaseControllerT
+from ._core_writer import ADWriterT
 
 
-def get_io_class_for_writer(writer_class: type[ADWriter]):
-    writer_to_io_map = {
-        ADWriter: NDFileIO,
-        ADHDFWriter: NDFileHDFIO,
-        ADTIFFWriter: NDFileIO,
-    }
-    return writer_to_io_map[writer_class]
-
-
-class AreaDetector(StandardDetector, HasHints):
-    _controller: ADBaseController
-    _writer: ADWriter
-
+class AreaDetector(StandardDetector[ADBaseControllerT, ADWriterT]):
     def __init__(
         self,
         prefix: str,
+        driver: ADBaseIO,
+        controller: ADBaseControllerT,
+        writer_cls: type[ADWriterT],
         path_provider: PathProvider,
-        writer_class: type[ADWriter] = ADWriter,
-        writer_suffix: str = "",
-        controller_class: type[ADBaseController] = ADBaseController,
-        drv_class: type[ADBaseIO] = ADBaseIO,
-        drv_suffix: str = "cam1:",
-        name: str = "",
+        plugins: dict[str, NDPluginBaseIO] | None,
         config_sigs: Sequence[SignalR] = (),
-        **kwargs,
+        name: str = "",
+        fileio_suffix: str | None = None,
     ):
-        self.drv = drv_class(prefix + drv_suffix)
-        self._fileio = get_io_class_for_writer(writer_class)(prefix + writer_suffix)
-
-        super().__init__(
-            controller_class(self.drv, **kwargs),
-            writer_class(
-                self._fileio,
-                path_provider,
-                lambda: self.name,
-                ADBaseDatasetDescriber(self.drv),
-            ),
-            config_sigs=(self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
+        self.drv = driver
+        writer, self.fileio = writer_cls.writer_and_io(
+            prefix + (fileio_suffix or writer_cls.default_suffix),
+            path_provider,
+            lambda: name,
+            ADBaseDatasetDescriber(self.drv),
+            plugins=plugins,
             name=name,
         )
 
-    @property
-    def controller(self) -> ADBaseController:
-        return cast(ADBaseController, self._controller)
+        if plugins is not None:
+            for name, plugin in plugins.items():
+                setattr(self, name, plugin)
 
-    @property
-    def writer(self) -> ADWriter:
-        return cast(ADWriter, self._writer)
+        super().__init__(
+            controller,
+            writer,
+            (self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
+            name=name,
+        )
 
-    @property
-    def hints(self) -> Hints:
-        return self._writer.hints
+    def get_plugin(
+        self, name: str, plugin_type: type[NDPluginBaseIO] = NDPluginBaseIO
+    ) -> NDPluginBaseIO:
+        plugin = getattr(self, name, None)
+        if not isinstance(plugin, plugin_type):
+            raise TypeError(
+                f"Expected {self.name}.{name} to be a {plugin_type}, got {plugin}"
+            )
+        return plugin
