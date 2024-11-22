@@ -145,7 +145,7 @@ def test_malformed_trigger_in_seq_table():
         full_seq_table(["A"])
     assert (
         "Input should be 'Immediate', 'BITA=0', 'BITA=1', 'BITB=0', 'BITB=1', "
-        "'BITC...' [type=enum, input_value='A', input_type=str]"
+        "'BITC... [type=enum, input_value='A', input_type=str]"
     ) in str(exc)
 
     # Pydantic is able to infer type from these
