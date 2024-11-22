@@ -14,7 +14,7 @@ from test_tango_signals import (
 from ophyd_async.core import (
     NotConnected,
 )
-from ophyd_async.tango import (
+from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
     TangoSignalBackend,
