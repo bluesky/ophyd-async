@@ -1,5 +1,6 @@
 import asyncio
-from typing import cast
+from enum import Enum
+from typing import TypeVar, get_args
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -8,11 +9,30 @@ from ophyd_async.core import (
 )
 from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import adcore
+from ophyd_async.epics.adcore._core_io import DetectorState
+from ophyd_async.epics.adcore._core_logic import DEFAULT_GOOD_STATES
 
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
 
-class PilatusController(adcore.ADBaseController):
+#: Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
+#: The required minimum time difference between ExpPeriod and ExpTime
+#: (readout time) is 2.28 ms
+#: We provide an option to override for newer Pilatus models
+class PilatusReadoutTime(float, Enum):
+    """Pilatus readout time per model in ms"""
+
+    # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
+    pilatus2 = 2.28e-3
+
+    # Cite: https://media.dectris.com/user-manual-pilatus3-2020.pdf
+    pilatus3 = 0.95e-3
+
+
+PilatusControllerT = TypeVar("PilatusControllerT", bound="PilatusController")
+
+
+class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
     _supported_trigger_types = {
         DetectorTrigger.internal: PilatusTriggerMode.internal,
         DetectorTrigger.constant_gate: PilatusTriggerMode.ext_enable,
@@ -22,14 +42,24 @@ class PilatusController(adcore.ADBaseController):
     def __init__(
         self,
         driver: PilatusDriverIO,
-        readout_time: float,
+        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        readout_time: float = PilatusReadoutTime.pilatus3,
     ) -> None:
-        super().__init__(driver)
+        super().__init__(driver, good_states=good_states)
         self._readout_time = readout_time
 
-    @property
-    def driver(self) -> PilatusDriverIO:
-        return cast(PilatusDriverIO, self._driver)
+    @classmethod
+    def controller_and_drv(
+        cls: type[PilatusControllerT],
+        prefix: str,
+        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        name: str = "",
+        readout_time: float = PilatusReadoutTime.pilatus3,
+    ) -> tuple[PilatusControllerT, PilatusDriverIO]:
+        driver_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
+        driver = driver_cls(prefix, name=name)
+        controller = cls(driver, good_states=good_states, readout_time=readout_time)
+        return controller, driver
 
     def get_deadtime(self, exposure: float | None) -> float:
         return self._readout_time
@@ -40,13 +70,13 @@ class PilatusController(adcore.ADBaseController):
                 trigger_info.livetime
             )
         await asyncio.gather(
-            self.driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
-            self.driver.num_images.set(
+            self._driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
+            self._driver.num_images.set(
                 999_999
                 if trigger_info.total_number_of_triggers == 0
                 else trigger_info.total_number_of_triggers
             ),
-            self.driver.image_mode.set(adcore.ImageMode.multiple),
+            self._driver.image_mode.set(adcore.ImageMode.multiple),
         )
 
     async def arm(self):
@@ -57,7 +87,7 @@ class PilatusController(adcore.ADBaseController):
         # is actually ready. Should wait for that too or we risk dropping
         # a frame
         await wait_for_value(
-            self.driver.armed,
+            self._driver.armed,
             True,
             timeout=DEFAULT_TIMEOUT,
         )
