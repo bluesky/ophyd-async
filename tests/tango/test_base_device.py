@@ -12,7 +12,7 @@ from bluesky import RunEngine
 import tango
 from ophyd_async.core import Array1D, DeviceCollector, SignalRW, T
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango import TangoReadable, get_python_type
+from ophyd_async.tango.core import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
