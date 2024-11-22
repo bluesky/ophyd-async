@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._table &#8212; ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation</title>
+    <title>ophyd_async.core._table &#8212; ophyd-async 0.8.0a6.dev2+g80a507b8 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=9364f386"></script>
+    <script src="../../../_static/documentation_options.js?v=8f138286"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev1+ge4b18e58 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev2+g80a507b8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev2+g80a507b8 documentation - Home"/>
   
   
 </a></div>
@@ -460,7 +460,7 @@ window.addEventListener("load", () => mermaid.run());
   <h1>Source code for ophyd_async.core._table</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">get_origin</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -477,6 +477,13 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">value1</span><span class="p">,</span> <span class="n">value2</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">value1</span> <span class="o">+</span> <span class="n">value2</span>
+
+
+<span class="k">def</span> <span class="nf">_make_default_factory</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">numpy_array_default_factory</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">numpy_array_default_factory</span>
 
 
 <div class="viewcode-block" id="Table">
@@ -507,9 +514,7 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">NpArrayPydanticAnnotation</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span>
                         <span class="n">data_type</span><span class="o">=</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">strict_data_typing</span><span class="o">=</span><span class="kc">False</span>
                     <span class="p">),</span>
-                    <span class="n">Field</span><span class="p">(</span>
-                        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-                    <span class="p">),</span>
+                    <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">_make_default_factory</span><span class="p">(</span><span class="n">dtype</span><span class="p">)),</span>
                 <span class="p">]</span>
             <span class="k">elif</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">anno</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sequence</span><span class="p">:</span>
                 <span class="n">new_anno</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">anno</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)]</span>
