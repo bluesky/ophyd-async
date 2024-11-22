@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from ophyd_async.core import PathProvider
 from ophyd_async.core._signal import SignalR
 from ophyd_async.epics import adcore
+
 from ._aravis_controller import AravisController
 
 

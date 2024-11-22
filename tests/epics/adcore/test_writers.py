@@ -12,8 +12,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
-from ophyd_async.epics.adpilatus._pilatus_controller import PilatusReadoutTime
-from ophyd_async.plan_stubs._nd_attributes import setup_ndattributes, setup_ndstats_sum
+from ophyd_async.epics.adpilatus import PilatusReadoutTime
 from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
 

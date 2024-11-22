@@ -6,9 +6,8 @@ from ophyd_async.core import (
     TriggerInfo,
     set_mock_value,
 )
-from ophyd_async.core._detector import TriggerInfo
 from ophyd_async.epics import adcore, advimba
-from ophyd_async.epics.advimba._vimba_io import (
+from ophyd_async.epics.advimba import (
     VimbaExposeOutMode,
     VimbaOnOff,
     VimbaTriggerSource,

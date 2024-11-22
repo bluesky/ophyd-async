@@ -4,7 +4,7 @@ import pytest
 from bluesky.run_engine import RunEngine
 
 import ophyd_async.plan_stubs as ops
-from ophyd_async.core._device import DeviceCollector
+from ophyd_async.core import DeviceCollector
 from ophyd_async.epics import adcore
 
 

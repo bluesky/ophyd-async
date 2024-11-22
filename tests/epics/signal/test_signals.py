@@ -908,25 +908,25 @@ async def test_bool_works_for_mismatching_enums(ioc, protocol):
     await sig.connect()
 
 
-# @pytest.mark.skipif(os.name == "nt", reason="Hangs on windows for unknown reasons")
-# @PARAMETERISE_PROTOCOLS
-# async def test_can_read_using_ophyd_async_then_ophyd(ioc, protocol):
-#     prefix = get_prefix(ioc, protocol)
-#     oa_read = f"{protocol}://{prefix}float_prec_1"
-#     ophyd_read = f"{prefix}float_prec_0"
+@pytest.mark.skipif(os.name == "nt", reason="Hangs on windows for unknown reasons")
+@PARAMETERISE_PROTOCOLS
+async def test_can_read_using_ophyd_async_then_ophyd(ioc, protocol):
+    prefix = get_prefix(ioc, protocol)
+    oa_read = f"{protocol}://{prefix}float_prec_1"
+    ophyd_read = f"{prefix}float_prec_0"
 
-#     ophyd_async_sig = epics_signal_rw(float, oa_read)
-#     await ophyd_async_sig.connect()
-#     ophyd_signal = EpicsSignal(ophyd_read)
-#     ophyd_signal.wait_for_connection(timeout=5)
+    ophyd_async_sig = epics_signal_rw(float, oa_read)
+    await ophyd_async_sig.connect()
+    ophyd_signal = EpicsSignal(ophyd_read)
+    ophyd_signal.wait_for_connection(timeout=5)
 
-#     RE = RunEngine()
+    RE = RunEngine()
 
-#     def my_plan():
-#         yield from bps.rd(ophyd_async_sig)
-#         yield from bps.rd(ophyd_signal)
+    def my_plan():
+        yield from bps.rd(ophyd_async_sig)
+        yield from bps.rd(ophyd_signal)
 
-#     RE(my_plan())
+    RE(my_plan())
 
 
 def test_signal_module_emits_deprecation_warning():

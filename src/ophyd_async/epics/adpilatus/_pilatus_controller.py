@@ -8,7 +8,6 @@ from ophyd_async.core import (
     TriggerInfo,
     wait_for_value,
 )
-from ophyd_async.core import TriggerInfo
 from ophyd_async.epics import adcore
 
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode

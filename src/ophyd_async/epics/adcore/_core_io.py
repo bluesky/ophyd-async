@@ -1,9 +1,7 @@
 import asyncio
-from enum import Enum
 
-from ophyd_async.core import Device
-from ophyd_async.core._providers import DatasetDescriber
 from ophyd_async.core import Device, StrictEnum
+from ophyd_async.core._providers import DatasetDescriber
 from ophyd_async.epics.core import (
     epics_signal_r,
     epics_signal_rw,
