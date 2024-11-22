@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Annotated, Any, TypeVar, get_origin
 
 import numpy as np
@@ -17,6 +17,13 @@ def _concat(value1, value2):
         return np.concatenate((value1, value2))
     else:
         return value1 + value2
+
+
+def _make_default_factory(dtype: np.dtype) -> Callable[[], np.ndarray]:
+    def numpy_array_default_factory() -> np.ndarray:
+        return np.array([], dtype)
+
+    return numpy_array_default_factory
 
 
 class Table(BaseModel):
@@ -45,9 +52,7 @@ class Table(BaseModel):
                     NpArrayPydanticAnnotation.factory(
                         data_type=dtype.type, dimensions=1, strict_data_typing=False
                     ),
-                    Field(
-                        default_factory=lambda dtype=dtype: np.array([], dtype=dtype)
-                    ),
+                    Field(default_factory=_make_default_factory(dtype)),
                 ]
             elif get_origin(anno) is Sequence:
                 new_anno = Annotated[anno, Field(default_factory=list)]
