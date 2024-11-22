@@ -7,12 +7,15 @@ from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, S
 from enum import Enum
 from functools import cached_property
 from typing import (
+    Any,
     Generic,
+    TypeVar,
 )
 
 from bluesky.protocols import (
     Collectable,
     Flyable,
+    Hints,
     Preparable,
     Reading,
     Stageable,
@@ -27,7 +30,7 @@ from ._device import Device
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, T, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 
 class DetectorTrigger(str, Enum):
@@ -91,7 +94,7 @@ class DetectorController(ABC):
         """For a given exposure, how long should the time between exposures be"""
 
     @abstractmethod
-    async def prepare(self, trigger_info: TriggerInfo):
+    async def prepare(self, trigger_info: TriggerInfo) -> Any:
         """
         Do all necessary steps to prepare the detector for triggers.
 
@@ -161,6 +164,16 @@ class DetectorWriter(ABC):
     async def close(self) -> None:
         """Close writer, blocks until I/O is complete"""
 
+    @property
+    def hints(self) -> Hints:
+        return {}
+
+
+# Add type vars for controller/type, so we can define
+# StandardDetector[KinetixController, ADTIFFWriter] for example
+DetectorControllerT = TypeVar("DetectorControllerT", bound=DetectorController)
+DetectorWriterT = TypeVar("DetectorWriterT", bound=DetectorWriter)
+
 
 class StandardDetector(
     Device,
@@ -172,7 +185,7 @@ class StandardDetector(
     Flyable,
     Collectable,
     WritesStreamAssets,
-    Generic[T],
+    Generic[DetectorControllerT, DetectorWriterT],
 ):
     """
     Useful detector base class for step and fly scanning detectors.
@@ -181,8 +194,8 @@ class StandardDetector(
 
     def __init__(
         self,
-        controller: DetectorController,
-        writer: DetectorWriter,
+        controller: DetectorControllerT,
+        writer: DetectorWriterT,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
@@ -216,19 +229,11 @@ class StandardDetector(
 
         super().__init__(name)
 
-    @property
-    def controller(self) -> DetectorController:
-        return self._controller
-
-    @property
-    def writer(self) -> DetectorWriter:
-        return self._writer
-
     @AsyncStatus.wrap
     async def stage(self) -> None:
         # Disarm the detector, stop file writing.
         await self._check_config_sigs()
-        await asyncio.gather(self.writer.close(), self.controller.disarm())
+        await asyncio.gather(self._writer.close(), self._controller.disarm())
         self._trigger_info = None
 
     async def _check_config_sigs(self):
@@ -249,7 +254,7 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         # Stop data writing.
-        await asyncio.gather(self.writer.close(), self.controller.disarm())
+        await asyncio.gather(self._writer.close(), self._controller.disarm())
 
     async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
@@ -266,6 +271,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
+        print("In trigger")
         if self._trigger_info is None:
             await self.prepare(
                 TriggerInfo(
@@ -276,15 +282,16 @@ class StandardDetector(
                     frame_timeout=None,
                 )
             )
+        print(self._trigger_info)
         assert self._trigger_info
         assert self._trigger_info.trigger is DetectorTrigger.internal
         # Arm the detector and wait for it to finish.
-        indices_written = await self.writer.get_indices_written()
-        await self.controller.arm()
-        await self.controller.wait_for_idle()
+        indices_written = await self._writer.get_indices_written()
+        await self._controller.arm()
+        await self._controller.wait_for_idle()
         end_observation = indices_written + 1
 
-        async for index in self.writer.observe_indices_written(
+        async for index in self._writer.observe_indices_written(
             DEFAULT_TIMEOUT
             + (self._trigger_info.livetime or 0)
             + (self._trigger_info.deadtime or 0)
@@ -313,9 +320,9 @@ class StandardDetector(
                 value.deadtime
             ), "Deadtime must be supplied when in externally triggered mode"
         if value.deadtime:
-            required = self.controller.get_deadtime(value.livetime)
+            required = self._controller.get_deadtime(value.livetime)
             assert required <= value.deadtime, (
-                f"Detector {self.controller} needs at least {required}s deadtime, "
+                f"Detector {self._controller} needs at least {required}s deadtime, "
                 f"but trigger logic provides only {value.deadtime}s"
             )
         self._trigger_info = value
@@ -324,12 +331,12 @@ class StandardDetector(
             if isinstance(self._trigger_info.number_of_triggers, list)
             else [self._trigger_info.number_of_triggers]
         )
-        self._initial_frame = await self.writer.get_indices_written()
+        self._initial_frame = await self._writer.get_indices_written()
         self._describe, _ = await asyncio.gather(
-            self.writer.open(value.multiplier), self.controller.prepare(value)
+            self._writer.open(value.multiplier), self._controller.prepare(value)
         )
         if value.trigger != DetectorTrigger.internal:
-            await self.controller.arm()
+            await self._controller.arm()
             self._fly_start = time.monotonic()
 
     @AsyncStatus.wrap
@@ -348,7 +355,7 @@ class StandardDetector(
     @WatchableAsyncStatus.wrap
     async def complete(self):
         assert self._trigger_info
-        indices_written = self.writer.observe_indices_written(
+        indices_written = self._writer.observe_indices_written(
             self._trigger_info.frame_timeout
             or (
                 DEFAULT_TIMEOUT
@@ -377,7 +384,7 @@ class StandardDetector(
                 self._completable_frames = 0
                 self._frames_to_complete = 0
                 self._number_of_triggers_iter = None
-                await self.controller.wait_for_idle()
+                await self._controller.wait_for_idle()
 
     async def describe_collect(self) -> dict[str, DataKey]:
         return self._describe
@@ -389,9 +396,13 @@ class StandardDetector(
         # The index is optional, and provided for fly scans, however this needs to be
         # retrieved for step scans.
         if index is None:
-            index = await self.writer.get_indices_written()
-        async for doc in self.writer.collect_stream_docs(index):
+            index = await self._writer.get_indices_written()
+        async for doc in self._writer.collect_stream_docs(index):
             yield doc
 
     async def get_index(self) -> int:
-        return await self.writer.get_indices_written()
+        return await self._writer.get_indices_written()
+
+    @property
+    def hints(self) -> Hints:
+        return self._writer.hints
