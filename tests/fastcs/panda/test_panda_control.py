@@ -4,25 +4,17 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DetectorTrigger, Device, DeviceCollector
-from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.epics.pvi import fill_pvi_entries
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.core import DetectorTrigger, Device, DeviceCollector, TriggerInfo
+from ophyd_async.epics.core import epics_signal_rw
+from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import CommonPandaBlocks, PandaPcapController
 
 
 @pytest.fixture
 async def mock_panda():
     class Panda(CommonPandaBlocks):
-        def __init__(self, prefix: str, name: str = ""):
-            self._prefix = prefix
-            super().__init__(name)
-
-        async def connect(self, mock: bool = False, timeout: float = DEFAULT_TIMEOUT):
-            await fill_pvi_entries(
-                self, self._prefix + "PVI", timeout=timeout, mock=mock
-            )
-            await super().connect(mock=mock, timeout=timeout)
+        def __init__(self, uri: str, name: str = ""):
+            super().__init__(name=name, connector=fastcs_connector(self, uri))
 
     async with DeviceCollector(mock=True):
         mock_panda = Panda("PANDACONTROLLER:", name="mock_panda")

@@ -6,8 +6,6 @@ from ophyd_async.core import (
     TriggerInfo,
 )
 from ophyd_async.epics import adcore
-from ophyd_async.epics.adcore._core_io import DetectorState
-from ophyd_async.epics.adcore._core_logic import DEFAULT_GOOD_STATES
 
 from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
 
@@ -25,7 +23,7 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
     def __init__(
         self,
         driver: AravisDriverIO,
-        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
         gpio_number: GPIO_NUMBER = 1,
     ) -> None:
         super().__init__(driver, good_states=good_states)
@@ -35,7 +33,7 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
     def controller_and_drv(
         cls: type[AravisControllerT],
         prefix: str,
-        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
         name: str = "",
         gpio_number: GPIO_NUMBER = 1,
     ) -> tuple[AravisControllerT, AravisDriverIO]:
@@ -80,7 +78,7 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
                 f"use {trigger}"
             )
         if trigger == DetectorTrigger.internal:
-            return AravisTriggerMode.off, "Freerun"
+            return AravisTriggerMode.off, AravisTriggerSource.freerun
         else:
             return (AravisTriggerMode.on, f"Line{self.gpio_number}")  # type: ignore
 

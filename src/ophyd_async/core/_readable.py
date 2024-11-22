@@ -1,6 +1,8 @@
 import warnings
-from collections.abc import Callable, Generator, Sequence
+from collections.abc import Awaitable, Callable, Generator, Sequence
 from contextlib import contextmanager
+from enum import Enum
+from typing import Any, cast
 
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
@@ -11,11 +13,61 @@ from ._signal import SignalR
 from ._status import AsyncStatus
 from ._utils import merge_gathered_dicts
 
-ReadableChild = AsyncReadable | AsyncConfigurable | AsyncStageable | HasHints
-ReadableChildWrapper = (
-    Callable[[ReadableChild], ReadableChild]
-    | type["ConfigSignal"]
-    | type["HintedSignal"]
+
+class StandardReadableFormat(Enum):
+    """Declare how a `Device` should contribute to the `StandardReadable` verbs."""
+
+    #: Detect which verbs the child supports and contribute to:
+    #:
+    #: - ``read()``, ``describe()`` if it is `bluesky.protocols.Readable`
+    #: - ``read_configuration()``, ``describe_configuration()`` if it is
+    #:   `bluesky.protocols.Configurable`
+    #: - ``stage()``, ``unstage()`` if it is `bluesky.protocols.Stageable`
+    #: - ``hints`` if it `bluesky.protocols.HasHints`
+    CHILD = "CHILD"
+    #: Contribute the `Signal` value to ``read_configuration()`` and
+    #: ``describe_configuration()``
+    CONFIG_SIGNAL = "CONFIG_SIGNAL"
+    #: Contribute the monitored `Signal` value to ``read()`` and ``describe()``` and
+    #: put the signal name in ``hints``
+    HINTED_SIGNAL = "HINTED_SIGNAL"
+    #: Contribute the uncached `Signal` value to ``read()`` and ``describe()```
+    UNCACHED_SIGNAL = "UNCACHED_SIGNAL"
+    #: Contribute the uncached `Signal` value to ``read()`` and ``describe()``` and
+    #: put the signal name in ``hints``
+    HINTED_UNCACHED_SIGNAL = "HINTED_UNCACHED_SIGNAL"
+
+    def __call__(self, parent: Device, child: Device):
+        if not isinstance(parent, StandardReadable):
+            raise TypeError(f"Expected parent to be StandardReadable, got {parent}")
+        parent.add_readables([child], self)
+
+
+# Back compat
+class _WarningMatcher:
+    def __init__(self, name: str, target: StandardReadableFormat):
+        self._name = name
+        self._target = target
+
+    def __eq__(self, value: object) -> bool:
+        warnings.warn(
+            DeprecationWarning(
+                f"Use `StandardReadableFormat.{self._target.name}` "
+                f"instead of `{self._name}`"
+            ),
+            stacklevel=2,
+        )
+        return value == self._target
+
+
+def _compat_format(name: str, target: StandardReadableFormat) -> StandardReadableFormat:
+    return cast(StandardReadableFormat, _WarningMatcher(name, target))
+
+
+ConfigSignal = _compat_format("ConfigSignal", StandardReadableFormat.CONFIG_SIGNAL)
+HintedSignal: Any = _compat_format("HintedSignal", StandardReadableFormat.HINTED_SIGNAL)
+HintedSignal.uncached = _compat_format(
+    "HintedSignal.uncached", StandardReadableFormat.HINTED_UNCACHED_SIGNAL
 )
 
 
@@ -31,37 +83,12 @@ class StandardReadable(
 
     # These must be immutable types to avoid accidental sharing between
     # different instances of the class
-    _readables: tuple[AsyncReadable, ...] = ()
-    _configurables: tuple[AsyncConfigurable, ...] = ()
+    _describe_config_funcs: tuple[Callable[[], Awaitable[dict[str, DataKey]]], ...] = ()
+    _read_config_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
+    _describe_funcs: tuple[Callable[[], Awaitable[dict[str, DataKey]]], ...] = ()
+    _read_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
     _stageables: tuple[AsyncStageable, ...] = ()
     _has_hints: tuple[HasHints, ...] = ()
-
-    def set_readable_signals(
-        self,
-        read: Sequence[SignalR] = (),
-        config: Sequence[SignalR] = (),
-        read_uncached: Sequence[SignalR] = (),
-    ):
-        """
-        Parameters
-        ----------
-        read:
-            Signals to make up :meth:`~StandardReadable.read`
-        conf:
-            Signals to make up :meth:`~StandardReadable.read_configuration`
-        read_uncached:
-            Signals to make up :meth:`~StandardReadable.read` that won't be cached
-        """
-        warnings.warn(
-            DeprecationWarning(
-                "Migrate to `add_children_as_readables` context manager or "
-                "`add_readables` method"
-            ),
-            stacklevel=2,
-        )
-        self.add_readables(read, wrapper=HintedSignal)
-        self.add_readables(config, wrapper=ConfigSignal)
-        self.add_readables(read_uncached, wrapper=HintedSignal.uncached)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
@@ -75,19 +102,17 @@ class StandardReadable(
 
     async def describe_configuration(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(
-            [sig.describe_configuration() for sig in self._configurables]
+            [func() for func in self._describe_config_funcs]
         )
 
     async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts(
-            [sig.read_configuration() for sig in self._configurables]
-        )
+        return await merge_gathered_dicts([func() for func in self._read_config_funcs])
 
     async def describe(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts([sig.describe() for sig in self._readables])
+        return await merge_gathered_dicts([func() for func in self._describe_funcs])
 
     async def read(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts([sig.read() for sig in self._readables])
+        return await merge_gathered_dicts([func() for func in self._read_funcs])
 
     @property
     def hints(self) -> Hints:
@@ -127,135 +152,109 @@ class StandardReadable(
     @contextmanager
     def add_children_as_readables(
         self,
-        wrapper: ReadableChildWrapper | None = None,
+        format: StandardReadableFormat = StandardReadableFormat.CHILD,
     ) -> Generator[None, None, None]:
-        """Context manager to wrap adding Devices
+        """Context manager that calls `add_readables` on child Devices added within.
 
-        Add Devices to this class instance inside the Context Manager to automatically
-        add them to the correct fields, based on the Device's interfaces.
-
-        The provided wrapper class will be applied to all Devices and can be used to
-        specify their behaviour.
-
-        Parameters
-        ----------
-        wrapper:
-            Wrapper class to apply to all Devices created inside the context manager.
-
-        See Also
-        --------
-        :func:`~StandardReadable.add_readables`
-        :class:`ConfigSignal`
-        :class:`HintedSignal`
-        :meth:`HintedSignal.uncached`
+        Scans ``self.children()`` on entry and exit to context manager, and calls
+        `add_readables` on any that are added with the provided
+        `StandardReadableFormat`.
         """
 
-        dict_copy = self.__dict__.copy()
+        dict_copy = dict(self.children())
 
         yield
 
         # Set symmetric difference operator gives all newly added keys
-        new_keys = dict_copy.keys() ^ self.__dict__.keys()
-        new_values = [self.__dict__[key] for key in new_keys]
+        new_dict = dict(self.children())
+        new_keys = dict_copy.keys() ^ new_dict.keys()
+        new_values = [new_dict[key] for key in new_keys]
 
         flattened_values = []
         for value in new_values:
             if isinstance(value, DeviceVector):
-                children = value.children()
-                flattened_values.extend([x[1] for x in children])
+                flattened_values.extend(value.values())
             else:
                 flattened_values.append(value)
 
         new_devices = list(filter(lambda x: isinstance(x, Device), flattened_values))
-        self.add_readables(new_devices, wrapper)
+        self.add_readables(new_devices, format)
 
     def add_readables(
         self,
-        devices: Sequence[ReadableChild],
-        wrapper: ReadableChildWrapper | None = None,
+        devices: Sequence[Device],
+        format: StandardReadableFormat = StandardReadableFormat.CHILD,
     ) -> None:
-        """Add the given devices to the lists of known Devices
+        """Add devices to contribute to various bluesky verbs.
 
-        Add the provided Devices to the relevant fields, based on the Signal's
-        interfaces.
+        Use output from the given devices to contribute to the verbs of the following
+        interfaces:
 
-        The provided wrapper class will be applied to all Devices and can be used to
-        specify their behaviour.
+        - `bluesky.protocols.Readable`
+        - `bluesky.protocols.Configurable`
+        - `bluesky.protocols.Stageable`
+        - `bluesky.protocols.HasHints`
 
         Parameters
         ----------
         devices:
             The devices to be added
-        wrapper:
-            Wrapper class to apply to all Devices created inside the context manager.
-
-        See Also
-        --------
-        :func:`~StandardReadable.add_children_as_readables`
-        :class:`ConfigSignal`
-        :class:`HintedSignal`
-        :meth:`HintedSignal.uncached`
+        format:
+            Determines which of the devices functions are added to which verb as per the
+            `StandardReadableFormat` documentation
         """
 
-        for readable in devices:
-            obj = readable
-            if wrapper:
-                obj = wrapper(readable)
+        for device in devices:
+            match format:
+                case StandardReadableFormat.CHILD:
+                    if isinstance(device, AsyncConfigurable):
+                        self._describe_config_funcs += (device.describe_configuration,)
+                        self._read_config_funcs += (device.read_configuration,)
+                    if isinstance(device, AsyncReadable):
+                        self._describe_funcs += (device.describe,)
+                        self._read_funcs += (device.read,)
+                    if isinstance(device, AsyncStageable):
+                        self._stageables += (device,)
+                    if isinstance(device, HasHints):
+                        self._has_hints += (device,)
+                case StandardReadableFormat.CONFIG_SIGNAL:
+                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
+                    self._describe_config_funcs += (device.describe,)
+                    self._read_config_funcs += (device.read,)
+                case StandardReadableFormat.HINTED_SIGNAL:
+                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
+                    self._describe_funcs += (device.describe,)
+                    self._read_funcs += (device.read,)
+                    self._stageables += (device,)
+                    self._has_hints += (_HintsFromName(device),)
+                case StandardReadableFormat.UNCACHED_SIGNAL:
+                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
+                    self._describe_funcs += (device.describe,)
+                    self._read_funcs += (_UncachedRead(device),)
+                case StandardReadableFormat.HINTED_UNCACHED_SIGNAL:
+                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
+                    self._describe_funcs += (device.describe,)
+                    self._read_funcs += (_UncachedRead(device),)
+                    self._has_hints += (_HintsFromName(device),)
 
-            if isinstance(obj, AsyncReadable):
-                self._readables += (obj,)
 
-            if isinstance(obj, AsyncConfigurable):
-                self._configurables += (obj,)
-
-            if isinstance(obj, AsyncStageable):
-                self._stageables += (obj,)
-
-            if isinstance(obj, HasHints):
-                self._has_hints += (obj,)
-
-
-class ConfigSignal(AsyncConfigurable):
-    def __init__(self, signal: ReadableChild) -> None:
-        assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
+class _UncachedRead:
+    def __init__(self, signal: SignalR) -> None:
         self.signal = signal
 
-    async def read_configuration(self) -> dict[str, Reading]:
-        return await self.signal.read()
+    async def __call__(self) -> dict[str, Reading]:
+        return await self.signal.read(cached=False)
 
-    async def describe_configuration(self) -> dict[str, DataKey]:
-        return await self.signal.describe()
+
+class _HintsFromName(HasHints):
+    def __init__(self, device: Device) -> None:
+        self.device = device
 
     @property
     def name(self) -> str:
-        return self.signal.name
-
-
-class HintedSignal(HasHints, AsyncReadable):
-    def __init__(self, signal: ReadableChild, allow_cache: bool = True) -> None:
-        assert isinstance(signal, SignalR), f"Expected signal, got {signal}"
-        self.signal = signal
-        self.cached = None if allow_cache else allow_cache
-        if allow_cache:
-            self.stage = signal.stage
-            self.unstage = signal.unstage
-
-    async def read(self) -> dict[str, Reading]:
-        return await self.signal.read(cached=self.cached)
-
-    async def describe(self) -> dict[str, DataKey]:
-        return await self.signal.describe()
-
-    @property
-    def name(self) -> str:
-        return self.signal.name
+        return self.device.name
 
     @property
     def hints(self) -> Hints:
-        if self.signal.name == "":
-            return {"fields": []}
-        return {"fields": [self.signal.name]}
-
-    @classmethod
-    def uncached(cls, signal: ReadableChild) -> "HintedSignal":
-        return cls(signal, allow_cache=False)
+        fields = [self.name] if self.name else []
+        return {"fields": fields}

@@ -1,10 +1,10 @@
 import asyncio
 
-from ophyd_async.core import DetectorTrigger
-from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core import (
+    DetectorTrigger,
+    TriggerInfo,
+)
 from ophyd_async.epics import adcore
-from ophyd_async.epics.adcore._core_io import DetectorState
-from ophyd_async.epics.adcore._core_logic import DEFAULT_GOOD_STATES
 
 from ._kinetix_io import KinetixDriverIO, KinetixTriggerMode
 
@@ -20,7 +20,7 @@ class KinetixController(adcore.ADBaseController[KinetixDriverIO]):
     def __init__(
         self,
         driver: KinetixDriverIO,
-        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
     ) -> None:
         super().__init__(driver, good_states=good_states)
 

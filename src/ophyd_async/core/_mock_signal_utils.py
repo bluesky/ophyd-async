@@ -1,23 +1,30 @@
 from collections.abc import Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
+from ._device import Device
 from ._mock_signal_backend import MockSignalBackend
-from ._signal import Signal
-from ._utils import T
+from ._signal import Signal, SignalConnector, SignalR
+from ._soft_signal_backend import SignalDatatypeT
+from ._utils import LazyMock
+
+
+def get_mock(device: Device | Signal) -> Mock:
+    mock = device._mock  # noqa: SLF001
+    assert isinstance(mock, LazyMock), f"Device {device} not connected in mock mode"
+    return mock()
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
-    backend = signal._backend  # noqa:SLF001
-    assert isinstance(backend, MockSignalBackend), (
-        "Expected to receive a `MockSignalBackend`, instead "
-        f" received {type(backend)}. "
-    )
-    return backend
+    connector = signal._connector  # noqa: SLF001
+    assert isinstance(connector, SignalConnector), f"Expected Signal, got {signal}"
+    assert isinstance(
+        connector.backend, MockSignalBackend
+    ), f"Signal {signal} not connected in mock mode"
+    return connector.backend
 
 
-def set_mock_value(signal: Signal[T], value: T):
+def set_mock_value(signal: Signal[SignalDatatypeT], value: SignalDatatypeT):
     """Set the value of a signal that is in mock mode."""
     backend = _get_mock_signal_backend(signal)
     backend.set_value(value)
@@ -59,8 +66,8 @@ class _SetValuesIterator:
 
     def __init__(
         self,
-        signal: Signal,
-        values: Iterable[Any],
+        signal: SignalR[SignalDatatypeT],
+        values: Iterable[SignalDatatypeT],
         require_all_consumed: bool = False,
     ):
         self.signal = signal
@@ -99,8 +106,8 @@ class _SetValuesIterator:
 
 
 def set_mock_values(
-    signal: Signal,
-    values: Iterable[Any],
+    signal: SignalR[SignalDatatypeT],
+    values: Iterable[SignalDatatypeT],
     require_all_consumed: bool = False,
 ) -> _SetValuesIterator:
     """Iterator to set a signal to a sequence of values, optionally repeating the
@@ -143,7 +150,9 @@ def _unset_side_effect_cm(put_mock: AsyncMock):
 
 
 def callback_on_mock_put(
-    signal: Signal[T], callback: Callable[[T], None] | Callable[[T], Awaitable[None]]
+    signal: Signal[SignalDatatypeT],
+    callback: Callable[[SignalDatatypeT, bool], None]
+    | Callable[[SignalDatatypeT, bool], Awaitable[None]],
 ):
     """For setting a callback when a backend is put to.
 

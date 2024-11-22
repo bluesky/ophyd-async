@@ -3,13 +3,8 @@ from collections.abc import Sequence
 
 from bluesky.protocols import Triggerable
 
-from ophyd_async.core import (
-    AsyncStatus,
-    ConfigSignal,
-    HintedSignal,
-    SignalR,
-    StandardReadable,
-)
+from ophyd_async.core import AsyncStatus, SignalR, StandardReadable
+from ophyd_async.core import StandardReadableFormat as Format
 
 from ._core_io import ADBaseIO, NDPluginBaseIO
 from ._utils import ImageMode
@@ -24,17 +19,16 @@ class SingleTriggerDetector(StandardReadable, Triggerable):
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self.drv = drv
-
         if plugins is not None:
-            for name, plugin in plugins.items():
-                setattr(self, name, plugin)
+            for k, v in plugins.items():
+                setattr(self, k, v)
 
         self.add_readables(
             [self.drv.array_counter, *read_uncached],
-            wrapper=HintedSignal.uncached,
+            Format.HINTED_UNCACHED_SIGNAL,
         )
 
-        self.add_readables([self.drv.acquire_time], wrapper=ConfigSignal)
+        self.add_readables([self.drv.acquire_time], Format.CONFIG_SIGNAL)
 
         super().__init__(name=name)
 

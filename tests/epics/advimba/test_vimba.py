@@ -3,6 +3,7 @@ import pytest
 from ophyd_async.core import (
     DetectorTrigger,
     PathProvider,
+    TriggerInfo,
     set_mock_value,
 )
 from ophyd_async.core._detector import TriggerInfo
@@ -108,7 +109,9 @@ async def test_can_collect(
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
     assert stream_resource["data_key"] == "test_advimba1"
-    assert stream_resource["uri"] == "file://localhost" + str(full_file_name)
+    assert stream_resource["uri"] == "file://localhost/" + str(full_file_name).lstrip(
+        "/"
+    )
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,

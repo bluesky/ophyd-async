@@ -2,49 +2,43 @@ import os
 from unittest.mock import ANY
 
 import bluesky.plan_stubs as bps
-import numpy as np
 import pytest
 from bluesky import RunEngine
 
 from ophyd_async.core import (
-    Device,
-    SignalR,
+    StandardFlyer,
     StaticFilenameProvider,
     StaticPathProvider,
+    assert_emitted,
     callback_on_mock_put,
     set_mock_value,
 )
-from ophyd_async.core._flyer import StandardFlyer
-from ophyd_async.core._signal import assert_emitted
 from ophyd_async.fastcs.panda import (
     DatasetTable,
     HDFPanda,
     PandaHdf5DatasetType,
+    StaticSeqTableTriggerLogic,
 )
-from ophyd_async.fastcs.panda._trigger import StaticSeqTableTriggerLogic
-from ophyd_async.plan_stubs._fly import (
+from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
 
 
 @pytest.fixture
 async def mock_hdf_panda(tmp_path):
-    class CaptureBlock(Device):
-        test_capture: SignalR
-
     fp = StaticFilenameProvider("test-panda")
     dp = StaticPathProvider(fp, tmp_path)
 
     mock_hdf_panda = HDFPanda("HDFPANDA:", path_provider=dp, name="panda")
     await mock_hdf_panda.connect(mock=True)
 
-    def link_function(value, **kwargs):
+    def link_function(value: bool, wait: bool = True):
         set_mock_value(mock_hdf_panda.pcap.active, value)
 
     # Mimic directory exists check that happens normally in the PandA IOC
-    def check_dir_exits(value, **kwargs):
+    def check_dir_exits(value: str, wait: bool = True):
         if os.path.exists(value):
-            set_mock_value(mock_hdf_panda.data.directory_exists, 1)
+            set_mock_value(mock_hdf_panda.data.directory_exists, True)
 
     callback_on_mock_put(mock_hdf_panda.pcap.arm, link_function)
     callback_on_mock_put(mock_hdf_panda.data.hdf_directory, check_dir_exits)
@@ -52,16 +46,8 @@ async def mock_hdf_panda(tmp_path):
     set_mock_value(
         mock_hdf_panda.data.datasets,
         DatasetTable(
-            name=np.array(
-                [
-                    "x",
-                    "y",
-                ]
-            ),
-            hdf5_type=[
-                PandaHdf5DatasetType.UINT_32,
-                PandaHdf5DatasetType.FLOAT_64,
-            ],
+            name=["x", "y"],
+            dtype=[PandaHdf5DatasetType.UINT_32, PandaHdf5DatasetType.FLOAT_64],
         ),
     )
 
@@ -151,8 +137,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
     assert data_key_names == ["x", "y"]
     for data_key_name in data_key_names:
         assert (
-            docs["descriptor"][0]["data_keys"][data_key_name]["source"]
-            == "mock+soft://panda-data-hdf_directory"
+            docs["descriptor"][0]["data_keys"][data_key_name]["source"] == "mock+pva://"
         )
 
     # test stream resources
@@ -164,7 +149,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
             "uid": ANY,
             "data_key": data_key_name,
             "mimetype": "application/x-hdf5",
-            "uri": "file://localhost" + str(tmp_path / "test-panda.h5"),
+            "uri": "file://localhost/" + str(tmp_path / "test-panda.h5").lstrip("/"),
             "parameters": {
                 "dataset": f"/{dataset_name}",
                 "swmr": False,

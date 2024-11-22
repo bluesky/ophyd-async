@@ -1,17 +1,18 @@
 import asyncio
 import time
 from enum import Enum, IntEnum
+from typing import Annotated as A
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import numpy as np
-import numpy.typing as npt
 import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import DeviceCollector, HintedSignal, SignalRW, T
-from ophyd_async.tango import TangoReadable, get_python_type
+from ophyd_async.core import Array1D, DeviceCollector, SignalRW, T
+from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.tango.core import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
@@ -24,7 +25,6 @@ from tango import (
     CmdArgType,
     DevState,
 )
-from tango import DeviceProxy as SyncDeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
@@ -175,20 +175,9 @@ class TestDevice(Device):
 # --------------------------------------------------------------------
 class TestTangoReadable(TangoReadable):
     __test__ = False
-    justvalue: SignalRW[int]
-    array: SignalRW[npt.NDArray[float]]
-    limitedvalue: SignalRW[float]
-
-    def __init__(
-        self,
-        trl: str | None = None,
-        device_proxy: SyncDeviceProxy | None = None,
-        name: str = "",
-    ) -> None:
-        super().__init__(trl, device_proxy, name=name)
-        self.add_readables(
-            [self.justvalue, self.array, self.limitedvalue], HintedSignal.uncached
-        )
+    justvalue: A[SignalRW[int], Format.HINTED_UNCACHED_SIGNAL]
+    array: A[SignalRW[Array1D[np.float64]], Format.HINTED_UNCACHED_SIGNAL]
+    limitedvalue: A[SignalRW[float], Format.HINTED_UNCACHED_SIGNAL]
 
 
 # --------------------------------------------------------------------
@@ -291,7 +280,7 @@ def demo_test_context():
             "devices": [{"name": "demo/counter/1"}, {"name": "demo/counter/2"}],
         },
     )
-    yield MultiDeviceTestContext(content)
+    yield MultiDeviceTestContext(content, process=True)
 
 
 # --------------------------------------------------------------------
@@ -325,16 +314,9 @@ async def test_connect(tango_test_device):
 @pytest.mark.asyncio
 async def test_set_trl(tango_test_device):
     values, description = await describe_class(tango_test_device)
-
-    # async with DeviceCollector():
-    #     test_device = TestTangoReadable(trl=tango_test_device)
     test_device = TestTangoReadable(name="test_device")
 
-    with pytest.raises(ValueError) as excinfo:
-        test_device.set_trl(0)
-    assert "TRL must be a string." in str(excinfo.value)
-
-    test_device.set_trl(tango_test_device)
+    test_device._connector.trl = tango_test_device
     await test_device.connect()
 
     assert test_device.name == "test_device"
@@ -350,12 +332,12 @@ async def test_connect_proxy(tango_test_device, proxy: bool | None):
         test_device = TestTangoReadable(trl=tango_test_device)
         test_device.proxy = None
         await test_device.connect()
-        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
+        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     elif proxy:
         proxy = await AsyncDeviceProxy(tango_test_device)
         test_device = TestTangoReadable(device_proxy=proxy)
         await test_device.connect()
-        assert isinstance(test_device.proxy, tango._tango.DeviceProxy)
+        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     else:
         proxy = None
         test_device = TestTangoReadable(device_proxy=proxy)
@@ -392,7 +374,7 @@ async def test_tango_demo(demo_test_context):
         RE(bp.count(list(detector.counters.values())))
 
         set_status = detector.set(1.0)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1.0)
         stop_status = detector.stop()
         await set_status
         await stop_status

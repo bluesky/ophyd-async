@@ -1,12 +1,12 @@
 from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR
-from ophyd_async.epics.adcore import ADHDFWriter, ADWriter, AreaDetector, NDPluginBaseIO
+from ophyd_async.epics import adcore
 
 from ._vimba_controller import VimbaController
 
 
-class VimbaDetector(AreaDetector[VimbaController, ADWriter]):
+class VimbaDetector(adcore.AreaDetector[VimbaController, adcore.ADWriter]):
     """
     Ophyd-async implementation of an ADVimba Detector.
     """
@@ -16,14 +16,12 @@ class VimbaDetector(AreaDetector[VimbaController, ADWriter]):
         prefix: str,
         path_provider: PathProvider,
         drv_suffix: str = "cam1:",
-        writer_cls: type[ADWriter] = ADHDFWriter,
+        writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         fileio_suffix: str | None = None,
         name: str = "",
-        plugins: dict[str, NDPluginBaseIO] = None,
+        plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
-        if plugins is None:
-            plugins = {}
         controller, driver = VimbaController.controller_and_drv(
             prefix + drv_suffix, name=name
         )

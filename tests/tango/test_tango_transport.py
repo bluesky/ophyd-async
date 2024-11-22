@@ -14,7 +14,7 @@ from test_tango_signals import (
 from ophyd_async.core import (
     NotConnected,
 )
-from ophyd_async.tango import (
+from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
     TangoSignalBackend,
@@ -207,9 +207,9 @@ async def test_get_tango_trl(
     proxy = await DeviceProxy(tango_test_device) if proxy_needed else None
     if should_raise:
         with pytest.raises(RuntimeError):
-            await get_tango_trl(trl, proxy)
+            await get_tango_trl(trl, proxy, 1)
     else:
-        result = await get_tango_trl(trl, proxy)
+        result = await get_tango_trl(trl, proxy, 1)
         assert isinstance(result, expected_type)
 
 
@@ -244,6 +244,7 @@ async def test_attribute_proxy_put(tango_test_device, attr, wait):
     else:
         if not wait:
             raise AssertionError("If wait is False, put should return a status object")
+    await asyncio.sleep(1.0)
     updated_value = await attr_proxy.get()
     if isinstance(new_value, np.ndarray):
         assert np.all(updated_value == new_value)
@@ -284,6 +285,7 @@ async def test_attribute_proxy_get_w_value(tango_test_device, attr, new_value):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
     await attr_proxy.put(new_value)
+    await asyncio.sleep(1.0)
     attr_proxy_value = await attr_proxy.get()
     if isinstance(new_value, np.ndarray):
         assert np.all(attr_proxy_value == new_value)
@@ -328,9 +330,9 @@ async def test_attribute_subscribe_callback(echo_device):
     attr_proxy = backend.proxies[source]
     val = None
 
-    def callback(reading, value):
+    def callback(reading):
         nonlocal val
-        val = value
+        val = reading["value"]
 
     attr_proxy.subscribe_callback(callback)
     assert attr_proxy.has_subscription()
@@ -356,7 +358,7 @@ async def test_attribute_unsubscribe_callback(echo_device):
     backend = await make_backend(float, source)
     attr_proxy = backend.proxies[source]
 
-    def callback(reading, value):
+    def callback(reading):
         pass
 
     attr_proxy.subscribe_callback(callback)
@@ -385,9 +387,9 @@ async def test_attribute_poll(tango_test_device):
     attr_proxy = AttributeProxy(device_proxy, "floatvalue")
     attr_proxy.support_events = False
 
-    def callback(reading, value):
+    def callback(reading):
         nonlocal val
-        val = value
+        val = reading["value"]
 
     def bad_callback():
         pass
@@ -445,9 +447,9 @@ async def test_attribute_poll_stringsandarrays(tango_test_device, attr):
     attr_proxy = AttributeProxy(device_proxy, attr)
     attr_proxy.support_events = False
 
-    def callback(reading, value):
+    def callback(reading):
         nonlocal val
-        val = value
+        val = reading["value"]
 
     val = None
     attr_proxy.set_polling(True, 0.1)
@@ -592,7 +594,7 @@ async def test_tango_transport_source(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
     transport = await make_backend(float, source)
-    transport_source = transport.source("")
+    transport_source = transport.source("", True)
     assert transport_source == source
 
 
@@ -620,10 +622,10 @@ async def test_tango_transport_connect(echo_device):
     source = echo_device + "/" + "float_scalar_attr"
     backend = await make_backend(float, source, connect=False)
     assert backend is not None
-    await backend.connect()
+    await backend.connect(1)
     backend.read_trl = ""
     with pytest.raises(RuntimeError) as exc_info:
-        await backend.connect()
+        await backend.connect(1)
     assert "trl not set" in str(exc_info.value)
 
 
@@ -633,11 +635,11 @@ async def test_tango_transport_connect_and_store_config(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
     transport = await make_backend(float, source, connect=False)
-    await transport._connect_and_store_config(source)
+    await transport._connect_and_store_config(source, 1)
     assert transport.trl_configs[source] is not None
 
     with pytest.raises(RuntimeError) as exc_info:
-        await transport._connect_and_store_config("")
+        await transport._connect_and_store_config("", 1)
     assert "trl not set" in str(exc_info.value)
 
 
@@ -652,8 +654,8 @@ async def test_tango_transport_put(echo_device):
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
-    await transport.connect()
-    source = transport.source("")
+    await transport.connect(1)
+    source = transport.source("", True)
     await transport.put(2.0)
     val = await transport.proxies[source].get_w_value()
     assert val == 2.0
@@ -665,7 +667,7 @@ async def test_tango_transport_get_datakey(echo_device):
     await prepare_device(echo_device, "float_scalar_attr", 1.0)
     source = echo_device + "/" + "float_scalar_attr"
     transport = await make_backend(float, source, connect=False)
-    await transport.connect()
+    await transport.connect(1)
     datakey = await transport.get_datakey(source)
     assert datakey["source"] == source
     assert datakey["dtype"] == "number"
@@ -683,7 +685,7 @@ async def test_tango_transport_get_reading(echo_device):
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
-    await transport.connect()
+    await transport.connect(1)
     reading = await transport.get_reading()
     assert reading["value"] == 1.0
 
@@ -699,7 +701,7 @@ async def test_tango_transport_get_value(echo_device):
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
-    await transport.connect()
+    await transport.connect(1)
     value = await transport.get_value()
     assert value == 1.0
 
@@ -715,7 +717,7 @@ async def test_tango_transport_get_setpoint(echo_device):
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
-    await transport.connect()
+    await transport.connect(1)
     new_setpoint = 2.0
     await transport.put(new_setpoint)
     setpoint = await transport.get_setpoint()
@@ -733,12 +735,12 @@ async def test_set_callback(echo_device):
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
-    await transport.connect()
+    await transport.connect(1)
     val = None
 
-    def callback(reading, value):
+    def callback(reading):
         nonlocal val
-        val = value
+        val = reading["value"]
 
     # Correct usage
     transport.set_callback(callback)
@@ -794,13 +796,13 @@ async def test_tango_transport_allow_events(echo_device, allow):
 @pytest.mark.asyncio
 async def test_tango_transport_read_and_write_trl(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
-    trl = device_proxy.dev_name()
-    read_trl = trl + "/" + "readback"
-    write_trl = trl + "/" + "setpoint"
+    # Must use a FQTRL, at least on windows.
+    read_trl = tango_test_device + "/" + "readback"
+    write_trl = tango_test_device + "/" + "setpoint"
 
     # Test with existing proxy
     transport = TangoSignalBackend(float, read_trl, write_trl, device_proxy)
-    await transport.connect()
+    await transport.connect(1)
     reading = await transport.get_reading()
     initial_value = reading["value"]
     new_value = initial_value + 1.0
@@ -810,7 +812,7 @@ async def test_tango_transport_read_and_write_trl(tango_test_device):
 
     # Without pre-existing proxy
     transport = TangoSignalBackend(float, read_trl, write_trl, None)
-    await transport.connect()
+    await transport.connect(1)
     reading = await transport.get_reading()
     initial_value = reading["value"]
     new_value = initial_value + 1.0
@@ -828,7 +830,7 @@ async def test_tango_transport_read_only_trl(tango_test_device):
 
     # Test with existing proxy
     transport = TangoSignalBackend(int, read_trl, read_trl, device_proxy)
-    await transport.connect()
+    await transport.connect(1)
     with pytest.raises(RuntimeError) as exc_info:
         await transport.put(1)
     assert "is not writable" in str(exc_info.value)
@@ -844,11 +846,11 @@ async def test_tango_transport_nonexistent_trl(tango_test_device):
     # Test with existing proxy
     transport = TangoSignalBackend(int, nonexistent_trl, nonexistent_trl, device_proxy)
     with pytest.raises(RuntimeError) as exc_info:
-        await transport.connect()
+        await transport.connect(1)
     assert "cannot be found" in str(exc_info.value)
 
     # Without pre-existing proxy
     transport = TangoSignalBackend(int, nonexistent_trl, nonexistent_trl, None)
     with pytest.raises(RuntimeError) as exc_info:
-        await transport.connect()
+        await transport.connect(1)
     assert "cannot be found" in str(exc_info.value)

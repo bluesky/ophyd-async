@@ -127,7 +127,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                 source=self._fileio.full_file_name.source,
                 shape=list(outer_shape + tuple(ds.shape)),
                 dtype="array" if ds.shape else "number",
-                dtype_numpy=ds.dtype_numpy,  # type: ignore
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
             for ds in self._datasets

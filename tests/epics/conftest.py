@@ -7,21 +7,18 @@ from bluesky.run_engine import RunEngine
 from ophyd_async.core._device import DeviceCollector
 from ophyd_async.core._mock_signal_utils import callback_on_mock_put, set_mock_value
 from ophyd_async.epics import adcore
-from ophyd_async.epics.adcore._core_detector import AreaDetector
-from ophyd_async.epics.adcore._core_logic import ADBaseController
-from ophyd_async.epics.adcore._core_writer import ADWriter
 
 
 @pytest.fixture
 def ad_standard_det_factory(
     RE: RunEngine,
     static_path_provider,
-) -> Callable[[type[ADBaseController], type[ADWriter], int], AreaDetector]:
+) -> Callable[[type[adcore.ADBaseController], type[adcore.ADWriter], int], adcore.AreaDetector]:
     def generate_ad_standard_det(
-        controller_cls: type[ADBaseController],
+        controller_cls: type[adcore.ADBaseController],
         writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         number=1,
-    ) -> AreaDetector:
+    ) -> adcore.AreaDetector:
         # Dynamically generate a name based on the class of controller
         detector_name = controller_cls.__name__
         if detector_name.endswith("Controller"):
@@ -35,7 +32,7 @@ def ad_standard_det_factory(
                 prefix + "cam1:", name=name
             )
 
-            test_adstandard_det = AreaDetector[controller_cls, writer_cls](
+            test_adstandard_det = adcore.AreaDetector[controller_cls, writer_cls](
                 prefix,
                 driver,
                 controller,
@@ -45,7 +42,7 @@ def ad_standard_det_factory(
                 name=name,
             )
 
-        def on_set_file_path_callback(value, **kwargs):
+        def on_set_file_path_callback(value: str, wait: bool = True):
             if os.path.exists(value):
                 set_mock_value(
                     test_adstandard_det._writer._fileio.file_path_exists, True

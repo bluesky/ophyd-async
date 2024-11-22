@@ -6,17 +6,18 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceCollector,
-    MockSignalBackend,
+    SoftSignalBackend,
     NotConnected,
     SignalRW,
 )
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.core import soft_signal_rw
+from ophyd_async.epics.core import epics_signal_rw
 
 
-class ValueErrorBackend(MockSignalBackend):
+class ValueErrorBackend(SoftSignalBackend):
     def __init__(self, exc_text=""):
         self.exc_text = exc_text
-        super().__init__(datatype=int, initial_backend=None)
+        super().__init__(datatype=int)
 
     async def connect(self, timeout: float = DEFAULT_TIMEOUT):
         raise ValueError(self.exc_text)
@@ -24,7 +25,7 @@ class ValueErrorBackend(MockSignalBackend):
 
 class WorkingDummyChildDevice(Device):
     def __init__(self, name: str = "working_dummy_child_device") -> None:
-        self.working_signal = SignalRW(backend=MockSignalBackend(datatype=int))
+        self.working_signal = soft_signal_rw(int)
         super().__init__(name=name)
 
 
@@ -44,7 +45,7 @@ class ValueErrorDummyChildDevice(Device):
     def __init__(
         self, name: str = "value_error_dummy_child_device", exc_text=""
     ) -> None:
-        self.value_error_signal = SignalRW(backend=ValueErrorBackend(exc_text=exc_text))
+        self.value_error_signal = SignalRW(ValueErrorBackend(exc_text=exc_text))
         super().__init__(name=name)
 
 
@@ -170,6 +171,38 @@ async def test_error_handling_value_errors(caplog):
     messages = [logs[idx].message for idx in (2, 3)]
     for protocol in ("pva", "ca"):
         assert f"signal {protocol}://A_NON_EXISTENT_SIGNAL timed out" in messages
+
+
+class BadDatatypeDevice(Device):
+    def __init__(self, name: str = "") -> None:
+        self.sig = epics_signal_rw(object, "", "")
+        super().__init__(name)
+
+
+async def test_error_handling_device_collector_mock():
+    with pytest.raises(NotConnected) as e:
+        async with DeviceCollector(mock=True):
+            device = BadDatatypeDevice()
+            device2 = BadDatatypeDevice()
+    expected_output = NotConnected(
+        {
+            "device": NotConnected(
+                {"sig": TypeError(f"Can't make converter for {object}")}
+            ),
+            "device2": NotConnected(
+                {"sig": TypeError(f"Can't make converter for {object}")}
+            ),
+        }
+    )
+    assert str(expected_output) == str(e.value)
+
+
+def test_introspecting_sub_errors():
+    sub_error1 = NotConnected("bad")
+    assert sub_error1.sub_errors == {}
+    sub_error2 = ValueError("very bad")
+    error = NotConnected({"child1": sub_error1, "child2": sub_error2})
+    assert error.sub_errors == {"child1": sub_error1, "child2": sub_error2}
 
 
 async def test_error_handling_device_collector(caplog):

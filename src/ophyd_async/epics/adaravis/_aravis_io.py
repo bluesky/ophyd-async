@@ -1,11 +1,9 @@
-from enum import Enum
-
-from ophyd_async.core import SubsetEnum
+from ophyd_async.core import StrictEnum, SubsetEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.signal import epics_signal_rw_rbv
+from ophyd_async.epics.core import epics_signal_rw_rbv
 
 
-class AravisTriggerMode(str, Enum):
+class AravisTriggerMode(StrictEnum):
     """GigEVision GenICAM standard: on=externally triggered"""
 
     on = "On"
@@ -19,7 +17,11 @@ class AravisTriggerMode(str, Enum):
     To prevent requiring one Enum class per possible configuration, we set as this Enum
     but read from the underlying signal as a str.
     """
-AravisTriggerSource = SubsetEnum["Freerun", "Line1"]
+
+
+class AravisTriggerSource(SubsetEnum):
+    freerun = "Freerun"
+    line1 = "Line1"
 
 
 class AravisDriverIO(adcore.ADBaseIO):

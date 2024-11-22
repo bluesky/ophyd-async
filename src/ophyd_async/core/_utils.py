@@ -2,23 +2,34 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Generic, Literal, ParamSpec, TypeVar, get_origin
+from enum import Enum, EnumMeta
+from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
+from unittest.mock import Mock
 
 import numpy as np
-from bluesky.protocols import Reading
-from pydantic import BaseModel
 
 T = TypeVar("T")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
-
-#: A function that will be called with the Reading and value when the
-#: monitor updates
-ReadingValueCallback = Callable[[Reading, T], None]
 DEFAULT_TIMEOUT = 10.0
-ErrorText = str | dict[str, Exception]
+ErrorText = str | Mapping[str, Exception]
+
+
+class StrictEnum(str, Enum):
+    """All members should exist in the Backend, and there will be no extras"""
+
+
+class SubsetEnumMeta(EnumMeta):
+    def __call__(self, value, *args, **kwargs):  # type: ignore
+        if isinstance(value, str) and not isinstance(value, self):
+            return value
+        return super().__call__(value, *args, **kwargs)
+
+
+class SubsetEnum(StrictEnum, metaclass=SubsetEnumMeta):
+    """All members should exist in the Backend, but there may be extras"""
 
 
 CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
@@ -51,6 +62,13 @@ class NotConnected(Exception):
 
         self._errors = errors
 
+    @property
+    def sub_errors(self) -> Mapping[str, Exception]:
+        if isinstance(self._errors, dict):
+            return self._errors.copy()
+        else:
+            return {}
+
     def _format_sub_errors(self, name: str, error: Exception, indent="") -> str:
         if isinstance(error, NotConnected):
             error_txt = ":" + error.format_error_string(indent + self._indent_width)
@@ -81,6 +99,19 @@ class NotConnected(Exception):
     def __str__(self) -> str:
         return self.format_error_string(indent="")
 
+    @classmethod
+    def with_other_exceptions_logged(
+        cls, exceptions: Mapping[str, Exception]
+    ) -> NotConnected:
+        for name, exception in exceptions.items():
+            if not isinstance(exception, NotConnected):
+                logging.exception(
+                    f"device `{name}` raised unexpected exception "
+                    f"{type(exception).__name__}",
+                    exc_info=exception,
+                )
+        return NotConnected(exceptions)
+
 
 @dataclass(frozen=True)
 class WatcherUpdate(Generic[T]):
@@ -102,24 +133,41 @@ async def wait_for_connection(**coros: Awaitable[None]):
 
     Expected kwargs should be a mapping of names to coroutine tasks to execute.
     """
-    results = await asyncio.gather(*coros.values(), return_exceptions=True)
-    exceptions = {}
-
-    for name, result in zip(coros, results, strict=False):
-        if isinstance(result, Exception):
-            exceptions[name] = result
-            if not isinstance(result, NotConnected):
-                logging.exception(
-                    f"device `{name}` raised unexpected exception "
-                    f"{type(result).__name__}",
-                    exc_info=result,
-                )
+    exceptions: dict[str, Exception] = {}
+    if len(coros) == 1:
+        # Single device optimization
+        name, coro = coros.popitem()
+        try:
+            await coro
+        except Exception as e:
+            exceptions[name] = e
+    else:
+        # Use gather to connect in parallel
+        results = await asyncio.gather(*coros.values(), return_exceptions=True)
+        for name, result in zip(coros, results, strict=False):
+            if isinstance(result, Exception):
+                exceptions[name] = result
 
     if exceptions:
-        raise NotConnected(exceptions)
+        raise NotConnected.with_other_exceptions_logged(exceptions)
 
 
-def get_dtype(typ: type) -> np.dtype | None:
+def get_dtype(datatype: type) -> np.dtype:
+    """Get the runtime dtype from a numpy ndarray type annotation
+
+    >>> from ophyd_async.core import Array1D
+    >>> import numpy as np
+    >>> get_dtype(Array1D[np.int8])
+    dtype('int8')
+    """
+    if not get_origin(datatype) == np.ndarray:
+        raise TypeError(f"Expected Array1D[dtype], got {datatype}")
+    # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
+    # so extract numpy.float64 from it
+    return np.dtype(get_args(get_args(datatype)[1])[0])
+
+
+def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
     """Get the runtime dtype from a numpy ndarray type annotation
 
     >>> import numpy.typing as npt
@@ -127,11 +175,15 @@ def get_dtype(typ: type) -> np.dtype | None:
     >>> get_dtype(npt.NDArray[np.int8])
     dtype('int8')
     """
-    if getattr(typ, "__origin__", None) == np.ndarray:
-        # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
-        # so extract numpy.float64 from it
-        return np.dtype(typ.__args__[1].__args__[0])  # type: ignore
-    return None
+    if get_origin(datatype) is Sequence:
+        datatype = get_args(datatype)[0]
+    if datatype and issubclass(datatype, Enum):
+        if not issubclass(datatype, StrictEnum):
+            raise TypeError(
+                f"{datatype} should inherit from .SubsetEnum "
+                "or ophyd_async.core.StrictEnum"
+            )
+        return datatype
 
 
 def get_unique(values: dict[str, T], types: str) -> T:
@@ -187,7 +239,66 @@ def in_micros(t: float) -> int:
     return int(np.ceil(t * 1e6))
 
 
-def is_pydantic_model(datatype) -> bool:
-    while origin := get_origin(datatype):
-        datatype = origin
-    return datatype and issubclass(datatype, BaseModel)
+def get_origin_class(annotatation: Any) -> type | None:
+    origin = get_origin(annotatation) or annotatation
+    if isinstance(origin, type):
+        return origin
+
+
+class Reference(Generic[T]):
+    """Hide an object behind a reference.
+
+    Used to opt out of the naming/parent-child relationship of `Device`.
+
+    For example::
+
+        class DeviceWithRefToSignal(Device):
+            def __init__(self, signal: SignalRW[int]):
+                self.signal_ref = Reference(signal)
+                super().__init__()
+
+            def set(self, value) -> AsyncStatus:
+                return self.signal_ref().set(value + 1)
+
+    """
+
+    def __init__(self, obj: T):
+        self._obj = obj
+
+    def __call__(self) -> T:
+        return self._obj
+
+
+class LazyMock:
+    """A lazily created Mock to be used when connecting in mock mode.
+
+    Creating Mocks is reasonably expensive when each Device (and Signal)
+    requires its own, and the tree is only used when ``Signal.set()`` is
+    called. This class allows a tree of lazily connected Mocks to be
+    constructed so that when the leaf is created, so are its parents.
+    Any calls to the child are then accessible from the parent mock.
+
+    >>> parent = LazyMock()
+    >>> child = parent.child("child")
+    >>> child_mock = child()
+    >>> child_mock()  # doctest: +ELLIPSIS
+    <Mock name='mock.child()' id='...'>
+    >>> parent_mock = parent()
+    >>> parent_mock.mock_calls
+    [call.child()]
+    """
+
+    def __init__(self, name: str = "", parent: LazyMock | None = None) -> None:
+        self.parent = parent
+        self.name = name
+        self._mock: Mock | None = None
+
+    def child(self, name: str) -> LazyMock:
+        return LazyMock(name, self)
+
+    def __call__(self) -> Mock:
+        if self._mock is None:
+            self._mock = Mock(spec=object)
+            if self.parent is not None:
+                self.parent().attach_mock(self._mock, self.name)
+        return self._mock

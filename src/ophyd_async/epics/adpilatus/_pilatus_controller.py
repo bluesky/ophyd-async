@@ -5,12 +5,11 @@ from typing import TypeVar, get_args
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorTrigger,
+    TriggerInfo,
     wait_for_value,
 )
-from ophyd_async.core._detector import TriggerInfo
+from ophyd_async.core import TriggerInfo
 from ophyd_async.epics import adcore
-from ophyd_async.epics.adcore._core_io import DetectorState
-from ophyd_async.epics.adcore._core_logic import DEFAULT_GOOD_STATES
 
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
@@ -42,7 +41,7 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
     def __init__(
         self,
         driver: PilatusDriverIO,
-        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
         readout_time: float = PilatusReadoutTime.pilatus3,
     ) -> None:
         super().__init__(driver, good_states=good_states)
@@ -52,7 +51,7 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
     def controller_and_drv(
         cls: type[PilatusControllerT],
         prefix: str,
-        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
         name: str = "",
         readout_time: float = PilatusReadoutTime.pilatus3,
     ) -> tuple[PilatusControllerT, PilatusDriverIO]:

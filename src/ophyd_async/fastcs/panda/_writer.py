@@ -17,7 +17,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._block import DataBlock
+from ._block import CaptureMode, DataBlock
 
 
 class PandaHDFWriter(DetectorWriter):
@@ -25,13 +25,11 @@ class PandaHDFWriter(DetectorWriter):
 
     def __init__(
         self,
-        prefix: str,
         path_provider: PathProvider,
         name_provider: NameProvider,
         panda_data_block: DataBlock,
     ) -> None:
         self.panda_data_block = panda_data_block
-        self._prefix = prefix
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._datasets: list[HDFDataset] = []
@@ -58,7 +56,7 @@ class PandaHDFWriter(DetectorWriter):
             self.panda_data_block.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
-            self.panda_data_block.num_capture.set(0),
+            self.panda_data_block.capture_mode.set(CaptureMode.FOREVER),
         )
 
         # Make sure that directory exists or has been created.
@@ -89,8 +87,7 @@ class PandaHDFWriter(DetectorWriter):
                 shape=list(ds.shape),
                 dtype="array" if ds.shape != [1] else "number",
                 # PandA data should always be written as Float64
-                # Ignore type check until https://github.com/bluesky/event-model/issues/308
-                dtype_numpy="<f8",  # type: ignore
+                dtype_numpy="<f8",
                 external="STREAM:",
             )
             for ds in self._datasets
@@ -110,7 +107,7 @@ class PandaHDFWriter(DetectorWriter):
             HDFDataset(
                 dataset_name, "/" + dataset_name, [1], multiplier=1, chunk_shape=(1024,)
             )
-            for dataset_name in capture_table["name"]
+            for dataset_name in capture_table.name
         ]
 
         # Warn user if dataset table is empty in PandA

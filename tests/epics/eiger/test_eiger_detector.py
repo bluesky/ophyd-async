@@ -33,6 +33,4 @@ async def test_when_prepared_with_energy_then_energy_set_on_detector(detector):
         )
     )
 
-    get_mock_put(detector.drv.photon_energy).assert_called_once_with(
-        10000, wait=ANY, timeout=ANY
-    )
+    get_mock_put(detector.drv.photon_energy).assert_called_once_with(10000, wait=ANY)

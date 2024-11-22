@@ -15,14 +15,18 @@ from ophyd_async.epics import motor
 
 
 class FailingDevice(Device):
-    async def connect(self, mock: bool = False, timeout=DEFAULT_TIMEOUT):
+    async def connect(
+        self, mock: bool = False, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+    ):
         raise AttributeError()
 
 
 class WorkingDevice(Device):
     connected = False
 
-    async def connect(self, mock: bool = True, timeout=DEFAULT_TIMEOUT):
+    async def connect(
+        self, mock: bool = True, timeout=DEFAULT_TIMEOUT, force_reconnect=False
+    ):
         self.connected = True
         return await super().connect(mock=True)
 
@@ -65,6 +69,16 @@ def test_sync_device_connector_run_engine_created_connects(RE):
         working_device = WorkingDevice("somename")
 
     assert working_device.connected
+
+
+def test_connecting_in_plan_raises(RE):
+    def bad_plan():
+        yield from bps.null()
+        with DeviceCollector():
+            working_device = WorkingDevice("somename")  # noqa: F841
+
+    with pytest.raises(RuntimeError, match="Cannot use DeviceConnector inside a plan"):
+        RE(bad_plan())
 
 
 def test_async_device_connector_run_engine_same_event_loop():

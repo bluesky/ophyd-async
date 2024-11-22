@@ -10,11 +10,13 @@ from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DeviceCollector,
+    LazyMock,
     NotConnected,
     assert_emitted,
     assert_reading,
     assert_value,
     callback_on_mock_put,
+    get_mock,
     get_mock_put,
     set_mock_value,
 )
@@ -179,7 +181,7 @@ async def test_sensor_reading_shows_value(mock_sensor: demo.Sensor):
 async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
     mover_setpoint_mock = get_mock_put(mock_mover.setpoint)
     await mock_mover.setpoint.set(10)
-    mover_setpoint_mock.assert_called_once_with(10, wait=ANY, timeout=ANY)
+    mover_setpoint_mock.assert_called_once_with(10, wait=ANY)
 
     # Assert that velocity is set before move
     mover_velocity_mock = get_mock_put(mock_mover.velocity)
@@ -190,13 +192,34 @@ async def test_retrieve_mock_and_assert(mock_mover: demo.Mover):
 
     await mock_mover.velocity.set(100)
     await mock_mover.setpoint.set(67)
+    assert parent_mock.mock_calls == [
+        call.velocity(100, wait=True),
+        call.setpoint(67, wait=True),
+    ]
 
-    parent_mock.assert_has_calls(
-        [
-            call.velocity(100, wait=True, timeout=ANY),
-            call.setpoint(67, wait=True, timeout=ANY),
-        ]
-    )
+
+async def test_mocks_in_device_share_parent():
+    lm = LazyMock()
+    mock_mover = demo.Mover("BLxxI-MO-TABLE-01:Y:")
+    await mock_mover.connect(mock=lm)
+    mock = lm()
+
+    assert get_mock(mock_mover) is mock
+    assert get_mock(mock_mover.setpoint) is mock.setpoint
+    assert get_mock_put(mock_mover.setpoint) is mock.setpoint.put
+    await mock_mover.setpoint.set(10)
+    get_mock_put(mock_mover.setpoint).assert_called_once_with(10, wait=ANY)
+
+    await mock_mover.velocity.set(100)
+    await mock_mover.setpoint.set(67)
+
+    mock.reset_mock()
+    await mock_mover.velocity.set(100)
+    await mock_mover.setpoint.set(67)
+    assert mock.mock_calls == [
+        call.velocity.put(100, wait=True),
+        call.setpoint.put(67, wait=True),
+    ]
 
 
 async def test_read_mover(mock_mover: demo.Mover):
@@ -243,26 +266,27 @@ async def test_sensor_disconnected(caplog):
     logs = caplog.get_records("call")
     logs = [log for log in logs if "_signal" not in log.pathname]
     assert len(logs) == 2
+    messages = {log.message for log in logs}
 
-    assert logs[0].message == ("signal ca://PRE:Value timed out")
-    assert logs[1].message == ("signal ca://PRE:Mode timed out")
+    assert messages == {
+        "signal ca://PRE:Value timed out",
+        "signal ca://PRE:Mode timed out",
+    }
     assert s.name == "sensor"
 
 
 async def test_read_sensor(mock_sensor: demo.Sensor):
-    mock_sensor.stage()
     assert (await mock_sensor.read())["mock_sensor-value"]["value"] == 0
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.low
     desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
-    assert desc["choices"] == ("Low Energy", "High Energy")  # type: ignore
+    assert desc["choices"] == ["Low Energy", "High Energy"]
     set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
     ] == demo.EnergyMode.high
-    await mock_sensor.unstage()
 
 
 async def test_sensor_in_plan(RE: RunEngine, mock_sensor: demo.Sensor):
@@ -295,9 +319,23 @@ async def test_assembly_renaming() -> None:
 
 
 async def test_dynamic_sensor_group_disconnected():
-    with pytest.raises(NotConnected):
+    with pytest.raises(NotConnected) as e:
         async with DeviceCollector(timeout=0.1):
             mock_sensor_group_dynamic = demo.SensorGroup("MOCK:SENSOR:")
+    expected = """
+mock_sensor_group_dynamic: NotConnected:
+    sensors: NotConnected:
+        1: NotConnected:
+            value: NotConnected: ca://MOCK:SENSOR:1:Value
+            mode: NotConnected: ca://MOCK:SENSOR:1:Mode
+        2: NotConnected:
+            value: NotConnected: ca://MOCK:SENSOR:2:Value
+            mode: NotConnected: ca://MOCK:SENSOR:2:Mode
+        3: NotConnected:
+            value: NotConnected: ca://MOCK:SENSOR:3:Value
+            mode: NotConnected: ca://MOCK:SENSOR:3:Mode
+"""
+    assert str(e.value) == expected
 
     assert mock_sensor_group_dynamic.name == "mock_sensor_group_dynamic"
 

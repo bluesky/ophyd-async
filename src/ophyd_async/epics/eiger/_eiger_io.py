@@ -1,10 +1,8 @@
-from enum import Enum
-
-from ophyd_async.core import Device
-from ophyd_async.epics.signal import epics_signal_r, epics_signal_rw_rbv, epics_signal_w
+from ophyd_async.core import Device, StrictEnum
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw_rbv, epics_signal_w
 
 
-class EigerTriggerMode(str, Enum):
+class EigerTriggerMode(StrictEnum):
     internal = "ints"
     edge = "exts"
     gate = "exte"

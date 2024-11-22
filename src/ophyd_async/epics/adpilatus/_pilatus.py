@@ -22,11 +22,9 @@ class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
         writer_cls: type[ADWriter] = ADHDFWriter,
         fileio_suffix: str | None = None,
         name: str = "",
-        plugins: dict[str, NDPluginBaseIO] = None,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
-        if plugins is None:
-            plugins = {}
         controller, driver = PilatusController.controller_and_drv(
             prefix + drv_suffix, name=name, readout_time=readout_time
         )

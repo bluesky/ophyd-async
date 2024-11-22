@@ -1,244 +1,181 @@
 from __future__ import annotations
 
-import inspect
 import time
-from collections import abc
-from enum import Enum
-from typing import Generic, cast, get_origin
+from abc import abstractmethod
+from collections.abc import Sequence
+from dataclasses import dataclass
+from functools import lru_cache
+from typing import Any, Generic, get_args, get_origin
 
 import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey
-from event_model.documents.event_descriptor import Dtype
-from pydantic import BaseModel
-from typing_extensions import TypedDict
 
 from ._signal_backend import (
-    RuntimeSubsetEnum,
+    Array1D,
+    EnumT,
+    Primitive,
+    PrimitiveT,
     SignalBackend,
+    SignalDatatype,
+    SignalDatatypeT,
+    SignalMetadata,
+    TableT,
+    make_datakey,
 )
-from ._utils import (
-    DEFAULT_TIMEOUT,
-    ReadingValueCallback,
-    T,
-    get_dtype,
-    is_pydantic_model,
-)
-
-primitive_dtypes: dict[type, Dtype] = {
-    str: "string",
-    int: "integer",
-    float: "number",
-    bool: "boolean",
-}
+from ._table import Table
+from ._utils import Callback, get_dtype, get_enum_cls
 
 
-class SignalMetadata(TypedDict):
-    units: str | None
-    precision: int | None
+class SoftConverter(Generic[SignalDatatypeT]):
+    # This is Any -> SignalDatatypeT because we support coercing
+    # value types to SignalDatatype to allow people to do things like
+    # SignalRW[Enum].set("enum value")
+    @abstractmethod
+    def write_value(self, value: Any) -> SignalDatatypeT: ...
 
 
-class SoftConverter(Generic[T]):
-    def value(self, value: T) -> T:
-        return value
+@dataclass
+class PrimitiveSoftConverter(SoftConverter[PrimitiveT]):
+    datatype: type[PrimitiveT]
 
-    def write_value(self, value: T) -> T:
-        return value
+    def write_value(self, value: Any) -> PrimitiveT:
+        return self.datatype(value) if value else self.datatype()
 
-    def reading(self, value: T, timestamp: float, severity: int) -> Reading:
-        return Reading(
-            value=value,
-            timestamp=timestamp,
-            alarm_severity=-1 if severity > 2 else severity,
+
+class SequenceStrSoftConverter(SoftConverter[Sequence[str]]):
+    def write_value(self, value: Any) -> Sequence[str]:
+        return [str(v) for v in value] if value else []
+
+
+@dataclass
+class SequenceEnumSoftConverter(SoftConverter[Sequence[EnumT]]):
+    datatype: type[EnumT]
+
+    def write_value(self, value: Any) -> Sequence[EnumT]:
+        return [self.datatype(v) for v in value] if value else []
+
+
+@dataclass
+class NDArraySoftConverter(SoftConverter[Array1D]):
+    datatype: np.dtype | None = None
+
+    def write_value(self, value: Any) -> Array1D:
+        return np.array(() if value is None else value, dtype=self.datatype)
+
+
+@dataclass
+class EnumSoftConverter(SoftConverter[EnumT]):
+    datatype: type[EnumT]
+
+    def write_value(self, value: Any) -> EnumT:
+        return (
+            self.datatype(value)
+            if value
+            else list(self.datatype.__members__.values())[0]
         )
 
-    def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        dk: DataKey = {"source": source, "shape": [], **metadata}  # type: ignore
-        dtype = type(value)
-        if np.issubdtype(dtype, np.integer):
-            dtype = int
-        elif np.issubdtype(dtype, np.floating):
-            dtype = float
-        assert (
-            dtype in primitive_dtypes
-        ), f"invalid converter for value of type {type(value)}"
-        dk["dtype"] = primitive_dtypes[dtype]
-        # type ignore until https://github.com/bluesky/event-model/issues/308
-        try:
-            dk["dtype_numpy"] = np.dtype(dtype).descr[0][1]  # type: ignore
-        except TypeError:
-            dk["dtype_numpy"] = ""  # type: ignore
-        return dk
 
-    def make_initial_value(self, datatype: type[T] | None) -> T:
-        if datatype is None:
-            return cast(T, None)
+@dataclass
+class TableSoftConverter(SoftConverter[TableT]):
+    datatype: type[TableT]
 
-        return datatype()
-
-
-class SoftArrayConverter(SoftConverter):
-    def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        dtype_numpy = ""
-        if isinstance(value, list):
-            if len(value) > 0:
-                dtype_numpy = np.dtype(type(value[0])).descr[0][1]
-        else:
-            dtype_numpy = np.dtype(value.dtype).descr[0][1]
-
-        return {
-            "source": source,
-            "dtype": "array",
-            "dtype_numpy": dtype_numpy,  # type: ignore
-            "shape": [len(value)],
-            **metadata,
-        }
-
-    def make_initial_value(self, datatype: type[T] | None) -> T:
-        if datatype is None:
-            return cast(T, None)
-
-        if get_origin(datatype) == abc.Sequence:
-            return cast(T, [])
-
-        return cast(T, datatype(shape=0))  # type: ignore
-
-
-class SoftEnumConverter(SoftConverter):
-    choices: tuple[str, ...]
-
-    def __init__(self, datatype: RuntimeSubsetEnum | type[Enum]):
-        if issubclass(datatype, Enum):  # type: ignore
-            self.choices = tuple(v.value for v in datatype)
-        else:
-            self.choices = datatype.choices
-
-    def write_value(self, value: Enum | str) -> str:
-        return value  # type: ignore
-
-    def get_datakey(self, source: str, value, **metadata) -> DataKey:
-        return {
-            "source": source,
-            "dtype": "string",
-            # type ignore until https://github.com/bluesky/event-model/issues/308
-            "dtype_numpy": "|S40",  # type: ignore
-            "shape": [],
-            "choices": self.choices,
-            **metadata,
-        }
-
-    def make_initial_value(self, datatype: type[T] | None) -> T:
-        if datatype is None:
-            return cast(T, None)
-
-        if issubclass(datatype, Enum):
-            return cast(T, list(datatype.__members__.values())[0])  # type: ignore
-        return cast(T, self.choices[0])
-
-
-class SoftPydanticModelConverter(SoftConverter):
-    def __init__(self, datatype: type[BaseModel]):
-        self.datatype = datatype
-
-    def write_value(self, value):
+    def write_value(self, value: Any) -> TableT:
         if isinstance(value, dict):
             return self.datatype(**value)
-        return value
+        elif isinstance(value, self.datatype):
+            return value
+        elif value is None:
+            return self.datatype()
+        else:
+            raise TypeError(f"Cannot convert {value} to {self.datatype}")
 
 
-def make_converter(datatype):
-    is_array = get_dtype(datatype) is not None
-    is_sequence = get_origin(datatype) == abc.Sequence
-    is_enum = inspect.isclass(datatype) and (
-        issubclass(datatype, Enum) or issubclass(datatype, RuntimeSubsetEnum)
-    )
+@lru_cache
+def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
+    enum_cls = get_enum_cls(datatype)
+    if datatype == Sequence[str]:
+        return SequenceStrSoftConverter()
+    elif get_origin(datatype) == Sequence and enum_cls:
+        return SequenceEnumSoftConverter(enum_cls)
+    elif datatype is np.ndarray:
+        return NDArraySoftConverter()
+    elif get_origin(datatype) == np.ndarray:
+        if datatype not in get_args(SignalDatatype):
+            raise TypeError(f"Expected Array1D[dtype], got {datatype}")
+        return NDArraySoftConverter(get_dtype(datatype))
+    elif enum_cls:
+        return EnumSoftConverter(enum_cls)
+    elif issubclass(datatype, Table):
+        return TableSoftConverter(datatype)
+    elif issubclass(datatype, Primitive):
+        return PrimitiveSoftConverter(datatype)
+    raise TypeError(f"Can't make converter for {datatype}")
 
-    if is_array or is_sequence:
-        return SoftArrayConverter()
-    if is_enum:
-        return SoftEnumConverter(datatype)  # type: ignore
-    if is_pydantic_model(datatype):
-        return SoftPydanticModelConverter(datatype)  # type: ignore
 
-    return SoftConverter()
-
-
-class SoftSignalBackend(SignalBackend[T]):
+class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     """An backend to a soft Signal, for test signals see ``MockSignalBackend``."""
-
-    _value: T
-    _initial_value: T | None
-    _timestamp: float
-    _severity: int
-
-    @classmethod
-    def datatype_allowed(cls, dtype: type) -> bool:
-        return True  # Any value allowed in a soft signal
 
     def __init__(
         self,
-        datatype: type[T] | None,
-        initial_value: T | None = None,
-        metadata: SignalMetadata = None,  # type: ignore
-    ) -> None:
-        self.datatype = datatype
-        self._initial_value = initial_value
-        self._metadata = metadata or {}
-        self.converter: SoftConverter = make_converter(datatype)
-        if self._initial_value is None:
-            self._initial_value = self.converter.make_initial_value(self.datatype)
-        else:
-            self._initial_value = self.converter.write_value(self._initial_value)  # type: ignore
+        datatype: type[SignalDatatypeT] | None,
+        initial_value: SignalDatatypeT | None = None,
+        units: str | None = None,
+        precision: int | None = None,
+    ):
+        # Create the right converter for the datatype
+        self.converter = make_converter(datatype or float)
+        # Add the extra static metadata to the dictionary
+        self.metadata: SignalMetadata = {}
+        if units is not None:
+            self.metadata["units"] = units
+        if precision is not None:
+            self.metadata["precision"] = precision
+        if enum_cls := get_enum_cls(datatype):
+            self.metadata["choices"] = [v.value for v in enum_cls]
+        # Create and set the initial value
+        self.initial_value = self.converter.write_value(initial_value)
+        self.reading: Reading[SignalDatatypeT]
+        self.callback: Callback[Reading[SignalDatatypeT]] | None = None
+        self.set_value(self.initial_value)
+        super().__init__(datatype)
 
-        self.callback: ReadingValueCallback[T] | None = None
-        self._severity = 0
-        self.set_value(self._initial_value)  # type: ignore
+    def set_value(self, value: SignalDatatypeT):
+        self.reading = Reading(
+            value=self.converter.write_value(value),
+            timestamp=time.monotonic(),
+            alarm_severity=0,
+        )
+        if self.callback:
+            self.callback(self.reading)
 
-    def source(self, name: str) -> str:
+    def source(self, name: str, read: bool) -> str:
         return f"soft://{name}"
 
-    async def connect(self, timeout: float = DEFAULT_TIMEOUT) -> None:
-        """Connection isn't required for soft signals."""
+    async def connect(self, timeout: float):
         pass
 
-    async def put(self, value: T | None, wait=True, timeout=None):
-        write_value = (
-            self.converter.write_value(value)
-            if value is not None
-            else self._initial_value
-        )
-
-        self.set_value(write_value)  # type: ignore
-
-    def set_value(self, value: T):
-        """Method to bypass asynchronous logic."""
-        self._value = value
-        self._timestamp = time.monotonic()
-        reading: Reading = self.converter.reading(
-            self._value, self._timestamp, self._severity
-        )
-
-        if self.callback:
-            self.callback(reading, self._value)
+    async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
+        write_value = self.initial_value if value is None else value
+        self.set_value(write_value)
 
     async def get_datakey(self, source: str) -> DataKey:
-        return self.converter.get_datakey(source, self._value, **self._metadata)
+        return make_datakey(
+            self.datatype or float, self.reading["value"], source, self.metadata
+        )
 
-    async def get_reading(self) -> Reading:
-        return self.converter.reading(self._value, self._timestamp, self._severity)
+    async def get_reading(self) -> Reading[SignalDatatypeT]:
+        return self.reading
 
-    async def get_value(self) -> T:
-        return self.converter.value(self._value)
+    async def get_value(self) -> SignalDatatypeT:
+        return self.reading["value"]
 
-    async def get_setpoint(self) -> T:
-        """For a soft signal, the setpoint and readback values are the same."""
-        return await self.get_value()
+    async def get_setpoint(self) -> SignalDatatypeT:
+        # For a soft signal, the setpoint and readback values are the same.
+        return self.reading["value"]
 
-    def set_callback(self, callback: ReadingValueCallback[T] | None) -> None:
+    def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback:
             assert not self.callback, "Cannot set a callback when one is already set"
-            reading: Reading = self.converter.reading(
-                self._value, self._timestamp, self._severity
-            )
-            callback(reading, self._value)
+            callback(self.reading)
         self.callback = callback

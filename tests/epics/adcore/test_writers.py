@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
 import pytest
@@ -8,12 +9,13 @@ from ophyd_async.core import (
     PathProvider,
     StandardDetector,
     StaticPathProvider,
+    set_mock_value,
 )
-from ophyd_async.core._mock_signal_utils import set_mock_value
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
 from ophyd_async.epics.adpilatus._pilatus_controller import PilatusReadoutTime
-from ophyd_async.epics.signal._signal import epics_signal_r
 from ophyd_async.plan_stubs._nd_attributes import setup_ndattributes, setup_ndstats_sum
+from ophyd_async.epics.core import epics_signal_r
+from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
 
 
 class DummyDatasetDescriber(DatasetDescriber):
@@ -107,6 +109,7 @@ async def test_stats_describe_when_plugin_configured(
 ):
     assert hdf_writer_with_stats._file is None
     set_mock_value(hdf_writer_with_stats._fileio.file_path_exists, True)
+    assert hdf_writer_with_stats._plugins is not None
     set_mock_value(
         hdf_writer_with_stats._plugins["stats"].nd_attributes_file,
         """<?xml version='1.0' encoding='utf-8'?>
@@ -159,6 +162,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
 ):
     assert hdf_writer_with_stats._file is None
     set_mock_value(hdf_writer_with_stats._fileio.file_path_exists, True)
+    assert hdf_writer_with_stats._plugins is not None
     set_mock_value(
         hdf_writer_with_stats._plugins["stats"].nd_attributes_file,
         """<?xml version='1.0' encoding='utf-8'?>
@@ -184,7 +188,8 @@ async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
         detector.set_name(type(detector).__name__)
         RE(setup_ndstats_sum(detector))
         xml = await detector.fileio.nd_attributes_file.get_value()
-        for element in xml:
+        root = ET.fromstring(xml)
+        for element in root:
             assert str(element.tag) == "Attribute"
             assert element.attrib == {
                 "name": f"{detector.name}-sum",
@@ -213,7 +218,8 @@ async def test_nd_attributes_plan_stub(RE, detectors):
             dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
         )
         RE(setup_ndattributes(detector.fileio, [pv, param]))
-        xml = await detector.fileio.nd_attributes_file.get_value()
+        text = await detector.fileio.nd_attributes_file.get_value()
+        xml = ET.fromstring(text)
         assert xml[0].tag == "Attribute"
         assert xml[0].attrib == {
             "name": "Temperature",

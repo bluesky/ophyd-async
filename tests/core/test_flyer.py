@@ -1,6 +1,6 @@
+import asyncio
 import time
 from collections.abc import AsyncGenerator, AsyncIterator, Sequence
-from enum import Enum
 from typing import Any
 from unittest.mock import Mock
 
@@ -19,14 +19,15 @@ from ophyd_async.core import (
     FlyerController,
     StandardDetector,
     StandardFlyer,
+    StrictEnum,
     TriggerInfo,
+    assert_emitted,
     observe_value,
 )
-from ophyd_async.core._signal import assert_emitted
-from ophyd_async.epics.signal import epics_signal_rw
+from ophyd_async.epics.core import epics_signal_rw
 
 
-class TriggerState(str, Enum):
+class TriggerState(StrictEnum):
     null = "null"
     preparing = "preparing"
     starting = "starting"
@@ -125,12 +126,12 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):
         return writers[1].dummy_signal.set(1)
 
-    detector_1: StandardDetector[Any] = StandardDetector(
+    detector_1: StandardDetector[Any, Any] = StandardDetector(
         Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
     )
-    detector_2: StandardDetector[Any] = StandardDetector(
+    detector_2: StandardDetector[Any, Any] = StandardDetector(
         Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
@@ -355,6 +356,9 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         match_msg = "Prepare must be called before kickoff!"
     with pytest.raises(Exception, match=match_msg):
         RE(flying_plan())
+
+    # Try explicitly letting event loop clean up tasks...?
+    await asyncio.sleep(1.0)
 
 
 @pytest.mark.parametrize(
