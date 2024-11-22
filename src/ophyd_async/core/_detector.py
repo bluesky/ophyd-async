@@ -30,13 +30,13 @@ class DetectorTrigger(StrictEnum):
     """Type of mechanism for triggering a detector to take frames"""
 
     #: Detector generates internal trigger for given rate
-    internal = "internal"
+    INTERNAL = "internal"
     #: Expect a series of arbitrary length trigger signals
-    edge_trigger = "edge_trigger"
+    EDGE_TRIGGER = "edge_trigger"
     #: Expect a series of constant width external gate signals
-    constant_gate = "constant_gate"
+    CONSTANT_GATE = "constant_gate"
     #: Expect a series of variable width external gate signals
-    variable_gate = "variable_gate"
+    VARIABLE_GATE = "variable_gate"
 
 
 class TriggerInfo(BaseModel):
@@ -53,7 +53,7 @@ class TriggerInfo(BaseModel):
     #:     - 3 times for final flat field images
     number_of_triggers: NonNegativeInt | list[NonNegativeInt]
     #: Sort of triggers that will be sent
-    trigger: DetectorTrigger = Field(default=DetectorTrigger.internal)
+    trigger: DetectorTrigger = Field(default=DetectorTrigger.INTERNAL)
     #: What is the minimum deadtime between triggers
     deadtime: float | None = Field(default=None, ge=0)
     #: What is the maximum high time of the triggers
@@ -265,14 +265,14 @@ class StandardDetector(
             await self.prepare(
                 TriggerInfo(
                     number_of_triggers=1,
-                    trigger=DetectorTrigger.internal,
+                    trigger=DetectorTrigger.INTERNAL,
                     deadtime=None,
                     livetime=None,
                     frame_timeout=None,
                 )
             )
         assert self._trigger_info
-        assert self._trigger_info.trigger is DetectorTrigger.internal
+        assert self._trigger_info.trigger is DetectorTrigger.INTERNAL
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         await self.controller.arm()
@@ -303,7 +303,7 @@ class StandardDetector(
         Args:
             value: TriggerInfo describing how to trigger the detector
         """
-        if value.trigger != DetectorTrigger.internal:
+        if value.trigger != DetectorTrigger.INTERNAL:
             assert (
                 value.deadtime
             ), "Deadtime must be supplied when in externally triggered mode"
@@ -323,7 +323,7 @@ class StandardDetector(
         self._describe, _ = await asyncio.gather(
             self.writer.open(value.multiplier), self.controller.prepare(value)
         )
-        if value.trigger != DetectorTrigger.internal:
+        if value.trigger != DetectorTrigger.INTERNAL:
             await self.controller.arm()
             self._fly_start = time.monotonic()
 

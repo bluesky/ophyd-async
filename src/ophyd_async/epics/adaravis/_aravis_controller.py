@@ -31,9 +31,9 @@ class AravisController(DetectorController):
 
     async def prepare(self, trigger_info: TriggerInfo):
         if trigger_info.total_number_of_triggers == 0:
-            image_mode = adcore.ImageMode.continuous
+            image_mode = adcore.ImageMode.CONTINUOUS
         else:
-            image_mode = adcore.ImageMode.multiple
+            image_mode = adcore.ImageMode.MULTIPLE
         if (exposure := trigger_info.livetime) is not None:
             await self._drv.acquire_time.set(exposure)
 
@@ -58,9 +58,9 @@ class AravisController(DetectorController):
         self, trigger: DetectorTrigger
     ) -> tuple[AravisTriggerMode, AravisTriggerSource]:
         supported_trigger_types = (
-            DetectorTrigger.constant_gate,
-            DetectorTrigger.edge_trigger,
-            DetectorTrigger.internal,
+            DetectorTrigger.CONSTANT_GATE,
+            DetectorTrigger.EDGE_TRIGGER,
+            DetectorTrigger.INTERNAL,
         )
         if trigger not in supported_trigger_types:
             raise ValueError(
@@ -68,8 +68,8 @@ class AravisController(DetectorController):
                 f"types: {supported_trigger_types} but was asked to "
                 f"use {trigger}"
             )
-        if trigger == DetectorTrigger.internal:
-            return AravisTriggerMode.off, AravisTriggerSource.freerun
+        if trigger == DetectorTrigger.INTERNAL:
+            return AravisTriggerMode.OFF, AravisTriggerSource.FREERUN
         else:
             return (AravisTriggerMode.on, f"Line{self.gpio_number}")  # type: ignore
 
