@@ -19,7 +19,9 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         name: str = "",
     ):
         # This has to be first so we make self.pcap
-        connector = fastcs_connector(self, prefix)
+        connector = fastcs_connector(
+            self, prefix, error_hint="Is PandABlocks-ioc at least version 0.11.4?"
+        )
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             path_provider=path_provider,
