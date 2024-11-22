@@ -117,7 +117,10 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         """
 
         status = await set_and_wait_for_value(
-            self._driver.acquire, True, timeout=self.frame_timeout, wait_for_set_completion=False
+            self._driver.acquire,
+            True,
+            timeout=self.frame_timeout,
+            wait_for_set_completion=False,
         )
 
         async def complete_acquisition() -> None:
