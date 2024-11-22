@@ -6,7 +6,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.core._detector import TriggerInfo
-from ophyd_async.epics import advimba
+from ophyd_async.epics import adcore, advimba
 from ophyd_async.epics.advimba._vimba_io import (
     VimbaExposeOutMode,
     VimbaOnOff,
@@ -16,7 +16,7 @@ from ophyd_async.epics.advimba._vimba_io import (
 
 @pytest.fixture
 def test_advimba(ad_standard_det_factory) -> advimba.VimbaDetector:
-    return ad_standard_det_factory(advimba.VimbaDetector)
+    return ad_standard_det_factory(advimba.VimbaController, adcore.ADHDFWriter)
 
 
 async def test_get_deadtime(
@@ -32,11 +32,11 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
     set_mock_value(test_advimba.drv.exposure_mode, VimbaExposeOutMode.timed)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
-        await test_advimba.controller.prepare(
+        await test_advimba._controller.prepare(
             TriggerInfo(number_of_triggers=1, trigger=trig_mode)
         )
-        await test_advimba.controller.arm()
-        await test_advimba.controller.wait_for_idle()
+        await test_advimba._controller.arm()
+        await test_advimba._controller.wait_for_idle()
         # Prevent timeouts
         set_mock_value(test_advimba.drv.acquire, True)
 
@@ -84,7 +84,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_advimba.describe() == {
         "test_advimba1": {
             "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -131,7 +131,7 @@ async def test_can_decribe_collect(
     assert (await test_advimba.describe_collect()) == {
         "test_advimba1": {
             "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

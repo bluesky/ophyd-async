@@ -1,26 +1,28 @@
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import pytest
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
 import ophyd_async.plan_stubs as ops
+from ophyd_async.core._device import DeviceCollector
 from ophyd_async.epics import adcore
 
 
 @pytest.fixture
 async def single_trigger_det_with_stats():
-    stats = adcore.NDPluginStatsIO("PREFIX:STATS", name="stats")
-    det = adcore.SingleTriggerDetector(
-        drv=adcore.ADBaseIO("PREFIX:DRV"),
-        stats=stats,
-        read_uncached=[stats.unique_id],
-        name="det",
-    )
+    async with DeviceCollector(mock=True):
+        stats = adcore.NDPluginStatsIO("PREFIX:STATS", name="stats")
+        det = adcore.SingleTriggerDetector(
+            drv=adcore.ADBaseIO("PREFIX:DRV"),
+            plugins={"stats": stats},
+            read_uncached=[stats.unique_id],
+            name="det",
+        )
 
     # Set non-default values to check they are set back
     # These are using set_mock_value to simulate the backend IOC being setup
     # in a particular way, rather than values being set by the Ophyd signals
-    yield det, stats
+    return det, stats
 
 
 async def test_single_trigger_det(
@@ -51,6 +53,8 @@ async def test_single_trigger_det(
 
     assert names == ["start", "descriptor", "event", "stop"]
     _, descriptor, event, _ = docs
+    print(descriptor)
+    print(event)
     assert descriptor["configuration"]["det"]["data"]["det-drv-acquire_time"] == 0.5
     assert event["data"]["det-drv-array_counter"] == 1
     assert event["data"]["det-stats-unique_id"] == 0

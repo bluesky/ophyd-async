@@ -11,16 +11,16 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adpilatus
-from ophyd_async.epics.adpilatus import PilatusController, PilatusDriverIO
+from ophyd_async.epics.adpilatus import PilatusDriverIO
 
 
 @pytest.fixture
 def test_adpilatus(ad_standard_det_factory) -> adpilatus.PilatusDetector:
-    return ad_standard_det_factory(adpilatus.PilatusDetector)
+    return ad_standard_det_factory(adpilatus.PilatusController)
 
 
 async def test_deadtime_overridable(test_adpilatus: adpilatus.PilatusDetector):
-    pilatus_controller = cast(PilatusController, test_adpilatus.controller)
+    pilatus_controller = test_adpilatus._controller
     pilatus_controller._readout_time = adpilatus.PilatusReadoutTime.pilatus2
 
     # deadtime invariant with exposure time
@@ -30,7 +30,7 @@ async def test_deadtime_overridable(test_adpilatus: adpilatus.PilatusDetector):
 async def test_deadtime_invariant(
     test_adpilatus: adpilatus.PilatusDetector,
 ):
-    pilatus_controller = test_adpilatus.controller
+    pilatus_controller = test_adpilatus._controller
     # deadtime invariant with exposure time
     assert pilatus_controller.get_deadtime(0) == 0.95e-3
     assert pilatus_controller.get_deadtime(500) == 0.95e-3
@@ -51,11 +51,11 @@ async def test_trigger_mode_set(
 ):
     async def trigger_and_complete():
         set_mock_value(test_adpilatus.drv.armed, True)
-        await test_adpilatus.controller.prepare(
+        await test_adpilatus._controller.prepare(
             TriggerInfo(number_of_triggers=1, trigger=detector_trigger)
         )
-        await test_adpilatus.controller.arm()
-        await test_adpilatus.controller.wait_for_idle()
+        await test_adpilatus._controller.arm()
+        await test_adpilatus._controller.wait_for_idle()
 
     await _trigger(test_adpilatus, expected_trigger_mode, trigger_and_complete)
 
@@ -64,11 +64,11 @@ async def test_trigger_mode_set_without_armed_pv(
     test_adpilatus: adpilatus.PilatusDetector,
 ):
     async def trigger_and_complete():
-        await test_adpilatus.controller.prepare(
+        await test_adpilatus._controller.prepare(
             TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.internal)
         )
-        await test_adpilatus.controller.arm()
-        await test_adpilatus.controller.wait_for_idle()
+        await test_adpilatus._controller.arm()
+        await test_adpilatus._controller.wait_for_idle()
 
     with patch(
         "ophyd_async.epics.adpilatus._pilatus_controller.DEFAULT_TIMEOUT",
@@ -125,7 +125,7 @@ async def test_exposure_time_and_acquire_period_set(
     async def dummy_open(multiplier: int = 0):
         return {}
 
-    test_adpilatus.writer.open = dummy_open
+    test_adpilatus._writer.open = dummy_open
     set_mock_value(test_adpilatus.drv.armed, True)
     await test_adpilatus.prepare(
         TriggerInfo(
@@ -140,8 +140,8 @@ async def test_exposure_time_and_acquire_period_set(
 
 
 async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
-    pilatus = test_adpilatus.controller
-    pilatus_driver = cast(PilatusDriverIO, pilatus.driver)
+    pilatus = test_adpilatus._controller
+    pilatus_driver = test_adpilatus.drv
     set_mock_value(pilatus_driver.armed, True)
     await pilatus.prepare(
         TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.constant_gate)

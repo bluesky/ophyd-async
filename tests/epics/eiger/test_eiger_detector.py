@@ -21,7 +21,7 @@ def test_when_detector_initialised_then_driver_and_odin_have_expected_prefixes(
 
 
 async def test_when_prepared_with_energy_then_energy_set_on_detector(detector):
-    detector.controller.arm = AsyncMock()
+    detector._controller.arm = AsyncMock()
     await detector.prepare(
         EigerTriggerInfo(
             frame_timeout=None,

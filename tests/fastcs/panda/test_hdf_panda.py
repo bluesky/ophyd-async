@@ -69,8 +69,8 @@ async def mock_hdf_panda(tmp_path):
 
 
 async def test_hdf_panda_passes_blocks_to_controller(mock_hdf_panda: HDFPanda):
-    assert hasattr(mock_hdf_panda.controller, "pcap")
-    assert mock_hdf_panda.controller.pcap is mock_hdf_panda.pcap
+    assert hasattr(mock_hdf_panda._controller, "pcap")
+    assert mock_hdf_panda._controller.pcap is mock_hdf_panda.pcap
 
 
 async def test_hdf_panda_hardware_triggered_flyable(
@@ -137,7 +137,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
         # Verify that _completable_frames is reset to 0 after the final complete.
         assert mock_hdf_panda._completable_frames == 0
         yield from bps.unstage_all(flyer, mock_hdf_panda)
-        yield from bps.wait_for([lambda: mock_hdf_panda.controller.disarm()])
+        yield from bps.wait_for([lambda: mock_hdf_panda._controller.disarm()])
 
     # fly scan
     RE(flying_plan())

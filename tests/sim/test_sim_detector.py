@@ -21,8 +21,8 @@ async def test_sim_pattern_detector_initialization(
 async def test_detector_creates_controller_and_writer(
     sim_pattern_detector: PatternDetector,
 ):
-    assert sim_pattern_detector.writer
-    assert sim_pattern_detector.controller
+    assert sim_pattern_detector._writer
+    assert sim_pattern_detector._controller
 
 
 def test_writes_pattern_to_file(

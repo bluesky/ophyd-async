@@ -26,24 +26,28 @@ from ophyd_async.epics import adcore, adsimdetector
 
 
 @pytest.fixture
-def test_adsimdetector(ad_standard_det_factory):
-    return ad_standard_det_factory(adsimdetector.SimDetector)
+def test_adsimdetector(ad_standard_det_factory: Callable) -> adsimdetector.SimDetector:
+    return ad_standard_det_factory(adsimdetector.SimController)
 
 
 @pytest.fixture
-def test_adsimdetector_tiff(ad_standard_det_factory):
-    return ad_standard_det_factory(adsimdetector.SimDetectorTIFF)
+def test_adsimdetector_tiff(
+    ad_standard_det_factory: Callable,
+) -> adsimdetector.SimDetector:
+    return ad_standard_det_factory(adsimdetector.SimController, adcore.ADTIFFWriter)
 
 
 @pytest.fixture
-def two_test_adsimdetectors(ad_standard_det_factory):
-    deta = ad_standard_det_factory(adsimdetector.SimDetector)
-    detb = ad_standard_det_factory(adsimdetector.SimDetector, number=2)
+def two_test_adsimdetectors(
+    ad_standard_det_factory: Callable,
+) -> Sequence[adsimdetector.SimDetector]:
+    deta = ad_standard_det_factory(adsimdetector.SimController)
+    detb = ad_standard_det_factory(adsimdetector.SimController, number=2)
 
     return deta, detb
 
 
-def count_sim(dets: Sequence[adcore.AreaDetector], times: int = 1):
+def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 
     yield from bps.stage_all(*dets)
@@ -51,9 +55,7 @@ def count_sim(dets: Sequence[adcore.AreaDetector], times: int = 1):
     for _ in range(times):
         read_values = {}
         for det in dets:
-            read_values[det] = yield from bps.rd(
-                cast(adcore.ADWriter, det.writer).fileio.num_captured
-            )
+            read_values[det] = yield from bps.rd(det._writer._fileio.num_captured)
 
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
@@ -61,7 +63,7 @@ def count_sim(dets: Sequence[adcore.AreaDetector], times: int = 1):
         yield from bps.sleep(0.2)
         [
             set_mock_value(
-                cast(adcore.ADWriter, det.writer).fileio.num_captured,
+                det._writer._fileio.num_captured,
                 read_values[det] + 1,
             )
             for det in dets
@@ -80,7 +82,7 @@ def count_sim(dets: Sequence[adcore.AreaDetector], times: int = 1):
 
 
 async def test_two_detectors_fly_different_rate(
-    two_test_adsimdetectors: list[adsimdetector.SimDetector], RE: RunEngine
+    two_test_adsimdetectors: Sequence[adsimdetector.SimDetector], RE: RunEngine
 ):
     trigger_info = TriggerInfo(
         number_of_triggers=15,
@@ -112,23 +114,23 @@ async def test_two_detectors_fly_different_rate(
             yield from bps.trigger(det, wait=False, group="trigger_cleanup")
 
         # det[0] captures 5 frames, but we do not emit a StreamDatum as det[1] has not
-        set_mock_value(two_test_adsimdetectors[0].hdf.num_captured, 5)
+        set_mock_value(two_test_adsimdetectors[0].fileio.num_captured, 5)
 
         yield from bps.collect(*two_test_adsimdetectors)
         assert_n_stream_datums(0)
 
         # det[0] captures 10 frames, but we do not emit a StreamDatum as det[1] has not
-        set_mock_value(two_test_adsimdetectors[0].hdf.num_captured, 10)
+        set_mock_value(two_test_adsimdetectors[0].fileio.num_captured, 10)
         yield from bps.collect(*two_test_adsimdetectors)
         assert_n_stream_datums(0)
 
         # det[1] has caught up to first 7 frames, emit streamDatum for seq_num {1,7}
-        set_mock_value(two_test_adsimdetectors[1].hdf.num_captured, 7)
+        set_mock_value(two_test_adsimdetectors[1].fileio.num_captured, 7)
         yield from bps.collect(*two_test_adsimdetectors)
         assert_n_stream_datums(2, 1, 8)
 
         for det in two_test_adsimdetectors:
-            set_mock_value(det.hdf.num_captured, 15)
+            set_mock_value(det.fileio.num_captured, 15)
 
         # emits stream datum for seq_num {8, 15}
         yield from bps.collect(*two_test_adsimdetectors)
@@ -152,13 +154,13 @@ async def test_two_detectors_step(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     [
-        set_mock_value(cast(adcore.ADHDFWriter, det._writer).hdf.file_path_exists, True)
+        set_mock_value(det._writer._fileio.file_path_exists, True)
         for det in two_test_adsimdetectors
     ]
 
-    controller_a = cast(adcore.ADBaseController, two_test_adsimdetectors[0].controller)
-    writer_a = cast(adcore.ADHDFWriter, two_test_adsimdetectors[0].writer)
-    writer_b = cast(adcore.ADHDFWriter, two_test_adsimdetectors[1].writer)
+    controller_a = two_test_adsimdetectors[0]._controller
+    writer_a = two_test_adsimdetectors[0]._writer
+    writer_b = two_test_adsimdetectors[1]._writer
     info_a = writer_a._path_provider(device_name=writer_a._name_provider())
     info_b = writer_b._path_provider(device_name=writer_b._name_provider())
     file_name_a = None
@@ -168,22 +170,26 @@ async def test_two_detectors_step(
         nonlocal file_name_a, file_name_b
         yield from count_sim(two_test_adsimdetectors, times=1)
 
-        drv = controller_a.driver
+        drv = controller_a._driver
         assert False is (yield from bps.rd(drv.acquire))
         assert adcore.ImageMode.multiple == (yield from bps.rd(drv.image_mode))
 
-        hdfb = writer_b.hdf
+        hdfb = cast(adcore.NDFileHDFIO, writer_b._fileio)
         assert True is (yield from bps.rd(hdfb.lazy_open))
         assert True is (yield from bps.rd(hdfb.swmr_mode))
         assert 0 == (yield from bps.rd(hdfb.num_capture))
         assert adcore.FileWriteMode.stream == (yield from bps.rd(hdfb.file_write_mode))
 
-        assert (yield from bps.rd(writer_a.hdf.file_path)) == str(info_a.directory_path)
-        file_name_a = yield from bps.rd(writer_a.hdf.file_name)
+        assert (yield from bps.rd(writer_a._fileio.file_path)) == str(
+            info_a.directory_path
+        )
+        file_name_a = yield from bps.rd(writer_a._fileio.file_name)
         assert file_name_a == info_a.filename
 
-        assert (yield from bps.rd(writer_b.hdf.file_path)) == str(info_b.directory_path)
-        file_name_b = yield from bps.rd(writer_b.hdf.file_name)
+        assert (yield from bps.rd(writer_b._fileio.file_path)) == str(
+            info_b.directory_path
+        )
+        file_name_b = yield from bps.rd(writer_b._fileio.file_name)
         assert file_name_b == info_b.filename
 
     RE(plan())
@@ -205,8 +211,8 @@ async def test_two_detectors_step(
     assert descriptor["configuration"]["test_adsim2"]["data"][
         "test_adsim2-drv-acquire_time"
     ] == pytest.approx(1.8)
-    assert descriptor["data_keys"]["test_adsim1"]["shape"] == (10, 10)
-    assert descriptor["data_keys"]["test_adsim2"]["shape"] == (11, 11)
+    assert descriptor["data_keys"]["test_adsim1"]["shape"] == [10, 10]
+    assert descriptor["data_keys"]["test_adsim2"]["shape"] == [11, 11]
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
     assert (
@@ -221,40 +227,40 @@ async def test_two_detectors_step(
     assert event["data"] == {}
 
 
-@pytest.mark.parametrize(
-    "detector_class", [adsimdetector.SimDetector, adsimdetector.SimDetectorTIFF]
-)
+@pytest.mark.parametrize("writer_cls", [adcore.ADHDFWriter, adcore.ADTIFFWriter])
 async def test_detector_writes_to_file(
     RE: RunEngine,
     ad_standard_det_factory: Callable,
-    detector_class: type[adsimdetector.SimDetector],
+    writer_cls: type[adcore.ADWriter],
     tmp_path: Path,
 ):
-    test_adsimdetector = ad_standard_det_factory(detector_class)
+    test_adsimdetector: adsimdetector.SimDetector = ad_standard_det_factory(
+        adsimdetector.SimController, writer_cls
+    )
 
     names = []
     docs = []
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     set_mock_value(
-        cast(adcore.ADHDFWriter, test_adsimdetector.writer).fileio.file_path_exists,
+        test_adsimdetector._writer._fileio.file_path_exists,
         True,
     )
 
     RE(count_sim([test_adsimdetector], times=3))
 
-    assert await cast(
-        adcore.ADWriter, test_adsimdetector.writer
-    ).fileio.file_path.get_value() == str(tmp_path)
+    assert await test_adsimdetector._writer._fileio.file_path.get_value() == str(
+        tmp_path
+    )
 
     descriptor_index = names.index("descriptor")
 
     assert docs[descriptor_index].get("data_keys").get(test_adsimdetector.name).get(
         "shape"
-    ) == (
+    ) == [
         10,
         10,
-    )
+    ]
     assert names == [
         "start",
         "descriptor",
@@ -342,7 +348,7 @@ def test_detector_with_unnamed_or_disconnected_config_sigs(
 ):
     dp = StaticPathProvider(static_filename_provider, tmp_path)
 
-    some_other_driver = adcore.ADBaseIO("TEST", name=driver_name)
+    some_other_driver = adsimdetector.SimDriverIO("TEST", name=driver_name)
 
     det = adsimdetector.SimDetector(
         "FOO:",
@@ -380,7 +386,7 @@ async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
         await ad.arm()
         await ad.wait_for_idle()
 
-    driver = ad.driver
+    driver = ad._driver
     assert await driver.num_images.get_value() == 1
     assert await driver.image_mode.get_value() == adcore.ImageMode.multiple
     assert await driver.acquire.get_value() is True

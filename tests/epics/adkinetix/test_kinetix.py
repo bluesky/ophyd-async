@@ -11,8 +11,8 @@ from ophyd_async.epics.adkinetix._kinetix_io import KinetixTriggerMode
 
 
 @pytest.fixture
-def test_adkinetix(ad_standard_det_factory):
-    return ad_standard_det_factory(adkinetix.KinetixDetector)
+def test_adkinetix(ad_standard_det_factory) -> adkinetix.KinetixDetector:
+    return ad_standard_det_factory(adkinetix.KinetixController)
 
 
 async def test_get_deadtime(
@@ -26,11 +26,11 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
     set_mock_value(test_adkinetix.drv.trigger_mode, KinetixTriggerMode.internal)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
-        await test_adkinetix.controller.prepare(
+        await test_adkinetix._controller.prepare(
             TriggerInfo(number_of_triggers=1, trigger=trig_mode)
         )
-        await test_adkinetix.controller.arm()
-        await test_adkinetix.controller.wait_for_idle()
+        await test_adkinetix._controller.arm()
+        await test_adkinetix._controller.wait_for_idle()
         # Prevent timeouts
         set_mock_value(test_adkinetix.drv.acquire, True)
 
@@ -68,7 +68,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_adkinetix.describe() == {
         "test_adkinetix1": {
             "source": "mock+ca://KINETIX1:HDF1:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -115,7 +115,7 @@ async def test_can_decribe_collect(
     assert (await test_adkinetix.describe_collect()) == {
         "test_adkinetix1": {
             "source": "mock+ca://KINETIX1:HDF1:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

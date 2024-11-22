@@ -13,7 +13,7 @@ from ophyd_async.epics import adaravis
 
 @pytest.fixture
 def test_adaravis(ad_standard_det_factory) -> adaravis.AravisDetector:
-    return ad_standard_det_factory(adaravis.AravisDetector)
+    return ad_standard_det_factory(adaravis.AravisController)
 
 
 @pytest.mark.parametrize("exposure_time", [0.0, 0.1, 1.0, 10.0, 100.0])
@@ -21,14 +21,14 @@ async def test_deadtime_invariant_with_exposure_time(
     exposure_time: float,
     test_adaravis: adaravis.AravisDetector,
 ):
-    assert test_adaravis.controller.get_deadtime(exposure_time) == 1961e-6
+    assert test_adaravis._controller.get_deadtime(exposure_time) == 1961e-6
 
 
 async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDetector):
     set_mock_value(test_adaravis.drv.trigger_source, "Freerun")
 
     async def trigger_and_complete():
-        await test_adaravis.controller.prepare(
+        await test_adaravis._controller.prepare(
             TriggerInfo(
                 number_of_triggers=1,
                 trigger=DetectorTrigger.edge_trigger,
@@ -42,7 +42,7 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
 
     # Default TriggerSource
     assert (await test_adaravis.drv.trigger_source.get_value()) == "Freerun"
-    test_adaravis.set_external_trigger_gpio(1)
+    test_adaravis._controller.set_external_trigger_gpio(1)
     # TriggerSource not changed by setting gpio
     assert (await test_adaravis.drv.trigger_source.get_value()) == "Freerun"
 
@@ -51,24 +51,24 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
     # TriggerSource changes
     assert (await test_adaravis.drv.trigger_source.get_value()) == "Line1"
 
-    test_adaravis.set_external_trigger_gpio(3)
+    test_adaravis._controller.set_external_trigger_gpio(3)
     # TriggerSource not changed by setting gpio
     await trigger_and_complete()
     assert (await test_adaravis.drv.trigger_source.get_value()) == "Line3"
 
 
 def test_gpio_pin_limited(test_adaravis: adaravis.AravisDetector):
-    assert test_adaravis.get_external_trigger_gpio() == 1
-    test_adaravis.set_external_trigger_gpio(2)
-    assert test_adaravis.get_external_trigger_gpio() == 2
+    assert test_adaravis._controller.get_external_trigger_gpio() == 1
+    test_adaravis._controller.set_external_trigger_gpio(2)
+    assert test_adaravis._controller.get_external_trigger_gpio() == 2
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "AravisDetector only supports the following GPIO indices: "
+            "AravisController only supports the following GPIO indices: "
             "(1, 2, 3, 4) but was asked to use 55"
         ),
     ):
-        test_adaravis.set_external_trigger_gpio(55)  # type: ignore
+        test_adaravis._controller.set_external_trigger_gpio(55)  # type: ignore
 
 
 async def test_hints_from_hdf_writer(test_adaravis: adaravis.AravisDetector):
@@ -89,7 +89,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_adaravis.describe() == {
         "test_adaravis1": {
             "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -135,7 +135,7 @@ async def test_can_decribe_collect(
     assert (await test_adaravis.describe_collect()) == {
         "test_adaravis1": {
             "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
-            "shape": (10, 10),
+            "shape": [10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

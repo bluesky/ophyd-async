@@ -117,8 +117,8 @@ class MockDetector(StandardDetector):
     async def complete(self):
         assert self._trigger_info
         assert self._fly_start
-        self.writer.increment_index()
-        async for index in self.writer.observe_indices_written(
+        self._writer.increment_index()
+        async for index in self._writer.observe_indices_written(
             self._trigger_info.frame_timeout
             or (
                 DEFAULT_TIMEOUT
@@ -268,7 +268,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
         )
 
         for detector in detector_list:
-            detector.controller.disarm.assert_called_once()  # type: ignore
+            detector._controller.disarm.assert_called_once()  # type: ignore
 
         yield from bps.open_run()
         yield from bps.declare_stream(*detector_list, name="main_stream", collect=True)
@@ -285,7 +285,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
 
         # Manually incremenet the index as if a frame was taken
         for detector in detector_list:
-            detector.writer.increment_index()
+            detector._writer.increment_index()
 
         set_mock_value(flyer.trigger_logic.seq.active, 0)
 
@@ -307,7 +307,7 @@ async def test_hardware_triggered_flyable_with_static_seq_table_logic(
 
         yield from bps.unstage_all(flyer, *detector_list)
         for detector in detector_list:
-            assert detector.controller.disarm.called  # type: ignore
+            assert detector._controller.disarm.called  # type: ignore
 
     # fly scan
     RE(flying_plan())
@@ -432,4 +432,6 @@ async def test_trigger_sets_or_defaults_timeout(
     RE(fly())
 
     for detector in detectors:
-        assert detector.writer.observe_indices_written_timeout_log == [expected_timeout]
+        assert detector._writer.observe_indices_written_timeout_log == [
+            expected_timeout
+        ]
