@@ -1,6 +1,7 @@
 import asyncio
 import time
 
+import pytest
 from bluesky.plans import spiral_square
 from bluesky.run_engine import RunEngine
 
@@ -36,6 +37,43 @@ async def test_slow_move():
     assert await m1.user_readback.get_value() == 10
     assert elapsed >= 0.5
     assert elapsed < 1
+
+
+async def test_negative_move():
+    m1 = SimMotor("M1", instant=False)
+    await m1.connect()
+    assert await m1.user_readback.get_value() == 0.0
+    status = m1.set(-0.11)
+    updates = []
+    status.watch(lambda **kwargs: updates.append(kwargs))
+    await status
+    assert await m1.user_readback.get_value() == -0.11
+    assert updates == [
+        {
+            "current": 0.0,
+            "initial": 0.0,
+            "name": "M1",
+            "target": -0.11,
+            "time_elapsed": pytest.approx(0, abs=0.05),
+            "unit": "mm",
+        },
+        {
+            "current": -0.1,
+            "initial": 0.0,
+            "name": "M1",
+            "target": -0.11,
+            "time_elapsed": pytest.approx(0.1, abs=0.05),
+            "unit": "mm",
+        },
+        {
+            "current": -0.11,
+            "initial": 0.0,
+            "name": "M1",
+            "target": -0.11,
+            "time_elapsed": pytest.approx(0.2, abs=0.05),
+            "unit": "mm",
+        },
+    ]
 
 
 async def test_stop():

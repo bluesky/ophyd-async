@@ -44,8 +44,11 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
     async def _move(self, old_position: float, new_position: float, move_time: float):
         start = time.monotonic()
-        distance = abs(new_position - old_position)
+        distance = new_position - old_position
         while True:
+            # 10hz update loop
+            await asyncio.sleep(0.1)
+
             time_elapsed = round(time.monotonic() - start, 2)
 
             # update position based on time elapsed
@@ -57,9 +60,6 @@ class SimMotor(StandardReadable, Movable, Stoppable):
                 current_position = old_position + distance * time_elapsed / move_time
 
             self._user_readback_set(current_position)
-
-            # 10hz update loop
-            await asyncio.sleep(0.1)
 
     @WatchableAsyncStatus.wrap
     async def set(self, value: float):
@@ -75,22 +75,25 @@ class SimMotor(StandardReadable, Movable, Stoppable):
             self.velocity.get_value(),
         )
         # If zero velocity, do instant move
-        move_time = abs(new_position - old_position) / velocity if velocity else 0
-        self._move_status = AsyncStatus(
-            self._move(old_position, new_position, move_time)
-        )
-        # If stop is called then this will raise a CancelledError, ignore it
-        with contextlib.suppress(asyncio.CancelledError):
-            async for current_position in observe_value(
-                self.user_readback, done_status=self._move_status
-            ):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.name,
-                    unit=units,
-                )
+        if velocity == 0:
+            self._user_readback_set(new_position)
+        else:
+            move_time = abs(new_position - old_position) / velocity
+            self._move_status = AsyncStatus(
+                self._move(old_position, new_position, move_time)
+            )
+            # If stop is called then this will raise a CancelledError, ignore it
+            with contextlib.suppress(asyncio.CancelledError):
+                async for current_position in observe_value(
+                    self.user_readback, done_status=self._move_status
+                ):
+                    yield WatcherUpdate(
+                        current=current_position,
+                        initial=old_position,
+                        target=new_position,
+                        name=self.name,
+                        unit=units,
+                    )
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 
