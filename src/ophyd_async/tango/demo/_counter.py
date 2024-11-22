@@ -7,11 +7,12 @@ from ophyd_async.tango.core import TangoPolling, TangoReadable
 
 class TangoCounter(TangoReadable):
     # Enter the name and type of the signals you want to use
-    # If type is None or Signal, the type will be inferred from the Tango device
-    # Enable device level polling, useful for servers that do not support events
+    # If the server doesn't support events, the TangoPolling annotation gives
+    # the parameters for ophyd to poll instead
     counts: A[SignalR[int], Format.HINTED_SIGNAL, TangoPolling(1.0, 0.1, 0.1)]
     sample_time: A[SignalRW[float], Format.CONFIG_SIGNAL, TangoPolling(0.1, 0.1, 0.1)]
     start: SignalX
+    # If a tango name clashes with a bluesky verb, add a trailing underscore
     reset_: SignalX
 
     @AsyncStatus.wrap

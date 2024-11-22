@@ -23,11 +23,12 @@ from tango import DevState
 
 class TangoMover(TangoReadable, Movable, Stoppable):
     # Enter the name and type of the signals you want to use
-    # If type is None or Signal, the type will be inferred from the Tango device
-    # Enable device level polling, useful for servers that do not support events
+    # If the server doesn't support events, the TangoPolling annotation gives
+    # the parameters for ophyd to poll instead
     position: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
     velocity: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
     state: A[SignalR[DevState], TangoPolling(0.1)]
+    # If a tango name clashes with a bluesky verb, add a trailing underscore
     stop_: SignalX
 
     def __init__(self, trl: str | None = "", name=""):
