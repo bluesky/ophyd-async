@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import time
 
+import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
@@ -44,22 +45,20 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
     async def _move(self, old_position: float, new_position: float, move_time: float):
         start = time.monotonic()
-        distance = new_position - old_position
-        while True:
-            # 10hz update loop
-            await asyncio.sleep(0.1)
-
-            time_elapsed = round(time.monotonic() - start, 2)
-
-            # update position based on time elapsed
-            if time_elapsed >= move_time:
-                # successfully reached our target position
-                self._user_readback_set(new_position)
-                break
-            else:
-                current_position = old_position + distance * time_elapsed / move_time
-
-            self._user_readback_set(current_position)
+        # Make an array of relative update times at 10Hz intervals
+        update_times = np.arange(0.1, move_time, 0.1)
+        # With the end position appended
+        update_times = np.concatenate((update_times, [move_time]))
+        # Interpolate the [old, new] position array with those update times
+        new_positions = np.interp(
+            update_times, [0, move_time], [old_position, new_position]
+        )
+        for update_time, new_position in zip(update_times, new_positions, strict=True):
+            # Calculate how long to wait to get there
+            relative_time = time.monotonic() - start
+            await asyncio.sleep(update_time - relative_time)
+            # Update the readback position
+            self._user_readback_set(new_position)
 
     @WatchableAsyncStatus.wrap
     async def set(self, value: float):
