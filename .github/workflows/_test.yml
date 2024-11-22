@@ -50,9 +50,6 @@ jobs:
           python-version: ${{ inputs.python-version }}
           pip-install: ".[dev]"
 
-      - name: Run import linter
-        run: lint-imports
-
       - name: Run tests
         run: tox -e tests
 

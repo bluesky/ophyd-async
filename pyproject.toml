@@ -191,10 +191,22 @@ name = "tango depends only on core"
 type = "forbidden"
 source_modules = "ophyd_async.tango"
 forbidden_modules = [
+    "ophyd_async.epics",
     "ophyd_async.fastcs",
     "ophyd_async.plan_stubs",
     "ophyd_async.sim",
+]
+
+
+[[tool.importlinter.contracts]]
+name = "sim depends only on core"
+type = "forbidden"
+source_modules = "ophyd_async.sim"
+forbidden_modules = [
     "ophyd_async.epics",
+    "ophyd_async.fastcs",
+    "ophyd_async.plan_stubs",
+    "ophyd_async.tango",
 ]
 
 
