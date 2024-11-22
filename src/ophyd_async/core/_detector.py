@@ -270,7 +270,6 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        print("In trigger")
         if self._trigger_info is None:
             await self.prepare(
                 TriggerInfo(
@@ -281,7 +280,6 @@ class StandardDetector(
                     frame_timeout=None,
                 )
             )
-        print(self._trigger_info)
         assert self._trigger_info
         assert self._trigger_info.trigger is DetectorTrigger.internal
         # Arm the detector and wait for it to finish.
