@@ -16,7 +16,14 @@ from ophyd_async.core import (
     SignalW,
     SignalX,
 )
-from tango import AttrDataFormat, AttrWriteType, CmdArgType, DeviceProxy, DevState
+from tango import (
+    AttrDataFormat,
+    AttrWriteType,
+    CmdArgType,
+    DeviceProxy,
+    DevState,
+    NonSupportedFeature,  # type: ignore
+)
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ._tango_transport import TangoSignalBackend, get_python_type
@@ -174,8 +181,11 @@ async def infer_signal_type(
     else:
         dev_proxy = proxy
 
-    if tr_name in dev_proxy.get_pipe_list():
-        raise NotImplementedError("Pipes are not supported")
+    try:
+        if tr_name in dev_proxy.get_pipe_list():
+            raise NotImplementedError("Pipes are not supported")
+    except NonSupportedFeature:  # type: ignore
+        pass
 
     if tr_name not in dev_proxy.get_attribute_list():
         if tr_name not in dev_proxy.get_command_list():
