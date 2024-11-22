@@ -10,7 +10,9 @@ from ._control import PandaPcapController
 from ._writer import PandaHDFWriter
 
 
-class HDFPanda(CommonPandaBlocks, StandardDetector):
+class HDFPanda(
+    CommonPandaBlocks, StandardDetector[PandaPcapController, PandaHDFWriter]
+):
     def __init__(
         self,
         prefix: str,
