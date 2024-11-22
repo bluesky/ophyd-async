@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.signal._signal &#8212; ophyd-async 0.8.0a6.dev2+g80a507b8 documentation</title>
+    <title>ophyd_async.tango.signal._signal &#8212; ophyd-async 0.8.0a6.dev3+gb73c4517 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../../_static/documentation_options.js?v=8f138286"></script>
+    <script src="../../../../_static/documentation_options.js?v=526597e1"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev2+g80a507b8 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev2+g80a507b8 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev3+gb73c4517 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev3+gb73c4517 documentation - Home"/>
   
   
 </a></div>
@@ -476,7 +476,14 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">SignalW</span><span class="p">,</span>
     <span class="n">SignalX</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">tango</span> <span class="kn">import</span> <span class="n">AttrDataFormat</span><span class="p">,</span> <span class="n">AttrWriteType</span><span class="p">,</span> <span class="n">CmdArgType</span><span class="p">,</span> <span class="n">DeviceProxy</span><span class="p">,</span> <span class="n">DevState</span>
+<span class="kn">from</span> <span class="nn">tango</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AttrDataFormat</span><span class="p">,</span>
+    <span class="n">AttrWriteType</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="p">,</span>
+    <span class="n">DeviceProxy</span><span class="p">,</span>
+    <span class="n">DevState</span><span class="p">,</span>
+    <span class="n">NonSupportedFeature</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">tango.asyncio</span> <span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
 
 <span class="kn">from</span> <span class="nn">._tango_transport</span> <span class="kn">import</span> <span class="n">TangoSignalBackend</span><span class="p">,</span> <span class="n">get_python_type</span>
@@ -646,8 +653,11 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">else</span><span class="p">:</span>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="n">proxy</span>
 
-    <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_pipe_list</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Pipes are not supported&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_pipe_list</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Pipes are not supported&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">NonSupportedFeature</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">pass</span>
 
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">():</span>
