@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.tango &#8212; ophyd-async 0.8.0a6.dev3+gb73c4517 documentation</title>
+    <title>ophyd_async.tango &#8212; ophyd-async 0.8.0a6.dev4+gdb65028b documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=526597e1"></script>
+    <script src="../_static/documentation_options.js?v=38523bcc"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Index" href="../genindex.html" />
+    <link rel="next" title="ophyd_async.tango.core" href="ophyd_async.tango.core.html" />
     <link rel="prev" title="ophyd_async.sim.testing" href="ophyd_async.sim.testing.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev3+gb73c4517 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev3+gb73c4517 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev4+gdb65028b documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev4+gdb65028b documentation - Home"/>
   
   
 </a></div>
@@ -438,7 +438,11 @@
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.sim.testing.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.sim.testing</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a></li>
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.tango.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
@@ -508,206 +512,18 @@ may change API on minor release numbers before then</p>
 </div>
 <section id="module-ophyd_async.tango">
 <span id="ophyd-async-tango"></span><h1><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code><a class="headerlink" href="#module-ophyd_async.tango" title="Link to this heading">#</a></h1>
-<p class="rubric">Members</p>
+<p class="rubric">Submodules</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.TangoDevice" title="ophyd_async.tango.TangoDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoDevice</span></code></a></p></td>
-<td><p>General class for TangoDevices.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.TangoReadable" title="ophyd_async.tango.TangoReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoReadable</span></code></a></p></td>
-<td><p>General class for readable TangoDevices.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.tango_polling" title="ophyd_async.tango.tango_polling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_polling</span></code></a></p></td>
-<td><p>Class decorator to configure polling for Tango devices.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoSignalBackend</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="ophyd_async.tango.core.html#module-ophyd_async.tango.core" title="ophyd_async.tango.core"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_python_type</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="ophyd_async.tango.demo.html#module-ophyd_async.tango.demo" title="ophyd_async.tango.demo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></p></td>
 <td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype_extended</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_trl_descriptor</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tango_trl</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_python_type</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_signal_type</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_backend</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">AttributeProxy</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommandProxy</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_proper_executor</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.tango_signal_r" title="ophyd_async.tango.tango_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_r</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalR</span></code></a> backed by 1 Tango Attribute/Command</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.tango_signal_rw" title="ophyd_async.tango.tango_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_rw</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a> backed by 1 or 2 Tango Attribute/Command</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.tango_signal_w" title="ophyd_async.tango.tango_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_w</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalW</span></code></a> backed by 1 Tango Attribute/Command</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.tango_signal_x" title="ophyd_async.tango.tango_signal_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_x</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalX</span></code></a> backed by 1 Tango Attribute/Command</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.tango.TangoDevice">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.</span></span><span class="sig-name descname"><span class="pre">TangoDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_proxy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/tango/base_devices/_base_device.html#TangoDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.TangoDevice" title="Link to this definition">#</a></dt>
-<dd><p>General class for TangoDevices. Extends Device to provide attributes for Tango
-devices.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>trl</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Tango resource locator, typically of the device server.</p></li>
-<li><p><strong>device_proxy</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>AsyncDeviceProxy</em><em>, </em><em>SyncDeviceProxy</em><em>]</em><em>]</em>) – Asynchronous or synchronous DeviceProxy object for the device. If not provided,
-an asynchronous DeviceProxy object will be created using the trl and awaited
-when the device is connected.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.tango.TangoReadable">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.</span></span><span class="sig-name descname"><span class="pre">TangoReadable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_proxy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/tango/base_devices/_tango_readable.html#TangoReadable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.TangoReadable" title="Link to this definition">#</a></dt>
-<dd><p>General class for readable TangoDevices. Extends StandardReadable to provide
-attributes for Tango devices.</p>
-<p>Usage: to proper signals mount should be awaited:
-new_device = await TangoDevice(&lt;tango_device&gt;)</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.tango.TangoReadable.trl">
-<span class="sig-name descname"><span class="pre">trl</span></span><a class="headerlink" href="#ophyd_async.tango.TangoReadable.trl" title="Link to this definition">#</a></dt>
-<dd><p>Tango resource locator, typically of the device server.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.tango.TangoReadable.proxy">
-<span class="sig-name descname"><span class="pre">proxy</span></span><a class="headerlink" href="#ophyd_async.tango.TangoReadable.proxy" title="Link to this definition">#</a></dt>
-<dd><p>AsyncDeviceProxy object for the device. This is created when the
-device is connected.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>AsyncDeviceProxy</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.tango.tango_polling">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.</span></span><span class="sig-name descname"><span class="pre">tango_polling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_polling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/tango/base_devices/_base_device.html#tango_polling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.tango_polling" title="Link to this definition">#</a></dt>
-<dd><p>Class decorator to configure polling for Tango devices.</p>
-<p>This decorator allows for the configuration of both device-level and signal-level
-polling for Tango devices. Polling is useful for device servers that do not support
-event-driven updates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>polling</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>]</em><em>,</em>) – Dict[str, Tuple[float, float, float]]]], optional
-Device-level polling configuration as a tuple of three floats representing the
-polling interval, polling timeout, and polling delay. Alternatively,
-a dictionary can be provided to specify signal-level polling configurations
-directly.</p></li>
-<li><p><strong>signal_polling</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>]</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Signal-level polling configuration as a dictionary where keys are signal names
-and values are tuples of three floats representing the polling interval, polling
-timeout, and polling delay.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.tango.tango_signal_r">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.</span></span><span class="sig-name descname"><span class="pre">tango_signal_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_proxy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/tango/signal/_signal.html#tango_signal_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.tango_signal_r" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalR</span></code></a> backed by 1 Tango Attribute/Command</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>datatype</strong> – Check that the Attribute/Command is of this type</p></li>
-<li><p><strong>read_trl</strong> – The Attribute/Command to read and monitor</p></li>
-<li><p><strong>device_proxy</strong> – If given, this DeviceProxy will be used</p></li>
-<li><p><strong>timeout</strong> – The timeout for the read operation</p></li>
-<li><p><strong>name</strong> – The name of the Signal</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.tango.tango_signal_rw">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.</span></span><span class="sig-name descname"><span class="pre">tango_signal_rw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_proxy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/tango/signal/_signal.html#tango_signal_rw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.tango_signal_rw" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a> backed by 1 or 2 Tango Attribute/Command</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>datatype</strong> – Check that the Attribute/Command is of this type</p></li>
-<li><p><strong>read_trl</strong> – The Attribute/Command to read and monitor</p></li>
-<li><p><strong>write_trl</strong> – If given, use this Attribute/Command to write to, otherwise use read_trl</p></li>
-<li><p><strong>device_proxy</strong> – If given, this DeviceProxy will be used</p></li>
-<li><p><strong>timeout</strong> – The timeout for the read and write operations</p></li>
-<li><p><strong>name</strong> – The name of the Signal</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.tango.tango_signal_w">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.</span></span><span class="sig-name descname"><span class="pre">tango_signal_w</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_proxy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core._signal.SignalW"><span class="pre">SignalW</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/tango/signal/_signal.html#tango_signal_w"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.tango_signal_w" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalW</span></code></a> backed by 1 Tango Attribute/Command</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>datatype</strong> – Check that the Attribute/Command is of this type</p></li>
-<li><p><strong>write_trl</strong> – The Attribute/Command to write to</p></li>
-<li><p><strong>device_proxy</strong> – If given, this DeviceProxy will be used</p></li>
-<li><p><strong>timeout</strong> – The timeout for the write operation</p></li>
-<li><p><strong>name</strong> – The name of the Signal</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.tango.tango_signal_x">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.</span></span><span class="sig-name descname"><span class="pre">tango_signal_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">write_trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_proxy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeviceProxy</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core._signal.SignalX"><span class="pre">SignalX</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/tango/signal/_signal.html#tango_signal_x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.tango_signal_x" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalX</span></code></a> backed by 1 Tango Attribute/Command</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>write_trl</strong> – The Attribute/Command to write its initial value to on execute</p></li>
-<li><p><strong>device_proxy</strong> – If given, this DeviceProxy will be used</p></li>
-<li><p><strong>timeout</strong> – The timeout for the command operation</p></li>
-<li><p><strong>name</strong> – The name of the Signal</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 
 
@@ -730,11 +546,11 @@ timeout, and polling delay.</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="../genindex.html"
+       href="ophyd_async.tango.core.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Index</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -748,28 +564,6 @@ timeout, and polling delay.</p></li>
                 <dialog id="pst-secondary-sidebar-modal"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.TangoDevice"><code class="docutils literal notranslate"><span class="pre">TangoDevice</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.TangoReadable"><code class="docutils literal notranslate"><span class="pre">TangoReadable</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.TangoReadable.trl"><code class="docutils literal notranslate"><span class="pre">TangoReadable.trl</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.TangoReadable.proxy"><code class="docutils literal notranslate"><span class="pre">TangoReadable.proxy</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.tango_polling"><code class="docutils literal notranslate"><span class="pre">tango_polling()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.tango_signal_r"><code class="docutils literal notranslate"><span class="pre">tango_signal_r()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.tango_signal_rw"><code class="docutils literal notranslate"><span class="pre">tango_signal_rw()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.tango_signal_w"><code class="docutils literal notranslate"><span class="pre">tango_signal_w()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.tango_signal_x"><code class="docutils literal notranslate"><span class="pre">tango_signal_x()</span></code></a></li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
 
