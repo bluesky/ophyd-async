@@ -97,7 +97,7 @@ class Device(HasName, Connectable):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
-    def set_name(self, name: str):
+    def set_name(self, name: str, separator: str = "-"):
         """Set ``self.name=name`` and each ``self.child.name=name+"-child"``.
 
         Parameters
@@ -110,8 +110,8 @@ class Device(HasName, Connectable):
         if "log" in self.__dict__:
             del self.log
         for child_name, child in self.children():
-            child_name = f"{self.name}-{child_name.strip('_')}" if self.name else ""
-            child.set_name(child_name)
+            child_name = f"{self.name}{separator}{child_name}" if self.name else ""
+            child.set_name(child_name, separator)
 
     def __setattr__(self, name: str, value: Any) -> None:
         # Bear in mind that this function is called *a lot*, so
