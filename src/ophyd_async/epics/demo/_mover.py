@@ -37,8 +37,8 @@ class Mover(StandardReadable, Movable, Stoppable):
 
         super().__init__(name=name)
 
-    def set_name(self, name: str):
-        super().set_name(name)
+    def set_name(self, name: str, separator: str = "-"):
+        super().set_name(name, separator)
         # Readback should be named the same as its parent in read()
         self.readback.set_name(name)
 
