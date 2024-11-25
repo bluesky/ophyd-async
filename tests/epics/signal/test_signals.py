@@ -774,7 +774,7 @@ def test_signal_helpers():
 async def test_str_enum_returns_enum(ioc, protocol):
     device = await connect_example_device(ioc, protocol)
     val = await device.enum.get_value()
-    assert repr(val) == "<ExampleEnum.b: 'Bbb'>"
+    assert repr(val) == "<ExampleEnum.B: 'Bbb'>"
     assert val is ExampleEnum.B
     assert val == "Bbb"
 

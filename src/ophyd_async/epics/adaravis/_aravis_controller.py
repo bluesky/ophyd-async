@@ -71,7 +71,7 @@ class AravisController(DetectorController):
         if trigger == DetectorTrigger.INTERNAL:
             return AravisTriggerMode.OFF, AravisTriggerSource.FREERUN
         else:
-            return (AravisTriggerMode.on, f"Line{self.gpio_number}")  # type: ignore
+            return (AravisTriggerMode.ON, f"Line{self.gpio_number}")  # type: ignore
 
     async def disarm(self):
         await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)
