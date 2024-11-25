@@ -315,7 +315,7 @@ async def test_assembly_renaming() -> None:
     thing.set_name("foo")
     assert thing.x.name == "foo-x"
     assert thing.x.velocity.name == "foo-x-velocity"
-    assert thing.x.stop_.name == "foo-x-stop"
+    assert thing.x.stop_.name == "foo-x-stop_"
 
 
 async def test_dynamic_sensor_group_disconnected():
