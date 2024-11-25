@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a Simple Device &#8212; ophyd-async 0.8.0a6.dev5+g1d444f45 documentation</title>
+    <title>Make a Simple Device &#8212; ophyd-async 0.8.0a7.dev1+g235d26ae documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=dc3973a6"></script>
+    <script src="../_static/documentation_options.js?v=1038d6a4"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a6.dev5+g1d444f45 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a6.dev5+g1d444f45 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.0a7.dev1+g235d26ae documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.0a7.dev1+g235d26ae documentation - Home"/>
   
   
 </a></div>
@@ -500,7 +500,7 @@ define some signals, then tell the superclass which signals should contribute to
 its Python type, which could be:</p>
 <ul class="simple">
 <li><p>A primitive (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">float</span></code></a>)</p></li>
-<li><p>An array (<a class="reference external" href="https://numpy.org/devdocs/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.2.dev0)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.typing.NDArray</span></code></a> ie. <code class="docutils literal notranslate"><span class="pre">numpy.typing.NDArray[numpy.uint16]</span></code> or <code class="docutils literal notranslate"><span class="pre">Sequence[str]</span></code>)</p></li>
+<li><p>An array (<a class="reference external" href="https://numpy.org/devdocs/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.3.dev0)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.typing.NDArray</span></code></a> ie. <code class="docutils literal notranslate"><span class="pre">numpy.typing.NDArray[numpy.uint16]</span></code> or <code class="docutils literal notranslate"><span class="pre">Sequence[str]</span></code>)</p></li>
 <li><dl class="simple">
 <dt>An enum (<a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">enum.Enum</span></code></a>) which <strong>must</strong> also extend <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a></dt><dd><ul>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a> and <code class="docutils literal notranslate"><span class="pre">EnumClass(StrictEnum)</span></code> are the only valid <code class="docutils literal notranslate"><span class="pre">datatype</span></code> for an enumerated signal.</p></li>
