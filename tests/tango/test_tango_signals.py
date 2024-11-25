@@ -319,33 +319,28 @@ async def assert_monitor_then_put(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value",
-    ATTRIBUTES_SET,
-    ids=[x[0] for x in ATTRIBUTES_SET],
-)
-async def test_backend_get_put_monitor_attr(
-    echo_device: str,
-    pv: str,
-    tango_type: str,
-    d_format: AttrDataFormat,
-    py_type: type[T],
-    initial_value: T,
-    put_value: T,
-):
+async def test_backend_get_put_monitor_attr(echo_device: str):
     try:
-        # Set a timeout for the operation to prevent it from running indefinitely
-        await asyncio.wait_for(
-            assert_monitor_then_put(
-                echo_device,
-                pv,
-                initial_value,
-                put_value,
-                get_test_descriptor(py_type, initial_value, False),
-                py_type,
-            ),
-            timeout=100,  # Timeout in seconds
-        )
+        for (
+            pv,
+            _,
+            _,
+            py_type,
+            initial_value,
+            put_value,
+        ) in ATTRIBUTES_SET:
+            # Set a timeout for the operation to prevent it from running indefinitely
+            await asyncio.wait_for(
+                assert_monitor_then_put(
+                    echo_device,
+                    pv,
+                    initial_value,
+                    put_value,
+                    get_test_descriptor(py_type, initial_value, False),
+                    py_type,
+                ),
+                timeout=100,  # Timeout in seconds
+            )
     except asyncio.TimeoutError:
         pytest.fail("Test timed out")
     except Exception as e:
@@ -381,205 +376,132 @@ async def assert_put_read(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value",
-    COMMANDS_SET,
-    ids=[x[0] for x in COMMANDS_SET],
-)
 async def test_backend_get_put_monitor_cmd(
     echo_device: str,
-    pv: str,
-    tango_type: str,
-    d_format: AttrDataFormat,
-    py_type: type[T],
-    initial_value: T,
-    put_value: T,
 ):
-    # With the given datatype, check we have the correct initial value and putting works
-    descriptor = get_test_descriptor(py_type, initial_value, True)
-    await assert_put_read(echo_device, pv, put_value, descriptor, py_type)
-    # # With guessed datatype, check we can set it back to the initial value
-    await assert_put_read(echo_device, pv, put_value, descriptor)
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    await asyncio.gather(*tasks)
-    del echo_device
+    for pv, _, _, py_type, initial_value, put_value in COMMANDS_SET:
+        # With the given datatype, check we have the correct initial value
+        # and putting works
+        descriptor = get_test_descriptor(py_type, initial_value, True)
+        await assert_put_read(echo_device, pv, put_value, descriptor, py_type)
+        # # With guessed datatype, check we can set it back to the initial value
+        await assert_put_read(echo_device, pv, put_value, descriptor)
+        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+        await asyncio.gather(*tasks)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
-    [
-        (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-            use_proxy,
-        )
-        for (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-        ) in ATTRIBUTES_SET
-        for use_proxy in [True, False]
-    ],
-    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
-)
+@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_r(
     echo_device: str,
-    pv: str,
-    tango_type: str,
-    d_format: AttrDataFormat,
-    py_type: type[T],
-    initial_value: T,
-    put_value: T,
     use_proxy: bool,
 ):
-    await prepare_device(echo_device, pv, initial_value)
-    source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
-
     timeout = 0.2
-    signal = tango_signal_r(
-        datatype=py_type,
-        read_trl=source,
-        device_proxy=proxy,
-        timeout=timeout,
-        name="test_signal",
-    )
-    await signal.connect()
-    reading = await signal.read()
-    assert_close(reading["test_signal"]["value"], initial_value)
+
+    for (
+        pv,
+        _,
+        _,
+        py_type,
+        initial_value,
+        _,
+    ) in ATTRIBUTES_SET:
+        await prepare_device(echo_device, pv, initial_value)
+        source = echo_device + "/" + pv
+        signal = tango_signal_r(
+            datatype=py_type,
+            read_trl=source,
+            device_proxy=proxy,
+            timeout=timeout,
+            name="test_signal",
+        )
+        await signal.connect()
+        reading = await signal.read()
+        assert_close(reading["test_signal"]["value"], initial_value)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
-    [
-        (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-            use_proxy,
-        )
-        for (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-        ) in ATTRIBUTES_SET
-        for use_proxy in [True, False]
-    ],
-    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
-)
+@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_w(
     echo_device: str,
-    pv: str,
-    tango_type: str,
-    d_format: AttrDataFormat,
-    py_type: type[T],
-    initial_value: T,
-    put_value: T,
     use_proxy: bool,
 ):
-    await prepare_device(echo_device, pv, initial_value)
-    source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
-
     timeout = 0.2
-    signal = tango_signal_w(
-        datatype=py_type,
-        write_trl=source,
-        device_proxy=proxy,
-        timeout=timeout,
-        name="test_signal",
-    )
-    await signal.connect()
-    status = signal.set(put_value, wait=True, timeout=timeout)
-    await status
-    assert status.done is True and status.success is True
+    for (
+        pv,
+        _,
+        _,
+        py_type,
+        initial_value,
+        put_value,
+    ) in ATTRIBUTES_SET:
+        await prepare_device(echo_device, pv, initial_value)
+        source = echo_device + "/" + pv
 
-    status = signal.set(put_value, wait=False, timeout=timeout)
-    await status
-    assert status.done is True and status.success is True
+        signal = tango_signal_w(
+            datatype=py_type,
+            write_trl=source,
+            device_proxy=proxy,
+            timeout=timeout,
+            name="test_signal",
+        )
+        await signal.connect()
+        status = signal.set(put_value, wait=True, timeout=timeout)
+        await status
+        assert status.done is True and status.success is True
 
-    status = signal.set(put_value, wait=True)
-    await status
-    assert status.done is True and status.success is True
+        status = signal.set(put_value, wait=False, timeout=timeout)
+        await status
+        assert status.done is True and status.success is True
 
-    status = signal.set(put_value, wait=False)
-    await status
-    assert status.done is True and status.success is True
+        status = signal.set(put_value, wait=True)
+        await status
+        assert status.done is True and status.success is True
+
+        status = signal.set(put_value, wait=False)
+        await status
+        assert status.done is True and status.success is True
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
-    [
-        (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-            use_proxy,
-        )
-        for (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-        ) in ATTRIBUTES_SET
-        for use_proxy in [True, False]
-    ],
-    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
-)
+@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_rw(
     echo_device: str,
-    pv: str,
-    tango_type: str,
-    d_format: AttrDataFormat,
-    py_type: type[T],
-    initial_value: T,
-    put_value: T,
     use_proxy: bool,
 ):
-    await prepare_device(echo_device, pv, initial_value)
-    source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
+    for (
+        pv,
+        _,
+        _,
+        py_type,
+        initial_value,
+        put_value,
+    ) in ATTRIBUTES_SET:
+        await prepare_device(echo_device, pv, initial_value)
+        source = echo_device + "/" + pv
 
-    timeout = 0.2
-    signal = tango_signal_rw(
-        datatype=py_type,
-        read_trl=source,
-        write_trl=source,
-        device_proxy=proxy,
-        timeout=timeout,
-        name="test_signal",
-    )
-    await signal.connect()
-    reading = await signal.read()
-    assert_close(reading["test_signal"]["value"], initial_value)
-    await signal.set(put_value)
-    location = await signal.locate()
-    assert_close(location["setpoint"], put_value)
-    assert_close(location["readback"], put_value)
+        timeout = 0.2
+        signal = tango_signal_rw(
+            datatype=py_type,
+            read_trl=source,
+            write_trl=source,
+            device_proxy=proxy,
+            timeout=timeout,
+            name="test_signal",
+        )
+        await signal.connect()
+        reading = await signal.read()
+        assert_close(reading["test_signal"]["value"], initial_value)
+        await signal.set(put_value)
+        location = await signal.locate()
+        assert_close(location["setpoint"], put_value)
+        assert_close(location["readback"], put_value)
 
 
 # --------------------------------------------------------------------
@@ -603,145 +525,97 @@ async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.skip("Not sure if we need tango_signal_auto")
-@pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_proxy",
-    [
-        (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-            use_proxy,
-        )
-        for (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-        ) in ATTRIBUTES_SET
-        for use_proxy in [True, False]
-    ],
-    ids=[f"{x[0]}_{use_proxy}" for x in ATTRIBUTES_SET for use_proxy in [True, False]],
-)
+@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_auto_attrs(
     echo_device: str,
-    pv: str,
-    tango_type: str,
-    d_format: AttrDataFormat,
-    py_type: type[T],
-    initial_value: T,
-    put_value: T,
     use_proxy: bool,
 ):
-    await prepare_device(echo_device, pv, initial_value)
-    source = echo_device + "/" + pv
     proxy = await DeviceProxy(echo_device) if use_proxy else None
     timeout = 0.2
+    for (
+        pv,
+        _,
+        _,
+        py_type,
+        initial_value,
+        put_value,
+    ) in ATTRIBUTES_SET:
+        await prepare_device(echo_device, pv, initial_value)
+        source = echo_device + "/" + pv
 
-    async def _test_signal(dtype, proxy):
-        signal = await __tango_signal_auto(
-            datatype=dtype,
-            trl=source,
-            device_proxy=proxy,
-            timeout=timeout,
-            name="test_signal",
-        )
-        assert type(signal) is SignalRW
-        await signal.connect()
-        reading = await signal.read()
-        value = reading["test_signal"]["value"]
-        if isinstance(value, np.ndarray):
-            value = value.tolist()
-        assert_close(value, initial_value)
+        async def _test_signal(dtype, proxy, source, initial_value, put_value):
+            signal = await __tango_signal_auto(
+                datatype=dtype,
+                trl=source,
+                device_proxy=proxy,
+                timeout=timeout,
+                name="test_signal",
+            )
+            assert type(signal) is SignalRW
+            await signal.connect()
+            reading = await signal.read()
+            value = reading["test_signal"]["value"]
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
+            assert_close(value, initial_value)
 
-        await signal.set(put_value, wait=True, timeout=timeout)
-        reading = await signal.read()
-        value = reading["test_signal"]["value"]
-        if isinstance(value, np.ndarray):
-            value = value.tolist()
-        assert_close(value, put_value)
+            await signal.set(put_value, wait=True, timeout=timeout)
+            reading = await signal.read()
+            value = reading["test_signal"]["value"]
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
+            assert_close(value, put_value)
 
-    dtype = py_type
-    await _test_signal(dtype, proxy)
+        dtype = py_type
+        await _test_signal(dtype, proxy, source, initial_value, put_value)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.skip("Not sure if we need tango_signal_auto")
 @pytest.mark.parametrize(
-    "pv, tango_type, d_format, py_type, initial_value, put_value, use_dtype, use_proxy",
+    "use_dtype, use_proxy",
     [
-        (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-            use_dtype,
-            use_proxy,
-        )
-        for (
-            pv,
-            tango_type,
-            d_format,
-            py_type,
-            initial_value,
-            put_value,
-        ) in COMMANDS_SET
-        for use_dtype in [True, False]
-        for use_proxy in [True, False]
-    ],
-    ids=[
-        f"{x[0]}_{use_dtype}_{use_proxy}"
-        for x in COMMANDS_SET
+        (use_dtype, use_proxy)
         for use_dtype in [True, False]
         for use_proxy in [True, False]
     ],
 )
 async def test_tango_signal_auto_cmds(
     echo_device: str,
-    pv: str,
-    tango_type: str,
-    d_format: AttrDataFormat,
-    py_type: type[T],
-    initial_value: T,
-    put_value: T,
     use_dtype: bool,
     use_proxy: bool,
 ):
-    source = echo_device + "/" + pv
     timeout = 0.2
-
-    async def _test_signal(dtype, proxy):
-        signal = await __tango_signal_auto(
-            datatype=dtype,
-            trl=source,
-            device_proxy=proxy,
-            name="test_signal",
-            timeout=timeout,
-        )
-        # Ophyd SignalX does not support types
-        assert type(signal) in [SignalR, SignalRW, SignalW]
-        await signal.connect()
-        assert signal
-        reading = await signal.read()
-        assert reading["test_signal"]["value"] is None
-
-        await signal.set(put_value, wait=True, timeout=0.1)
-        reading = await signal.read()
-        value = reading["test_signal"]["value"]
-        if isinstance(value, np.ndarray):
-            value = value.tolist()
-        assert_close(value, put_value)
-
     proxy = await DeviceProxy(echo_device) if use_proxy else None
-    dtype = py_type if use_dtype else None
-    await _test_signal(dtype, proxy)
+
+    for pv, _, _, py_type, _, put_value in COMMANDS_SET:
+        source = echo_device + "/" + pv
+
+        async def _test_signal(dtype, proxy, source, put_value):
+            signal = await __tango_signal_auto(
+                datatype=dtype,
+                trl=source,
+                device_proxy=proxy,
+                name="test_signal",
+                timeout=timeout,
+            )
+            # Ophyd SignalX does not support types
+            assert type(signal) in [SignalR, SignalRW, SignalW]
+            await signal.connect()
+            assert signal
+            reading = await signal.read()
+            assert reading["test_signal"]["value"] is None
+
+            await signal.set(put_value, wait=True, timeout=0.1)
+            reading = await signal.read()
+            value = reading["test_signal"]["value"]
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
+            assert_close(value, put_value)
+
+        dtype = py_type if use_dtype else None
+        await _test_signal(dtype, proxy, source, put_value)
 
 
 # --------------------------------------------------------------------
