@@ -1,7 +1,6 @@
 import asyncio
-import dataclasses
 from abc import abstractmethod
-from typing import Generic, Self, TypeVar, get_args
+from typing import Generic, TypedDict, TypeVar, get_args
 
 from ._device import Device
 from ._protocol import AsyncMovable
@@ -9,25 +8,29 @@ from ._signal import SignalR, SignalRW
 from ._signal_backend import SignalBackend, SignalDatatypeT
 
 
-@dataclasses.dataclass
-class TransformArgument(Generic[SignalDatatypeT]):
-    @classmethod
-    async def get_dataclass_from_signals(cls, device: Device) -> Self:
-        coros = {}
-        for field in dataclasses.fields(cls):
-            sig = getattr(device, field.name)
-            assert isinstance(
-                sig, SignalR
-            ), f"{device.name}.{field.name} is {sig}, not a Signal"
-            coros[field.name] = sig.get_value()
-        results = await asyncio.gather(*coros.values())
-        kwargs = dict(zip(coros, results, strict=True))
-        return cls(**kwargs)
+class TransformArgument(TypedDict, Generic[SignalDatatypeT]):
+    pass
+
+
+T = TypeVar("T", bound=TransformArgument)
+
+
+async def _get_dataclass_from_signals(cls: type[T], device: Device) -> T:
+    coros = {}
+    for name in cls.__annotations__:
+        signal = getattr(device, name)
+        assert isinstance(
+            signal, SignalR
+        ), f"{device.name}.{name} is {signal}, not a Signal"
+        coros[name] = signal.get_value()
+    results = await asyncio.gather(*coros.values())
+    kwargs = dict(zip(coros, results, strict=True))
+    return cls(**kwargs)
 
 
 RawT = TypeVar("RawT", bound=TransformArgument)
 DerivedT = TypeVar("DerivedT", bound=TransformArgument)
-ParametersT = TypeVar("ParametersT", bound=TransformArgument)
+ParametersT = TypeVar("ParametersT")
 
 
 class TransformMeta(type):
@@ -67,12 +70,12 @@ class DerivedBackend(Generic[RawT, DerivedT, ParametersT]):
         self._transform = transform
 
     async def get_parameters(self) -> ParametersT:
-        return await self._transform.parameters_cls.get_dataclass_from_signals(
-            self._device
+        return await _get_dataclass_from_signals(
+            self._transform.parameters_cls, self._device
         )
 
     async def get_raw_values(self) -> RawT:
-        return await self._transform.raw_cls.get_dataclass_from_signals(self._device)
+        return await _get_dataclass_from_signals(self._transform.raw_cls, self._device)
 
     async def get_derived_values(self) -> DerivedT:
         raw, parameters = await asyncio.gather(

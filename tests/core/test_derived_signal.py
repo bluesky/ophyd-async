@@ -1,5 +1,4 @@
 import asyncio
-from dataclasses import dataclass
 from typing import TypeVar
 
 import numpy as np
@@ -36,7 +35,7 @@ async def test_transform_argument_cls_inference():
         TypeError,
         match=(
             "Transform classes must be defined with Raw, Derived, "
-            "and Parameter args."
+            "and Parameter `TransformArgument`s."
         ),
     ):
 
@@ -54,20 +53,17 @@ async def test_transform_argument_cls_inference():
 F = TypeVar("F", float, Array1D[np.float64])
 
 
-@dataclass
 class SlitsRaw(TransformArgument[F]):
     top: F
     bottom: F
 
 
-@dataclass
 class SlitsDerived(TransformArgument[F]):
     gap: F
     centre: F
 
 
-@dataclass
-class SlitsParameters(TransformArgument[float]):
+class SlitsParameters(TransformArgument):
     gap_offset: float
 
 
@@ -75,18 +71,18 @@ class SlitsTransform(Transform[SlitsRaw[F], SlitsDerived[F], SlitsParameters]):
     @classmethod
     def forward(cls, raw: SlitsRaw[F], parameters: SlitsParameters) -> SlitsDerived[F]:
         return SlitsDerived(
-            gap=raw.top - raw.bottom + parameters.gap_offset,
-            centre=(raw.top + raw.bottom) / 2,
+            gap=raw["top"] - raw["bottom"] + parameters["gap_offset"],
+            centre=(raw["top"] + raw["bottom"]) / 2,
         )
 
     @classmethod
     def inverse(
         cls, derived: SlitsDerived[F], parameters: SlitsParameters
     ) -> SlitsRaw[F]:
-        half_gap = (derived.gap - parameters.gap_offset) / 2
+        half_gap = (derived["gap"] - parameters["gap_offset"]) / 2
         return SlitsRaw(
-            top=derived.centre + half_gap,
-            bottom=derived.centre - half_gap,
+            top=derived["centre"] + half_gap,
+            bottom=derived["centre"] - half_gap,
         )
 
 
@@ -106,7 +102,7 @@ class Slits(Device):
     @AsyncStatus.wrap
     async def set(self, derived: SlitsDerived[float]) -> None:
         raw: SlitsRaw[float] = await self._backend.calculate_raw_values(derived)
-        await asyncio.gather(self.top.set(raw.top), self.bottom.set(raw.bottom))
+        await asyncio.gather(self.top.set(raw["top"]), self.bottom.set(raw["bottom"]))
 
 
 async def test_derived_signals():
