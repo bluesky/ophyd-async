@@ -9,6 +9,8 @@ from ._block import CommonPandaBlocks
 from ._control import PandaPcapController
 from ._writer import PandaHDFWriter
 
+MINIMUM_PANDA_IOC = "0.11.4"
+
 
 class HDFPanda(CommonPandaBlocks, StandardDetector):
     def __init__(
@@ -18,10 +20,9 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
+        error_hint = f"Is PandABlocks-ioc at least version {MINIMUM_PANDA_IOC}?"
         # This has to be first so we make self.pcap
-        connector = fastcs_connector(
-            self, prefix, error_hint="Is PandABlocks-ioc at least version 0.11.4?"
-        )
+        connector = fastcs_connector(self, prefix, error_hint)
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             path_provider=path_provider,
