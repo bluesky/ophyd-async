@@ -35,7 +35,7 @@ class SingleTriggerDetector(StandardReadable, Triggerable):
     @AsyncStatus.wrap
     async def stage(self) -> None:
         await asyncio.gather(
-            self.drv.image_mode.set(ImageMode.single),
+            self.drv.image_mode.set(ImageMode.SINGLE),
             self.drv.wait_for_plugins.set(True),
         )
         await super().stage()

@@ -83,7 +83,7 @@ async def detectors(
         detectors.append(adkinetix.KinetixDetector("KINETIX:", static_path_provider))
         detectors.append(
             adpilatus.PilatusDetector(
-                "PILATUS:", static_path_provider, PilatusReadoutTime.pilatus3
+                "PILATUS:", static_path_provider, PilatusReadoutTime.PILATUS3
             )
         )
         detectors.append(adaravis.AravisDetector("ADARAVIS:", static_path_provider))

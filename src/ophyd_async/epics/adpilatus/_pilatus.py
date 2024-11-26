@@ -7,7 +7,7 @@ from ophyd_async.epics.adcore._core_io import ADBaseDatasetDescriber, NDPluginBa
 from ophyd_async.epics.adcore._core_writer import ADWriter
 from ophyd_async.epics.adcore._hdf_writer import ADHDFWriter
 
-from ._pilatus_controller import PilatusController
+from ._pilatus_controller import PilatusController, PilatusReadoutTime
 
 
 class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
@@ -17,7 +17,7 @@ class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
         self,
         prefix: str,
         path_provider: PathProvider,
-        readout_time: float,
+        readout_time: PilatusReadoutTime = PilatusReadoutTime.PILATUS3,
         drv_suffix: str = "cam1:",
         writer_cls: type[ADWriter] = ADHDFWriter,
         fileio_suffix: str | None = None,

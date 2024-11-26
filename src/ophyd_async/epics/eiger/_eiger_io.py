@@ -3,9 +3,9 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw_rbv, epics_si
 
 
 class EigerTriggerMode(StrictEnum):
-    internal = "ints"
-    edge = "exts"
-    gate = "exte"
+    INTERNAL = "ints"
+    EDGE = "exts"
+    GATE = "exte"
 
 
 class EigerDriverIO(Device):

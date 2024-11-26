@@ -27,9 +27,9 @@ async def test_get_deadtime(
 
 
 async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
-    set_mock_value(test_advimba.drv.trigger_source, VimbaTriggerSource.freerun)
-    set_mock_value(test_advimba.drv.trigger_mode, VimbaOnOff.off)
-    set_mock_value(test_advimba.drv.exposure_mode, VimbaExposeOutMode.timed)
+    set_mock_value(test_advimba.drv.trigger_source, VimbaTriggerSource.FREERUN)
+    set_mock_value(test_advimba.drv.trigger_mode, VimbaOnOff.OFF)
+    set_mock_value(test_advimba.drv.exposure_mode, VimbaExposeOutMode.TIMED)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_advimba._controller.prepare(
@@ -45,22 +45,22 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
     assert (await test_advimba.drv.trigger_mode.get_value()) == "Off"
     assert (await test_advimba.drv.exposure_mode.get_value()) == "Timed"
 
-    await setup_trigger_mode(DetectorTrigger.edge_trigger)
+    await setup_trigger_mode(DetectorTrigger.EDGE_TRIGGER)
     assert (await test_advimba.drv.trigger_source.get_value()) == "Line1"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "On"
     assert (await test_advimba.drv.exposure_mode.get_value()) == "Timed"
 
-    await setup_trigger_mode(DetectorTrigger.constant_gate)
+    await setup_trigger_mode(DetectorTrigger.CONSTANT_GATE)
     assert (await test_advimba.drv.trigger_source.get_value()) == "Line1"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "On"
     assert (await test_advimba.drv.exposure_mode.get_value()) == "TriggerWidth"
 
-    await setup_trigger_mode(DetectorTrigger.internal)
+    await setup_trigger_mode(DetectorTrigger.INTERNAL)
     assert (await test_advimba.drv.trigger_source.get_value()) == "Freerun"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "Off"
     assert (await test_advimba.drv.exposure_mode.get_value()) == "Timed"
 
-    await setup_trigger_mode(DetectorTrigger.variable_gate)
+    await setup_trigger_mode(DetectorTrigger.VARIABLE_GATE)
     assert (await test_advimba.drv.trigger_source.get_value()) == "Line1"
     assert (await test_advimba.drv.trigger_mode.get_value()) == "On"
     assert (await test_advimba.drv.exposure_mode.get_value()) == "TriggerWidth"

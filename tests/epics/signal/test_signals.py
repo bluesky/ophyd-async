@@ -49,9 +49,9 @@ from ophyd_async.epics.testing import (
 
 
 class MySubsetEnum(SubsetEnum):
-    a = "Aaa"
-    b = "Bbb"
-    c = "Ccc"
+    A = "Aaa"
+    B = "Bbb"
+    C = "Ccc"
 
 
 Protocol = Literal["ca", "pva"]
@@ -307,7 +307,7 @@ async def assert_backend_get_put_monitor(
         (int, "my_int", 42, 43),
         (float, "my_float", 3.141, 43.5),
         (str, "my_str", "hello", "goodbye"),
-        (ExampleEnum, "enum", ExampleEnum.b, ExampleEnum.c),
+        (ExampleEnum, "enum", ExampleEnum.B, ExampleEnum.C),
         # numpy arrays of numpy types
         (
             Array1D[np.uint8],
@@ -495,9 +495,9 @@ async def test_error_raised_on_disconnected_PV(ioc, protocol) -> None:
 
 
 class BadEnum(StrictEnum):
-    a = "Aaa"
-    b = "B"
-    c = "Ccc"
+    A = "Aaa"
+    B = "B"
+    C = "Ccc"
 
 
 def test_enum_equality():
@@ -507,39 +507,39 @@ def test_enum_equality():
     """
 
     class GeneratedChoices(StrictEnum):
-        a = "Aaa"
-        b = "B"
-        c = "Ccc"
+        A = "Aaa"
+        B = "B"
+        C = "Ccc"
 
     class ExtendedGeneratedChoices(StrictEnum):
-        a = "Aaa"
-        b = "B"
-        c = "Ccc"
-        d = "Ddd"
+        A = "Aaa"
+        B = "B"
+        C = "Ccc"
+        D = "Ddd"
 
     for enum_class in (GeneratedChoices, ExtendedGeneratedChoices):
-        assert BadEnum.a == enum_class.a
-        assert BadEnum.a.value == enum_class.a
-        assert BadEnum.a.value == enum_class.a.value
-        assert BadEnum(enum_class.a) is BadEnum.a
-        assert BadEnum(enum_class.a.value) is BadEnum.a
+        assert BadEnum.A == enum_class.A
+        assert BadEnum.A.value == enum_class.A
+        assert BadEnum.A.value == enum_class.A.value
+        assert BadEnum(enum_class.A) is BadEnum.A
+        assert BadEnum(enum_class.A.value) is BadEnum.A
         assert not BadEnum == enum_class
 
     # We will always PUT BadEnum by String, and GET GeneratedChoices by index,
     # so shouldn't ever run across this from conversion code, but may occur if
     # casting returned values or passing as enum rather than value.
     with pytest.raises(ValueError):
-        BadEnum(ExtendedGeneratedChoices.d)
+        BadEnum(ExtendedGeneratedChoices.D)
 
 
 class EnumNoString(Enum):
-    a = "Aaa"
+    A = "Aaa"
 
 
 class SubsetEnumWrongChoices(SubsetEnum):
-    a = "Aaa"
-    b = "B"
-    c = "Ccc"
+    A = "Aaa"
+    B = "B"
+    C = "Ccc"
 
 
 @PARAMETERISE_PROTOCOLS
@@ -612,7 +612,7 @@ async def test_backend_put_enum_string(ioc, protocol) -> None:
     backend = device.enum2._connector.backend
     # Don't do this in production code, but allow on CLI
     await backend.put("Ccc", wait=True)  # type: ignore
-    assert ExampleEnum.c == await backend.get_value()
+    assert ExampleEnum.C == await backend.get_value()
 
 
 @PARAMETERISE_PROTOCOLS
@@ -626,7 +626,7 @@ async def test_backend_get_setpoint(ioc, protocol) -> None:
     device = await connect_example_device(ioc, protocol)
     backend = device.enum2._connector.backend
     await backend.put("Ccc", wait=True)
-    assert await backend.get_setpoint() == ExampleEnum.c
+    assert await backend.get_setpoint() == ExampleEnum.C
 
 
 def approx_table(datatype: type[Table], table: Table):
@@ -647,14 +647,14 @@ async def test_pva_table(ioc) -> None:
         int=np.array([1, 8, -9, 32], np.int32),
         float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
         str=["Hello", "World", "Foo", "Bar"],
-        enum=[ExampleEnum.a, ExampleEnum.b, ExampleEnum.a, ExampleEnum.c],
+        enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
     )
     put = ExampleTable(
         bool=np.array([True, False], np.bool_),
         int=np.array([-5, 32], np.int32),
         float=np.array([8.5, -6.97], np.float64),
         str=["Hello", "Bat"],
-        enum=[ExampleEnum.c, ExampleEnum.b],
+        enum=[ExampleEnum.C, ExampleEnum.B],
     )
     # Make and connect the backend
     for t, i, p in [(ExampleTable, initial, put), (None, put, initial)]:
@@ -774,8 +774,8 @@ def test_signal_helpers():
 async def test_str_enum_returns_enum(ioc, protocol):
     device = await connect_example_device(ioc, protocol)
     val = await device.enum.get_value()
-    assert repr(val) == "<ExampleEnum.b: 'Bbb'>"
-    assert val is ExampleEnum.b
+    assert repr(val) == "<ExampleEnum.B: 'Bbb'>"
+    assert val is ExampleEnum.B
     assert val == "Bbb"
 
 

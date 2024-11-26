@@ -16,7 +16,7 @@ from ._utils import ImageMode, stop_busy_record
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
 DEFAULT_GOOD_STATES: frozenset[DetectorState] = frozenset(
-    [DetectorState.Idle, DetectorState.Aborted]
+    [DetectorState.IDLE, DetectorState.ABORTED]
 )
 
 ADBaseIOT = TypeVar("ADBaseIOT", bound=ADBaseIO)
@@ -55,14 +55,14 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
 
     async def prepare(self, trigger_info: TriggerInfo) -> Any:
         assert (
-            trigger_info.trigger == DetectorTrigger.internal
+            trigger_info.trigger == DetectorTrigger.INTERNAL
         ), "fly scanning (i.e. external triggering) is not supported for this device"
         self.frame_timeout = (
             DEFAULT_TIMEOUT + await self._driver.acquire_time.get_value()
         )
         await asyncio.gather(
             self._driver.num_images.set(trigger_info.total_number_of_triggers),
-            self._driver.image_mode.set(ImageMode.multiple),
+            self._driver.image_mode.set(ImageMode.MULTIPLE),
         )
 
     async def arm(self):

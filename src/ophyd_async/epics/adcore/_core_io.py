@@ -12,8 +12,8 @@ from ._utils import ADBaseDataType, FileWriteMode, ImageMode, convert_ad_dtype_t
 
 
 class Callback(StrictEnum):
-    Enable = "Enable"
-    Disable = "Disable"
+    ENABLE = "Enable"
+    DISABLE = "Disable"
 
 
 class NDArrayBaseIO(Device):
@@ -88,17 +88,17 @@ class DetectorState(StrictEnum):
     See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore
     """
 
-    Idle = "Idle"
-    Acquire = "Acquire"
-    Readout = "Readout"
-    Correct = "Correct"
-    Saving = "Saving"
-    Aborting = "Aborting"
-    Error = "Error"
-    Waiting = "Waiting"
-    Initializing = "Initializing"
-    Disconnected = "Disconnected"
-    Aborted = "Aborted"
+    IDLE = "Idle"
+    ACQUIRE = "Acquire"
+    READOUT = "Readout"
+    CORRECT = "Correct"
+    SAVING = "Saving"
+    ABORTING = "Aborting"
+    ERROR = "Error"
+    WAITING = "Waiting"
+    INITIALIZING = "Initializing"
+    DISCONNECTED = "Disconnected"
+    ABORTED = "Aborted"
 
 
 class ADBaseIO(NDArrayBaseIO):
@@ -115,14 +115,14 @@ class ADBaseIO(NDArrayBaseIO):
 
 
 class Compression(StrictEnum):
-    none = "None"
-    nbit = "N-bit"
-    szip = "szip"
-    zlib = "zlib"
-    blosc = "Blosc"
-    bslz4 = "BSLZ4"
-    lz4 = "LZ4"
-    jpeg = "JPEG"
+    NONE = "None"
+    NBIT = "N-bit"
+    SZIP = "szip"
+    ZLIB = "zlib"
+    BLOSC = "Blosc"
+    BSLZ4 = "BSLZ4"
+    LZ4 = "LZ4"
+    JPEG = "JPEG"
 
 
 class NDFileIO(NDPluginBaseIO):

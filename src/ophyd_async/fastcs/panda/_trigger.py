@@ -20,8 +20,8 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
 
     async def prepare(self, value: SeqTableInfo):
         await asyncio.gather(
-            self.seq.prescale_units.set(TimeUnits.us),
-            self.seq.enable.set(BitMux.zero),
+            self.seq.prescale_units.set(TimeUnits.US),
+            self.seq.enable.set(BitMux.ZERO),
         )
         await asyncio.gather(
             self.seq.prescale.set(value.prescale_as_us),
@@ -30,14 +30,14 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
         )
 
     async def kickoff(self) -> None:
-        await self.seq.enable.set(BitMux.one)
+        await self.seq.enable.set(BitMux.ONE)
         await wait_for_value(self.seq.active, True, timeout=1)
 
     async def complete(self) -> None:
         await wait_for_value(self.seq.active, False, timeout=None)
 
     async def stop(self):
-        await self.seq.enable.set(BitMux.zero)
+        await self.seq.enable.set(BitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
 
 
@@ -68,7 +68,7 @@ class StaticPcompTriggerLogic(FlyerController[PcompInfo]):
         self.pcomp = pcomp
 
     async def prepare(self, value: PcompInfo):
-        await self.pcomp.enable.set(BitMux.zero)
+        await self.pcomp.enable.set(BitMux.ZERO)
         await asyncio.gather(
             self.pcomp.start.set(value.start_postion),
             self.pcomp.width.set(value.pulse_width),
@@ -78,12 +78,12 @@ class StaticPcompTriggerLogic(FlyerController[PcompInfo]):
         )
 
     async def kickoff(self) -> None:
-        await self.pcomp.enable.set(BitMux.one)
+        await self.pcomp.enable.set(BitMux.ONE)
         await wait_for_value(self.pcomp.active, True, timeout=1)
 
     async def complete(self, timeout: float | None = None) -> None:
         await wait_for_value(self.pcomp.active, False, timeout=timeout)
 
     async def stop(self):
-        await self.pcomp.enable.set(BitMux.zero)
+        await self.pcomp.enable.set(BitMux.ZERO)
         await wait_for_value(self.pcomp.active, False, timeout=1)

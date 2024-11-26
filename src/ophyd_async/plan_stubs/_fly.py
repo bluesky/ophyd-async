@@ -62,7 +62,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
     trigger_info = TriggerInfo(
         number_of_triggers=number_of_frames * repeats,
-        trigger=DetectorTrigger.constant_gate,
+        trigger=DetectorTrigger.CONSTANT_GATE,
         deadtime=deadtime,
         livetime=exposure,
         frame_timeout=frame_timeout,
