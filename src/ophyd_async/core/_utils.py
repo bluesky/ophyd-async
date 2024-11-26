@@ -16,6 +16,7 @@ Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
 ErrorText = str | Mapping[str, Exception]
 
+
 class StrictEnumMeta(EnumMeta):
     def __new__(metacls, *args, **kwargs):
         ret = super().__new__(metacls, *args, **kwargs)
@@ -23,6 +24,7 @@ class StrictEnumMeta(EnumMeta):
         if lowercase_names:
             raise TypeError(f"Names {lowercase_names} should be uppercase")
         return ret
+
 
 class StrictEnum(str, Enum, metaclass=StrictEnumMeta):
     """All members should exist in the Backend, and there will be no extras"""
