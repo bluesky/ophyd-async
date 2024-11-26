@@ -1,5 +1,5 @@
 from collections.abc import Awaitable, Callable, Iterable
-from contextlib import asynccontextmanager, contextmanager
+from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock
 
 from ._device import Device
@@ -40,8 +40,8 @@ def set_mock_put_proceeds(signal: Signal, proceeds: bool):
         backend.put_proceeds.clear()
 
 
-@asynccontextmanager
-async def mock_puts_blocked(*signals: Signal):
+@contextmanager
+def mock_puts_blocked(*signals: Signal):
     for signal in signals:
         set_mock_put_proceeds(signal, False)
     yield

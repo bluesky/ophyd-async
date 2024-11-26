@@ -339,7 +339,7 @@ async def test_locatable(sim_motor: motor.Motor) -> None:
         lambda x, *_, **__: set_mock_value(sim_motor.user_readback, x),
     )
     assert (await sim_motor.locate())["readback"] == 0
-    async with mock_puts_blocked(sim_motor.user_setpoint):
+    with mock_puts_blocked(sim_motor.user_setpoint):
         move_status = sim_motor.set(10)
         assert (await sim_motor.locate())["readback"] == 0
     await move_status
