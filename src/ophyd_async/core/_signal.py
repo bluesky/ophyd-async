@@ -122,7 +122,7 @@ class _SignalCache(Generic[SignalDatatypeT]):
 
     def _callback(self, reading: Reading[SignalDatatypeT]):
         self._signal.log.debug(
-            f"Updated subscription: reading of source {self._signal.source} changed"
+            f"Updated subscription: reading of source {self._signal.source} changed "
             f"from {self._reading} to {reading}"
         )
         self._reading = reading
