@@ -760,6 +760,10 @@ def test_signal_helpers():
     assert read_write_rbv_suffix._connector.backend.read_pv == "ReadWrite:RBV"
     assert read_write_rbv_suffix._connector.backend.write_pv == "ReadWrite"
 
+    read_write_rbv_w_field = epics_signal_rw_rbv(int, "ReadWrite.VAL")
+    assert read_write_rbv_w_field._connector.backend.read_pv == "ReadWrite_RBV.VAL"
+    assert read_write_rbv_w_field._connector.backend.write_pv == "ReadWrite.VAL"
+
     read = epics_signal_r(int, "Read")
     assert read._connector.backend.read_pv == "Read"
 

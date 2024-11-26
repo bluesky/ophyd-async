@@ -124,7 +124,13 @@ def epics_signal_rw_rbv(
     read_suffix:
         Append this suffix to the write pv to create the readback pv
     """
-    return epics_signal_rw(datatype, f"{write_pv}{read_suffix}", write_pv, name)
+
+    # Handle case where we have a PV w/ a field
+    if "." in write_pv:
+        base_pv, field = tuple(write_pv.split('.', 1))
+        return epics_signal_rw(datatype, f"{base_pv}{read_suffix}.{field}", write_pv, name)
+    else:
+        return epics_signal_rw(datatype, f"{write_pv}{read_suffix}", write_pv, name)
 
 
 def epics_signal_r(
