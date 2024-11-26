@@ -1,7 +1,13 @@
 from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR
-from ophyd_async.epics.adcore import ADHDFWriter, ADWriter, AreaDetector, NDPluginBaseIO
+from ophyd_async.epics.adcore import (
+    ADBaseDatasetDescriber,
+    ADHDFWriter,
+    ADWriter,
+    AreaDetector,
+    NDPluginBaseIO,
+)
 
 from ._kinetix_controller import KinetixController
 
@@ -26,16 +32,23 @@ class KinetixDetector(AreaDetector[KinetixController, ADWriter]):
         controller, driver = KinetixController.controller_and_drv(
             prefix + drv_suffix, name=name
         )
+        writer, fileio = writer_cls.writer_and_io(
+            prefix,
+            path_provider,
+            lambda: name,
+            ADBaseDatasetDescriber(driver),
+            fileio_suffix=fileio_suffix,
+            plugins=plugins,
+        )
 
         super().__init__(
-            prefix=prefix,
             driver=driver,
             controller=controller,
-            writer_cls=writer_cls,
-            path_provider=path_provider,
+            fileio=fileio,
+            writer=writer,
             plugins=plugins,
             name=name,
-            fileio_suffix=fileio_suffix,
             config_sigs=config_sigs,
         )
         self.drv = driver
+        self.fileio = fileio

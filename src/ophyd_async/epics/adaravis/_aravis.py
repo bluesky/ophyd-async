@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from ophyd_async.core import PathProvider
 from ophyd_async.core._signal import SignalR
 from ophyd_async.epics import adcore
+from ophyd_async.epics.adcore._core_io import ADBaseDatasetDescriber
 
 from ._aravis_controller import AravisController
 
@@ -29,17 +30,23 @@ class AravisDetector(adcore.AreaDetector[AravisController, adcore.ADWriter]):
         controller, driver = AravisController.controller_and_drv(
             prefix + drv_suffix, gpio_number=gpio_number, name=name
         )
+        writer, fileio = writer_cls.writer_and_io(
+            prefix,
+            path_provider,
+            lambda: name,
+            ADBaseDatasetDescriber(driver),
+            fileio_suffix=fileio_suffix,
+            plugins=plugins,
+        )
 
         super().__init__(
-            prefix=prefix,
             driver=driver,
             controller=controller,
-            writer_cls=writer_cls,
-            fileio_suffix=fileio_suffix,
-            path_provider=path_provider,
+            fileio=fileio,
+            writer=writer,
             plugins=plugins,
             name=name,
             config_sigs=config_sigs,
         )
-
         self.drv = driver
+        self.fileio = fileio

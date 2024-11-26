@@ -31,15 +31,23 @@ class SimDetector(adcore.AreaDetector[SimController, adcore.ADWriter]):
         controller, driver = SimController.controller_and_drv(
             prefix + drv_suffix, name=name
         )
+        writer, fileio = writer_cls.writer_and_io(
+            prefix,
+            path_provider,
+            lambda: name,
+            adcore.ADBaseDatasetDescriber(driver),
+            fileio_suffix=fileio_suffix,
+            plugins=plugins,
+        )
 
         super().__init__(
-            prefix=prefix,
             driver=driver,
             controller=controller,
-            writer_cls=writer_cls,
-            fileio_suffix=fileio_suffix,
-            path_provider=path_provider,
+            fileio=fileio,
+            writer=writer,
             plugins=plugins,
             name=name,
             config_sigs=config_sigs,
         )
+        self.drv = driver
+        self.fileio = fileio

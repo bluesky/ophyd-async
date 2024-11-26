@@ -70,15 +70,22 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         path_provider: PathProvider,
         name_provider: NameProvider,
         dataset_describer: ADBaseDatasetDescriber,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        fileio_suffix: str | None = None,
         name: str = "",
+        plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> tuple[ADWriterT, NDFileIOT]:
         try:
             fileio_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
         except IndexError as err:
             raise RuntimeError("File IO class for writer not specified!") from err
 
-        fileio = fileio_cls(prefix, name=name)
+        if fileio_suffix is None:
+            fileio_prefix = prefix + cls.default_suffix
+        else:
+            fileio_prefix = prefix + fileio_suffix
+
+        fileio = fileio_cls(fileio_prefix, name=name)
+
         writer = cls(
             fileio, path_provider, name_provider, dataset_describer, plugins=plugins
         )

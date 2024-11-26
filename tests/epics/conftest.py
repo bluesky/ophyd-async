@@ -33,13 +33,18 @@ def ad_standard_det_factory(
                 prefix + "cam1:", name=name
             )
 
-            test_adstandard_det = adcore.AreaDetector[controller_cls, writer_cls](
+            writer, fileio = writer_cls.writer_and_io(
                 prefix,
+                static_path_provider,
+                lambda: name,
+                adcore.ADBaseDatasetDescriber(driver),
+            )
+
+            test_adstandard_det = adcore.AreaDetector[controller_cls, writer_cls](
                 driver,
                 controller,
-                writer_cls,
-                static_path_provider,
-                {},
+                fileio,
+                writer,
                 name=name,
             )
 
