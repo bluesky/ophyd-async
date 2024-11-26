@@ -28,6 +28,10 @@
     "url": "https://bluesky.github.io/ophyd-async/v0.8.0a1/"
   },
   {
+    "version": "v0.8.0",
+    "url": "https://bluesky.github.io/ophyd-async/v0.8.0/"
+  },
+  {
     "version": "v0.7.0a1",
     "url": "https://bluesky.github.io/ophyd-async/v0.7.0a1/"
   },
