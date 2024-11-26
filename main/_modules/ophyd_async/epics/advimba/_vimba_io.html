@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.advimba._vimba_io &#8212; ophyd-async 0.8.1.dev1+g6f20a4b5 documentation</title>
+    <title>ophyd_async.epics.advimba._vimba_io &#8212; ophyd-async 0.8.1.dev2+g1d05222a documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../../_static/documentation_options.js?v=90ac7110"></script>
+    <script src="../../../../_static/documentation_options.js?v=be288acf"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev1+g6f20a4b5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev1+g6f20a4b5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev2+g1d05222a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev2+g1d05222a documentation - Home"/>
   
   
 </a></div>
@@ -464,44 +464,44 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <span class="k">class</span> <span class="nc">VimbaPixelFormat</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-    <span class="n">internal</span> <span class="o">=</span> <span class="s2">&quot;Mono8&quot;</span>
-    <span class="n">ext_enable</span> <span class="o">=</span> <span class="s2">&quot;Mono12&quot;</span>
-    <span class="n">ext_trigger</span> <span class="o">=</span> <span class="s2">&quot;Ext. Trigger&quot;</span>
-    <span class="n">mult_trigger</span> <span class="o">=</span> <span class="s2">&quot;Mult. Trigger&quot;</span>
-    <span class="n">alignment</span> <span class="o">=</span> <span class="s2">&quot;Alignment&quot;</span>
+    <span class="n">INTERNAL</span> <span class="o">=</span> <span class="s2">&quot;Mono8&quot;</span>
+    <span class="n">EXT_ENABLE</span> <span class="o">=</span> <span class="s2">&quot;Mono12&quot;</span>
+    <span class="n">EXT_TRIGGER</span> <span class="o">=</span> <span class="s2">&quot;Ext. Trigger&quot;</span>
+    <span class="n">MULT_TRIGGER</span> <span class="o">=</span> <span class="s2">&quot;Mult. Trigger&quot;</span>
+    <span class="n">ALIGNMENT</span> <span class="o">=</span> <span class="s2">&quot;Alignment&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">VimbaConvertFormat</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-    <span class="n">none</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
-    <span class="n">mono8</span> <span class="o">=</span> <span class="s2">&quot;Mono8&quot;</span>
-    <span class="n">mono16</span> <span class="o">=</span> <span class="s2">&quot;Mono16&quot;</span>
-    <span class="n">rgb8</span> <span class="o">=</span> <span class="s2">&quot;RGB8&quot;</span>
-    <span class="n">rgb16</span> <span class="o">=</span> <span class="s2">&quot;RGB16&quot;</span>
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+    <span class="n">MONO8</span> <span class="o">=</span> <span class="s2">&quot;Mono8&quot;</span>
+    <span class="n">MONO16</span> <span class="o">=</span> <span class="s2">&quot;Mono16&quot;</span>
+    <span class="n">RGB8</span> <span class="o">=</span> <span class="s2">&quot;RGB8&quot;</span>
+    <span class="n">RGB16</span> <span class="o">=</span> <span class="s2">&quot;RGB16&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">VimbaTriggerSource</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-    <span class="n">freerun</span> <span class="o">=</span> <span class="s2">&quot;Freerun&quot;</span>
-    <span class="n">line1</span> <span class="o">=</span> <span class="s2">&quot;Line1&quot;</span>
-    <span class="n">line2</span> <span class="o">=</span> <span class="s2">&quot;Line2&quot;</span>
-    <span class="n">fixed_rate</span> <span class="o">=</span> <span class="s2">&quot;FixedRate&quot;</span>
-    <span class="n">software</span> <span class="o">=</span> <span class="s2">&quot;Software&quot;</span>
-    <span class="n">action0</span> <span class="o">=</span> <span class="s2">&quot;Action0&quot;</span>
-    <span class="n">action1</span> <span class="o">=</span> <span class="s2">&quot;Action1&quot;</span>
+    <span class="n">FREERUN</span> <span class="o">=</span> <span class="s2">&quot;Freerun&quot;</span>
+    <span class="n">LINE1</span> <span class="o">=</span> <span class="s2">&quot;Line1&quot;</span>
+    <span class="n">LINE2</span> <span class="o">=</span> <span class="s2">&quot;Line2&quot;</span>
+    <span class="n">FIXED_RATE</span> <span class="o">=</span> <span class="s2">&quot;FixedRate&quot;</span>
+    <span class="n">SOFTWARE</span> <span class="o">=</span> <span class="s2">&quot;Software&quot;</span>
+    <span class="n">ACTION0</span> <span class="o">=</span> <span class="s2">&quot;Action0&quot;</span>
+    <span class="n">ACTION1</span> <span class="o">=</span> <span class="s2">&quot;Action1&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">VimbaOverlap</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-    <span class="n">off</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span>
-    <span class="n">prev_frame</span> <span class="o">=</span> <span class="s2">&quot;PreviousFrame&quot;</span>
+    <span class="n">OFF</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span>
+    <span class="n">PREV_FRAME</span> <span class="o">=</span> <span class="s2">&quot;PreviousFrame&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">VimbaOnOff</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-    <span class="n">on</span> <span class="o">=</span> <span class="s2">&quot;On&quot;</span>
-    <span class="n">off</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span>
+    <span class="n">ON</span> <span class="o">=</span> <span class="s2">&quot;On&quot;</span>
+    <span class="n">OFF</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">VimbaExposeOutMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-    <span class="n">timed</span> <span class="o">=</span> <span class="s2">&quot;Timed&quot;</span>  <span class="c1"># Use ExposureTime PV</span>
-    <span class="n">trigger_width</span> <span class="o">=</span> <span class="s2">&quot;TriggerWidth&quot;</span>  <span class="c1"># Expose for length of high signal</span>
+    <span class="n">TIMED</span> <span class="o">=</span> <span class="s2">&quot;Timed&quot;</span>  <span class="c1"># Use ExposureTime PV</span>
+    <span class="n">TRIGGER_WIDTH</span> <span class="o">=</span> <span class="s2">&quot;TriggerWidth&quot;</span>  <span class="c1"># Expose for length of high signal</span>
 
 
 <div class="viewcode-block" id="VimbaDriverIO">

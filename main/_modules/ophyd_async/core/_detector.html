@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.8.1.dev1+g6f20a4b5 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.8.1.dev2+g1d05222a documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=90ac7110"></script>
+    <script src="../../../_static/documentation_options.js?v=be288acf"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev1+g6f20a4b5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev1+g6f20a4b5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev2+g1d05222a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev2+g1d05222a documentation - Home"/>
   
   
 </a></div>
@@ -492,13 +492,13 @@ window.addEventListener("load", () => mermaid.run());
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of mechanism for triggering a detector to take frames&quot;&quot;&quot;</span>
 
     <span class="c1">#: Detector generates internal trigger for given rate</span>
-    <span class="n">internal</span> <span class="o">=</span> <span class="s2">&quot;internal&quot;</span>
+    <span class="n">INTERNAL</span> <span class="o">=</span> <span class="s2">&quot;internal&quot;</span>
     <span class="c1">#: Expect a series of arbitrary length trigger signals</span>
-    <span class="n">edge_trigger</span> <span class="o">=</span> <span class="s2">&quot;edge_trigger&quot;</span>
+    <span class="n">EDGE_TRIGGER</span> <span class="o">=</span> <span class="s2">&quot;edge_trigger&quot;</span>
     <span class="c1">#: Expect a series of constant width external gate signals</span>
-    <span class="n">constant_gate</span> <span class="o">=</span> <span class="s2">&quot;constant_gate&quot;</span>
+    <span class="n">CONSTANT_GATE</span> <span class="o">=</span> <span class="s2">&quot;constant_gate&quot;</span>
     <span class="c1">#: Expect a series of variable width external gate signals</span>
-    <span class="n">variable_gate</span> <span class="o">=</span> <span class="s2">&quot;variable_gate&quot;</span></div>
+    <span class="n">VARIABLE_GATE</span> <span class="o">=</span> <span class="s2">&quot;variable_gate&quot;</span></div>
 
 
 
@@ -518,7 +518,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="c1">#:     - 3 times for final flat field images</span>
     <span class="n">number_of_triggers</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">NonNegativeInt</span><span class="p">]</span>
     <span class="c1">#: Sort of triggers that will be sent</span>
-    <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">)</span>
+    <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">)</span>
     <span class="c1">#: What is the minimum deadtime between triggers</span>
     <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="c1">#: What is the maximum high time of the triggers</span>
@@ -769,14 +769,14 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
                 <span class="n">TriggerInfo</span><span class="p">(</span>
                     <span class="n">number_of_triggers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                    <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span>
+                    <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span>
                     <span class="n">deadtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">livetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">frame_timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">is</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">is</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span>
         <span class="c1"># Arm the detector and wait for it to finish.</span>
         <span class="n">indices_written</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
@@ -809,7 +809,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        Args:</span>
 <span class="sd">            value: TriggerInfo describing how to trigger the detector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
             <span class="k">assert</span> <span class="p">(</span>
                 <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span>
             <span class="p">),</span> <span class="s2">&quot;Deadtime must be supplied when in externally triggered mode&quot;</span>
@@ -829,7 +829,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">multiplier</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span></div>
 
