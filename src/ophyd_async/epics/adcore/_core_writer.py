@@ -22,8 +22,7 @@ from ophyd_async.core._signal import (
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT
 
-# from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
-from ._core_io import ADBaseDatasetDescriber, NDFileIO, NDPluginBaseIO
+from ._core_io import ADBaseDatasetDescriber, NDArrayBaseIO, NDFileIO, NDPluginBaseIO
 from ._utils import FileWriteMode
 
 
@@ -49,8 +48,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         mimetype: str = "",
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
+        self.fileio = fileio
         self._plugins = plugins
-        self._fileio = fileio
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._dataset_describer = dataset_describer
@@ -64,57 +63,62 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._filename_template = "%s%s_%6.6d"
 
     @classmethod
-    def writer_and_io(
+    def with_io(
         cls: type[ADWriterT],
         prefix: str,
+        suffix: str | None,
         path_provider: PathProvider,
-        name_provider: NameProvider,
-        dataset_describer: ADBaseDatasetDescriber,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
-        name: str = "",
-    ) -> tuple[ADWriterT, NDFileIOT]:
+        dataset_source: NDArrayBaseIO,
+        plugins: dict[str, NDPluginBaseIO] | None,
+    ) -> ADWriterT:
         try:
             fileio_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
         except IndexError as err:
             raise RuntimeError("File IO class for writer not specified!") from err
 
-        fileio = fileio_cls(prefix, name=name)
+        fileio: NDFileIOT = fileio_cls(prefix + (suffix or cls.default_suffix))
+        dataset_describer = ADBaseDatasetDescriber(dataset_source)
+
+        def name_provider() -> str:
+            assert fileio.parent, "Not attached to a detector"
+            return fileio.parent.name
+
         writer = cls(
             fileio, path_provider, name_provider, dataset_describer, plugins=plugins
         )
-        return writer, fileio
+        return writer
 
     async def begin_capture(self) -> None:
         info = self._path_provider(device_name=self._name_provider())
 
-        await self._fileio.enable_callbacks.set(True)
+        await self.fileio.enable_callbacks.set(True)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
-        await self._fileio.create_directory.set(info.create_dir_depth)
+        await self.fileio.create_directory.set(info.create_dir_depth)
 
         await asyncio.gather(
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self._fileio.file_path.set(str(info.directory_path)),
-            self._fileio.file_name.set(info.filename),
-            self._fileio.file_write_mode.set(FileWriteMode.stream),
+            self.fileio.file_path.set(str(info.directory_path)),
+            self.fileio.file_name.set(info.filename),
+            self.fileio.file_write_mode.set(FileWriteMode.stream),
             # For non-HDF file writers, use AD file templating mechanism
             # for generating multi-image datasets
-            self._fileio.file_template.set(
+            self.fileio.file_template.set(
                 self._filename_template + self._file_extension
             ),
-            self._fileio.auto_increment.set(True),
-            self._fileio.file_number.set(0),
+            self.fileio.auto_increment.set(True),
+            self.fileio.file_number.set(0),
         )
 
         assert (
-            await self._fileio.file_path_exists.get_value()
+            await self.fileio.file_path_exists.get_value()
         ), f"File path {info.directory_path} for file plugin does not exist!"
 
         # Overwrite num_capture to go forever
-        await self._fileio.num_capture.set(0)
+        await self.fileio.num_capture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes
-        self._capture_status = await set_and_wait_for_value(self._fileio.capture, True)
+        self._capture_status = await set_and_wait_for_value(self.fileio.capture, True)
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
@@ -140,11 +144,11 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected"""
-        async for num_captured in observe_value(self._fileio.num_captured, timeout):
+        async for num_captured in observe_value(self.fileio.num_captured, timeout):
             yield num_captured // self._multiplier
 
     async def get_indices_written(self) -> int:
-        num_captured = await self._fileio.num_captured.get_value()
+        num_captured = await self.fileio.num_captured.get_value()
         return num_captured // self._multiplier
 
     async def collect_stream_docs(
@@ -152,8 +156,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._emitted_resource:
-                file_path = Path(await self._fileio.file_path.get_value())
-                file_name = await self._fileio.file_name.get_value()
+                file_path = Path(await self.fileio.file_path.get_value())
+                file_name = await self.fileio.file_name.get_value()
                 file_template = file_name + "_{:06d}" + self._file_extension
 
                 frame_shape = await self._dataset_describer.shape()
@@ -201,8 +205,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
-        await self._fileio.capture.set(False, wait=False)
-        await wait_for_value(self._fileio.capture, False, DEFAULT_TIMEOUT)
+        await self.fileio.capture.set(False, wait=False)
+        await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status

@@ -1,13 +1,13 @@
 from collections.abc import Sequence
 
-from ophyd_async.core import PathProvider
-from ophyd_async.core._signal import SignalR
+from ophyd_async.core import PathProvider, SignalR
 from ophyd_async.epics import adcore
 
 from ._aravis_controller import AravisController
+from ._aravis_io import AravisDriverIO
 
 
-class AravisDetector(adcore.AreaDetector[AravisController, adcore.ADWriter]):
+class AravisDetector(adcore.AreaDetector[AravisController]):
     """
     Ophyd-async implementation of an ADAravis Detector.
     The detector may be configured for an external trigger on a GPIO port,
@@ -26,20 +26,9 @@ class AravisDetector(adcore.AreaDetector[AravisController, adcore.ADWriter]):
         config_sigs: Sequence[SignalR] = (),
         plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
     ):
-        controller, driver = AravisController.controller_and_drv(
-            prefix + drv_suffix, gpio_number=gpio_number, name=name
+        driver = AravisDriverIO(prefix + drv_suffix)
+        controller = AravisController(driver, gpio_number=gpio_number)
+        writer = writer_cls.with_io(
+            prefix, fileio_suffix, path_provider, driver, plugins
         )
-
-        super().__init__(
-            prefix=prefix,
-            driver=driver,
-            controller=controller,
-            writer_cls=writer_cls,
-            fileio_suffix=fileio_suffix,
-            path_provider=path_provider,
-            plugins=plugins,
-            name=name,
-            config_sigs=config_sigs,
-        )
-
-        self.drv = driver
+        super().__init__(driver, controller, writer, plugins, config_sigs, name)

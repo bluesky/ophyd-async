@@ -55,7 +55,7 @@ def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
     for _ in range(times):
         read_values = {}
         for det in dets:
-            read_values[det] = yield from bps.rd(det._writer._fileio.num_captured)
+            read_values[det] = yield from bps.rd(det._writer.fileio.num_captured)
 
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
@@ -63,7 +63,7 @@ def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
         yield from bps.sleep(1.0)
         [
             set_mock_value(
-                det._writer._fileio.num_captured,
+                det._writer.fileio.num_captured,
                 read_values[det] + 1,
             )
             for det in dets
@@ -154,7 +154,7 @@ async def test_two_detectors_step(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     [
-        set_mock_value(det._writer._fileio.file_path_exists, True)
+        set_mock_value(det._writer.fileio.file_path_exists, True)
         for det in two_test_adsimdetectors
     ]
 
@@ -174,22 +174,22 @@ async def test_two_detectors_step(
         assert False is (yield from bps.rd(drv.acquire))
         assert adcore.ImageMode.multiple == (yield from bps.rd(drv.image_mode))
 
-        hdfb = cast(adcore.NDFileHDFIO, writer_b._fileio)
+        hdfb = cast(adcore.NDFileHDFIO, writer_b.fileio)
         assert True is (yield from bps.rd(hdfb.lazy_open))
         assert True is (yield from bps.rd(hdfb.swmr_mode))
         assert 0 == (yield from bps.rd(hdfb.num_capture))
         assert adcore.FileWriteMode.stream == (yield from bps.rd(hdfb.file_write_mode))
 
-        assert (yield from bps.rd(writer_a._fileio.file_path)) == str(
+        assert (yield from bps.rd(writer_a.fileio.file_path)) == str(
             info_a.directory_path
         )
-        file_name_a = yield from bps.rd(writer_a._fileio.file_name)
+        file_name_a = yield from bps.rd(writer_a.fileio.file_name)
         assert file_name_a == info_a.filename
 
-        assert (yield from bps.rd(writer_b._fileio.file_path)) == str(
+        assert (yield from bps.rd(writer_b.fileio.file_path)) == str(
             info_b.directory_path
         )
-        file_name_b = yield from bps.rd(writer_b._fileio.file_name)
+        file_name_b = yield from bps.rd(writer_b.fileio.file_name)
         assert file_name_b == info_b.filename
 
     RE(plan())
@@ -247,13 +247,13 @@ async def test_detector_writes_to_file(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     set_mock_value(
-        test_adsimdetector._writer._fileio.file_path_exists,
+        test_adsimdetector._writer.fileio.file_path_exists,
         True,
     )
 
     RE(count_sim([test_adsimdetector], times=3))
 
-    assert await test_adsimdetector._writer._fileio.file_path.get_value() == str(
+    assert await test_adsimdetector._writer.fileio.file_path.get_value() == str(
         tmp_path
     )
 

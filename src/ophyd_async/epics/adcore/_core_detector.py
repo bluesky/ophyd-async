@@ -1,35 +1,24 @@
 from collections.abc import Sequence
 
-from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.core import SignalR, StandardDetector
 
-from ._core_io import ADBaseDatasetDescriber, ADBaseIO, NDPluginBaseIO
+from ._core_io import ADBaseIO, NDFileIO, NDPluginBaseIO
 from ._core_logic import ADBaseControllerT
-from ._core_writer import ADWriterT
+from ._core_writer import ADWriter
 
 
-class AreaDetector(StandardDetector[ADBaseControllerT, ADWriterT]):
+class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
     def __init__(
         self,
-        prefix: str,
         driver: ADBaseIO,
         controller: ADBaseControllerT,
-        writer_cls: type[ADWriterT],
-        path_provider: PathProvider,
+        writer: ADWriter[NDFileIO],
         plugins: dict[str, NDPluginBaseIO] | None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
-        fileio_suffix: str | None = None,
     ):
         self.drv = driver
-        writer, self.fileio = writer_cls.writer_and_io(
-            prefix + (fileio_suffix or writer_cls.default_suffix),
-            path_provider,
-            lambda: name,
-            ADBaseDatasetDescriber(self.drv),
-            plugins=plugins,
-            name=name,
-        )
-
+        self.fileio = writer.fileio
         if plugins is not None:
             for name, plugin in plugins.items():
                 setattr(self, name, plugin)

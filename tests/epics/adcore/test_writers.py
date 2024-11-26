@@ -107,7 +107,7 @@ async def test_stats_describe_when_plugin_configured(
     hdf_writer_with_stats: adcore.ADHDFWriter,
 ):
     assert hdf_writer_with_stats._file is None
-    set_mock_value(hdf_writer_with_stats._fileio.file_path_exists, True)
+    set_mock_value(hdf_writer_with_stats.fileio.file_path_exists, True)
     assert hdf_writer_with_stats._plugins is not None
     set_mock_value(
         hdf_writer_with_stats._plugins["stats"].nd_attributes_file,
@@ -160,7 +160,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
     hdf_writer_with_stats: adcore.ADHDFWriter,
 ):
     assert hdf_writer_with_stats._file is None
-    set_mock_value(hdf_writer_with_stats._fileio.file_path_exists, True)
+    set_mock_value(hdf_writer_with_stats.fileio.file_path_exists, True)
     assert hdf_writer_with_stats._plugins is not None
     set_mock_value(
         hdf_writer_with_stats._plugins["stats"].nd_attributes_file,

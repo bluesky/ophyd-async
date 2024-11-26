@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Generic, TypeVar, get_args
+from typing import Any, Generic, TypeVar
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -33,22 +33,6 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         self.good_states = good_states
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
-
-    @classmethod
-    def controller_and_drv(
-        cls: type[ADBaseControllerT],
-        prefix: str,
-        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
-        name: str = "",
-    ) -> tuple[ADBaseControllerT, ADBaseIOT]:
-        try:
-            driver_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
-        except IndexError as err:
-            raise RuntimeError("Driver IO class for controller not specified!") from err
-
-        driver = driver_cls(prefix, name=name)
-        controller = cls(driver, good_states=good_states)
-        return controller, driver
 
     def get_deadtime(self, exposure: float | None) -> float:
         return 0.002

@@ -23,9 +23,7 @@ class KinetixDetector(AreaDetector[KinetixController, ADWriter]):
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
-        controller, driver = KinetixController.controller_and_drv(
-            prefix + drv_suffix, name=name
-        )
+        controller, driver = KinetixController.with_io(prefix + drv_suffix, name=name)
 
         super().__init__(
             prefix=prefix,

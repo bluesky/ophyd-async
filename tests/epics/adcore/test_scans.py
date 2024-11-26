@@ -80,7 +80,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     writer: adcore.ADHDFWriter,
     controller: adcore.ADBaseController,
 ):
-    set_mock_value(writer._fileio.file_path_exists, True)
+    set_mock_value(writer.fileio.file_path_exists, True)
     detector: StandardDetector[Any, Any] = StandardDetector(
         controller, writer, name="detector"
     )
@@ -96,7 +96,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     RE: RunEngine, writer: adcore.ADHDFWriter
 ):
     controller = DummyController()
-    set_mock_value(writer._fileio.file_path_exists, True)
+    set_mock_value(writer.fileio.file_path_exists, True)
 
     detector: StandardDetector[Any, Any] = StandardDetector(controller, writer)
     trigger_logic = DummyTriggerLogic()

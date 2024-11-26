@@ -54,13 +54,13 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         # Setting HDF writer specific signals
 
         # Make sure we are using chunk auto-sizing
-        await asyncio.gather(self._fileio.chunk_size_auto.set(True))
+        await asyncio.gather(self.fileio.chunk_size_auto.set(True))
 
         await asyncio.gather(
-            self._fileio.num_extra_dims.set(0),
-            self._fileio.lazy_open.set(True),
-            self._fileio.swmr_mode.set(True),
-            self._fileio.xml_file_name.set(""),
+            self.fileio.num_extra_dims.set(0),
+            self.fileio.lazy_open.set(True),
+            self.fileio.swmr_mode.set(True),
+            self.fileio.xml_file_name.set(""),
         )
 
         # By default, don't add file number to filename
@@ -78,7 +78,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         outer_shape = (multiplier,) if multiplier > 1 else ()
 
         # Determine number of frames that will be saved per HDF chunk
-        frames_per_chunk = await self._fileio.num_frames_chunks.get_value()
+        frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
 
         # Add the main data
         self._datasets = [
@@ -124,7 +124,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
 
         describe = {
             ds.data_key: DataKey(
-                source=self._fileio.full_file_name.source,
+                source=self.fileio.full_file_name.source,
                 shape=list(outer_shape + tuple(ds.shape)),
                 dtype="array" if ds.shape else "number",
                 dtype_numpy=ds.dtype_numpy,
@@ -138,10 +138,10 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
-        await self._fileio.flush_now.set(True)
+        await self.fileio.flush_now.set(True)
         if indices_written:
             if not self._file:
-                path = Path(await self._fileio.full_file_name.get_value())
+                path = Path(await self.fileio.full_file_name.get_value())
                 self._file = HDFFile(
                     # See https://github.com/bluesky/ophyd-async/issues/122
                     path,
@@ -158,8 +158,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
-        await self._fileio.capture.set(False, wait=False)
-        await wait_for_value(self._fileio.capture, False, DEFAULT_TIMEOUT)
+        await self.fileio.capture.set(False, wait=False)
+        await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status
