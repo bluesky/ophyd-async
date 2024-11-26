@@ -105,7 +105,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
         number_of_triggers=1,
-        trigger=DetectorTrigger.constant_gate,
+        trigger=DetectorTrigger.CONSTANT_GATE,
         deadtime=2,
         livetime=2,
     )

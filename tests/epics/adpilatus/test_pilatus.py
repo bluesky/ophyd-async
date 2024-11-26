@@ -19,7 +19,7 @@ def test_adpilatus(ad_standard_det_factory) -> adpilatus.PilatusDetector:
 
 async def test_deadtime_overridable(test_adpilatus: adpilatus.PilatusDetector):
     pilatus_controller = test_adpilatus._controller
-    pilatus_controller._readout_time = adpilatus.PilatusReadoutTime.pilatus2
+    pilatus_controller._readout_time = adpilatus.PilatusReadoutTime.PILATUS2
 
     # deadtime invariant with exposure time
     assert pilatus_controller.get_deadtime(0) == 2.28e-3
@@ -37,9 +37,9 @@ async def test_deadtime_invariant(
 @pytest.mark.parametrize(
     "detector_trigger,expected_trigger_mode",
     [
-        (DetectorTrigger.internal, adpilatus.PilatusTriggerMode.internal),
-        (DetectorTrigger.internal, adpilatus.PilatusTriggerMode.internal),
-        (DetectorTrigger.internal, adpilatus.PilatusTriggerMode.internal),
+        (DetectorTrigger.INTERNAL, adpilatus.PilatusTriggerMode.INTERNAL),
+        (DetectorTrigger.INTERNAL, adpilatus.PilatusTriggerMode.INTERNAL),
+        (DetectorTrigger.INTERNAL, adpilatus.PilatusTriggerMode.INTERNAL),
     ],
 )
 async def test_trigger_mode_set(
@@ -63,7 +63,7 @@ async def test_trigger_mode_set_without_armed_pv(
 ):
     async def trigger_and_complete():
         await test_adpilatus.controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.internal)
+            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.INTERNAL)
         )
         await test_adpilatus.controller.arm()
         await test_adpilatus.controller.wait_for_idle()
@@ -75,7 +75,7 @@ async def test_trigger_mode_set_without_armed_pv(
         with pytest.raises(asyncio.TimeoutError):
             await _trigger(
                 test_adpilatus,
-                adpilatus.PilatusTriggerMode.internal,
+                adpilatus.PilatusTriggerMode.INTERNAL,
                 trigger_and_complete,
             )
 
@@ -88,7 +88,7 @@ async def _trigger(
     # Default TriggerMode
     assert (
         await test_adpilatus.drv.trigger_mode.get_value()
-    ) == adpilatus.PilatusTriggerMode.internal
+    ) == adpilatus.PilatusTriggerMode.INTERNAL
 
     await trigger_and_complete()
 
@@ -109,7 +109,7 @@ async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDete
         await test_adpilatus.prepare(
             TriggerInfo(
                 number_of_triggers=1,
-                trigger=DetectorTrigger.edge_trigger,
+                trigger=DetectorTrigger.EDGE_TRIGGER,
                 deadtime=1.0,
                 livetime=1.0,
             )
@@ -127,7 +127,7 @@ async def test_exposure_time_and_acquire_period_set(
     await test_adpilatus.prepare(
         TriggerInfo(
             number_of_triggers=1,
-            trigger=DetectorTrigger.internal,
+            trigger=DetectorTrigger.INTERNAL,
             deadtime=1.0,
             livetime=1.0,
         )
@@ -141,16 +141,16 @@ async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
     pilatus_driver = pilatus._drv
     set_mock_value(pilatus_driver.armed, True)
     await pilatus.prepare(
-        TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.constant_gate)
+        TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.CONSTANT_GATE)
     )
     await pilatus.arm()
     await pilatus.wait_for_idle()
 
     assert await pilatus_driver.num_images.get_value() == 1
-    assert await pilatus_driver.image_mode.get_value() == adcore.ImageMode.multiple
+    assert await pilatus_driver.image_mode.get_value() == adcore.ImageMode.MULTIPLE
     assert (
         await pilatus_driver.trigger_mode.get_value()
-        == adpilatus.PilatusTriggerMode.ext_enable
+        == adpilatus.PilatusTriggerMode.EXT_ENABLE
     )
     assert await pilatus_driver.acquire.get_value() is True
 

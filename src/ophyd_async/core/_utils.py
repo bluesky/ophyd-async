@@ -17,11 +17,20 @@ DEFAULT_TIMEOUT = 10.0
 ErrorText = str | Mapping[str, Exception]
 
 
-class StrictEnum(str, Enum):
+class StrictEnumMeta(EnumMeta):
+    def __new__(metacls, *args, **kwargs):
+        ret = super().__new__(metacls, *args, **kwargs)
+        lowercase_names = [x.name for x in ret if not x.name.isupper()]  # type: ignore
+        if lowercase_names:
+            raise TypeError(f"Names {lowercase_names} should be uppercase")
+        return ret
+
+
+class StrictEnum(str, Enum, metaclass=StrictEnumMeta):
     """All members should exist in the Backend, and there will be no extras"""
 
 
-class SubsetEnumMeta(EnumMeta):
+class SubsetEnumMeta(StrictEnumMeta):
     def __call__(self, value, *args, **kwargs):  # type: ignore
         if isinstance(value, str) and not isinstance(value, self):
             return value

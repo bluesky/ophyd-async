@@ -11,42 +11,42 @@ from ophyd_async.core import (
 
 
 class ADBaseDataType(StrictEnum):
-    Int8 = "Int8"
-    UInt8 = "UInt8"
-    Int16 = "Int16"
-    UInt16 = "UInt16"
-    Int32 = "Int32"
-    UInt32 = "UInt32"
-    Int64 = "Int64"
-    UInt64 = "UInt64"
-    Float32 = "Float32"
-    Float64 = "Float64"
+    INT8 = "Int8"
+    UINT8 = "UInt8"
+    INT16 = "Int16"
+    UINT16 = "UInt16"
+    INT32 = "Int32"
+    UINT32 = "UInt32"
+    INT64 = "Int64"
+    UINT64 = "UInt64"
+    FLOAT32 = "Float32"
+    FLOAT64 = "Float64"
 
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
     ad_dtype_to_np_dtype = {
-        ADBaseDataType.Int8: "|i1",
-        ADBaseDataType.UInt8: "|u1",
-        ADBaseDataType.Int16: "<i2",
-        ADBaseDataType.UInt16: "<u2",
-        ADBaseDataType.Int32: "<i4",
-        ADBaseDataType.UInt32: "<u4",
-        ADBaseDataType.Int64: "<i8",
-        ADBaseDataType.UInt64: "<u8",
-        ADBaseDataType.Float32: "<f4",
-        ADBaseDataType.Float64: "<f8",
+        ADBaseDataType.INT8: "|i1",
+        ADBaseDataType.UINT8: "|u1",
+        ADBaseDataType.INT16: "<i2",
+        ADBaseDataType.UINT16: "<u2",
+        ADBaseDataType.INT32: "<i4",
+        ADBaseDataType.UINT32: "<u4",
+        ADBaseDataType.INT64: "<i8",
+        ADBaseDataType.UINT64: "<u8",
+        ADBaseDataType.FLOAT32: "<f4",
+        ADBaseDataType.FLOAT64: "<f8",
     }
     return ad_dtype_to_np_dtype[ad_dtype]
 
 
 def convert_pv_dtype_to_np(datatype: str) -> str:
     _pvattribute_to_ad_datatype = {
-        "DBR_SHORT": ADBaseDataType.Int16,
-        "DBR_ENUM": ADBaseDataType.Int16,
-        "DBR_INT": ADBaseDataType.Int32,
-        "DBR_LONG": ADBaseDataType.Int32,
-        "DBR_FLOAT": ADBaseDataType.Float32,
-        "DBR_DOUBLE": ADBaseDataType.Float64,
+        "DBR_SHORT": ADBaseDataType.INT16,
+        "DBR_ENUM": ADBaseDataType.INT16,
+        "DBR_INT": ADBaseDataType.INT32,
+        "DBR_LONG": ADBaseDataType.INT32,
+        "DBR_FLOAT": ADBaseDataType.FLOAT32,
+        "DBR_DOUBLE": ADBaseDataType.FLOAT64,
     }
     if datatype in ["DBR_STRING", "DBR_CHAR"]:
         np_datatype = "s40"
@@ -62,9 +62,9 @@ def convert_pv_dtype_to_np(datatype: str) -> str:
 
 def convert_param_dtype_to_np(datatype: str) -> str:
     _paramattribute_to_ad_datatype = {
-        "INT": ADBaseDataType.Int32,
-        "INT64": ADBaseDataType.Int64,
-        "DOUBLE": ADBaseDataType.Float64,
+        "INT": ADBaseDataType.INT32,
+        "INT64": ADBaseDataType.INT64,
+        "DOUBLE": ADBaseDataType.FLOAT64,
     }
     if datatype in ["STRING"]:
         np_datatype = "s40"
@@ -79,15 +79,15 @@ def convert_param_dtype_to_np(datatype: str) -> str:
 
 
 class FileWriteMode(StrictEnum):
-    single = "Single"
-    capture = "Capture"
-    stream = "Stream"
+    SINGLE = "Single"
+    CAPTURE = "Capture"
+    STREAM = "Stream"
 
 
 class ImageMode(StrictEnum):
-    single = "Single"
-    multiple = "Multiple"
-    continuous = "Continuous"
+    SINGLE = "Single"
+    MULTIPLE = "Multiple"
+    CONTINUOUS = "Continuous"
 
 
 class NDAttributeDataType(StrictEnum):

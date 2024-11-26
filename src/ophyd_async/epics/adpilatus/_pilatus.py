@@ -17,10 +17,10 @@ class PilatusReadoutTime(float, Enum):
     """Pilatus readout time per model in ms"""
 
     # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
-    pilatus2 = 2.28e-3
+    PILATUS2 = 2.28e-3
 
     # Cite: https://media.dectris.com/user-manual-pilatus3-2020.pdf
-    pilatus3 = 0.95e-3
+    PILATUS3 = 0.95e-3
 
 
 class PilatusDetector(StandardDetector):
@@ -33,7 +33,7 @@ class PilatusDetector(StandardDetector):
         self,
         prefix: str,
         path_provider: PathProvider,
-        readout_time: PilatusReadoutTime = PilatusReadoutTime.pilatus3,
+        readout_time: PilatusReadoutTime = PilatusReadoutTime.PILATUS3,
         drv_suffix: str = "cam1:",
         hdf_suffix: str = "HDF1:",
         name: str = "",

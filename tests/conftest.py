@@ -231,7 +231,7 @@ def one_shot_trigger_info() -> TriggerInfo:
     return TriggerInfo(
         frame_timeout=None,
         number_of_triggers=1,
-        trigger=DetectorTrigger.internal,
+        trigger=DetectorTrigger.INTERNAL,
         deadtime=None,
         livetime=None,
     )
