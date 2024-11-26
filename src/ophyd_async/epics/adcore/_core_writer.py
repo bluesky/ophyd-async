@@ -121,7 +121,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         # Overwrite num_capture to go forever
         await self._fileio.num_capture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes
-        self._capture_status = await set_and_wait_for_value(self._fileio.capture, True)
+        self._capture_status = await set_and_wait_for_value(
+            self._fileio.capture, True, wait_for_set_completion=False
+        )
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
