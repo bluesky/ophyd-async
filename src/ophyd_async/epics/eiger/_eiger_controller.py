@@ -11,10 +11,10 @@ from ophyd_async.core import (
 from ._eiger_io import EigerDriverIO, EigerTriggerMode
 
 EIGER_TRIGGER_MODE_MAP = {
-    DetectorTrigger.internal: EigerTriggerMode.internal,
-    DetectorTrigger.constant_gate: EigerTriggerMode.gate,
-    DetectorTrigger.variable_gate: EigerTriggerMode.gate,
-    DetectorTrigger.edge_trigger: EigerTriggerMode.edge,
+    DetectorTrigger.INTERNAL: EigerTriggerMode.INTERNAL,
+    DetectorTrigger.CONSTANT_GATE: EigerTriggerMode.GATE,
+    DetectorTrigger.VARIABLE_GATE: EigerTriggerMode.GATE,
+    DetectorTrigger.EDGE_TRIGGER: EigerTriggerMode.EDGE,
 }
 
 

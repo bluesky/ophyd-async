@@ -95,7 +95,7 @@ async def test_save_device_all_types(
     await device_all_types.my_int.set(1)
     await device_all_types.my_float.set(1.234)
     await device_all_types.my_str.set("test_string")
-    await device_all_types.enum.set(ExampleEnum.b)
+    await device_all_types.enum.set(ExampleEnum.B)
     await device_all_types.enum2.set("Bbb")
     for pv, dtype in {
         device_all_types.int8a: np.int8,
@@ -141,7 +141,7 @@ async def test_save_device_all_types(
             int=np.array([1, 8, -9, 32], np.int32),
             float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
             str=["Hello", "World", "Foo", "Bar"],
-            enum=[ExampleEnum.a, ExampleEnum.b, ExampleEnum.a, ExampleEnum.c],
+            enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
         )
     )
 

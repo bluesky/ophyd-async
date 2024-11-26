@@ -15,18 +15,18 @@ from ophyd_async.epics.core._p4p import (
 
 
 class AB(SubsetEnum):
-    a = "A"
-    b = "B"
+    A = "A"
+    B = "B"
 
 
 class AB1(SubsetEnum):
-    a = "A1"
-    b = "B1"
+    A = "A1"
+    B = "B1"
 
 
 class AB2(SubsetEnum):
-    a = "A2"
-    b = "B2"
+    A = "A2"
+    B = "B2"
 
 
 async def test_ca_runtime_enum_converter():

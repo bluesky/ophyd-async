@@ -4,44 +4,44 @@ from ophyd_async.epics.core import epics_signal_rw_rbv
 
 
 class VimbaPixelFormat(StrictEnum):
-    internal = "Mono8"
-    ext_enable = "Mono12"
-    ext_trigger = "Ext. Trigger"
-    mult_trigger = "Mult. Trigger"
-    alignment = "Alignment"
+    INTERNAL = "Mono8"
+    EXT_ENABLE = "Mono12"
+    EXT_TRIGGER = "Ext. Trigger"
+    MULT_TRIGGER = "Mult. Trigger"
+    ALIGNMENT = "Alignment"
 
 
 class VimbaConvertFormat(StrictEnum):
-    none = "None"
-    mono8 = "Mono8"
-    mono16 = "Mono16"
-    rgb8 = "RGB8"
-    rgb16 = "RGB16"
+    NONE = "None"
+    MONO8 = "Mono8"
+    MONO16 = "Mono16"
+    RGB8 = "RGB8"
+    RGB16 = "RGB16"
 
 
 class VimbaTriggerSource(StrictEnum):
-    freerun = "Freerun"
-    line1 = "Line1"
-    line2 = "Line2"
-    fixed_rate = "FixedRate"
-    software = "Software"
-    action0 = "Action0"
-    action1 = "Action1"
+    FREERUN = "Freerun"
+    LINE1 = "Line1"
+    LINE2 = "Line2"
+    FIXED_RATE = "FixedRate"
+    SOFTWARE = "Software"
+    ACTION0 = "Action0"
+    ACTION1 = "Action1"
 
 
 class VimbaOverlap(StrictEnum):
-    off = "Off"
-    prev_frame = "PreviousFrame"
+    OFF = "Off"
+    PREV_FRAME = "PreviousFrame"
 
 
 class VimbaOnOff(StrictEnum):
-    on = "On"
-    off = "Off"
+    ON = "On"
+    OFF = "Off"
 
 
 class VimbaExposeOutMode(StrictEnum):
-    timed = "Timed"  # Use ExposureTime PV
-    trigger_width = "TriggerWidth"  # Expose for length of high signal
+    TIMED = "Timed"  # Use ExposureTime PV
+    TRIGGER_WIDTH = "TriggerWidth"  # Expose for length of high signal
 
 
 class VimbaDriverIO(adcore.ADBaseIO):

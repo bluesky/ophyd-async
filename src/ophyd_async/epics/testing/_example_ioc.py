@@ -23,9 +23,9 @@ PVA_RECORDS = str(Path(__file__).parent / "test_records_pva.db")
 
 
 class ExampleEnum(StrictEnum):
-    a = "Aaa"
-    b = "Bbb"
-    c = "Ccc"
+    A = "Aaa"
+    B = "Bbb"
+    C = "Ccc"
 
 
 class ExampleTable(Table):

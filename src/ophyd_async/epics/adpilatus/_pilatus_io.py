@@ -4,11 +4,11 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw_rbv
 
 
 class PilatusTriggerMode(StrictEnum):
-    internal = "Internal"
-    ext_enable = "Ext. Enable"
-    ext_trigger = "Ext. Trigger"
-    mult_trigger = "Mult. Trigger"
-    alignment = "Alignment"
+    INTERNAL = "Internal"
+    EXT_ENABLE = "Ext. Enable"
+    EXT_TRIGGER = "Ext. Trigger"
+    MULT_TRIGGER = "Mult. Trigger"
+    ALIGNMENT = "Alignment"
 
 
 class PilatusDriverIO(adcore.ADBaseIO):

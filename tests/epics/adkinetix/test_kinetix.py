@@ -23,7 +23,7 @@ async def test_get_deadtime(
 
 async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
     set_mock_value(
-        test_adkinetix.drv.trigger_mode, adkinetix.KinetixTriggerMode.internal
+        test_adkinetix.drv.trigger_mode, adkinetix.KinetixTriggerMode.INTERNAL
     )
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
@@ -38,16 +38,16 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
     # Default TriggerSource
     assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Internal"
 
-    await setup_trigger_mode(DetectorTrigger.edge_trigger)
+    await setup_trigger_mode(DetectorTrigger.EDGE_TRIGGER)
     assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Rising Edge"
 
-    await setup_trigger_mode(DetectorTrigger.constant_gate)
+    await setup_trigger_mode(DetectorTrigger.CONSTANT_GATE)
     assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
 
-    await setup_trigger_mode(DetectorTrigger.internal)
+    await setup_trigger_mode(DetectorTrigger.INTERNAL)
     assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Internal"
 
-    await setup_trigger_mode(DetectorTrigger.variable_gate)
+    await setup_trigger_mode(DetectorTrigger.VARIABLE_GATE)
     assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
 
 

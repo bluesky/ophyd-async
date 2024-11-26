@@ -26,14 +26,14 @@ class SimController(DetectorController):
 
     async def prepare(self, trigger_info: TriggerInfo):
         assert (
-            trigger_info.trigger == DetectorTrigger.internal
+            trigger_info.trigger == DetectorTrigger.INTERNAL
         ), "fly scanning (i.e. external triggering) is not supported for this device"
         self.frame_timeout = (
             DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
         await asyncio.gather(
             self.driver.num_images.set(trigger_info.total_number_of_triggers),
-            self.driver.image_mode.set(adcore.ImageMode.multiple),
+            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
         )
 
     async def arm(self):

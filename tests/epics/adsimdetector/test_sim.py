@@ -78,7 +78,7 @@ async def test_two_detectors_fly_different_rate(
 ):
     trigger_info = TriggerInfo(
         number_of_triggers=15,
-        trigger=DetectorTrigger.internal,
+        trigger=DetectorTrigger.INTERNAL,
     )
     docs = defaultdict(list)
 
@@ -166,13 +166,13 @@ async def test_two_detectors_step(
 
         drv = controller_a.driver
         assert False is (yield from bps.rd(drv.acquire))
-        assert adcore.ImageMode.multiple == (yield from bps.rd(drv.image_mode))
+        assert adcore.ImageMode.MULTIPLE == (yield from bps.rd(drv.image_mode))
 
         hdfb = writer_b.hdf
         assert True is (yield from bps.rd(hdfb.lazy_open))
         assert True is (yield from bps.rd(hdfb.swmr_mode))
         assert 0 == (yield from bps.rd(hdfb.num_capture))
-        assert adcore.FileWriteMode.stream == (yield from bps.rd(hdfb.file_write_mode))
+        assert adcore.FileWriteMode.STREAM == (yield from bps.rd(hdfb.file_write_mode))
 
         assert (yield from bps.rd(writer_a.hdf.file_path)) == str(info_a.directory_path)
         file_name_a = yield from bps.rd(writer_a.hdf.file_name)
@@ -364,14 +364,14 @@ async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
     ad = test_adsimdetector._controller
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         await ad.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.internal)
+            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.INTERNAL)
         )
         await ad.arm()
         await ad.wait_for_idle()
 
     driver = ad.driver
     assert await driver.num_images.get_value() == 1
-    assert await driver.image_mode.get_value() == adcore.ImageMode.multiple
+    assert await driver.image_mode.get_value() == adcore.ImageMode.MULTIPLE
     assert await driver.acquire.get_value() is True
 
     await ad.disarm()
