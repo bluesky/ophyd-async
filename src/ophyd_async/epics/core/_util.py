@@ -12,7 +12,7 @@ from ophyd_async.core import (
 )
 
 
-def get_pv_basename_and_field(pv: str) -> tuple[str | None]:
+def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
     """Simple utility function for extracting base pv name without field"""
 
     if "." in pv:
