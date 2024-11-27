@@ -32,10 +32,11 @@ def _get_signal_details(entry: Entry) -> tuple[type[Signal], str, str]:
 
 
 class PviDeviceConnector(DeviceConnector):
-    def __init__(self, prefix: str = "") -> None:
+    def __init__(self, prefix: str = "", error_hint: str = "") -> None:
         # TODO: what happens if we get a leading "pva://" here?
         self.prefix = prefix
         self.pvi_pv = prefix + "PVI"
+        self.error_hint = error_hint
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
@@ -85,7 +86,8 @@ class PviDeviceConnector(DeviceConnector):
                     if e:
                         self._fill_child(name, e, i)
         # Check that all the requested children have been filled
-        self.filler.check_filled(f"{self.pvi_pv}: {entries}")
+        suffix = f"\n{self.error_hint}" if self.error_hint else ""
+        self.filler.check_filled(f"{self.pvi_pv}: {entries}{suffix}")
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_real(device, timeout, force_reconnect)
