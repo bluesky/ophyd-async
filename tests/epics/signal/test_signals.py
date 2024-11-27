@@ -252,6 +252,10 @@ def datakey(protocol: str, suffix: str, value=None) -> DataKey:
 
     d.update(_metadata[protocol].get(get_internal_dtype(suffix), {}))
 
+    # For CA, waveform longstrings include units, limits fields
+    if suffix == "longstr" and protocol == "ca":
+        d.update({"units": ANY, "limits": ANY})
+
     return d  # type: ignore
 
 
@@ -345,9 +349,12 @@ async def assert_backend_get_put_monitor(
             ["five", "six", "seven"],
             ["nine", "ten"],
         ),
-        # Can't do long strings until https://github.com/epics-base/pva2pva/issues/17
-        # (str, "longstr", ls1, ls2),
-        # (str, "longstr2.VAL$", ls1, ls2),
+        (
+            str,
+            "longstr",
+            ls1,
+            ls2,
+        ),
     ],
 )
 async def test_backend_get_put_monitor(
