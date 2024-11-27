@@ -88,6 +88,10 @@ async def test_enum_yaml_formatting(tmp_path):
     assert saved_enums == enums
 
 
+# Long string more than 40 chars
+ls1 = "/here/is/a/long/string/of/more/than/40/chars"
+
+
 async def test_save_device_all_types(
     RE: RunEngine, device_all_types: ExamplePvaDevice, tmp_path
 ):
@@ -95,6 +99,7 @@ async def test_save_device_all_types(
     await device_all_types.my_int.set(1)
     await device_all_types.my_float.set(1.234)
     await device_all_types.my_str.set("test_string")
+    await device_all_types.longstr.set(ls1)
     await device_all_types.enum.set(ExampleEnum.B)
     await device_all_types.enum2.set("Bbb")
     for pv, dtype in {
