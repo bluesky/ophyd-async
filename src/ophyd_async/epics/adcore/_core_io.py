@@ -16,7 +16,7 @@ class Callback(StrictEnum):
 class NDArrayBaseIO(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.unique_id = epics_signal_r(int, prefix + "UniqueId_RBV")
-        self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile.VAL")
+        self.nd_attributes_file = epics_signal_rw(str, prefix + "NDAttributesFile")
         self.acquire = epics_signal_rw_rbv(bool, prefix + "Acquire")
         self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
         self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
@@ -115,10 +115,10 @@ class NDFileHDFIO(NDPluginBaseIO):
         self.position_mode = epics_signal_rw_rbv(bool, prefix + "PositionMode")
         self.compression = epics_signal_rw_rbv(Compression, prefix + "Compression")
         self.num_extra_dims = epics_signal_rw_rbv(int, prefix + "NumExtraDims")
-        self.file_path = epics_signal_rw_rbv(str, prefix + "FilePath.VAL")
-        self.file_name = epics_signal_rw_rbv(str, prefix + "FileName.VAL")
+        self.file_path = epics_signal_rw_rbv(str, prefix + "FilePath")
+        self.file_name = epics_signal_rw_rbv(str, prefix + "FileName")
         self.file_path_exists = epics_signal_r(bool, prefix + "FilePathExists_RBV")
-        self.file_template = epics_signal_rw_rbv(str, prefix + "FileTemplate.VAL")
+        self.file_template = epics_signal_rw_rbv(str, prefix + "FileTemplate")
         self.full_file_name = epics_signal_r(str, prefix + "FullFileName_RBV")
         self.file_write_mode = epics_signal_rw_rbv(
             FileWriteMode, prefix + "FileWriteMode"
@@ -129,7 +129,7 @@ class NDFileHDFIO(NDPluginBaseIO):
         self.lazy_open = epics_signal_rw_rbv(bool, prefix + "LazyOpen")
         self.capture = epics_signal_rw_rbv(bool, prefix + "Capture")
         self.flush_now = epics_signal_rw(bool, prefix + "FlushNow")
-        self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName.VAL")
+        self.xml_file_name = epics_signal_rw_rbv(str, prefix + "XMLFileName")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1")
         self.create_directory = epics_signal_rw(int, prefix + "CreateDirectory")

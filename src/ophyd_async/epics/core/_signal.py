@@ -14,7 +14,7 @@ from ophyd_async.core import (
     get_unique,
 )
 
-from ._util import EpicsSignalBackend
+from ._util import EpicsSignalBackend, get_pv_basename_and_field
 
 
 class EpicsProtocol(Enum):
@@ -125,12 +125,13 @@ def epics_signal_rw_rbv(
         Append this suffix to the write pv to create the readback pv
     """
 
-    # Handle case where we have a PV w/ a field
-    if "." in write_pv:
-        base_pv, field = tuple(write_pv.split('.', 1))
-        return epics_signal_rw(datatype, f"{base_pv}{read_suffix}.{field}", write_pv, name)
+    base_pv, field = get_pv_basename_and_field(write_pv)
+    if field is not None:
+        read_pv = f"{base_pv}{read_suffix}.{field}"
     else:
-        return epics_signal_rw(datatype, f"{write_pv}{read_suffix}", write_pv, name)
+        read_pv = f"{write_pv}{read_suffix}"
+
+    return epics_signal_rw(datatype, read_pv, write_pv, name)
 
 
 def epics_signal_r(

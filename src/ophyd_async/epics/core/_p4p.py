@@ -94,6 +94,21 @@ class PvaConverter(Generic[SignalDatatypeT]):
         return value
 
 
+class PvaLongStringConverter(PvaConverter[str]):
+    def __init__(self):
+        super().__init__(str)
+
+    def value(self, value: Any) -> SignalDatatypeT:
+        # for channel access ca_xxx classes, this
+        # invokes __pos__ operator to return an instance of
+        # the builtin base class
+        return "".join([chr(char) for char in value["value"][:-1]])
+
+    def write_value(self, value: Any) -> Any:
+        # The pva library will do the conversion for us
+        return [ord(char) for char in value] + [0]
+
+
 class DisconnectedPvaConverter(PvaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
@@ -252,6 +267,8 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
     elif datatype in (None, inferred_datatype):
         # If datatype matches what we are given then allow it and use inferred converter
         return converter_cls(inferred_datatype)
+    elif datatype is str and format_datatype(inferred_datatype) == "Array1D[np.int8]":
+        return PvaLongStringConverter()
     raise TypeError(
         f"{pv} with inferred datatype {format_datatype(inferred_datatype)}"
         f" from {typeid=} {specifier=}"
