@@ -185,6 +185,7 @@ async def test_blocks_during_put(mock_signals):
     with mock_puts_blocked(signal1, signal2):
         status1 = signal1.set("second_value", wait=True, timeout=None)
         status2 = signal2.set("second_value", wait=True, timeout=None)
+        await asyncio.sleep(0.1)
         assert await signal1.get_value() == "second_value"
         assert await signal2.get_value() == "second_value"
         assert not status1.done

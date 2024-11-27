@@ -102,7 +102,8 @@ async def start_acquiring_driver_and_ensure_status(
         state = await driver.detector_state.get_value()
         if state not in good_states:
             raise ValueError(
-                f"Final detector state {state} not in valid end states: {good_states}"
+                f"Final detector state {state.value} not in valid end "
+                f"states: {good_states}"
             )
 
     return AsyncStatus(complete_acquisition())
