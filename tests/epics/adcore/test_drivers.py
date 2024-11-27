@@ -90,10 +90,12 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
         await asyncio.sleep(0)
         set_mock_value(driver.detector_state, adcore.DetectorState.DISCONNECTED)
 
+    await wait_then_fail()
+
     acquiring = await adcore.start_acquiring_driver_and_ensure_status(
         driver, timeout=0.1
     )
-    await wait_then_fail()
-
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Final detector state DetectorState.DISCONNECTED"
+    ):
         await acquiring

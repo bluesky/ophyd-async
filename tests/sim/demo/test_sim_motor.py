@@ -1,6 +1,7 @@
 import asyncio
 import time
 
+import pytest
 from bluesky.plans import spiral_square
 from bluesky.run_engine import RunEngine
 
@@ -49,6 +50,7 @@ async def test_stop():
     new_pos = await m1.user_readback.get_value()
     assert new_pos < 10
     assert new_pos >= 0.1
-    # move should not be successful as we stopped it
-    assert move_status.done
+
     assert not move_status.success
+    with pytest.raises(RuntimeError, match="Motor was stopped"):
+        await move_status
