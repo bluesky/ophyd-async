@@ -99,13 +99,14 @@ class PvaLongStringConverter(PvaConverter[str]):
         super().__init__(str)
 
     def value(self, value: Any) -> SignalDatatypeT:
-        # for channel access ca_xxx classes, this
-        # invokes __pos__ operator to return an instance of
-        # the builtin base class
+        # Value here is a null terminated array of ascii codes.
+        # We strip out the null terminator, and convert each code
+        # to the corresponding char, joining into a string
         return "".join([chr(char) for char in value["value"][:-1]])
 
     def write_value(self, value: Any) -> Any:
-        # The pva library will do the conversion for us
+        # Inverse of reading - convert each character into it's ascii code,
+        # put into a list, and add null terminator.
         return [ord(char) for char in value] + [0]
 
 
