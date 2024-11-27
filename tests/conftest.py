@@ -113,20 +113,21 @@ def fail_test_on_unclosed_tasks(request: FixtureRequest):
     by the end of the test.
     """
 
-    fail_count = request.session.testsfailed
     try:
+        fail_count = request.session.testsfailed
         loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
 
-    asyncio.set_event_loop(loop)
-    loop.set_debug(True)
+        asyncio.set_event_loop(loop)
+        loop.set_debug(True)
 
-    request.addfinalizer(
-        lambda: _error_and_kill_pending_tasks(
-            loop, request.node.name, request.session.testsfailed == fail_count
+        request.addfinalizer(
+            lambda: _error_and_kill_pending_tasks(
+                loop, request.node.name, request.session.testsfailed == fail_count
+            )
         )
-    )
+    except RuntimeError as error:
+        if str(error) != "no running event loop":
+            raise error
 
 
 @pytest.fixture(scope="function")
