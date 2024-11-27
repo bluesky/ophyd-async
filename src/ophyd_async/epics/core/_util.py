@@ -16,7 +16,7 @@ def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
     """Simple utility function for extracting base pv name without field"""
 
     if "." in pv:
-        return tuple(pv.split(".", -1))
+        return (pv.split(".", -1)[0], pv.split(".", -1)[1])
     else:
         return (pv, None)
 

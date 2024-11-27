@@ -98,7 +98,7 @@ class PvaLongStringConverter(PvaConverter[str]):
     def __init__(self):
         super().__init__(str)
 
-    def value(self, value: Any) -> SignalDatatypeT:
+    def value(self, value: Any) -> Any:
         # Value here is a null terminated array of ascii codes.
         # We strip out the null terminator, and convert each code
         # to the corresponding char, joining into a string
