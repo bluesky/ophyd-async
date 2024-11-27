@@ -99,8 +99,12 @@ addopts = """
     --doctest-glob="*.rst" --doctest-glob="*.md"
     --ignore=docs/examples --ignore=src/ophyd_async/epics/signal.py
     """
-# https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
-filterwarnings = "error"
+# "error" for https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
+# "tango" for https://github.com/bluesky/ophyd-async/issues/681
+filterwarnings = """
+error
+ignore::DeprecationWarning:tango.asyncio_executor:  
+"""
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
 log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
