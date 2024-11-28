@@ -21,7 +21,6 @@ from ophyd_async.core import (
     Array1D,
     NotConnected,
     SignalBackend,
-    SignalR,
     StrictEnum,
     SubsetEnum,
     T,
@@ -38,7 +37,9 @@ from ophyd_async.epics.core import (
     epics_signal_w,
     epics_signal_x,
 )
-from ophyd_async.epics.core._signal import _epics_signal_backend  # noqa: PLC2701
+from ophyd_async.epics.core._signal import (
+    _epics_signal_backend,  # noqa: PLC2701
+)
 from ophyd_async.epics.testing import (
     ExampleCaDevice,
     ExampleEnum,
@@ -936,19 +937,24 @@ def test_signal_module_emits_deprecation_warning():
         import ophyd_async.epics.signal  # noqa: F401
 
 
-async def test_observe_ticking_signal_with_busy_loop(ioc: TestingIOC):
-    sig = SignalR(await ioc.make_backend(int, "ticking"))
+@PARAMETERISE_PROTOCOLS
+async def test_observe_ticking_signal_with_busy_loop(ioc, protocol):
+    sig = epics_signal_rw(int, f"{protocol}://{get_prefix(ioc, protocol)}ticking")
+    sig.set_name("hello")
+    await sig.connect()
+
     recv = []
 
     async def watch():
-        async for val in observe_value(sig):
-            time.sleep(0.3)
+        async for val in observe_value(sig, except_after_time=0.35):
+            time.sleep(0.15)
             recv.append(val)
 
     start = time.time()
+
     with pytest.raises(asyncio.TimeoutError):
-        await asyncio.wait_for(watch(), timeout=0.4)
-    assert time.time() - start == pytest.approx(0.6, abs=0.1)
+        await watch()
+    assert time.time() - start == pytest.approx(0.35, abs=0.15)
     assert len(recv) == 2
     # Don't check values as CA and PVA have different algorithms for
     # dropping updates for slow callbacks
