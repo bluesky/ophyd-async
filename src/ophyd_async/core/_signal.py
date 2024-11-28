@@ -92,6 +92,10 @@ class Signal(Device, Generic[SignalDatatypeT]):
         self._timeout = timeout
 
     @property
+    def datatype(self) -> type[SignalRW] | None:
+        return self._connector.backend.datatype
+
+    @property
     def source(self) -> str:
         """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
         return self._connector.backend.source(self.name, read=True)
