@@ -1,10 +1,11 @@
-from collections.abc import Awaitable
-
-import bluesky.plan_stubs as bps
+from bluesky.utils import plan
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, LazyMock, wait_for_connection
 
+from ._wait_for_one import wait_for_one
 
+
+@plan
 def ensure_connected(
     *devices: Device,
     mock: bool | LazyMock = False,
@@ -17,17 +18,10 @@ def ensure_connected(
     }
     if non_unique:
         raise ValueError(f"Devices do not have unique names {non_unique}")
-
-    def connect_devices() -> Awaitable[None]:
-        coros = {
-            device.name: device.connect(
-                mock=mock, timeout=timeout, force_reconnect=force_reconnect
-            )
-            for device in devices
-        }
-        return wait_for_connection(**coros)
-
-    (connect_task,) = yield from bps.wait_for([connect_devices])
-
-    if connect_task and connect_task.exception() is not None:
-        raise connect_task.exception()
+    coros = {
+        device.name: device.connect(
+            mock=mock, timeout=timeout, force_reconnect=force_reconnect
+        )
+        for device in devices
+    }
+    yield from wait_for_one(wait_for_connection(**coros))
