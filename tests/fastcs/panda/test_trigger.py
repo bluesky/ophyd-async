@@ -116,7 +116,7 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
         SeqTrigger.IMMEDIATE,
         SeqTrigger.BITA_0,
     ]
-    assert (out.position == [0, 0, 50, 0, 0, 0, 250, 0, 0, 0, 50, 0, 0]).all()
+    assert (out.position == [0, 0, 25, 0, 0, 0, 275, 0, 0, 0, 25, 0, 0]).all()
     assert (out.time1 == [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000, 0]).all()
     assert (out.time2 == [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000, 0]).all()
 

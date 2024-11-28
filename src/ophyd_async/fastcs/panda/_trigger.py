@@ -66,7 +66,7 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
         self.name = name
 
     async def prepare(self, value: ScanSpecInfo):
-        await self.seq.enable.set(BitMux.zero)
+        await self.seq.enable.set(PandaBitMux.ZERO)
         path = Path(value.spec.calculate())
         chunk = path.consume()
         gaps = self._calculate_gaps(chunk)
@@ -98,7 +98,7 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
             rows += SeqTable.row(
                 trigger=trig,
                 position=int(
-                    chunk.midpoints[fast_axis][start]
+                    chunk.lower[fast_axis][start]
                     / await fast_axis.encoder_res.get_value()
                 ),
             )
@@ -121,20 +121,20 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
             start = gap
         await asyncio.gather(
             self.seq.prescale.set(1.0),
-            self.seq.prescale_units.set(TimeUnits.us),
+            self.seq.prescale_units.set(PandaTimeUnits.US),
             self.seq.repeats.set(1),
             self.seq.table.set(rows),
         )
 
     async def kickoff(self) -> None:
-        await self.seq.enable.set(BitMux.one)
+        await self.seq.enable.set(PandaBitMux.ONE)
         await wait_for_value(self.seq.active, True, timeout=1)
 
     async def complete(self) -> None:
         await wait_for_value(self.seq.active, False, timeout=None)
 
     async def stop(self):
-        await self.seq.enable.set(BitMux.zero)
+        await self.seq.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
 
     def _calculate_gaps(self, chunk: Frames[motor.Motor]):
