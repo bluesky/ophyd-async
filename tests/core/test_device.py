@@ -115,12 +115,15 @@ async def test_children_of_device_have_set_names_and_get_connected(
 async def test_children_of_device_with_different_separator(
     parent: DummyDeviceGroup,
 ):
-    parent.set_name("parent", separator="_")
-    assert parent.name == "parent"
-    assert parent.child1.name == "parent_child1"
-    assert parent._child2.name == "parent__child2"
-    assert parent.dict_with_children.name == "parent_dict_with_children"
-    assert parent.dict_with_children[123].name == "parent_dict_with_children_123"
+    for separator in ("_", None):
+        # The second time round, check that it doesn't change name if
+        # we pass None, as this is what PviConnector does
+        parent.set_name("parent", child_name_separator=separator)
+        assert parent.name == "parent"
+        assert parent.child1.name == "parent_child1"
+        assert parent._child2.name == "parent__child2"
+        assert parent.dict_with_children.name == "parent_dict_with_children"
+        assert parent.dict_with_children[123].name == "parent_dict_with_children_123"
 
 
 async def test_device_with_device_collector():
