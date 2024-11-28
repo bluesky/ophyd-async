@@ -11,10 +11,10 @@ from ophyd_async.epics import adcore
 from ._kinetix_io import KinetixDriverIO, KinetixTriggerMode
 
 KINETIX_TRIGGER_MODE_MAP = {
-    DetectorTrigger.internal: KinetixTriggerMode.internal,
-    DetectorTrigger.constant_gate: KinetixTriggerMode.gate,
-    DetectorTrigger.variable_gate: KinetixTriggerMode.gate,
-    DetectorTrigger.edge_trigger: KinetixTriggerMode.edge,
+    DetectorTrigger.INTERNAL: KinetixTriggerMode.INTERNAL,
+    DetectorTrigger.CONSTANT_GATE: KinetixTriggerMode.GATE,
+    DetectorTrigger.VARIABLE_GATE: KinetixTriggerMode.GATE,
+    DetectorTrigger.EDGE_TRIGGER: KinetixTriggerMode.EDGE,
 }
 
 
@@ -33,11 +33,11 @@ class KinetixController(DetectorController):
         await asyncio.gather(
             self._drv.trigger_mode.set(KINETIX_TRIGGER_MODE_MAP[trigger_info.trigger]),
             self._drv.num_images.set(trigger_info.total_number_of_triggers),
-            self._drv.image_mode.set(adcore.ImageMode.multiple),
+            self._drv.image_mode.set(adcore.ImageMode.MULTIPLE),
         )
         if trigger_info.livetime is not None and trigger_info.trigger not in [
-            DetectorTrigger.variable_gate,
-            DetectorTrigger.constant_gate,
+            DetectorTrigger.VARIABLE_GATE,
+            DetectorTrigger.CONSTANT_GATE,
         ]:
             await self._drv.acquire_time.set(trigger_info.livetime)
 

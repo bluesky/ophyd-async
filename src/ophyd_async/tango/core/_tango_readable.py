@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from ophyd_async.core import (
-    StandardReadable,
-)
-from ophyd_async.tango.base_devices._base_device import TangoDevice
+from ophyd_async.core import StandardReadable
 from tango import DeviceProxy
+
+from ._base_device import TangoDevice
 
 
 class TangoReadable(TangoDevice, StandardReadable):

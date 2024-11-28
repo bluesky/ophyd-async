@@ -56,7 +56,9 @@ async def panda_t():
 
     class Panda(CommonPandaBlocksNoData):
         def __init__(self, uri: str, name: str = ""):
-            super().__init__(name=name, connector=fastcs_connector(self, uri))
+            super().__init__(
+                name=name, connector=fastcs_connector(self, uri, "Is it ok?")
+            )
 
     yield Panda
 
@@ -124,7 +126,7 @@ async def test_panda_with_missing_blocks(panda_pva, panda_t):
         match=re.escape(
             "mypanda: cannot provision ['pcap'] from PANDAQSRVI:PVI: "
             "{'pulse': [None, {'d': 'PANDAQSRVI:PULSE1:PVI'}],"
-            " 'seq': [None, {'d': 'PANDAQSRVI:SEQ1:PVI'}]}"
+            " 'seq': [None, {'d': 'PANDAQSRVI:SEQ1:PVI'}]}\nIs it ok?"
         ),
     ):
         await panda.connect()

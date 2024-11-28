@@ -67,7 +67,7 @@ class ADHDFWriter(DetectorWriter):
             self.hdf.file_path.set(str(info.directory_path)),
             self.hdf.file_name.set(info.filename),
             self.hdf.file_template.set("%s/%s.h5"),
-            self.hdf.file_write_mode.set(FileWriteMode.stream),
+            self.hdf.file_write_mode.set(FileWriteMode.STREAM),
             # Never use custom xml layout file but use the one defined
             # in the source code file NDFileHDF5LayoutXML.cpp
             self.hdf.xml_file_name.set(""),

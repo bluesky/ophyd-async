@@ -15,9 +15,9 @@ class EnergyMode(StrictEnum):
     """Energy mode for `Sensor`"""
 
     #: Low energy mode
-    low = "Low Energy"
+    LOW = "Low Energy"
     #: High energy mode
-    high = "High Energy"
+    HIGH = "High Energy"
 
 
 class Sensor(StandardReadable, EpicsDevice):

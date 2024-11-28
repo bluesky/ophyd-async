@@ -1,3 +1,4 @@
+from ._base_device import TangoDevice, TangoPolling
 from ._signal import (
     infer_python_type,
     infer_signal_type,
@@ -7,6 +8,7 @@ from ._signal import (
     tango_signal_w,
     tango_signal_x,
 )
+from ._tango_readable import TangoReadable
 from ._tango_transport import (
     AttributeProxy,
     CommandProxy,
@@ -18,7 +20,7 @@ from ._tango_transport import (
     get_trl_descriptor,
 )
 
-__all__ = (
+__all__ = [
     "AttributeProxy",
     "CommandProxy",
     "ensure_proper_executor",
@@ -34,4 +36,7 @@ __all__ = (
     "tango_signal_rw",
     "tango_signal_w",
     "tango_signal_x",
-)
+    "TangoDevice",
+    "TangoReadable",
+    "TangoPolling",
+]

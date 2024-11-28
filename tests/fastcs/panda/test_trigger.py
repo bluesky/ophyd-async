@@ -57,7 +57,7 @@ async def test_pcomp_trigger_logic(mock_panda):
         pulse_width=1,
         rising_edge_step=1,
         number_of_pulses=5,
-        direction=PcompDirection.positive,
+        direction=PcompDirection.POSITIVE,
     )
 
     async def set_active(value: bool):
@@ -145,7 +145,7 @@ def test_malformed_trigger_in_seq_table():
         full_seq_table(["A"])
     assert (
         "Input should be 'Immediate', 'BITA=0', 'BITA=1', 'BITB=0', 'BITB=1', "
-        "'BITC...' [type=enum, input_value='A', input_type=str]"
+        "'BITC... [type=enum, input_value='A', input_type=str]"
     ) in str(exc)
 
     # Pydantic is able to infer type from these

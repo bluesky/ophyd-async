@@ -27,11 +27,11 @@ from ophyd_async.fastcs.panda import (
 TABLES = [
     DatasetTable(
         name=[],
-        hdf5_type=[],
+        dtype=[],
     ),
     DatasetTable(
         name=["x"],
-        hdf5_type=[PandaHdf5DatasetType.UINT_32],
+        dtype=[PandaHdf5DatasetType.UINT_32],
     ),
     DatasetTable(
         name=[
@@ -40,7 +40,7 @@ TABLES = [
             "y_min",
             "y_max",
         ],
-        hdf5_type=[
+        dtype=[
             PandaHdf5DatasetType.UINT_32,
             PandaHdf5DatasetType.FLOAT_64,
             PandaHdf5DatasetType.FLOAT_64,
@@ -82,7 +82,7 @@ async def mock_panda(panda_t):
         mock_panda.data.datasets,
         DatasetTable(
             name=[],
-            hdf5_type=[],
+            dtype=[],
         ),
     )
 

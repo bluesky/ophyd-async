@@ -197,6 +197,14 @@ async def test_error_handling_device_collector_mock():
     assert str(expected_output) == str(e.value)
 
 
+def test_introspecting_sub_errors():
+    sub_error1 = NotConnected("bad")
+    assert sub_error1.sub_errors == {}
+    sub_error2 = ValueError("very bad")
+    error = NotConnected({"child1": sub_error1, "child2": sub_error2})
+    assert error.sub_errors == {"child1": sub_error1, "child2": sub_error2}
+
+
 async def test_error_handling_device_collector(caplog):
     caplog.set_level(10)
     with pytest.raises(NotConnected) as e:

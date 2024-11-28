@@ -3,7 +3,12 @@ import time
 
 import pytest
 
-from ophyd_async.core import AsyncStatus, observe_value, soft_signal_r_and_setter
+from ophyd_async.core import (
+    AsyncStatus,
+    observe_signals_value,
+    observe_value,
+    soft_signal_r_and_setter,
+)
 
 
 async def test_observe_value_working_correctly():
@@ -19,6 +24,28 @@ async def test_observe_value_working_correctly():
     async for val in observe_value(sig, done_status=status):
         recv.append(val)
     assert recv == [0, 1, 2]
+    await status
+
+
+async def test_observes_signals_values_working_correctly():
+    sig1, setter1 = soft_signal_r_and_setter(float)
+    sig2, setter2 = soft_signal_r_and_setter(float)
+
+    async def tick():
+        for i in range(2):
+            await asyncio.sleep(0.01)
+            setter1(i + 1)
+            setter2(i + 10)
+
+    recv1 = []
+    recv2 = []
+    status = AsyncStatus(tick())
+    async for signal, value in observe_signals_value(sig1, sig2, done_status=status):
+        if signal is sig1:
+            recv1.append(value)
+        elif signal is sig2:
+            recv2.append(value)
+    assert recv1 == [0, 1, 2] and recv2 == [0, 10, 11]
     await status
 
 

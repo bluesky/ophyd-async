@@ -42,6 +42,7 @@ dev = [
     "inflection",
     "ipython",
     "ipywidgets",
+    "import-linter",
     "matplotlib",
     "myst-parser",
     "numpydoc",
@@ -164,3 +165,53 @@ lint.preview = true # so that preview mode PLC2701 is enabled
 # See https://github.com/DiamondLightSource/python-copier-template/issues/154
 # Remove this line to forbid private member access in tests
 "tests/**/*" = ["SLF001"]
+
+
+[tool.importlinter]
+root_package = "ophyd_async"
+
+[[tool.importlinter.contracts]]
+name = "Core is independent"
+type = "independence"
+modules = "ophyd_async.core"
+
+[[tool.importlinter.contracts]]
+name = "Epics depends only on core"
+type = "forbidden"
+source_modules = "ophyd_async.epics"
+forbidden_modules = [
+    "ophyd_async.fastcs",
+    "ophyd_async.plan_stubs",
+    "ophyd_async.sim",
+    "ophyd_async.tango",
+]
+
+[[tool.importlinter.contracts]]
+name = "tango depends only on core"
+type = "forbidden"
+source_modules = "ophyd_async.tango"
+forbidden_modules = [
+    "ophyd_async.epics",
+    "ophyd_async.fastcs",
+    "ophyd_async.plan_stubs",
+    "ophyd_async.sim",
+]
+
+
+[[tool.importlinter.contracts]]
+name = "sim depends only on core"
+type = "forbidden"
+source_modules = "ophyd_async.sim"
+forbidden_modules = [
+    "ophyd_async.epics",
+    "ophyd_async.fastcs",
+    "ophyd_async.plan_stubs",
+    "ophyd_async.tango",
+]
+
+
+[[tool.importlinter.contracts]]
+name = "Fastcs depends only on core, epics, tango"
+type = "forbidden"
+source_modules = "ophyd_async.fastcs"
+forbidden_modules = ["ophyd_async.plan_stubs", "ophyd_async.sim"]

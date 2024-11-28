@@ -36,14 +36,14 @@ class PulseBlock(Device):
 
 
 class PcompDirection(StrictEnum):
-    positive = "Positive"
-    negative = "Negative"
-    either = "Either"
+    POSITIVE = "Positive"
+    NEGATIVE = "Negative"
+    EITHER = "Either"
 
 
 class BitMux(SubsetEnum):
-    zero = "ZERO"
-    one = "ONE"
+    ZERO = "ZERO"
+    ONE = "ONE"
 
 
 class PcompBlock(Device):
@@ -57,10 +57,10 @@ class PcompBlock(Device):
 
 
 class TimeUnits(StrictEnum):
-    min = "min"
-    s = "s"
-    ms = "ms"
-    us = "us"
+    MIN = "min"
+    S = "s"
+    MS = "ms"
+    US = "us"
 
 
 class SeqBlock(Device):
