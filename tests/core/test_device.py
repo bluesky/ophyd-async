@@ -102,7 +102,7 @@ async def test_children_of_device_have_set_names_and_get_connected(
 ):
     assert parent.name == "parent"
     assert parent.child1.name == "parent-child1"
-    assert parent._child2.name == "parent-child2"
+    assert parent._child2.name == "parent-_child2"
     assert parent.dict_with_children.name == "parent-dict_with_children"
     assert parent.dict_with_children[123].name == "parent-dict_with_children-123"
 
@@ -110,6 +110,20 @@ async def test_children_of_device_have_set_names_and_get_connected(
 
     assert parent.child1.connected
     assert parent.dict_with_children[123].connected
+
+
+async def test_children_of_device_with_different_separator(
+    parent: DummyDeviceGroup,
+):
+    for separator in ("_", None):
+        # The second time round, check that it doesn't change name if
+        # we pass None, as this is what PviConnector does
+        parent.set_name("parent", child_name_separator=separator)
+        assert parent.name == "parent"
+        assert parent.child1.name == "parent_child1"
+        assert parent._child2.name == "parent__child2"
+        assert parent.dict_with_children.name == "parent_dict_with_children"
+        assert parent.dict_with_children[123].name == "parent_dict_with_children_123"
 
 
 async def test_device_with_device_collector():
@@ -120,7 +134,7 @@ async def test_device_with_device_collector():
     assert parent.parent is None
     assert parent.child1.name == "parent-child1"
     assert parent.child1.parent == parent
-    assert parent._child2.name == "parent-child2"
+    assert parent._child2.name == "parent-_child2"
     assert parent._child2.parent == parent
     assert parent.dict_with_children.name == "parent-dict_with_children"
     assert parent.dict_with_children.parent == parent
