@@ -940,21 +940,20 @@ def test_signal_module_emits_deprecation_warning():
 @PARAMETERISE_PROTOCOLS
 async def test_observe_ticking_signal_with_busy_loop(ioc, protocol):
     sig = epics_signal_rw(int, f"{protocol}://{get_prefix(ioc, protocol)}ticking")
-    sig.set_name("hello")
     await sig.connect()
 
     recv = []
 
     async def watch():
-        async for val in observe_value(sig, except_after_time=0.35):
-            time.sleep(0.15)
+        async for val in observe_value(sig, except_after_time=0.4):
+            time.sleep(0.3)
             recv.append(val)
 
     start = time.time()
 
     with pytest.raises(asyncio.TimeoutError):
         await watch()
-    assert time.time() - start == pytest.approx(0.35, abs=0.15)
+    assert time.time() - start == pytest.approx(0.6, abs=0.1)
     assert len(recv) == 2
     # Don't check values as CA and PVA have different algorithms for
     # dropping updates for slow callbacks

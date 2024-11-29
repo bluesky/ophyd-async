@@ -467,6 +467,14 @@ async def observe_value(
         yield value
 
 
+def _get_iteration_timeout(
+    timeout: float | None, overall_deadline: float | None
+) -> float | None:
+    # Test this works if overall timeout <=0
+    overall_deadline = overall_deadline - time.monotonic() if overall_deadline else None
+    return min([x for x in [overall_deadline, timeout] if x is not None], default=None)
+
+
 async def observe_signals_value(
     *signals: SignalR[SignalDatatypeT],
     timeout: float | None = None,
@@ -504,12 +512,11 @@ async def observe_signals_value(
     q: asyncio.Queue[tuple[SignalR[SignalDatatypeT], SignalDatatypeT] | Status] = (
         asyncio.Queue()
     )
-    if timeout is None:
-        get_value = q.get
-    else:
 
-        async def get_value():
-            return await asyncio.wait_for(q.get(), timeout)
+    async def get_value(timeout: float | None = None):
+        if timeout is None:
+            return await q.get()
+        return await asyncio.wait_for(q.get(), timeout)
 
     cbs: dict[SignalR, Callback] = {}
     for signal in signals:
@@ -522,17 +529,19 @@ async def observe_signals_value(
 
     if done_status is not None:
         done_status.add_callback(q.put_nowait)
-    start_time = time.time()
+    overall_deadline = (
+        time.monotonic() + except_after_time if except_after_time else None
+    )
     try:
         while True:
-            if except_after_time and time.time() - start_time > except_after_time:
+            if overall_deadline and time.monotonic() >= overall_deadline:
                 raise asyncio.TimeoutError(
                     f"observe_value was still observing signals "
                     f"{[signal.source for signal in signals]} after "
                     f"timeout {except_after_time}s"
                 )
-            item = await asyncio.wait_for(q.get(), timeout)
-            item = await get_value()
+
+            item = await get_value(_get_iteration_timeout(timeout, overall_deadline))
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc

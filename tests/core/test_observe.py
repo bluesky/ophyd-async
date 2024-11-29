@@ -105,13 +105,13 @@ async def test_observe_value_times_out_with_no_external_task():
 
     recv = []
 
-    async def watch():
-        async for val in observe_value(sig):
+    async def watch(except_after_time):
+        async for val in observe_value(sig, except_after_time=except_after_time):
             recv.append(val)
             setter(val + 1)
 
     start = time.time()
     with pytest.raises(asyncio.TimeoutError):
-        await asyncio.wait_for(watch(), timeout=0.1)
+        await watch(except_after_time=0.1)
     assert recv
     assert time.time() - start == pytest.approx(0.1, abs=0.05)
