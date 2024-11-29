@@ -60,14 +60,14 @@ async def test_observe_value_times_out():
     recv = []
 
     async def watch():
-        async for val in observe_value(sig):
+        async for val in observe_value(sig, except_after_time=0.2):
             recv.append(val)
 
     t = asyncio.create_task(tick())
     start = time.time()
     try:
         with pytest.raises(asyncio.TimeoutError):
-            await asyncio.wait_for(watch(), timeout=0.2)
+            await watch()
         assert recv == [0, 1]
         assert time.time() - start == pytest.approx(0.2, abs=0.05)
     finally:
@@ -85,7 +85,7 @@ async def test_observe_value_times_out_with_busy_sleep():
     recv = []
 
     async def watch():
-        async for val in observe_value(sig):
+        async for val in observe_value(sig, except_after_time=0.2):
             time.sleep(0.15)
             recv.append(val)
 
@@ -93,7 +93,7 @@ async def test_observe_value_times_out_with_busy_sleep():
     start = time.time()
     try:
         with pytest.raises(asyncio.TimeoutError):
-            await asyncio.wait_for(watch(), timeout=0.2)
+            await watch()
         assert recv == [0, 1]
         assert time.time() - start == pytest.approx(0.3, abs=0.05)
     finally:
@@ -115,3 +115,16 @@ async def test_observe_value_times_out_with_no_external_task():
         await watch(except_after_time=0.1)
     assert recv
     assert time.time() - start == pytest.approx(0.1, abs=0.05)
+
+
+async def test_observe_value_uses_correct_timeout():
+    sig, _ = soft_signal_r_and_setter(float)
+
+    async def watch(timeout, except_after_time):
+        async for _ in observe_value(sig, timeout, except_after_time=except_after_time):
+            ...
+
+    start = time.time()
+    with pytest.raises(asyncio.TimeoutError):
+        await watch(timeout=0.3, except_after_time=0.15)
+    assert time.time() - start == pytest.approx(0.15, abs=0.05)

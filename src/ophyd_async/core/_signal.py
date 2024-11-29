@@ -442,7 +442,7 @@ async def observe_value(
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the iterator.
     except_after_time:
-        If given, the maximum time to watch a value in seconds. If the loop is still
+        If given, the maximum time to watch a signal, in seconds. If the loop is still
         being watched after this length, raise asyncio.TimeoutError. This should be used
         instead of on an 'asyncio.wait_for' timeout
 
@@ -470,7 +470,6 @@ async def observe_value(
 def _get_iteration_timeout(
     timeout: float | None, overall_deadline: float | None
 ) -> float | None:
-    # Test this works if overall timeout <=0
     overall_deadline = overall_deadline - time.monotonic() if overall_deadline else None
     return min([x for x in [overall_deadline, timeout] if x is not None], default=None)
 
@@ -495,7 +494,7 @@ async def observe_signals_value(
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the iterator.
     except_after_time:
-        If given, the maximum time to watch a value in seconds. If the loop is still
+        If given, the maximum time to watch a signal, in seconds. If the loop is still
         being watched after this length, raise asyncio.TimeoutError. This should be used
         instead of on an 'asyncio.wait_for' timeout
 
