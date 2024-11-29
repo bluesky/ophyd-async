@@ -157,6 +157,7 @@ lint.select = [
     "UP",      # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
     "SLF",     # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
     "PLC2701", # private import - https://docs.astral.sh/ruff/rules/import-private-name/
+    "LOG015",  # root logger call - https://docs.astral.sh/ruff/rules/root-logger-call/
 ]
 lint.preview = true # so that preview mode PLC2701 is enabled
 
