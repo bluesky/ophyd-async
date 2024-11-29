@@ -512,13 +512,6 @@ async def observe_signals_value(
         asyncio.Queue()
     )
 
-    if timeout is None:
-        get_value = q.get
-    else:
-
-        async def get_value():
-            return await asyncio.wait_for(q.get(), timeout)
-
     cbs: dict[SignalR, Callback] = {}
     for signal in signals:
 
