@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import pytest
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -19,7 +19,7 @@ from ophyd_async.core import (
     TriggerInfo,
     set_mock_value,
 )
-from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics import adcore
 
 
 class DummyTriggerLogic(FlyerController[int]):
@@ -53,11 +53,11 @@ class DummyController(DetectorController):
 
 
 @pytest.fixture
-def controller(RE) -> adsimdetector.SimController:
+def controller(RE) -> adcore.ADBaseController:
     with DeviceCollector(mock=True):
         drv = adcore.ADBaseIO("DRV")
 
-    return adsimdetector.SimController(drv)
+    return adcore.ADBaseController(drv)
 
 
 @pytest.fixture
@@ -67,9 +67,10 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
 
     return adcore.ADHDFWriter(
         hdf,
-        path_provider=static_path_provider,
-        name_provider=lambda: "test",
-        dataset_describer=AsyncMock(),
+        static_path_provider,
+        lambda: "test",
+        AsyncMock(),
+        {},
     )
 
 
@@ -77,10 +78,10 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: adcore.ADHDFWriter,
-    controller: adsimdetector.SimController,
+    controller: adcore.ADBaseController,
 ):
-    set_mock_value(writer.hdf.file_path_exists, True)
-    detector: StandardDetector[Any] = StandardDetector(
+    set_mock_value(writer._fileio.file_path_exists, True)
+    detector: StandardDetector[Any, Any] = StandardDetector(
         controller, writer, name="detector"
     )
 
@@ -95,11 +96,9 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     RE: RunEngine, writer: adcore.ADHDFWriter
 ):
     controller = DummyController()
-    set_mock_value(writer.hdf.file_path_exists, True)
+    set_mock_value(writer._fileio.file_path_exists, True)
 
-    detector: StandardDetector[TriggerInfo | None] = StandardDetector(
-        controller, writer
-    )
+    detector: StandardDetector[Any, Any] = StandardDetector(controller, writer)
     trigger_logic = DummyTriggerLogic()
 
     flyer = StandardFlyer(trigger_logic, name="flyer")
