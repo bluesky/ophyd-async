@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, MutableMapping, Sequence
-from pathlib import Path
+from abc import abstractmethod
+from collections.abc import Callable, Iterator, MutableMapping, Sequence
 from typing import Any
 
 import bluesky.plan_stubs as bps
@@ -9,7 +9,6 @@ from bluesky.protocols import Location
 from bluesky.utils import Msg, MsgGenerator
 
 from ._device import Device
-from ._device_save_loader import load_from_yaml, save_to_yaml
 from ._signal import SignalRW
 from ._signal_backend import SignalDatatypeT
 
@@ -44,6 +43,23 @@ class Settings(MutableMapping[SignalRW[Any], Any]):
 
     def __or__(self, other: MutableMapping[SignalRW, Any]) -> Settings:
         return Settings(self._settings | dict(other))
+
+    def partition(
+        self, predicate: Callable[[SignalRW], bool]
+    ) -> tuple[Settings, Settings]:
+        where_true, where_false = Settings(), Settings()
+        for signal, value in self.items():
+            dest = where_true if predicate(signal) else where_false
+            dest[signal] = value
+        return where_true, where_false
+
+
+class SettingsProvider:
+    @abstractmethod
+    def store(self, name: str, data: dict[str, Any]): ...
+
+    @abstractmethod
+    def retrieve(self, name: str) -> dict[str, Any]: ...
 
 
 def _walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW[Any]]:
@@ -93,7 +109,7 @@ def _get_values_of_signals(
 
 # Add a plan settings_from_device(device: Device) -> MsgGenerator[Settings] to
 # walk any device for SignalRWs and locate all SignalRWs from it
-def settings_from_device(device: Device) -> MsgGenerator[Settings]:
+def _settings_from_device(device: Device) -> MsgGenerator[Settings]:
     """Plan to recursively walk a Device to find SignalRWs and get their values."""
     signals = _walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
@@ -101,56 +117,68 @@ def settings_from_device(device: Device) -> MsgGenerator[Settings]:
     return Settings(signal_values)
 
 
-# Add a plan settings_to_yaml(device: Device, yaml_path: str) ->
-# MsgGenerator[None] that uses the above to store those settings to a YAML file
-def settings_to_yaml(device: Device, yaml_path: str | Path) -> MsgGenerator[None]:
+# Add a plan settings_to_change(device: Device, settings: Settings) ->
+# MsgGenerator[Settings] that discards settings that are already at the right
+# value, erroring if they aren't in the Device
+def _settings_to_change(
+    device: Device, settings: Settings
+) -> MsgGenerator[tuple[Settings, Settings]]:
+    # Get the current settings of the Device
+    original_settings = yield from _settings_from_device(device)
+    # Check that the signals in settings are actually in the Device
+    unknown_signals = set(settings) - set(original_settings)
+    assert not unknown_signals, f"Signal {unknown_signals} are not in {device}"
+    # Work out which signals need to change
+    signals_to_change = {
+        signal: value
+        for signal, value in settings.items()
+        if original_settings[signal] != value
+    }
+    # Return the settings that need to change and their original values
+    return Settings(signals_to_change), original_settings
+
+
+def _apply_settings(device: Device, settings: Settings):
+    for to_apply in device.partition_settings(settings):
+        if to_apply:
+            for signal, value in to_apply.items():
+                yield from bps.abs_set(signal, value, "apply_settings")
+            yield from bps.wait("apply_settings")
+
+
+def store_settings(
+    provider: SettingsProvider, name: str, device: Device
+) -> MsgGenerator[None]:
     """Plan to recursively walk a Device to find SignalRWs and write a YAML of their
     values.
     """
     signals = _walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
-    save_to_yaml(named_values, yaml_path)
+    provider.store(name, named_values)
 
 
-# Add a function settings_from_yaml(device: Device, yaml_path: str) -> Settings
-# that loads a YAML file for values, walks a Device for SignalRWs, and creates a
-# Settings object from them
-def settings_from_yaml(device: Device, yaml_path: str | Path) -> Settings:
-    """Load a YAML file of values, and create a Settings object from them."""
-    data = load_from_yaml(yaml_path)
+def retrieve_settings(
+    provider: SettingsProvider, name: str, device: Device
+) -> Settings:
+    named_values = provider.retrieve(name)
     signals = _walk_rw_signals(device)
-    signal_values = {signals[name]: value for name, value in data.items()}
+    signal_values = {signals[name]: value for name, value in named_values.items()}
     return Settings(signal_values)
 
 
-# Add a plan settings_to_change(device: Device, settings: Settings) ->
-# MsgGenerator[Settings] that discards settings that are already at the right
-# value, erroring if they aren't in the Device
-def settings_to_change(device: Device, settings: Settings) -> MsgGenerator[Settings]:
-    signals = _walk_rw_signals(device)
-    # Check that the signals in settings are actually in the Device
-    unknown_signals = set(signals.values()) - set(settings)
-    assert not unknown_signals, f"Signal {unknown_signals} are not in {device}"
-    # Get the current value of signals
-    named_values = yield from _get_values_of_signals(signals)
-    need_wait = False
-    # Change any signals in settings that don't match current value
-    for name, current_value in named_values.items():
-        signal = signals[name]
-        needed_value = settings.get(signal, None)
-        if needed_value != current_value:
-            need_wait = True
-            yield from bps.abs_set(signal, needed_value, "change_settings")
-    # Wait for them to complete
-    if need_wait:
-        yield from bps.wait("change_settings")
+def apply_settings(
+    device: Device, settings: Settings
+) -> MsgGenerator[Callable[[], MsgGenerator[None]]]:
+    to_change, original = yield from _settings_to_change(device, settings)
+    yield from _apply_settings(device, to_change)
+
+    def revert() -> MsgGenerator[None]:
+        to_change_back, _ = yield from _settings_to_change(device, original)
+        yield from _apply_settings(device, to_change_back)
+
+    return revert
 
 
-# Add per-device plans apply_settings_to_x(device: Device, settings: Settings)
-# -> MsgGenerator[Settings] that calls settings_to_change and sets the signals
-# that come back in the right phases, then returns the settings that would be
-# required to restore it
-#
 # Add utility functions x_settings(...) -> Settings that make settings to do
 # particular jobs
 #

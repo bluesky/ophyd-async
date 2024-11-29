@@ -158,6 +158,9 @@ lint.select = [
     "SLF",     # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
     "PLC2701", # private import - https://docs.astral.sh/ruff/rules/import-private-name/
 ]
+lint.ignore = [
+    "B901", # Return in a generator is needed for plans
+]
 lint.preview = true # so that preview mode PLC2701 is enabled
 
 [tool.ruff.lint.per-file-ignores]

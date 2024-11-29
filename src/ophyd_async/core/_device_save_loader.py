@@ -1,5 +1,5 @@
 import warnings
-from collections.abc import Callable, Generator, Sequence
+from collections.abc import Generator, Sequence
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -8,7 +8,6 @@ import numpy as np
 import numpy.typing as npt
 import yaml
 from bluesky.plan_stubs import abs_set, wait
-from bluesky.protocols import Location
 from bluesky.utils import Msg
 from pydantic import BaseModel
 

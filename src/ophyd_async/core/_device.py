@@ -10,6 +10,8 @@ from typing import Any, TypeVar
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
+from ophyd_async.core._settings import Settings
+
 from ._protocol import Connectable
 from ._utils import DEFAULT_TIMEOUT, LazyMock, NotConnected, wait_for_connection
 
@@ -186,6 +188,9 @@ class Device(HasName, Connectable):
             assert self._connect_task, "Connect task not created, this shouldn't happen"
             # Wait for it to complete
             await self._connect_task
+
+    def partition_settings(self, settings: Settings) -> list[Settings]:
+        return [settings]
 
 
 _not_device_attrs = {
