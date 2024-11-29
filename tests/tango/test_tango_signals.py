@@ -402,155 +402,154 @@ async def test_backend_get_put_monitor_cmd(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_r(
     echo_device: str,
-    use_proxy: bool,
 ):
-    proxy = await DeviceProxy(echo_device) if use_proxy else None
     timeout = 0.2
-
-    for attr_data in ATTRIBUTES_SET:
-        await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
-        source = echo_device + "/" + attr_data.pv
-        signal = tango_signal_r(
-            datatype=attr_data.py_type,
-            read_trl=source,
-            device_proxy=proxy,
-            timeout=timeout,
-            name="test_signal",
-        )
-        await signal.connect()
-        reading = await signal.read()
-        assert_close(reading["test_signal"]["value"], attr_data.initial_value)
+    for use_proxy in [True, False]:
+        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        for attr_data in ATTRIBUTES_SET:
+            await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
+            source = echo_device + "/" + attr_data.pv
+            signal = tango_signal_r(
+                datatype=attr_data.py_type,
+                read_trl=source,
+                device_proxy=proxy,
+                timeout=timeout,
+                name="test_signal",
+            )
+            await signal.connect()
+            reading = await signal.read()
+            assert_close(reading["test_signal"]["value"], attr_data.initial_value)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_w(
     echo_device: str,
-    use_proxy: bool,
 ):
-    proxy = await DeviceProxy(echo_device) if use_proxy else None
-    timeout = 0.2
-    for attr_data in ATTRIBUTES_SET:
-        await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
-        source = echo_device + "/" + attr_data.pv
+    for use_proxy in [True, False]:
+        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        timeout = 0.2
+        for attr_data in ATTRIBUTES_SET:
+            await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
+            source = echo_device + "/" + attr_data.pv
 
-        signal = tango_signal_w(
-            datatype=attr_data.py_type,
-            write_trl=source,
-            device_proxy=proxy,
-            timeout=timeout,
-            name="test_signal",
-        )
-        await signal.connect()
-        status = signal.set(attr_data.put_value, wait=True, timeout=timeout)
-        await status
-        assert status.done is True and status.success is True
+            signal = tango_signal_w(
+                datatype=attr_data.py_type,
+                write_trl=source,
+                device_proxy=proxy,
+                timeout=timeout,
+                name="test_signal",
+            )
+            await signal.connect()
+            status = signal.set(attr_data.put_value, wait=True, timeout=timeout)
+            await status
+            assert status.done is True and status.success is True
 
-        status = signal.set(attr_data.put_value, wait=False, timeout=timeout)
-        await status
-        assert status.done is True and status.success is True
+            status = signal.set(attr_data.put_value, wait=False, timeout=timeout)
+            await status
+            assert status.done is True and status.success is True
 
-        status = signal.set(attr_data.put_value, wait=True)
-        await status
-        assert status.done is True and status.success is True
+            status = signal.set(attr_data.put_value, wait=True)
+            await status
+            assert status.done is True and status.success is True
 
-        status = signal.set(attr_data.put_value, wait=False)
-        await status
-        assert status.done is True and status.success is True
+            status = signal.set(attr_data.put_value, wait=False)
+            await status
+            assert status.done is True and status.success is True
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_rw(
     echo_device: str,
-    use_proxy: bool,
 ):
-    proxy = await DeviceProxy(echo_device) if use_proxy else None
-    for attr_data in ATTRIBUTES_SET:
-        await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
-        source = echo_device + "/" + attr_data.pv
+    timeout = 0.2
+    for use_proxy in [True, False]:
+        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        for attr_data in ATTRIBUTES_SET:
+            await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
+            source = echo_device + "/" + attr_data.pv
 
-        timeout = 0.2
-        signal = tango_signal_rw(
-            datatype=attr_data.py_type,
-            read_trl=source,
-            write_trl=source,
+            signal = tango_signal_rw(
+                datatype=attr_data.py_type,
+                read_trl=source,
+                write_trl=source,
+                device_proxy=proxy,
+                timeout=timeout,
+                name="test_signal",
+            )
+            await signal.connect()
+            reading = await signal.read()
+            assert_close(reading["test_signal"]["value"], attr_data.initial_value)
+            await signal.set(attr_data.put_value)
+            location = await signal.locate()
+            assert_close(location["setpoint"], attr_data.put_value)
+            assert_close(location["readback"], attr_data.put_value)
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_tango_signal_x(tango_test_device: str):
+    timeout = 0.2
+    for use_proxy in [True, False]:
+        proxy = await DeviceProxy(tango_test_device) if use_proxy else None
+        signal = tango_signal_x(
+            write_trl=tango_test_device + "/" + "clear",
             device_proxy=proxy,
             timeout=timeout,
             name="test_signal",
         )
         await signal.connect()
-        reading = await signal.read()
-        assert_close(reading["test_signal"]["value"], attr_data.initial_value)
-        await signal.set(attr_data.put_value)
-        location = await signal.locate()
-        assert_close(location["setpoint"], attr_data.put_value)
-        assert_close(location["readback"], attr_data.put_value)
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-@pytest.mark.parametrize("use_proxy", [True, False])
-async def test_tango_signal_x(tango_test_device: str, use_proxy: bool):
-    proxy = await DeviceProxy(tango_test_device) if use_proxy else None
-    timeout = 0.2
-    signal = tango_signal_x(
-        write_trl=tango_test_device + "/" + "clear",
-        device_proxy=proxy,
-        timeout=timeout,
-        name="test_signal",
-    )
-    await signal.connect()
-    status = signal.trigger()
-    await status
-    assert status.done is True and status.success is True
+        status = signal.trigger()
+        await status
+        assert status.done is True and status.success is True
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.skip("Not sure if we need tango_signal_auto")
-@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_auto_attrs(
     echo_device: str,
-    use_proxy: bool,
 ):
-    proxy = await DeviceProxy(echo_device) if use_proxy else None
     timeout = 0.2
-    for attr_data in ATTRIBUTES_SET:
-        await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
-        source = echo_device + "/" + attr_data.pv
+    for use_proxy in [True, False]:
+        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        for attr_data in ATTRIBUTES_SET:
+            await prepare_device(echo_device, attr_data.pv, attr_data.initial_value)
+            source = echo_device + "/" + attr_data.pv
 
-        async def _test_signal(dtype, proxy, source, initial_value, put_value):
-            signal = await __tango_signal_auto(
-                datatype=dtype,
-                trl=source,
-                device_proxy=proxy,
-                timeout=timeout,
-                name="test_signal",
+            async def _test_signal(dtype, proxy, source, initial_value, put_value):
+                signal = await __tango_signal_auto(
+                    datatype=dtype,
+                    trl=source,
+                    device_proxy=proxy,
+                    timeout=timeout,
+                    name="test_signal",
+                )
+                assert type(signal) is SignalRW
+                await signal.connect()
+                reading = await signal.read()
+                value = reading["test_signal"]["value"]
+                if isinstance(value, np.ndarray):
+                    value = value.tolist()
+                assert_close(value, initial_value)
+
+                await signal.set(put_value, wait=True, timeout=timeout)
+                reading = await signal.read()
+                value = reading["test_signal"]["value"]
+                if isinstance(value, np.ndarray):
+                    value = value.tolist()
+                assert_close(value, put_value)
+
+            await _test_signal(
+                attr_data.dtype,
+                proxy,
+                source,
+                attr_data.initial_value,
+                attr_data.put_value,
             )
-            assert type(signal) is SignalRW
-            await signal.connect()
-            reading = await signal.read()
-            value = reading["test_signal"]["value"]
-            if isinstance(value, np.ndarray):
-                value = value.tolist()
-            assert_close(value, initial_value)
-
-            await signal.set(put_value, wait=True, timeout=timeout)
-            reading = await signal.read()
-            value = reading["test_signal"]["value"]
-            if isinstance(value, np.ndarray):
-                value = value.tolist()
-            assert_close(value, put_value)
-
-        await _test_signal(
-            attr_data.dtype, proxy, source, attr_data.initial_value, attr_data.put_value
-        )
 
 
 # --------------------------------------------------------------------
@@ -604,18 +603,18 @@ async def test_tango_signal_auto_cmds(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.skip("Not sure if we need tango_signal_auto")
-@pytest.mark.parametrize("use_proxy", [True, False])
 async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bool):
-    proxy = await DeviceProxy(tango_test_device) if use_proxy else None
-    signal = await __tango_signal_auto(
-        datatype=None,
-        trl=tango_test_device + "/" + "clear",
-        device_proxy=proxy,
-    )
-    assert type(signal) is SignalX
-    await signal.connect()
-    assert signal
-    await signal.trigger(wait=True)
+    for use_proxy in [True, False]:
+        proxy = await DeviceProxy(tango_test_device) if use_proxy else None
+        signal = await __tango_signal_auto(
+            datatype=None,
+            trl=tango_test_device + "/" + "clear",
+            device_proxy=proxy,
+        )
+        assert type(signal) is SignalX
+        await signal.connect()
+        assert signal
+        await signal.trigger(wait=True)
 
 
 # --------------------------------------------------------------------
