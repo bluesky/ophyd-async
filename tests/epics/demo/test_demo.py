@@ -19,9 +19,9 @@ from ophyd_async.core import (
     get_mock,
     get_mock_put,
     set_mock_value,
-    wait_for_pending_wakeups,
 )
 from ophyd_async.epics import demo
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 @pytest.fixture

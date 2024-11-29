@@ -96,7 +96,6 @@ from ._utils import (
     get_unique,
     in_micros,
     wait_for_connection,
-    wait_for_pending_wakeups,
 )
 
 __all__ = [
@@ -193,5 +192,4 @@ __all__ = [
     "in_micros",
     "wait_for_connection",
     "completed_status",
-    "wait_for_pending_wakeups",
 ]

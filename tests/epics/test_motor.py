@@ -15,9 +15,9 @@ from ophyd_async.core import (
     set_mock_put_proceeds,
     set_mock_value,
     soft_signal_rw,
-    wait_for_pending_wakeups,
 )
 from ophyd_async.epics import motor
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 @pytest.fixture
