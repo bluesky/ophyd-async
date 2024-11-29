@@ -426,7 +426,7 @@ async def observe_value(
     signal: SignalR[SignalDatatypeT],
     timeout: float | None = None,
     done_status: Status | None = None,
-    except_after_time: float | None = None,
+    done_timeout: float | None = None,
 ) -> AsyncGenerator[SignalDatatypeT, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
@@ -441,7 +441,7 @@ async def observe_value(
     done_status:
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the iterator.
-    except_after_time:
+    done_timeout:
         If given, the maximum time to watch a signal, in seconds. If the loop is still
         being watched after this length, raise asyncio.TimeoutError. This should be used
         instead of on an 'asyncio.wait_for' timeout
@@ -450,7 +450,7 @@ async def observe_value(
     -----
     Due to a rare condition with busy signals, it is not recommended to use this
     function with asyncio.timeout, including in an 'asyncio.wait_for' loop. Instead,
-    this timeout should be given to the except_after_time parameter.
+    this timeout should be given to the done_timeout parameter.
 
     Example usage::
 
@@ -462,7 +462,7 @@ async def observe_value(
         signal,
         timeout=timeout,
         done_status=done_status,
-        except_after_time=except_after_time,
+        done_timeout=done_timeout,
     ):
         yield value
 
@@ -478,7 +478,7 @@ async def observe_signals_value(
     *signals: SignalR[SignalDatatypeT],
     timeout: float | None = None,
     done_status: Status | None = None,
-    except_after_time: float | None = None,
+    done_timeout: float | None = None,
 ) -> AsyncGenerator[tuple[SignalR[SignalDatatypeT], SignalDatatypeT], None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
@@ -493,7 +493,7 @@ async def observe_signals_value(
     done_status:
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the iterator.
-    except_after_time:
+    done_timeout:
         If given, the maximum time to watch a signal, in seconds. If the loop is still
         being watched after this length, raise asyncio.TimeoutError. This should be used
         instead of on an 'asyncio.wait_for' timeout
@@ -512,10 +512,12 @@ async def observe_signals_value(
         asyncio.Queue()
     )
 
-    async def get_value(timeout: float | None = None):
-        if timeout is None:
-            return await q.get()
-        return await asyncio.wait_for(q.get(), timeout)
+    if timeout is None:
+        get_value = q.get
+    else:
+
+        async def get_value():
+            return await asyncio.wait_for(q.get(), timeout)
 
     cbs: dict[SignalR, Callback] = {}
     for signal in signals:
@@ -528,19 +530,17 @@ async def observe_signals_value(
 
     if done_status is not None:
         done_status.add_callback(q.put_nowait)
-    overall_deadline = (
-        time.monotonic() + except_after_time if except_after_time else None
-    )
+    overall_deadline = time.monotonic() + done_timeout if done_timeout else None
     try:
         while True:
             if overall_deadline and time.monotonic() >= overall_deadline:
                 raise asyncio.TimeoutError(
                     f"observe_value was still observing signals "
                     f"{[signal.source for signal in signals]} after "
-                    f"timeout {except_after_time}s"
+                    f"timeout {done_timeout}s"
                 )
-
-            item = await get_value(_get_iteration_timeout(timeout, overall_deadline))
+            iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
+            item = await asyncio.wait_for(q.get(), iteration_timeout)
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc

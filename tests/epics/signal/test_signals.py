@@ -945,7 +945,7 @@ async def test_observe_ticking_signal_with_busy_loop(ioc, protocol):
     recv = []
 
     async def watch():
-        async for val in observe_value(sig, except_after_time=0.4):
+        async for val in observe_value(sig, done_timeout=0.4):
             time.sleep(0.3)
             recv.append(val)
 
