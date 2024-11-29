@@ -31,6 +31,8 @@ from ophyd_async.core import (
 
 from ._util import EpicsSignalBackend, format_datatype, get_supported_values
 
+logger = logging.getLogger("ophyd_async")
+
 
 def _limits_from_value(value: Any) -> Limits:
     def get_limits(
@@ -282,7 +284,7 @@ async def pvget_with_timeout(pv: str, timeout: float) -> Any:
     try:
         return await asyncio.wait_for(context().get(pv), timeout=timeout)
     except asyncio.TimeoutError as exc:
-        logging.debug(f"signal pva://{pv} timed out", exc_info=True)
+        logger.debug(f"signal pva://{pv} timed out", exc_info=True)
         raise NotConnected(f"pva://{pv}") from exc
 
 
