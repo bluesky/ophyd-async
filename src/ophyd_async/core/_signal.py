@@ -245,6 +245,11 @@ class SignalW(Signal[SignalDatatypeT], Movable):
         await _wait_for(self._connector.backend.put(value, wait=wait), timeout, source)
         self.log.debug(f"Successfully put value {value} to backend at source {source}")
 
+    @_add_timeout
+    async def get_setpoint(self) -> SignalDatatypeT:
+        """Return the setpoint."""
+        return await self._connector.backend.get_setpoint()
+
 
 class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
     """Signal that can be both read and set"""

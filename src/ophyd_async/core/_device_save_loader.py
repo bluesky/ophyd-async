@@ -147,5 +147,5 @@ def load_device(device: Device, path: str):
     :func:`ophyd_async.core.save_device`
     """
     values = load_from_yaml(path)
-    signals_to_set = walk_rw_signals(device)
+    signals_to_set = walk_rw_signals(device)  # noqa: F821
     yield from set_signal_values(signals_to_set, values)
