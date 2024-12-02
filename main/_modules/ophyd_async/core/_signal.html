@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.8.1.dev5+g629e764b documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.8.1.dev6+gb846eab1 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=d10012a8"></script>
+    <script src="../../../_static/documentation_options.js?v=e7eaf2e9"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev5+g629e764b documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev5+g629e764b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev6+gb846eab1 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev6+gb846eab1 documentation - Home"/>
   
   
 </a></div>
@@ -462,6 +462,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">cast</span>
 
@@ -953,6 +954,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">done_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">done_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscribe to the value of a signal so it can be iterated from.</span>
 
@@ -967,9 +969,17 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    done_status:</span>
 <span class="sd">        If this status is complete, stop observing and make the iterator return.</span>
 <span class="sd">        If it raises an exception then this exception will be raised by the iterator.</span>
+<span class="sd">    done_timeout:</span>
+<span class="sd">        If given, the maximum time to watch a signal, in seconds. If the loop is still</span>
+<span class="sd">        being watched after this length, raise asyncio.TimeoutError. This should be used</span>
+<span class="sd">        instead of on an &#39;asyncio.wait_for&#39; timeout</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
+<span class="sd">    Due to a rare condition with busy signals, it is not recommended to use this</span>
+<span class="sd">    function with asyncio.timeout, including in an &#39;asyncio.wait_for&#39; loop. Instead,</span>
+<span class="sd">    this timeout should be given to the done_timeout parameter.</span>
+
 <span class="sd">    Example usage::</span>
 
 <span class="sd">        async for value in observe_value(sig):</span>
@@ -977,10 +987,20 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">async</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_signals_value</span><span class="p">(</span>
-        <span class="n">signal</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">done_status</span><span class="o">=</span><span class="n">done_status</span>
+        <span class="n">signal</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+        <span class="n">done_status</span><span class="o">=</span><span class="n">done_status</span><span class="p">,</span>
+        <span class="n">done_timeout</span><span class="o">=</span><span class="n">done_timeout</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">yield</span> <span class="n">value</span></div>
 
+
+
+<span class="k">def</span> <span class="nf">_get_iteration_timeout</span><span class="p">(</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">overall_deadline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">overall_deadline</span> <span class="o">=</span> <span class="n">overall_deadline</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="k">if</span> <span class="n">overall_deadline</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">min</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">overall_deadline</span><span class="p">,</span> <span class="n">timeout</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="observe_signals_value">
@@ -989,6 +1009,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="o">*</span><span class="n">signals</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">done_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">done_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscribe to the value of a signal so it can be iterated from.</span>
 
@@ -1003,6 +1024,10 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    done_status:</span>
 <span class="sd">        If this status is complete, stop observing and make the iterator return.</span>
 <span class="sd">        If it raises an exception then this exception will be raised by the iterator.</span>
+<span class="sd">    done_timeout:</span>
+<span class="sd">        If given, the maximum time to watch a signal, in seconds. If the loop is still</span>
+<span class="sd">        being watched after this length, raise asyncio.TimeoutError. This should be used</span>
+<span class="sd">        instead of on an &#39;asyncio.wait_for&#39; timeout</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1017,12 +1042,6 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">q</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="n">Status</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">get_value</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span>
-    <span class="k">else</span><span class="p">:</span>
-
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">get_value</span><span class="p">():</span>
-            <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
 
     <span class="n">cbs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">SignalR</span><span class="p">,</span> <span class="n">Callback</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
@@ -1035,13 +1054,17 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="k">if</span> <span class="n">done_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">done_status</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span>
-
+    <span class="n">overall_deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="n">done_timeout</span> <span class="k">if</span> <span class="n">done_timeout</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="c1"># yield here in case something else is filling the queue</span>
-            <span class="c1"># like in test_observe_value_times_out_with_no_external_task()</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_value</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">overall_deadline</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">overall_deadline</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;observe_value was still observing signals &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2"> after &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;timeout </span><span class="si">{</span><span class="n">done_timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
+                <span class="p">)</span>
+            <span class="n">iteration_timeout</span> <span class="o">=</span> <span class="n">_get_iteration_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">overall_deadline</span><span class="p">)</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">iteration_timeout</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">done_status</span> <span class="ow">and</span> <span class="n">item</span> <span class="ow">is</span> <span class="n">done_status</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">exc</span> <span class="o">:=</span> <span class="n">done_status</span><span class="o">.</span><span class="n">exception</span><span class="p">():</span>
                     <span class="k">raise</span> <span class="n">exc</span>
