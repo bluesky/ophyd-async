@@ -102,7 +102,7 @@ class PvaLongStringConverter(PvaConverter[str]):
         # Value here is a null terminated array of ascii codes.
         # We strip out the null terminator, and convert each code
         # to the corresponding char, joining into a string
-        return "".join([chr(char) for char in value["value"][:-1]])
+        return value["value"].tobytes().rstrip(b"\0").decode()
 
     def write_value(self, value: Any) -> Any:
         # Inverse of reading - convert each character into it's ascii code,
