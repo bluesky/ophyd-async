@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import time
 from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping
 from typing import Any, Generic, cast
 
@@ -425,6 +426,7 @@ async def observe_value(
     signal: SignalR[SignalDatatypeT],
     timeout: float | None = None,
     done_status: Status | None = None,
+    done_timeout: float | None = None,
 ) -> AsyncGenerator[SignalDatatypeT, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
@@ -439,9 +441,17 @@ async def observe_value(
     done_status:
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the iterator.
+    done_timeout:
+        If given, the maximum time to watch a signal, in seconds. If the loop is still
+        being watched after this length, raise asyncio.TimeoutError. This should be used
+        instead of on an 'asyncio.wait_for' timeout
 
     Notes
     -----
+    Due to a rare condition with busy signals, it is not recommended to use this
+    function with asyncio.timeout, including in an 'asyncio.wait_for' loop. Instead,
+    this timeout should be given to the done_timeout parameter.
+
     Example usage::
 
         async for value in observe_value(sig):
@@ -449,15 +459,26 @@ async def observe_value(
     """
 
     async for _, value in observe_signals_value(
-        signal, timeout=timeout, done_status=done_status
+        signal,
+        timeout=timeout,
+        done_status=done_status,
+        done_timeout=done_timeout,
     ):
         yield value
+
+
+def _get_iteration_timeout(
+    timeout: float | None, overall_deadline: float | None
+) -> float | None:
+    overall_deadline = overall_deadline - time.monotonic() if overall_deadline else None
+    return min([x for x in [overall_deadline, timeout] if x is not None], default=None)
 
 
 async def observe_signals_value(
     *signals: SignalR[SignalDatatypeT],
     timeout: float | None = None,
     done_status: Status | None = None,
+    done_timeout: float | None = None,
 ) -> AsyncGenerator[tuple[SignalR[SignalDatatypeT], SignalDatatypeT], None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
@@ -472,6 +493,10 @@ async def observe_signals_value(
     done_status:
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the iterator.
+    done_timeout:
+        If given, the maximum time to watch a signal, in seconds. If the loop is still
+        being watched after this length, raise asyncio.TimeoutError. This should be used
+        instead of on an 'asyncio.wait_for' timeout
 
     Notes
     -----
@@ -486,12 +511,6 @@ async def observe_signals_value(
     q: asyncio.Queue[tuple[SignalR[SignalDatatypeT], SignalDatatypeT] | Status] = (
         asyncio.Queue()
     )
-    if timeout is None:
-        get_value = q.get
-    else:
-
-        async def get_value():
-            return await asyncio.wait_for(q.get(), timeout)
 
     cbs: dict[SignalR, Callback] = {}
     for signal in signals:
@@ -504,13 +523,17 @@ async def observe_signals_value(
 
     if done_status is not None:
         done_status.add_callback(q.put_nowait)
-
+    overall_deadline = time.monotonic() + done_timeout if done_timeout else None
     try:
         while True:
-            # yield here in case something else is filling the queue
-            # like in test_observe_value_times_out_with_no_external_task()
-            await asyncio.sleep(0)
-            item = await get_value()
+            if overall_deadline and time.monotonic() >= overall_deadline:
+                raise asyncio.TimeoutError(
+                    f"observe_value was still observing signals "
+                    f"{[signal.source for signal in signals]} after "
+                    f"timeout {done_timeout}s"
+                )
+            iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
+            item = await asyncio.wait_for(q.get(), iteration_timeout)
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc

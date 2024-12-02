@@ -150,3 +150,9 @@ record(lsi, "$(device)longstr2") {
   field(INP, {const:"a string that is just longer than forty characters"})
   field(PINI, "YES")
 }
+
+record(calc, "$(device)ticking") {
+  field(INPA, "$(device)ticking")
+  field(CALC, "A+1")
+  field(SCAN, ".1 second")
+}
