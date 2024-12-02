@@ -10,6 +10,7 @@ from ophyd_async.core import (
     AsyncStatus,
     DeviceCollector,
     callback_on_mock_put,
+    get_mock_put,
     mock_puts_blocked,
     observe_value,
     set_mock_put_proceeds,
@@ -154,6 +155,11 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     await asyncio.sleep(0.2)
     assert not s.done
     await sim_motor.stop()
+
+    # Note: needs to explicitly be called with 1, not just processed.
+    # See https://epics.anl.gov/bcda/synApps/motor/motorRecord.html#Fields_command
+    get_mock_put(sim_motor.motor_stop).assert_called_once_with(1, wait=False)
+
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
     await wait_for_pending_wakeups()
     assert s.done
