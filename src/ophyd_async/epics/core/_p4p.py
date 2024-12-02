@@ -107,7 +107,7 @@ class PvaLongStringConverter(PvaConverter[str]):
     def write_value(self, value: Any) -> Any:
         # Inverse of reading - convert each character into it's ascii code,
         # put into a list, and add null terminator.
-        return np.frombuffer(str(s).encode() + b"\0", dtype=np.int8)
+        return np.frombuffer(str(value).encode() + b"\0", dtype=np.int8)
 
 
 class DisconnectedPvaConverter(PvaConverter):
