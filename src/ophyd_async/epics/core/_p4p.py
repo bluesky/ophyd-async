@@ -268,7 +268,7 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
     elif datatype in (None, inferred_datatype):
         # If datatype matches what we are given then allow it and use inferred converter
         return converter_cls(inferred_datatype)
-    elif datatype is str and format_datatype(inferred_datatype) == "Array1D[np.int8]":
+    elif datatype is str and inferred_datatype == Array1D[np.int8]:
         return PvaLongStringConverter()
     raise TypeError(
         f"{pv} with inferred datatype {format_datatype(inferred_datatype)}"
