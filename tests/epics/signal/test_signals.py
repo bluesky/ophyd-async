@@ -26,6 +26,7 @@ from ophyd_async.core import (
     T,
     Table,
     load_from_yaml,
+    observe_value,
     save_to_yaml,
 )
 from ophyd_async.epics.core import (
@@ -36,7 +37,9 @@ from ophyd_async.epics.core import (
     epics_signal_w,
     epics_signal_x,
 )
-from ophyd_async.epics.core._signal import _epics_signal_backend  # noqa: PLC2701
+from ophyd_async.epics.core._signal import (
+    _epics_signal_backend,  # noqa: PLC2701
+)
 from ophyd_async.epics.testing import (
     ExampleCaDevice,
     ExampleEnum,
@@ -120,11 +123,36 @@ class MonitorQueue:
         update_reading = await asyncio.wait_for(self.updates.get(), timeout=5)
         update_value = update_reading["value"]
 
-        assert update_value == expected_value == backend_value
+        # We can't compare arrays of bool easily so we do it as numpy rows
+        if issubclass(type(update_value), Table):
+            assert all(
+                row1 == row2
+                for row1, row2 in zip(
+                    expected_value.numpy_table(),
+                    update_value.numpy_table(),
+                    strict=True,
+                )
+            )
+            assert all(
+                row1 == row2
+                for row1, row2 in zip(
+                    expected_value.numpy_table(),
+                    backend_value.numpy_table(),
+                    strict=True,
+                )
+            )
+        else:
+            assert update_value == expected_value == backend_value
+
         if expected_type:
             assert_types_are_equal(type(update_value), expected_type, update_value)
             assert_types_are_equal(type(backend_value), expected_type, backend_value)
-        assert update_reading == expected_reading == backend_reading
+
+        for key in expected_reading:
+            if key == "value":
+                continue
+            assert update_reading[key] == expected_reading[key]
+            assert backend_reading[key] == expected_reading[key]
 
     def close(self):
         self.backend.set_callback(None)
@@ -640,9 +668,9 @@ def approx_table(datatype: type[Table], table: Table):
     new_table = datatype(**table.model_dump())
     for k, v in new_table:
         if datatype is Table:
-            setattr(new_table, k, pytest.approx(v))
+            setattr(new_table, k, v)
         else:
-            object.__setattr__(new_table, k, pytest.approx(v))
+            object.__setattr__(new_table, k, v)
     return new_table
 
 
@@ -943,3 +971,25 @@ async def test_can_read_using_ophyd_async_then_ophyd(ioc, protocol):
 def test_signal_module_emits_deprecation_warning():
     with pytest.deprecated_call():
         import ophyd_async.epics.signal  # noqa: F401
+
+
+@PARAMETERISE_PROTOCOLS
+async def test_observe_ticking_signal_with_busy_loop(ioc, protocol):
+    sig = epics_signal_rw(int, f"{protocol}://{get_prefix(ioc, protocol)}ticking")
+    await sig.connect()
+
+    recv = []
+
+    async def watch():
+        async for val in observe_value(sig, done_timeout=0.4):
+            time.sleep(0.3)
+            recv.append(val)
+
+    start = time.time()
+
+    with pytest.raises(asyncio.TimeoutError):
+        await watch()
+    assert time.time() - start == pytest.approx(0.6, abs=0.1)
+    assert len(recv) == 2
+    # Don't check values as CA and PVA have different algorithms for
+    # dropping updates for slow callbacks

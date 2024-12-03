@@ -21,10 +21,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics import demo
-
-# Long enough for multiple asyncio event loop cycles to run so
-# all the tasks have a chance to run
-A_WHILE = 0.001
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 @pytest.fixture
@@ -141,7 +138,7 @@ async def test_mover_moving_well(mock_mover: demo.Mover) -> None:
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
     set_mock_value(mock_mover.readback, 0.5499999)
-    await asyncio.sleep(A_WHILE)
+    await wait_for_pending_wakeups()
     assert s.done
     assert s.success
     done.assert_called_once_with(s)
@@ -315,7 +312,7 @@ async def test_assembly_renaming() -> None:
     thing.set_name("foo")
     assert thing.x.name == "foo-x"
     assert thing.x.velocity.name == "foo-x-velocity"
-    assert thing.x.stop_.name == "foo-x-stop"
+    assert thing.x.stop_.name == "foo-x-stop_"
 
 
 async def test_dynamic_sensor_group_disconnected():

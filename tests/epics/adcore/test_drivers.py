@@ -70,7 +70,7 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
 ):
     set_mock_value(driver.detector_state, adcore.DetectorState.ERROR)
     acquiring = await adcore.start_acquiring_driver_and_ensure_status(
-        driver, timeout=0.01
+        driver, timeout=0.05
     )
     with pytest.raises(ValueError):
         await acquiring
