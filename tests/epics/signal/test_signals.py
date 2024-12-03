@@ -123,11 +123,36 @@ class MonitorQueue:
         update_reading = await asyncio.wait_for(self.updates.get(), timeout=5)
         update_value = update_reading["value"]
 
-        assert update_value == expected_value == backend_value
+        # We can't compare arrays of bool easily so we do it as numpy rows
+        if issubclass(type(update_value), Table):
+            assert all(
+                row1 == row2
+                for row1, row2 in zip(
+                    expected_value.numpy_table(),
+                    update_value.numpy_table(),
+                    strict=True,
+                )
+            )
+            assert all(
+                row1 == row2
+                for row1, row2 in zip(
+                    expected_value.numpy_table(),
+                    backend_value.numpy_table(),
+                    strict=True,
+                )
+            )
+        else:
+            assert update_value == expected_value == backend_value
+
         if expected_type:
             assert_types_are_equal(type(update_value), expected_type, update_value)
             assert_types_are_equal(type(backend_value), expected_type, backend_value)
-        assert update_reading == expected_reading == backend_reading
+
+        for key in expected_reading:
+            if key == "value":
+                continue
+            assert update_reading[key] == expected_reading[key]
+            assert backend_reading[key] == expected_reading[key]
 
     def close(self):
         self.backend.set_callback(None)
@@ -636,9 +661,9 @@ def approx_table(datatype: type[Table], table: Table):
     new_table = datatype(**table.model_dump())
     for k, v in new_table:
         if datatype is Table:
-            setattr(new_table, k, pytest.approx(v))
+            setattr(new_table, k, v)
         else:
-            object.__setattr__(new_table, k, pytest.approx(v))
+            object.__setattr__(new_table, k, v)
     return new_table
 
 

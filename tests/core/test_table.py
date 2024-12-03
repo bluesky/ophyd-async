@@ -44,7 +44,11 @@ def test_table_wrong_types(kwargs, error_msg):
     "kwargs",
     [
         {"bool": np.array([1], dtype=np.uint8), "uint": [3], "str": ["a"]},
-        {"bool": [False], "uint": np.array([1], dtype=np.float64), "str": ["b"]},
+        {
+            "bool": np.array([False], dtype=np.bool_),
+            "uint": np.array([1], dtype=np.float64),
+            "str": ["b"],
+        },
     ],
 )
 def test_table_coerces(kwargs):
