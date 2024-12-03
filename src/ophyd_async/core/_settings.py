@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 from abc import abstractmethod
-from collections.abc import Callable, Iterator, MutableMapping, Sequence
+from collections.abc import Callable, Iterator, MutableMapping
 from typing import Any
 
-from bluesky.protocols import Location
-from bluesky.utils import Msg, MsgGenerator
+import bluesky.plan_stubs as bps
+from bluesky.utils import MsgGenerator
 
 from ._device import Device
 from ._signal import SignalRW
@@ -53,20 +53,6 @@ class Settings(MutableMapping[SignalRW[Any], Any]):
             dest[signal] = value
         return where_true, where_false
 
-    async def apply(self) -> Settings:
-        # Get the current settings of the Device
-        original_values = await asyncio.gather(*[sig.get_setpoint() for sig in self])
-        original_settings = Settings(dict(zip(self, original_values, strict=True)))
-        # Set the signals that need to change
-        coros = [
-            signal.set(value)
-            for signal, value in self.items()
-            if value != original_settings[signal]
-        ]
-        await asyncio.gather(*coros)
-        # Return the original settings
-        return original_settings
-
 
 class SettingsProvider:
     @abstractmethod
@@ -111,14 +97,12 @@ def _walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalR
 def _get_values_of_signals(
     signals: dict[str, SignalRW],
 ) -> MsgGenerator[dict[str, Any]]:
-    locations: Sequence[Location] = yield Msg(
-        "locate", *signals.values(), squeeze=False
-    )
-    named_values = {
-        name: location["setpoint"]
-        for name, location in zip(signals, locations, strict=True)
-    }
-    return named_values
+    async def get_all_values() -> dict[str, Any]:
+        values = await asyncio.gather(sig.get_value() for sig in signals.values())
+        return dict(zip(signals, values, strict=True))
+
+    (task,) = yield from bps.wait_for([get_all_values])
+    return task.result()
 
 
 def store_settings(
@@ -139,6 +123,63 @@ def retrieve_settings(
     signals = _walk_rw_signals(device)
     signal_values = {signals[name]: value for name, value in named_values.items()}
     return Settings(signal_values)
+
+
+def apply_settings(settings: Settings) -> MsgGenerator[None]:
+    if settings:
+        for signal, value in settings.items():
+            yield from bps.abs_set(signal, value, "apply_settings")
+        yield from bps.wait("apply_settings")
+
+
+# Add a plan settings_to_change(device: Device, settings: Settings) ->
+# MsgGenerator[Settings] that discards settings that are already at the right
+# value, erroring if they aren't in the Device
+def _settings_to_change(
+    device: Device, settings: Settings
+) -> MsgGenerator[tuple[Settings, Settings]]:
+    # Get the current settings of the Device
+    signals = _walk_rw_signals(device)
+    named_values = yield from _get_values_of_signals(signals)
+    signal_values = {signals[name]: value for name, value in named_values.items()}
+    original_settings = Settings(signal_values)
+    # Check that the signals in settings are actually in the Device
+    unknown_signals = set(settings) - set(original_settings)
+    assert not unknown_signals, f"Signal {unknown_signals} are not in {device}"
+    # Work out which signals need to change
+    signals_to_change = {
+        signal: value
+        for signal, value in settings.items()
+        if original_settings[signal] != value
+    }
+    # Return the settings that need to change and their original values
+    return Settings(signals_to_change), original_settings
+
+
+Reverter = Callable[[], MsgGenerator[None]]
+
+
+def only_set_unequal_signals(
+    apply_device_settings: Callable[[Settings], MsgGenerator[None]],
+) -> Callable[[Device, Settings], MsgGenerator[Reverter]]:
+    def apply_to_unequal(device: Device, settings: Settings) -> MsgGenerator[Reverter]:
+        to_change, original = yield from _settings_to_change(device, settings)
+        yield from apply_device_settings(to_change)
+
+        def revert_settings() -> MsgGenerator[None]:
+            to_change_back, _ = yield from _settings_to_change(device, original)
+            yield from apply_device_settings(to_change_back)
+
+        return revert_settings
+
+    return apply_to_unequal
+
+
+@only_set_unequal_signals
+def apply_panda_settings(settings: Settings) -> MsgGenerator[None]:
+    units, others = settings.partition(lambda signal: signal.name.endswith("_units"))
+    yield from apply_settings(units)
+    yield from apply_settings(others)
 
 
 # Add utility functions x_settings(...) -> Settings that make settings to do
