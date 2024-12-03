@@ -133,36 +133,12 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                             profile_gap : profile_gap + len_gap
                         ] = vel_gap[axis]
 
-                        positions[cs_axes[axis]][profile_gap + len_gap] = chunk.lower[
-                            axis
-                        ][gap]
-                        positions[cs_axes[axis]][profile_gap + len_gap + 1] = (
-                            chunk.upper[axis][gap]
-                        )
-
-                        velocities[cs_axes[axis]][
-                            profile_gap + len_gap : profile_gap + len_gap + 2
-                        ] = np.repeat(
-                            (chunk.upper[axis][gap] - chunk.lower[axis][gap])
-                            / chunk.midpoints["DURATION"][gap],
-                            2,
-                            axis=0,
-                        )
-
                     else:
                         time_array[profile_gap : profile_gap + len_gap] = time_gap
-                        user_array[profile_gap : profile_gap + len_gap] = 2
+                        user_array[profile_gap : profile_gap + len_gap - 1] = 2
+                        user_array[profile_gap + len_gap - 1] = 1
 
-                        time_array[
-                            profile_gap + len_gap : profile_gap + len_gap + 2
-                        ] = np.repeat(
-                            chunk.midpoints["DURATION"][gap] / (2 * TICK_S), 2
-                        )
-                        user_array[
-                            profile_gap + len_gap : profile_gap + len_gap + 2
-                        ] = 1
-
-                added_point += len_gap + 1
+                added_point += len_gap
             start = gap
 
         # Calculate Starting and end Position to allow ramp up and trail off velocity
