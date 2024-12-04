@@ -268,6 +268,7 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
     elif datatype in (None, inferred_datatype):
         # If datatype matches what we are given then allow it and use inferred converter
         return converter_cls(inferred_datatype)
+    # Allow waveforms with FTVL=CHAR to be treated as str when requested
     elif datatype is str and inferred_datatype == Array1D[np.int8]:
         return PvaLongStringConverter()
     raise TypeError(
