@@ -1,3 +1,9 @@
+from ._derived_signal import (
+    DerivedBackend,
+    DerivedSignalBackend,
+    Transform,
+    TransformArgument,
+)
 from ._detector import (
     DetectorController,
     DetectorTrigger,
@@ -99,6 +105,10 @@ from ._utils import (
 )
 
 __all__ = [
+    "DerivedBackend",
+    "DerivedSignalBackend",
+    "Transform",
+    "TransformArgument",
     "DetectorController",
     "DetectorTrigger",
     "DetectorWriter",

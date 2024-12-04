@@ -127,6 +127,14 @@ class AsyncStageable(Protocol):
         """
 
 
+@runtime_checkable
+class AsyncMovable(Protocol):
+    @abstractmethod
+    def set(self, value) -> AsyncStatus:
+        """Return a ``Status`` that is marked done when the device is done moving."""
+        ...
+
+
 C = TypeVar("C", contravariant=True)
 
 
