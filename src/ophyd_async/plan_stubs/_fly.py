@@ -119,11 +119,9 @@ def fly_and_collect(
     yield from bps.kickoff(flyer, wait=True)
     for detector in detectors:
         yield from bps.kickoff(detector)
-    group = short_uid(label="complete")
 
-    yield from bps.complete(flyer, wait=False, group=group)
-    for detector in detectors:
-        yield from bps.complete(detector, wait=False, group=group)
+    group = short_uid(label="complete")
+    yield from bps.complete_all(flyer, wait=False, group=group)
 
     done = False
     while not done:
