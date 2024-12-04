@@ -21,10 +21,7 @@ from ophyd_async.core import (
     set_mock_value,
 )
 from ophyd_async.epics import demo
-
-# Long enough for multiple asyncio event loop cycles to run so
-# all the tasks have a chance to run
-A_WHILE = 0.001
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 @pytest.fixture
@@ -141,7 +138,7 @@ async def test_mover_moving_well(mock_mover: demo.Mover) -> None:
         time_elapsed=pytest.approx(0.1, abs=0.05),
     )
     set_mock_value(mock_mover.readback, 0.5499999)
-    await asyncio.sleep(A_WHILE)
+    await wait_for_pending_wakeups()
     assert s.done
     assert s.success
     done.assert_called_once_with(s)
@@ -279,14 +276,14 @@ async def test_read_sensor(mock_sensor: demo.Sensor):
     assert (await mock_sensor.read())["mock_sensor-value"]["value"] == 0
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
-    ] == demo.EnergyMode.low
+    ] == demo.EnergyMode.LOW
     desc = (await mock_sensor.describe_configuration())["mock_sensor-mode"]
     assert desc["dtype"] == "string"
     assert desc["choices"] == ["Low Energy", "High Energy"]
-    set_mock_value(mock_sensor.mode, demo.EnergyMode.high)
+    set_mock_value(mock_sensor.mode, demo.EnergyMode.HIGH)
     assert (await mock_sensor.read_configuration())["mock_sensor-mode"][
         "value"
-    ] == demo.EnergyMode.high
+    ] == demo.EnergyMode.HIGH
 
 
 async def test_sensor_in_plan(RE: RunEngine, mock_sensor: demo.Sensor):
@@ -315,7 +312,7 @@ async def test_assembly_renaming() -> None:
     thing.set_name("foo")
     assert thing.x.name == "foo-x"
     assert thing.x.velocity.name == "foo-x-velocity"
-    assert thing.x.stop_.name == "foo-x-stop"
+    assert thing.x.stop_.name == "foo-x-stop_"
 
 
 async def test_dynamic_sensor_group_disconnected():

@@ -15,9 +15,9 @@ from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
 class PilatusController(DetectorController):
     _supported_trigger_types = {
-        DetectorTrigger.internal: PilatusTriggerMode.internal,
-        DetectorTrigger.constant_gate: PilatusTriggerMode.ext_enable,
-        DetectorTrigger.variable_gate: PilatusTriggerMode.ext_enable,
+        DetectorTrigger.INTERNAL: PilatusTriggerMode.INTERNAL,
+        DetectorTrigger.CONSTANT_GATE: PilatusTriggerMode.EXT_ENABLE,
+        DetectorTrigger.VARIABLE_GATE: PilatusTriggerMode.EXT_ENABLE,
     }
 
     def __init__(
@@ -44,7 +44,7 @@ class PilatusController(DetectorController):
                 if trigger_info.total_number_of_triggers == 0
                 else trigger_info.total_number_of_triggers
             ),
-            self._drv.image_mode.set(adcore.ImageMode.multiple),
+            self._drv.image_mode.set(adcore.ImageMode.MULTIPLE),
         )
 
     async def arm(self):

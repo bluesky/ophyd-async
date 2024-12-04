@@ -28,28 +28,28 @@ from ophyd_async.epics.core import epics_signal_rw
 
 
 class TriggerState(StrictEnum):
-    null = "null"
-    preparing = "preparing"
-    starting = "starting"
-    stopping = "stopping"
+    NULL = "null"
+    PREPARING = "preparing"
+    STARTING = "starting"
+    STOPPING = "stopping"
 
 
 class DummyTriggerLogic(FlyerController[int]):
     def __init__(self):
-        self.state = TriggerState.null
+        self.state = TriggerState.NULL
 
     async def prepare(self, value: int):
-        self.state = TriggerState.preparing
+        self.state = TriggerState.PREPARING
         return value
 
     async def kickoff(self):
-        self.state = TriggerState.starting
+        self.state = TriggerState.STARTING
 
     async def complete(self):
-        self.state = TriggerState.null
+        self.state = TriggerState.NULL
 
     async def stop(self):
-        self.state = TriggerState.stopping
+        self.state = TriggerState.STOPPING
 
 
 class DummyWriter(DetectorWriter):
@@ -160,7 +160,7 @@ async def test_hardware_triggered_flyable(
 
     def flying_plan():
         yield from bps.stage_all(*detectors, flyer)
-        assert flyer._trigger_logic.state == TriggerState.stopping
+        assert flyer._trigger_logic.state == TriggerState.STOPPING
 
         # move the flyer to the correct place, before fly scanning.
         # Prepare the flyer first to get the trigger info for the detectors
@@ -172,14 +172,14 @@ async def test_hardware_triggered_flyable(
                 detector,
                 TriggerInfo(
                     number_of_triggers=number_of_triggers,
-                    trigger=DetectorTrigger.constant_gate,
+                    trigger=DetectorTrigger.CONSTANT_GATE,
                     deadtime=2,
                     livetime=2,
                 ),
                 wait=True,
             )
 
-        assert flyer._trigger_logic.state == TriggerState.preparing
+        assert flyer._trigger_logic.state == TriggerState.PREPARING
         for detector in detectors:
             detector.controller.disarm.assert_called_once()  # type: ignore
 
@@ -195,7 +195,7 @@ async def test_hardware_triggered_flyable(
             for detector in detectors:
                 yield from bps.complete(detector, wait=False, group="complete")
 
-            assert flyer._trigger_logic.state == TriggerState.null
+            assert flyer._trigger_logic.state == TriggerState.NULL
 
             # Manually increment the index as if a frame was taken
             frames_completed += frames
@@ -227,7 +227,7 @@ async def test_hardware_triggered_flyable(
         yield from bps.unstage_all(flyer, *detectors)
         for detector in detectors:
             assert detector.controller.disarm.called  # type: ignore
-        assert trigger_logic.state == TriggerState.stopping
+        assert trigger_logic.state == TriggerState.STOPPING
 
     # fly scan
     RE(flying_plan())
@@ -282,14 +282,14 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
     flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
         number_of_triggers=number_of_triggers,
-        trigger=DetectorTrigger.constant_gate,
+        trigger=DetectorTrigger.CONSTANT_GATE,
         deadtime=2,
         livetime=2,
     )
 
     def flying_plan():
         yield from bps.stage_all(*detectors, flyer)
-        assert flyer._trigger_logic.state == TriggerState.stopping
+        assert flyer._trigger_logic.state == TriggerState.STOPPING
 
         # move the flyer to the correct place, before fly scanning.
         # Prepare the flyer first to get the trigger info for the detectors
@@ -316,7 +316,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         for detector in detectors:
             yield from bps.complete(detector, wait=False, group="complete")
 
-        assert flyer._trigger_logic.state == TriggerState.null
+        assert flyer._trigger_logic.state == TriggerState.NULL
 
         # Manually increment the index as if a frame was taken
         for detector in detectors:
@@ -367,7 +367,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         (
             {
                 "number_of_triggers": 1,
-                "trigger": DetectorTrigger.constant_gate,
+                "trigger": DetectorTrigger.CONSTANT_GATE,
                 "deadtime": 2,
                 "livetime": 2,
                 "frame_timeout": "a",
@@ -388,7 +388,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         (
             {
                 "number_of_triggers": 1,
-                "trigger": DetectorTrigger.internal,
+                "trigger": DetectorTrigger.INTERNAL,
                 "deadtime": 2,
                 "livetime": 1,
                 "frame_timeout": -1,

@@ -10,6 +10,7 @@ from ophyd_async.core import (
     AsyncStatus,
     DeviceCollector,
     callback_on_mock_put,
+    get_mock_put,
     mock_puts_blocked,
     observe_value,
     set_mock_put_proceeds,
@@ -17,17 +18,7 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.epics import motor
-
-
-async def wait_for_wakeups(max_yields=10):
-    loop = asyncio.get_event_loop()
-    # If anything has called loop.call_soon or is scheduled a wakeup
-    # then let it run
-    for _ in range(max_yields):
-        await asyncio.sleep(0)
-        if not loop._ready:
-            return
-    raise RuntimeError(f"Tasks still scheduling wakeups after {max_yields} yields")
+from ophyd_async.testing import wait_for_pending_wakeups
 
 
 @pytest.fixture
@@ -44,7 +35,7 @@ async def sim_motor():
 async def wait_for_eq(item, attribute, comparison, timeout):
     timeout_time = time.monotonic() + timeout
     while getattr(item, attribute) != comparison:
-        await wait_for_wakeups()
+        await wait_for_pending_wakeups()
         if time.monotonic() > timeout_time:
             raise TimeoutError
 
@@ -56,7 +47,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     s.watch(watcher)
     done = Mock()
     s.add_callback(done)
-    await wait_for_wakeups()
+    await wait_for_pending_wakeups()
     await wait_for_eq(watcher, "call_count", 1, 1)
     assert watcher.call_args == call(
         name="sim_motor",
@@ -86,7 +77,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_mock_value(sim_motor.motor_done_move, True)
     set_mock_value(sim_motor.user_readback, 0.55)
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await wait_for_wakeups()
+    await wait_for_pending_wakeups()
     await wait_for_eq(s, "done", True, 1)
     done.assert_called_once_with(s)
 
@@ -98,7 +89,7 @@ async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
     s.watch(watcher)
     done = Mock()
     s.add_callback(done)
-    await wait_for_wakeups()
+    await wait_for_pending_wakeups()
     assert watcher.call_count == 1
     assert watcher.call_args == call(
         name="sim_motor",
@@ -126,7 +117,7 @@ async def test_motor_moving_well_2(sim_motor: motor.Motor) -> None:
         time_elapsed=pytest.approx(0.1, abs=0.2),
     )
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await wait_for_wakeups()
+    await wait_for_pending_wakeups()
     assert s.done
     done.assert_called_once_with(s)
 
@@ -164,8 +155,13 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     await asyncio.sleep(0.2)
     assert not s.done
     await sim_motor.stop()
+
+    # Note: needs to explicitly be called with 1, not just processed.
+    # See https://epics.anl.gov/bcda/synApps/motor/motorRecord.html#Fields_command
+    get_mock_put(sim_motor.motor_stop).assert_called_once_with(1, wait=False)
+
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await wait_for_wakeups()
+    await wait_for_pending_wakeups()
     assert s.done
     assert s.success is False
 
@@ -339,7 +335,7 @@ async def test_locatable(sim_motor: motor.Motor) -> None:
         lambda x, *_, **__: set_mock_value(sim_motor.user_readback, x),
     )
     assert (await sim_motor.locate())["readback"] == 0
-    async with mock_puts_blocked(sim_motor.user_setpoint):
+    with mock_puts_blocked(sim_motor.user_setpoint):
         move_status = sim_motor.set(10)
         assert (await sim_motor.locate())["readback"] == 0
     await move_status

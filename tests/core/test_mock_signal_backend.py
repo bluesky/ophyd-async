@@ -118,7 +118,7 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
         get_mock_put(signal).assert_called_once_with(10)
     exc_msgs.append(str(exc.value))
     with pytest.raises(AssertionError) as exc:
-        async with mock_puts_blocked(signal):
+        with mock_puts_blocked(signal):
             ...
     exc_msgs.append(str(exc.value))
     with pytest.raises(AssertionError) as exc:
@@ -182,7 +182,7 @@ async def mock_signals():
 async def test_blocks_during_put(mock_signals):
     signal1, signal2 = mock_signals
 
-    async with mock_puts_blocked(signal1, signal2):
+    with mock_puts_blocked(signal1, signal2):
         status1 = signal1.set("second_value", wait=True, timeout=None)
         status2 = signal2.set("second_value", wait=True, timeout=None)
         assert await signal1.get_value() == "second_value"

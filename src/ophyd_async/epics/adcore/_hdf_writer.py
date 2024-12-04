@@ -20,7 +20,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._core_io import NDArrayBaseIO, NDFileHDFIO
+from ._core_io import Callback, NDArrayBaseIO, NDFileHDFIO
 from ._utils import (
     FileWriteMode,
     convert_param_dtype_to_np,
@@ -67,10 +67,11 @@ class ADHDFWriter(DetectorWriter):
             self.hdf.file_path.set(str(info.directory_path)),
             self.hdf.file_name.set(info.filename),
             self.hdf.file_template.set("%s/%s.h5"),
-            self.hdf.file_write_mode.set(FileWriteMode.stream),
+            self.hdf.file_write_mode.set(FileWriteMode.STREAM),
             # Never use custom xml layout file but use the one defined
             # in the source code file NDFileHDF5LayoutXML.cpp
             self.hdf.xml_file_name.set(""),
+            self.hdf.enable_callbacks.set(Callback.ENABLE),
         )
 
         assert (
@@ -80,7 +81,9 @@ class ADHDFWriter(DetectorWriter):
         # Overwrite num_capture to go forever
         await self.hdf.num_capture.set(0)
         # Wait for it to start, stashing the status that tells us when it finishes
-        self._capture_status = await set_and_wait_for_value(self.hdf.capture, True)
+        self._capture_status = await set_and_wait_for_value(
+            self.hdf.capture, True, wait_for_set_completion=False
+        )
         name = self._name_provider()
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()

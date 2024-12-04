@@ -4,16 +4,16 @@ from ophyd_async.epics.core import epics_signal_rw_rbv
 
 
 class KinetixTriggerMode(StrictEnum):
-    internal = "Internal"
-    edge = "Rising Edge"
-    gate = "Exp. Gate"
+    INTERNAL = "Internal"
+    EDGE = "Rising Edge"
+    GATE = "Exp. Gate"
 
 
 class KinetixReadoutMode(StrictEnum):
-    sensitivity = 1
-    speed = 2
-    dynamic_range = 3
-    sub_electron = 4
+    SENSITIVITY = 1
+    SPEED = 2
+    DYNAMIC_RANGE = 3
+    SUB_ELECTRON = 4
 
 
 class KinetixDriverIO(adcore.ADBaseIO):

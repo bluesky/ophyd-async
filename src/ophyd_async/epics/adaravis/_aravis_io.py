@@ -6,8 +6,8 @@ from ophyd_async.epics.core import epics_signal_rw_rbv
 class AravisTriggerMode(StrictEnum):
     """GigEVision GenICAM standard: on=externally triggered"""
 
-    on = "On"
-    off = "Off"
+    ON = "On"
+    OFF = "Off"
 
 
 """A minimal set of TriggerSources that must be supported by the underlying record.
@@ -20,8 +20,8 @@ class AravisTriggerMode(StrictEnum):
 
 
 class AravisTriggerSource(SubsetEnum):
-    freerun = "Freerun"
-    line1 = "Line1"
+    FREERUN = "Freerun"
+    LINE1 = "Line1"
 
 
 class AravisDriverIO(adcore.ADBaseIO):

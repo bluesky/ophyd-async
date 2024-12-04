@@ -15,6 +15,8 @@ from ophyd_async.fastcs.panda import (
     SeqTableInfo,
 )
 
+DEFAULT_FLUSH_PERIOD = 0.5
+
 
 def prepare_static_pcomp_flyer_and_detectors(
     flyer: StandardFlyer[PcompInfo],
@@ -62,7 +64,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
     trigger_info = TriggerInfo(
         number_of_triggers=number_of_frames * repeats,
-        trigger=DetectorTrigger.constant_gate,
+        trigger=DetectorTrigger.CONSTANT_GATE,
         deadtime=deadtime,
         livetime=exposure,
         frame_timeout=frame_timeout,
@@ -104,6 +106,7 @@ def fly_and_collect(
     stream_name: str,
     flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
     detectors: list[StandardDetector],
+    flush_period: float = DEFAULT_FLUSH_PERIOD,
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
 
@@ -116,8 +119,6 @@ def fly_and_collect(
     yield from bps.kickoff(flyer, wait=True)
     for detector in detectors:
         yield from bps.kickoff(detector)
-
-    # collect_while_completing
     group = short_uid(label="complete")
 
     yield from bps.complete(flyer, wait=False, group=group)
@@ -126,18 +127,8 @@ def fly_and_collect(
 
     done = False
     while not done:
-        try:
-            yield from bps.wait(group=group, timeout=0.5)
-        except TimeoutError:
-            pass
-        else:
-            done = True
-        yield from bps.collect(
-            *detectors,
-            return_payload=False,
-            name=stream_name,
-        )
-    yield from bps.wait(group=group)
+        done = yield from bps.wait(group=group, timeout=flush_period, move_on=True)
+        yield from bps.collect(*detectors, name=stream_name)
 
 
 def fly_and_collect_with_static_pcomp(

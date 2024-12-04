@@ -1,0 +1,158 @@
+record(bo, "$(device)bool") {
+  field(ZNAM, "No")
+  field(ONAM, "Yes")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(bo, "$(device)bool_unnamed") {
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(longout, "$(device)int") {
+  field(LLSV, "MAJOR") # LOLO is alarm
+  field(LSV, "MINOR") # LOW is warning
+  field(HSV, "MINOR") # HIGH is warning
+  field(HHSV, "MAJOR") # HIHI is alarm
+  field(HOPR, "100")
+  field(HIHI, "98")
+  field(HIGH, "96")
+  field(DRVH, "90")
+  field(DRVL, "10")
+  field(LOW, "5")
+  field(LOLO, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(longout, "$(device)partialint") {
+  field(LLSV, "MAJOR") # LOLO is alarm
+  field(HHSV, "MAJOR") # HIHI is alarm
+  field(HOPR, "100")
+  field(HIHI, "98")
+  field(DRVH, "90")
+  field(DRVL, "10")
+  field(LOLO, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(longout, "$(device)lessint") {
+  field(HSV, "MINOR") # LOW is warning
+  field(LSV, "MINOR") # HIGH is warning
+  field(HOPR, "100")
+  field(HIGH, "98")
+  field(LOW, "2")
+  field(LOPR, "0")
+  field(VAL, "42")
+  field(PINI, "YES")
+}
+
+record(ao, "$(device)float") {
+  field(PREC, "1")
+  field(EGU, "mm")
+  field(VAL, "3.141")
+  field(PINI, "YES")
+}
+
+record(ao, "$(device)float_prec_0") {
+  field(PREC, "0")
+  field(EGU, "mm")
+  field(VAL, "3")
+  field(PINI, "YES")
+}
+
+record(ao, "$(device)float_prec_1") {
+  field(PREC, "1")
+  field(EGU, "mm")
+  field(VAL, "3")
+  field(PINI, "YES")
+}
+
+record(stringout, "$(device)str") {
+  field(VAL, "hello")
+  field(PINI, "YES")
+}
+
+record(mbbo, "$(device)enum") {
+  field(ZRST, "Aaa")
+  field(ZRVL, "5")
+  field(ONST, "Bbb")
+  field(ONVL, "6")
+  field(TWST, "Ccc")
+  field(TWVL, "7")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(mbbo, "$(device)enum2") {
+  field(ZRST, "Aaa")
+  field(ONST, "Bbb")
+  field(TWST, "Ccc")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)uint8a") {
+  field(NELM, "3")
+  field(FTVL, "UCHAR")
+  field(INP, {const:[0, 255]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)int16a") {
+  field(NELM, "3")
+  field(FTVL, "SHORT")
+  field(INP, {const:[-32768, 32767]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)int32a") {
+  field(NELM, "3")
+  field(FTVL, "LONG")
+  field(INP, {const:[-2147483648, 2147483647]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)float32a") {
+  field(NELM, "3")
+  field(FTVL, "FLOAT")
+  field(INP, {const:[0.000002, -123.123]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)float64a") {
+  field(NELM, "3")
+  field(FTVL, "DOUBLE")
+  field(INP, {const:[0.1, -12345678.123]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)stra") {
+  field(NELM, "3")
+  field(FTVL, "STRING")
+  field(INP, {const:["five", "six", "seven"]})
+  field(PINI, "YES")
+}
+
+record(waveform, "$(device)longstr") {
+  field(NELM, "80")
+  field(FTVL, "CHAR")
+  field(INP, {const:"a string that is just longer than forty characters"})
+  field(PINI, "YES")
+}
+
+record(lsi, "$(device)longstr2") {
+  field(SIZV, "80")
+  field(INP, {const:"a string that is just longer than forty characters"})
+  field(PINI, "YES")
+}
+
+record(calc, "$(device)ticking") {
+  field(INPA, "$(device)ticking")
+  field(CALC, "A+1")
+  field(SCAN, ".1 second")
+}
