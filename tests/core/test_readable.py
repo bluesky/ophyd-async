@@ -32,13 +32,13 @@ def test_standard_readable_hints():
 
     assert sr.hints == {}
 
-    hint1 = MagicMock()
+    hint1 = MagicMock(spec=HasHints)
     hint1.hints = {"fields": ["abc"], "dimensions": [(["f1", "f2"], "s1")]}
 
-    hint2 = MagicMock()
+    hint2 = MagicMock(spec=HasHints)
     hint2.hints = {"fields": ["def", "ghi"]}
 
-    hint3 = MagicMock()
+    hint3 = MagicMock(spec=HasHints)
     hint3.hints = {"fields": ["jkl"], "gridding": "rectilinear_nonsequential"}
 
     sr.add_readables([hint1, hint2, hint3])
@@ -53,10 +53,10 @@ def test_standard_readable_hints():
 def test_standard_readable_hints_raises_when_overriding_string_literal():
     sr = StandardReadable()
 
-    hint1 = MagicMock()
+    hint1 = MagicMock(spec=HasHints)
     hint1.hints = {"gridding": "rectilinear_nonsequential"}
 
-    hint2 = MagicMock()
+    hint2 = MagicMock(spec=HasHints)
     hint2.hints = {"gridding": "a different string"}
 
     sr._has_hints = (
@@ -71,10 +71,10 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
 def test_standard_readable_hints_raises_when_overriding_sequence():
     sr = StandardReadable()
 
-    hint1 = MagicMock()
+    hint1 = MagicMock(spec=HasHints)
     hint1.hints = {"fields": ["field1", "field2"]}
 
-    hint2 = MagicMock()
+    hint2 = MagicMock(spec=HasHints)
     hint2.hints = {"fields": ["field2"]}
 
     sr._has_hints = (
@@ -90,7 +90,7 @@ def test_standard_readable_hints_raises_when_overriding_sequence():
 def test_standard_readable_hints_invalid_types(invalid_type):
     sr = StandardReadable()
 
-    hint1 = MagicMock()
+    hint1 = MagicMock(spec=HasHints)
     hint1.hints = {"test": invalid_type}
 
     sr._has_hints = (hint1,)
