@@ -10,6 +10,8 @@
   int64a: [-9223372036854775808, 9223372036854775807, 0, 1, 2, 3, 4]
   int8a: [-128, 127, 0, 1, 2, 3, 4]
   lessint: 0
+  longstr: '/here/is/a/long/string/of/more/than/40/chars'
+  longstr2: ''
   my_bool: false
   my_float: 1.234
   my_int: 1

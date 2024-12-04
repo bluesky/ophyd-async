@@ -94,6 +94,22 @@ class PvaConverter(Generic[SignalDatatypeT]):
         return value
 
 
+class PvaLongStringConverter(PvaConverter[str]):
+    def __init__(self):
+        super().__init__(str)
+
+    def value(self, value: Any) -> Any:
+        # Value here is a null terminated array of ascii codes.
+        # We strip out the null terminator, and convert each code
+        # to the corresponding char, joining into a string
+        return value["value"].tobytes().rstrip(b"\0").decode()
+
+    def write_value(self, value: Any) -> Any:
+        # Inverse of reading - convert each character into it's ascii code,
+        # put into a list, and add null terminator.
+        return np.frombuffer(str(value).encode() + b"\0", dtype=np.int8)
+
+
 class DisconnectedPvaConverter(PvaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
@@ -252,6 +268,9 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
     elif datatype in (None, inferred_datatype):
         # If datatype matches what we are given then allow it and use inferred converter
         return converter_cls(inferred_datatype)
+    # Allow waveforms with FTVL=CHAR to be treated as str when requested
+    elif datatype is str and inferred_datatype == Array1D[np.int8]:
+        return PvaLongStringConverter()
     raise TypeError(
         f"{pv} with inferred datatype {format_datatype(inferred_datatype)}"
         f" from {typeid=} {specifier=}"

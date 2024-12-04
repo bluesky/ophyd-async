@@ -40,6 +40,8 @@ class ExampleCaDevice(EpicsDevice):
     my_int: A[SignalRW[int], PvSuffix("int")]
     my_float: A[SignalRW[float], PvSuffix("float")]
     my_str: A[SignalRW[str], PvSuffix("str")]
+    longstr: A[SignalRW[str], PvSuffix("longstr")]
+    longstr2: A[SignalRW[str], PvSuffix("longstr2")]
     my_bool: A[SignalRW[bool], PvSuffix("bool")]
     enum: A[SignalRW[ExampleEnum], PvSuffix("enum")]
     enum2: A[SignalRW[ExampleEnum], PvSuffix("enum2")]
