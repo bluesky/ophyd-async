@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 import bluesky.plan_stubs as bps
@@ -12,6 +12,7 @@ from ophyd_async.core import (
     Settings,
     SettingsProvider,
     SignalRW,
+    T,
     walk_rw_signals,
 )
 
@@ -20,12 +21,20 @@ from ._wait_for_one import wait_for_one
 
 @plan
 def _get_values_of_signals(
-    signals: dict[str, SignalRW],
-) -> MsgGenerator[dict[str, Any]]:
+    signals: Mapping[T, SignalRW],
+) -> MsgGenerator[dict[T, Any]]:
     coros = [sig.get_value() for sig in signals.values()]
     values = yield from wait_for_one(asyncio.gather(*coros))
     named_values = dict(zip(signals, values, strict=True))
     return named_values
+
+
+@plan
+def get_current_settings(device: Device) -> MsgGenerator[Settings]:
+    signals = walk_rw_signals(device)
+    named_values = yield from _get_values_of_signals(signals)
+    signal_values = {signals[name]: value for name, value in named_values.items()}
+    return Settings(signal_values)
 
 
 @plan
@@ -58,41 +67,38 @@ def apply_settings(settings: Settings) -> MsgGenerator[None]:
         yield from bps.wait("apply_settings")
 
 
-Reverter = Callable[[], MsgGenerator[None]]
-
-
-def _settings_to_change(
-    device: Device, settings: Settings
-) -> MsgGenerator[tuple[Settings, Settings]]:
-    # Get the current settings of the Device
-    signals = walk_rw_signals(device)
-    named_values = yield from _get_values_of_signals(signals)
-    signal_values = {signals[name]: value for name, value in named_values.items()}
-    original_settings = Settings(signal_values)
-    # Check that the signals in settings are actually in the Device
-    unknown_signals = set(settings) - set(original_settings)
-    assert not unknown_signals, f"Signal {unknown_signals} are not in {device}"
-    # Work out which signals need to change
+@plan
+def apply_settings_if_different(
+    settings: Settings,
+    apply_plan: Callable[[Settings], MsgGenerator[None]],
+    current_settings: Settings | None = None,
+) -> MsgGenerator[None]:
+    if current_settings is None:
+        signal_values = yield from _get_values_of_signals(
+            {sig: sig for sig in settings}
+        )
+        current_settings = Settings(signal_values)
     signals_to_change = {
         signal: value
         for signal, value in settings.items()
-        if original_settings[signal] != value
+        if current_settings[signal] != value
     }
-    # Return the settings that need to change and their original values
-    return Settings(signals_to_change), original_settings
+    yield from apply_plan(Settings(signals_to_change))
 
 
-def only_set_unequal_signals(
-    apply_device_settings: Callable[[Settings], MsgGenerator[None]],
-) -> Callable[[Device, Settings], MsgGenerator[Reverter]]:
-    def apply_to_unequal(device: Device, settings: Settings) -> MsgGenerator[Reverter]:
-        to_change, original = yield from _settings_to_change(device, settings)
-        yield from apply_device_settings(to_change)
-
-        def revert_settings() -> MsgGenerator[None]:
-            to_change_back, _ = yield from _settings_to_change(device, original)
-            yield from apply_device_settings(to_change_back)
-
-        return revert_settings
-
-    return apply_to_unequal
+# def thing(panda: Device, settings: Settings) -> MsgGenerator[None]:
+#     # Get the initial state of the device
+#     initial_settings = yield from get_current_settings(panda)
+#     # Apply our settings that are different from the initial settings
+#     settings.check_can_apply_to(panda)
+#     yield from apply_settings_if_different(
+#         settings, apply_settings_to_panda, initial_settings
+#     )
+#     yield from fly(panda)
+#     # Setup for a different plan
+#     yield from apply_settings_if_different(settings, apply_settings_to_panda)
+#     yield from fly(panda)
+#     # Restore to how it was
+#     yield from apply_settings_if_different(
+#         initial_settings, apply_settings_if_different
+#     )

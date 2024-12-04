@@ -4,7 +4,8 @@ from abc import abstractmethod
 from collections.abc import Callable, Iterator, MutableMapping
 from typing import Any
 
-from ._signal import SignalRW
+from ._device import Device
+from ._signal import SignalRW, walk_rw_signals
 from ._signal_backend import SignalDatatypeT
 
 
@@ -47,6 +48,12 @@ class Settings(MutableMapping[SignalRW[Any], Any]):
             dest = where_true if predicate(signal) else where_false
             dest[signal] = value
         return where_true, where_false
+
+    def check_can_apply_to(self, device: Device) -> None:
+        signals_in_device = walk_rw_signals(device)
+        # Check that the signals in settings are actually in the Device
+        unknown_signals = set(self) - set(signals_in_device.values())
+        assert not unknown_signals, f"Signal {unknown_signals} are not in {device}"
 
 
 class SettingsProvider:

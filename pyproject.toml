@@ -177,9 +177,9 @@ root_package = "ophyd_async"
 name = "All runtime modules are in layers"
 type = "layers"
 containers = ["ophyd_async"]
-layers = ["plan_stubs", "fastcs", "epics | tango", "core"]
+layers = ["plan_stubs", "fastcs", "epics | tango | sim", "core"]
 exhaustive = true
-exhaustive_ignores = ["ophyd_async.testing"]
+exhaustive_ignores = ["testing", "_version", "__main__"]
 
 [[tool.importlinter.contracts]]
 name = "Testing modules"
