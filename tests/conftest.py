@@ -89,7 +89,9 @@ def _error_and_kill_pending_tasks(
     unfinished_tasks = {
         task
         for task in asyncio.all_tasks(loop)
-        if task.get_coro().__name__ not in _ALLOWED_PYTEST_TASKS and not task.done()
+        if (coro := task.get_coro()) is not None
+        and coro.__name__ not in _ALLOWED_PYTEST_TASKS
+        and not task.done()
     }
     for task in unfinished_tasks:
         task.cancel()
@@ -113,15 +115,22 @@ def fail_test_on_unclosed_tasks(request: FixtureRequest):
     by the end of the test.
     """
 
-    fail_count = request.session.testsfailed
-    loop = asyncio.get_event_loop()
-    loop.set_debug(True)
+    try:
+        fail_count = request.session.testsfailed
+        loop = asyncio.get_running_loop()
 
-    request.addfinalizer(
-        lambda: _error_and_kill_pending_tasks(
-            loop, request.node.name, request.session.testsfailed == fail_count
+        loop.set_debug(True)
+
+        request.addfinalizer(
+            lambda: _error_and_kill_pending_tasks(
+                loop, request.node.name, request.session.testsfailed == fail_count
+            )
         )
-    )
+    # Once https://github.com/bluesky/ophyd-async/issues/683
+    # is finished we can remove this try, except.
+    except RuntimeError as error:
+        if str(error) != "no running event loop":
+            raise error
 
 
 @pytest.fixture(scope="function")
@@ -242,4 +251,11 @@ def pytest_collection_modifyitems(config, items):
 
     for item in items:
         if tango_dir in str(item.fspath):
-            item.add_marker(pytest.mark.forked)
+            if sys.version_info >= (3, 12):
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason="Tango is currently not supported on Python 3.12: https://github.com/bluesky/ophyd-async/issues/681"
+                    )
+                )
+            else:
+                item.add_marker(pytest.mark.forked)
