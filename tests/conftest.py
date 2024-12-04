@@ -251,4 +251,11 @@ def pytest_collection_modifyitems(config, items):
 
     for item in items:
         if tango_dir in str(item.fspath):
-            item.add_marker(pytest.mark.forked)
+            if sys.version_info >= (3, 12):
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason="Tango is currently not supported on Python 3.12: https://github.com/bluesky/ophyd-async/issues/681"
+                    )
+                )
+            else:
+                item.add_marker(pytest.mark.forked)
