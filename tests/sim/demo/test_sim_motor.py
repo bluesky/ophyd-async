@@ -39,6 +39,43 @@ async def test_slow_move():
     assert elapsed < 1
 
 
+async def test_negative_move():
+    m1 = SimMotor("M1", instant=False)
+    await m1.connect()
+    assert await m1.user_readback.get_value() == 0.0
+    status = m1.set(-0.19)
+    updates = []
+    status.watch(lambda **kwargs: updates.append(kwargs))
+    await status
+    assert await m1.user_readback.get_value() == -0.19
+    assert updates == [
+        {
+            "current": 0.0,
+            "initial": 0.0,
+            "name": "M1",
+            "target": -0.19,
+            "time_elapsed": pytest.approx(0, abs=0.05),
+            "unit": "mm",
+        },
+        {
+            "current": -0.1,
+            "initial": 0.0,
+            "name": "M1",
+            "target": -0.19,
+            "time_elapsed": pytest.approx(0.1, abs=0.05),
+            "unit": "mm",
+        },
+        {
+            "current": -0.19,
+            "initial": 0.0,
+            "name": "M1",
+            "target": -0.19,
+            "time_elapsed": pytest.approx(0.19, abs=0.05),
+            "unit": "mm",
+        },
+    ]
+
+
 async def test_stop():
     async with DeviceCollector():
         m1 = SimMotor("M1", instant=False)
