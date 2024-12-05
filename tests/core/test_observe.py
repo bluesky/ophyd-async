@@ -92,6 +92,10 @@ async def test_observe_value_times_out_with_busy_sleep():
             recv.append(val)
 
     t = asyncio.create_task(tick())
+    # Let it get started so we get our first update
+    # This is needed to fix for python 3.12, otherwise the task
+    # gets starved by the busy sleep
+    await asyncio.sleep(0.05)
     start = time.time()
     try:
         with pytest.raises(asyncio.TimeoutError):
