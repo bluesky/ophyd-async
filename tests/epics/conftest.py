@@ -7,9 +7,8 @@ from bluesky.run_engine import RunEngine
 from ophyd_async.core import (
     DeviceCollector,
     StandardDetector,
-    callback_on_mock_put,
-    set_mock_value,
 )
+from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
 
 @pytest.fixture

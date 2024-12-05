@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from ophyd_async.core import DeviceCollector, set_mock_value
+from ophyd_async.core import DeviceCollector
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
@@ -16,6 +16,7 @@ from ophyd_async.fastcs.panda import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
+from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture

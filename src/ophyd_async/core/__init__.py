@@ -21,16 +21,6 @@ from ._flyer import FlyerController, StandardFlyer
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
-from ._mock_signal_utils import (
-    callback_on_mock_put,
-    get_mock,
-    get_mock_put,
-    mock_puts_blocked,
-    reset_mock_put_calls,
-    set_mock_put_proceeds,
-    set_mock_value,
-    set_mock_values,
-)
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
 from ._providers import (
     AutoIncrementFilenameProvider,
@@ -53,14 +43,11 @@ from ._readable import (
 )
 from ._signal import (
     Signal,
+    SignalConnector,
     SignalR,
     SignalRW,
     SignalW,
     SignalX,
-    assert_configuration,
-    assert_emitted,
-    assert_reading,
-    assert_value,
     observe_signals_value,
     observe_value,
     set_and_wait_for_other_value,
@@ -123,14 +110,6 @@ __all__ = [
     "HDFFile",
     "config_ophyd_async_logging",
     "MockSignalBackend",
-    "callback_on_mock_put",
-    "get_mock",
-    "get_mock_put",
-    "mock_puts_blocked",
-    "reset_mock_put_calls",
-    "set_mock_put_proceeds",
-    "set_mock_value",
-    "set_mock_values",
     "AsyncConfigurable",
     "AsyncReadable",
     "AsyncStageable",
@@ -150,14 +129,11 @@ __all__ = [
     "StandardReadable",
     "StandardReadableFormat",
     "Signal",
+    "SignalConnector",
     "SignalR",
     "SignalRW",
     "SignalW",
     "SignalX",
-    "assert_configuration",
-    "assert_emitted",
-    "assert_reading",
-    "assert_value",
     "observe_value",
     "observe_signals_value",
     "set_and_wait_for_value",

@@ -12,6 +12,9 @@ from ophyd_async.core import (
     DeviceCollector,
     LazyMock,
     NotConnected,
+)
+from ophyd_async.epics import demo
+from ophyd_async.testing import (
     assert_emitted,
     assert_reading,
     assert_value,
@@ -19,9 +22,8 @@ from ophyd_async.core import (
     get_mock,
     get_mock_put,
     set_mock_value,
+    wait_for_pending_wakeups,
 )
-from ophyd_async.epics import demo
-from ophyd_async.testing import wait_for_pending_wakeups
 
 
 @pytest.fixture
@@ -293,11 +295,9 @@ async def test_sensor_in_plan(RE: RunEngine, mock_sensor: demo.Sensor):
      when used in plan(count).
     """
     docs = defaultdict(list)
+    RE.subscribe(lambda name, doc: docs[name].append(doc))
 
-    def capture_emitted(name, doc):
-        docs[name].append(doc)
-
-    RE(bp.count([mock_sensor], num=2), capture_emitted)
+    RE(bp.count([mock_sensor], num=2))
     assert_emitted(docs, start=1, descriptor=1, event=2, stop=1)
 
 

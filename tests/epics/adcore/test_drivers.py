@@ -6,10 +6,9 @@ import pytest
 from ophyd_async.core import (
     DetectorController,
     DeviceCollector,
-    get_mock_put,
-    set_mock_value,
 )
 from ophyd_async.epics import adcore
+from ophyd_async.testing import get_mock_put, set_mock_value
 
 TEST_DEADTIME = 0.1
 

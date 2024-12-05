@@ -22,7 +22,6 @@ from ophyd_async.core import (
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
-    set_mock_value,
 )
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
@@ -35,6 +34,7 @@ from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
     time_resolved_fly_and_collect_with_static_seq_table,
 )
+from ophyd_async.testing import set_mock_value
 
 
 class DummyWriter(DetectorWriter):

@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from unittest.mock import ANY
 
 import bluesky.plan_stubs as bps
@@ -9,9 +10,6 @@ from ophyd_async.core import (
     StandardFlyer,
     StaticFilenameProvider,
     StaticPathProvider,
-    assert_emitted,
-    callback_on_mock_put,
-    set_mock_value,
 )
 from ophyd_async.fastcs.panda import (
     DatasetTable,
@@ -22,6 +20,7 @@ from ophyd_async.fastcs.panda import (
 from ophyd_async.plan_stubs import (
     prepare_static_seq_table_flyer_and_detectors_with_same_trigger,
 )
+from ophyd_async.testing import assert_emitted, callback_on_mock_put, set_mock_value
 
 
 @pytest.fixture
@@ -64,14 +63,8 @@ async def test_hdf_panda_hardware_triggered_flyable(
     mock_hdf_panda,
     tmp_path,
 ):
-    docs = {}
-
-    def append_and_print(name, doc):
-        if name not in docs:
-            docs[name] = []
-        docs[name] += [doc]
-
-    RE.subscribe(append_and_print)
+    docs = defaultdict(list)
+    RE.subscribe(lambda name, doc: docs[name].append(doc))
 
     shutter_time = 0.004
     exposure = 1

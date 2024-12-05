@@ -11,6 +11,11 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SoftSignalBackend,
+    soft_signal_r_and_setter,
+    soft_signal_rw,
+)
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+from ophyd_async.testing import (
     callback_on_mock_put,
     get_mock_put,
     mock_puts_blocked,
@@ -18,10 +23,7 @@ from ophyd_async.core import (
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
-    soft_signal_r_and_setter,
-    soft_signal_rw,
 )
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
 
 async def test_mock_signal_backend():
