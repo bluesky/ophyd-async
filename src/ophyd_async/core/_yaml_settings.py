@@ -31,7 +31,10 @@ class YamlSettingsProvider(SettingsProvider):
     def __init__(self, directory: Path | str):
         self._directory = Path(directory)
 
-    def store(self, name: str, data: dict[str, Any]):
+    def _file_path(self, name: str) -> Path:
+        return self._directory / (name + ".yaml")
+
+    async def store(self, name: str, data: dict[str, Any]):
         yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
         yaml.add_multi_representer(
             BaseModel,
@@ -39,18 +42,17 @@ class YamlSettingsProvider(SettingsProvider):
             Dumper=yaml.Dumper,
         )
         yaml.add_multi_representer(Enum, enum_representer, Dumper=yaml.Dumper)
-
-        with open(self._directory / name, "w") as file:
+        with open(self._file_path(name), "w") as file:
             yaml.dump(data, file)
 
-    def retrieve(self, name: str) -> dict[str, Any]:
-        with open(self._directory / name) as file:
+    async def retrieve(self, name: str) -> dict[str, Any]:
+        with open(self._file_path(name)) as file:
             data = yaml.full_load(file)
         if isinstance(data, list):
             warnings.warn(
                 DeprecationWarning(
                     "Found old save file. Re-save your yaml settings file "
-                    f"{self._directory / name} using "
+                    f"{self._file_path(name)} using "
                     "ophyd_async.plan_stubs.store_settings"
                 ),
                 stacklevel=2,

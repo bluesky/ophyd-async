@@ -63,6 +63,7 @@ from ._signal import (
 )
 from ._signal_backend import (
     Array1D,
+    DTypeScalar_co,
     SignalBackend,
     SignalDatatype,
     SignalDatatypeT,
@@ -89,6 +90,7 @@ from ._utils import (
     in_micros,
     wait_for_connection,
 )
+from ._yaml_settings import YamlSettingsProvider
 
 __all__ = [
     "DetectorController",
@@ -153,6 +155,7 @@ __all__ = [
     "wait_for_value",
     "walk_rw_signals",
     "Array1D",
+    "DTypeScalar_co",
     "SignalBackend",
     "make_datakey",
     "StrictEnum",
@@ -179,4 +182,5 @@ __all__ = [
     "in_micros",
     "wait_for_connection",
     "completed_status",
+    "YamlSettingsProvider",
 ]

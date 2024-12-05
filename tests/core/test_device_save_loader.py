@@ -13,13 +13,7 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
     Table,
-    all_at_once,
-    get_signal_values,
-    load_device,
-    load_from_yaml,
-    save_device,
-    save_to_yaml,
-    set_signal_values,
+    YamlSettingsProvider,
     walk_rw_signals,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
@@ -78,12 +72,13 @@ def sort_signal_by_phase(values: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 async def test_enum_yaml_formatting(tmp_path):
-    enums = [EnumTest.VAL1, EnumTest.VAL2]
-    save_to_yaml(enums, path.join(tmp_path, "test_file.yaml"))
+    enums = {"val1": EnumTest.VAL1, "val2": EnumTest.VAL2}
+    provider = YamlSettingsProvider(tmp_path)
+    await provider.store("test_file", enums)
     with open(path.join(tmp_path, "test_file.yaml")) as file:
         saved_enums = yaml.load(file, yaml.Loader)
     # check that save/load reduces from enum to str
-    assert all(isinstance(value, str) for value in saved_enums)
+    assert all(isinstance(value, str) for value in saved_enums.values())
     # check values of enums same
     assert saved_enums == enums
 

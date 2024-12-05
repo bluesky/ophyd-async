@@ -78,8 +78,8 @@ class Table(BaseModel):
             }
         )
 
-    def __eq__(self, value: object) -> bool:
-        return super().__eq__(value)
+    # def __eq__(self, value: object) -> bool:
+    #     return self.model_dump() == value
 
     def numpy_dtype(self) -> np.dtype:
         dtype = []

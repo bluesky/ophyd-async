@@ -55,3 +55,16 @@ def test_table_coerces(kwargs):
     t = MyTable(**kwargs)
     for k, v in t:
         assert v == pytest.approx(kwargs[k])
+    assert t == pytest.approx(t)
+
+
+def test_table_equality():
+    table1 = MyTable(bool=[True], uint=[32], str=["foo"])
+    serialized = {"bool": [True], "uint": [32], "str": ["foo"]}
+    assert table1 == serialized
+    # assert table1 == pytest.approx(table2)
+    # assert pytest.approx(table1) == table2
+    # assert table1.model_dump() == table2
+    # assert table1 == table2.model_dump()
+    # assert table1 == pytest.approx(table2.model_dump())
+    # assert pytest.approx(table1.model_dump()) == table2
