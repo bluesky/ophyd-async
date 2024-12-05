@@ -86,7 +86,9 @@ async def test_observe_value_times_out_with_busy_sleep():
 
     async def watch():
         async for val in observe_value(sig, done_timeout=0.2):
-            await asyncio.sleep(0.1)
+            # This is a test to prove a subtle timing bug where the inner loop
+            # of observe_value was blocking the event loop.
+            time.sleep(0.15)
             recv.append(val)
 
     t = asyncio.create_task(tick())
@@ -95,7 +97,7 @@ async def test_observe_value_times_out_with_busy_sleep():
         with pytest.raises(asyncio.TimeoutError):
             await watch()
         assert recv == [0, 1]
-        assert time.time() - start == pytest.approx(0.2, abs=0.05)
+        assert time.time() - start == pytest.approx(0.3, abs=0.05)
     finally:
         t.cancel()
 
