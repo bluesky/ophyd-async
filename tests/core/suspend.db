@@ -1,0 +1,37 @@
+record(calc, "$(device)COUNTER")  {
+    field(SCAN, ".1 second")
+    field(INPA, "$(device)COUNTER")
+    field(CALC, "A+0.1")
+    field(FLNK, "$(device)SETSIGNAL")
+}
+
+record(ao, "$(device)SIGNAL") {
+}
+
+record(ao, "$(device)RESUMEVAL") {
+    field(VAL, "10")
+}
+
+record(ao, "$(device)RESUMETIME") {
+    field(VAL, "10")  # set to initial high value
+}
+
+record(ao, "$(device)FAILTIME") {
+    field(VAL, "5")
+}
+
+record(ao, "$(device)FAILVAL") {
+    field(VAL, "20")
+}
+
+record(calcout, "$(device)SETSIGNAL") {
+    field(INPA, "$(device)SIGNAL")
+    field(INPB, "$(device)COUNTER")
+    field(INPC, "$(device)RESUMETIME")
+    field(INPD, "$(device)RESUMEVAL")
+    field(INPE, "$(device)FAILTIME")
+    field(INPF, "$(device)FAILVAL")
+    field(CALC, "(E<=B && B<=C)?F:D")  # set to fail val between fail time and resume time
+    field(OUT,  "$(device)SIGNAL PP")
+    field(OOPT, "Every Time")
+}
