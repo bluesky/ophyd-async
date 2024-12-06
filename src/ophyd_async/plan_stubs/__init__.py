@@ -5,6 +5,7 @@ from ._fly import (
     time_resolved_fly_and_collect_with_static_seq_table,
 )
 from ._nd_attributes import setup_ndattributes, setup_ndstats_sum
+from ._panda import apply_panda_settings
 from ._settings import (
     apply_settings,
     apply_settings_if_different,
@@ -20,6 +21,7 @@ __all__ = [
     "ensure_connected",
     "setup_ndattributes",
     "setup_ndstats_sum",
+    "apply_panda_settings",
     "apply_settings",
     "apply_settings_if_different",
     "get_current_settings",
