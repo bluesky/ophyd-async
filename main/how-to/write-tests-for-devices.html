@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Write Tests for Devices &#8212; ophyd-async 0.8.1.dev13+g3f97acaf documentation</title>
+    <title>Write Tests for Devices &#8212; ophyd-async 0.8.1.dev14+g15421a3e documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=6327a9b6"></script>
+    <script src="../_static/documentation_options.js?v=4fc6296d"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev14+g15421a3e documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev14+g15421a3e documentation - Home"/>
   
   
 </a></div>
@@ -580,11 +580,9 @@ may change API on minor release numbers before then</p>
 <span class="sd">     when used in plan(count).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">docs</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="n">docs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">capture_emitted</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
-        <span class="n">docs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
-
-    <span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">count</span><span class="p">([</span><span class="n">mock_sensor</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">capture_emitted</span><span class="p">)</span>
+    <span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">count</span><span class="p">([</span><span class="n">mock_sensor</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
     <span class="n">assert_emitted</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>

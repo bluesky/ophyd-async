@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device &#8212; ophyd-async 0.8.1.dev13+g3f97acaf documentation</title>
+    <title>ophyd_async.core._device &#8212; ophyd-async 0.8.1.dev14+g15421a3e documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=6327a9b6"></script>
+    <script src="../../../_static/documentation_options.js?v=4fc6296d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev14+g15421a3e documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev14+g15421a3e documentation - Home"/>
   
   
 </a></div>
@@ -470,7 +470,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="n">HasName</span>
 <span class="kn">from</span> <span class="nn">bluesky.run_engine</span> <span class="kn">import</span> <span class="n">call_in_bluesky_event_loop</span><span class="p">,</span> <span class="n">in_bluesky_event_loop</span>
 
-<span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="n">Connectable</span>
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">LazyMock</span><span class="p">,</span> <span class="n">NotConnected</span><span class="p">,</span> <span class="n">wait_for_connection</span>
 
 
@@ -532,7 +531,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="Device">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Device">[docs]</a>
-<span class="k">class</span> <span class="nc">Device</span><span class="p">(</span><span class="n">HasName</span><span class="p">,</span> <span class="n">Connectable</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Device</span><span class="p">(</span><span class="n">HasName</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Common base class for all Ophyd Async Devices.&quot;&quot;&quot;</span>
 
     <span class="n">_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>

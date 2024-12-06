@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.8.1.dev13+g3f97acaf documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.8.1.dev14+g15421a3e documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=6327a9b6"></script>
+    <script src="../../../_static/documentation_options.js?v=4fc6296d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev14+g15421a3e documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev14+g15421a3e documentation - Home"/>
   
   
 </a></div>
@@ -463,8 +463,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Locatable</span><span class="p">,</span>
@@ -478,7 +478,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
 <span class="kn">from</span> <span class="nn">._mock_signal_backend</span> <span class="kn">import</span> <span class="n">MockSignalBackend</span>
 <span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AsyncConfigurable</span><span class="p">,</span>
     <span class="n">AsyncReadable</span><span class="p">,</span>
     <span class="n">AsyncStageable</span><span class="p">,</span>
     <span class="n">Reading</span><span class="p">,</span>
@@ -813,138 +812,6 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">backend</span> <span class="o">=</span> <span class="n">SoftSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
     <span class="n">signal</span> <span class="o">=</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">)</span></div>
-
-
-
-<span class="k">def</span> <span class="nf">_generate_assert_error_msg</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expected_result</span><span class="p">,</span> <span class="n">actual_result</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="n">WARNING</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[93m&quot;</span>
-    <span class="n">FAIL</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[91m&quot;</span>
-    <span class="n">ENDC</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">WARNING</span><span class="si">}{</span><span class="n">name</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2"> to produce&quot;</span>
-        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">FAIL</span><span class="si">}{</span><span class="n">expected_result</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">but actually got </span><span class="se">\n</span><span class="si">{</span><span class="n">FAIL</span><span class="si">}{</span><span class="n">actual_result</span><span class="si">}{</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="p">)</span>
-
-
-<div class="viewcode-block" id="assert_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.assert_value">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">assert_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert a signal&#39;s value and compare it an expected signal.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    signal:</span>
-<span class="sd">        signal with get_value.</span>
-<span class="sd">    value:</span>
-<span class="sd">        The expected value from the signal.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Example usage::</span>
-<span class="sd">        await assert_value(signal, value)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">actual_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="n">actual_value</span> <span class="o">==</span> <span class="n">value</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="n">expected_result</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
-        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_value</span><span class="p">,</span>
-    <span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="assert_reading">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.assert_reading">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">assert_reading</span><span class="p">(</span>
-    <span class="n">readable</span><span class="p">:</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">expected_reading</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert readings from readable.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    readable:</span>
-<span class="sd">        Callable with readable.read function that generate readings.</span>
-
-<span class="sd">    reading:</span>
-<span class="sd">        The expected readings from the readable.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Example usage::</span>
-<span class="sd">        await assert_reading(readable, reading)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">actual_reading</span> <span class="o">=</span> <span class="k">await</span> <span class="n">readable</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="n">expected_reading</span> <span class="o">==</span> <span class="n">actual_reading</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">readable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="n">expected_result</span><span class="o">=</span><span class="n">expected_reading</span><span class="p">,</span>
-        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_reading</span><span class="p">,</span>
-    <span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="assert_configuration">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.assert_configuration">[docs]</a>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">assert_configuration</span><span class="p">(</span>
-    <span class="n">configurable</span><span class="p">:</span> <span class="n">AsyncConfigurable</span><span class="p">,</span>
-    <span class="n">configuration</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert readings from Configurable.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    configurable:</span>
-<span class="sd">        Configurable with Configurable.read function that generate readings.</span>
-
-<span class="sd">    configuration:</span>
-<span class="sd">        The expected readings from configurable.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Example usage::</span>
-<span class="sd">        await assert_configuration(configurable configuration)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">actual_configurable</span> <span class="o">=</span> <span class="k">await</span> <span class="n">configurable</span><span class="o">.</span><span class="n">read_configuration</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="n">configuration</span> <span class="o">==</span> <span class="n">actual_configurable</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">configurable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="n">expected_result</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
-        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_configurable</span><span class="p">,</span>
-    <span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="assert_emitted">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.assert_emitted">[docs]</a>
-<span class="k">def</span> <span class="nf">assert_emitted</span><span class="p">(</span><span class="n">docs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]],</span> <span class="o">**</span><span class="n">numbers</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert emitted document generated by running a Bluesky plan</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    Doc:</span>
-<span class="sd">        A dictionary</span>
-
-<span class="sd">    numbers:</span>
-<span class="sd">        expected emission in kwarg from</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Example usage::</span>
-<span class="sd">        assert_emitted(docs, start=1, descriptor=1,</span>
-<span class="sd">        resource=1, datum=1, event=1, stop=1)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">numbers</span><span class="p">),</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;documents&quot;</span><span class="p">,</span>
-        <span class="n">expected_result</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">numbers</span><span class="p">),</span>
-        <span class="n">actual_result</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">docs</span><span class="p">),</span>
-    <span class="p">)</span>
-    <span class="n">actual_numbers</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-    <span class="k">assert</span> <span class="n">actual_numbers</span> <span class="o">==</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">_generate_assert_error_msg</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;emitted&quot;</span><span class="p">,</span>
-        <span class="n">expected_result</span><span class="o">=</span><span class="n">numbers</span><span class="p">,</span>
-        <span class="n">actual_result</span><span class="o">=</span><span class="n">actual_numbers</span><span class="p">,</span>
-    <span class="p">)</span></div>
 
 
 
