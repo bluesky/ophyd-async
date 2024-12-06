@@ -189,7 +189,7 @@ class AttributeProxy(TangoProxy):
                 raise TimeoutError(f"{self._name} attr put failed: Timeout") from te
             except DevFailed as de:
                 raise RuntimeError(
-                    f"{self._name} device" f" failure: {de.args[0].desc}"
+                    f"{self._name} device failure: {de.args[0].desc}"
                 ) from de
 
         else:
