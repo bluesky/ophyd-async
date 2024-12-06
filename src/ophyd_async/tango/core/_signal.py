@@ -28,6 +28,8 @@ from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ._tango_transport import TangoSignalBackend, get_python_type
 
+logger = logging.getLogger("ophyd_async")
+
 
 def make_backend(
     datatype: type[SignalDatatypeT] | None,
@@ -205,7 +207,7 @@ async def infer_signal_type(
         if config.in_type == CmdArgType.DevVoid:
             return SignalX
         elif config.in_type != config.out_type:
-            logging.debug("Commands with different in and out dtypes are not supported")
+            logger.debug("Commands with different in and out dtypes are not supported")
             return None
         else:
             return SignalRW
