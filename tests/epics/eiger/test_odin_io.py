@@ -3,8 +3,9 @@ from unittest.mock import ANY, MagicMock
 
 import pytest
 
-from ophyd_async.core import DeviceCollector, get_mock_put, set_mock_value
+from ophyd_async.core import DeviceCollector
 from ophyd_async.epics.eiger._odin_io import Odin, OdinWriter, Writing  # noqa: PLC2701
+from ophyd_async.testing import get_mock_put, set_mock_value
 
 OdinDriverAndWriter = tuple[Odin, OdinWriter]
 

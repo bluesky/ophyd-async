@@ -13,36 +13,8 @@ from typing import (
 from bluesky.protocols import HasName, Reading
 from event_model import DataKey
 
-from ._utils import DEFAULT_TIMEOUT
-
 if TYPE_CHECKING:
-    from unittest.mock import Mock
-
     from ._status import AsyncStatus
-
-
-@runtime_checkable
-class Connectable(Protocol):
-    @abstractmethod
-    async def connect(
-        self,
-        mock: bool | Mock = False,
-        timeout: float = DEFAULT_TIMEOUT,
-        force_reconnect: bool = False,
-    ):
-        """Connect self and all child Devices.
-
-        Contains a timeout that gets propagated to child.connect methods.
-
-        Parameters
-        ----------
-        mock:
-            If True then use ``MockSignalBackend`` for all Signals
-        timeout:
-            Time to wait before failing with a TimeoutError.
-        force_reconnect:
-            Reconnect even if previous connect was successful.
-        """
 
 
 @runtime_checkable

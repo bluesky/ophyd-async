@@ -10,7 +10,6 @@ from typing import Any, TypeVar
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
-from ._protocol import Connectable
 from ._utils import DEFAULT_TIMEOUT, LazyMock, NotConnected, wait_for_connection
 
 
@@ -61,7 +60,7 @@ class DeviceConnector:
         await wait_for_connection(**coros)
 
 
-class Device(HasName, Connectable):
+class Device(HasName):
     """Common base class for all Ophyd Async Devices."""
 
     _name: str = ""

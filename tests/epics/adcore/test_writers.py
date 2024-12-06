@@ -9,11 +9,11 @@ from ophyd_async.core import (
     PathProvider,
     StandardDetector,
     StaticPathProvider,
-    set_mock_value,
 )
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
 from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
+from ophyd_async.testing import set_mock_value
 
 
 class DummyDatasetDescriber(DatasetDescriber):
