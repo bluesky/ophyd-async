@@ -6,9 +6,9 @@ from ophyd_async.core import (
     DetectorTrigger,
     PathProvider,
     TriggerInfo,
-    set_mock_value,
 )
 from ophyd_async.epics import adaravis
+from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture

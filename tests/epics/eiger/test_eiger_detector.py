@@ -2,8 +2,9 @@ from unittest.mock import ANY, AsyncMock, MagicMock
 
 import pytest
 
-from ophyd_async.core import DetectorTrigger, DeviceCollector, get_mock_put
+from ophyd_async.core import DetectorTrigger, DeviceCollector
 from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
+from ophyd_async.testing import get_mock_put
 
 
 @pytest.fixture

@@ -13,8 +13,6 @@ from ophyd_async.core import (
     SignalR,
     StaticFilenameProvider,
     StaticPathProvider,
-    callback_on_mock_put,
-    set_mock_value,
 )
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
@@ -23,6 +21,7 @@ from ophyd_async.fastcs.panda import (
     PandaHdf5DatasetType,
     PandaHDFWriter,
 )
+from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
 TABLES = [
     DatasetTable(

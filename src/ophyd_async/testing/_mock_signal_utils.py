@@ -2,11 +2,15 @@ from collections.abc import Awaitable, Callable, Iterable
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock
 
-from ._device import Device
-from ._mock_signal_backend import MockSignalBackend
-from ._signal import Signal, SignalConnector, SignalR
-from ._soft_signal_backend import SignalDatatypeT
-from ._utils import LazyMock
+from ophyd_async.core import (
+    Device,
+    LazyMock,
+    MockSignalBackend,
+    Signal,
+    SignalConnector,
+    SignalDatatypeT,
+    SignalR,
+)
 
 
 def get_mock(device: Device | Signal) -> Mock:
