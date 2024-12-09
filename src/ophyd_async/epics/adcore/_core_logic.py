@@ -130,7 +130,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
             state = await self._driver.detector_state.get_value()
             if state not in self.good_states:
                 raise ValueError(
-                    f"Final detector state {state} not"
+                    f"Final detector state {state.value} not "
                     "in valid end states: {self.good_states}"
                 )
 

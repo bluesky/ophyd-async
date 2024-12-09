@@ -33,7 +33,7 @@ class AravisDetector(adcore.AreaDetector[AravisController, adcore.ADWriter]):
         writer, fileio = writer_cls.writer_and_io(
             prefix,
             path_provider,
-            lambda: name,
+            lambda: self.name,
             ADBaseDatasetDescriber(driver),
             fileio_suffix=fileio_suffix,
             plugins=plugins,

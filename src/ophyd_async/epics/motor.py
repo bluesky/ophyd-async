@@ -20,7 +20,7 @@ from ophyd_async.core import (
     observe_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_x
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
 
 class MotorLimitsException(Exception):
@@ -76,7 +76,10 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
 
-        self.motor_stop = epics_signal_x(prefix + ".STOP")
+        # Note:cannot use epics_signal_x here, as the motor record specifies that
+        # we must write 1 to stop the motor. Simply processing the record is not
+        # sufficient.
+        self.motor_stop = epics_signal_w(int, prefix + ".STOP")
         # Whether set() should complete successfully or not
         self._set_success = True
 
@@ -91,8 +94,8 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
 
         super().__init__(name=name)
 
-    def set_name(self, name: str):
-        super().set_name(name)
+    def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
+        super().set_name(name, child_name_separator=child_name_separator)
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
@@ -178,7 +181,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        await self.motor_stop.trigger(wait=False)
+        await self.motor_stop.set(1, wait=False)
 
     async def _prepare_velocity(
         self, start_position: float, end_position: float, time_for_move: float

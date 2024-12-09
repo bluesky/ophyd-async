@@ -4,9 +4,9 @@ from ophyd_async.core import (
     DetectorTrigger,
     StaticPathProvider,
     TriggerInfo,
-    set_mock_value,
 )
 from ophyd_async.epics import adkinetix
+from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture

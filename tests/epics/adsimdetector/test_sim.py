@@ -19,10 +19,9 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
-    assert_emitted,
-    set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.testing import assert_emitted, set_mock_value
 
 
 @pytest.fixture
@@ -89,6 +88,7 @@ async def test_two_detectors_fly_different_rate(
         trigger=DetectorTrigger.INTERNAL,
     )
     docs = defaultdict(list)
+    RE.subscribe(lambda name, doc: docs[name].append(doc))
 
     def assert_n_stream_datums(
         n: int, start: int | None = None, stop: int | None = None
@@ -139,7 +139,7 @@ async def test_two_detectors_fly_different_rate(
         # Trigger has complete as all expected frames written
         yield from bps.wait("trigger_cleanup")
 
-    RE(fly_plan(), lambda name, doc: docs[name].append(doc))
+    RE(fly_plan())
     assert_emitted(
         docs, start=1, descriptor=1, stream_resource=2, stream_datum=4, stop=1
     )

@@ -10,7 +10,6 @@ from typing import Any, TypeVar
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
-from ._protocol import Connectable
 from ._utils import DEFAULT_TIMEOUT, LazyMock, NotConnected, wait_for_connection
 
 
@@ -61,7 +60,7 @@ class DeviceConnector:
         await wait_for_connection(**coros)
 
 
-class Device(HasName, Connectable):
+class Device(HasName):
     """Common base class for all Ophyd Async Devices."""
 
     _name: str = ""
@@ -71,13 +70,16 @@ class Device(HasName, Connectable):
     _connect_task: asyncio.Task | None = None
     # The mock if we have connected in mock mode
     _mock: LazyMock | None = None
+    # The separator to use when making child names
+    _child_name_separator: str = "-"
 
     def __init__(
         self, name: str = "", connector: DeviceConnector | None = None
     ) -> None:
         self._connector = connector or DeviceConnector()
         self._connector.create_children_from_annotations(self)
-        self.set_name(name)
+        if name:
+            self.set_name(name)
 
     @property
     def name(self) -> str:
@@ -97,21 +99,30 @@ class Device(HasName, Connectable):
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
-    def set_name(self, name: str):
+    def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
         """Set ``self.name=name`` and each ``self.child.name=name+"-child"``.
 
         Parameters
         ----------
         name:
             New name to set
+        child_name_separator:
+            Use this as a separator instead of "-". Use "_" instead to make the same
+            names as the equivalent ophyd sync device.
         """
         self._name = name
+        if child_name_separator:
+            self._child_name_separator = child_name_separator
         # Ensure logger is recreated after a name change
         if "log" in self.__dict__:
             del self.log
-        for child_name, child in self.children():
-            child_name = f"{self.name}-{child_name.strip('_')}" if self.name else ""
-            child.set_name(child_name)
+        for attr_name, child in self.children():
+            child_name = (
+                f"{self.name}{self._child_name_separator}{attr_name}"
+                if self.name
+                else ""
+            )
+            child.set_name(child_name, child_name_separator=self._child_name_separator)
 
     def __setattr__(self, name: str, value: Any) -> None:
         # Bear in mind that this function is called *a lot*, so
@@ -147,6 +158,10 @@ class Device(HasName, Connectable):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
+        assert hasattr(self, "_connector"), (
+            f"{self}: doesn't have attribute `_connector`,"
+            " did you call `super().__init__` in your `__init__` method?"
+        )
         if mock:
             # Always connect in mock mode serially
             if isinstance(mock, LazyMock):
@@ -247,6 +262,8 @@ class DeviceCollector:
     set_name:
         If True, call ``device.set_name(variable_name)`` on all collected
         Devices
+    child_name_separator:
+        Use this as a separator if we call ``set_name``.
     connect:
         If True, call ``device.connect(mock)`` in parallel on all
         collected Devices
@@ -271,11 +288,13 @@ class DeviceCollector:
     def __init__(
         self,
         set_name=True,
+        child_name_separator: str = "-",
         connect=True,
         mock=False,
         timeout: float = 10.0,
     ):
         self._set_name = set_name
+        self._child_name_separator = child_name_separator
         self._connect = connect
         self._mock = mock
         self._timeout = timeout
@@ -311,7 +330,7 @@ class DeviceCollector:
         for name, obj in self._objects_on_exit.items():
             if name not in self._names_on_enter and isinstance(obj, Device):
                 if self._set_name and not obj.name:
-                    obj.set_name(name)
+                    obj.set_name(name, child_name_separator=self._child_name_separator)
                 if self._connect:
                     connect_coroutines[name] = obj.connect(
                         self._mock, timeout=self._timeout

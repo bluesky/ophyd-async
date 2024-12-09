@@ -93,7 +93,7 @@ class DetectorController(ABC):
         """For a given exposure, how long should the time between exposures be"""
 
     @abstractmethod
-    async def prepare(self, trigger_info: TriggerInfo) -> Any:
+    async def prepare(self, trigger_info: TriggerInfo) -> None:
         """
         Do all necessary steps to prepare the detector for triggers.
 

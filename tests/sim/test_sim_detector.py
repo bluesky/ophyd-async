@@ -6,9 +6,9 @@ import h5py
 import numpy as np
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import assert_emitted
 from ophyd_async.plan_stubs import ensure_connected
 from ophyd_async.sim.demo import PatternDetector
+from ophyd_async.testing import assert_emitted
 
 
 async def test_sim_pattern_detector_initialization(
@@ -32,15 +32,13 @@ def test_writes_pattern_to_file(
 ):
     # assert that the file contains data in expected dimensions
     docs = defaultdict(list)
-
-    def capture_emitted(name, doc):
-        docs[name].append(doc)
+    RE.subscribe(lambda name, doc: docs[name].append(doc))
 
     def plan():
         yield from ensure_connected(sim_pattern_detector, mock=True)
         yield from bp.count([sim_pattern_detector])
 
-    RE(plan(), capture_emitted)
+    RE(plan())
     assert_emitted(
         docs, start=1, descriptor=1, stream_resource=2, stream_datum=2, event=1, stop=1
     )

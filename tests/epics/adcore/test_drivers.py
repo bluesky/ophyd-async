@@ -4,10 +4,9 @@ import pytest
 
 from ophyd_async.core import (
     DeviceCollector,
-    get_mock_put,
-    set_mock_value,
 )
 from ophyd_async.epics import adcore
+from ophyd_async.testing import get_mock_put, set_mock_value
 
 TEST_DEADTIME = 0.1
 
@@ -79,15 +78,14 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     set_mock_value(controller._driver.detector_state, adcore.DetectorState.IDLE)
 
     async def wait_then_fail():
-        await asyncio.sleep(0)
-        set_mock_value(
-            controller._driver.detector_state, adcore.DetectorState.DISCONNECTED
-        )
+        await asyncio.sleep(0.1)
+        set_mock_value(controller._driver.detector_state, adcore.DetectorState.DISCONNECTED)
 
-    controller.frame_timeout = 0.1
-
-    acquiring = await controller.start_acquiring_driver_and_ensure_status()
     await wait_then_fail()
 
-    with pytest.raises(ValueError):
+    acquiring = await controller.start_acquiring_driver_and_ensure_status()
+
+    with pytest.raises(
+        ValueError, match="Final detector state Disconnected not in valid end states:"
+    ):
         await acquiring

@@ -8,10 +8,9 @@ import pytest
 from ophyd_async.core import (
     DetectorTrigger,
     TriggerInfo,
-    set_mock_value,
 )
 from ophyd_async.epics import adcore, adpilatus
-from ophyd_async.epics.adpilatus import PilatusDriverIO
+from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
@@ -87,7 +86,7 @@ async def _trigger(
     expected_trigger_mode: adpilatus.PilatusTriggerMode,
     trigger_and_complete: Callable[[], Awaitable],
 ):
-    pilatus_driver = cast(PilatusDriverIO, test_adpilatus.drv)
+    pilatus_driver = test_adpilatus.drv
     # Default TriggerMode
     assert (
         await pilatus_driver.trigger_mode.get_value()

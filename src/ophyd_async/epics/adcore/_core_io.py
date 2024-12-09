@@ -48,7 +48,7 @@ class ADBaseDatasetDescriber(DatasetDescriber):
 class NDPluginBaseIO(NDArrayBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.nd_array_port = epics_signal_rw_rbv(str, prefix + "NDArrayPort")
-        self.enable_callbacks = epics_signal_rw_rbv(bool, prefix + "EnableCallbacks")
+        self.enable_callbacks = epics_signal_rw_rbv(Callback, prefix + "EnableCallbacks")
         self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0_RBV")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1_RBV")

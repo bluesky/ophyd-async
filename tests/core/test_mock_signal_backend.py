@@ -11,6 +11,11 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SoftSignalBackend,
+    soft_signal_r_and_setter,
+    soft_signal_rw,
+)
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+from ophyd_async.testing import (
     callback_on_mock_put,
     get_mock_put,
     mock_puts_blocked,
@@ -18,10 +23,7 @@ from ophyd_async.core import (
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
-    soft_signal_r_and_setter,
-    soft_signal_rw,
 )
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
 
 async def test_mock_signal_backend():
@@ -185,6 +187,7 @@ async def test_blocks_during_put(mock_signals):
     with mock_puts_blocked(signal1, signal2):
         status1 = signal1.set("second_value", wait=True, timeout=None)
         status2 = signal2.set("second_value", wait=True, timeout=None)
+        await asyncio.sleep(0.1)
         assert await signal1.get_value() == "second_value"
         assert await signal2.get_value() == "second_value"
         assert not status1.done

@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import time
 
+import numpy as np
 from bluesky.protocols import Movable, Stoppable
 
 from ophyd_async.core import (
@@ -44,22 +45,20 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
     async def _move(self, old_position: float, new_position: float, move_time: float):
         start = time.monotonic()
-        distance = abs(new_position - old_position)
-        while True:
-            time_elapsed = round(time.monotonic() - start, 2)
-
-            # update position based on time elapsed
-            if time_elapsed >= move_time:
-                # successfully reached our target position
-                self._user_readback_set(new_position)
-                break
-            else:
-                current_position = old_position + distance * time_elapsed / move_time
-
-            self._user_readback_set(current_position)
-
-            # 10hz update loop
-            await asyncio.sleep(0.1)
+        # Make an array of relative update times at 10Hz intervals
+        update_times = np.arange(0.1, move_time, 0.1)
+        # With the end position appended
+        update_times = np.concatenate((update_times, [move_time]))
+        # Interpolate the [old, new] position array with those update times
+        new_positions = np.interp(
+            update_times, [0, move_time], [old_position, new_position]
+        )
+        for update_time, new_position in zip(update_times, new_positions, strict=True):
+            # Calculate how long to wait to get there
+            relative_time = time.monotonic() - start
+            await asyncio.sleep(update_time - relative_time)
+            # Update the readback position
+            self._user_readback_set(new_position)
 
     @WatchableAsyncStatus.wrap
     async def set(self, value: float):
@@ -75,22 +74,25 @@ class SimMotor(StandardReadable, Movable, Stoppable):
             self.velocity.get_value(),
         )
         # If zero velocity, do instant move
-        move_time = abs(new_position - old_position) / velocity if velocity else 0
-        self._move_status = AsyncStatus(
-            self._move(old_position, new_position, move_time)
-        )
-        # If stop is called then this will raise a CancelledError, ignore it
-        with contextlib.suppress(asyncio.CancelledError):
-            async for current_position in observe_value(
-                self.user_readback, done_status=self._move_status
-            ):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.name,
-                    unit=units,
-                )
+        if velocity == 0:
+            self._user_readback_set(new_position)
+        else:
+            move_time = abs(new_position - old_position) / velocity
+            self._move_status = AsyncStatus(
+                self._move(old_position, new_position, move_time)
+            )
+            # If stop is called then this will raise a CancelledError, ignore it
+            with contextlib.suppress(asyncio.CancelledError):
+                async for current_position in observe_value(
+                    self.user_readback, done_status=self._move_status
+                ):
+                    yield WatcherUpdate(
+                        current=current_position,
+                        initial=old_position,
+                        target=new_position,
+                        name=self.name,
+                        unit=units,
+                    )
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 

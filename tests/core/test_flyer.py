@@ -1,5 +1,6 @@
 import asyncio
 import time
+from collections import defaultdict
 from collections.abc import AsyncGenerator, AsyncIterator, Sequence
 from typing import Any
 from unittest.mock import Mock
@@ -21,10 +22,10 @@ from ophyd_async.core import (
     StandardFlyer,
     StrictEnum,
     TriggerInfo,
-    assert_emitted,
     observe_value,
 )
 from ophyd_async.epics.core import epics_signal_rw
+from ophyd_async.testing import assert_emitted
 
 
 class TriggerState(StrictEnum):
@@ -146,14 +147,8 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
 async def test_hardware_triggered_flyable(
     RE: RunEngine, detectors: tuple[StandardDetector], number_of_triggers: list[int]
 ):
-    docs = {}
-
-    def append_and_print(name, doc):
-        if name not in docs:
-            docs[name] = []
-        docs[name] += [doc]
-
-    RE.subscribe(append_and_print)
+    docs = defaultdict(list)
+    RE.subscribe(lambda name, doc: docs[name].append(doc))
 
     trigger_logic = DummyTriggerLogic()
     flyer = StandardFlyer(trigger_logic, name="flyer")

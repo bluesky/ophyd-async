@@ -23,7 +23,7 @@ from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
-from ._core_io import ADBaseDatasetDescriber, NDFileIO, NDPluginBaseIO
+from ._core_io import ADBaseDatasetDescriber, Callback, NDFileIO, NDPluginBaseIO
 from ._utils import FileWriteMode
 
 
@@ -71,7 +71,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         name_provider: NameProvider,
         dataset_describer: ADBaseDatasetDescriber,
         fileio_suffix: str | None = None,
-        name: str = "",
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> tuple[ADWriterT, NDFileIOT]:
         try:
@@ -84,7 +83,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         else:
             fileio_prefix = prefix + fileio_suffix
 
-        fileio = fileio_cls(fileio_prefix, name=name)
+        fileio = fileio_cls(fileio_prefix, name=name_provider())
 
         writer = cls(
             fileio, path_provider, name_provider, dataset_describer, plugins=plugins
@@ -94,7 +93,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     async def begin_capture(self) -> None:
         info = self._path_provider(device_name=self._name_provider())
 
-        await self._fileio.enable_callbacks.set(True)
+        await self._fileio.enable_callbacks.set(Callback.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.

@@ -6,9 +6,9 @@ from ophyd_async.core import (
     DetectorTrigger,
     PathProvider,
     TriggerInfo,
-    set_mock_value,
 )
 from ophyd_async.epics import adaravis
+from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ async def test_deadtime_invariant_with_exposure_time(
 
 
 async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDetector):
-    set_mock_value(test_adaravis.drv.trigger_source, "Freerun")
+    set_mock_value(test_adaravis.drv.trigger_source, adaravis.AravisTriggerSource.FREERUN)
 
     async def trigger_and_complete():
         await test_adaravis._controller.prepare(
