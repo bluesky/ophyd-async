@@ -18,7 +18,7 @@ from ophyd_async.core import (
     StandardFlyer,
     TriggerInfo,
 )
-from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics import adcore
 from ophyd_async.testing import set_mock_value
 
 
@@ -38,7 +38,7 @@ class DummyTriggerLogic(FlyerController[int]):
 class DummyController(DetectorController):
     def __init__(self) -> None: ...
     async def prepare(self, trigger_info: TriggerInfo):
-        return AsyncStatus(asyncio.sleep(0.01))
+        await AsyncStatus(asyncio.sleep(0.01))
 
     async def arm(self):
         self._arm_status = AsyncStatus(asyncio.sleep(0.01))

@@ -2,7 +2,6 @@ from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR
 from ophyd_async.epics.adcore import (
-    ADBaseDatasetDescriber,
     ADHDFWriter,
     ADWriter,
     AreaDetector,
@@ -26,8 +25,9 @@ class KinetixDetector(AreaDetector[KinetixController, ADWriter]):
         writer_cls: type[ADWriter] = ADHDFWriter,
         fileio_suffix: str | None = None,
         name: str = "",
-        plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
+        plugins: dict[str, NDPluginBaseIO] | None = None,
+        use_fileio_for_ds_describer: bool = False,
     ):
         controller, driver = KinetixController.controller_and_drv(
             prefix + drv_suffix, name=name
@@ -36,7 +36,7 @@ class KinetixDetector(AreaDetector[KinetixController, ADWriter]):
             prefix,
             path_provider,
             lambda: name,
-            ADBaseDatasetDescriber(driver),
+            ds_describer_source=driver if not use_fileio_for_ds_describer else None,
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )

@@ -25,7 +25,9 @@ async def test_deadtime_invariant_with_exposure_time(
 
 
 async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDetector):
-    set_mock_value(test_adaravis.drv.trigger_source, adaravis.AravisTriggerSource.FREERUN)
+    set_mock_value(
+        test_adaravis.drv.trigger_source, adaravis.AravisTriggerSource.FREERUN
+    )
 
     async def trigger_and_complete():
         await test_adaravis._controller.prepare(
