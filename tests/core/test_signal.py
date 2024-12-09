@@ -258,15 +258,6 @@ async def mock_signal():
     yield mock_signal
 
 
-@pytest.fixture
-async def mock_signal_array():
-    mock_signal_array = epics_signal_rw(
-        Array1D[np.int8], "pva://mock_signal", name="mock_signal"
-    )
-    await mock_signal_array.connect(mock=True)
-    yield mock_signal_array
-
-
 async def test_assert_value(mock_signal: SignalRW):
     set_mock_value(mock_signal, 168)
     await assert_value(mock_signal, 168)
