@@ -1,0 +1,60 @@
+.. note::
+
+    Ophyd async is considered experimental until the v1.0 release and
+    may change API on minor release numbers before then
+
+``ophyd_async.epics.adcore``
+============================
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+.. automodule:: ophyd_async.epics.adcore
+    :members:
+
+    
+    
+    
+
+    
+    
+    .. rubric:: Members
+
+    .. autosummary::
+        :nosignatures:
+    
+        ADBaseIO
+        DetectorState
+        NDArrayBaseIO
+        NDFileHDFIO
+        NDPluginStatsIO
+        ADBaseDatasetDescriber
+        set_exposure_time_and_acquire_period_if_supplied
+        start_acquiring_driver_and_ensure_status
+        ADHDFWriter
+        SingleTriggerDetector
+        ADBaseDataType
+        FileWriteMode
+        ImageMode
+        NDAttributePv
+        NDAttributeParam
+        NDAttributeDataType
+        stop_busy_record
+        NDAttributePvDbrType
+    
+    
