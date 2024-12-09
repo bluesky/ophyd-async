@@ -19,20 +19,14 @@ def _generate_assert_error_msg(name: str, expected_result, actual_result) -> str
 
 
 async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
-    """Assert a signal's value and compare it an expected signal.
+    """Assert that a Signal has the given value.
 
     Parameters
     ----------
     signal:
-        signal with get_value.
+        Signal with get_value.
     value:
         The expected value from the signal.
-
-    Notes
-    -----
-    Example usage::
-        await assert_value(signal, value)
-
     """
     actual_value = await signal.get_value()
     assert actual_value == value, _generate_assert_error_msg(
@@ -43,37 +37,32 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 
 
 def _approx_readable_value(reading: Mapping[str, Reading]) -> Mapping[str, Reading]:
-    """Change Reading value to pytest.approx(value)"""
     for i in reading:
+        # np_array1 == np_array2 gives an array of booleans rather than a single bool
+        # Use pytest.approx(np_array1) so that we get a bool instead
         reading[i]["value"] = pytest.approx(reading[i]["value"])
     return reading
 
 
 async def assert_reading(
-    readable: AsyncReadable, expected_reading: Mapping[str, Reading]
+    readable: AsyncReadable,
+    reading: Mapping[str, Reading],
 ) -> None:
-    """Assert readings from readable.
+    """Assert that a readable Device has the given reading.
 
     Parameters
     ----------
     readable:
-        Callable with readable.read function that generate readings.
-
+        Device with an async ``read()`` method to get the reading from.
     reading:
-        The expected readings from the readable.
-
-    Notes
-    -----
-    Example usage::
-        await assert_reading(readable, reading)
-
+        The expected reading from the readable.
     """
     actual_reading = await readable.read()
     assert (
-        _approx_readable_value(expected_reading) == actual_reading
+        _approx_readable_value(reading) == actual_reading
     ), _generate_assert_error_msg(
         name=readable.name,
-        expected_result=expected_reading,
+        expected_result=reading,
         actual_result=actual_reading,
     )
 
@@ -82,21 +71,15 @@ async def assert_configuration(
     configurable: AsyncConfigurable,
     configuration: Mapping[str, Reading],
 ) -> None:
-    """Assert readings from Configurable.
+    """Assert that a configurable Device has the given configuration.
 
     Parameters
     ----------
     configurable:
-        Configurable with Configurable.read function that generate readings.
-
+        Device with an async ``read_configuration()`` method to get the configuration
+        from.
     configuration:
-        The expected readings from configurable.
-
-    Notes
-    -----
-    Example usage::
-        await assert_configuration(configurable configuration)
-
+        The expected configuration from the configurable.
     """
     actual_configurable = await configurable.read_configuration()
     assert (
@@ -113,15 +96,15 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
 
     Parameters
     ----------
-    Doc:
-        A dictionary
-
+    docs:
+        A mapping of document type -> list of documents that have been emitted.
     numbers:
-        expected emission in kwarg from
+        The number of each document type expected.
 
-    Notes
-    -----
-    Example usage::
+    Examples
+    --------
+    .. code::
+
         docs = defaultdict(list)
         RE.subscribe(lambda name, doc: docs[name].append(doc))
         RE(my_plan())

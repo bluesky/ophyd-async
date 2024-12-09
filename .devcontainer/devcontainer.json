@@ -20,6 +20,7 @@
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": "explicit"
                 },
+                "remote.autoForwardPorts": false,
                 "[python]": {
                     "editor.defaultFormatter": "charliermarsh.ruff"
                 }

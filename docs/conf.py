@@ -98,7 +98,7 @@ autodoc_member_order = "bysource"
 autodoc_inherit_docstrings = False
 
 # Add some more modules to the top level autosummary
-ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs"]
+ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs", "testing"]
 
 # Document only what is in __all__
 autosummary_ignore_module_all = False

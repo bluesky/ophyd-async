@@ -12,8 +12,9 @@ record(calc, "$(P)Value") {
     field(DESC, "Sensor value simulated from X and Y")
     field(INPA,  "$(P)X:Readback CP")
     field(INPB,  "$(P)Y:Readback CP")
-    field(INPC,  "$(P)Mode.RVAL CP")
-    field(CALC, "SIN(A)**10+COS(C+B*A)*COS(A)")
-    field(EGU,  "$(EGU=cts/s)")
-    field(PREC, "$(PREC=3)")
+    field(INPC,  "$(CHANNEL)")
+    field(INPD,  "$(P)Mode.RVAL CP")
+    field(CALC, "CEIL(SIN(A)**C+COS(D+B*A)*COS(A)+2)*999")
+    field(EGU,  "cts/s")
+    field(PREC, "0")
 }
