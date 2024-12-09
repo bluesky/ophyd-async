@@ -8,6 +8,9 @@ record(calc, "$(device)COUNTER")  {
 record(ao, "$(device)SIGNAL") {
 }
 
+record(ao, "$(device)STATICSIGNAL") {
+}
+
 record(ao, "$(device)RESUMEVAL") {
     field(VAL, "10")
 }
