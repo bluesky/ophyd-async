@@ -159,6 +159,9 @@ lint.select = [
     "SLF",     # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
     "PLC2701", # private import - https://docs.astral.sh/ruff/rules/import-private-name/
 ]
+lint.ignore = [
+    "B901", # Return in a generator is needed for plans
+]
 lint.preview = true # so that preview mode PLC2701 is enabled
 
 [tool.ruff.lint.per-file-ignores]
@@ -172,47 +175,26 @@ lint.preview = true # so that preview mode PLC2701 is enabled
 root_package = "ophyd_async"
 
 [[tool.importlinter.contracts]]
-name = "Core is independent"
-type = "independence"
-modules = "ophyd_async.core"
+name = "All runtime modules are in layers"
+type = "layers"
+containers = ["ophyd_async"]
+layers = ["plan_stubs", "fastcs", "epics | tango | sim", "core"]
+exhaustive = true
+exhaustive_ignores = ["testing", "_version", "__main__"]
 
 [[tool.importlinter.contracts]]
-name = "Epics depends only on core"
+name = "Testing modules"
+type = "layers"
+containers = ["ophyd_async"]
+layers = ["testing", "core"]
+
+[[tool.importlinter.contracts]]
+name = "Testing modules are not used at runtime"
 type = "forbidden"
-source_modules = "ophyd_async.epics"
+source_modules = "ophyd_async.testing"
 forbidden_modules = [
-    "ophyd_async.fastcs",
     "ophyd_async.plan_stubs",
-    "ophyd_async.sim",
+    "ophyd_async.fastcs",
+    "ophyd_async.epics",
     "ophyd_async.tango",
 ]
-
-[[tool.importlinter.contracts]]
-name = "tango depends only on core"
-type = "forbidden"
-source_modules = "ophyd_async.tango"
-forbidden_modules = [
-    "ophyd_async.epics",
-    "ophyd_async.fastcs",
-    "ophyd_async.plan_stubs",
-    "ophyd_async.sim",
-]
-
-
-[[tool.importlinter.contracts]]
-name = "sim depends only on core"
-type = "forbidden"
-source_modules = "ophyd_async.sim"
-forbidden_modules = [
-    "ophyd_async.epics",
-    "ophyd_async.fastcs",
-    "ophyd_async.plan_stubs",
-    "ophyd_async.tango",
-]
-
-
-[[tool.importlinter.contracts]]
-name = "Fastcs depends only on core, epics, tango"
-type = "forbidden"
-source_modules = "ophyd_async.fastcs"
-forbidden_modules = ["ophyd_async.plan_stubs", "ophyd_async.sim"]
