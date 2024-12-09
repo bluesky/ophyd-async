@@ -11,6 +11,7 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
+    Array1D,
     DeviceCollector,
     SignalR,
     SignalRW,
@@ -257,6 +258,15 @@ async def mock_signal():
     yield mock_signal
 
 
+@pytest.fixture
+async def mock_signal_array():
+    mock_signal_array = epics_signal_rw(
+        Array1D[np.int8], "pva://mock_signal", name="mock_signal"
+    )
+    await mock_signal_array.connect(mock=True)
+    yield mock_signal_array
+
+
 async def test_assert_value(mock_signal: SignalRW):
     set_mock_value(mock_signal, 168)
     await assert_value(mock_signal, 168)
@@ -277,6 +287,119 @@ async def test_failed_assert_reading(mock_signal: SignalRW):
     }
     with pytest.raises(AssertionError):
         await assert_reading(mock_signal, dummy_reading)
+
+
+class DummyReadableArray(StandardReadable):
+    """A demo Readable to produce read and config signal"""
+
+    def __init__(self, prefix: str, name="") -> None:
+        # Define some signals
+        with self.add_children_as_readables(Format.HINTED_SIGNAL):
+            self.value = epics_signal_r(Array1D[np.int8], prefix + "Value")
+            self.value2 = epics_signal_r(Array1D[np.float32], prefix + "Value")
+        # Set name and signals for read() and read_configuration()
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
+            self.mode = epics_signal_rw(Array1D[np.int8], prefix + "array1")
+            self.mode2 = epics_signal_rw(Array1D[np.float64], prefix + "array2")
+        super().__init__(name=name)
+
+
+@pytest.fixture
+async def mock_readable_array():
+    async with DeviceCollector(mock=True):
+        mock_readable_array = DummyReadableArray("SIM:READABLE:", name="mock_readable")
+
+    yield mock_readable_array
+
+
+async def test_assert_reading_array(mock_readable_array: DummyReadableArray):
+    set_mock_value(mock_readable_array.value, np.array([1, 2, 4, 6]))
+    set_mock_value(mock_readable_array.value2, np.array([1, 2, 4, 7]))
+    dummy_reading = {
+        "mock_readable-value": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 4, 6],
+            }
+        ),
+        "mock_readable-value2": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 4, 7],
+            }
+        ),
+    }
+    await assert_reading(mock_readable_array, dummy_reading)
+
+
+async def test_assert_reading_array_fail(mock_readable_array: DummyReadableArray):
+    set_mock_value(mock_readable_array.value, np.array([1, 2, 4, 6]))
+    set_mock_value(mock_readable_array.value2, np.array([1, 2, 4, 7]))
+    dummy_reading = {
+        "mock_readable-value": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 4, 6],
+            }
+        ),
+        "mock_readable-value2": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 4, 7.1],
+            }
+        ),
+    }
+    with pytest.raises(AssertionError):
+        await assert_reading(mock_readable_array, dummy_reading)
+
+
+async def test_assert_configuraion_array(mock_readable_array: DummyReadableArray):
+    set_mock_value(mock_readable_array.mode, np.array([1, 2, 4, 6]))
+    set_mock_value(mock_readable_array.mode2, np.array([1, 2, 4, 7]))
+    dummy_reading = {
+        "mock_readable-mode": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 4, 6],
+            }
+        ),
+        "mock_readable-mode2": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 4, 7],
+            }
+        ),
+    }
+    await assert_configuration(mock_readable_array, dummy_reading)
+
+
+async def test_assert_configuraion_array_fail(mock_readable_array: DummyReadableArray):
+    set_mock_value(mock_readable_array.mode, np.array([1, 2, 4, 6]))
+    set_mock_value(mock_readable_array.mode2, np.array([1, 2, 4, 7]))
+    dummy_reading = {
+        "mock_readable-mode": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 4, 6],
+            }
+        ),
+        "mock_readable-mode2": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": [1, 2, 0.4, 7],
+            }
+        ),
+    }
+    with pytest.raises(AssertionError):
+        await assert_configuration(mock_readable_array, dummy_reading)
 
 
 class DummyReadable(StandardReadable):
