@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Callable, Iterator, MutableMapping
-from typing import Any
+from typing import Any, Generic
 
-from ._device import Device
+from ._device import Device, DeviceT
 from ._signal import SignalRW
 from ._signal_backend import SignalDatatypeT
 
 
-class Settings(MutableMapping[SignalRW[Any], Any]):
+class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
     def __init__(
-        self, device: Device, settings: MutableMapping[SignalRW, Any] | None = None
+        self, device: DeviceT, settings: MutableMapping[SignalRW, Any] | None = None
     ):
         self.device = device
         self._settings = {}
@@ -47,14 +47,44 @@ class Settings(MutableMapping[SignalRW[Any], Any]):
     def __len__(self) -> int:
         return len(self._settings)
 
-    def __or__(self, other: MutableMapping[SignalRW, Any]) -> Settings:
+    def __or__(self, other: MutableMapping[SignalRW, Any]) -> Settings[DeviceT]:
+        """Create a new Settings that is the union of self overridden by other.
+
+        For example::
+
+            settings1 = Settings(device, {device.sig1: 1, device.sig2: 2})
+            settings2 = Settings(device, {device.sig1: 10, device.sig3: 3})
+            settings = settings1 | settings2
+            assert dict(settings) == {
+                device.sig1: 10,
+                device.sig2: 2,
+                device.sig3: 3,
+            }
+        """
         if isinstance(other, Settings) and not self._is_in_device(other.device):
             raise ValueError(f"{other.device} is not a child of {self.device}")
         return Settings(self.device, self._settings | dict(other))
 
     def partition(
         self, predicate: Callable[[SignalRW], bool]
-    ) -> tuple[Settings, Settings]:
+    ) -> tuple[Settings[DeviceT], Settings[DeviceT]]:
+        """Partition into two Settings based on a predicate.
+
+        Parameters
+        ----------
+        predicate
+            Callable that takes each signal, and returns a boolean to say if it
+            should be in the first returned Settings
+
+        Returns
+        -------
+            (where_true, where_false)
+
+        For example::
+
+            settings = Settings(device, {device.special: 1, device.sig: 2})
+            specials, others = settings.partition(lambda sig: "special" in sig.name)
+        """
         where_true, where_false = Settings(self.device), Settings(self.device)
         for signal, value in self.items():
             dest = where_true if predicate(signal) else where_false
@@ -64,7 +94,11 @@ class Settings(MutableMapping[SignalRW[Any], Any]):
 
 class SettingsProvider:
     @abstractmethod
-    async def store(self, name: str, data: dict[str, Any]): ...
+    async def store(self, name: str, data: dict[str, Any]):
+        """Store the data, associating it with the given name."""
+        ...
 
     @abstractmethod
-    async def retrieve(self, name: str) -> dict[str, Any]: ...
+    async def retrieve(self, name: str) -> dict[str, Any]:
+        """Retrieve the data associated with the given name."""
+        ...

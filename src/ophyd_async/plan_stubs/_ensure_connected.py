@@ -2,7 +2,7 @@ from bluesky.utils import plan
 
 from ophyd_async.core import DEFAULT_TIMEOUT, Device, LazyMock, wait_for_connection
 
-from ._wait_for_one import wait_for_one
+from ._wait_for_awaitable import wait_for_awaitable
 
 
 @plan
@@ -24,4 +24,4 @@ def ensure_connected(
         )
         for device in devices
     }
-    yield from wait_for_one(wait_for_connection(**coros))
+    yield from wait_for_awaitable(wait_for_connection(**coros))

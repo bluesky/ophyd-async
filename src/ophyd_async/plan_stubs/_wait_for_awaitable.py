@@ -7,6 +7,7 @@ from ophyd_async.core import T
 
 
 @plan
-def wait_for_one(coro: Awaitable[T]) -> MsgGenerator[T]:
+def wait_for_awaitable(coro: Awaitable[T]) -> MsgGenerator[T]:
+    """Wait for a single awaitable to complete, and return the result."""
     (task,) = yield from bps.wait_for([lambda: coro])
     return task.result()

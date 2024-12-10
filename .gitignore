@@ -87,8 +87,6 @@ docs/savefig
 # generated version number
 ophyd_async/_version.py
 
+
 # ruff cache
 .ruff_cache/
-
-# import linter cache
-.import_linter_cache/
