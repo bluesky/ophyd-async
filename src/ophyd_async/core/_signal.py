@@ -4,7 +4,7 @@ import asyncio
 import functools
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable
-from typing import Generic, cast
+from typing import Any, Generic, cast
 
 from bluesky.protocols import (
     Locatable,
@@ -598,3 +598,35 @@ async def set_and_wait_for_value(
         status_timeout,
         wait_for_set_completion,
     )
+
+
+def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW[Any]]:
+    """Retrieve all SignalRWs from a device.
+
+    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
+    part of saving and loading a device.
+
+    Parameters
+    ----------
+    device : Device
+        Ophyd device to retrieve read-write signals from.
+
+    path_prefix : str
+        For internal use, leave blank when calling the method.
+
+    Returns
+    -------
+    SignalRWs : dict
+        A dictionary matching the string attribute path of a SignalRW with the
+        signal itself.
+
+    """
+    signals: dict[str, SignalRW[Any]] = {}
+
+    for attr_name, attr in device.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        if type(attr) is SignalRW:
+            signals[dot_path] = attr
+        attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
+        signals.update(attr_signals)
+    return signals

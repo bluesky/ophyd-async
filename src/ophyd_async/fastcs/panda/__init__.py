@@ -23,7 +23,6 @@ from ._trigger import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
-from ._utils import phase_sorter
 from ._writer import PandaHDFWriter
 
 __all__ = [
@@ -47,5 +46,4 @@ __all__ = [
     "SeqTableInfo",
     "StaticPcompTriggerLogic",
     "StaticSeqTableTriggerLogic",
-    "phase_sorter",
 ]
