@@ -79,9 +79,7 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
 
     async def wait_then_fail():
         await asyncio.sleep(0.1)
-        set_mock_value(
-            controller._driver.detector_state, adcore.DetectorState.DISCONNECTED
-        )
+        set_mock_value(controller._driver.detector_state, adcore.DetectorState.DISCONNECTED)
 
     await wait_then_fail()
 

@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from ophyd_async.core import PathProvider
 from ophyd_async.core._signal import SignalR
 from ophyd_async.epics.adcore._core_detector import AreaDetector
-from ophyd_async.epics.adcore._core_io import NDPluginBaseIO
+from ophyd_async.epics.adcore._core_io import ADBaseDatasetDescriber, NDPluginBaseIO
 from ophyd_async.epics.adcore._core_writer import ADWriter
 from ophyd_async.epics.adcore._hdf_writer import ADHDFWriter
 
@@ -22,9 +22,8 @@ class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
         writer_cls: type[ADWriter] = ADHDFWriter,
         fileio_suffix: str | None = None,
         name: str = "",
-        config_sigs: Sequence[SignalR] = (),
         plugins: dict[str, NDPluginBaseIO] | None = None,
-        use_fileio_for_ds_describer: bool = False,
+        config_sigs: Sequence[SignalR] = (),
     ):
         controller, driver = PilatusController.controller_and_drv(
             prefix + drv_suffix, name=name, readout_time=readout_time
@@ -33,7 +32,7 @@ class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
             prefix,
             path_provider,
             lambda: name,
-            ds_describer_source=driver if not use_fileio_for_ds_describer else None,
+            ADBaseDatasetDescriber(driver),
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )

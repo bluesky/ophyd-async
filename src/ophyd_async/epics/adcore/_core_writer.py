@@ -23,19 +23,13 @@ from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
-from ._core_io import (
-    ADBaseDatasetDescriber,
-    Callback,
-    NDArrayBaseIO,
-    NDFileIO,
-    NDPluginBaseIO,
-)
+from ._core_io import ADBaseDatasetDescriber, Callback, NDFileIO, NDPluginBaseIO
 from ._utils import FileWriteMode
 
 
-class DatasetDescriberSource(Enum, str):
-    DRIVER = "driver"
-    FILEIO = "fileio"
+class ADWriterFormat(str, Enum):
+    HDF5 = ("HDF1:",)
+    TIFF = ("TIFF1:",)
 
 
 NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
@@ -75,7 +69,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         prefix: str,
         path_provider: PathProvider,
         name_provider: NameProvider,
-        ds_describer_source: NDArrayBaseIO | None = None,
+        dataset_describer: ADBaseDatasetDescriber,
         fileio_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> tuple[ADWriterT, NDFileIOT]:
@@ -90,11 +84,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             fileio_prefix = prefix + fileio_suffix
 
         fileio = fileio_cls(fileio_prefix, name=name_provider())
-
-        if ds_describer_source is None:
-            dataset_describer = ADBaseDatasetDescriber(fileio)
-        else:
-            dataset_describer = ADBaseDatasetDescriber(ds_describer_source)
 
         writer = cls(
             fileio, path_provider, name_provider, dataset_describer, plugins=plugins

@@ -27,7 +27,6 @@ class SimDetector(adcore.AreaDetector[SimController, adcore.ADWriter]):
         name="",
         config_sigs: Sequence[SignalR] = (),
         plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
-        use_fileio_for_ds_describer: bool = False,
     ):
         controller, driver = SimController.controller_and_drv(
             prefix + drv_suffix, name=name
@@ -36,7 +35,7 @@ class SimDetector(adcore.AreaDetector[SimController, adcore.ADWriter]):
             prefix,
             path_provider,
             lambda: name,
-            ds_describer_source=driver if not use_fileio_for_ds_describer else None,
+            adcore.ADBaseDatasetDescriber(driver),
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )
