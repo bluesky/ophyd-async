@@ -38,7 +38,7 @@ class DummyTriggerLogic(FlyerController[int]):
 class DummyController(DetectorController):
     def __init__(self) -> None: ...
     async def prepare(self, trigger_info: TriggerInfo):
-        return AsyncStatus(asyncio.sleep(0.01))
+        await asyncio.sleep(0.01)
 
     async def arm(self):
         self._arm_status = AsyncStatus(asyncio.sleep(0.01))
