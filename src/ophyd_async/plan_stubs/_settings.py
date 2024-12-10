@@ -58,6 +58,9 @@ def retrieve_settings(
     """Retrieve named Settings for a Device from a provider."""
     named_values = yield from wait_for_awaitable(provider.retrieve(name))
     signals = walk_rw_signals(device)
+    unknown_names = set(named_values) - set(signals)
+    if unknown_names:
+        raise NameError(f"Unknown signal names {sorted(unknown_names)}")
     signal_values = {signals[name]: value for name, value in named_values.items()}
     return Settings(device, signal_values)
 
