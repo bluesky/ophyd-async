@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
-from enum import Enum
 from pathlib import Path
 from typing import Generic, TypeVar, get_args
 from urllib.parse import urlunparse
@@ -25,12 +24,6 @@ from ophyd_async.core._utils import DEFAULT_TIMEOUT
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
 from ._core_io import ADBaseDatasetDescriber, Callback, NDFileIO, NDPluginBaseIO
 from ._utils import FileWriteMode
-
-
-class ADWriterFormat(str, Enum):
-    HDF5 = ("HDF1:",)
-    TIFF = ("TIFF1:",)
-
 
 NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
 ADWriterT = TypeVar("ADWriterT", bound="ADWriter")

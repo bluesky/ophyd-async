@@ -18,7 +18,7 @@ from ophyd_async.core import (
     StandardFlyer,
     TriggerInfo,
 )
-from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics import adcore
 from ophyd_async.testing import set_mock_value
 
 
