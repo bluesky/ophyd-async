@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from typing import Any
 
+import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import AsyncConfigurable, AsyncReadable, SignalDatatypeT, SignalR
@@ -41,6 +42,13 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
     )
 
 
+def _approx_readable_value(reading: Mapping[str, Reading]) -> Mapping[str, Reading]:
+    """Change Reading value to pytest.approx(value)"""
+    for i in reading:
+        reading[i]["value"] = pytest.approx(reading[i]["value"])
+    return reading
+
+
 async def assert_reading(
     readable: AsyncReadable, expected_reading: Mapping[str, Reading]
 ) -> None:
@@ -61,7 +69,9 @@ async def assert_reading(
 
     """
     actual_reading = await readable.read()
-    assert expected_reading == actual_reading, _generate_assert_error_msg(
+    assert (
+        _approx_readable_value(expected_reading) == actual_reading
+    ), _generate_assert_error_msg(
         name=readable.name,
         expected_result=expected_reading,
         actual_result=actual_reading,
@@ -89,7 +99,9 @@ async def assert_configuration(
 
     """
     actual_configurable = await configurable.read_configuration()
-    assert configuration == actual_configurable, _generate_assert_error_msg(
+    assert (
+        _approx_readable_value(configuration) == actual_configurable
+    ), _generate_assert_error_msg(
         name=configurable.name,
         expected_result=configuration,
         actual_result=actual_configurable,
