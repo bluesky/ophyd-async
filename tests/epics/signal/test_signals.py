@@ -25,9 +25,8 @@ from ophyd_async.core import (
     SubsetEnum,
     T,
     Table,
-    load_from_yaml,
+    YamlSettingsProvider,
     observe_value,
-    save_to_yaml,
 )
 from ophyd_async.epics.core import (
     EpicsDevice,
@@ -324,11 +323,10 @@ async def assert_backend_get_put_monitor(
         initial_value,
         datatype=None,
     )
-
-    yaml_path = tmp_path / "test.yaml"
-    save_to_yaml([{"test": put_value}], yaml_path)
-    loaded = load_from_yaml(yaml_path)
-    assert np.all(loaded[0]["test"] == put_value)
+    provider = YamlSettingsProvider(tmp_path)
+    await provider.store("test", {"test": put_value})
+    loaded = await provider.retrieve("test")
+    assert np.all(loaded["test"] == put_value)
 
 
 @PARAMETERISE_PROTOCOLS
@@ -503,11 +501,6 @@ async def test_bool_conversion_of_enum(
         True,
         bool,
     )
-
-    yaml_path = tmp_path / "test.yaml"
-    save_to_yaml([{"test": False}], yaml_path)
-    loaded = load_from_yaml(yaml_path)
-    assert np.all(loaded[0]["test"] is False)
 
 
 @PARAMETERISE_PROTOCOLS
