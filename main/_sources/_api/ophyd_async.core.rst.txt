@@ -71,10 +71,6 @@
         
         
         
-        
-        
-        
-        
 
 .. automodule:: ophyd_async.core
     :members:
@@ -99,14 +95,6 @@
         DeviceCollector
         DeviceVector
         DeviceFiller
-        all_at_once
-        get_signal_values
-        load_device
-        load_from_yaml
-        save_device
-        save_to_yaml
-        set_signal_values
-        walk_rw_signals
         StandardFlyer
         FlyerController
         HDFDataset
@@ -129,6 +117,8 @@
         YMDPathProvider
         StandardReadable
         StandardReadableFormat
+        Settings
+        SettingsProvider
         Signal
         SignalConnector
         SignalR
@@ -142,6 +132,7 @@
         soft_signal_r_and_setter
         soft_signal_rw
         wait_for_value
+        walk_rw_signals
         SignalBackend
         make_datakey
         StrictEnum
@@ -160,5 +151,6 @@
         in_micros
         wait_for_connection
         completed_status
+        YamlSettingsProvider
     
     

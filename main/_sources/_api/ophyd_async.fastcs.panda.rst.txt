@@ -21,7 +21,6 @@
         
         
         
-        
 
 .. automodule:: ophyd_async.fastcs.panda
     :members:
@@ -53,6 +52,5 @@
         SeqTrigger
         StaticPcompTriggerLogic
         StaticSeqTableTriggerLogic
-        phase_sorter
     
     

@@ -5,6 +5,9 @@
 
 ``ophyd_async.sim.testing``
 ===========================
+        
+        
+        
 
 .. automodule:: ophyd_async.sim.testing
     :members:
@@ -14,5 +17,14 @@
     
 
     
+    
+    .. rubric:: Members
+
+    .. autosummary::
+        :nosignatures:
+    
+        ExampleEnum
+        OneOfEverythingDevice
+        ParentOfEverythingDevice
     
     

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.9.0a2.dev2+ge08148f3 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.9.0a2.dev3+ge27b6d77 documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=b5f7d655"></script>
+    <script src="../_static/documentation_options.js?v=455608c8"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev2+ge08148f3 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev2+ge08148f3 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev3+ge27b6d77 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev3+ge27b6d77 documentation - Home"/>
   
   
 </a></div>
@@ -543,30 +543,6 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DeviceFiller</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.all_at_once" title="ophyd_async.core.all_at_once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">all_at_once</span></code></a></p></td>
-<td><p>Sort all the values into a single phase so they are set all at once</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_signal_values" title="ophyd_async.core.get_signal_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_signal_values</span></code></a></p></td>
-<td><p>Get signal values in bulk.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.load_device" title="ophyd_async.core.load_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_device</span></code></a></p></td>
-<td><p>Plan which loads PVs from a yaml file into a device.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.load_from_yaml" title="ophyd_async.core.load_from_yaml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_from_yaml</span></code></a></p></td>
-<td><p>Plan that returns a list of dicts with saved signal values from a yaml file.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.save_device" title="ophyd_async.core.save_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_device</span></code></a></p></td>
-<td><p>Plan that saves the state of all PV's on a device using a sorter.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.save_to_yaml" title="ophyd_async.core.save_to_yaml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_yaml</span></code></a></p></td>
-<td><p>Plan which serialises a phase or set of phases of SignalRWs to a yaml file.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.set_signal_values" title="ophyd_async.core.set_signal_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_signal_values</span></code></a></p></td>
-<td><p>Maps signals from a yaml file into device signals.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">walk_rw_signals</span></code></a></p></td>
-<td><p>Retrieve all SignalRWs from a device.</p></td>
-</tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardFlyer</span></code></p></td>
 <td><p></p></td>
 </tr>
@@ -638,6 +614,12 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.StandardReadableFormat" title="ophyd_async.core.StandardReadableFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardReadableFormat</span></code></a></p></td>
 <td><p>Declare how a <a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> should contribute to the <a class="reference internal" href="#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> verbs.</p></td>
 </tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Settings</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SettingsProvider</span></code></p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Signal</span></code></a></p></td>
 <td><p>A Device with the concept of a value, with R, RW, W and X flavours</p></td>
 </tr>
@@ -677,58 +659,64 @@ may change API on minor release numbers before then</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_value</span></code></a></p></td>
 <td><p>Wait for a signal to have a matching value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core.SignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalBackend</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">walk_rw_signals</span></code></a></p></td>
+<td><p>Retrieve all SignalRWs from a device.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core.SignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalBackend</span></code></a></p></td>
 <td><p>A read/write/monitor backend for a Signals</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_datakey</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_datakey</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrictEnum</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrictEnum</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubsetEnum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubsetEnum</span></code></a></p></td>
 <td><p>All members should exist in the Backend, but there may be extras</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalMetadata</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalMetadata</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend" title="ophyd_async.core.SoftSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend" title="ophyd_async.core.SoftSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a></p></td>
 <td><p>An backend to a soft Signal, for test signals see <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a></p></td>
 <td><p>Convert asyncio awaitable to bluesky Status interface</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatchableAsyncStatus</span></code></a></p></td>
 <td><p>Convert AsyncIterator of WatcherUpdates to bluesky Status interface.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
 <td><p>A lazily created Mock to be used when connecting in mock mode.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotConnected</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.NotConnected" title="ophyd_async.core.NotConnected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotConnected</span></code></a></p></td>
 <td><p>Exception to be raised if a <a class="reference internal" href="#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> is cancelled</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
 <td><p>Hide an object behind a reference.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.WatcherUpdate" title="ophyd_async.core.WatcherUpdate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatcherUpdate</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.WatcherUpdate" title="ophyd_async.core.WatcherUpdate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WatcherUpdate</span></code></a></p></td>
 <td><p>A dataclass such that, when expanded, it provides the kwargs for a watcher</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_dtype" title="ophyd_async.core.get_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dtype</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_enum_cls" title="ophyd_async.core.get_enum_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_enum_cls</span></code></a></p></td>
 <td><p>Get the runtime dtype from a numpy ndarray type annotation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_unique" title="ophyd_async.core.get_unique"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unique</span></code></a></p></td>
 <td><p>If all values are the same, return that value, otherwise raise TypeError</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.in_micros" title="ophyd_async.core.in_micros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_micros</span></code></a></p></td>
 <td><p>Converts between a positive number of seconds and an equivalent number of microseconds.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.wait_for_connection" title="ophyd_async.core.wait_for_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_connection</span></code></a></p></td>
 <td><p>Call many underlying signals, accumulating exceptions and returning them</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">completed_status</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">completed_status</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">YamlSettingsProvider</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -1182,173 +1170,6 @@ at runtime, so parent.foos[2] returns a FooDevice. For example usage see
 <code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicSensorGroup</span></code></p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.all_at_once">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">all_at_once</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#all_at_once"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.all_at_once" title="Link to this definition">#</a></dt>
-<dd><p>Sort all the values into a single phase so they are set all at once</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.get_signal_values">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_signal_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.utils.Msg.html#bluesky.utils.Msg" title="(in bluesky v1.14.dev69+g407422e4)"><span class="pre">Msg</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Location" title="(in bluesky v1.14.dev69+g407422e4)"><span class="pre">Location</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#get_signal_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_signal_values" title="Link to this definition">#</a></dt>
-<dd><p>Get signal values in bulk.</p>
-<p>Used as part of saving the signals of a device to a yaml file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>signals</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><em>SignalRW</em></a><em>]</em>) – Dictionary with pv names and matching SignalRW values. Often the direct result
-of <a class="reference internal" href="#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-func docutils literal notranslate"><span class="pre">walk_rw_signals()</span></code></a>.</p></li>
-<li><p><strong>ignore</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em><em>]</em>) – Optional list of PVs that should be ignored.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A dictionary containing pv names and their associated values. Ignored pvs are
-set to None.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.walk_rw_signals()</span></code></a>, <a class="reference internal" href="#ophyd_async.core.save_to_yaml" title="ophyd_async.core.save_to_yaml"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.save_to_yaml()</span></code></a></p>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.load_device">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">load_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#load_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.load_device" title="Link to this definition">#</a></dt>
-<dd><p>Plan which loads PVs from a yaml file into a device.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> (<a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core.Device"><em>Device</em></a>) – The device to load PVs into</p></li>
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path of the yaml file to load</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ophyd_async.core.save_device" title="ophyd_async.core.save_device"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.save_device()</span></code></a></p>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.load_from_yaml">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">load_from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#load_from_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.load_from_yaml" title="Link to this definition">#</a></dt>
-<dd><p>Plan that returns a list of dicts with saved signal values from a yaml file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>save_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path of the yaml file to load from</p>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ophyd_async.core.save_to_yaml" title="ophyd_async.core.save_to_yaml"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.save_to_yaml()</span></code></a>, <a class="reference internal" href="#ophyd_async.core.set_signal_values" title="ophyd_async.core.set_signal_values"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.set_signal_values()</span></code></a></p>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.save_device">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">save_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">device:</span> <span class="pre">~ophyd_async.core._device.Device,</span> <span class="pre">path:</span> <span class="pre">str,</span> <span class="pre">sorter:</span> <span class="pre">~collections.abc.Callable[[dict[str,</span> <span class="pre">~typing.Any]],</span> <span class="pre">~collections.abc.Sequence[dict[str,</span> <span class="pre">~typing.Any]]]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">all_at_once&gt;,</span> <span class="pre">ignore:</span> <span class="pre">list[str]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#save_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.save_device" title="Link to this definition">#</a></dt>
-<dd><p>Plan that saves the state of all PV’s on a device using a sorter.</p>
-<p>The default sorter assumes all saved PVs can be loaded at once, and therefore
-can be saved at one time, i.e. all PVs will appear on one list in the
-resulting yaml file.</p>
-<p>This can be a problem, because when the yaml is ingested with
-<a class="reference internal" href="#ophyd_async.core.load_device" title="ophyd_async.core.load_device"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.load_device()</span></code></a>, it will set all of those PVs at once.
-However, some PV’s need to be set before others - this is device specific.</p>
-<p>Therefore, users should consider the order of device loading and write their
-own sorter algorithms accordingly.</p>
-<p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda.phase_sorter()</span></code> for a valid implementation of the
-sorter.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> (<a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core.Device"><em>Device</em></a>) – The device whose PVs should be saved.</p></li>
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The path where the resulting yaml should be saved to</p></li>
-<li><p><strong>sorter</strong> (<em>Callable</em><em>[</em><em>[</em><em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>]</em><em>, </em><em>Sequence</em><em>[</em><em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>]</em><em>]</em>)</p></li>
-<li><p><strong>ignore</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em><em>]</em>)</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ophyd_async.core.load_device" title="ophyd_async.core.load_device"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.load_device()</span></code></a></p>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.save_to_yaml">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">save_to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phases</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#save_to_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.save_to_yaml" title="Link to this definition">#</a></dt>
-<dd><p>Plan which serialises a phase or set of phases of SignalRWs to a yaml file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>phases</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>dicts</em>) – The values to save. Each item in the list is a seperate phase used when loading
-a device. In general this variable be the return value of <a class="reference internal" href="#ophyd_async.core.get_signal_values" title="ophyd_async.core.get_signal_values"><code class="xref any py py-func docutils literal notranslate"><span class="pre">get_signal_values</span></code></a>.</p></li>
-<li><p><strong>save_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path of the yaml file to write to</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.walk_rw_signals()</span></code></a>, <a class="reference internal" href="#ophyd_async.core.get_signal_values" title="ophyd_async.core.get_signal_values"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.get_signal_values()</span></code></a>, <a class="reference internal" href="#ophyd_async.core.load_from_yaml" title="ophyd_async.core.load_from_yaml"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.load_from_yaml()</span></code></a></p>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.set_signal_values">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_signal_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.utils.Msg.html#bluesky.utils.Msg" title="(in bluesky v1.14.dev69+g407422e4)"><span class="pre">Msg</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#set_signal_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_signal_values" title="Link to this definition">#</a></dt>
-<dd><p>Maps signals from a yaml file into device signals.</p>
-<p><code class="docutils literal notranslate"><span class="pre">values</span></code> contains signal values in phases, which are loaded in sequentially
-into the provided signals, to ensure signals are set in the correct order.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>signals</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><em>SignalRW</em></a><em>[</em><em>Any</em><em>]</em><em>]</em>) – Dictionary of named signals to be updated if value found in values argument.
-Can be the output of <a class="reference internal" href="#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-func docutils literal notranslate"><span class="pre">walk_rw_signals()</span></code></a> for a device.</p></li>
-<li><p><strong>values</strong> (<em>Sequence</em><em>[</em><em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>]</em>) – List of dictionaries of signal name and value pairs, if a signal matches
-the name of one in the signals argument, sets the signal to that value.
-The groups of signals are loaded in their list order.
-Can be the output of <a class="reference internal" href="#ophyd_async.core.load_from_yaml" title="ophyd_async.core.load_from_yaml"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_from_yaml()</span></code></a> for a yaml file.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="#ophyd_async.core.load_from_yaml" title="ophyd_async.core.load_from_yaml"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.load_from_yaml()</span></code></a>, <a class="reference internal" href="#ophyd_async.core.walk_rw_signals" title="ophyd_async.core.walk_rw_signals"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.walk_rw_signals()</span></code></a></p>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.core.walk_rw_signals">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">walk_rw_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_device_save_loader.html#walk_rw_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.walk_rw_signals" title="Link to this definition">#</a></dt>
-<dd><p>Retrieve all SignalRWs from a device.</p>
-<p>Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
-part of saving and loading a device.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> (<a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core.Device"><em>Device</em></a>) – Ophyd device to retrieve read-write signals from.</p></li>
-<li><p><strong>path_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – For internal use, leave blank when calling the method.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul>
-<li><p><strong>SignalRWs</strong> (<em>dict</em>) – A dictionary matching the string attribute path of a SignalRW with the
-signal itself.</p>
-<p>See Also</p>
-</li>
-<li><p><em>——–</em></p></li>
-<li><p><a class="reference internal" href="#ophyd_async.core.get_signal_values" title="ophyd_async.core.get_signal_values"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.get_signal_values()</span></code></a></p></li>
-<li><p><a class="reference internal" href="#ophyd_async.core.save_to_yaml" title="ophyd_async.core.save_to_yaml"><code class="xref py py-func docutils literal notranslate"><span class="pre">ophyd_async.core.save_to_yaml()</span></code></a></p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.HDFDataset">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">HDFDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_key:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape:</span> <span class="pre">collections.abc.Sequence[int]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype_numpy:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplier:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swmr:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_shape:</span> <span class="pre">tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...]</span> <span class="pre">=</span> <span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_hdf_dataset.html#HDFDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.HDFDataset" title="Link to this definition">#</a></dt>
@@ -1789,6 +1610,29 @@ callable then value will be checked for equality with match.</p></li>
 </div>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.walk_rw_signals">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">walk_rw_signals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.SignalRW" title="ophyd_async.core._signal.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/ophyd_async/core/_signal.html#walk_rw_signals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.walk_rw_signals" title="Link to this definition">#</a></dt>
+<dd><p>Retrieve all SignalRWs from a device.</p>
+<p>Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
+part of saving and loading a device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> (<a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core.Device"><em>Device</em></a>) – Ophyd device to retrieve read-write signals from.</p></li>
+<li><p><strong>path_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – For internal use, leave blank when calling the method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>SignalRWs</strong> – A dictionary matching the string attribute path of a SignalRW with the
+signal itself.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.SignalBackend">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">SignalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">SignalDatatypeT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/core/_signal_backend.html#SignalBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalBackend" title="Link to this definition">#</a></dt>
@@ -2140,14 +1984,6 @@ number of microseconds.</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceCollector"><code class="docutils literal notranslate"><span class="pre">DeviceCollector</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceVector"><code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.all_at_once"><code class="docutils literal notranslate"><span class="pre">all_at_once()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_signal_values"><code class="docutils literal notranslate"><span class="pre">get_signal_values()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.load_device"><code class="docutils literal notranslate"><span class="pre">load_device()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.load_from_yaml"><code class="docutils literal notranslate"><span class="pre">load_from_yaml()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.save_device"><code class="docutils literal notranslate"><span class="pre">save_device()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.save_to_yaml"><code class="docutils literal notranslate"><span class="pre">save_to_yaml()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_signal_values"><code class="docutils literal notranslate"><span class="pre">set_signal_values()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.walk_rw_signals"><code class="docutils literal notranslate"><span class="pre">walk_rw_signals()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HDFDataset"><code class="docutils literal notranslate"><span class="pre">HDFDataset</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HDFFile"><code class="docutils literal notranslate"><span class="pre">HDFFile</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.config_ophyd_async_logging"><code class="docutils literal notranslate"><span class="pre">config_ophyd_async_logging()</span></code></a></li>
@@ -2200,6 +2036,7 @@ number of microseconds.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.soft_signal_r_and_setter"><code class="docutils literal notranslate"><span class="pre">soft_signal_r_and_setter()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.soft_signal_rw"><code class="docutils literal notranslate"><span class="pre">soft_signal_rw()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.wait_for_value"><code class="docutils literal notranslate"><span class="pre">wait_for_value()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.walk_rw_signals"><code class="docutils literal notranslate"><span class="pre">walk_rw_signals()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalBackend"><code class="docutils literal notranslate"><span class="pre">SignalBackend</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalBackend.source"><code class="docutils literal notranslate"><span class="pre">SignalBackend.source()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalBackend.connect"><code class="docutils literal notranslate"><span class="pre">SignalBackend.connect()</span></code></a></li>

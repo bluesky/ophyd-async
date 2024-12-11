@@ -11,6 +11,12 @@
         
         
         
+        
+        
+        
+        
+        
+        
 
 .. automodule:: ophyd_async.plan_stubs
     :members:
@@ -32,5 +38,11 @@
         ensure_connected
         setup_ndattributes
         setup_ndstats_sum
+        apply_panda_settings
+        apply_settings
+        apply_settings_if_different
+        get_current_settings
+        retrieve_settings
+        store_settings
     
     

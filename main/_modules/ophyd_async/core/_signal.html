@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.9.0a2.dev2+ge08148f3 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.9.0a2.dev3+ge27b6d77 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=b5f7d655"></script>
+    <script src="../../../_static/documentation_options.js?v=455608c8"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev2+ge08148f3 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev2+ge08148f3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev3+ge27b6d77 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev3+ge27b6d77 documentation - Home"/>
   
   
 </a></div>
@@ -464,7 +464,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Locatable</span><span class="p">,</span>
@@ -1126,6 +1126,41 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">status_timeout</span><span class="p">,</span>
         <span class="n">wait_for_set_completion</span><span class="p">,</span>
     <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="walk_rw_signals">
+<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.walk_rw_signals">[docs]</a>
+<span class="k">def</span> <span class="nf">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all SignalRWs from a device.</span>
+
+<span class="sd">    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as</span>
+<span class="sd">    part of saving and loading a device.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : Device</span>
+<span class="sd">        Ophyd device to retrieve read-write signals from.</span>
+
+<span class="sd">    path_prefix : str</span>
+<span class="sd">        For internal use, leave blank when calling the method.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SignalRWs : dict</span>
+<span class="sd">        A dictionary matching the string attribute path of a SignalRW with the</span>
+<span class="sd">        signal itself.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">signals</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+        <span class="n">dot_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">is</span> <span class="n">SignalRW</span><span class="p">:</span>
+            <span class="n">signals</span><span class="p">[</span><span class="n">dot_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="n">attr_signals</span> <span class="o">=</span> <span class="n">walk_rw_signals</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">dot_path</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">signals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attr_signals</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">signals</span></div>
 
 </pre></div>
 
