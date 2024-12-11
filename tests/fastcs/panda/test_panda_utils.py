@@ -2,15 +2,14 @@ import numpy as np
 import yaml
 from bluesky import RunEngine
 
-from ophyd_async.core import DeviceCollector, load_device, save_device
+from ophyd_async.core import DeviceCollector, YamlSettingsProvider
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
-from ophyd_async.fastcs.panda import (
-    CommonPandaBlocks,
-    DataBlock,
-    SeqTable,
-    TimeUnits,
-    phase_sorter,
+from ophyd_async.fastcs.panda import CommonPandaBlocks, DataBlock, SeqTable, TimeUnits
+from ophyd_async.plan_stubs import (
+    apply_panda_settings,
+    retrieve_settings,
+    store_settings,
 )
 
 
@@ -30,8 +29,8 @@ async def get_mock_panda():
 async def test_save_load_panda(tmp_path, RE: RunEngine):
     mock_panda1 = await get_mock_panda()
     await mock_panda1.seq[1].table.set(SeqTable.row(repeats=1))
-
-    RE(save_device(mock_panda1, str(tmp_path / "panda.yaml"), sorter=phase_sorter))
+    provider = YamlSettingsProvider(tmp_path)
+    RE(store_settings(provider, "panda", mock_panda1))
 
     def check_equal_with_seq_tables(actual, expected):
         assert actual.model_fields_set == expected.model_fields_set
@@ -43,7 +42,12 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
     check_equal_with_seq_tables(
         (await mock_panda2.seq[1].table.get_value()), SeqTable()
     )
-    RE(load_device(mock_panda2, str(tmp_path / "panda.yaml")))
+
+    def load_panda():
+        settings = yield from retrieve_settings(provider, "panda", mock_panda2)
+        yield from apply_panda_settings(settings)
+
+    RE(load_panda())
 
     check_equal_with_seq_tables(
         await mock_panda2.seq[1].table.get_value(),
@@ -57,12 +61,10 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
     # Parse the YAML content
     parsed_yaml = yaml.safe_load(yaml_content)
 
-    assert parsed_yaml[0] == {
+    assert parsed_yaml == {
         "phase_1_signal_units": 0,
         "seq.1.prescale_units": TimeUnits("min"),
         "seq.2.prescale_units": TimeUnits("min"),
-    }
-    assert parsed_yaml[1] == {
         "data.capture": False,
         "data.capture_mode": "FIRST_N",
         "data.create_directory": 0,
