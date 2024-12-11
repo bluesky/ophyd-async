@@ -12,11 +12,11 @@ from ophyd_async.core import (
     AsyncStatus,
     DetectorController,
     DetectorTrigger,
-    DeviceCollector,
     FlyerController,
     StandardDetector,
     StandardFlyer,
     TriggerInfo,
+    init_devices,
 )
 from ophyd_async.epics import adcore, adsimdetector
 from ophyd_async.testing import set_mock_value
@@ -54,7 +54,7 @@ class DummyController(DetectorController):
 
 @pytest.fixture
 def controller(RE) -> adsimdetector.SimController:
-    with DeviceCollector(mock=True):
+    with init_devices(mock=True):
         drv = adcore.ADBaseIO("DRV")
 
     return adsimdetector.SimController(drv)
@@ -62,7 +62,7 @@ def controller(RE) -> adsimdetector.SimController:
 
 @pytest.fixture
 def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
-    with DeviceCollector(mock=True):
+    with init_devices(mock=True):
         hdf = adcore.NDFileHDFIO("HDF")
 
     return adcore.ADHDFWriter(

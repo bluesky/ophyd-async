@@ -6,11 +6,11 @@ from bluesky.protocols import HasHints, Hints
 
 from ophyd_async.core import (
     Device,
-    DeviceCollector,
     DeviceVector,
     SignalRW,
     SignalX,
     StandardReadable,
+    init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import PviDeviceConnector
@@ -62,7 +62,7 @@ def with_pvi_connector(
 
 
 async def test_fill_pvi_entries_mock_mode():
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         test_device = with_pvi_connector(Block3, "PREFIX:")
 
     # device vectors are typed

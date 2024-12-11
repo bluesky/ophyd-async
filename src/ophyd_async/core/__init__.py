@@ -5,7 +5,7 @@ from ._detector import (
     StandardDetector,
     TriggerInfo,
 )
-from ._device import Device, DeviceCollector, DeviceConnector, DeviceVector
+from ._device import Device, DeviceConnector, DeviceVector, init_devices
 from ._device_filler import DeviceFiller
 from ._flyer import FlyerController, StandardFlyer
 from ._hdf_dataset import HDFDataset, HDFFile
@@ -87,7 +87,7 @@ __all__ = [
     "TriggerInfo",
     "Device",
     "DeviceConnector",
-    "DeviceCollector",
+    "init_devices",
     "DeviceVector",
     "DeviceFiller",
     "StandardFlyer",

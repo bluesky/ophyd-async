@@ -3,8 +3,8 @@ from unittest.mock import ANY, patch
 from pytest import fixture, raises
 
 from ophyd_async.core import (
-    DeviceCollector,
     TriggerInfo,
+    init_devices,
 )
 from ophyd_async.epics.eiger import EigerController, EigerDriverIO
 from ophyd_async.testing import callback_on_mock_put, get_mock_put, set_mock_value
@@ -14,7 +14,7 @@ DriverAndController = tuple[EigerDriverIO, EigerController]
 
 @fixture
 def eiger_driver_and_controller_no_arm(RE) -> DriverAndController:
-    with DeviceCollector(mock=True):
+    with init_devices(mock=True):
         driver = EigerDriverIO("")
         controller = EigerController(driver)
 

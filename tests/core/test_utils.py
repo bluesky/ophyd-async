@@ -5,7 +5,7 @@ import pytest
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
-    DeviceCollector,
+    init_devices,
     SoftSignalBackend,
     NotConnected,
     SignalRW,
@@ -179,9 +179,9 @@ class BadDatatypeDevice(Device):
         super().__init__(name)
 
 
-async def test_error_handling_device_collector_mock():
+async def test_error_handling_init_devices_mock():
     with pytest.raises(NotConnected) as e:
-        async with DeviceCollector(mock=True):
+        async with init_devices(mock=True):
             device = BadDatatypeDevice()
             device2 = BadDatatypeDevice()
     expected_output = NotConnected(
@@ -205,11 +205,11 @@ def test_introspecting_sub_errors():
     assert error.sub_errors == {"child1": sub_error1, "child2": sub_error2}
 
 
-async def test_error_handling_device_collector(caplog):
+async def test_error_handling_init_devices(caplog):
     caplog.set_level(10)
     with pytest.raises(NotConnected) as e:
         # flake8: noqa
-        async with DeviceCollector(timeout=0.1):
+        async with init_devices(timeout=0.1):
             dummy_device_two_working_one_timeout_two_value_error = (
                 DummyDeviceTwoWorkingTwoTimeOutTwoValueError()
             )
@@ -271,7 +271,7 @@ async def test_combining_top_level_signal_and_child_device():
     )
 
     with pytest.raises(NotConnected) as e:
-        async with DeviceCollector(timeout=0.1):
+        async with init_devices(timeout=0.1):
             dummy_device2 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
     assert str(e.value) == (
         "\ndummy_device2: NotConnected:\n"

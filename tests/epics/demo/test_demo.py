@@ -9,9 +9,9 @@ from bluesky.protocols import Reading
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
-    DeviceCollector,
     LazyMock,
     NotConnected,
+    init_devices,
 )
 from ophyd_async.epics import demo
 from ophyd_async.testing import (
@@ -28,7 +28,7 @@ from ophyd_async.testing import (
 
 @pytest.fixture
 async def mock_mover() -> demo.Mover:
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_mover = demo.Mover("BLxxI-MO-TABLE-01:X:")
         # Signals connected here
 
@@ -41,7 +41,7 @@ async def mock_mover() -> demo.Mover:
 
 @pytest.fixture
 async def mock_sensor() -> demo.Sensor:
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_sensor = demo.Sensor("MOCK:SENSOR:")
         # Signals connected here
 
@@ -51,7 +51,7 @@ async def mock_sensor() -> demo.Sensor:
 
 @pytest.fixture
 async def mock_sensor_group() -> demo.SensorGroup:
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_sensor_group = demo.SensorGroup("MOCK:SENSOR:")
         # Signals connected here
 
@@ -252,7 +252,7 @@ async def test_set_velocity(mock_mover: demo.Mover) -> None:
 
 async def test_mover_disconnected():
     with pytest.raises(NotConnected):
-        async with DeviceCollector(timeout=0.1):
+        async with init_devices(timeout=0.1):
             m = demo.Mover("ca://PRE:", name="mover")
     assert m.name == "mover"
 
@@ -260,7 +260,7 @@ async def test_mover_disconnected():
 async def test_sensor_disconnected(caplog):
     caplog.set_level(10)
     with pytest.raises(NotConnected):
-        async with DeviceCollector(timeout=0.1):
+        async with init_devices(timeout=0.1):
             s = demo.Sensor("ca://PRE:", name="sensor")
     logs = caplog.get_records("call")
     logs = [log for log in logs if "_signal" not in log.pathname]
@@ -317,7 +317,7 @@ async def test_assembly_renaming() -> None:
 
 async def test_dynamic_sensor_group_disconnected():
     with pytest.raises(NotConnected) as e:
-        async with DeviceCollector(timeout=0.1):
+        async with init_devices(timeout=0.1):
             mock_sensor_group_dynamic = demo.SensorGroup("MOCK:SENSOR:")
     expected = """
 mock_sensor_group_dynamic: NotConnected:

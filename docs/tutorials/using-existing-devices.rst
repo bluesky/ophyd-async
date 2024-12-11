@@ -47,7 +47,7 @@ Finally we create the Ophyd Async devices imported from the `epics.demo` module:
     :language: python
     :start-after: # Create ophyd-async devices
 
-The first thing to note is `with`. This uses a `DeviceCollector` as a context
+The first thing to note is `with`. This uses `init_devices` as a context
 manager to collect up the top level `Device` instances created in the context,
 and run the following:
 

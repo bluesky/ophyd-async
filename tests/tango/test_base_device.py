@@ -10,7 +10,7 @@ import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import Array1D, DeviceCollector, SignalRW, T
+from ophyd_async.core import Array1D, SignalRW, T, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
@@ -302,7 +302,7 @@ def compare_values(expected, received):
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
 
-    async with DeviceCollector():
+    async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
@@ -349,7 +349,7 @@ async def test_connect_proxy(tango_test_device, proxy: bool | None):
 async def test_with_bluesky(tango_test_device):
     # now let's do some bluesky stuff
     RE = RunEngine()
-    with DeviceCollector():
+    with init_devices():
         device = TestTangoReadable(tango_test_device)
     RE(bp.count([device]))
 

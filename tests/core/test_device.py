@@ -8,11 +8,11 @@ import pytest
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
-    DeviceCollector,
     DeviceVector,
     NotConnected,
     Reference,
     SignalRW,
+    init_devices,
     soft_signal_rw,
     wait_for_connection,
 )
@@ -126,8 +126,8 @@ async def test_children_of_device_with_different_separator(
         assert parent.dict_with_children[123].name == "parent_dict_with_children_123"
 
 
-async def test_device_with_device_collector():
-    async with DeviceCollector(mock=True):
+async def test_device_with_init_devices():
+    async with init_devices(mock=True):
         parent = DummyDeviceGroup("parent")
 
     assert parent.name == "parent"
