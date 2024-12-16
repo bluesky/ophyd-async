@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from ophyd_async.core import DeviceCollector
+from ophyd_async.core import init_devices
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
@@ -25,7 +25,7 @@ async def mock_panda():
         def __init__(self, uri: str, name: str = ""):
             super().__init__(name=name, connector=fastcs_connector(self, uri))
 
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")
 
     assert mock_panda.name == "mock_panda"

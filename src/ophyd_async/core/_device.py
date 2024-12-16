@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
-from collections.abc import Coroutine, Iterator, Mapping, MutableMapping
+from collections.abc import Awaitable, Callable, Iterator, Mapping, MutableMapping
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
 from typing import Any, TypeVar
@@ -254,54 +254,18 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         return hash(id(self))
 
 
-class DeviceCollector:
-    """Collector of top level Device instances to be used as a context manager
+class DeviceProcessor:
+    """Sync/Async Context Manager that finds all the Devices declared within it.
 
-    Parameters
-    ----------
-    set_name:
-        If True, call ``device.set_name(variable_name)`` on all collected
-        Devices
-    child_name_separator:
-        Use this as a separator if we call ``set_name``.
-    connect:
-        If True, call ``device.connect(mock)`` in parallel on all
-        collected Devices
-    mock:
-        If True, connect Signals in simulation mode
-    timeout:
-        How long to wait for connect before logging an exception
-
-    Notes
-    -----
-    Example usage::
-
-        [async] with DeviceCollector():
-            t1x = motor.Motor("BLxxI-MO-TABLE-01:X")
-            t1y = motor.Motor("pva://BLxxI-MO-TABLE-01:Y")
-            # Names and connects devices here
-        assert t1x.comm.velocity.source
-        assert t1x.name == "t1x"
-
+    Used in `init_devices`
     """
 
-    def __init__(
-        self,
-        set_name=True,
-        child_name_separator: str = "-",
-        connect=True,
-        mock=False,
-        timeout: float = 10.0,
-    ):
-        self._set_name = set_name
-        self._child_name_separator = child_name_separator
-        self._connect = connect
-        self._mock = mock
-        self._timeout = timeout
-        self._names_on_enter: set[str] = set()
-        self._objects_on_exit: dict[str, Any] = {}
+    def __init__(self, process_devices: Callable[[dict[str, Device]], Awaitable[None]]):
+        self._process_devices = process_devices
+        self._locals_on_enter: dict[str, Any] = {}
+        self._locals_on_exit: dict[str, Any] = {}
 
-    def _caller_locals(self):
+    def _caller_locals(self) -> dict[str, Any]:
         """Walk up until we find a stack frame that doesn't have us as self"""
         try:
             raise ValueError
@@ -314,34 +278,18 @@ class DeviceCollector:
                 assert (
                     caller_frame
                 ), "No previous frame to the one with self in it, this shouldn't happen"
-            return caller_frame.f_locals
+            return caller_frame.f_locals.copy()
 
-    def __enter__(self) -> DeviceCollector:
+    def __enter__(self) -> DeviceProcessor:
         # Stash the names that were defined before we were called
-        self._names_on_enter = set(self._caller_locals())
+        self._locals_on_enter = self._caller_locals()
         return self
 
-    async def __aenter__(self) -> DeviceCollector:
+    async def __aenter__(self) -> DeviceProcessor:
         return self.__enter__()
 
-    async def _on_exit(self) -> None:
-        # Name and kick off connect for devices
-        connect_coroutines: dict[str, Coroutine] = {}
-        for name, obj in self._objects_on_exit.items():
-            if name not in self._names_on_enter and isinstance(obj, Device):
-                if self._set_name and not obj.name:
-                    obj.set_name(name, child_name_separator=self._child_name_separator)
-                if self._connect:
-                    connect_coroutines[name] = obj.connect(
-                        self._mock, timeout=self._timeout
-                    )
-
-        # Connect to all the devices
-        if connect_coroutines:
-            await wait_for_connection(**connect_coroutines)
-
     async def __aexit__(self, type, value, traceback):
-        self._objects_on_exit = self._caller_locals()
+        self._locals_on_exit = self._caller_locals()
         await self._on_exit()
 
     def __exit__(self, type_, value, traceback):
@@ -350,7 +298,7 @@ class DeviceCollector:
                 "Cannot use DeviceConnector inside a plan, instead use "
                 "`yield from ophyd_async.plan_stubs.ensure_connected(device)`"
             )
-        self._objects_on_exit = self._caller_locals()
+        self._locals_on_exit = self._caller_locals()
         try:
             fut = call_in_bluesky_event_loop(self._on_exit())
         except RuntimeError as e:
@@ -360,3 +308,62 @@ class DeviceCollector:
                 "user/explanations/event-loop-choice.html for more info."
             ) from e
         return fut
+
+    async def _on_exit(self) -> None:
+        # Find all the devices
+        devices = {
+            name: obj
+            for name, obj in self._locals_on_exit.items()
+            if isinstance(obj, Device) and self._locals_on_enter.get(name) is not obj
+        }
+        # Call the provided process function on them
+        await self._process_devices(devices)
+
+
+def init_devices(
+    set_name=True,
+    child_name_separator: str = "-",
+    connect=True,
+    mock=False,
+    timeout: float = 10.0,
+) -> DeviceProcessor:
+    """Auto initialise top level Device instances to be used as a context manager
+
+    Parameters
+    ----------
+    set_name:
+        If True, call ``device.set_name(variable_name)`` on all Devices
+        created within the context manager that have an empty ``name``
+    child_name_separator:
+        Use this as a separator if we call ``set_name``.
+    connect:
+        If True, call ``device.connect(mock, timeout)`` in parallel on all
+        Devices created within the context manager
+    mock:
+        If True, connect Signals in mock mode
+    timeout:
+        How long to wait for connect before logging an exception
+
+    Notes
+    -----
+    Example usage::
+
+        [async] with init_devices():
+            t1x = motor.Motor("BLxxI-MO-TABLE-01:X")
+            t1y = motor.Motor("pva://BLxxI-MO-TABLE-01:Y")
+            # Names and connects devices here
+        assert t1x.name == "t1x"
+    """
+
+    async def process_devices(devices: dict[str, Device]):
+        if set_name:
+            for name, device in devices.items():
+                if not device.name:
+                    device.set_name(name, child_name_separator=child_name_separator)
+        if connect:
+            coros = {
+                name: device.connect(mock, timeout) for name, device in devices.items()
+            }
+            await wait_for_connection(**coros)
+
+    return DeviceProcessor(process_devices)

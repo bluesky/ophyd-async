@@ -6,11 +6,11 @@ import pytest
 
 from ophyd_async.core import (
     Device,
-    DeviceCollector,
     MockSignalBackend,
     SignalRW,
     SignalW,
     SoftSignalBackend,
+    init_devices,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -170,7 +170,7 @@ async def test_get_mock_put():
 
 @pytest.fixture
 async def mock_signals():
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         signal1 = epics_signal_rw(str, "READ_PV1", "WRITE_PV1", name="mock_name1")
         signal2 = epics_signal_rw(str, "READ_PV2", "WRITE_PV2", name="mock_name2")
 

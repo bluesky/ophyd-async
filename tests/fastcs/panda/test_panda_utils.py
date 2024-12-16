@@ -2,7 +2,7 @@ import numpy as np
 import yaml
 from bluesky import RunEngine
 
-from ophyd_async.core import DeviceCollector, YamlSettingsProvider
+from ophyd_async.core import YamlSettingsProvider, init_devices
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import CommonPandaBlocks, DataBlock, SeqTable, TimeUnits
@@ -20,7 +20,7 @@ async def get_mock_panda():
         def __init__(self, uri: str, name: str = ""):
             super().__init__(name=name, connector=fastcs_connector(self, uri))
 
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_panda = Panda("PANDA")
         mock_panda.phase_1_signal_units = epics_signal_rw(int, "")
     return mock_panda

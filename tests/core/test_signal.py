@@ -12,12 +12,12 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     Array1D,
-    DeviceCollector,
     SignalR,
     SignalRW,
     SoftSignalBackend,
     StandardReadable,
     StrictEnum,
+    init_devices,
     set_and_wait_for_other_value,
     set_and_wait_for_value,
     soft_signal_r_and_setter,
@@ -275,7 +275,7 @@ class DummyReadableArray(StandardReadable):
 
 @pytest.fixture
 async def mock_readable():
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_readable = DummyReadableArray("SIM:READABLE:", name="mock_readable")
     yield mock_readable
 

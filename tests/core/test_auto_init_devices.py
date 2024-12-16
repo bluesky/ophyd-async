@@ -7,8 +7,8 @@ from bluesky.run_engine import RunEngine, TransitionError
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
-    DeviceCollector,
     NotConnected,
+    init_devices,
 )
 from ophyd_async.epics import motor
 from ophyd_async.testing import set_mock_value
@@ -33,10 +33,10 @@ class WorkingDevice(Device):
     async def set(self, new_position: float): ...
 
 
-async def test_device_collector_handles_top_level_errors(caplog):
+async def test_init_devices_handles_top_level_errors(caplog):
     caplog.set_level(10)
     with pytest.raises(NotConnected) as exc:
-        async with DeviceCollector():
+        async with init_devices():
             _ = FailingDevice("somename")
 
     assert not exc.value.__cause__
@@ -52,9 +52,9 @@ async def test_device_collector_handles_top_level_errors(caplog):
     assert device_log[0].levelname == "ERROR"
 
 
-def test_sync_device_connector_no_run_engine_raises_error():
+def test_sync_init_devices_no_run_engine_raises_error():
     with pytest.raises(NotConnected) as e:
-        with DeviceCollector():
+        with init_devices():
             working_device = WorkingDevice("somename")
     assert e.value._errors == (
         "Could not connect devices. Is the bluesky event loop running? See "
@@ -64,26 +64,36 @@ def test_sync_device_connector_no_run_engine_raises_error():
     assert not working_device.connected
 
 
-def test_sync_device_connector_run_engine_created_connects(RE):
-    with DeviceCollector():
+def test_sync_init_devices_run_engine_created_connects(RE):
+    with init_devices():
         working_device = WorkingDevice("somename")
 
     assert working_device.connected
 
 
+async def test_init_devices_detects_redeclared_devices():
+    original_working_device = working_device = WorkingDevice()
+
+    async with init_devices():
+        working_device = WorkingDevice()
+    assert original_working_device is not working_device
+    assert working_device.connected and working_device.name == "working_device"
+    assert not original_working_device.connected and original_working_device.name == ""
+
+
 def test_connecting_in_plan_raises(RE):
     def bad_plan():
         yield from bps.null()
-        with DeviceCollector():
+        with init_devices():
             working_device = WorkingDevice("somename")  # noqa: F841
 
     with pytest.raises(RuntimeError, match="Cannot use DeviceConnector inside a plan"):
         RE(bad_plan())
 
 
-def test_async_device_connector_run_engine_same_event_loop():
+def test_async_init_devices_run_engine_same_event_loop():
     async def set_up_device():
-        async with DeviceCollector(mock=True):
+        async with init_devices(mock=True):
             mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
         set_mock_value(mock_motor.velocity, 1)
         return mock_motor
@@ -126,17 +136,17 @@ def test_async_device_connector_run_engine_same_event_loop():
         "loop to set the value, unlike real signals."
     )
 )
-def test_async_device_connector_run_engine_different_event_loop():
+def test_async_init_devices_run_engine_different_event_loop():
     async def set_up_device():
-        async with DeviceCollector(mock=True):
+        async with init_devices(mock=True):
             mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
         return mock_motor
 
-    device_connector_loop = asyncio.new_event_loop()
+    init_devices_loop = asyncio.new_event_loop()
     run_engine_loop = asyncio.new_event_loop()
-    assert run_engine_loop is not device_connector_loop
+    assert run_engine_loop is not init_devices_loop
 
-    mock_motor = device_connector_loop.run_until_complete(set_up_device())
+    mock_motor = init_devices_loop.run_until_complete(set_up_device())
 
     RE = RunEngine(loop=run_engine_loop)
 
@@ -147,7 +157,7 @@ def test_async_device_connector_run_engine_different_event_loop():
 
     # The set should fail since the run engine is on a different event loop
     assert (
-        device_connector_loop.run_until_complete(mock_motor.user_setpoint.read())[
+        init_devices_loop.run_until_complete(mock_motor.user_setpoint.read())[
             "mock_motor-user_setpoint"
         ]["value"]
         != 3.14
