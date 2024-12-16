@@ -9,8 +9,8 @@ from bluesky.run_engine import RunEngine
 from ophyd_async.core import (
     DetectorTrigger,
     Device,
-    DeviceCollector,
     StaticPathProvider,
+    init_devices,
 )
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
@@ -47,7 +47,7 @@ def RE():
 
 @pytest.fixture
 async def setup_device(RE, ioc_prefixes):
-    async with DeviceCollector():
+    async with init_devices():
         device = SetupDevice(ioc_prefixes[0], ioc_prefixes[1] + "FP:")
     await asyncio.gather(
         device.header_detail.set("all"),
@@ -62,7 +62,7 @@ async def setup_device(RE, ioc_prefixes):
 @pytest.fixture
 async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
     provider = StaticPathProvider(lambda: "test_eiger", Path(SAVE_PATH))
-    async with DeviceCollector():
+    async with init_devices():
         test_eiger = EigerDetector("", provider, ioc_prefixes[0], ioc_prefixes[1])
 
     return test_eiger

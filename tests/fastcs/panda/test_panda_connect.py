@@ -9,9 +9,9 @@ import pytest
 
 from ophyd_async.core import (
     Device,
-    DeviceCollector,
     DeviceVector,
     NotConnected,
+    init_devices,
 )
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
@@ -65,7 +65,7 @@ async def panda_t():
 
 @pytest.fixture
 async def mock_panda(panda_t):
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_panda = panda_t("PANDAQSRV:")
 
     assert mock_panda.name == "mock_panda"

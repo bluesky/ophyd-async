@@ -5,7 +5,7 @@ import pytest
 
 from ophyd_async.core import (
     DetectorController,
-    DeviceCollector,
+    init_devices,
 )
 from ophyd_async.epics import adcore
 from ophyd_async.testing import get_mock_put, set_mock_value
@@ -15,7 +15,7 @@ TEST_DEADTIME = 0.1
 
 @pytest.fixture
 def driver(RE) -> adcore.ADBaseIO:
-    with DeviceCollector(mock=True):
+    with init_devices(mock=True):
         driver = adcore.ADBaseIO("DRV:", name="drv")
     return driver
 

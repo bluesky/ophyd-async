@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import DetectorTrigger, Device, DeviceCollector, TriggerInfo
+from ophyd_async.core import DetectorTrigger, Device, TriggerInfo, init_devices
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import CommonPandaBlocks, PandaPcapController
@@ -16,7 +16,7 @@ async def mock_panda():
         def __init__(self, uri: str, name: str = ""):
             super().__init__(name=name, connector=fastcs_connector(self, uri))
 
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_panda = Panda("PANDACONTROLLER:", name="mock_panda")
         mock_panda.phase_1_signal_units = epics_signal_rw(int, "")
     yield mock_panda

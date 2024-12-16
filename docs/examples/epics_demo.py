@@ -7,7 +7,7 @@ from bluesky.plans import grid_scan  # noqa
 from bluesky.utils import ProgressBarManager, register_transform
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
 
-from ophyd_async.core import DeviceCollector
+from ophyd_async.core import init_devices
 from ophyd_async.epics import demo
 
 # Create a run engine, with plotting, progressbar and transform
@@ -31,7 +31,7 @@ class OldSensor(Device):
 det_old = OldSensor(pv_prefix, name="det_old")
 
 # Create ophyd-async devices
-with DeviceCollector():
+with init_devices():
     det = demo.Sensor(pv_prefix)
     det_group = demo.SensorGroup(pv_prefix)
     samp = demo.SampleStage(pv_prefix)
