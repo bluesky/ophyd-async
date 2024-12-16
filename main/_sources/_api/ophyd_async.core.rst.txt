@@ -92,7 +92,7 @@
         StandardDetector
         Device
         DeviceConnector
-        DeviceCollector
+        init_devices
         DeviceVector
         DeviceFiller
         StandardFlyer

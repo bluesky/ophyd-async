@@ -24,7 +24,7 @@ Async Tests
 Mock Backend
 ------------
 
-Ophyd devices initialized with a mock backend behave in a similar way to mocks, without requiring you to mock out all the dependencies and internals. The `DeviceCollector` can initialize any number of devices, and their signals and sub-devices (recursively), with a mock backend.
+Ophyd devices initialized with a mock backend behave in a similar way to mocks, without requiring you to mock out all the dependencies and internals. The `init_devices` can initialize any number of devices, and their signals and sub-devices (recursively), with a mock backend.
 
 .. literalinclude:: ../../tests/epics/demo/test_demo.py
    :pyobject: mock_sensor
