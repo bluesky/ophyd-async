@@ -4,7 +4,7 @@ import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 from bluesky import RunEngine
 
-from ophyd_async.tango.demo import (
+from ophyd_async.tango.sim import (
     DemoCounter,
     DemoMover,
     TangoDetector,
@@ -14,11 +14,11 @@ from tango.test_context import MultiDeviceTestContext
 content = (
     {
         "class": DemoMover,
-        "devices": [{"name": "demo/motor/1"}],
+        "devices": [{"name": "sim/motor/1"}],
     },
     {
         "class": DemoCounter,
-        "devices": [{"name": "demo/counter/1"}, {"name": "demo/counter/2"}],
+        "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
     },
 )
 
@@ -30,8 +30,8 @@ async def main():
         detector = TangoDetector(
             trl="",
             name="detector",
-            counters_kwargs={"prefix": "demo/counter/", "count": 2},
-            mover_kwargs={"trl": "demo/motor/1"},
+            counters_kwargs={"prefix": "sim/counter/", "count": 2},
+            mover_kwargs={"trl": "sim/motor/1"},
         )
         await detector.connect()
 
