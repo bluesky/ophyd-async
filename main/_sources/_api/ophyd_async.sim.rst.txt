@@ -5,24 +5,30 @@
 
 ``ophyd_async.sim``
 ===================
+        
+        
+        
+        
+        
 
 .. automodule:: ophyd_async.sim
     :members:
 
     
     
-    .. rubric:: Submodules
+    
+
+    
+    
+    .. rubric:: Members
 
     .. autosummary::
-        :toctree:
-        :template: custom-module-template.rst
-        :recursive:
+        :nosignatures:
     
-        ophyd_async.sim.demo
-        ophyd_async.sim.testing
-    
-    
-
-    
+        PatternGenerator
+        PatternDetector
+        PatternDetectorController
+        PatternDetectorWriter
+        SimMotor
     
     

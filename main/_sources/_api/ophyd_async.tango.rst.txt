@@ -19,7 +19,7 @@
         :recursive:
     
         ophyd_async.tango.core
-        ophyd_async.tango.demo
+        ophyd_async.tango.sim
     
     
 

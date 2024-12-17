@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using existing Devices &#8212; ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation</title>
+    <title>Using existing Devices &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
   
   
   
@@ -16,8 +16,8 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
@@ -38,12 +38,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=1a99a943"></script>
+    <script src="../_static/documentation_options.js?v=1d9f009f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,10 +51,11 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/using-existing-devices';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
-        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
         </script>
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -129,8 +130,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
   
   
 </a></div>
@@ -419,9 +420,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -494,7 +500,7 @@ below and place it in an <code class="docutils literal notranslate"><span class=
 <span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Component</span><span class="p">,</span> <span class="n">Device</span><span class="p">,</span> <span class="n">EpicsSignal</span><span class="p">,</span> <span class="n">EpicsSignalRO</span>
 
 <span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">init_devices</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics</span> <span class="kn">import</span> <span class="n">demo</span>
+<span class="kn">from</span> <span class="nn">ophyd_async.epics</span> <span class="kn">import</span> <span class="n">sim</span>
 
 <span class="c1"># Create a run engine, with plotting, progressbar and transform</span>
 <span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">({},</span> <span class="n">call_returns_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -505,7 +511,7 @@ below and place it in an <code class="docutils literal notranslate"><span class=
 <span class="n">register_transform</span><span class="p">(</span><span class="s2">&quot;RE&quot;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&lt;&quot;</span><span class="p">)</span>
 
 <span class="c1"># Start IOC with demo pvs in subprocess</span>
-<span class="n">pv_prefix</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">()</span>
+<span class="n">pv_prefix</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">()</span>
 
 
 <span class="c1"># Create ophyd devices</span>
@@ -518,16 +524,16 @@ below and place it in an <code class="docutils literal notranslate"><span class=
 
 <span class="c1"># Create ophyd-async devices</span>
 <span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
-    <span class="n">det</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">Sensor</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
-    <span class="n">det_group</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">SensorGroup</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
-    <span class="n">samp</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">SampleStage</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
+    <span class="n">det</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">Sensor</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
+    <span class="n">det_group</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SensorGroup</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
+    <span class="n">samp</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SampleStage</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The top section of the file is explained in the Bluesky tutorial, but the bottom
 section is Ophyd specific.</p>
 <p>First of all we start up a specific EPICS IOC for the demo devices. This is only
 used in this tutorial:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pv_prefix</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pv_prefix</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">()</span>
 
 
 </pre></div>
@@ -543,11 +549,11 @@ that you can mix Ophyd and Ophyd Async devices in the same RunEngine:</p>
 
 </pre></div>
 </div>
-<p>Finally we create the Ophyd Async devices imported from the <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#module-ophyd_async.epics.demo" title="ophyd_async.epics.demo"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">epics.demo</span></code></a> module:</p>
+<p>Finally we create the Ophyd Async devices imported from the <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#module-ophyd_async.epics.sim" title="ophyd_async.epics.sim"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">epics.sim</span></code></a> module:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
-    <span class="n">det</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">Sensor</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
-    <span class="n">det_group</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">SensorGroup</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
-    <span class="n">samp</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">SampleStage</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
+    <span class="n">det</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">Sensor</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
+    <span class="n">det_group</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SensorGroup</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
+    <span class="n">samp</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">SampleStage</span><span class="p">(</span><span class="n">pv_prefix</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The first thing to note is <a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#with" title="(in Python v3.13)"><code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">with</span> <span class="pre">statement</span></code></a>. This uses <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.init_devices" title="ophyd_async.core.init_devices"><code class="xref any py py-func docutils literal notranslate"><span class="pre">init_devices</span></code></a> as a context
@@ -592,14 +598,14 @@ commands).</p>
 can be used in plans. We can move the <code class="docutils literal notranslate"><span class="pre">samp.x</span></code> mover to 100mm using
 <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref any docutils literal notranslate"><span class="pre">bluesky.plan_stubs.mv</span></code></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">mov</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, device: samp-x, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7fd21c5e1440&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, device: samp-x, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f8a70991740&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>If this is too verbose to write, we registered a shorthand with
 <code class="docutils literal notranslate"><span class="pre">bluesky.utils.register_transform</span></code>: <code class="docutils literal notranslate"><span class="pre">&lt;my_plan(args)</span></code> is translated to
 <code class="docutils literal notranslate"><span class="pre">RE(my_plan(args))</span></code>. The command above can also be run as:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="o">&lt;</span><span class="n">mov</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, device: samp-x, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7fd21c5e0840&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, device: samp-x, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f8a70990b40&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>We can get the primary reading of <code class="docutils literal notranslate"><span class="pre">samp.x</span></code>, in this case its readback value,
@@ -610,11 +616,11 @@ using <a class="reference external" href="https://blueskyproject.io/bluesky/main
 </div>
 <p>We can do a relative move of <code class="docutils literal notranslate"><span class="pre">samp.x</span></code> by 10mm, using <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mvr.html#bluesky.plan_stubs.mvr" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref any docutils literal notranslate"><span class="pre">bluesky.plan_stubs.mvr</span></code></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="o">&lt;</span><span class="n">movr</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
-<span class="gh">Out[4]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, device: samp-x, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7fd21c5e3140&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[4]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;WatchableAsyncStatus, device: samp-x, task: &lt;coroutine object WatchableAsyncStatus._notify_watchers_from at 0x7f8a70993440&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>Individual Devices will also expose some of the parameters of the underlying
-hardware on itself. In the case of a <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Mover" title="ophyd_async.epics.demo.Mover"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Mover</span></code></a>, we can set and get its
+hardware on itself. In the case of a <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Mover" title="ophyd_async.epics.sim.Mover"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Mover</span></code></a>, we can set and get its
 <code class="docutils literal notranslate"><span class="pre">velocity</span></code>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="o">&lt;</span><span class="n">rd</span><span class="p">(</span><span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">velocity</span><span class="p">)</span>
 <span class="gh">Out[5]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=100.0, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
@@ -628,12 +634,12 @@ can do a <a class="reference external" href="https://blueskyproject.io/bluesky/m
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 1     Time: 2024-12-16 16:52:17</span>
-<span class="go">Persistent Unique Scan ID: &#39;08e7286d-ab90-4797-a08c-8a1d6a16c0e8&#39;</span>
+<span class="go">Transient Scan ID: 1     Time: 2024-12-17 11:37:19</span>
+<span class="go">Persistent Unique Scan ID: &#39;ac4e2e1e-53c3-422c-b929-a4ed1dcd2ead&#39;</span>
 
 
 
-<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;08e7286d-ab90-4797-a08c-8a1d6a16c0e8&#39;,), plan_result=&#39;08e7286d-ab90-4797-a08c-8a1d6a16c0e8&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[6]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;ac4e2e1e-53c3-422c-b929-a4ed1dcd2ead&#39;,), plan_result=&#39;ac4e2e1e-53c3-422c-b929-a4ed1dcd2ead&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/grid_scan1.png"><img alt="../_images/grid_scan1.png" src="../_images/grid_scan1.png" style="width: 4in;" />
@@ -644,10 +650,10 @@ can do a <a class="reference external" href="https://blueskyproject.io/bluesky/m
 </pre></div>
 </div>
 <p>Although this is an <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a> and programmatic code should import and
-use instances of <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.EnergyMode" title="ophyd_async.epics.demo.EnergyMode"><code class="xref any py py-class docutils literal notranslate"><span class="pre">EnergyMode</span></code></a>, we can set it using a
+use instances of <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.EnergyMode" title="ophyd_async.epics.sim.EnergyMode"><code class="xref any py py-class docutils literal notranslate"><span class="pre">EnergyMode</span></code></a>, we can set it using a
 string value on the commandline:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="o">&lt;</span><span class="n">mov</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="s2">&quot;High Energy&quot;</span><span class="p">)</span>
-<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, device: det-mode, task: &lt;coroutine object SignalW.set at 0x7fd23d1b4840&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=(), plan_result=(&lt;AsyncStatus, device: det-mode, task: &lt;coroutine object SignalW.set at 0x7f8a709d7940&gt;, done&gt;,), exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <p>The same scan will now give a slightly different output. If we include the v1
@@ -655,12 +661,12 @@ device we can see it gives the same result:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="o">&lt;</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">det</span><span class="p">,</span> <span class="n">det_old</span><span class="p">],</span> <span class="n">samp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 
-<span class="go">Transient Scan ID: 2     Time: 2024-12-16 16:52:21</span>
-<span class="go">Persistent Unique Scan ID: &#39;a543e50b-4a55-4cdf-81e7-79c130ad6110&#39;</span>
+<span class="go">Transient Scan ID: 2     Time: 2024-12-17 11:37:22</span>
+<span class="go">Persistent Unique Scan ID: &#39;595b573b-3970-4b91-98d7-0b1763c04091&#39;</span>
 
 
 
-<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;a543e50b-4a55-4cdf-81e7-79c130ad6110&#39;,), plan_result=&#39;a543e50b-4a55-4cdf-81e7-79c130ad6110&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[9]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;595b573b-3970-4b91-98d7-0b1763c04091&#39;,), plan_result=&#39;595b573b-3970-4b91-98d7-0b1763c04091&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/grid_scan2.png"><img alt="../_images/grid_scan2.png" src="../_images/grid_scan2.png" style="width: 4in;" />
@@ -743,13 +749,13 @@ device we can see it gives the same result:</p>
 </div>
 
   <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../_sources/tutorials/using-existing-devices.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
-</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/using-existing-devices.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
 
 </div></div>
               
@@ -764,8 +770,8 @@ device we can see it gives the same result:</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -776,7 +782,8 @@ device we can see it gives the same result:</p>
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
 </p></div>
       
     </div>

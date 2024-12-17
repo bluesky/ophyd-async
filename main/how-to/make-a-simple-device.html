@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a Simple Device &#8212; ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation</title>
+    <title>Make a Simple Device &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
   
   
   
@@ -16,8 +16,8 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
@@ -38,12 +38,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=1a99a943"></script>
+    <script src="../_static/documentation_options.js?v=1d9f009f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,10 +51,11 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'how-to/make-a-simple-device';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
-        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
         </script>
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -129,8 +130,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
   
   
 </a></div>
@@ -424,9 +425,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -483,10 +489,10 @@ may change API on minor release numbers before then</p>
 <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> class, create some <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> instances, and optionally implement
 other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
 <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
-<p>The rest of this guide will show examples from <code class="docutils literal notranslate"><span class="pre">src/ophyd_async/epics/demo/__init__.py</span></code></p>
+<p>The rest of this guide will show examples from <code class="docutils literal notranslate"><span class="pre">src/ophyd_async/epics/sim/__init__.py</span></code></p>
 <section id="readable">
 <h2>Readable<a class="headerlink" href="#readable" title="Link to this heading">#</a></h2>
-<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Sensor" title="ophyd_async.epics.demo.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
+<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Sensor" title="ophyd_async.epics.sim.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
 define some signals, then tell the superclass which signals should contribute to
 <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
@@ -525,7 +531,7 @@ and <code class="docutils literal notranslate"><span class="pre">unstage()</span
 </section>
 <section id="movable">
 <h2>Movable<a class="headerlink" href="#movable" title="Link to this heading">#</a></h2>
-<p>For a more complicated device like a <a class="reference internal" href="../_api/ophyd_async.epics.demo.html#ophyd_async.epics.demo.Mover" title="ophyd_async.epics.demo.Mover"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Mover</span></code></a>, you can still use <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>
+<p>For a more complicated device like a <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Mover" title="ophyd_async.epics.sim.Mover"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Mover</span></code></a>, you can still use <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>
 and implement some addition protocols:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mover</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity&quot;&quot;&quot;</span>
@@ -704,13 +710,13 @@ can <code class="docutils literal notranslate"><span class="pre">rd</span> <span
 </div>
 
   <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../_sources/how-to/make-a-simple-device.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
-</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/how-to/make-a-simple-device.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
 
 </div></div>
               
@@ -725,8 +731,8 @@ can <code class="docutils literal notranslate"><span class="pre">rd</span> <span
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -737,7 +743,8 @@ can <code class="docutils literal notranslate"><span class="pre">rd</span> <span
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
 </p></div>
       
     </div>

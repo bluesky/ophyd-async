@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Write Tests for Devices &#8212; ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation</title>
+    <title>Write Tests for Devices &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
   
   
   
@@ -16,8 +16,8 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
@@ -38,12 +38,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=1a99a943"></script>
+    <script src="../_static/documentation_options.js?v=1d9f009f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,10 +51,11 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'how-to/write-tests-for-devices';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
-        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
         </script>
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -129,8 +130,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev4+ga0e1dadb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
   
   
 </a></div>
@@ -424,9 +425,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -495,9 +501,9 @@ may change API on minor release numbers before then</p>
 <h2>Mock Backend<a class="headerlink" href="#mock-backend" title="Link to this heading">#</a></h2>
 <p>Ophyd devices initialized with a mock backend behave in a similar way to mocks, without requiring you to mock out all the dependencies and internals. The <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.init_devices" title="ophyd_async.core.init_devices"><code class="xref any py py-func docutils literal notranslate"><span class="pre">init_devices</span></code></a> can initialize any number of devices, and their signals and sub-devices (recursively), with a mock backend.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">mock_sensor</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">demo</span><span class="o">.</span><span class="n">Sensor</span><span class="p">:</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">mock_sensor</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">sim</span><span class="o">.</span><span class="n">Sensor</span><span class="p">:</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">mock_sensor</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">Sensor</span><span class="p">(</span><span class="s2">&quot;MOCK:SENSOR:&quot;</span><span class="p">)</span>
+        <span class="n">mock_sensor</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">Sensor</span><span class="p">(</span><span class="s2">&quot;MOCK:SENSOR:&quot;</span><span class="p">)</span>
         <span class="c1"># Signals connected here</span>
 
     <span class="k">assert</span> <span class="n">mock_sensor</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;mock_sensor&quot;</span>
@@ -509,7 +515,7 @@ may change API on minor release numbers before then</p>
 <h2>Mock Utility Functions<a class="headerlink" href="#mock-utility-functions" title="Link to this heading">#</a></h2>
 <p>Mock signals behave as simply as possible, holding a sensible default value when initialized and retaining any value (in memory) to which they are set. This model breaks down in the case of read-only signals, which cannot be set because there is an expectation of some external device setting them in the real world. There is a utility function, <code class="docutils literal notranslate"><span class="pre">set_mock_value</span></code>, to mock-set values for mock signals, including read-only ones.</p>
 <p>In addition this example also utilizes helper functions like <code class="docutils literal notranslate"><span class="pre">assert_reading</span></code> and <code class="docutils literal notranslate"><span class="pre">assert_value</span></code> to ensure the validity of device readings and values. For more information see: <a class="reference internal" href="../_api/ophyd_async.core.html"><span class="doc">API.core</span></a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_sensor_reading_shows_value</span><span class="p">(</span><span class="n">mock_sensor</span><span class="p">:</span> <span class="n">demo</span><span class="o">.</span><span class="n">Sensor</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_sensor_reading_shows_value</span><span class="p">(</span><span class="n">mock_sensor</span><span class="p">:</span> <span class="n">sim</span><span class="o">.</span><span class="n">Sensor</span><span class="p">):</span>
     <span class="c1"># Check default value</span>
     <span class="k">await</span> <span class="n">assert_value</span><span class="p">(</span><span class="n">mock_sensor</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
     <span class="k">assert</span> <span class="p">(</span><span class="k">await</span> <span class="n">mock_sensor</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span> <span class="o">==</span> <span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
@@ -538,7 +544,7 @@ may change API on minor release numbers before then</p>
 </pre></div>
 </div>
 <p>Given that the mock signal holds a <code class="docutils literal notranslate"><span class="pre">unittest.mock.Mock</span></code> object you can retrieve this object and assert that the device has been set correctly using <code class="docutils literal notranslate"><span class="pre">get_mock_put</span></code>. You are also free to use any other behaviour that <code class="docutils literal notranslate"><span class="pre">unittest.mock.Mock</span></code> provides, such as in this example which sets the parent of the mock to allow ordering across signals to be asserted:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_retrieve_mock_and_assert</span><span class="p">(</span><span class="n">mock_mover</span><span class="p">:</span> <span class="n">demo</span><span class="o">.</span><span class="n">Mover</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_retrieve_mock_and_assert</span><span class="p">(</span><span class="n">mock_mover</span><span class="p">:</span> <span class="n">sim</span><span class="o">.</span><span class="n">Mover</span><span class="p">):</span>
     <span class="n">mover_setpoint_mock</span> <span class="o">=</span> <span class="n">get_mock_put</span><span class="p">(</span><span class="n">mock_mover</span><span class="o">.</span><span class="n">setpoint</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">mock_mover</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
     <span class="n">mover_setpoint_mock</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">ANY</span><span class="p">)</span>
@@ -560,7 +566,7 @@ may change API on minor release numbers before then</p>
 </div>
 <p>There are several other test utility functions:</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code>, for hooking in logic when a mock value changes (e.g. because someone puts to it). This can be called directly, or used as a context, with the callbacks ending after exit.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_mover_stopped</span><span class="p">(</span><span class="n">mock_mover</span><span class="p">:</span> <span class="n">demo</span><span class="o">.</span><span class="n">Mover</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_mover_stopped</span><span class="p">(</span><span class="n">mock_mover</span><span class="p">:</span> <span class="n">sim</span><span class="o">.</span><span class="n">Mover</span><span class="p">):</span>
     <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">callback_on_mock_put</span><span class="p">(</span>
         <span class="n">mock_mover</span><span class="o">.</span><span class="n">stop_</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
@@ -573,7 +579,7 @@ may change API on minor release numbers before then</p>
 </section>
 <section id="testing-a-device-in-a-plan-with-the-runengine">
 <h2>Testing a Device in a Plan with the RunEngine<a class="headerlink" href="#testing-a-device-in-a-plan-with-the-runengine" title="Link to this heading">#</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_sensor_in_plan</span><span class="p">(</span><span class="n">RE</span><span class="p">:</span> <span class="n">RunEngine</span><span class="p">,</span> <span class="n">mock_sensor</span><span class="p">:</span> <span class="n">demo</span><span class="o">.</span><span class="n">Sensor</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_sensor_in_plan</span><span class="p">(</span><span class="n">RE</span><span class="p">:</span> <span class="n">RunEngine</span><span class="p">,</span> <span class="n">mock_sensor</span><span class="p">:</span> <span class="n">sim</span><span class="o">.</span><span class="n">Sensor</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tests mock sensor behavior within a RunEngine plan.</span>
 
 <span class="sd">    This test verifies that the sensor emits the expected documents</span>
@@ -661,13 +667,13 @@ may change API on minor release numbers before then</p>
 </div>
 
   <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../_sources/how-to/write-tests-for-devices.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
-</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/how-to/write-tests-for-devices.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
 
 </div></div>
               
@@ -682,8 +688,8 @@ may change API on minor release numbers before then</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -694,7 +700,8 @@ may change API on minor release numbers before then</p>
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
 </p></div>
       
     </div>
