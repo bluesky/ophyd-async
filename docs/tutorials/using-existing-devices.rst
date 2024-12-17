@@ -41,7 +41,7 @@ that you can mix Ophyd and Ophyd Async devices in the same RunEngine:
     :start-after: # Create ophyd devices
     :end-before: # Create ophyd-async devices
 
-Finally we create the Ophyd Async devices imported from the `epics.demo` module:
+Finally we create the Ophyd Async devices imported from the `epics.sim` module:
 
 .. literalinclude:: ../examples/epics_demo.py
     :language: python

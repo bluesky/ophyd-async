@@ -62,7 +62,7 @@ The two approaches now look like:
 
 ```python
 class Sensor(StandardReadable, EpicsDevice):
-    """A demo sensor that produces a scalar value based on X and Y Movers"""
+    """A sim sensor that produces a scalar value based on X and Y Movers"""
 
     value: A[SignalR[float], PvSuffix("Value"), Format.HINTED_SIGNAL]
     mode: A[SignalRW[EnergyMode], PvSuffix("Mode"), Format.CONFIG_SIGNAL]

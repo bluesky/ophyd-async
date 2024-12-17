@@ -183,18 +183,12 @@ exhaustive = true
 exhaustive_ignores = ["testing", "_version", "__main__"]
 
 [[tool.importlinter.contracts]]
-name = "Testing modules"
-type = "layers"
-containers = ["ophyd_async"]
-layers = ["testing", "core"]
-
-[[tool.importlinter.contracts]]
-name = "Testing modules are not used at runtime"
+name = "Testing and sim modules are not used at runtime"
 type = "forbidden"
-source_modules = "ophyd_async.testing"
-forbidden_modules = [
+forbidden_modules = ["ophyd_async.testing", "ophyd_async.sim"]
+source_modules = [
     "ophyd_async.plan_stubs",
-    "ophyd_async.fastcs",
+    "ophyd_async.fast.*",
     "ophyd_async.epics",
     "ophyd_async.tango",
 ]

@@ -10,7 +10,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.epics import adsimdetector
-from ophyd_async.sim.demo import SimMotor
+from ophyd_async.sim import SimMotor
 
 
 async def make_detector(prefix: str, name: str, tmp_path: Path):
