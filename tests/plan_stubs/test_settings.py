@@ -13,8 +13,7 @@ from ophyd_async.plan_stubs import (
     retrieve_settings,
     store_settings,
 )
-from ophyd_async.sim.testing import ExampleTable, ParentOfEverythingDevice
-from ophyd_async.testing import get_mock
+from ophyd_async.testing import ExampleTable, ParentOfEverythingDevice, get_mock
 
 TEST_DATA = Path(__file__).absolute().parent.parent / "test_data"
 

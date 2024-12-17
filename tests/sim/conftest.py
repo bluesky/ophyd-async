@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from ophyd_async.sim.demo import PatternDetector
+from ophyd_async.sim import PatternDetector
 
 
 @pytest.fixture

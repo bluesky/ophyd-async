@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from ophyd_async.core import init_devices
-from ophyd_async.sim.demo import PatternDetectorWriter, PatternGenerator
+from ophyd_async.sim import PatternDetectorWriter, PatternGenerator
 
 
 @pytest.fixture

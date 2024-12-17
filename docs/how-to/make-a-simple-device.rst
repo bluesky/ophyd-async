@@ -13,7 +13,7 @@ To make a simple device, you need to subclass from the
 other suitable Bluesky `Protocols <hardware_interface>` like
 :external+bluesky:py:class:`bluesky.protocols.Movable`.
 
-The rest of this guide will show examples from ``src/ophyd_async/epics/demo/__init__.py``
+The rest of this guide will show examples from ``src/ophyd_async/epics/sim/__init__.py``
 
 Readable
 --------
@@ -22,7 +22,7 @@ For a simple :external+bluesky:py:class:`bluesky.protocols.Readable` object like
 define some signals, then tell the superclass which signals should contribute to
 ``read()`` and ``read_configuration()``:
 
-.. literalinclude:: ../../src/ophyd_async/epics/demo/_sensor.py
+.. literalinclude:: ../../src/ophyd_async/epics/sim/_sensor.py
    :pyobject: Sensor
 
 First some Signals are constructed and stored on the Device. Each one is passed
@@ -54,7 +54,7 @@ Movable
 For a more complicated device like a `Mover`, you can still use `StandardReadable`
 and implement some addition protocols:
 
-.. literalinclude:: ../../src/ophyd_async/epics/demo/_mover.py
+.. literalinclude:: ../../src/ophyd_async/epics/sim/_mover.py
    :pyobject: Mover
 
 The ``set()`` method implements :external+bluesky:py:class:`bluesky.protocols.Movable`. This
@@ -71,7 +71,7 @@ Assembly
 
 Compound assemblies can be used to group Devices into larger logical Devices:
 
-.. literalinclude:: ../../src/ophyd_async/epics/demo/_mover.py
+.. literalinclude:: ../../src/ophyd_async/epics/sim/_mover.py
    :pyobject: SampleStage
 
 This applies prefixes on construction:

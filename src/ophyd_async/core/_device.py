@@ -206,7 +206,7 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
 
     In the below example, foos becomes a dictionary on the parent device
     at runtime, so parent.foos[2] returns a FooDevice. For example usage see
-    :class:`~ophyd_async.epics.demo.DynamicSensorGroup`
+    :class:`~ophyd_async.epics.sim.DynamicSensorGroup`
     """
 
     def __init__(
