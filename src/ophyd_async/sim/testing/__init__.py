@@ -1,3 +1,5 @@
+"""Devices to be used in testing."""
+
 from ._one_of_everything import (
     ExampleEnum,
     ExampleTable,

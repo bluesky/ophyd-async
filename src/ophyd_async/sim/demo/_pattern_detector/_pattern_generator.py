@@ -11,6 +11,7 @@ from ophyd_async.core import (
     HDFDataset,
     HDFFile,
     PathProvider,
+    SignalR,
     observe_value,
     soft_signal_r_and_setter,
 )
@@ -46,11 +47,13 @@ class PatternGenerator:
         saturation_exposure_time: float = 0.1,
         detector_width: int = 320,
         detector_height: int = 240,
+        x_signal: SignalR[float] | None = None,
+        y_signal: SignalR[float] | None = None,
     ) -> None:
         self.saturation_exposure_time = saturation_exposure_time
         self.exposure = saturation_exposure_time
-        self.x = 0.0
-        self.y = 0.0
+        self.x_signal = x_signal
+        self.y_signal = y_signal
         self.height = detector_height
         self.width = detector_width
         self.image_counter: int = 0
@@ -78,7 +81,9 @@ class PatternGenerator:
 
     async def write_image_to_file(self) -> None:
         # generate the simulated data
-        intensity: float = generate_interesting_pattern(self.x, self.y)
+        x = await self.x_signal.get_value() if self.x_signal else 0.0
+        y = await self.y_signal.get_value() if self.y_signal else 0.0
+        intensity = generate_interesting_pattern(x, y)
         detector_data = (
             self._full_intensity_blob
             * intensity
@@ -98,12 +103,6 @@ class PatternGenerator:
     def set_exposure(self, value: float) -> None:
         self.exposure = value
 
-    def set_x(self, value: float) -> None:
-        self.x = value
-
-    def set_y(self, value: float) -> None:
-        self.y = value
-
     async def open_file(
         self, path_provider: PathProvider, name: str, multiplier: int = 1
     ) -> dict[str, DataKey]:
@@ -113,6 +112,7 @@ class PatternGenerator:
         self._path_provider = path_provider
 
         self._handle_for_h5_file = h5py.File(self.target_path, "w", libver="latest")
+        print(self, self.target_path)
 
         assert self._handle_for_h5_file, "not loaded the file right"
 

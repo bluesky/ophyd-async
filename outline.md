@@ -1,0 +1,20 @@
+- tutorials
+  x installation
+  x using existing devices - soft device, init_devices, using verbs
+  - implementing EPICS devices - EPICS demo, mover, observe_signals, implementing verbs, types, Hinted signal and standard readable
+  - implementing Tango devices - as above but Tango
+  - implementing FastCS devices - as above but FastCS
+  - writing tests for devices - EPICS demo, mock, assert, system tests
+  - implementing detector support - pattern detector, file writing, documents
+- how-to
+  - How to choose the right base class when implementing a new Device
+  - How to reimplement an ophyd sync device in ophyd-async
+  - How to wait for signals while implementing bluesky verbs
+  - How to store and retrieve device settings
+  - How to use settings to put devices back in their original state
+  - How to implement a device for an EPICS areaDetector
+- explanations
+  - devices, signals and their backends
+  - declarative vs procedural devices
+  - where should device logic live
+  - device connection strategies

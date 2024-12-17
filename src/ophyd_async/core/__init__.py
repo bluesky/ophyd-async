@@ -1,3 +1,5 @@
+"""The building blocks for making devices."""
+
 from ._detector import (
     DetectorController,
     DetectorTrigger,

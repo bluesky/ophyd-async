@@ -1,0 +1,13 @@
+record(ao, "$(P)AcquireTime") {
+    field(DESC, "Time to acquire for")
+    field(VAL, "0.1")
+    field(OUT, "$(P)Start.DLY0")
+    field(ZRVL, "10")
+    field(ZRST, "Low Energy")
+    field(ONVL, "100")
+    field(ONST, "High Energy")
+}
+
+record(seq, "$(P)Start") {
+    field(DESC, "Start sequence")
+}

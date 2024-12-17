@@ -1,3 +1,5 @@
+"""Demo devices to be used in tutorials."""
+
 from ._pattern_detector import (
     DATA_PATH,
     SUM_PATH,
