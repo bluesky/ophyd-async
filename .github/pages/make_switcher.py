@@ -33,7 +33,7 @@ def get_versions(ref: str, add: str | None) -> list[str]:
         builds = set(get_branch_contents(ref))
     except CalledProcessError:
         builds = set()
-        logging.warning(f"Cannot get {ref} contents")
+        logging.warning(f"Cannot get {ref} contents")  # noqa: LOG015
 
     # Add and remove from the list of builds
     if add:
