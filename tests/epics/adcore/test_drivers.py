@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import patch
 
 import pytest
 
@@ -67,6 +68,7 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
         await acquiring
 
 
+@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
 async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     controller: adcore.ADBaseController,
 ):
@@ -78,12 +80,14 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     set_mock_value(controller._driver.detector_state, adcore.DetectorState.IDLE)
 
     async def wait_then_fail():
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         set_mock_value(
             controller._driver.detector_state, adcore.DetectorState.DISCONNECTED
         )
 
     await wait_then_fail()
+
+    controller.frame_timeout = 0.1
 
     acquiring = await controller.start_acquiring_driver_and_ensure_status()
 

@@ -167,8 +167,8 @@ class DetectorWriter(ABC):
         return {}
 
 
-# Add type vars for controller/type, so we can define
-# StandardDetector[KinetixController, ADTIFFWriter] for example
+# Add type var for controller so we can define
+# StandardDetector[KinetixController, ADWriter] for example
 DetectorControllerT = TypeVar("DetectorControllerT", bound=DetectorController)
 DetectorWriterT = TypeVar("DetectorWriterT", bound=DetectorWriter)
 

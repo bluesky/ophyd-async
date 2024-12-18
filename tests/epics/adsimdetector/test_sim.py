@@ -26,22 +26,22 @@ from ophyd_async.testing import assert_emitted, set_mock_value
 
 @pytest.fixture
 def test_adsimdetector(ad_standard_det_factory: Callable) -> adsimdetector.SimDetector:
-    return ad_standard_det_factory(adsimdetector.SimController)
+    return ad_standard_det_factory(adsimdetector.SimDetector)
 
 
 @pytest.fixture
 def test_adsimdetector_tiff(
     ad_standard_det_factory: Callable,
 ) -> adsimdetector.SimDetector:
-    return ad_standard_det_factory(adsimdetector.SimController, adcore.ADTIFFWriter)
+    return ad_standard_det_factory(adsimdetector.SimDetector, adcore.ADTIFFWriter)
 
 
 @pytest.fixture
 def two_test_adsimdetectors(
     ad_standard_det_factory: Callable,
 ) -> Sequence[adsimdetector.SimDetector]:
-    deta = ad_standard_det_factory(adsimdetector.SimController)
-    detb = ad_standard_det_factory(adsimdetector.SimController, number=2)
+    deta = ad_standard_det_factory(adsimdetector.SimDetector)
+    detb = ad_standard_det_factory(adsimdetector.SimDetector, number=2)
 
     return deta, detb
 
@@ -239,7 +239,7 @@ async def test_detector_writes_to_file(
     tmp_path: Path,
 ):
     test_adsimdetector: adsimdetector.SimDetector = ad_standard_det_factory(
-        adsimdetector.SimController, writer_cls
+        adsimdetector.SimDetector, writer_cls
     )
 
     names = []

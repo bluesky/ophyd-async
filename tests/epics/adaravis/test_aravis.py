@@ -1,4 +1,5 @@
 import re
+from typing import cast
 
 import pytest
 
@@ -13,7 +14,7 @@ from ophyd_async.testing import set_mock_value
 
 @pytest.fixture
 def test_adaravis(ad_standard_det_factory) -> adaravis.AravisDetector:
-    return ad_standard_det_factory(adaravis.AravisController)
+    return ad_standard_det_factory(adaravis.AravisDetector)
 
 
 @pytest.mark.parametrize("exposure_time", [0.0, 0.1, 1.0, 10.0, 100.0])
@@ -25,9 +26,8 @@ async def test_deadtime_invariant_with_exposure_time(
 
 
 async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDetector):
-    set_mock_value(
-        test_adaravis.drv.trigger_source, adaravis.AravisTriggerSource.FREERUN
-    )
+    driver = cast(adaravis.AravisDriverIO, test_adaravis.drv)
+    set_mock_value(driver.trigger_source, adaravis.AravisTriggerSource.FREERUN)
 
     async def trigger_and_complete():
         await test_adaravis._controller.prepare(
@@ -40,23 +40,23 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
             )
         )
         # Prevent timeouts
-        set_mock_value(test_adaravis.drv.acquire, True)
+        set_mock_value(driver.acquire, True)
 
     # Default TriggerSource
-    assert (await test_adaravis.drv.trigger_source.get_value()) == "Freerun"
+    assert (await driver.trigger_source.get_value()) == "Freerun"
     test_adaravis._controller.set_external_trigger_gpio(1)
     # TriggerSource not changed by setting gpio
-    assert (await test_adaravis.drv.trigger_source.get_value()) == "Freerun"
+    assert (await driver.trigger_source.get_value()) == "Freerun"
 
     await trigger_and_complete()
 
     # TriggerSource changes
-    assert (await test_adaravis.drv.trigger_source.get_value()) == "Line1"
+    assert (await driver.trigger_source.get_value()) == "Line1"
 
     test_adaravis._controller.set_external_trigger_gpio(3)
     # TriggerSource not changed by setting gpio
     await trigger_and_complete()
-    assert (await test_adaravis.drv.trigger_source.get_value()) == "Line3"
+    assert (await driver.trigger_source.get_value()) == "Line3"
 
 
 def test_gpio_pin_limited(test_adaravis: adaravis.AravisDetector):

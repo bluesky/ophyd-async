@@ -14,38 +14,29 @@ def ad_standard_det_factory(
     RE: RunEngine,
     static_path_provider,
 ) -> Callable[
-    [type[adcore.ADBaseController], type[adcore.ADWriter], int], adcore.AreaDetector
+    [type[adcore.AreaDetector], type[adcore.ADWriter], int], adcore.AreaDetector
 ]:
     def generate_ad_standard_det(
-        controller_cls: type[adcore.ADBaseController],
+        detector_cls: type[adcore.AreaDetector],
         writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         number=1,
+        **kwargs,
     ) -> adcore.AreaDetector:
         # Dynamically generate a name based on the class of controller
-        detector_name = controller_cls.__name__
-        if detector_name.endswith("Controller"):
-            detector_name = detector_name[: -len("Controller")]
+        detector_name = detector_cls.__name__
+        if detector_name.endswith("Detector"):
+            detector_name = detector_name[: -len("Detector")]
 
         with DeviceCollector(mock=True):
             prefix = f"{detector_name.upper()}{number}:"
             name = f"test_ad{detector_name.lower()}{number}"
 
-            controller, driver = controller_cls.controller_and_drv(
-                prefix + "cam1:", name=name
-            )
-
-            writer, fileio = writer_cls.writer_and_io(
+            test_adstandard_det = detector_cls(
                 prefix,
                 static_path_provider,
-                lambda: name,
-                adcore.ADBaseDatasetDescriber(driver),
-            )
-
-            test_adstandard_det = adcore.AreaDetector[controller_cls, writer_cls](
-                driver,
-                controller,
-                fileio,
-                writer,
+                # The inner areaDetector class wants the instantaiated object,
+                # but the outward facing classes want a writer class type
+                writer_cls=writer_cls,  # type: ignore
                 name=name,
             )
 

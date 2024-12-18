@@ -2,7 +2,6 @@ from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR
 from ophyd_async.epics.adcore import (
-    ADBaseDatasetDescriber,
     ADHDFWriter,
     ADWriter,
     AreaDetector,
@@ -10,9 +9,10 @@ from ophyd_async.epics.adcore import (
 )
 
 from ._kinetix_controller import KinetixController
+from ._kinetix_io import KinetixDriverIO
 
 
-class KinetixDetector(AreaDetector[KinetixController, ADWriter]):
+class KinetixDetector(AreaDetector[KinetixController]):
     """
     Ophyd-async implementation of an ADKinetix Detector.
     https://github.com/NSLS-II/ADKinetix
@@ -29,14 +29,13 @@ class KinetixDetector(AreaDetector[KinetixController, ADWriter]):
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
-        controller, driver = KinetixController.controller_and_drv(
-            prefix + drv_suffix, name=name
-        )
-        writer, fileio = writer_cls.writer_and_io(
+        driver = KinetixDriverIO(prefix + drv_suffix)
+        controller = KinetixController(driver)
+
+        writer = writer_cls.with_io(
             prefix,
             path_provider,
-            lambda: name,
-            ADBaseDatasetDescriber(driver),
+            dataset_source=driver,
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )
@@ -44,11 +43,8 @@ class KinetixDetector(AreaDetector[KinetixController, ADWriter]):
         super().__init__(
             driver=driver,
             controller=controller,
-            fileio=fileio,
             writer=writer,
             plugins=plugins,
             name=name,
             config_sigs=config_sigs,
         )
-        self.drv = driver
-        self.fileio = fileio

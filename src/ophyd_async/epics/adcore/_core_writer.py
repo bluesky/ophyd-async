@@ -22,7 +22,13 @@ from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
-from ._core_io import ADBaseDatasetDescriber, Callback, NDFileIO, NDPluginBaseIO
+from ._core_io import (
+    ADBaseDatasetDescriber,
+    Callback,
+    NDArrayBaseIO,
+    NDFileIO,
+    NDPluginBaseIO,
+)
 from ._utils import FileWriteMode
 
 NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
@@ -57,31 +63,31 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._filename_template = "%s%s_%6.6d"
 
     @classmethod
-    def writer_and_io(
+    def with_io(
         cls: type[ADWriterT],
         prefix: str,
         path_provider: PathProvider,
-        name_provider: NameProvider,
-        dataset_describer: ADBaseDatasetDescriber,
+        dataset_source: NDArrayBaseIO | None = None,
         fileio_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
-    ) -> tuple[ADWriterT, NDFileIOT]:
+    ) -> ADWriterT:
         try:
             fileio_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
         except IndexError as err:
             raise RuntimeError("File IO class for writer not specified!") from err
 
-        if fileio_suffix is None:
-            fileio_prefix = prefix + cls.default_suffix
-        else:
-            fileio_prefix = prefix + fileio_suffix
+        fileio = fileio_cls(prefix + (fileio_suffix or cls.default_suffix))
+        dataset_describer = ADBaseDatasetDescriber(dataset_source or fileio)
 
-        fileio = fileio_cls(fileio_prefix, name=name_provider())
+        def name_provider() -> str:
+            if fileio.parent == "Not attached to a detector":
+                raise RuntimeError("Initializing writer without parent detector!")
+            return fileio.parent.name
 
         writer = cls(
             fileio, path_provider, name_provider, dataset_describer, plugins=plugins
         )
-        return writer, fileio
+        return writer
 
     async def begin_capture(self) -> None:
         info = self._path_provider(device_name=self._name_provider())

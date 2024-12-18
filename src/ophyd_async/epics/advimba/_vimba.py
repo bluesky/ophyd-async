@@ -2,12 +2,12 @@ from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR
 from ophyd_async.epics import adcore
-from ophyd_async.epics.adcore._core_io import ADBaseDatasetDescriber
 
 from ._vimba_controller import VimbaController
+from ._vimba_io import VimbaDriverIO
 
 
-class VimbaDetector(adcore.AreaDetector[VimbaController, adcore.ADWriter]):
+class VimbaDetector(adcore.AreaDetector[VimbaController]):
     """
     Ophyd-async implementation of an ADVimba Detector.
     """
@@ -23,14 +23,13 @@ class VimbaDetector(adcore.AreaDetector[VimbaController, adcore.ADWriter]):
         plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
-        controller, driver = VimbaController.controller_and_drv(
-            prefix + drv_suffix, name=name
-        )
-        writer, fileio = writer_cls.writer_and_io(
+        driver = VimbaDriverIO(prefix + drv_suffix)
+        controller = VimbaController(driver)
+
+        writer = writer_cls.with_io(
             prefix,
             path_provider,
-            lambda: name,
-            ADBaseDatasetDescriber(driver),
+            dataset_source=driver,
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )
@@ -38,11 +37,8 @@ class VimbaDetector(adcore.AreaDetector[VimbaController, adcore.ADWriter]):
         super().__init__(
             driver=driver,
             controller=controller,
-            fileio=fileio,
             writer=writer,
             plugins=plugins,
             name=name,
             config_sigs=config_sigs,
         )
-        self.drv = driver
-        self.fileio = fileio

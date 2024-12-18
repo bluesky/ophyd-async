@@ -3,12 +3,12 @@ from collections.abc import Sequence
 from ophyd_async.core import PathProvider
 from ophyd_async.core._signal import SignalR
 from ophyd_async.epics import adcore
-from ophyd_async.epics.adcore._core_io import ADBaseDatasetDescriber
 
 from ._aravis_controller import AravisController
+from ._aravis_io import AravisDriverIO
 
 
-class AravisDetector(adcore.AreaDetector[AravisController, adcore.ADWriter]):
+class AravisDetector(adcore.AreaDetector[AravisController]):
     """
     Ophyd-async implementation of an ADAravis Detector.
     The detector may be configured for an external trigger on a GPIO port,
@@ -27,14 +27,13 @@ class AravisDetector(adcore.AreaDetector[AravisController, adcore.ADWriter]):
         config_sigs: Sequence[SignalR] = (),
         plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
     ):
-        controller, driver = AravisController.controller_and_drv(
-            prefix + drv_suffix, gpio_number=gpio_number, name=name
-        )
-        writer, fileio = writer_cls.writer_and_io(
+        driver = AravisDriverIO(prefix + drv_suffix)
+        controller = AravisController(driver, gpio_number=gpio_number)
+
+        writer = writer_cls.with_io(
             prefix,
             path_provider,
-            lambda: self.name,
-            ADBaseDatasetDescriber(driver),
+            dataset_source=driver,
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )
@@ -42,11 +41,8 @@ class AravisDetector(adcore.AreaDetector[AravisController, adcore.ADWriter]):
         super().__init__(
             driver=driver,
             controller=controller,
-            fileio=fileio,
             writer=writer,
             plugins=plugins,
             name=name,
             config_sigs=config_sigs,
         )
-        self.drv = driver
-        self.fileio = fileio

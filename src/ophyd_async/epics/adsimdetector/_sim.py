@@ -16,7 +16,7 @@ class SimController(adcore.ADBaseController[SimDriverIO]):
         super().__init__(driver, good_states=good_states)
 
 
-class SimDetector(adcore.AreaDetector[SimController, adcore.ADWriter]):
+class SimDetector(adcore.AreaDetector[SimController]):
     def __init__(
         self,
         prefix: str,
@@ -28,14 +28,13 @@ class SimDetector(adcore.AreaDetector[SimController, adcore.ADWriter]):
         config_sigs: Sequence[SignalR] = (),
         plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
     ):
-        controller, driver = SimController.controller_and_drv(
-            prefix + drv_suffix, name=name
-        )
-        writer, fileio = writer_cls.writer_and_io(
+        driver = SimDriverIO(prefix + drv_suffix)
+        controller = SimController(driver)
+
+        writer = writer_cls.with_io(
             prefix,
             path_provider,
-            lambda: name,
-            adcore.ADBaseDatasetDescriber(driver),
+            dataset_source=driver,
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )
@@ -43,11 +42,8 @@ class SimDetector(adcore.AreaDetector[SimController, adcore.ADWriter]):
         super().__init__(
             driver=driver,
             controller=controller,
-            fileio=fileio,
             writer=writer,
             plugins=plugins,
             name=name,
             config_sigs=config_sigs,
         )
-        self.drv = driver
-        self.fileio = fileio

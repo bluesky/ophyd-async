@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import Awaitable, Callable
+from typing import cast
 from unittest.mock import patch
 
 import pytest
@@ -14,7 +15,7 @@ from ophyd_async.testing import set_mock_value
 
 @pytest.fixture
 def test_adpilatus(ad_standard_det_factory) -> adpilatus.PilatusDetector:
-    return ad_standard_det_factory(adpilatus.PilatusController)
+    return ad_standard_det_factory(adpilatus.PilatusDetector)
 
 
 async def test_deadtime_overridable(test_adpilatus: adpilatus.PilatusDetector):
@@ -139,7 +140,7 @@ async def test_exposure_time_and_acquire_period_set(
 
 async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
     pilatus = test_adpilatus._controller
-    pilatus_driver = test_adpilatus.drv
+    pilatus_driver = cast(adpilatus.PilatusDriverIO, test_adpilatus.drv)
     set_mock_value(pilatus_driver.armed, True)
     await pilatus.prepare(
         TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.CONSTANT_GATE)

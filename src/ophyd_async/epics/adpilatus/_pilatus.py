@@ -3,14 +3,15 @@ from collections.abc import Sequence
 from ophyd_async.core import PathProvider
 from ophyd_async.core._signal import SignalR
 from ophyd_async.epics.adcore._core_detector import AreaDetector
-from ophyd_async.epics.adcore._core_io import ADBaseDatasetDescriber, NDPluginBaseIO
+from ophyd_async.epics.adcore._core_io import NDPluginBaseIO
 from ophyd_async.epics.adcore._core_writer import ADWriter
 from ophyd_async.epics.adcore._hdf_writer import ADHDFWriter
 
 from ._pilatus_controller import PilatusController, PilatusReadoutTime
+from ._pilatus_io import PilatusDriverIO
 
 
-class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
+class PilatusDetector(AreaDetector[PilatusController]):
     """A Pilatus StandardDetector writing HDF files"""
 
     def __init__(
@@ -25,14 +26,13 @@ class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
-        controller, driver = PilatusController.controller_and_drv(
-            prefix + drv_suffix, name=name, readout_time=readout_time
-        )
-        writer, fileio = writer_cls.writer_and_io(
+        driver = PilatusDriverIO(prefix + drv_suffix)
+        controller = PilatusController(driver)
+
+        writer = writer_cls.with_io(
             prefix,
             path_provider,
-            lambda: name,
-            ADBaseDatasetDescriber(driver),
+            dataset_source=driver,
             fileio_suffix=fileio_suffix,
             plugins=plugins,
         )
@@ -40,11 +40,8 @@ class PilatusDetector(AreaDetector[PilatusController, ADWriter]):
         super().__init__(
             driver=driver,
             controller=controller,
-            fileio=fileio,
             writer=writer,
             plugins=plugins,
             name=name,
             config_sigs=config_sigs,
         )
-        self.drv = driver
-        self.fileio = fileio
