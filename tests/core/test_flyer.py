@@ -127,12 +127,12 @@ async def detectors(RE: RunEngine) -> tuple[StandardDetector, StandardDetector]:
     async def dummy_arm_2(self=None, trigger=None, num=0, exposure=None):
         return writers[1].dummy_signal.set(1)
 
-    detector_1: StandardDetector[Any] = StandardDetector(
+    detector_1: StandardDetector[Any, Any] = StandardDetector(
         Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_1),
         writers[0],
         name="detector_1",
     )
-    detector_2: StandardDetector[Any] = StandardDetector(
+    detector_2: StandardDetector[Any, Any] = StandardDetector(
         Mock(spec=DetectorController, get_deadtime=lambda num: num, arm=dummy_arm_2),
         writers[1],
         name="detector_2",
@@ -176,7 +176,7 @@ async def test_hardware_triggered_flyable(
 
         assert flyer._trigger_logic.state == TriggerState.PREPARING
         for detector in detectors:
-            detector.controller.disarm.assert_called_once()  # type: ignore
+            detector._controller.disarm.assert_called_once()  # type: ignore
 
         yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
@@ -195,8 +195,8 @@ async def test_hardware_triggered_flyable(
             # Manually increment the index as if a frame was taken
             frames_completed += frames
             for detector in detectors:
-                yield from bps.abs_set(detector.writer.dummy_signal, frames_completed)
-                detector.writer.index = frames_completed
+                yield from bps.abs_set(detector._writer.dummy_signal, frames_completed)
+                detector._writer.index = frames_completed
             done = False
             while not done:
                 try:
@@ -221,7 +221,7 @@ async def test_hardware_triggered_flyable(
 
         yield from bps.unstage_all(flyer, *detectors)
         for detector in detectors:
-            assert detector.controller.disarm.called  # type: ignore
+            assert detector._controller.disarm.called  # type: ignore
         assert trigger_logic.state == TriggerState.STOPPING
 
     # fly scan
@@ -316,9 +316,9 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         # Manually increment the index as if a frame was taken
         for detector in detectors:
             yield from bps.abs_set(
-                detector.writer.dummy_signal, trigger_info.total_number_of_triggers
+                detector._writer.dummy_signal, trigger_info.total_number_of_triggers
             )
-            detector.writer.index = trigger_info.total_number_of_triggers
+            detector._writer.index = trigger_info.total_number_of_triggers
 
         yield from bps.wait(group="complete")
 
@@ -334,7 +334,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
             assert detector._completable_frames == 0
             assert detector._frames_to_complete == 0
             assert detector._number_of_triggers_iter is None
-            assert detector.controller.wait_for_idle.called  # type: ignore
+            assert detector._controller.wait_for_idle.called  # type: ignore
 
             # This is an additional kickoff
             # Ensuring stop iteration is called if kickoff is invoked after complete

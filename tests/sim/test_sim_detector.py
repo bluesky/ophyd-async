@@ -4,7 +4,7 @@ from collections import defaultdict
 import bluesky.plans as bp
 import h5py
 import numpy as np
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.plan_stubs import ensure_connected
 from ophyd_async.sim import PatternDetector
@@ -22,8 +22,8 @@ async def test_sim_pattern_detector_initialization(
 async def test_detector_creates_controller_and_writer(
     sim_pattern_detector: PatternDetector,
 ):
-    assert sim_pattern_detector.writer
-    assert sim_pattern_detector.controller
+    assert sim_pattern_detector._writer
+    assert sim_pattern_detector._controller
 
 
 def test_writes_pattern_to_file(
