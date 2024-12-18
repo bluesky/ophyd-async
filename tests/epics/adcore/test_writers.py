@@ -45,7 +45,7 @@ async def hdf_writer(
 async def tiff_writer(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADTIFFWriter:
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         tiff = adcore.NDFileIO("TIFF:")
 
     return adcore.ADTIFFWriter(

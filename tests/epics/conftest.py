@@ -30,7 +30,7 @@ def ad_standard_det_factory(
         with init_devices(mock=True):
             prefix = f"{detector_name.upper()}{number}:"
             name = f"test_ad{detector_name.lower()}{number}"
-        
+
             test_adstandard_det = detector_cls(
                 prefix,
                 static_path_provider,

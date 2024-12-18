@@ -4,13 +4,13 @@ import pytest
 from bluesky.run_engine import RunEngine
 
 import ophyd_async.plan_stubs as ops
-from ophyd_async.core import DeviceCollector
+from ophyd_async.core import init_devices
 from ophyd_async.epics import adcore
 
 
 @pytest.fixture
 async def single_trigger_det_with_stats():
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         stats = adcore.NDPluginStatsIO("PREFIX:STATS", name="stats")
         det = adcore.SingleTriggerDetector(
             drv=adcore.ADBaseIO("PREFIX:DRV"),
