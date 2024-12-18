@@ -55,3 +55,4 @@ def test_table_coerces(kwargs):
     t = MyTable(**kwargs)
     for k, v in t:
         assert v == pytest.approx(kwargs[k])
+    assert t == pytest.approx(t)

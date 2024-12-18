@@ -2,14 +2,14 @@ from unittest.mock import ANY, AsyncMock, MagicMock
 
 import pytest
 
-from ophyd_async.core import DetectorTrigger, DeviceCollector
+from ophyd_async.core import DetectorTrigger, init_devices
 from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
 from ophyd_async.testing import get_mock_put
 
 
 @pytest.fixture
 def detector(RE):
-    with DeviceCollector(mock=True):
+    with init_devices(mock=True):
         detector = EigerDetector("BL03I", MagicMock())
     return detector
 

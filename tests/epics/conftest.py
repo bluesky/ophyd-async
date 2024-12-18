@@ -4,7 +4,7 @@ from collections.abc import Callable
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import DeviceCollector
+from ophyd_async.core import init_devices
 from ophyd_async.epics import adcore
 from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
@@ -27,10 +27,10 @@ def ad_standard_det_factory(
         if detector_name.endswith("Detector"):
             detector_name = detector_name[: -len("Detector")]
 
-        with DeviceCollector(mock=True):
+        with init_devices(mock=True):
             prefix = f"{detector_name.upper()}{number}:"
             name = f"test_ad{detector_name.lower()}{number}"
-
+        
             test_adstandard_det = detector_cls(
                 prefix,
                 static_path_provider,

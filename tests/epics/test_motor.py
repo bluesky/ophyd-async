@@ -8,7 +8,7 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     CALCULATE_TIMEOUT,
     AsyncStatus,
-    DeviceCollector,
+    init_devices,
     observe_value,
     soft_signal_rw,
 )
@@ -25,7 +25,7 @@ from ophyd_async.testing import (
 
 @pytest.fixture
 async def sim_motor():
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X", name="sim_motor")
 
     set_mock_value(sim_motor.motor_egu, "mm")

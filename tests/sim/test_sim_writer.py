@@ -2,13 +2,13 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import DeviceCollector
-from ophyd_async.sim.demo import PatternDetectorWriter, PatternGenerator
+from ophyd_async.core import init_devices
+from ophyd_async.sim import PatternDetectorWriter, PatternGenerator
 
 
 @pytest.fixture
 async def writer(static_path_provider) -> PatternDetectorWriter:
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         driver = PatternGenerator()
 
     return PatternDetectorWriter(driver, static_path_provider, lambda: "NAME")

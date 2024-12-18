@@ -41,13 +41,13 @@ that you can mix Ophyd and Ophyd Async devices in the same RunEngine:
     :start-after: # Create ophyd devices
     :end-before: # Create ophyd-async devices
 
-Finally we create the Ophyd Async devices imported from the `epics.demo` module:
+Finally we create the Ophyd Async devices imported from the `epics.sim` module:
 
 .. literalinclude:: ../examples/epics_demo.py
     :language: python
     :start-after: # Create ophyd-async devices
 
-The first thing to note is `with`. This uses a `DeviceCollector` as a context
+The first thing to note is `with`. This uses `init_devices` as a context
 manager to collect up the top level `Device` instances created in the context,
 and run the following:
 

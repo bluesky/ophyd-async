@@ -8,11 +8,11 @@ import pytest
 
 from ophyd_async.core import (
     Device,
-    DeviceCollector,
     HDFFile,
     SignalR,
     StaticFilenameProvider,
     StaticPathProvider,
+    init_devices,
 )
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
@@ -66,7 +66,7 @@ async def panda_t():
 
 @pytest.fixture
 async def mock_panda(panda_t):
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_panda = panda_t("mock_PANDA", name="mock_panda")
 
     # Mimic directory exists check that happens normally in the PandA IOC
@@ -92,7 +92,7 @@ async def mock_panda(panda_t):
 async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     fp = StaticFilenameProvider("data")
     dp = StaticPathProvider(fp, tmp_path / mock_panda.name, create_dir_depth=-1)
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         writer = PandaHDFWriter(
             path_provider=dp,
             name_provider=lambda: mock_panda.name,
@@ -215,7 +215,7 @@ async def test_oserror_when_hdf_dir_does_not_exist(tmp_path, mock_panda):
     dp = StaticPathProvider(
         fp, tmp_path / mock_panda.name / "extra" / "dirs", create_dir_depth=-1
     )
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         writer = PandaHDFWriter(
             path_provider=dp,
             name_provider=lambda: "test-panda",

@@ -11,11 +11,13 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
-    DeviceCollector,
+    Array1D,
     SignalR,
     SignalRW,
     SoftSignalBackend,
     StandardReadable,
+    StrictEnum,
+    init_devices,
     set_and_wait_for_other_value,
     set_and_wait_for_value,
     soft_signal_r_and_setter,
@@ -250,76 +252,148 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert (await signal.get_value()) == INITIAL_VALUE
 
 
-@pytest.fixture
-async def mock_signal():
-    mock_signal = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
-    await mock_signal.connect(mock=True)
-    yield mock_signal
+class MockEnum(StrictEnum):
+    GOOD = "Good"
+    OK = "Ok"
 
 
-async def test_assert_value(mock_signal: SignalRW):
-    set_mock_value(mock_signal, 168)
-    await assert_value(mock_signal, 168)
-
-
-async def test_assert_reaading(mock_signal: SignalRW):
-    set_mock_value(mock_signal, 888)
-    dummy_reading = {
-        "mock_signal": Reading({"alarm_severity": 0, "timestamp": ANY, "value": 888})
-    }
-    await assert_reading(mock_signal, dummy_reading)
-
-
-async def test_failed_assert_reading(mock_signal: SignalRW):
-    set_mock_value(mock_signal, 888)
-    dummy_reading = {
-        "mock_signal": Reading({"alarm_severity": 0, "timestamp": ANY, "value": 88})
-    }
-    with pytest.raises(AssertionError):
-        await assert_reading(mock_signal, dummy_reading)
-
-
-class DummyReadable(StandardReadable):
+class DummyReadableArray(StandardReadable):
     """A demo Readable to produce read and config signal"""
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
-            self.value = epics_signal_r(float, prefix + "Value")
-        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
-            self.mode = epics_signal_rw(str, prefix + "Mode")
-            self.mode2 = epics_signal_rw(str, prefix + "Mode2")
+            self.int_value = epics_signal_r(int, prefix + "int")
+            self.int_array = epics_signal_r(Array1D[np.int8], prefix + "Value")
+            self.float_array = epics_signal_r(Array1D[np.float32], prefix + "Value")
         # Set name and signals for read() and read_configuration()
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
+            self.str_value = epics_signal_rw(str, prefix + "Value")
+            self.strictEnum_value = epics_signal_rw(MockEnum, prefix + "array2")
         super().__init__(name=name)
 
 
 @pytest.fixture
 async def mock_readable():
-    async with DeviceCollector(mock=True):
-        mock_readable = DummyReadable("SIM:READABLE:", name="mock_readable")
-
+    async with init_devices(mock=True):
+        mock_readable = DummyReadableArray("SIM:READABLE:", name="mock_readable")
     yield mock_readable
 
 
-async def test_assert_configuration(mock_readable: DummyReadable):
-    set_mock_value(mock_readable.value, 123)
-    set_mock_value(mock_readable.mode, "super mode")
-    set_mock_value(mock_readable.mode2, "slow mode")
-    dummy_config_reading = {
-        "mock_readable-mode": (
+async def test_assert_value(mock_readable: DummyReadableArray):
+    set_mock_value(mock_readable.int_value, 168)
+    await assert_value(mock_readable.int_value, 168)
+
+
+async def test_assert_reaading(mock_readable: DummyReadableArray):
+    set_mock_value(mock_readable.int_value, 188)
+    set_mock_value(mock_readable.int_array, np.array([1, 2, 4, 7]))
+    set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
+
+    dummy_reading = {
+        "mock_readable-int_value": Reading(
+            {"alarm_severity": 0, "timestamp": ANY, "value": 188}
+        ),
+        "mock_readable-int_array": Reading(
+            {"alarm_severity": 0, "timestamp": ANY, "value": [1, 2, 4, 7]}
+        ),
+        "mock_readable-float_array": Reading(
             {
                 "alarm_severity": 0,
                 "timestamp": ANY,
-                "value": "super mode",
+                "value": [1.1231, -2.3, 451.15, 6.6233],
             }
         ),
-        "mock_readable-mode2": {
-            "alarm_severity": 0,
-            "timestamp": ANY,
-            "value": "slow mode",
-        },
     }
-    await assert_configuration(mock_readable, dummy_config_reading)
+    await assert_reading(mock_readable, dummy_reading)
+
+
+@pytest.mark.parametrize(
+    "int_value, int_array, float_array",
+    [
+        ([128, np.array([1, 2, 4, 7]), np.array([1.1231, -2.3, 451.15, 6.6233])]),
+        ([188, np.array([-5, 2, 4, 7]), np.array([1.1231, -2.3, 451.15, 6.6233])]),
+        ([188, np.array([1, 2, 4, 7]), np.array([1.231, -2.3, 451.15, 6.6233])]),
+    ],
+)
+async def test_failed_assert_reading(
+    mock_readable: DummyReadableArray, int_value, int_array, float_array
+):
+    set_mock_value(mock_readable.int_value, 188)
+    set_mock_value(mock_readable.int_array, np.array([1, 2, 4, 7]))
+    set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
+
+    dummy_reading = {
+        "mock_readable-int_value": Reading(
+            {"alarm_severity": 0, "timestamp": ANY, "value": int_value}
+        ),
+        "mock_readable-int_array": Reading(
+            {"alarm_severity": 0, "timestamp": ANY, "value": int_array}
+        ),
+        "mock_readable-float_array": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": float_array,
+            }
+        ),
+    }
+    with pytest.raises(AssertionError):
+        await assert_reading(mock_readable, dummy_reading)
+
+
+async def test_assert_configuraion(mock_readable: DummyReadableArray):
+    set_mock_value(mock_readable.str_value, "haha")
+    set_mock_value(mock_readable.strictEnum_value, MockEnum.GOOD)
+    dummy_reading = {
+        "mock_readable-str_value": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": "haha",
+            }
+        ),
+        "mock_readable-strictEnum_value": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": MockEnum.GOOD,
+            }
+        ),
+    }
+    await assert_configuration(mock_readable, dummy_reading)
+
+
+@pytest.mark.parametrize(
+    "str_value, enum_value",
+    [
+        ("ha", MockEnum.OK),
+        ("not funny", MockEnum.GOOD),
+    ],
+)
+async def test_assert_configuraion_fail(
+    mock_readable: DummyReadableArray, str_value, enum_value
+):
+    set_mock_value(mock_readable.str_value, "haha")
+    set_mock_value(mock_readable.strictEnum_value, MockEnum.GOOD)
+    dummy_reading = {
+        "mock_readable-mode": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": str_value,
+            }
+        ),
+        "mock_readable-mode2": Reading(
+            {
+                "alarm_severity": 0,
+                "timestamp": ANY,
+                "value": enum_value,
+            }
+        ),
+    }
+    with pytest.raises(AssertionError):
+        await assert_configuration(mock_readable, dummy_reading)
 
 
 async def test_signal_get_and_set_logging(caplog):

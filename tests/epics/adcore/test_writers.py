@@ -5,10 +5,10 @@ import pytest
 
 from ophyd_async.core import (
     DatasetDescriber,
-    DeviceCollector,
     PathProvider,
     StandardDetector,
     StaticPathProvider,
+    init_devices,
 )
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
 from ophyd_async.epics.adpilatus import PilatusReadoutTime
@@ -29,7 +29,7 @@ class DummyDatasetDescriber(DatasetDescriber):
 async def hdf_writer(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADHDFWriter:
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         hdf = adcore.NDFileHDFIO("HDF:")
 
     return adcore.ADHDFWriter(
@@ -57,7 +57,7 @@ async def tiff_writer(
 async def hdf_writer_with_stats(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADHDFWriter:
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         hdf = adcore.NDFileHDFIO("HDF:")
         stats = adcore.NDPluginStatsIO("FOO:")
 
@@ -78,7 +78,7 @@ async def detectors(
     static_path_provider: PathProvider,
 ) -> list[StandardDetector]:
     detectors = []
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         detectors.append(advimba.VimbaDetector("VIMBA:", static_path_provider))
         detectors.append(adkinetix.KinetixDetector("KINETIX:", static_path_provider))
         detectors.append(

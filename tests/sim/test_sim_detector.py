@@ -7,7 +7,7 @@ import numpy as np
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.plan_stubs import ensure_connected
-from ophyd_async.sim.demo import PatternDetector
+from ophyd_async.sim import PatternDetector
 from ophyd_async.testing import assert_emitted
 
 

@@ -10,10 +10,10 @@ import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import Array1D, DeviceCollector, SignalRW, T
+from ophyd_async.core import Array1D, SignalRW, T, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_python_type
-from ophyd_async.tango.demo import (
+from ophyd_async.tango.sim import (
     DemoCounter,
     DemoMover,
     TangoDetector,
@@ -269,15 +269,15 @@ def tango_test_device():
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def demo_test_context():
+def sim_test_context():
     content = (
         {
             "class": DemoMover,
-            "devices": [{"name": "demo/motor/1"}],
+            "devices": [{"name": "sim/motor/1"}],
         },
         {
             "class": DemoCounter,
-            "devices": [{"name": "demo/counter/1"}, {"name": "demo/counter/2"}],
+            "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
         },
     )
     yield MultiDeviceTestContext(content, process=True)
@@ -302,7 +302,7 @@ def compare_values(expected, received):
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
 
-    async with DeviceCollector():
+    async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
@@ -349,19 +349,19 @@ async def test_connect_proxy(tango_test_device, proxy: bool | None):
 async def test_with_bluesky(tango_test_device):
     # now let's do some bluesky stuff
     RE = RunEngine()
-    with DeviceCollector():
+    with init_devices():
         device = TestTangoReadable(tango_test_device)
     RE(bp.count([device]))
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_demo(demo_test_context):
-    with demo_test_context:
+async def test_tango_sim(sim_test_context):
+    with sim_test_context:
         detector = TangoDetector(
             name="detector",
-            mover_trl="demo/motor/1",
-            counter_trls=["demo/counter/1", "demo/counter/2"],
+            mover_trl="sim/motor/1",
+            counter_trls=["sim/counter/1", "sim/counter/2"],
         )
         await detector.connect()
         await detector.trigger()

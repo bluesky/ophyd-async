@@ -1,6 +1,6 @@
 import pytest
 
-from ophyd_async.sim.demo import PatternGenerator
+from ophyd_async.sim import PatternGenerator
 
 
 @pytest.fixture

@@ -14,13 +14,13 @@ from ophyd_async.core import (
     AsyncStatus,
     DetectorController,
     DetectorWriter,
-    DeviceCollector,
     FlyerController,
     SignalR,
     StandardDetector,
     StandardFlyer,
     WatchableAsyncStatus,
     WatcherUpdate,
+    init_devices,
     observe_value,
 )
 from ophyd_async.epics.core import epics_signal_rw
@@ -173,7 +173,7 @@ async def mock_panda():
         def __init__(self, uri: str, name: str = ""):
             super().__init__(name=name, connector=fastcs_connector(self, uri))
 
-    async with DeviceCollector(mock=True):
+    async with init_devices(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")
 
     assert mock_panda.name == "mock_panda"
