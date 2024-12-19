@@ -39,6 +39,11 @@ class Table(BaseModel):
     # so it is strictly checked against the BaseModel we are supplied.
     model_config = ConfigDict(extra="allow")
 
+    # Add an init method to match the above model config, otherwise the type
+    # checker will not think we can pass arbitrary kwargs into the base class init
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     @classmethod
     def __init_subclass__(cls):
         # But forbit extra in subclasses so it gets validated
