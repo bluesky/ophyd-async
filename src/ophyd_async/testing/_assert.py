@@ -1,15 +1,14 @@
-from functools import partial
 from typing import Any
 
-import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     AsyncConfigurable,
     AsyncReadable,
+    SignalDatatype,
     SignalDatatypeT,
     SignalR,
-    Table,
+    is_same,
 )
 
 
@@ -22,20 +21,6 @@ def _generate_assert_error_msg(name: str, expected_result, actual_result) -> str
         + f"\n{FAIL}{expected_result}{ENDC}"
         + f"\nbut actually got \n{FAIL}{actual_result}{ENDC}"
     )
-
-
-def _value_equal(value1, value2) -> bool:
-    return value1 == pytest.approx(value2)
-
-
-def _table_equal(table1: Table, table2: Table) -> bool:
-    # keys and values of all fields should be the same
-    if not table1.model_fields == table2.model_fields:
-        return False
-    for field, value1 in table1:
-        if not _value_equal(value1, getattr(table2, field)):
-            return False
-    return True
 
 
 async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
@@ -55,14 +40,9 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 
     """
     actual_value = await signal.get_value()
-    error_msg = _generate_assert_error_msg(
+    assert is_same(actual_value, value), _generate_assert_error_msg(
         name=signal.name, expected_result=value, actual_result=actual_value
     )
-    if isinstance(actual_value, Table):
-        assert isinstance(value, Table), error_msg
-        assert _table_equal(actual_value, value), error_msg
-    else:
-        assert _value_equal(value, actual_value), error_msg
 
 
 async def assert_reading(
@@ -113,31 +93,32 @@ async def assert_configuration(
     _compare_readings_dicts(actual_configuration, configuration, configurable.name)
 
 
-def _compare_metadata(reading1: Reading, reading2: Reading):
-    return {k: v for k, v in reading1.items() if k != "value"} == {
-        k: v for k, v in reading2.items() if k != "value"
-    }
+class EqualSignalValue:
+    def __init__(self, value: SignalDatatype):
+        self.value = value
+
+    def __eq__(self, other):
+        if isinstance(other, EqualSignalValue):
+            other = other.value
+        return is_same(self.value, other)
 
 
 def _compare_readings_dicts(
     actual: dict[str, Reading], expected: dict[str, Reading], name: str
 ):
-    error_msg = partial(
-        _generate_assert_error_msg,
+    expected = {  # type: ignore
+        k: dict(v, value=EqualSignalValue(expected[k]["value"]))
+        for k, v in expected.items()
+    }
+    actual = {  # type: ignore
+        k: dict(v, value=EqualSignalValue(actual[k]["value"]))
+        for k, v in actual.items()
+    }
+    assert actual == expected, _generate_assert_error_msg(
         name=name,
         expected_result=expected,
         actual_result=actual,
     )
-
-    assert actual.keys() == expected.keys(), error_msg()
-    for key, actual_reading in actual.items():
-        if isinstance(actual_reading["value"], Table):
-            assert _table_equal(
-                actual_reading["value"], expected[key]["value"]
-            ) and _compare_metadata(actual_reading, expected[key]), error_msg()
-        else:
-            expected[key]["value"] = pytest.approx(expected[key]["value"])
-            assert actual_reading == expected[key], error_msg()
 
 
 def assert_emitted(docs: dict[str, list[dict]], **numbers: int):
