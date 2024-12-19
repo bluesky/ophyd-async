@@ -1,31 +1,28 @@
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated as A
-from typing import Literal
 
 import numpy as np
 
-from ophyd_async.core import (
-    Array1D,
-    SignalRW,
-    StrictEnum,
-    Table,
-)
-from ophyd_async.epics.core import (
-    EpicsDevice,
-    PvSuffix,
-)
+from ophyd_async.core import Array1D, SignalR, SignalRW, StrictEnum, Table
+from ophyd_async.core._utils import SubsetEnum
+from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
-from ._utils import TestingIOC
+from ._utils import TestingIOC, generate_random_pv_prefix
 
-CA_PVA_RECORDS = str(Path(__file__).parent / "test_records.db")
-PVA_RECORDS = str(Path(__file__).parent / "test_records_pva.db")
+CA_PVA_RECORDS = Path(__file__).parent / "test_records.db"
+PVA_RECORDS = Path(__file__).parent / "test_records_pva.db"
 
 
 class ExampleEnum(StrictEnum):
     A = "Aaa"
     B = "Bbb"
     C = "Ccc"
+
+
+class ExampleSubsetEnum(SubsetEnum):
+    A = "Aaa"
+    B = "Bbb"
 
 
 class ExampleTable(Table):
@@ -41,10 +38,11 @@ class ExampleCaDevice(EpicsDevice):
     my_float: A[SignalRW[float], PvSuffix("float")]
     my_str: A[SignalRW[str], PvSuffix("str")]
     longstr: A[SignalRW[str], PvSuffix("longstr")]
-    longstr2: A[SignalRW[str], PvSuffix("longstr2")]
+    longstr2: A[SignalRW[str], PvSuffix("longstr2.VAL$")]
     my_bool: A[SignalRW[bool], PvSuffix("bool")]
     enum: A[SignalRW[ExampleEnum], PvSuffix("enum")]
     enum2: A[SignalRW[ExampleEnum], PvSuffix("enum2")]
+    subset_enum: A[SignalRW[ExampleSubsetEnum], PvSuffix("subset_enum")]
     bool_unnamed: A[SignalRW[bool], PvSuffix("bool_unnamed")]
     partialint: A[SignalRW[int], PvSuffix("partialint")]
     lessint: A[SignalRW[int], PvSuffix("lessint")]
@@ -63,45 +61,26 @@ class ExamplePvaDevice(ExampleCaDevice):  # pva can support all signal types tha
     int64a: A[SignalRW[Array1D[np.int64]], PvSuffix("int64a")]
     uint64a: A[SignalRW[Array1D[np.uint64]], PvSuffix("uint64a")]
     table: A[SignalRW[ExampleTable], PvSuffix("table")]
-    ntndarray_data: A[SignalRW[Array1D[np.int64]], PvSuffix("ntndarray:data")]
+    ntndarray: A[SignalR[np.ndarray], PvSuffix("ntndarray")]
 
 
-async def connect_example_device(
-    ioc: TestingIOC, protocol: Literal["ca", "pva"]
-) -> ExamplePvaDevice | ExampleCaDevice:
-    """Helper function to return a connected example device.
+class ExampleIocAndDevices:
+    def __init__(self):
+        self.prefix = generate_random_pv_prefix()
+        self.ioc = TestingIOC()
+        # Create supporting records and ExampleCaDevice
+        ca_prefix = f"{self.prefix}ca:"
+        self.ioc.add_database(CA_PVA_RECORDS, device=ca_prefix)
+        self.ca_device = ExampleCaDevice(f"ca://{ca_prefix}")
+        # Create supporting records and ExamplePvaDevice
+        pva_prefix = f"{self.prefix}pva:"
+        self.ioc.add_database(CA_PVA_RECORDS, device=pva_prefix)
+        self.ioc.add_database(PVA_RECORDS, device=pva_prefix)
+        self.pva_device = ExamplePvaDevice(f"pva://{pva_prefix}")
 
-    Parameters
-    ----------
+    def get_signal(self, protocol: str, name: str) -> SignalRW:
+        device = getattr(self, f"{protocol}_device")
+        return getattr(device, name)
 
-    ioc: TestingIOC
-        TestingIOC configured to provide the records needed for the device
-
-    protocol: Literal["ca", "pva"]
-        The transport protocol of the device
-
-    Returns
-    -------
-    ExamplePvaDevice | ExampleCaDevice
-        a connected EpicsDevice with signals of many EPICS record types
-    """
-    device_cls = ExamplePvaDevice if protocol == "pva" else ExampleCaDevice
-    device = device_cls(f"{protocol}://{ioc.prefix_for(device_cls)}")
-    await device.connect()
-    return device
-
-
-def get_example_ioc() -> TestingIOC:
-    """Get TestingIOC instance with the example databases loaded.
-
-    Returns
-    -------
-    TestingIOC
-        instance with test_records.db loaded for ExampleCaDevice and
-        test_records.db and test_records_pva.db loaded for ExamplePvaDevice.
-    """
-    ioc = TestingIOC()
-    ioc.database_for(PVA_RECORDS, ExamplePvaDevice)
-    ioc.database_for(CA_PVA_RECORDS, ExamplePvaDevice)
-    ioc.database_for(CA_PVA_RECORDS, ExampleCaDevice)
-    return ioc
+    def get_pv(self, protocol: str, name: str) -> str:
+        return f"{protocol}://{self.prefix}{protocol}:{name}"

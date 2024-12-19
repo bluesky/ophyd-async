@@ -40,7 +40,7 @@ def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
     def get_limits(limit: str) -> LimitsRange | None:
         low = getattr(value, f"lower_{limit}_limit", nan)
         high = getattr(value, f"upper_{limit}_limit", nan)
-        if not (isnan(low) and isnan(high)):
+        if not (isnan(low) and isnan(high)) and not high == low == 0:
             return LimitsRange(
                 low=None if isnan(low) else low,
                 high=None if isnan(high) else high,
@@ -59,14 +59,16 @@ def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
 
 
 def _metadata_from_augmented_value(
-    value: AugmentedValue, metadata: SignalMetadata
+    datatype: type[SignalDatatypeT] | None,
+    value: AugmentedValue,
+    metadata: SignalMetadata,
 ) -> SignalMetadata:
     metadata = metadata.copy()
-    if hasattr(value, "units"):
+    if hasattr(value, "units") and datatype not in (str, bool):
         metadata["units"] = value.units
     if hasattr(value, "precision") and not isnan(value.precision):
         metadata["precision"] = value.precision
-    if limits := _limits_from_augmented_value(value):
+    if (limits := _limits_from_augmented_value(value)) and datatype is not bool:
         metadata["limits"] = limits
     return metadata
 
@@ -290,7 +292,9 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
 
     async def get_datakey(self, source: str) -> DataKey:
         value = await self._caget(self.read_pv, FORMAT_CTRL)
-        metadata = _metadata_from_augmented_value(value, self.converter.metadata)
+        metadata = _metadata_from_augmented_value(
+            self.datatype, value, self.converter.metadata
+        )
         return make_datakey(
             self.converter.datatype, self.converter.value(value), source, metadata
         )

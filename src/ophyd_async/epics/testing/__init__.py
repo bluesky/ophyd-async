@@ -1,24 +1,24 @@
-from ._example_ioc import (
+from ._example import (
     CA_PVA_RECORDS,
     PVA_RECORDS,
     ExampleCaDevice,
     ExampleEnum,
+    ExampleIocAndDevices,
     ExamplePvaDevice,
+    ExampleSubsetEnum,
     ExampleTable,
-    connect_example_device,
-    get_example_ioc,
 )
-from ._utils import TestingIOC, generate_random_PV_prefix
+from ._utils import TestingIOC, generate_random_pv_prefix
 
 __all__ = [
     "CA_PVA_RECORDS",
     "PVA_RECORDS",
     "ExampleCaDevice",
     "ExampleEnum",
+    "ExampleSubsetEnum",
     "ExamplePvaDevice",
     "ExampleTable",
-    "connect_example_device",
-    "get_example_ioc",
+    "ExampleIocAndDevices",
     "TestingIOC",
-    "generate_random_PV_prefix",
+    "generate_random_pv_prefix",
 ]

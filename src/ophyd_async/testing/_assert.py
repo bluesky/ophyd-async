@@ -3,6 +3,7 @@ from typing import Any
 
 import pytest
 from bluesky.protocols import Reading
+from event_model import DataKey
 
 from ophyd_async.core import AsyncConfigurable, AsyncReadable, SignalDatatypeT, SignalR
 
@@ -106,6 +107,14 @@ async def assert_configuration(
         expected_result=configuration,
         actual_result=actual_configurable,
     )
+
+
+async def assert_describe_signal(signal: SignalR, /, **metadata):
+    actual_describe = await signal.describe()
+    assert list(actual_describe) == [signal.name]
+    (actual_datakey,) = actual_describe.values()
+    expected_datakey = DataKey(source=signal.source, **metadata)
+    assert actual_datakey == expected_datakey
 
 
 def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
