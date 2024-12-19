@@ -1,3 +1,4 @@
+from ._compare_signals import is_same
 from ._detector import (
     DetectorController,
     DetectorTrigger,
@@ -80,6 +81,7 @@ from ._utils import (
 from ._yaml_settings import YamlSettingsProvider
 
 __all__ = [
+    "is_same",
     "DetectorController",
     "DetectorTrigger",
     "DetectorWriter",

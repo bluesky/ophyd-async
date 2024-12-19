@@ -5,7 +5,6 @@ from collections.abc import Callable, Mapping
 from typing import Any
 
 import bluesky.plan_stubs as bps
-import numpy as np
 from bluesky.utils import MsgGenerator, plan
 
 from ophyd_async.core import (
@@ -14,9 +13,9 @@ from ophyd_async.core import (
     SettingsProvider,
     SignalRW,
     T,
+    is_same,
     walk_rw_signals,
 )
-from ophyd_async.core._table import Table
 
 from ._wait_for_awaitable import wait_for_awaitable
 
@@ -106,20 +105,7 @@ def apply_settings_if_different(
         )
         current_settings = Settings(settings.device, signal_values)
 
-    def _is_different(current, required) -> bool:
-        if isinstance(current, Table):
-            current = current.model_dump()
-            if isinstance(required, Table):
-                required = required.model_dump()
-            return current.keys() != required.keys() or any(
-                _is_different(current[k], required[k]) for k in current
-            )
-        elif isinstance(current, np.ndarray):
-            return not np.array_equal(current, required)
-        else:
-            return current != required
-
-    settings_to_change, _ = settings.partition(
-        lambda sig: _is_different(current_settings[sig], settings[sig])
+    _, settings_to_change = settings.partition(
+        lambda sig: is_same(current_settings[sig], settings[sig])
     )
     yield from apply_plan(settings_to_change)
