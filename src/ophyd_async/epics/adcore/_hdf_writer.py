@@ -48,7 +48,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._file: HDFFile | None = None
         self._include_file_number = False
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frequency_ratio: int = 1) -> dict[str, DataKey]:
         self._file = None
 
         # Setting HDF writer specific signals
@@ -74,8 +74,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         name = self._name_provider()
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
-        self._multiplier = multiplier
-        outer_shape = (multiplier,) if multiplier > 1 else ()
+        self._frequency_ratio = frequency_ratio
 
         # Determine number of frames that will be saved per HDF chunk
         frames_per_chunk = await self._fileio.num_frames_chunks.get_value()
@@ -87,7 +86,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                 dataset="/entry/data/data",
                 shape=detector_shape,
                 dtype_numpy=np_dtype,
-                multiplier=multiplier,
+                frequency_ratio=frequency_ratio,
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
@@ -115,7 +114,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                                 f"/entry/instrument/NDAttributes/{datakey}",
                                 (),
                                 np_datatype,
-                                multiplier,
+                                frequency_ratio,
                                 # NDAttributes appear to always be configured with
                                 # this chunk size
                                 chunk_shape=(16384,),
@@ -125,7 +124,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         describe = {
             ds.data_key: DataKey(
                 source=self._fileio.full_file_name.source,
-                shape=list(outer_shape + tuple(ds.shape)),
+                shape=list((frequency_ratio,) + tuple(ds.shape)),
                 dtype="array" if ds.shape else "number",
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
