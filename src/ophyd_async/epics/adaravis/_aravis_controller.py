@@ -29,18 +29,6 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
         super().__init__(driver, good_states=good_states)
         self.gpio_number = gpio_number
 
-    @classmethod
-    def controller_and_drv(
-        cls: type[AravisControllerT],
-        prefix: str,
-        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
-        name: str = "",
-        gpio_number: GPIO_NUMBER = 1,
-    ) -> tuple[AravisControllerT, AravisDriverIO]:
-        driver_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
-        driver = driver_cls(prefix, name=name)
-        controller = cls(driver, good_states=good_states, gpio_number=gpio_number)
-        return controller, driver
 
     def get_deadtime(self, exposure: float | None) -> float:
         return _HIGHEST_POSSIBLE_DEADTIME
