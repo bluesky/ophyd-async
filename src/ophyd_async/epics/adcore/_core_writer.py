@@ -49,7 +49,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self._plugins = plugins
-        self._fileio = fileio
+        self.fileio = fileio
         self._path_provider = path_provider
         self._name_provider = name_provider
         self._dataset_describer = dataset_describer
