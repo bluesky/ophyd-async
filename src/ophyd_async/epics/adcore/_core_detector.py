@@ -10,14 +10,13 @@ from ._core_writer import ADWriter
 class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
     def __init__(
         self,
-        driver: ADBaseIO,
         controller: ADBaseControllerT,
         writer: ADWriter,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
-        self.drv = driver
+        self.driver = controller.driver
         self.fileio = writer.fileio
 
         if plugins is not None:
