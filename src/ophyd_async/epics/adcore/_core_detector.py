@@ -18,7 +18,7 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
         name: str = "",
     ):
         self.drv = driver
-        self.fileio = writer._fileio  # noqa: SLF001
+        self.fileio = writer.fileio
 
         if plugins is not None:
             for name, plugin in plugins.items():
