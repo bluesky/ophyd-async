@@ -29,7 +29,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         driver: ADBaseIOT,
         good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
     ) -> None:
-        self._driver = driver
+        self.driver = driver
         self.good_states = good_states
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
