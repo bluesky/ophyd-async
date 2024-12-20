@@ -1,0 +1,21 @@
+bool_unnamed: true
+enum: Bbb
+enum2: Bbb
+float32a: [1.9999999949504854e-06, -123.12300109863281]
+float64a: [0.1, -12345678.123]
+int16a: [-32768, 32767]
+int32a: [-2147483648, 2147483647]
+lessint: 42
+longstr: a string that is just longer than forty characters
+longstr2: a string that is just longer than forty characters
+my_bool: true
+my_float: 3.141
+my_int: 42
+my_str: hello
+partialint: 42
+stra:
+- five
+- six
+- seven
+subset_enum: Bbb
+uint8a: [0, 255]

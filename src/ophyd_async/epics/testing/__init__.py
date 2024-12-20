@@ -1,24 +1,24 @@
 from ._example_ioc import (
     CA_PVA_RECORDS,
     PVA_RECORDS,
-    ExampleCaDevice,
-    ExampleEnum,
-    ExamplePvaDevice,
-    ExampleTable,
-    connect_example_device,
-    get_example_ioc,
+    EpicsTestCaDevice,
+    EpicsTestEnum,
+    EpicsTestIocAndDevices,
+    EpicsTestPvaDevice,
+    EpicsTestSubsetEnum,
+    EpicsTestTable,
 )
-from ._utils import TestingIOC, generate_random_PV_prefix
+from ._utils import TestingIOC, generate_random_pv_prefix
 
 __all__ = [
     "CA_PVA_RECORDS",
     "PVA_RECORDS",
-    "ExampleCaDevice",
-    "ExampleEnum",
-    "ExamplePvaDevice",
-    "ExampleTable",
-    "connect_example_device",
-    "get_example_ioc",
+    "EpicsTestCaDevice",
+    "EpicsTestEnum",
+    "EpicsTestSubsetEnum",
+    "EpicsTestPvaDevice",
+    "EpicsTestTable",
+    "EpicsTestIocAndDevices",
     "TestingIOC",
-    "generate_random_PV_prefix",
+    "generate_random_pv_prefix",
 ]
