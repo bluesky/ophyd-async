@@ -70,15 +70,3 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
         else:
             return (AravisTriggerMode.ON, f"Line{self.gpio_number}")  # type: ignore
 
-    def get_external_trigger_gpio(self):
-        return self.gpio_number
-
-    def set_external_trigger_gpio(self, gpio_number: GPIO_NUMBER):
-        supported_gpio_numbers = get_args(AravisController.GPIO_NUMBER)
-        if gpio_number not in supported_gpio_numbers:
-            raise ValueError(
-                f"{self.__class__.__name__} only supports the following GPIO "
-                f"indices: {supported_gpio_numbers} but was asked to "
-                f"use {gpio_number}"
-            )
-        self.gpio_number = gpio_number
