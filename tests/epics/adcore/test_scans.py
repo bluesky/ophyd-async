@@ -18,7 +18,7 @@ from ophyd_async.core import (
     TriggerInfo,
     init_devices,
 )
-from ophyd_async.epics import adcore
+from ophyd_async.epics import adcore, adsimdetector
 from ophyd_async.testing import set_mock_value
 
 
@@ -53,11 +53,11 @@ class DummyController(DetectorController):
 
 
 @pytest.fixture
-def controller(RE) -> adcore.ADBaseController:
+def controller(RE) -> adsimdetector.SimController:
     with init_devices(mock=True):
         drv = adcore.ADBaseIO("DRV")
 
-    return adcore.ADBaseController(drv)
+    return adsimdetector.SimController(drv)
 
 
 @pytest.fixture
@@ -78,9 +78,9 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: adcore.ADHDFWriter,
-    controller: adcore.ADBaseController,
+    controller: adsimdetector.SimController,
 ):
-    set_mock_value(writer._fileio.file_path_exists, True)
+    set_mock_value(writer.fileio.file_path_exists, True)
     detector: StandardDetector[Any, Any] = StandardDetector(
         controller, writer, name="detector"
     )
@@ -96,7 +96,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     RE: RunEngine, writer: adcore.ADHDFWriter
 ):
     controller = DummyController()
-    set_mock_value(writer._fileio.file_path_exists, True)
+    set_mock_value(writer.fileio.file_path_exists, True)
 
     detector: StandardDetector[Any, Any] = StandardDetector(controller, writer)
     trigger_logic = DummyTriggerLogic()

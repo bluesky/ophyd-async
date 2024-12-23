@@ -29,7 +29,7 @@ async def test_get_deadtime(
 
 
 async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
-    driver = cast(advimba.VimbaDriverIO, test_advimba.drv)
+    driver = cast(advimba.VimbaDriverIO, test_advimba.driver)
 
     set_mock_value(driver.trigger_source, VimbaTriggerSource.FREERUN)
     set_mock_value(driver.trigger_mode, VimbaOnOff.OFF)

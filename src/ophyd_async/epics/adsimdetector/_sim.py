@@ -15,6 +15,9 @@ class SimController(adcore.ADBaseController[SimDriverIO]):
     ) -> None:
         super().__init__(driver, good_states=good_states)
 
+    def get_deadtime(self, exposure: float | None) -> float:
+        return 0.001
+
 
 class SimDetector(adcore.AreaDetector[SimController]):
     def __init__(
@@ -40,7 +43,6 @@ class SimDetector(adcore.AreaDetector[SimController]):
         )
 
         super().__init__(
-            driver=driver,
             controller=controller,
             writer=writer,
             plugins=plugins,

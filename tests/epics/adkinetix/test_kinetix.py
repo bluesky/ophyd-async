@@ -24,7 +24,7 @@ async def test_get_deadtime(
 
 
 async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
-    driver = cast(adkinetix.KinetixDriverIO, test_adkinetix.drv)
+    driver = cast(adkinetix.KinetixDriverIO, test_adkinetix.driver)
     set_mock_value(driver.trigger_mode, adkinetix.KinetixTriggerMode.INTERNAL)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):

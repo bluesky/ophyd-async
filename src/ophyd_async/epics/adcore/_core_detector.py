@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from ophyd_async.core import SignalR, StandardDetector
 
-from ._core_io import ADBaseIO, NDPluginBaseIO
+from ._core_io import NDPluginBaseIO
 from ._core_logic import ADBaseControllerT
 from ._core_writer import ADWriter
 
@@ -26,7 +26,7 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
         super().__init__(
             controller,
             writer,
-            (self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
+            (self.driver.acquire_period, self.driver.acquire_time, *config_sigs),
             name=name,
         )
 

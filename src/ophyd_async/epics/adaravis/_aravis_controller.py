@@ -1,5 +1,5 @@
 import asyncio
-from typing import Literal, TypeVar, get_args
+from typing import Literal, TypeVar
 
 from ophyd_async.core import (
     DetectorTrigger,
@@ -29,7 +29,6 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
         super().__init__(driver, good_states=good_states)
         self.gpio_number = gpio_number
 
-
     def get_deadtime(self, exposure: float | None) -> float:
         return _HIGHEST_POSSIBLE_DEADTIME
 
@@ -39,16 +38,16 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
         else:
             image_mode = adcore.ImageMode.MULTIPLE
         if (exposure := trigger_info.livetime) is not None:
-            await self._driver.acquire_time.set(exposure)
+            await self.driver.acquire_time.set(exposure)
 
         trigger_mode, trigger_source = self._get_trigger_info(trigger_info.trigger)
         # trigger mode must be set first and on it's own!
-        await self._driver.trigger_mode.set(trigger_mode)
+        await self.driver.trigger_mode.set(trigger_mode)
 
         await asyncio.gather(
-            self._driver.trigger_source.set(trigger_source),
-            self._driver.num_images.set(trigger_info.total_number_of_triggers),
-            self._driver.image_mode.set(image_mode),
+            self.driver.trigger_source.set(trigger_source),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.image_mode.set(image_mode),
         )
 
     def _get_trigger_info(
@@ -69,4 +68,3 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
             return AravisTriggerMode.OFF, AravisTriggerSource.FREERUN
         else:
             return (AravisTriggerMode.ON, f"Line{self.gpio_number}")  # type: ignore
-
