@@ -38,7 +38,7 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
         else:
             image_mode = adcore.ImageMode.MULTIPLE
         if (exposure := trigger_info.livetime) is not None:
-            await self.driver.acquire_time.set(exposure)
+            asyncio.gather(self.driver.acquire_time.set(exposure))
 
         trigger_mode, trigger_source = self._get_trigger_info(trigger_info.trigger)
         # trigger mode must be set first and on it's own!
