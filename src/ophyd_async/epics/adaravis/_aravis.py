@@ -39,7 +39,6 @@ class AravisDetector(adcore.AreaDetector[AravisController]):
         )
 
         super().__init__(
-            driver=driver,
             controller=controller,
             writer=writer,
             plugins=plugins,

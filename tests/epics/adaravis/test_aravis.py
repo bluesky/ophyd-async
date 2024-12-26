@@ -1,4 +1,3 @@
-import re
 from typing import cast
 
 import pytest
@@ -26,7 +25,7 @@ async def test_deadtime_invariant_with_exposure_time(
 
 
 async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDetector):
-    driver = cast(adaravis.AravisDriverIO, test_adaravis.drv)
+    driver = cast(adaravis.AravisDriverIO, test_adaravis.driver)
     set_mock_value(driver.trigger_source, adaravis.AravisTriggerSource.FREERUN)
 
     async def trigger_and_complete():
@@ -44,7 +43,7 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
 
     # Default TriggerSource
     assert (await driver.trigger_source.get_value()) == "Freerun"
-    test_adaravis._controller.set_external_trigger_gpio(1)
+    test_adaravis._controller.gpio_number = 1
     # TriggerSource not changed by setting gpio
     assert (await driver.trigger_source.get_value()) == "Freerun"
 
@@ -53,24 +52,10 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
     # TriggerSource changes
     assert (await driver.trigger_source.get_value()) == "Line1"
 
-    test_adaravis._controller.set_external_trigger_gpio(3)
+    test_adaravis._controller.gpio_number = 3
     # TriggerSource not changed by setting gpio
     await trigger_and_complete()
     assert (await driver.trigger_source.get_value()) == "Line3"
-
-
-def test_gpio_pin_limited(test_adaravis: adaravis.AravisDetector):
-    assert test_adaravis._controller.get_external_trigger_gpio() == 1
-    test_adaravis._controller.set_external_trigger_gpio(2)
-    assert test_adaravis._controller.get_external_trigger_gpio() == 2
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "AravisController only supports the following GPIO indices: "
-            "(1, 2, 3, 4) but was asked to use 55"
-        ),
-    ):
-        test_adaravis._controller.set_external_trigger_gpio(55)  # type: ignore
 
 
 async def test_hints_from_hdf_writer(test_adaravis: adaravis.AravisDetector):

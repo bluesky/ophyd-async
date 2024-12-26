@@ -29,24 +29,21 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         driver: ADBaseIOT,
         good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
     ) -> None:
-        self._driver = driver
+        self.driver = driver
         self.good_states = good_states
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
-
-    def get_deadtime(self, exposure: float | None) -> float:
-        return 0.001
 
     async def prepare(self, trigger_info: TriggerInfo) -> None:
         assert (
             trigger_info.trigger == DetectorTrigger.INTERNAL
         ), "fly scanning (i.e. external triggering) is not supported for this device"
         self.frame_timeout = (
-            DEFAULT_TIMEOUT + await self._driver.acquire_time.get_value()
+            DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
         await asyncio.gather(
-            self._driver.num_images.set(trigger_info.total_number_of_triggers),
-            self._driver.image_mode.set(ImageMode.MULTIPLE),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.image_mode.set(ImageMode.MULTIPLE),
         )
 
     async def arm(self):
@@ -59,7 +56,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have
         # 2 or they will deadlock
-        await stop_busy_record(self._driver.acquire, False, timeout=1)
+        await stop_busy_record(self.driver.acquire, False, timeout=1)
 
     async def set_exposure_time_and_acquire_period_if_supplied(
         self,
@@ -81,8 +78,8 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         if exposure is not None:
             full_frame_time = exposure + self.get_deadtime(exposure)
             await asyncio.gather(
-                self._driver.acquire_time.set(exposure, timeout=timeout),
-                self._driver.acquire_period.set(full_frame_time, timeout=timeout),
+                self.driver.acquire_time.set(exposure, timeout=timeout),
+                self.driver.acquire_period.set(full_frame_time, timeout=timeout),
             )
 
     async def start_acquiring_driver_and_ensure_status(self) -> AsyncStatus:
@@ -101,7 +98,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         """
 
         status = await set_and_wait_for_value(
-            self._driver.acquire,
+            self.driver.acquire,
             True,
             timeout=DEFAULT_TIMEOUT,
             wait_for_set_completion=False,
@@ -111,7 +108,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
             """NOTE: possible race condition here between the callback from
             set_and_wait_for_value and the detector state updating."""
             await status
-            state = await self._driver.detector_state.get_value()
+            state = await self.driver.detector_state.get_value()
             if state not in self.good_states:
                 raise ValueError(
                     f"Final detector state {state.value} not "

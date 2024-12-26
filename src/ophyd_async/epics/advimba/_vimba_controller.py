@@ -36,17 +36,17 @@ class VimbaController(adcore.ADBaseController[VimbaDriverIO]):
 
     async def prepare(self, trigger_info: TriggerInfo):
         await asyncio.gather(
-            self._driver.trigger_mode.set(TRIGGER_MODE[trigger_info.trigger]),
-            self._driver.exposure_mode.set(EXPOSE_OUT_MODE[trigger_info.trigger]),
-            self._driver.num_images.set(trigger_info.total_number_of_triggers),
-            self._driver.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.trigger_mode.set(TRIGGER_MODE[trigger_info.trigger]),
+            self.driver.exposure_mode.set(EXPOSE_OUT_MODE[trigger_info.trigger]),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
         )
         if trigger_info.livetime is not None and trigger_info.trigger not in [
             DetectorTrigger.VARIABLE_GATE,
             DetectorTrigger.CONSTANT_GATE,
         ]:
-            await self._driver.acquire_time.set(trigger_info.livetime)
+            await self.driver.acquire_time.set(trigger_info.livetime)
         if trigger_info.trigger != DetectorTrigger.INTERNAL:
-            self._driver.trigger_source.set(VimbaTriggerSource.LINE1)
+            self.driver.trigger_source.set(VimbaTriggerSource.LINE1)
         else:
-            self._driver.trigger_source.set(VimbaTriggerSource.FREERUN)
+            self.driver.trigger_source.set(VimbaTriggerSource.FREERUN)

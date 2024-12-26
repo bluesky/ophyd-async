@@ -54,7 +54,7 @@ def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
     for _ in range(times):
         read_values = {}
         for det in dets:
-            read_values[det] = yield from bps.rd(det._writer._fileio.num_captured)
+            read_values[det] = yield from bps.rd(det._writer.fileio.num_captured)
 
         for det in dets:
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
@@ -62,7 +62,7 @@ def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
         yield from bps.sleep(1.0)
         [
             set_mock_value(
-                det._writer._fileio.num_captured,
+                det._writer.fileio.num_captured,
                 read_values[det] + 1,
             )
             for det in dets
@@ -154,7 +154,7 @@ async def test_two_detectors_step(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     [
-        set_mock_value(det._writer._fileio.file_path_exists, True)
+        set_mock_value(det.fileio.file_path_exists, True)
         for det in two_test_adsimdetectors
     ]
 
@@ -170,26 +170,26 @@ async def test_two_detectors_step(
         nonlocal file_name_a, file_name_b
         yield from count_sim(two_test_adsimdetectors, times=1)
 
-        drv = controller_a._driver
+        drv = controller_a.driver
         assert False is (yield from bps.rd(drv.acquire))
         assert adcore.ImageMode.MULTIPLE == (yield from bps.rd(drv.image_mode))
 
-        hdfb = cast(adcore.NDFileHDFIO, writer_b._fileio)
+        hdfb = cast(adcore.NDFileHDFIO, writer_b.fileio)
         assert True is (yield from bps.rd(hdfb.lazy_open))
         assert True is (yield from bps.rd(hdfb.swmr_mode))
         assert 0 == (yield from bps.rd(hdfb.num_capture))
         assert adcore.FileWriteMode.STREAM == (yield from bps.rd(hdfb.file_write_mode))
 
-        assert (yield from bps.rd(writer_a._fileio.file_path)) == str(
+        assert (yield from bps.rd(writer_a.fileio.file_path)) == str(
             info_a.directory_path
         )
-        file_name_a = yield from bps.rd(writer_a._fileio.file_name)
+        file_name_a = yield from bps.rd(writer_a.fileio.file_name)
         assert file_name_a == info_a.filename
 
-        assert (yield from bps.rd(writer_b._fileio.file_path)) == str(
+        assert (yield from bps.rd(writer_b.fileio.file_path)) == str(
             info_b.directory_path
         )
-        file_name_b = yield from bps.rd(writer_b._fileio.file_name)
+        file_name_b = yield from bps.rd(writer_b.fileio.file_name)
         assert file_name_b == info_b.filename
 
     RE(plan())
@@ -206,10 +206,10 @@ async def test_two_detectors_step(
 
     _, descriptor, sra, sda, srb, sdb, event, _ = docs
     assert descriptor["configuration"]["test_adsim1"]["data"][
-        "test_adsim1-drv-acquire_time"
+        "test_adsim1-driver-acquire_time"
     ] == pytest.approx(0.8)
     assert descriptor["configuration"]["test_adsim2"]["data"][
-        "test_adsim2-drv-acquire_time"
+        "test_adsim2-driver-acquire_time"
     ] == pytest.approx(1.8)
     assert descriptor["data_keys"]["test_adsim1"]["shape"] == [10, 10]
     assert descriptor["data_keys"]["test_adsim2"]["shape"] == [11, 11]
@@ -247,15 +247,13 @@ async def test_detector_writes_to_file(
     RE.subscribe(lambda name, _: names.append(name))
     RE.subscribe(lambda _, doc: docs.append(doc))
     set_mock_value(
-        test_adsimdetector._writer._fileio.file_path_exists,
+        test_adsimdetector.fileio.file_path_exists,
         True,
     )
 
     RE(count_sim([test_adsimdetector], times=3))
 
-    assert await test_adsimdetector._writer._fileio.file_path.get_value() == str(
-        tmp_path
-    )
+    assert await test_adsimdetector.fileio.file_path.get_value() == str(tmp_path)
 
     descriptor_index = names.index("descriptor")
 
@@ -285,13 +283,13 @@ async def test_read_and_describe_detector(
     describe = await test_adsimdetector.describe_configuration()
     read = await test_adsimdetector.read_configuration()
     assert describe == {
-        "test_adsim1-drv-acquire_time": {
+        "test_adsim1-driver-acquire_time": {
             "source": "mock+ca://SIM1:cam1:AcquireTime_RBV",
             "dtype": "number",
             "dtype_numpy": "<f8",
             "shape": [],
         },
-        "test_adsim1-drv-acquire_period": {
+        "test_adsim1-driver-acquire_period": {
             "source": "mock+ca://SIM1:cam1:AcquirePeriod_RBV",
             "dtype": "number",
             "dtype_numpy": "<f8",
@@ -299,12 +297,12 @@ async def test_read_and_describe_detector(
         },
     }
     assert read == {
-        "test_adsim1-drv-acquire_time": {
+        "test_adsim1-driver-acquire_time": {
             "value": 0.8,
             "timestamp": pytest.approx(time.monotonic(), rel=1e-2),
             "alarm_severity": 0,
         },
-        "test_adsim1-drv-acquire_period": {
+        "test_adsim1-driver-acquire_period": {
             "value": 1.0,
             "timestamp": pytest.approx(time.monotonic(), rel=1e-2),
             "alarm_severity": 0,
@@ -360,11 +358,11 @@ def test_detector_with_unnamed_or_disconnected_config_sigs(
         name="foo",
     )
 
-    det._config_sigs = [some_other_driver.acquire_time, det.drv.acquire]
+    det._config_sigs = [some_other_driver.acquire_time, det.driver.acquire]
 
     def my_plan():
         yield from ops.ensure_connected(det, mock=True)
-        assert det.drv.acquire.name == "foo-drv-acquire"
+        assert det.driver.acquire.name == "foo-driver-acquire"
         assert some_other_driver.acquire_time.name == (
             driver_name + "-acquire_time" if driver_name else ""
         )
@@ -390,7 +388,7 @@ async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
         await ad.arm()
         await ad.wait_for_idle()
 
-    driver = ad._driver
+    driver = ad.driver
     assert await driver.num_images.get_value() == 1
     assert await driver.image_mode.get_value() == adcore.ImageMode.MULTIPLE
     assert await driver.acquire.get_value() is True

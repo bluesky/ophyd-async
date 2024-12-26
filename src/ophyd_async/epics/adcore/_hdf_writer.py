@@ -54,13 +54,13 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         # Setting HDF writer specific signals
 
         # Make sure we are using chunk auto-sizing
-        await asyncio.gather(self._fileio.chunk_size_auto.set(True))
+        await asyncio.gather(self.fileio.chunk_size_auto.set(True))
 
         await asyncio.gather(
-            self._fileio.num_extra_dims.set(0),
-            self._fileio.lazy_open.set(True),
-            self._fileio.swmr_mode.set(True),
-            self._fileio.xml_file_name.set(""),
+            self.fileio.num_extra_dims.set(0),
+            self.fileio.lazy_open.set(True),
+            self.fileio.swmr_mode.set(True),
+            self.fileio.xml_file_name.set(""),
         )
 
         # By default, don't add file number to filename
@@ -77,7 +77,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._frequency_ratio = frequency_ratio
 
         # Determine number of frames that will be saved per HDF chunk
-        frames_per_chunk = await self._fileio.num_frames_chunks.get_value()
+        frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
 
         # Add the main data
         self._datasets = [
@@ -91,40 +91,39 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             )
         ]
         # And all the scalar datasets
-        if self._plugins is not None:
-            for plugin in self._plugins.values():
-                maybe_xml = await plugin.nd_attributes_file.get_value()
-                # This is the check that ADCore does to see if it is an XML string
-                # rather than a filename to parse
-                if "<Attributes>" in maybe_xml:
-                    root = ET.fromstring(maybe_xml)
-                    for child in root:
-                        datakey = child.attrib["name"]
-                        if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
-                            np_datatype = convert_pv_dtype_to_np(
-                                child.attrib.get("dbrtype", "DBR_NATIVE")
-                            )
-                        else:
-                            np_datatype = convert_param_dtype_to_np(
-                                child.attrib.get("datatype", "INT")
-                            )
-                        self._datasets.append(
-                            HDFDataset(
-                                datakey,
-                                f"/entry/instrument/NDAttributes/{datakey}",
-                                (),
-                                np_datatype,
-                                frequency_ratio,
-                                # NDAttributes appear to always be configured with
-                                # this chunk size
-                                chunk_shape=(16384,),
-                            )
+        for plugin in self._plugins.values():
+            maybe_xml = await plugin.nd_attributes_file.get_value()
+            # This is the check that ADCore does to see if it is an XML string
+            # rather than a filename to parse
+            if "<Attributes>" in maybe_xml:
+                root = ET.fromstring(maybe_xml)
+                for child in root:
+                    datakey = child.attrib["name"]
+                    if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
+                        np_datatype = convert_pv_dtype_to_np(
+                            child.attrib.get("dbrtype", "DBR_NATIVE")
                         )
+                    else:
+                        np_datatype = convert_param_dtype_to_np(
+                            child.attrib.get("datatype", "INT")
+                        )
+                    self._datasets.append(
+                        HDFDataset(
+                            datakey,
+                            f"/entry/instrument/NDAttributes/{datakey}",
+                            (),
+                            np_datatype,
+                            multiplier,
+                            # NDAttributes appear to always be configured with
+                            # this chunk size
+                            chunk_shape=(16384,),
+                        )
+                    )
 
         describe = {
             ds.data_key: DataKey(
-                source=self._fileio.full_file_name.source,
-                shape=list((frequency_ratio,) + tuple(ds.shape)),
+                source=self.fileio.full_file_name.source,
+                shape=list(outer_shape + tuple(ds.shape)),
                 dtype="array" if ds.shape else "number",
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
@@ -137,10 +136,10 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
-        await self._fileio.flush_now.set(True)
+        await self.fileio.flush_now.set(True)
         if indices_written:
             if not self._file:
-                path = Path(await self._fileio.full_file_name.get_value())
+                path = Path(await self.fileio.full_file_name.get_value())
                 self._file = HDFFile(
                     # See https://github.com/bluesky/ophyd-async/issues/122
                     path,
@@ -157,8 +156,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
-        await self._fileio.capture.set(False, wait=False)
-        await wait_for_value(self._fileio.capture, False, DEFAULT_TIMEOUT)
+        await self.fileio.capture.set(False, wait=False)
+        await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
         if self._capture_status:
             # We kicked off an open, so wait for it to return
             await self._capture_status

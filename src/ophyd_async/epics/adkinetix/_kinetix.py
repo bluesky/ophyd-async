@@ -41,7 +41,6 @@ class KinetixDetector(AreaDetector[KinetixController]):
         )
 
         super().__init__(
-            driver=driver,
             controller=controller,
             writer=writer,
             plugins=plugins,

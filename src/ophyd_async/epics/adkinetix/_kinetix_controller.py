@@ -29,14 +29,14 @@ class KinetixController(adcore.ADBaseController[KinetixDriverIO]):
 
     async def prepare(self, trigger_info: TriggerInfo):
         await asyncio.gather(
-            self._driver.trigger_mode.set(
+            self.driver.trigger_mode.set(
                 KINETIX_TRIGGER_MODE_MAP[trigger_info.trigger]
             ),
-            self._driver.num_images.set(trigger_info.total_number_of_triggers),
-            self._driver.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
         )
         if trigger_info.livetime is not None and trigger_info.trigger not in [
             DetectorTrigger.VARIABLE_GATE,
             DetectorTrigger.CONSTANT_GATE,
         ]:
-            await self._driver.acquire_time.set(trigger_info.livetime)
+            await self.driver.acquire_time.set(trigger_info.livetime)

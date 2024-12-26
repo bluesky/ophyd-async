@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from ophyd_async.core import SignalR, StandardDetector
 
-from ._core_io import ADBaseIO, NDPluginBaseIO
+from ._core_io import NDPluginBaseIO
 from ._core_logic import ADBaseControllerT
 from ._core_writer import ADWriter
 
@@ -10,15 +10,14 @@ from ._core_writer import ADWriter
 class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
     def __init__(
         self,
-        driver: ADBaseIO,
         controller: ADBaseControllerT,
         writer: ADWriter,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
-        self.drv = driver
-        self.fileio = writer._fileio  # noqa: SLF001
+        self.driver = controller.driver
+        self.fileio = writer.fileio
 
         if plugins is not None:
             for name, plugin in plugins.items():
@@ -27,7 +26,7 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
         super().__init__(
             controller,
             writer,
-            (self.drv.acquire_period, self.drv.acquire_time, *config_sigs),
+            (self.driver.acquire_period, self.driver.acquire_time, *config_sigs),
             name=name,
         )
 

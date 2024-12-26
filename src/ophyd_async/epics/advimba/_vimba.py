@@ -35,7 +35,6 @@ class VimbaDetector(adcore.AreaDetector[VimbaController]):
         )
 
         super().__init__(
-            driver=driver,
             controller=controller,
             writer=writer,
             plugins=plugins,

@@ -68,13 +68,13 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
                 trigger_info.livetime
             )
         await asyncio.gather(
-            self._driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
-            self._driver.num_images.set(
+            self.driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
+            self.driver.num_images.set(
                 999_999
                 if trigger_info.total_number_of_triggers == 0
                 else trigger_info.total_number_of_triggers
             ),
-            self._driver.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
         )
 
     async def arm(self):
@@ -85,7 +85,7 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
         # is actually ready. Should wait for that too or we risk dropping
         # a frame
         await wait_for_value(
-            self._driver.armed,
+            self.driver.armed,
             True,
             timeout=DEFAULT_TIMEOUT,
         )

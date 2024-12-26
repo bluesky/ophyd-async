@@ -6,7 +6,7 @@ import pytest
 from ophyd_async.core import (
     init_devices,
 )
-from ophyd_async.epics import adcore
+from ophyd_async.epics import adcore, adsimdetector
 from ophyd_async.testing import get_mock_put, set_mock_value
 
 TEST_DEADTIME = 0.1
@@ -20,14 +20,14 @@ def driver(RE) -> adcore.ADBaseIO:
 
 
 @pytest.fixture
-async def controller(RE, driver: adcore.ADBaseIO) -> adcore.ADBaseController:
-    controller = adcore.ADBaseController(driver)
+async def controller(RE, driver: adcore.ADBaseIO) -> adsimdetector.SimController:
+    controller = adsimdetector.SimController(driver)
     controller.get_deadtime = lambda exposure: TEST_DEADTIME
     return controller
 
 
 async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_exposure_supplied(  # noqa: E501
-    controller: adcore.ADBaseController,
+    controller: adsimdetector.SimController,
     driver: adcore.ADBaseIO,
 ):
     put_exposure = get_mock_put(driver.acquire_time)
@@ -47,22 +47,22 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_
     ],
 )
 async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
-    controller: adcore.ADBaseController,
+    controller: adsimdetector.SimController,
     exposure: float,
     expected_exposure: float,
     expected_acquire_period: float,
 ):
     await controller.set_exposure_time_and_acquire_period_if_supplied(exposure)
-    actual_exposure = await controller._driver.acquire_time.get_value()
-    actual_acquire_period = await controller._driver.acquire_period.get_value()
+    actual_exposure = await controller.driver.acquire_time.get_value()
+    actual_acquire_period = await controller.driver.acquire_period.get_value()
     assert expected_exposure == actual_exposure
     assert expected_acquire_period == actual_acquire_period
 
 
 async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
-    controller: adcore.ADBaseController,
+    controller: adsimdetector.SimController,
 ):
-    set_mock_value(controller._driver.detector_state, adcore.DetectorState.ERROR)
+    set_mock_value(controller.driver.detector_state, adcore.DetectorState.ERROR)
     acquiring = await controller.start_acquiring_driver_and_ensure_status()
     with pytest.raises(ValueError):
         await acquiring
@@ -70,19 +70,19 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
 
 @patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
 async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
-    controller: adcore.ADBaseController,
+    controller: adsimdetector.SimController,
 ):
     """This test ensures a failing status is captured halfway through acquisition.
 
     Real world application; it takes some time to start acquiring, and during that time
     the detector gets itself into a bad state.
     """
-    set_mock_value(controller._driver.detector_state, adcore.DetectorState.IDLE)
+    set_mock_value(controller.driver.detector_state, adcore.DetectorState.IDLE)
 
     async def wait_then_fail():
         await asyncio.sleep(0)
         set_mock_value(
-            controller._driver.detector_state, adcore.DetectorState.DISCONNECTED
+            controller.driver.detector_state, adcore.DetectorState.DISCONNECTED
         )
 
     await wait_then_fail()

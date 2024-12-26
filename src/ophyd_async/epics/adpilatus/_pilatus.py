@@ -38,7 +38,6 @@ class PilatusDetector(AreaDetector[PilatusController]):
         )
 
         super().__init__(
-            driver=driver,
             controller=controller,
             writer=writer,
             plugins=plugins,
