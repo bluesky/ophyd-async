@@ -76,7 +76,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_adaravis.describe() == {
         "test_adaravis1": {
             "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [1, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -124,7 +124,7 @@ async def test_can_decribe_collect(
     assert (await test_adaravis.describe_collect()) == {
         "test_adaravis1": {
             "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [1, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

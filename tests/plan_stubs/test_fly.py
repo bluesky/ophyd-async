@@ -44,6 +44,7 @@ class DummyWriter(DetectorWriter):
         self._name = name
         self._file: ComposeStreamResourceBundle | None = None
         self._last_emitted = 0
+        self._batch_size = 1
         self.index = 0
         self.observe_indices_written_timeout_log = []
 

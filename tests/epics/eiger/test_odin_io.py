@@ -52,7 +52,7 @@ async def test_given_data_shape_set_when_open_called_then_describe_has_correct_s
     set_mock_value(driver.image_width, 1024)
     set_mock_value(driver.image_height, 768)
     description = await writer.open()
-    assert description["data"]["shape"] == [768, 1024]
+    assert description["data"]["shape"] == [1, 768, 1024]
 
 
 async def test_when_closed_then_data_capture_turned_off(
