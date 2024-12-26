@@ -5,7 +5,7 @@ from typing import Generic, TypeVar, get_args
 from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
-from event_model import ( # type: ignore
+from event_model import (  # type: ignore
     ComposeStreamResource,
     DataKey,
     StreamRange,
@@ -135,7 +135,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         describe = {
             self._name_provider(): DataKey(
                 source=self._name_provider(),
-                shape=list((batch_size,) + frame_shape),
+                shape=list((batch_size, *frame_shape)),
                 dtype="array",
                 dtype_numpy=dtype_numpy,
                 external="STREAM:",

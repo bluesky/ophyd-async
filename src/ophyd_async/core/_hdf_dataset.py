@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlunparse
 
-from event_model import ( # type: ignore
+from event_model import (  # type: ignore
     ComposeStreamResource,
     ComposeStreamResourceBundle,
     StreamDatum,
