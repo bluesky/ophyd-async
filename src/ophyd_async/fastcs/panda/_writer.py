@@ -34,7 +34,6 @@ class PandaHDFWriter(DetectorWriter):
         self._name_provider = name_provider
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
-        self._batch_size = 1
 
     # Triggered on PCAP arm
     async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
@@ -84,7 +83,8 @@ class PandaHDFWriter(DetectorWriter):
         describe = {
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
-                shape=list((self._batch_size, *ds.shape)),
+                # batch_size is always 1 for PandA
+                shape=list((1, *ds.shape)),
                 dtype="array" if ds.shape != [1] else "number",
                 # PandA data should always be written as Float64
                 dtype_numpy="<f8",
@@ -141,7 +141,7 @@ class PandaHDFWriter(DetectorWriter):
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):
-            yield num_captured // self._batch_size
+            yield num_captured
 
     async def collect_stream_docs(
         self, indices_written: int

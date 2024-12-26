@@ -2,7 +2,7 @@ import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
 
 from bluesky.protocols import StreamAsset
-from event_model import DataKey
+from event_model import DataKey # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -114,10 +114,10 @@ class OdinWriter(DetectorWriter):
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(self._drv.num_captured, timeout):
-            yield num_captured
+            yield num_captured // self._batch_size
 
     async def get_indices_written(self) -> int:
-        return await self._drv.num_captured.get_value()
+        return await self._drv.num_captured.get_value() // self._batch_size
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
         # TODO: Correctly return stream https://github.com/bluesky/ophyd-async/issues/530

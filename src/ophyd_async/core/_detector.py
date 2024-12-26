@@ -329,6 +329,9 @@ class StandardDetector(
             if isinstance(self._trigger_info.number_of_triggers, list)
             else [self._trigger_info.number_of_triggers]
         )
+        # TODO: How can we get the indices written prior to opening the writer?
+        # This is a problem since the `get_indices_written` needs to know the batch_size
+        # to return the correct number of indices written.
         self._initial_frame = await self._writer.get_indices_written()
         self._describe, _ = await asyncio.gather(
             self._writer.open(value.batch_size), self._controller.prepare(value)

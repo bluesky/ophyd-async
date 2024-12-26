@@ -6,7 +6,7 @@ import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource
+from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -38,13 +38,13 @@ from ophyd_async.testing import set_mock_value
 
 
 class DummyWriter(DetectorWriter):
-    def __init__(self, name: str, shape: Sequence[int]):
+    def __init__(self, name: str, shape: Sequence[int], batch_size: int = 1):
         self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
+        self._batch_size = batch_size
         self._file: ComposeStreamResourceBundle | None = None
         self._last_emitted = 0
-        self._batch_size = 1
         self.index = 0
         self.observe_indices_written_timeout_log = []
 

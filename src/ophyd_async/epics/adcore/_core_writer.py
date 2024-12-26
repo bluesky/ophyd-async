@@ -5,11 +5,7 @@ from typing import Generic, TypeVar, get_args
 from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
-from event_model import (  # type: ignore
-    ComposeStreamResource,
-    DataKey,
-    StreamRange,
-)
+from event_model import DataKey, ComposeStreamResource, StreamRange  # type: ignore
 
 from ophyd_async.core._detector import DetectorWriter
 from ophyd_async.core._providers import DatasetDescriber, NameProvider, PathProvider
@@ -181,10 +177,14 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                 self._emitted_resource = bundler_composer(
                     mimetype=self._mimetype,
                     uri=uri,
+                    # TODO: This is confusing, I expected this to be of type `DataKey`
+                    # but it is a string. Naming could be improved maybe?
                     data_key=self._name_provider(),
+                    # Q: What are the parameters used for? Extra info?
                     parameters={
-                        # Assume that we always write 1 frame per file/chunk
-                        "chunk_shape": (1, *frame_shape),
+                        # TODO: Validate this assumption and that it should not be self._batch_size
+                        # Assume that we always write self._batch_size frames per file/chunk
+                        "chunk_shape": (self._batch_size, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
                     },
