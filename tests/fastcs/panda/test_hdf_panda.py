@@ -146,7 +146,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
             "parameters": {
                 "dataset": f"/{dataset_name}",
                 "swmr": False,
-                "multiplier": 1,
+                "batch_size": 1,
                 "chunk_shape": (1024,),
             },
         }

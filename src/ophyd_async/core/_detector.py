@@ -21,7 +21,7 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
-from event_model import DataKey
+from event_model import DataKey # type: ignore
 from pydantic import BaseModel, Field, NonNegativeInt, computed_field
 
 from ._device import Device, DeviceConnector
@@ -65,7 +65,7 @@ class TriggerInfo(BaseModel):
     livetime: float | None = Field(default=None, ge=0)
     #: What is the maximum timeout on waiting for a frame
     frame_timeout: float | None = Field(default=None, gt=0)
-    #: The number of triggers are grouped into a single StreamDatum index.
+    #: The number of triggers that are grouped into a single StreamDatum index.
     #: A batch_size > 1 can be useful to have frames from a faster detector able to be zipped with a single frame from a slower detector.
     #: E.g. if number_of_triggers=10 and batch_size=5 then the detector will take 10 frames,
     #: but publish 2 StreamDatum indices, and describe() will show a shape of (5, h, w) for each.

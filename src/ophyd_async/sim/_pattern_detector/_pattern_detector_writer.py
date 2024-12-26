@@ -20,9 +20,9 @@ class PatternDetectorWriter(DetectorWriter):
         self.path_provider = path_provider
         self.name_provider = name_provider
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
         return await self.pattern_generator.open_file(
-            self.path_provider, self.name_provider(), multiplier
+            self.path_provider, self.name_provider(), batch_size
         )
 
     async def close(self) -> None:

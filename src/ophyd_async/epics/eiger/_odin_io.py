@@ -77,8 +77,9 @@ class OdinWriter(DetectorWriter):
         self._name_provider = name_provider
         super().__init__()
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=self._name_provider())
+        self._batch_size = batch_size
 
         await asyncio.gather(
             self._drv.file_path.set(str(info.directory_path)),
@@ -101,7 +102,7 @@ class OdinWriter(DetectorWriter):
         return {
             "data": DataKey(
                 source=self._drv.file_name.source,
-                shape=list(data_shape),
+                shape=list((self._batch_size, *data_shape)),
                 dtype="array",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
                 dtype_numpy="<u2",

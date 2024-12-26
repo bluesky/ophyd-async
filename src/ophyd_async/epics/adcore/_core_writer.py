@@ -5,7 +5,7 @@ from typing import Generic, TypeVar, get_args
 from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
-from event_model import (
+from event_model import ( # type: ignore
     ComposeStreamResource,
     DataKey,
     StreamRange,
@@ -148,11 +148,11 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected"""
         async for num_captured in observe_value(self.fileio.num_captured, timeout):
-            yield num_captured // self._multiplier
+            yield num_captured // self._batch_size
 
     async def get_indices_written(self) -> int:
         num_captured = await self.fileio.num_captured.get_value()
-        return num_captured // self._multiplier
+        return num_captured // self._batch_size
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -183,7 +183,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                     uri=uri,
                     data_key=self._name_provider(),
                     parameters={
-                        # TODO: Is the following assumption accurate or should this be `self._batch_size`?
                         # Assume that we always write 1 frame per file/chunk
                         "chunk_shape": (1, *frame_shape),
                         # Include file template for reconstruction in consolidator

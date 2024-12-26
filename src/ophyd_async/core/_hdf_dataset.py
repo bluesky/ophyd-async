@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlunparse
 
-from event_model import (
+from event_model import ( # type: ignore
     ComposeStreamResource,
     ComposeStreamResourceBundle,
     StreamDatum,
@@ -18,7 +18,7 @@ class HDFDataset:
     dataset: str
     shape: Sequence[int] = field(default_factory=tuple)
     dtype_numpy: str = ""
-    frequency_ratio: int = 1
+    batch_size: int = 1
     swmr: bool = False
     # Represents explicit chunk size written to disk.
     chunk_shape: tuple[int, ...] = ()
@@ -67,7 +67,7 @@ class HDFFile:
                 parameters={
                     "dataset": ds.dataset,
                     "swmr": ds.swmr,
-                    "group_factor": ds.group_factor,
+                    "batch_size": ds.batch_size,
                     "chunk_shape": ds.chunk_shape,
                 },
                 uid=None,

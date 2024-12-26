@@ -149,7 +149,7 @@ async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_pat
     assert name == "data.h5"
 
 
-async def test_open_errors_when_multiplier_not_one(mock_writer: PandaHDFWriter):
+async def test_open_errors_when_batch_size_not_one(mock_writer: PandaHDFWriter):
     with pytest.raises(ValueError):
         await mock_writer.open(2)
 
@@ -191,7 +191,7 @@ async def test_collect_stream_docs(
             "parameters": {
                 "dataset": f"/{name}",
                 "swmr": False,
-                "multiplier": 1,
+                "batch_size": 1,
                 "chunk_shape": (1024,),
             },
         }
