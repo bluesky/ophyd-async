@@ -5,7 +5,11 @@ from typing import Generic, TypeVar, get_args
 from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
-from event_model import DataKey, ComposeStreamResource, StreamRange  # type: ignore
+from event_model import (  # type: ignore
+    ComposeStreamResource,
+    DataKey,
+    StreamRange,
+)
 
 from ophyd_async.core._detector import DetectorWriter
 from ophyd_async.core._providers import DatasetDescriber, NameProvider, PathProvider
@@ -91,6 +95,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
+        # TODO: This is not actually creating the directory, it's just setting the depth
         await self.fileio.create_directory.set(info.create_dir_depth)
 
         await asyncio.gather(
