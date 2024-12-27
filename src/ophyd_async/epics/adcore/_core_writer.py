@@ -55,7 +55,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._emitted_resource = None
 
         self._capture_status: AsyncStatus | None = None
-        self._batch_size = 1
         self._filename_template = "%s%s_%6.6d"
 
     @classmethod

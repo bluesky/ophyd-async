@@ -19,7 +19,6 @@ class PatternDetectorWriter(DetectorWriter):
         self.pattern_generator = pattern_generator
         self.path_provider = path_provider
         self.name_provider = name_provider
-        self._batch_size = 1
 
     async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
         self._batch_size = batch_size

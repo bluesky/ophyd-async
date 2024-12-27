@@ -38,11 +38,10 @@ from ophyd_async.testing import set_mock_value
 
 
 class DummyWriter(DetectorWriter):
-    def __init__(self, name: str, shape: Sequence[int], batch_size: int = 1):
+    def __init__(self, name: str, shape: Sequence[int]):
         self.dummy_signal = epics_signal_rw(int, "pva://read_pv")
         self._shape = shape
         self._name = name
-        self._batch_size = batch_size
         self._file: ComposeStreamResourceBundle | None = None
         self._last_emitted = 0
         self.index = 0
