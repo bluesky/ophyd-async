@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from ophyd_async.core import (
     AsyncReadable,

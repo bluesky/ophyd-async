@@ -23,7 +23,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adsimdetector
 
-
 PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
     Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
@@ -260,9 +259,9 @@ async def sim_detector(request: FixtureRequest):
         tmp_path (Path): Temporary directory for file writing
     """
     prefix = (
-        request.param[0] if isinstance(request.param, (list, tuple)) else request.param
+        request.param[0] if isinstance(request.param, list | tuple) else request.param
     )
-    name = request.param[1] if isinstance(request.param, (list, tuple)) else "test"
+    name = request.param[1] if isinstance(request.param, list | tuple) else "test"
     tmp_path = request.getfixturevalue("tmp_path")
 
     fp = StaticFilenameProvider(f"test-{new_uid()}")
