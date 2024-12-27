@@ -8,7 +8,9 @@ from ophyd_async.core import (
 from ophyd_async.sim import SimMotor
 
 
-@pytest.mark.parametrize("sim_detector", [("test", "test det", Path("/tmp"))], indirect=True)
+@pytest.mark.parametrize(
+    "sim_detector", [("test", "test det", Path("/tmp"))], indirect=True
+)
 async def test_readable(sim_detector):
     assert isinstance(SimMotor, AsyncReadable)
     assert isinstance(sim_detector, AsyncReadable)

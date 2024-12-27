@@ -249,20 +249,19 @@ def one_shot_trigger_info() -> TriggerInfo:
         livetime=None,
     )
 
+
 @pytest.fixture
 async def sim_detector(request: FixtureRequest):
     """Fixture that creates a simulated detector.
-    
-    Parameters
-    ----------
-    prefix : str
-        The PV prefix for the detector
-    name : str 
-        Name for the detector instance
-    tmp_path : Path
-        Temporary directory for file writing
+
+    Args:
+        prefix (str): The PV prefix for the detector
+        name (str): Name for the detector instance
+        tmp_path (Path): Temporary directory for file writing
     """
-    prefix = request.param[0] if isinstance(request.param, (list, tuple)) else request.param
+    prefix = (
+        request.param[0] if isinstance(request.param, (list, tuple)) else request.param
+    )
     name = request.param[1] if isinstance(request.param, (list, tuple)) else "test"
     tmp_path = request.getfixturevalue("tmp_path")
 
