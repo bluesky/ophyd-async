@@ -72,6 +72,7 @@ def _metadata_from_value(datatype: type[SignalDatatype], value: Any) -> SignalMe
         hasattr(display_data, "precision")
         and not isnan(display_data.precision)
         and specifier[-1] in _float_specifiers
+        and datatype is not int
     ):
         metadata["precision"] = display_data.precision
     if (limits := _limits_from_value(value)) and specifier[-1] in _number_specifiers:
@@ -93,14 +94,21 @@ class PvaConverter(Generic[SignalDatatypeT]):
         self.datatype = datatype
 
     def value(self, value: Any) -> SignalDatatypeT:
-        # for channel access ca_xxx classes, this
-        # invokes __pos__ operator to return an instance of
-        # the builtin base class
+        # Normally the value will be of the correct python type
         return value["value"]
 
     def write_value(self, value: Any) -> Any:
         # The pva library will do the conversion for us
         return value
+
+
+class PvaIntConverter(PvaConverter[int]):
+    def __init__(self):
+        super().__init__(int)
+
+    def value(self, value: Any) -> int:
+        # Convert to an int
+        return int(value["value"])
 
 
 class PvaLongStringConverter(PvaConverter[str]):
@@ -270,7 +278,7 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
         == 0
     ):
         # Allow int signals to represent float records when prec is 0
-        return PvaConverter(int)
+        return PvaIntConverter()
     elif inferred_datatype is str and (enum_cls := get_enum_cls(datatype)):
         # Allow strings to be used as enums until QSRV supports this
         return PvaConverter(str)

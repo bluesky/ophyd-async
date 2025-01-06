@@ -182,6 +182,7 @@ class MonitorQueue(AbstractContextManager):
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
+        expected_type = type(expected_value)
         if isinstance(expected_value, Table):
             expected_value = ApproxTable(expected_value)
         else:
@@ -191,6 +192,7 @@ class MonitorQueue(AbstractContextManager):
         reading = await self.signal.read()
         # Check they match what we expected
         assert value == expected_value
+        assert type(value) is expected_type
         expected_reading = {
             self.signal.name: {
                 "value": expected_value,

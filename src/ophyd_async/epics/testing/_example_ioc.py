@@ -36,6 +36,7 @@ class EpicsTestTable(Table):
 class EpicsTestCaDevice(EpicsDevice):
     my_int: A[SignalRW[int], PvSuffix("int")]
     my_float: A[SignalRW[float], PvSuffix("float")]
+    float_prec_0: A[SignalRW[int], PvSuffix("float_prec_0")]
     my_str: A[SignalRW[str], PvSuffix("str")]
     longstr: A[SignalRW[str], PvSuffix("longstr")]
     longstr2: A[SignalRW[str], PvSuffix("longstr2.VAL$")]
