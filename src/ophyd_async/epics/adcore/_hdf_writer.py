@@ -44,6 +44,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             file_extension=".h5",
             mimetype="application/x-hdf5",
         )
+        self.hdf = self.fileio
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
         self._include_file_number = False
