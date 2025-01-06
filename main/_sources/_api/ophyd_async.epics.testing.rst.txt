@@ -27,12 +27,12 @@
     .. autosummary::
         :nosignatures:
     
-        ExampleCaDevice
-        ExampleEnum
-        ExamplePvaDevice
-        connect_example_device
-        get_example_ioc
+        EpicsTestCaDevice
+        EpicsTestEnum
+        EpicsTestSubsetEnum
+        EpicsTestPvaDevice
+        EpicsTestIocAndDevices
         TestingIOC
-        generate_random_PV_prefix
+        generate_random_pv_prefix
     
     
