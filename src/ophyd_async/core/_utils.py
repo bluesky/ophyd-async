@@ -189,7 +189,7 @@ def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
     if datatype and issubclass(datatype, Enum):
         if not issubclass(datatype, StrictEnum):
             raise TypeError(
-                f"{datatype} should inherit from .SubsetEnum "
+                f"{datatype} should inherit from ophyd_async.core.SubsetEnum "
                 "or ophyd_async.core.StrictEnum"
             )
         return datatype
