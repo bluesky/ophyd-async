@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>9. Procedural vs Declarative Devices &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
+    <title>9. Procedural vs Declarative Devices &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
   
   
   
@@ -30,7 +30,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=1d9f009f"></script>
+    <script src="../../_static/documentation_options.js?v=4881ec4e"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -130,8 +130,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
   
   
 </a></div>
@@ -499,8 +499,8 @@
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading">#</a></h2>
 <p>In <a class="reference internal" href="0006-procedural-device-definitions.html"><span class="std std-doc">6. Procedural Device Definitions</span></a> we decided we preferred the procedural approach to devices, because of the issue of applying structure like <code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code>. Since then we have <code class="docutils literal notranslate"><span class="pre">FastCS</span></code> and <code class="docutils literal notranslate"><span class="pre">Tango</span></code> support which use a declarative approach. We need to decide whether we are happy with this situation, or whether we should go all in one way or the other. A suitable test Device would be:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EpicsProceduralDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_values</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EpicsProceduralDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_values</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
                 <span class="p">{</span>
@@ -514,14 +514,14 @@
 </pre></div>
 </div>
 <p>and a Tango/FastCS procedural equivalent would be (if we add support to StandardReadable for Format.HINTED_SIGNAL and Format.CONFIG_SIGNAL annotations):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TangoDeclarativeDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">TangoDevice</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TangoDeclarativeDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">TangoDevice</span><span class="p">):</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">DeviceVector</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>But we could specify the Tango one procedurally (with some slight ugliness around the DeviceVector):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TangoProceduralDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TangoProceduralDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="n">tango_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">)})</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">ConfigSignal</span><span class="p">):</span>
@@ -530,7 +530,7 @@
 </pre></div>
 </div>
 <p>or the EPICS one could be declarative:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EpicsDeclarativeDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EpicsDeclarativeDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span>
         <span class="n">DeviceVector</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">,</span> <span class="n">EpicsSuffix</span><span class="p">(</span><span class="s2">&quot;Value</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;num_values&quot;</span><span class="p">)</span>
     <span class="p">]</span>
@@ -543,15 +543,15 @@
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading">#</a></h2>
 <p>We decided that the declarative approach is to be preferred until we need to write formatted strings. At that point we should drop to an <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method and a for loop. This is not a step towards only supporting the declarative approach and there are no plans to drop the procedural approach.</p>
 <p>The two approaches now look like:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A sim sensor that produces a scalar value based on X and Y Movers&quot;&quot;&quot;</span>
 
     <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
 
 
-<span class="k">class</span> <span class="nc">SensorGroup</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sensor_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SensorGroup</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sensor_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sensors</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
                 <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">Sensor</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sensor_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span>
@@ -577,9 +577,9 @@
 <h2>Epics <code class="docutils literal notranslate"><span class="pre">signal</span></code> module moves<a class="headerlink" href="#epics-signal-module-moves" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code> moves to <code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code> with a backwards compat module that emits deprecation warning.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics.signal</span> <span class="kn">import</span> <span class="n">epics_signal_rw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">epics_signal_rw</span>
 <span class="c1"># new</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics.core</span> <span class="kn">import</span> <span class="n">epics_signal_rw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">epics_signal_rw</span>
 </pre></div>
 </div>
 </section>
@@ -587,16 +587,16 @@
 <h2><code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code> wrappers change to <code class="docutils literal notranslate"><span class="pre">StandardReadableFormat</span></code><a class="headerlink" href="#standardreadable-wrappers-change-to-standardreadableformat" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code> wrappers change to enum members of <code class="docutils literal notranslate"><span class="pre">StandardReadableFormat</span></code> (normally imported as <code class="docutils literal notranslate"><span class="pre">Format</span></code>)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">ConfigSignal</span><span class="p">,</span> <span class="n">HintedSignal</span>
-<span class="k">class</span> <span class="nc">MyDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigSignal</span><span class="p">,</span> <span class="n">HintedSignal</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">([</span><span class="n">sig1</span><span class="p">],</span> <span class="n">ConfigSignal</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">([</span><span class="n">sig2</span><span class="p">],</span> <span class="n">HintedSignal</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">([</span><span class="n">sig3</span><span class="p">],</span> <span class="n">HintedSignal</span><span class="o">.</span><span class="n">uncached</span><span class="p">)</span>
 <span class="c1"># new</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
-<span class="k">class</span> <span class="nc">MyDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyDevice</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">([</span><span class="n">sig1</span><span class="p">],</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">([</span><span class="n">sig2</span><span class="p">],</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_readables</span><span class="p">([</span><span class="n">sig3</span><span class="p">],</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_UNCACHED_SIGNAL</span>
@@ -606,22 +606,22 @@
 <section id="declarative-devices-are-now-available">
 <h2>Declarative Devices are now available<a class="headerlink" href="#declarative-devices-are-now-available" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">ConfigSignal</span><span class="p">,</span> <span class="n">HintedSignal</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics.signal</span> <span class="kn">import</span> <span class="n">epics_signal_r</span><span class="p">,</span> <span class="n">epics_signal_rw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigSignal</span><span class="p">,</span> <span class="n">HintedSignal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">epics_signal_r</span><span class="p">,</span> <span class="n">epics_signal_rw</span>
 
-<span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">HintedSignal</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Value&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">ConfigSignal</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">EnergyMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Mode&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="c1"># new</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics.core</span> <span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">,</span> <span class="n">epics_signal_r</span><span class="p">,</span> <span class="n">epics_signal_rw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">,</span> <span class="n">epics_signal_r</span><span class="p">,</span> <span class="n">epics_signal_rw</span>
 
-<span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
 </pre></div>

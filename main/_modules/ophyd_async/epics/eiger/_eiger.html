@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.eiger._eiger &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
+    <title>ophyd_async.epics.eiger._eiger &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=1d9f009f"></script>
+    <script src="../../../../_static/documentation_options.js?v=4881ec4e"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -135,8 +135,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
   
   
 </a></div>
@@ -464,22 +464,22 @@ window.addEventListener("load", () => mermaid.run());
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.eiger._eiger</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">StandardDetector</span><span class="p">,</span> <span class="n">TriggerInfo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">StandardDetector</span><span class="p">,</span> <span class="n">TriggerInfo</span>
 
-<span class="kn">from</span> <span class="nn">._eiger_controller</span> <span class="kn">import</span> <span class="n">EigerController</span>
-<span class="kn">from</span> <span class="nn">._eiger_io</span> <span class="kn">import</span> <span class="n">EigerDriverIO</span>
-<span class="kn">from</span> <span class="nn">._odin_io</span> <span class="kn">import</span> <span class="n">Odin</span><span class="p">,</span> <span class="n">OdinWriter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._eiger_controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">EigerController</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._eiger_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">EigerDriverIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._odin_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">Odin</span><span class="p">,</span> <span class="n">OdinWriter</span>
 
 
-<span class="k">class</span> <span class="nc">EigerTriggerInfo</span><span class="p">(</span><span class="n">TriggerInfo</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EigerTriggerInfo</span><span class="p">(</span><span class="n">TriggerInfo</span><span class="p">):</span>
     <span class="n">energy_ev</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="EigerDetector">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.eiger.html#ophyd_async.epics.eiger.EigerDetector">[docs]</a>
-<span class="k">class</span> <span class="nc">EigerDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EigerDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Ophyd-async implementation of an Eiger Detector.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -487,7 +487,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">_controller</span><span class="p">:</span> <span class="n">EigerController</span>
     <span class="n">_writer</span><span class="p">:</span> <span class="n">Odin</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
@@ -505,7 +505,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="p">)</span>
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">EigerTriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">EigerTriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">set_energy</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">energy_ev</span><span class="p">)</span>
         <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a Simple Device &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
+    <title>Make a Simple Device &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
   
   
   
@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=1d9f009f"></script>
+    <script src="../_static/documentation_options.js?v=4881ec4e"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -130,8 +130,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
   
   
 </a></div>
@@ -487,15 +487,15 @@ may change API on minor release numbers before then</p>
 <h1>Make a Simple Device<a class="headerlink" href="#make-a-simple-device" title="Link to this heading">#</a></h1>
 <p>To make a simple device, you need to subclass from the
 <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> class, create some <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> instances, and optionally implement
-other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
-<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
+other suitable Bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#hardware-interface" title="(in bluesky v1.13.1rc2.dev7+g5b449007)"><code class="xref any docutils literal notranslate"><span class="pre">Protocols</span></code></a> like
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.1rc2.dev7+g5b449007)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>.</p>
 <p>The rest of this guide will show examples from <code class="docutils literal notranslate"><span class="pre">src/ophyd_async/epics/sim/__init__.py</span></code></p>
 <section id="readable">
 <h2>Readable<a class="headerlink" href="#readable" title="Link to this heading">#</a></h2>
-<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Sensor" title="ophyd_async.epics.sim.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
+<p>For a simple <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="(in bluesky v1.13.1rc2.dev7+g5b449007)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> object like a <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Sensor" title="ophyd_async.epics.sim.Sensor"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Sensor</span></code></a>, you need to
 define some signals, then tell the superclass which signals should contribute to
 <code class="docutils literal notranslate"><span class="pre">read()</span></code> and <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Sensor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo sensor that produces a scalar value based on X and Y Movers&quot;&quot;&quot;</span>
 
     <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
@@ -533,10 +533,10 @@ and <code class="docutils literal notranslate"><span class="pre">unstage()</span
 <h2>Movable<a class="headerlink" href="#movable" title="Link to this heading">#</a></h2>
 <p>For a more complicated device like a <a class="reference internal" href="../_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Mover" title="ophyd_async.epics.sim.Mover"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Mover</span></code></a>, you can still use <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>
 and implement some addition protocols:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mover</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Mover</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Define some signals</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">readback</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Readback&quot;</span><span class="p">)</span>
@@ -552,13 +552,13 @@ and implement some addition protocols:</p>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="o">=</span><span class="n">child_name_separator</span><span class="p">)</span>
         <span class="c1"># Readback should be named the same as its parent in read()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">):</span>
         <span class="n">new_position</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">old_position</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
@@ -593,13 +593,13 @@ and implement some addition protocols:</p>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
         <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">status</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.14.dev75+gf655a730)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>. This
+<p>The <code class="docutils literal notranslate"><span class="pre">set()</span></code> method implements <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="(in bluesky v1.13.1rc2.dev7+g5b449007)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a>. This
 creates a <a class="reference external" href="https://docs.python.org/3/glossary.html#term-coroutine" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">coroutine</span></code></a> <code class="docutils literal notranslate"><span class="pre">do_set()</span></code> which gets the old position, units and
 precision in parallel, sets the setpoint, then observes the readback value,
 informing watchers of the progress. When it gets to the requested value it
@@ -611,10 +611,10 @@ interrupted.</p>
 <section id="assembly">
 <h2>Assembly<a class="headerlink" href="#assembly" title="Link to this heading">#</a></h2>
 <p>Compound assemblies can be used to group Devices into larger logical Devices:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SampleStage</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SampleStage</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo sample stage with X and Y movables&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Define some child Devices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">Mover</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;X:&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">Mover</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Y:&quot;</span><span class="p">)</span>

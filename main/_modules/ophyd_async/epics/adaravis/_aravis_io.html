@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adaravis._aravis_io &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
+    <title>ophyd_async.epics.adaravis._aravis_io &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=1d9f009f"></script>
+    <script src="../../../../_static/documentation_options.js?v=4881ec4e"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -135,8 +135,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
   
   
 </a></div>
@@ -464,12 +464,12 @@ window.addEventListener("load", () => mermaid.run());
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.adaravis._aravis_io</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="n">StrictEnum</span><span class="p">,</span> <span class="n">SubsetEnum</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics</span> <span class="kn">import</span> <span class="n">adcore</span>
-<span class="kn">from</span> <span class="nn">ophyd_async.epics.core</span> <span class="kn">import</span> <span class="n">epics_signal_rw_rbv</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrictEnum</span><span class="p">,</span> <span class="n">SubsetEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">epics_signal_rw_rbv</span>
 
 
-<span class="k">class</span> <span class="nc">AravisTriggerMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AravisTriggerMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;GigEVision GenICAM standard: on=externally triggered&quot;&quot;&quot;</span>
 
     <span class="n">ON</span> <span class="o">=</span> <span class="s2">&quot;On&quot;</span>
@@ -485,14 +485,14 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    &quot;&quot;&quot;</span>
 
 
-<span class="k">class</span> <span class="nc">AravisTriggerSource</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AravisTriggerSource</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
     <span class="n">FREERUN</span> <span class="o">=</span> <span class="s2">&quot;Freerun&quot;</span>
     <span class="n">LINE1</span> <span class="o">=</span> <span class="s2">&quot;Line1&quot;</span>
 
 
 <div class="viewcode-block" id="AravisDriverIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisDriverIO">[docs]</a>
-<span class="k">class</span> <span class="nc">AravisDriverIO</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AravisDriverIO</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">):</span>
     <span class="c1"># If instantiating a new instance, ensure it is supported in the _deadtimes dict</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generic Driver supporting the Manta and Mako drivers.</span>
 <span class="sd">    Fetches deadtime prior to use in a Streaming scan.</span>
@@ -503,7 +503,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    This mirrors the interface provided by ADAravis/db/aravisCamera.template.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trigger_mode</span> <span class="o">=</span> <span class="n">epics_signal_rw_rbv</span><span class="p">(</span>
             <span class="n">AravisTriggerMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;TriggerMode&quot;</span>
         <span class="p">)</span>

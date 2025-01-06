@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
+    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=1d9f009f"></script>
+    <script src="../../../../_static/documentation_options.js?v=4881ec4e"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -135,8 +135,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
   
   
 </a></div>
@@ -466,14 +466,14 @@ window.addEventListener("load", () => mermaid.run());
   <h1>Source code for ophyd_async.tango.core._signal</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Tango Signals over Pytango&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">IntEnum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">IntEnum</span>
 
-<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
 
-<span class="kn">from</span> <span class="nn">ophyd_async.core</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">Signal</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
@@ -482,7 +482,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">SignalW</span><span class="p">,</span>
     <span class="n">SignalX</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">tango</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AttrDataFormat</span><span class="p">,</span>
     <span class="n">AttrWriteType</span><span class="p">,</span>
     <span class="n">CmdArgType</span><span class="p">,</span>
@@ -490,12 +490,12 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">DevState</span><span class="p">,</span>
     <span class="n">NonSupportedFeature</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">tango.asyncio</span> <span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
 
-<span class="kn">from</span> <span class="nn">._tango_transport</span> <span class="kn">import</span> <span class="n">TangoSignalBackend</span><span class="p">,</span> <span class="n">get_python_type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._tango_transport</span><span class="w"> </span><span class="kn">import</span> <span class="n">TangoSignalBackend</span><span class="p">,</span> <span class="n">get_python_type</span>
 
 
-<span class="k">def</span> <span class="nf">make_backend</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_backend</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -506,7 +506,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="tango_signal_rw">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_rw">[docs]</a>
-<span class="k">def</span> <span class="nf">tango_signal_rw</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tango_signal_rw</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -538,7 +538,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="tango_signal_r">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_r">[docs]</a>
-<span class="k">def</span> <span class="nf">tango_signal_r</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tango_signal_r</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -567,7 +567,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="tango_signal_w">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_w">[docs]</a>
-<span class="k">def</span> <span class="nf">tango_signal_w</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tango_signal_w</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -596,7 +596,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="tango_signal_x">
 <a class="viewcode-back" href="../../../../_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_x">[docs]</a>
-<span class="k">def</span> <span class="nf">tango_signal_x</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tango_signal_x</span><span class="p">(</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
@@ -620,7 +620,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">infer_python_type</span><span class="p">(</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_python_type</span><span class="p">(</span>
     <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span> <span class="o">|</span> <span class="nb">type</span><span class="p">[</span><span class="n">DevState</span><span class="p">]</span> <span class="o">|</span> <span class="n">IntEnum</span><span class="p">:</span>
     <span class="c1"># TODO: work out if this is still needed</span>
@@ -650,7 +650,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">return</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">py_type</span><span class="p">]</span> <span class="k">if</span> <span class="n">isarray</span> <span class="k">else</span> <span class="n">py_type</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">infer_signal_type</span><span class="p">(</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_signal_type</span><span class="p">(</span>
     <span class="n">trl</span><span class="p">,</span> <span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">Signal</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">trl</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>

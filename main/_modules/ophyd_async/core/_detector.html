@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=1d9f009f"></script>
+    <script src="../../../_static/documentation_options.js?v=4881ec4e"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -135,8 +135,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
   
   
 </a></div>
@@ -466,13 +466,13 @@ window.addEventListener("load", () => mermaid.run());
   <h1>Source code for ophyd_async.core._detector</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Module which defines abstract classes to work with detectors&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 
-<span class="kn">from</span> <span class="nn">bluesky.protocols</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Collectable</span><span class="p">,</span>
     <span class="n">Flyable</span><span class="p">,</span>
     <span class="n">Preparable</span><span class="p">,</span>
@@ -482,19 +482,19 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">Triggerable</span><span class="p">,</span>
     <span class="n">WritesStreamAssets</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">event_model</span> <span class="kn">import</span> <span class="n">DataKey</span>
-<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">computed_field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">computed_field</span>
 
-<span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
-<span class="kn">from</span> <span class="nn">._protocol</span> <span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
-<span class="kn">from</span> <span class="nn">._signal</span> <span class="kn">import</span> <span class="n">SignalR</span>
-<span class="kn">from</span> <span class="nn">._status</span> <span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span>
-<span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">,</span> <span class="n">WatcherUpdate</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._status</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">,</span> <span class="n">WatcherUpdate</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
 
 
 <div class="viewcode-block" id="DetectorTrigger">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger">[docs]</a>
-<span class="k">class</span> <span class="nc">DetectorTrigger</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectorTrigger</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of mechanism for triggering a detector to take frames&quot;&quot;&quot;</span>
 
     <span class="c1">#: Detector generates internal trigger for given rate</span>
@@ -510,7 +510,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="TriggerInfo">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo">[docs]</a>
-<span class="k">class</span> <span class="nc">TriggerInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TriggerInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to setup triggering on a detector&quot;&quot;&quot;</span>
 
     <span class="c1">#: Number of triggers that will be sent, (0 means infinite) Can be:</span>
@@ -539,7 +539,7 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="nd">@computed_field</span>
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">total_number_of_triggers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_number_of_triggers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
@@ -550,7 +550,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="DetectorController">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController">[docs]</a>
-<span class="k">class</span> <span class="nc">DetectorController</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectorController</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Classes implementing this interface should hold the logic for</span>
 <span class="sd">    arming and disarming a detector</span>
@@ -559,14 +559,14 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DetectorController.get_deadtime">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.get_deadtime">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;For a given exposure, how long should the time between exposures be&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DetectorController.prepare">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.prepare">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Do all necessary steps to prepare the detector for triggers.</span>
 
@@ -589,7 +589,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DetectorController.arm">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.arm">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Arm the detector</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
@@ -598,7 +598,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DetectorController.wait_for_idle">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.wait_for_idle">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This will wait on the internal _arm_status and wait for it to get disarmed/idle</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
@@ -607,7 +607,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DetectorController.disarm">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.disarm">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector, return detector to an idle state&quot;&quot;&quot;</span></div>
 </div>
 
@@ -615,14 +615,14 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="DetectorWriter">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter">[docs]</a>
-<span class="k">class</span> <span class="nc">DetectorWriter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectorWriter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Logic for making a detector write data to somewhere persistent</span>
 <span class="sd">    (e.g. an HDF5 file)&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="DetectorWriter.open">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.open">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Open writer and wait for it to be ready for data.</span>
 
 <span class="sd">        Args:</span>
@@ -637,7 +637,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DetectorWriter.observe_indices_written">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.observe_indices_written">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">observe_indices_written</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observe_indices_written</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield the index of each frame (or equivalent data point) as it is written&quot;&quot;&quot;</span></div>
@@ -646,21 +646,21 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DetectorWriter.get_indices_written">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.get_indices_written">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of indices written&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DetectorWriter.collect_stream_docs">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.collect_stream_docs">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">collect_stream_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collect_stream_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create Stream docs up to given number written&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DetectorWriter.close">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.close">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Close writer, blocks until I/O is complete&quot;&quot;&quot;</span></div>
 </div>
 
@@ -668,7 +668,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="StandardDetector">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StandardDetector">[docs]</a>
-<span class="k">class</span> <span class="nc">StandardDetector</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StandardDetector</span><span class="p">(</span>
     <span class="n">Device</span><span class="p">,</span>
     <span class="n">Stageable</span><span class="p">,</span>
     <span class="n">AsyncConfigurable</span><span class="p">,</span>
@@ -684,7 +684,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    Aggregates controller and writer logic together.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorController</span><span class="p">,</span>
         <span class="n">writer</span><span class="p">:</span> <span class="n">DetectorWriter</span><span class="p">,</span>
@@ -722,21 +722,21 @@ window.addEventListener("load", () => mermaid.run());
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorController</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">controller</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorController</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">writer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorWriter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">writer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorWriter</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span>
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Disarm the detector, stop file writing.</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_config_sigs</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_check_config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_check_config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks configuration signals are named and connected.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
@@ -749,28 +749,28 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;config signal </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be connected before it is &quot;</span>
                     <span class="o">+</span> <span class="s2">&quot;passed to the detector&quot;</span>
-                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Stop data writing.</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
         <span class="c1"># All data is in StreamResources, not Events, so nothing to output here</span>
         <span class="k">return</span> <span class="p">{}</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span>
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
                 <span class="n">TriggerInfo</span><span class="p">(</span>
@@ -800,7 +800,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="StandardDetector.prepare">
 <a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StandardDetector.prepare">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Arm detector.</span>
 
@@ -841,7 +841,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Prepare must be called before kickoff!&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -851,10 +851,10 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Kickoff called more than the configured number of &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">total_number_of_triggers</span><span class="si">}</span><span class="s2"> iteration(s)!&quot;</span>
-            <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
 
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span>
         <span class="n">indices_written</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">frame_timeout</span>
@@ -887,10 +887,10 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">describe_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">collect_asset_docs</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">collect_asset_docs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
         <span class="c1"># Collect stream datum documents for all indices written.</span>
@@ -901,7 +901,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">doc</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span></div>
 
 </pre></div>

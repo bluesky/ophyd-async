@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Make a StandardDetector &#8212; ophyd-async 0.9.0a2.dev5+gc781e276 documentation</title>
+    <title>Make a StandardDetector &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
   
   
   
@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=1d9f009f"></script>
+    <script src="../_static/documentation_options.js?v=4881ec4e"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -130,8 +130,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev5+gc781e276 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
   
   
 </a></div>
@@ -500,23 +500,23 @@ The <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_asyn
 </ul>
 <p>Define a <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDriver</span></code> if the NDArray requires fields in addition to those on <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBaseIO</span></code> to be exposed. It should extend <code class="xref py py-class docutils literal notranslate"><span class="pre">ADBaseIO</span></code>.
 Enumeration fields should be named to prevent namespace collision, i.e. for a Signal named “TriggerSource” use the enum “FooTriggerSource”</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FooDriver</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">FooDriver</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trigger_mode</span> <span class="o">=</span> <span class="n">epics_signal_rw_rbv</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;TriggerMode&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Define a <code class="xref py py-class docutils literal notranslate"><span class="pre">FooController</span></code> with handling for converting the standard pattern of <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.arm" title="ophyd_async.core.DetectorController.arm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorController.arm()</span></code></a> and <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.disarm" title="ophyd_async.core.DetectorController.disarm"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorController.disarm()</span></code></a> to required state of <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDriver</span></code> e.g. setting a compatible “FooTriggerSource” for a given <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger" title="ophyd_async.core.DetectorTrigger"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorTrigger</span></code></a>, or raising an exception if incompatible with the <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger" title="ophyd_async.core.DetectorTrigger"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorTrigger</span></code></a>.</p>
 <p>The <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorController.get_deadtime" title="ophyd_async.core.DetectorController.get_deadtime"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorController.get_deadtime()</span></code></a> method is used when constructing sequence tables for hardware controlled scanning. Details on how to calculate the deadtime may be only available from technical manuals or otherwise complex. <strong>If it requires fetching from signals, it is recommended to cache the value during the StandardDetector `prepare` method.</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FooController</span><span class="p">(</span><span class="n">DetectorController</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">FooDriver</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">FooController</span><span class="p">(</span><span class="n">DetectorController</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">FooDriver</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span> <span class="o">=</span> <span class="n">driver</span>
 
-    <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="c1"># FooDetector deadtime handling</span>
         <span class="k">return</span> <span class="mf">0.001</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span>
@@ -531,18 +531,18 @@ Enumeration fields should be named to prevent namespace collision, i.e. for a Si
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">adcore</span><span class="o">.</span><span class="n">start_acquiring_driver_and_ensure_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="n">adcore</span><span class="o">.</span><span class="n">stop_busy_record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drv</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><code class="xref py py-class docutils literal notranslate"><span class="pre">FooDetector</span></code> ties the Driver, Controller and data persistence layer together. The example <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDetector</span></code> writes h5 files using the standard NDPlugin. It additionally supports the <code class="xref py py-class docutils literal notranslate"><span class="pre">HasHints</span></code> protocol which is optional but recommended.</p>
 <p>Its initialiser assumes the NSLS-II AreaDetector plugin EPICS address suffixes as defaults but allows overriding: <strong>this pattern is recommended for consistency</strong>.
 If the <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDriver</span></code> signals that should be read as configuration, they should be added to the “config_sigs” passed to the super.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FooDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">FooDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
     <span class="n">_controller</span><span class="p">:</span> <span class="n">FooController</span>
     <span class="n">_writer</span><span class="p">:</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFWriter</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
@@ -567,7 +567,7 @@ If the <code class="xref py py-class docutils literal notranslate"><span class="
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">hints</span>
 </pre></div>
 </div>
@@ -576,37 +576,37 @@ If the <code class="xref py py-class docutils literal notranslate"><span class="
 <h2>Writing a non-AreaDetector StandardDetector<a class="headerlink" href="#writing-a-non-areadetector-standarddetector" title="Link to this heading">#</a></h2>
 <p>A non-AreaDetector <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> should implement <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> and <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a> directly.
 Here we construct a <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> that co-ordinates signals on a PandA PositionCapture block - a child device “pcap” of the <a class="reference internal" href="../_api/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> implementation, analogous to the <code class="xref py py-class docutils literal notranslate"><span class="pre">FooDriver</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PandaPcapController</span><span class="p">(</span><span class="n">DetectorController</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PandaPcapController</span><span class="p">(</span><span class="n">DetectorController</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pcap</span> <span class="o">=</span> <span class="n">pcap</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.000000008</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">in</span> <span class="p">(</span>
             <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">CONSTANT_GATE</span><span class="p">,</span>
             <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">VARIABLE_GATE</span><span class="p">,</span>
         <span class="p">),</span> <span class="s2">&quot;Only constant_gate and variable_gate triggering is supported on the PandA&quot;</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pcap</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The PandA may write a number of fields, and the <code class="xref py py-class docutils literal notranslate"><span class="pre">PandaHDFWriter</span></code> co-ordinates those, configures the filewriter and describes the data for the RunEngine.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PandaHDFWriter</span><span class="p">(</span><span class="n">DetectorWriter</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PandaHDFWriter</span><span class="p">(</span><span class="n">DetectorWriter</span><span class="p">):</span>
     <span class="n">_ctxt</span><span class="p">:</span> <span class="n">Context</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
@@ -620,7 +620,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
         <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># Triggered on PCAP arm</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve and get descriptor of all PandA signals marked for capture&quot;&quot;&quot;</span>
 
         <span class="c1"># Ensure flushes are immediate</span>
@@ -658,7 +658,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
 
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">()</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a describe based on the datasets PV</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -677,7 +677,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">describe</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_update_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_update_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load data from the datasets PV on the panda, update internal</span>
 <span class="sd">        representation of datasets that the panda will write.</span>
@@ -705,8 +705,8 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
 
     <span class="c1"># Next few functions are exactly the same as AD writer. Could move as default</span>
     <span class="c1"># StandardDetector behavior</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
-        <span class="k">def</span> <span class="nf">matcher</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">matcher</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="n">index</span>
 
         <span class="n">matcher</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;index_at_least_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -714,10 +714,10 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
             <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">matcher</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
         <span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">num_captured</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">observe_indices_written</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">observe_indices_written</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait until a specific index is ready to be collected&quot;&quot;&quot;</span>
@@ -726,7 +726,7 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
         <span class="p">):</span>
             <span class="k">yield</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">collect_stream_docs</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">collect_stream_docs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
         <span class="c1"># TODO: fail if we get dropped frames</span>
@@ -743,15 +743,15 @@ Here we construct a <a class="reference internal" href="../_api/ophyd_async.core
                 <span class="k">yield</span> <span class="s2">&quot;stream_datum&quot;</span><span class="p">,</span> <span class="n">doc</span>
 
     <span class="c1"># Could put this function as default for StandardDetector</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_data_block</span><span class="o">.</span><span class="n">capture</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
             <span class="kc">False</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
         <span class="p">)</span>
 </pre></div>
 </div>
 <p>The PandA StandardDetector implementation simply ties the component parts and its child devices together.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">HDFPanda</span><span class="p">(</span><span class="n">CommonPandaBlocks</span><span class="p">,</span> <span class="n">StandardDetector</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">HDFPanda</span><span class="p">(</span><span class="n">CommonPandaBlocks</span><span class="p">,</span> <span class="n">StandardDetector</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
