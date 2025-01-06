@@ -58,12 +58,15 @@ Protocol = Literal["ca", "pva"]
 @pytest.fixture(scope="module")
 def ioc_devices():
     ioc_devices = EpicsTestIocAndDevices()
-    ioc_devices.ioc.start_ioc()
+    ioc_devices.ioc.start()
     yield ioc_devices
     # Purge the channel caches before we stop the IOC to stop
     # RuntimeError: Event loop is closed errors on teardown
     purge_channel_caches()
-    ioc_devices.ioc.stop_ioc()
+    ioc_devices.ioc.stop()
+    # Print the IOC process output so in the case of a failing test
+    # we will see if anything on the IOC side also failed
+    print(ioc_devices.ioc.output)
 
 
 class ExpectedData(Generic[T]):

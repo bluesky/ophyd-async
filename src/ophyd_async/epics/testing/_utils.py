@@ -18,7 +18,7 @@ class TestingIOC:
     def add_database(self, db: Path | str, /, **macros: str):
         self._db_macros.append((Path(db), macros))
 
-    def start_ioc(self):
+    def start(self):
         ioc_args = [
             sys.executable,
             "-m",
@@ -27,7 +27,6 @@ class TestingIOC:
         for db, macros in self._db_macros:
             macro_str = ",".join(f"{k}={v}" for k, v in macros.items())
             ioc_args += ["-m", macro_str, "-d", str(db)]
-        print(ioc_args)
         self._process = subprocess.Popen(
             ioc_args,
             stdin=subprocess.PIPE,
@@ -39,14 +38,13 @@ class TestingIOC:
         start_time = time.monotonic()
         while "iocRun: All initialization complete" not in self.output:
             if time.monotonic() - start_time > 10:
-                self.stop_ioc()
+                self.stop()
                 raise TimeoutError(f"IOC did not start in time:\n{self.output}")
             self.output += self._process.stdout.readline()
 
-    def stop_ioc(self):
+    def stop(self):
         try:
             self.output += self._process.communicate("exit()")[0]
         except ValueError:
             # Someone else already called communicate
             pass
-        print(self.output)
