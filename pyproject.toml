@@ -75,9 +75,6 @@ dev = [
     "types-pyyaml",
 ]
 
-[project.scripts]
-ophyd-async = "ophyd_async.__main__:main"
-
 [project.urls]
 GitHub = "https://github.com/bluesky/ophyd-async"
 
