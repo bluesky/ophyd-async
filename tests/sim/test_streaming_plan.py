@@ -38,7 +38,7 @@ async def test_streaming_plan(RE: RunEngine, sim_pattern_detector: PatternDetect
         "event",
         "stop",
     ]
-    await sim_pattern_detector.writer.close()
+    await sim_pattern_detector._writer.close()
 
 
 async def test_plan(RE: RunEngine, sim_pattern_detector: PatternDetector):

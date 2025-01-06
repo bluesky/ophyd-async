@@ -11,6 +11,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
+from ophyd_async.epics.adpilatus import PilatusReadoutTime
 from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ophyd_async.testing import set_mock_value
@@ -36,6 +37,19 @@ async def hdf_writer(
         static_path_provider,
         lambda: "test",
         DummyDatasetDescriber(),
+        {},
+    )
+
+
+@pytest.fixture
+async def tiff_writer(
+    RE, static_path_provider: StaticPathProvider
+) -> adcore.ADTIFFWriter:
+    async with init_devices(mock=True):
+        tiff = adcore.NDFileIO("TIFF:")
+
+    return adcore.ADTIFFWriter(
+        tiff, static_path_provider, lambda: "test", DummyDatasetDescriber(), {}
     )
 
 
@@ -55,7 +69,7 @@ async def hdf_writer_with_stats(
         static_path_provider,
         lambda: "test",
         DummyDatasetDescriber(),
-        stats,
+        {"stats": stats},
     )
 
 
@@ -67,25 +81,36 @@ async def detectors(
     async with init_devices(mock=True):
         detectors.append(advimba.VimbaDetector("VIMBA:", static_path_provider))
         detectors.append(adkinetix.KinetixDetector("KINETIX:", static_path_provider))
-        detectors.append(adpilatus.PilatusDetector("PILATUS:", static_path_provider))
+        detectors.append(
+            adpilatus.PilatusDetector(
+                "PILATUS:", static_path_provider, PilatusReadoutTime.PILATUS3
+            )
+        )
         detectors.append(adaravis.AravisDetector("ADARAVIS:", static_path_provider))
     return detectors
 
 
-async def test_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
+async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._file is None
 
     [item async for item in hdf_writer.collect_stream_docs(1)]
     assert hdf_writer._file
 
 
+async def test_tiff_writer_collect_stream_docs(tiff_writer: adcore.ADTIFFWriter):
+    assert tiff_writer._emitted_resource is None
+    [item async for item in tiff_writer.collect_stream_docs(1)]
+    assert tiff_writer._emitted_resource
+
+
 async def test_stats_describe_when_plugin_configured(
     hdf_writer_with_stats: adcore.ADHDFWriter,
 ):
     assert hdf_writer_with_stats._file is None
-    set_mock_value(hdf_writer_with_stats.hdf.file_path_exists, True)
+    set_mock_value(hdf_writer_with_stats.fileio.file_path_exists, True)
+    assert hdf_writer_with_stats._plugins is not None
     set_mock_value(
-        hdf_writer_with_stats._plugins[0].nd_attributes_file,
+        hdf_writer_with_stats._plugins["stats"].nd_attributes_file,
         """<?xml version='1.0' encoding='utf-8'?>
 <Attributes>
     <Attribute
@@ -135,9 +160,10 @@ async def test_stats_describe_raises_error_with_dbr_native(
     hdf_writer_with_stats: adcore.ADHDFWriter,
 ):
     assert hdf_writer_with_stats._file is None
-    set_mock_value(hdf_writer_with_stats.hdf.file_path_exists, True)
+    set_mock_value(hdf_writer_with_stats.fileio.file_path_exists, True)
+    assert hdf_writer_with_stats._plugins is not None
     set_mock_value(
-        hdf_writer_with_stats._plugins[0].nd_attributes_file,
+        hdf_writer_with_stats._plugins["stats"].nd_attributes_file,
         """<?xml version='1.0' encoding='utf-8'?>
 <Attributes>
     <Attribute
@@ -160,7 +186,7 @@ async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
         await detector.connect(mock=True)
         detector.set_name(type(detector).__name__)
         RE(setup_ndstats_sum(detector))
-        xml = await detector.hdf.nd_attributes_file.get_value()
+        xml = await detector.fileio.nd_attributes_file.get_value()
         root = ET.fromstring(xml)
         for element in root:
             assert str(element.tag) == "Attribute"
@@ -190,8 +216,8 @@ async def test_nd_attributes_plan_stub(RE, detectors):
             description="The sample temperature",
             dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
         )
-        RE(setup_ndattributes(detector.hdf, [pv, param]))
-        text = await detector.hdf.nd_attributes_file.get_value()
+        RE(setup_ndattributes(detector.fileio, [pv, param]))
+        text = await detector.fileio.nd_attributes_file.get_value()
         xml = ET.fromstring(text)
         assert xml[0].tag == "Attribute"
         assert xml[0].attrib == {
@@ -218,7 +244,7 @@ async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):
     for detector in detectors:
         await detector.connect(mock=True)
         with pytest.raises(ValueError) as e:
-            RE(setup_ndattributes(detector.hdf, invalidObjects))
+            RE(setup_ndattributes(detector.fileio, invalidObjects))
         assert (
             str(e.value)
             == f"Invalid type for ndattributes: {type(invalidObjects[0])}. "

@@ -12,7 +12,9 @@ from ._writer import PandaHDFWriter
 MINIMUM_PANDA_IOC = "0.11.4"
 
 
-class HDFPanda(CommonPandaBlocks, StandardDetector):
+class HDFPanda(
+    CommonPandaBlocks, StandardDetector[PandaPcapController, PandaHDFWriter]
+):
     def __init__(
         self,
         prefix: str,

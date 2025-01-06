@@ -270,7 +270,7 @@ async def sim_detector(request: FixtureRequest):
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector(prefix, dp, name=name)
 
-    det._config_sigs = [det.drv.acquire_time, det.drv.acquire]
+    det._config_sigs = [det.driver.acquire_time, det.driver.acquire]
 
     return det
 

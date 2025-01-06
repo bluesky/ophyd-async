@@ -58,7 +58,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     if not detectors:
         raise ValueError("No detectors provided. There must be at least one.")
 
-    deadtime = max(det.controller.get_deadtime(exposure) for det in detectors)
+    deadtime = max(det._controller.get_deadtime(exposure) for det in detectors)  # noqa: SLF001
 
     trigger_info = TriggerInfo(
         number_of_triggers=number_of_frames * repeats,

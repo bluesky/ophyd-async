@@ -1,33 +1,18 @@
-from enum import Enum
+from collections.abc import Sequence
 
-from bluesky.protocols import Hints
+from ophyd_async.core import PathProvider
+from ophyd_async.core._signal import SignalR
+from ophyd_async.epics.adcore._core_detector import AreaDetector
+from ophyd_async.epics.adcore._core_io import NDPluginBaseIO
+from ophyd_async.epics.adcore._core_writer import ADWriter
+from ophyd_async.epics.adcore._hdf_writer import ADHDFWriter
 
-from ophyd_async.core import PathProvider, StandardDetector
-from ophyd_async.epics import adcore
-
-from ._pilatus_controller import PilatusController
+from ._pilatus_controller import PilatusController, PilatusReadoutTime
 from ._pilatus_io import PilatusDriverIO
 
 
-#: Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
-#: The required minimum time difference between ExpPeriod and ExpTime
-#: (readout time) is 2.28 ms
-#: We provide an option to override for newer Pilatus models
-class PilatusReadoutTime(float, Enum):
-    """Pilatus readout time per model in ms"""
-
-    # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
-    PILATUS2 = 2.28e-3
-
-    # Cite: https://media.dectris.com/user-manual-pilatus3-2020.pdf
-    PILATUS3 = 0.95e-3
-
-
-class PilatusDetector(StandardDetector):
+class PilatusDetector(AreaDetector[PilatusController]):
     """A Pilatus StandardDetector writing HDF files"""
-
-    _controller: PilatusController
-    _writer: adcore.ADHDFWriter
 
     def __init__(
         self,
@@ -35,24 +20,27 @@ class PilatusDetector(StandardDetector):
         path_provider: PathProvider,
         readout_time: PilatusReadoutTime = PilatusReadoutTime.PILATUS3,
         drv_suffix: str = "cam1:",
-        hdf_suffix: str = "HDF1:",
+        writer_cls: type[ADWriter] = ADHDFWriter,
+        fileio_suffix: str | None = None,
         name: str = "",
+        plugins: dict[str, NDPluginBaseIO] | None = None,
+        config_sigs: Sequence[SignalR] = (),
     ):
-        self.drv = PilatusDriverIO(prefix + drv_suffix)
-        self.hdf = adcore.NDFileHDFIO(prefix + hdf_suffix)
+        driver = PilatusDriverIO(prefix + drv_suffix)
+        controller = PilatusController(driver)
 
-        super().__init__(
-            PilatusController(self.drv, readout_time=readout_time.value),
-            adcore.ADHDFWriter(
-                self.hdf,
-                path_provider,
-                lambda: self.name,
-                adcore.ADBaseDatasetDescriber(self.drv),
-            ),
-            config_sigs=(self.drv.acquire_time,),
-            name=name,
+        writer = writer_cls.with_io(
+            prefix,
+            path_provider,
+            dataset_source=driver,
+            fileio_suffix=fileio_suffix,
+            plugins=plugins,
         )
 
-    @property
-    def hints(self) -> Hints:
-        return self._writer.hints
+        super().__init__(
+            controller=controller,
+            writer=writer,
+            plugins=plugins,
+            name=name,
+            config_sigs=config_sigs,
+        )

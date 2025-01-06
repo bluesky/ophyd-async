@@ -1,5 +1,6 @@
 from ._detector import (
     DetectorController,
+    DetectorControllerT,
     DetectorTrigger,
     DetectorWriter,
     StandardDetector,
@@ -81,6 +82,7 @@ from ._yaml_settings import YamlSettingsProvider
 
 __all__ = [
     "DetectorController",
+    "DetectorControllerT",
     "DetectorTrigger",
     "DetectorWriter",
     "StandardDetector",

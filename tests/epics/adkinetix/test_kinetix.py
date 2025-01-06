@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 
 from ophyd_async.core import (
@@ -10,7 +12,7 @@ from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
-def test_adkinetix(ad_standard_det_factory):
+def test_adkinetix(ad_standard_det_factory) -> adkinetix.KinetixDetector:
     return ad_standard_det_factory(adkinetix.KinetixDetector)
 
 
@@ -22,33 +24,32 @@ async def test_get_deadtime(
 
 
 async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
-    set_mock_value(
-        test_adkinetix.drv.trigger_mode, adkinetix.KinetixTriggerMode.INTERNAL
-    )
+    driver = cast(adkinetix.KinetixDriverIO, test_adkinetix.driver)
+    set_mock_value(driver.trigger_mode, adkinetix.KinetixTriggerMode.INTERNAL)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
-        await test_adkinetix.controller.prepare(
+        await test_adkinetix._controller.prepare(
             TriggerInfo(number_of_triggers=1, trigger=trig_mode)
         )
-        await test_adkinetix.controller.arm()
-        await test_adkinetix.controller.wait_for_idle()
+        await test_adkinetix._controller.arm()
+        await test_adkinetix._controller.wait_for_idle()
         # Prevent timeouts
-        set_mock_value(test_adkinetix.drv.acquire, True)
+        set_mock_value(driver.acquire, True)
 
     # Default TriggerSource
-    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Internal"
+    assert (await driver.trigger_mode.get_value()) == "Internal"
 
     await setup_trigger_mode(DetectorTrigger.EDGE_TRIGGER)
-    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Rising Edge"
+    assert (await driver.trigger_mode.get_value()) == "Rising Edge"
 
     await setup_trigger_mode(DetectorTrigger.CONSTANT_GATE)
-    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
+    assert (await driver.trigger_mode.get_value()) == "Exp. Gate"
 
     await setup_trigger_mode(DetectorTrigger.INTERNAL)
-    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Internal"
+    assert (await driver.trigger_mode.get_value()) == "Internal"
 
     await setup_trigger_mode(DetectorTrigger.VARIABLE_GATE)
-    assert (await test_adkinetix.drv.trigger_mode.get_value()) == "Exp. Gate"
+    assert (await driver.trigger_mode.get_value()) == "Exp. Gate"
 
 
 async def test_hints_from_hdf_writer(test_adkinetix: adkinetix.KinetixDetector):

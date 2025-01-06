@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import pytest
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -38,7 +38,7 @@ class DummyTriggerLogic(FlyerController[int]):
 class DummyController(DetectorController):
     def __init__(self) -> None: ...
     async def prepare(self, trigger_info: TriggerInfo):
-        return AsyncStatus(asyncio.sleep(0.01))
+        await asyncio.sleep(0.01)
 
     async def arm(self):
         self._arm_status = AsyncStatus(asyncio.sleep(0.01))
@@ -67,9 +67,10 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
 
     return adcore.ADHDFWriter(
         hdf,
-        path_provider=static_path_provider,
-        name_provider=lambda: "test",
-        dataset_describer=AsyncMock(),
+        static_path_provider,
+        lambda: "test",
+        AsyncMock(),
+        {},
     )
 
 
@@ -79,8 +80,8 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     writer: adcore.ADHDFWriter,
     controller: adsimdetector.SimController,
 ):
-    set_mock_value(writer.hdf.file_path_exists, True)
-    detector: StandardDetector[Any] = StandardDetector(
+    set_mock_value(writer.fileio.file_path_exists, True)
+    detector: StandardDetector[Any, Any] = StandardDetector(
         controller, writer, name="detector"
     )
 
@@ -95,11 +96,9 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     RE: RunEngine, writer: adcore.ADHDFWriter
 ):
     controller = DummyController()
-    set_mock_value(writer.hdf.file_path_exists, True)
+    set_mock_value(writer.fileio.file_path_exists, True)
 
-    detector: StandardDetector[TriggerInfo | None] = StandardDetector(
-        controller, writer
-    )
+    detector: StandardDetector[Any, Any] = StandardDetector(controller, writer)
     trigger_logic = DummyTriggerLogic()
 
     flyer = StandardFlyer(trigger_logic, name="flyer")
