@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.9.0a2.dev7+g3132d297 documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.9.0a2.dev8+g6c42a1fa documentation</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=4c977ee4"></script>
+    <script src="../_static/documentation_options.js?v=cf36df89"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -130,8 +130,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev7+g3132d297 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev7+g3132d297 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev8+g6c42a1fa documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev8+g6c42a1fa documentation - Home"/>
   
   
 </a></div>
@@ -524,28 +524,40 @@ may change API on minor release numbers before then</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseIO</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.DetectorState" title="ophyd_async.epics.adcore.DetectorState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetectorState</span></code></a></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">AreaDetector</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.DetectorState" title="ophyd_async.epics.adcore.DetectorState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetectorState</span></code></a></p></td>
 <td><p>Default set of states of an AreaDetector driver.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArrayBaseIO</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArrayBaseIO</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDFileIO</span></code></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDFileHDFIO</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginStatsIO" title="ophyd_async.epics.adcore.NDPluginStatsIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginStatsIO</span></code></a></p></td>
-<td><p>Plugin for computing statistics from an image or region of interest within an image.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDatasetDescriber</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginBaseIO</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied" title="ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_exposure_time_and_acquire_period_if_supplied</span></code></a></p></td>
-<td><p>Sets the exposure time if it is not None and the acquire period to the exposure time plus the deadtime.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginStatsIO" title="ophyd_async.epics.adcore.NDPluginStatsIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginStatsIO</span></code></a></p></td>
+<td><p>Plugin for computing statistics from an image or region of interest within an image.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status" title="ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_acquiring_driver_and_ensure_status</span></code></a></p></td>
-<td><p>Start acquiring driver, raising ValueError if the detector is in a bad state.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDatasetDescriber</span></code></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADHDFWriter</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseController</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADWriter</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADHDFWriter</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADTIFFWriter</span></code></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SingleTriggerDetector</span></code></p></td>
@@ -589,49 +601,6 @@ See definition in ADApp/ADSrc/ADDriver.h in <a class="github reference external"
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginStatsIO">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDPluginStatsIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/adcore/_core_io.html#NDPluginStatsIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginStatsIO" title="Link to this definition">#</a></dt>
 <dd><p>Plugin for computing statistics from an image or region of interest within an image.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">set_exposure_time_and_acquire_period_if_supplied</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">controller</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core._detector.DetectorController"><span class="pre">DetectorController</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ADBaseIO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/epics/adcore/_core_logic.html#set_exposure_time_and_acquire_period_if_supplied"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied" title="Link to this definition">#</a></dt>
-<dd><p>Sets the exposure time if it is not None and the acquire period to the
-exposure time plus the deadtime. This is expected behavior for most
-AreaDetectors, but some may require more specialized handling.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>controller</strong> – Controller that can supply a deadtime.</p></li>
-<li><p><strong>driver</strong> – The driver to start acquiring. Must subclass ADBaseIO.</p></li>
-<li><p><strong>exposure</strong> – Desired exposure time, this is a noop if it is None.</p></li>
-<li><p><strong>timeout</strong> – How long to wait for the exposure time and acquire period to be set.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">start_acquiring_driver_and_ensure_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ADBaseIO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#frozenset" title="(in Python v3.13)"><span class="pre">frozenset</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.DetectorState" title="ophyd_async.epics.adcore._core_io.DetectorState"><span class="pre">DetectorState</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">frozenset({DetectorState.ABORTED,</span> <span class="pre">DetectorState.IDLE})</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a></span></span><a class="reference internal" href="../_modules/ophyd_async/epics/adcore/_core_logic.html#start_acquiring_driver_and_ensure_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status" title="Link to this definition">#</a></dt>
-<dd><p>Start acquiring driver, raising ValueError if the detector is in a bad state.</p>
-<p>This sets driver.acquire to True, and waits for it to be True up to a timeout.
-Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES, and otherwise
-raises a ValueError.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>driver</strong> – The driver to start acquiring. Must subclass ADBaseIO.</p></li>
-<li><p><strong>good_states</strong> – set of states defined in DetectorState enum which are considered good states.</p></li>
-<li><p><strong>timeout</strong> – How long to wait for driver.acquire to readback True (i.e. acquiring).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>An AsyncStatus that can be awaited to set driver.acquire to True and perform
-subsequent raising (if applicable) due to detector state.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus">AsyncStatus</a></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -695,8 +664,6 @@ subsequent raising (if applicable) due to detector state.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.DetectorState"><code class="docutils literal notranslate"><span class="pre">DetectorState</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginStatsIO"><code class="docutils literal notranslate"><span class="pre">NDPluginStatsIO</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.set_exposure_time_and_acquire_period_if_supplied"><code class="docutils literal notranslate"><span class="pre">set_exposure_time_and_acquire_period_if_supplied()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.start_acquiring_driver_and_ensure_status"><code class="docutils literal notranslate"><span class="pre">start_acquiring_driver_and_ensure_status()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDAttributePv"><code class="docutils literal notranslate"><span class="pre">NDAttributePv</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDAttributeParam"><code class="docutils literal notranslate"><span class="pre">NDAttributeParam</span></code></a></li>
 </ul>

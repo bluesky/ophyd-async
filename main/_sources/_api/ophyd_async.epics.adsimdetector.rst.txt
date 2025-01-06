@@ -7,6 +7,7 @@
 ===================================
         
         
+        
 
 .. automodule:: ophyd_async.epics.adsimdetector
     :members:
@@ -22,7 +23,8 @@
     .. autosummary::
         :nosignatures:
     
-        SimDetector
+        SimDriverIO
         SimController
+        SimDetector
     
     

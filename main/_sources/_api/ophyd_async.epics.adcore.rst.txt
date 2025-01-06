@@ -23,6 +23,10 @@
         
         
         
+        
+        
+        
+        
 
 .. automodule:: ophyd_async.epics.adcore
     :members:
@@ -39,14 +43,18 @@
         :nosignatures:
     
         ADBaseIO
+        AreaDetector
         DetectorState
         NDArrayBaseIO
+        NDFileIO
         NDFileHDFIO
+        NDPluginBaseIO
         NDPluginStatsIO
         ADBaseDatasetDescriber
-        set_exposure_time_and_acquire_period_if_supplied
-        start_acquiring_driver_and_ensure_status
+        ADBaseController
+        ADWriter
         ADHDFWriter
+        ADTIFFWriter
         SingleTriggerDetector
         ADBaseDataType
         FileWriteMode

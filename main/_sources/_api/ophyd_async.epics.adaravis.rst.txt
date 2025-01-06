@@ -8,6 +8,8 @@
         
         
         
+        
+        
 
 .. automodule:: ophyd_async.epics.adaravis
     :members:
@@ -26,5 +28,7 @@
         AravisDetector
         AravisController
         AravisDriverIO
+        AravisTriggerMode
+        AravisTriggerSource
     
     
