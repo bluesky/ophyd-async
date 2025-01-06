@@ -95,7 +95,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
-        # TODO: This is not actually creating the directory, it's just setting the depth
         await self.fileio.create_directory.set(info.create_dir_depth)
 
         await asyncio.gather(

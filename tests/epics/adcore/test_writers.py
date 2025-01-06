@@ -1,3 +1,5 @@
+import os
+
 import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
@@ -14,7 +16,7 @@ from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
 from ophyd_async.epics.adpilatus import PilatusReadoutTime
 from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
-from ophyd_async.testing import set_mock_value
+from ophyd_async.testing import set_mock_value, callback_on_mock_put
 
 
 class DummyDatasetDescriber(DatasetDescriber):
@@ -32,13 +34,25 @@ async def hdf_writer(
     async with init_devices(mock=True):
         hdf = adcore.NDFileHDFIO("HDF:")
 
-    return adcore.ADHDFWriter(
+    writer = adcore.ADHDFWriter(
         hdf,
         static_path_provider,
         lambda: "test",
         DummyDatasetDescriber(),
         {},
     )
+
+    def on_set_file_path_callback(value: str, wait: bool = True):
+        """Mock a successful directory & file creation"""
+        set_mock_value(writer.fileio.file_path_exists, True)
+        set_mock_value(
+            writer.fileio.full_file_name,
+            f"{value}/{static_path_provider._filename_provider()}{writer._file_extension}",
+        )
+
+    callback_on_mock_put(writer.fileio.file_path, on_set_file_path_callback)
+
+    return writer
 
 
 @pytest.fixture
@@ -48,9 +62,21 @@ async def tiff_writer(
     async with init_devices(mock=True):
         tiff = adcore.NDFileIO("TIFF:")
 
-    return adcore.ADTIFFWriter(
+    writer = adcore.ADTIFFWriter(
         tiff, static_path_provider, lambda: "test", DummyDatasetDescriber(), {}
     )
+
+    def on_set_file_path_callback(value: str, wait: bool = True):
+        """Mock a successful directory & file creation"""
+        set_mock_value(writer.fileio.file_path_exists, True)
+        set_mock_value(
+            writer.fileio.full_file_name,
+            f"{value}/{static_path_provider._filename_provider()}{writer._file_extension}",
+        )
+
+    callback_on_mock_put(writer.fileio.file_path, on_set_file_path_callback)
+
+    return writer
 
 
 @pytest.fixture
@@ -64,13 +90,25 @@ async def hdf_writer_with_stats(
     # Set number of frames per chunk to something reasonable
     set_mock_value(hdf.num_frames_chunks, 2)
 
-    return adcore.ADHDFWriter(
+    writer = adcore.ADHDFWriter(
         hdf,
         static_path_provider,
         lambda: "test",
         DummyDatasetDescriber(),
         {"stats": stats},
     )
+
+    def on_set_file_path_callback(value: str, wait: bool = True):
+        """Mock a successful directory & file creation"""
+        set_mock_value(writer.fileio.file_path_exists, True)
+        set_mock_value(
+            writer.fileio.full_file_name,
+            f"{value}/{static_path_provider._filename_provider()}{writer._file_extension}",
+        )
+
+    callback_on_mock_put(writer.fileio.file_path, on_set_file_path_callback)
+
+    return writer
 
 
 @pytest.fixture
@@ -92,7 +130,7 @@ async def detectors(
 
 async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._file is None
-
+    _ = await hdf_writer.open(batch_size=1)
     [item async for item in hdf_writer.collect_stream_docs(1)]
     assert hdf_writer._file
 
