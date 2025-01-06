@@ -10,6 +10,7 @@ from typing import Any
 
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
+from bluesky.utils import new_uid
 from pytest import FixtureRequest
 
 from ophyd_async.core import (
@@ -18,7 +19,9 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
+    init_devices,
 )
+from ophyd_async.epics import adsimdetector
 
 PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
@@ -244,6 +247,32 @@ def one_shot_trigger_info() -> TriggerInfo:
         deadtime=None,
         livetime=None,
     )
+
+
+@pytest.fixture
+async def sim_detector(request: FixtureRequest):
+    """Fixture that creates a simulated detector.
+
+    Args:
+        prefix (str): The PV prefix for the detector
+        name (str): Name for the detector instance
+        tmp_path (Path): Temporary directory for file writing
+    """
+    prefix = (
+        request.param[0] if isinstance(request.param, list | tuple) else request.param
+    )
+    name = request.param[1] if isinstance(request.param, list | tuple) else "test"
+    tmp_path = request.getfixturevalue("tmp_path")
+
+    fp = StaticFilenameProvider(f"test-{new_uid()}")
+    dp = StaticPathProvider(fp, tmp_path)
+
+    async with init_devices(mock=True):
+        det = adsimdetector.SimDetector(prefix, dp, name=name)
+
+    det._config_sigs = [det.drv.acquire_time, det.drv.acquire]
+
+    return det
 
 
 def pytest_collection_modifyitems(config, items):
