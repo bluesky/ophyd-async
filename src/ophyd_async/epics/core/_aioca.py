@@ -66,7 +66,11 @@ def _metadata_from_augmented_value(
     metadata = metadata.copy()
     if hasattr(value, "units") and datatype not in (str, bool):
         metadata["units"] = value.units
-    if hasattr(value, "precision") and not isnan(value.precision):
+    if (
+        hasattr(value, "precision")
+        and not isnan(value.precision)
+        and datatype is not int
+    ):
         metadata["precision"] = value.precision
     if (limits := _limits_from_augmented_value(value)) and datatype is not bool:
         metadata["limits"] = limits
@@ -100,6 +104,11 @@ class CaConverter(Generic[SignalDatatypeT]):
 class DisconnectedCaConverter(CaConverter):
     def __getattribute__(self, __name: str) -> Any:
         raise NotImplementedError("No PV has been set as connect() has not been called")
+
+
+class CaIntConverter(CaConverter[int]):
+    def value(self, value: AugmentedValue) -> int:
+        return int(value)  # type: ignore
 
 
 class CaArrayConverter(CaConverter[np.ndarray]):
@@ -204,7 +213,7 @@ def make_converter(
         and get_unique({k: v.precision for k, v in values.items()}, "precision") == 0
     ):
         # Allow int signals to represent float records when prec is 0
-        return CaConverter(int, pv_dbr)
+        return CaIntConverter(int, pv_dbr)
     elif datatype in (None, inferred_datatype):
         # If datatype matches what we are given then allow it and use inferred converter
         return converter_cls(inferred_datatype, pv_dbr)
