@@ -1,5 +1,9 @@
+from . import __pytest_assert_rewrite  # noqa: F401
 from ._assert import (
+    ApproxTable,
+    MonitorQueue,
     assert_configuration,
+    assert_describe_signal,
     assert_emitted,
     assert_reading,
     assert_value,
@@ -24,6 +28,7 @@ from ._wait_for_pending import wait_for_pending_wakeups
 
 __all__ = [
     "assert_configuration",
+    "assert_describe_signal",
     "assert_emitted",
     "assert_reading",
     "assert_value",
@@ -40,4 +45,6 @@ __all__ = [
     "ExampleTable",
     "OneOfEverythingDevice",
     "ParentOfEverythingDevice",
+    "MonitorQueue",
+    "ApproxTable",
 ]

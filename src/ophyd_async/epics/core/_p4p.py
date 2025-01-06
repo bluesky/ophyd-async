@@ -39,7 +39,7 @@ def _limits_from_value(value: Any) -> Limits:
         substructure = getattr(value, substucture_name, None)
         low = getattr(substructure, low_name, nan)
         high = getattr(substructure, high_name, nan)
-        if not (isnan(low) and isnan(high)):
+        if not (isnan(low) and isnan(high)) and not low == high == 0:
             return LimitsRange(
                 low=None if isnan(low) else low,
                 high=None if isnan(high) else high,
@@ -60,12 +60,21 @@ def _limits_from_value(value: Any) -> Limits:
 def _metadata_from_value(datatype: type[SignalDatatype], value: Any) -> SignalMetadata:
     metadata = SignalMetadata()
     value_data: Any = getattr(value, "value", None)
+    specifier = _get_specifier(value)
     display_data: Any = getattr(value, "display", None)
-    if hasattr(display_data, "units"):
+    if (
+        hasattr(display_data, "units")
+        and specifier[-1] in _number_specifiers
+        and datatype is not str
+    ):
         metadata["units"] = display_data.units
-    if hasattr(display_data, "precision") and not isnan(display_data.precision):
+    if (
+        hasattr(display_data, "precision")
+        and not isnan(display_data.precision)
+        and specifier[-1] in _float_specifiers
+    ):
         metadata["precision"] = display_data.precision
-    if limits := _limits_from_value(value):
+    if (limits := _limits_from_value(value)) and specifier[-1] in _number_specifiers:
         metadata["limits"] = limits
     # Get choices from display or value
     if datatype is str or issubclass(datatype, StrictEnum):
@@ -174,6 +183,9 @@ class PvaTableConverter(PvaConverter[Table]):
 
 
 # https://mdavidsaver.github.io/p4p/values.html
+_float_specifiers = {"f", "d"}
+_int_specifiers = {"b", "B", "h", "H", "i", "I", "l", "L"}
+_number_specifiers = _float_specifiers.union(_int_specifiers)
 _datatype_converter_from_typeid: dict[
     tuple[str, str], tuple[type[SignalDatatype], type[PvaConverter]]
 ] = {
@@ -208,7 +220,7 @@ _datatype_converter_from_typeid: dict[
 }
 
 
-def _get_specifier(value: Value):
+def _get_specifier(value: Value) -> str:
     typ = value.type("value").aspy()
     if isinstance(typ, tuple):
         return typ[0]

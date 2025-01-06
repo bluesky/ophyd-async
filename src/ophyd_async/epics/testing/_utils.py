@@ -5,50 +5,28 @@ import sys
 import time
 from pathlib import Path
 
-from aioca import purge_channel_caches
 
-from ophyd_async.core import Device
-
-
-def generate_random_PV_prefix() -> str:
+def generate_random_pv_prefix() -> str:
     return "".join(random.choice(string.ascii_lowercase) for _ in range(12)) + ":"
 
 
 class TestingIOC:
-    _dbs: dict[type[Device], list[Path]] = {}
-    _prefixes: dict[type[Device], str] = {}
+    def __init__(self):
+        self._db_macros: list[tuple[Path, dict[str, str]]] = []
+        self.output = ""
 
-    @classmethod
-    def with_database(cls, db: Path | str):  # use as a decorator
-        def inner(device_cls: type[Device]):
-            cls.database_for(db, device_cls)
-            return device_cls
+    def add_database(self, db: Path | str, /, **macros: str):
+        self._db_macros.append((Path(db), macros))
 
-        return inner
-
-    @classmethod
-    def database_for(cls, db, device_cls):
-        path = Path(db)
-        if not path.is_file():
-            raise OSError(f"{path} is not a file.")
-        if device_cls not in cls._dbs:
-            cls._dbs[device_cls] = []
-        cls._dbs[device_cls].append(path)
-
-    def prefix_for(self, device_cls):
-        # generate random prefix, return existing if already generated
-        return self._prefixes.setdefault(device_cls, generate_random_PV_prefix())
-
-    def start_ioc(self):
+    def start(self):
         ioc_args = [
             sys.executable,
             "-m",
             "epicscorelibs.ioc",
         ]
-        for device_cls, dbs in self._dbs.items():
-            prefix = self.prefix_for(device_cls)
-            for db in dbs:
-                ioc_args += ["-m", f"device={prefix}", "-d", str(db)]
+        for db, macros in self._db_macros:
+            macro_str = ",".join(f"{k}={v}" for k, v in macros.items())
+            ioc_args += ["-m", macro_str, "-d", str(db)]
         self._process = subprocess.Popen(
             ioc_args,
             stdin=subprocess.PIPE,
@@ -56,23 +34,17 @@ class TestingIOC:
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         )
+        assert self._process.stdout
         start_time = time.monotonic()
-        while "iocRun: All initialization complete" not in (
-            self._process.stdout.readline().strip()  # type: ignore
-        ):
+        while "iocRun: All initialization complete" not in self.output:
             if time.monotonic() - start_time > 10:
-                try:
-                    print(self._process.communicate("exit()")[0])
-                except ValueError:
-                    # Someone else already called communicate
-                    pass
-                raise TimeoutError("IOC did not start in time")
+                self.stop()
+                raise TimeoutError(f"IOC did not start in time:\n{self.output}")
+            self.output += self._process.stdout.readline()
 
-    def stop_ioc(self):
-        # close backend caches before the event loop
-        purge_channel_caches()
+    def stop(self):
         try:
-            print(self._process.communicate("exit()")[0])
+            self.output += self._process.communicate("exit()")[0]
         except ValueError:
             # Someone else already called communicate
             pass
