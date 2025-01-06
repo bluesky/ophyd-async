@@ -31,11 +31,11 @@ async def mock_hdf_panda(tmp_path):
     mock_hdf_panda = HDFPanda("HDFPANDA:", path_provider=dp, name="panda")
     await mock_hdf_panda.connect(mock=True)
 
-    def link_function(value, **kwargs):
+    def link_function(value: bool, wait: bool = True):
         set_mock_value(mock_hdf_panda.pcap.active, value)
 
     # Mimic directory exists check that happens normally in the PandA IOC
-    def check_dir_exits(value, **kwargs):
+    def check_dir_exits(value: str, wait: bool = True):
         if os.path.exists(value):
             set_mock_value(mock_hdf_panda.data.directory_exists, True)
 
@@ -54,8 +54,8 @@ async def mock_hdf_panda(tmp_path):
 
 
 async def test_hdf_panda_passes_blocks_to_controller(mock_hdf_panda: HDFPanda):
-    assert hasattr(mock_hdf_panda.controller, "pcap")
-    assert mock_hdf_panda.controller.pcap is mock_hdf_panda.pcap
+    assert hasattr(mock_hdf_panda._controller, "pcap")
+    assert mock_hdf_panda._controller.pcap is mock_hdf_panda.pcap
 
 
 async def test_hdf_panda_hardware_triggered_flyable(
@@ -116,7 +116,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
         # Verify that _completable_frames is reset to 0 after the final complete.
         assert mock_hdf_panda._completable_frames == 0
         yield from bps.unstage_all(flyer, mock_hdf_panda)
-        yield from bps.wait_for([lambda: mock_hdf_panda.controller.disarm()])
+        yield from bps.wait_for([lambda: mock_hdf_panda._controller.disarm()])
 
     # fly scan
     RE(flying_plan())

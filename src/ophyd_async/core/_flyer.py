@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic
+from typing import Any, Generic
 
 from bluesky.protocols import Flyable, Preparable, Stageable
 
@@ -10,7 +10,7 @@ from ._utils import T
 
 class FlyerController(ABC, Generic[T]):
     @abstractmethod
-    async def prepare(self, value: T):
+    async def prepare(self, value: T) -> Any:
         """Move to the start of the flyscan"""
 
     @abstractmethod

@@ -2,11 +2,8 @@ import asyncio
 from typing import Literal
 
 from ophyd_async.core import (
-    AsyncStatus,
-    DetectorController,
     DetectorTrigger,
     TriggerInfo,
-    set_and_wait_for_value,
 )
 from ophyd_async.epics import adcore
 
@@ -18,13 +15,17 @@ from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
 _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
 
 
-class AravisController(DetectorController):
+class AravisController(adcore.ADBaseController[AravisDriverIO]):
     GPIO_NUMBER = Literal[1, 2, 3, 4]
 
-    def __init__(self, driver: AravisDriverIO, gpio_number: GPIO_NUMBER) -> None:
-        self._drv = driver
+    def __init__(
+        self,
+        driver: AravisDriverIO,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        gpio_number: GPIO_NUMBER = 1,
+    ) -> None:
+        super().__init__(driver, good_states=good_states)
         self.gpio_number = gpio_number
-        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float | None) -> float:
         return _HIGHEST_POSSIBLE_DEADTIME
@@ -35,24 +36,17 @@ class AravisController(DetectorController):
         else:
             image_mode = adcore.ImageMode.MULTIPLE
         if (exposure := trigger_info.livetime) is not None:
-            await self._drv.acquire_time.set(exposure)
+            asyncio.gather(self.driver.acquire_time.set(exposure))
 
         trigger_mode, trigger_source = self._get_trigger_info(trigger_info.trigger)
         # trigger mode must be set first and on it's own!
-        await self._drv.trigger_mode.set(trigger_mode)
+        await self.driver.trigger_mode.set(trigger_mode)
 
         await asyncio.gather(
-            self._drv.trigger_source.set(trigger_source),
-            self._drv.num_images.set(trigger_info.total_number_of_triggers),
-            self._drv.image_mode.set(image_mode),
+            self.driver.trigger_source.set(trigger_source),
+            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.image_mode.set(image_mode),
         )
-
-    async def arm(self):
-        self._arm_status = await set_and_wait_for_value(self._drv.acquire, True)
-
-    async def wait_for_idle(self):
-        if self._arm_status:
-            await self._arm_status
 
     def _get_trigger_info(
         self, trigger: DetectorTrigger
@@ -72,6 +66,3 @@ class AravisController(DetectorController):
             return AravisTriggerMode.OFF, AravisTriggerSource.FREERUN
         else:
             return (AravisTriggerMode.ON, f"Line{self.gpio_number}")  # type: ignore
-
-    async def disarm(self):
-        await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)

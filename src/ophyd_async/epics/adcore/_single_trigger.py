@@ -16,11 +16,12 @@ class SingleTriggerDetector(StandardReadable, Triggerable):
         drv: ADBaseIO,
         read_uncached: Sequence[SignalR] = (),
         name="",
-        **plugins: NDPluginBaseIO,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self.drv = drv
-        for k, v in plugins.items():
-            setattr(self, k, v)
+        if plugins is not None:
+            for k, v in plugins.items():
+                setattr(self, k, v)
 
         self.add_readables(
             [self.drv.array_counter, *read_uncached],

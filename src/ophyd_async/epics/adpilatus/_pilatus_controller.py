@@ -1,9 +1,9 @@
 import asyncio
+from enum import Enum
+from typing import TypeVar, get_args
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    AsyncStatus,
-    DetectorController,
     DetectorTrigger,
     TriggerInfo,
     wait_for_value,
@@ -13,7 +13,24 @@ from ophyd_async.epics import adcore
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
 
-class PilatusController(DetectorController):
+#: Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
+#: The required minimum time difference between ExpPeriod and ExpTime
+#: (readout time) is 2.28 ms
+#: We provide an option to override for newer Pilatus models
+class PilatusReadoutTime(float, Enum):
+    """Pilatus readout time per model in ms"""
+
+    # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
+    PILATUS2 = 2.28e-3
+
+    # Cite: https://media.dectris.com/user-manual-pilatus3-2020.pdf
+    PILATUS3 = 0.95e-3
+
+
+PilatusControllerT = TypeVar("PilatusControllerT", bound="PilatusController")
+
+
+class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
     _supported_trigger_types = {
         DetectorTrigger.INTERNAL: PilatusTriggerMode.INTERNAL,
         DetectorTrigger.CONSTANT_GATE: PilatusTriggerMode.EXT_ENABLE,
@@ -23,47 +40,55 @@ class PilatusController(DetectorController):
     def __init__(
         self,
         driver: PilatusDriverIO,
-        readout_time: float,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        readout_time: float = PilatusReadoutTime.PILATUS3,
     ) -> None:
-        self._drv = driver
+        super().__init__(driver, good_states=good_states)
         self._readout_time = readout_time
-        self._arm_status: AsyncStatus | None = None
+
+    @classmethod
+    def controller_and_drv(
+        cls: type[PilatusControllerT],
+        prefix: str,
+        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        name: str = "",
+        readout_time: float = PilatusReadoutTime.PILATUS3,
+    ) -> tuple[PilatusControllerT, PilatusDriverIO]:
+        driver_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
+        driver = driver_cls(prefix, name=name)
+        controller = cls(driver, good_states=good_states, readout_time=readout_time)
+        return controller, driver
 
     def get_deadtime(self, exposure: float | None) -> float:
         return self._readout_time
 
     async def prepare(self, trigger_info: TriggerInfo):
         if trigger_info.livetime is not None:
-            await adcore.set_exposure_time_and_acquire_period_if_supplied(
-                self, self._drv, trigger_info.livetime
+            await self.set_exposure_time_and_acquire_period_if_supplied(
+                trigger_info.livetime
             )
         await asyncio.gather(
-            self._drv.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
-            self._drv.num_images.set(
+            self.driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
+            self.driver.num_images.set(
                 999_999
                 if trigger_info.total_number_of_triggers == 0
                 else trigger_info.total_number_of_triggers
             ),
-            self._drv.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
         )
 
     async def arm(self):
         # Standard arm the detector and wait for the acquire PV to be True
-        self._arm_status = await adcore.start_acquiring_driver_and_ensure_status(
-            self._drv
-        )
+        self._arm_status = await self.start_acquiring_driver_and_ensure_status()
+
         # The pilatus has an additional PV that goes True when the camserver
         # is actually ready. Should wait for that too or we risk dropping
         # a frame
         await wait_for_value(
-            self._drv.armed,
+            self.driver.armed,
             True,
             timeout=DEFAULT_TIMEOUT,
         )
-
-    async def wait_for_idle(self):
-        if self._arm_status:
-            await self._arm_status
 
     @classmethod
     def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:
@@ -74,6 +99,3 @@ class PilatusController(DetectorController):
                 f"use {trigger}"
             )
         return cls._supported_trigger_types[trigger]
-
-    async def disarm(self):
-        await adcore.stop_busy_record(self._drv.acquire, False, timeout=1)
