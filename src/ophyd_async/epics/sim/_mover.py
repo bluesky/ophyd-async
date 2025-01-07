@@ -53,7 +53,9 @@ class Mover(StandardReadable, Movable, Stoppable):
             self.velocity.get_value(),
         )
         if timeout == CALCULATE_TIMEOUT:
-            assert velocity > 0, "Mover has zero velocity"
+            if velocity <= 0:
+                msg = "Mover has zero velocity"
+                raise ValueError(msg)
             timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
         # Make an Event that will be set on completion, and a Status that will
         # error if not done in time

@@ -248,6 +248,15 @@ async def test_set_velocity(mock_mover: sim.Mover) -> None:
     await v.set(3.0)
     assert (await v.read())["mock_mover-velocity"]["value"] == 3.0
     assert q.empty()
+    await v.set(0.0)
+    assert (await v.read())["mock_mover-velocity"]["value"] == 0.0
+    with pytest.raises(ValueError):
+        await mock_mover.set(3.14)
+    # TODO: double check the logic, why would we disallow negative velocity?
+    await v.set(-1.0)
+    assert (await v.read())["mock_mover-velocity"]["value"] == -1.0
+    with pytest.raises(ValueError):
+        await mock_mover.set(3.14)
 
 
 async def test_mover_disconnected():
