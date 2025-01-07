@@ -8,7 +8,7 @@ from bluesky.utils import ProgressBarManager, register_transform
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
 
 from ophyd_async.core import init_devices
-from ophyd_async.epics import sim
+from ophyd_async.epics import demo
 
 # Create a run engine, with plotting, progressbar and transform
 RE = RunEngine({}, call_returns_result=True)
@@ -19,7 +19,7 @@ plt.ion()
 register_transform("RE", prefix="<")
 
 # Start IOC with demo pvs in subprocess
-pv_prefix = sim.start_ioc_subprocess()
+pv_prefix = demo.start_ioc_subprocess()
 
 
 # Create ophyd devices
@@ -32,6 +32,6 @@ det_old = OldSensor(pv_prefix, name="det_old")
 
 # Create ophyd-async devices
 with init_devices():
-    det = sim.Sensor(pv_prefix)
-    det_group = sim.SensorGroup(pv_prefix)
-    samp = sim.SampleStage(pv_prefix)
+    det = demo.Sensor(pv_prefix)
+    det_group = demo.SensorGroup(pv_prefix)
+    samp = demo.SampleStage(pv_prefix)
