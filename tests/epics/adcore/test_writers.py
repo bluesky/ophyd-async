@@ -79,6 +79,13 @@ async def test_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._file
 
 
+async def test_file_not_found(hdf_writer: adcore.ADHDFWriter):
+    with pytest.raises(
+        FileNotFoundError, match=r"File path .* for hdf plugin does not exist"
+    ):
+        await hdf_writer.open()
+
+
 async def test_stats_describe_when_plugin_configured(
     hdf_writer_with_stats: adcore.ADHDFWriter,
 ):

@@ -74,9 +74,9 @@ class ADHDFWriter(DetectorWriter):
             self.hdf.enable_callbacks.set(Callback.ENABLE),
         )
 
-        assert (
-            await self.hdf.file_path_exists.get_value()
-        ), f"File path {info.directory_path} for hdf plugin does not exist"
+        if not await self.hdf.file_path_exists.get_value():
+            msg = f"File path {info.directory_path} for hdf plugin does not exist"
+            raise FileNotFoundError(msg)
 
         # Overwrite num_capture to go forever
         await self.hdf.num_capture.set(0)
