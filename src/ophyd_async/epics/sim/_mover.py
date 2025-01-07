@@ -52,11 +52,11 @@ class Mover(StandardReadable, Movable, Stoppable):
             self.precision.get_value(),
             self.velocity.get_value(),
         )
-        if timeout == CALCULATE_TIMEOUT:
-            if velocity <= 0:
-                msg = "Mover has zero velocity"
-                raise ValueError(msg)
-            timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
+        if timeout is CALCULATE_TIMEOUT and velocity != 0:
+            timeout = abs((new_position - old_position) / velocity) + DEFAULT_TIMEOUT
+        else:
+            msg = "Mover has zero velocity"
+            raise ValueError(msg)
         # Make an Event that will be set on completion, and a Status that will
         # error if not done in time
         done = asyncio.Event()

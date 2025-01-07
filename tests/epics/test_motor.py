@@ -189,12 +189,18 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
     q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["sim_motor-velocity"]["value"] == 1.0
-    await v.set(2.0)
-    assert (await q.get())["sim_motor-velocity"]["value"] == 2.0
+    await v.set(-2.0)
+    assert (await q.get())["sim_motor-velocity"]["value"] == -2.0
     v.clear_sub(q.put_nowait)
     await v.set(3.0)
     assert (await v.read())["sim_motor-velocity"]["value"] == 3.0
     assert q.empty()
+
+
+async def test_zero_velocity(sim_motor: motor.Motor) -> None:
+    await sim_motor.velocity.set(0)
+    with pytest.raises(ValueError):
+        await sim_motor.set(3.14)
 
 
 async def test_prepare_velocity_errors(sim_motor: motor.Motor):
@@ -313,17 +319,20 @@ async def test_prepare(
 
 async def test_kickoff(sim_motor: motor.Motor):
     sim_motor.set = MagicMock()
-    with pytest.raises(AssertionError):
+    with pytest.raises(
+        RuntimeError, match="Motor must be prepared before attempting to kickoff"
+    ):
         await sim_motor.kickoff()
-    with pytest.raises(AssertionError):
-        await sim_motor.kickoff()
+    # TODO: why was this called _twice_?
+    # with pytest.raises(RuntimeError):
+    #     await sim_motor.kickoff()
     sim_motor._fly_completed_position = 20
     await sim_motor.kickoff()
     sim_motor.set.assert_called_once_with(20, timeout=CALCULATE_TIMEOUT)
 
 
 async def test_complete(sim_motor: motor.Motor) -> None:
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match="kickoff not called"):
         sim_motor.complete()
     sim_motor._fly_status = sim_motor.set(20)
     assert not sim_motor._fly_status.done
