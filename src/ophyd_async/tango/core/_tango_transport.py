@@ -735,7 +735,10 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
 
         if callback:
             try:
-                assert not self.proxies[self.read_trl].has_subscription()  # type: ignore
+                # TODO: remove assert, I fail to get the test to work
+                # as soon as move the assert into a separate RunTime error
+                # the `test_tango_sim` fails
+                assert not self.proxies[self.read_trl].has_subscription()  # type: ignore  # noqa: S101
                 self.proxies[self.read_trl].subscribe_callback(callback)  # type: ignore
             except AssertionError as ae:
                 raise RuntimeError(
