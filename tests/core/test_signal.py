@@ -83,7 +83,7 @@ _array_vals = {
 
 @pytest.fixture
 async def one_of_everything_device():
-    device = OneOfEverythingDevice()
+    device = OneOfEverythingDevice("everything-device")
     await device.connect()
     return device
 
@@ -375,72 +375,92 @@ async def test_assert_configuration_everything(
     await assert_configuration(
         one_of_everything_device,
         {
-            "int": {"value": 1, "timestamp": ANY, "alarm_severity": 0},
-            "float": {"value": 1.234, "timestamp": ANY, "alarm_severity": 0},
-            "str": {"value": "test_string", "timestamp": ANY, "alarm_severity": 0},
-            "bool": {"value": True, "timestamp": ANY, "alarm_severity": 0},
-            "enum": {"value": "Bbb", "timestamp": ANY, "alarm_severity": 0},
-            "int8a": {
+            "everything-device-int": {
+                "value": 1,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-float": {
+                "value": 1.234,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-str": {
+                "value": "test_string",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-bool": {
+                "value": True,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-enum": {
+                "value": "Bbb",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-int8a": {
                 "value": _array_vals["int8a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "uint8a": {
+            "everything-device-uint8a": {
                 "value": _array_vals["uint8a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "int16a": {
+            "everything-device-int16a": {
                 "value": _array_vals["int16a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "uint16a": {
+            "everything-device-uint16a": {
                 "value": _array_vals["uint16a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "int32a": {
+            "everything-device-int32a": {
                 "value": _array_vals["int32a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "uint32a": {
+            "everything-device-uint32a": {
                 "value": _array_vals["uint32a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "int64a": {
+            "everything-device-int64a": {
                 "value": _array_vals["int64a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "uint64a": {
+            "everything-device-uint64a": {
                 "value": _array_vals["uint64a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "float32a": {
+            "everything-device-float32a": {
                 "value": _array_vals["float32a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "float64a": {
+            "everything-device-float64a": {
                 "value": _array_vals["float64a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "stra": {
+            "everything-device-stra": {
                 "value": ["one", "two", "three"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "enuma": {
+            "everything-device-enuma": {
                 "value": [ExampleEnum.A, ExampleEnum.C],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "table": {
+            "everything-device-table": {
                 "value": ExampleTable(
                     bool=np.array([False, False, True, True]),
                     int=np.array([1, 8, -9, 32], dtype=np.int32),
@@ -451,7 +471,7 @@ async def test_assert_configuration_everything(
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "ndarray": {
+            "everything-device-ndarray": {
                 "value": np.array([[1, 2, 3], [4, 5, 6]]),
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -463,30 +483,55 @@ async def test_assert_configuration_everything(
 async def test_assert_reading_everything(
     one_of_everything_device: OneOfEverythingDevice,
 ):
+    await assert_reading(one_of_everything_device, {})
     await assert_reading(
         one_of_everything_device.int,
-        {"int": {"value": 1, "timestamp": ANY, "alarm_severity": 0}},
+        {"everything-device-int": {"value": 1, "timestamp": ANY, "alarm_severity": 0}},
     )
     await assert_reading(
         one_of_everything_device.float,
-        {"float": {"value": 1.234, "timestamp": ANY, "alarm_severity": 0}},
+        {
+            "everything-device-float": {
+                "value": 1.234,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
     )
     await assert_reading(
         one_of_everything_device.str,
-        {"str": {"value": "test_string", "timestamp": ANY, "alarm_severity": 0}},
+        {
+            "everything-device-str": {
+                "value": "test_string",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
     )
     await assert_reading(
         one_of_everything_device.bool,
-        {"bool": {"value": True, "timestamp": ANY, "alarm_severity": 0}},
+        {
+            "everything-device-bool": {
+                "value": True,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
     )
     await assert_reading(
         one_of_everything_device.enum,
-        {"enum": {"value": ExampleEnum.B, "timestamp": ANY, "alarm_severity": 0}},
+        {
+            "everything-device-enum": {
+                "value": ExampleEnum.B,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
     )
     await assert_reading(
         one_of_everything_device.int8a,
         {
-            "int8a": {
+            "everything-device-int8a": {
                 "value": _array_vals["int8a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -496,7 +541,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.uint8a,
         {
-            "uint8a": {
+            "everything-device-uint8a": {
                 "value": _array_vals["uint8a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -506,7 +551,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.int16a,
         {
-            "int16a": {
+            "everything-device-int16a": {
                 "value": _array_vals["int16a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -516,7 +561,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.uint16a,
         {
-            "uint16a": {
+            "everything-device-uint16a": {
                 "value": _array_vals["uint16a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -526,7 +571,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.int32a,
         {
-            "int32a": {
+            "everything-device-int32a": {
                 "value": _array_vals["int32a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -536,7 +581,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.uint32a,
         {
-            "uint32a": {
+            "everything-device-uint32a": {
                 "value": _array_vals["uint32a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -546,7 +591,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.int64a,
         {
-            "int64a": {
+            "everything-device-int64a": {
                 "value": _array_vals["int64a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -556,7 +601,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.uint64a,
         {
-            "uint64a": {
+            "everything-device-uint64a": {
                 "value": _array_vals["uint64a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -566,7 +611,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.float32a,
         {
-            "float32a": {
+            "everything-device-float32a": {
                 "value": _array_vals["float32a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -576,7 +621,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.float64a,
         {
-            "float64a": {
+            "everything-device-float64a": {
                 "value": _array_vals["float64a"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -586,7 +631,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.stra,
         {
-            "stra": {
+            "everything-device-stra": {
                 "value": ["one", "two", "three"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -596,7 +641,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.enuma,
         {
-            "enuma": {
+            "everything-device-enuma": {
                 "value": [ExampleEnum.A, ExampleEnum.C],
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -606,7 +651,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.table,
         {
-            "table": {
+            "everything-device-table": {
                 "value": ExampleTable(
                     bool=np.array([False, False, True, True], np.bool_),
                     int=np.array([1, 8, -9, 32], np.int32),
@@ -622,7 +667,7 @@ async def test_assert_reading_everything(
     await assert_reading(
         one_of_everything_device.ndarray,
         {
-            "ndarray": {
+            "everything-device-ndarray": {
                 "value": np.array(([1, 2, 3], [4, 5, 6])),
                 "timestamp": ANY,
                 "alarm_severity": 0,
