@@ -26,7 +26,7 @@ class PandaPcapController(DetectorController):
                 "Only constant_gate and variable_gate triggering is supported on "
                 "the PandA",
             )
-            raise (TypeError, msg)
+            raise TypeError(msg)
 
     async def arm(self):
         self._arm_status = self.pcap.arm.set(True)
