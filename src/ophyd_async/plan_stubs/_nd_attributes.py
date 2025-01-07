@@ -51,10 +51,12 @@ def setup_ndattributes(
 
 def setup_ndstats_sum(detector: Device):
     hdf = getattr(detector, "fileio", None)
-    assert isinstance(hdf, NDFileHDFIO), (
-        f"Expected {detector.name} to have 'fileio' attribute that is an NDFilHDFIO, "
-        f"got {hdf}"
-    )
+    if not isinstance(hdf, NDFileHDFIO):
+        msg = (
+            f"Expected {detector.name} to have 'fileio' attribute that is an NDFilHDFIO, "
+            f"got {hdf}"
+        )
+        raise TypeError(msg)
     yield from (
         setup_ndattributes(
             hdf,
