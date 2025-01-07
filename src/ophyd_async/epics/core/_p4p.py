@@ -383,10 +383,15 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         return self.converter.value(value)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
+        if callback and self.subscription:
+            msg = "Cannot set a callback when one is already set"
+            raise RuntimeError(msg)
+
+        if self.subscription:
+            self.subscription.close()
+            self.subscription = None
+
         if callback:
-            assert (
-                not self.subscription
-            ), "Cannot set a callback when one is already set"
 
             async def async_callback(v):
                 callback(self._make_reading(v))
@@ -397,6 +402,3 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             self.subscription = context().monitor(
                 self.read_pv, async_callback, request=request
             )
-        elif self.subscription:
-            self.subscription.close()
-            self.subscription = None
