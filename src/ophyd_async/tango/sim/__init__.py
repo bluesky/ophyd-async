@@ -9,4 +9,16 @@ __all__ = [
     "TangoCounter",
     "TangoMover",
     "TangoDetector",
+    "device_content",
 ]
+
+device_content = (
+    {
+        "class": DemoMover,
+        "devices": [{"name": "sim/motor/1"}],
+    },
+    {
+        "class": DemoCounter,
+        "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
+    },
+)
