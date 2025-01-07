@@ -25,9 +25,12 @@ class SimController(DetectorController):
         return 0.002
 
     async def prepare(self, trigger_info: TriggerInfo):
-        assert (
-            trigger_info.trigger == DetectorTrigger.INTERNAL
-        ), "fly scanning (i.e. external triggering) is not supported for this device"
+        if trigger_info.trigger != DetectorTrigger.INTERNAL:
+            msg = (
+                "fly scanning (i.e. external triggering) is not supported for this "
+                "device"
+            )
+            raise TypeError(msg)
         self.frame_timeout = (
             DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
