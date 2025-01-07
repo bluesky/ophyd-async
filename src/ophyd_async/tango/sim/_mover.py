@@ -43,8 +43,11 @@ class TangoMover(TangoReadable, Movable, Stoppable):
         (old_position, velocity) = await asyncio.gather(
             self.position.get_value(), self.velocity.get_value()
         )
-        if timeout is CALCULATE_TIMEOUT:
-            assert velocity > 0, "Motor has zero velocity"
+        # TODO: check whether Tango does work with negative velocity
+        if timeout is CALCULATE_TIMEOUT and velocity == 0:
+            msg = "Motor has zero velocity"
+            raise ValueError(msg)
+        else:
             timeout = abs(value - old_position) / velocity + DEFAULT_TIMEOUT
 
         if not (isinstance(timeout, float) or timeout is None):
