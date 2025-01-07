@@ -190,7 +190,7 @@ type = "forbidden"
 forbidden_modules = ["ophyd_async.testing", "ophyd_async.sim"]
 source_modules = [
     "ophyd_async.plan_stubs",
-    "ophyd_async.fast.*",
+    "ophyd_async.fastcs",
     "ophyd_async.epics",
     "ophyd_async.tango",
 ]
