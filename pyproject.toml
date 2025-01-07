@@ -155,6 +155,7 @@ lint.select = [
     "UP",      # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
     "SLF",     # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
     "PLC2701", # private import - https://docs.astral.sh/ruff/rules/import-private-name/
+    "S101",    # assert = https://docs.astral.sh/ruff/rules/assert/
 ]
 lint.ignore = [
     "B901", # Return in a generator is needed for plans
@@ -165,7 +166,9 @@ lint.preview = true # so that preview mode PLC2701 is enabled
 # By default, private member access is allowed in tests
 # See https://github.com/DiamondLightSource/python-copier-template/issues/154
 # Remove this line to forbid private member access in tests
-"tests/**/*" = ["SLF001"]
+"tests/**/*" = ["SLF001", "S101"]
+"src/ophyd_async/testing/**/*" = ["SLF001", "S101"]
+"system_tests/**/*" = ["SLF001", "S101"]
 
 
 [tool.importlinter]
