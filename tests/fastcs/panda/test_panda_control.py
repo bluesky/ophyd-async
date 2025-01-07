@@ -49,7 +49,7 @@ async def test_panda_controller_arm_disarm(mock_panda):
 
 async def test_panda_controller_wrong_trigger():
     pandaController = PandaPcapController(None)
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         await pandaController.prepare(
             TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.INTERNAL)
         )
