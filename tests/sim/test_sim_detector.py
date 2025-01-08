@@ -5,9 +5,8 @@ import bluesky.plans as bp
 import h5py
 import numpy as np
 import pytest
-from bluesky import RunEngine
+from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import TriggerInfo
 from ophyd_async.plan_stubs import ensure_connected
 from ophyd_async.sim import PatternDetector
 from ophyd_async.testing import assert_emitted
