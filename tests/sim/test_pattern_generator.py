@@ -1,3 +1,6 @@
+from unittest.mock import MagicMock
+
+import numpy as np
 import pytest
 
 from ophyd_async.sim import PatternGenerator
@@ -32,3 +35,16 @@ def test_set_x(pattern_generator: PatternGenerator):
 def test_set_y(pattern_generator: PatternGenerator):
     pattern_generator.set_y(-3.0)
     assert pattern_generator.y == -3.0
+
+
+def test_write_data_to_dataset_no_file_opened(pattern_generator: PatternGenerator):
+    with pytest.raises(OSError, match="No file has been opened!"):
+        pattern_generator.write_data_to_dataset("test_path", (10,), MagicMock())
+
+
+def test_write_data_to_dataset_invalid_type(pattern_generator: PatternGenerator):
+    pattern_generator._handle_for_h5_file = {"test_path": MagicMock()}  # type: ignore
+    with pytest.raises(
+        TypeError, match="Expected test_path to be a dataset, got MagicMock"
+    ):
+        pattern_generator.write_data_to_dataset("test_path", (10,), MagicMock())
