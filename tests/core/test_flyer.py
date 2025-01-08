@@ -9,7 +9,11 @@ import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource # type: ignore
+from event_model import (  # type: ignore
+    ComposeStreamResourceBundle,
+    DataKey,
+    compose_stream_resource,
+)
 from pydantic import ValidationError
 
 from ophyd_async.core import (

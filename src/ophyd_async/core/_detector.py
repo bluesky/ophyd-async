@@ -66,9 +66,11 @@ class TriggerInfo(BaseModel):
     #: What is the maximum timeout on waiting for a frame
     frame_timeout: float | None = Field(default=None, gt=0)
     #: The number of triggers that are grouped into a single StreamDatum index.
-    #: A frames_per_event > 1 can be useful to have frames from a faster detector able to be zipped with a single frame from a slower detector.
-    #: E.g. if number_of_triggers=10 and frames_per_event=5 then the detector will take 10 frames,
-    #: but publish 2 StreamDatum indices, and describe() will show a shape of (5, h, w) for each.
+    #: A frames_per_event > 1 can be useful to have frames from a faster detector
+    #: able to be zipped with a single frame from a slower detector. E.g. if
+    #: number_of_triggers=10 and frames_per_event=5 then the detector will take
+    #: 10 frames, but publish 2 StreamDatum indices, and describe() will show a
+    #: shape of (5, h, w) for each.
     frames_per_event: NonNegativeInt = 1
 
     @computed_field
@@ -107,8 +109,8 @@ class DetectorController(ABC):
                 exposure time.
                 deadtime Defaults to None. This is the minimum deadtime between
                 triggers.
-                frames_per_event The number of triggers grouped into a single StreamDatum
-                index.
+                frames_per_event The number of triggers grouped into a single
+                    StreamDatum index
         """
 
     @abstractmethod
@@ -137,11 +139,13 @@ class DetectorWriter(ABC):
         """Open writer and wait for it to be ready for data.
 
         Args:
-            frames_per_event: The number of triggers are grouped into a single StreamDatum index.
-                A frames_per_event > 1 can be useful to have frames from a faster detector able to be zipped with a single frame from a slow detector.
-                E.g. if number_of_triggers=10 and frames_per_event=5 then the detector will take 10 frames,
-                but publish 2 StreamDatum indices, and describe() will show a shape of (5, h, w) for each.
-
+            frames_per_event: The number of triggers that are grouped into a single
+                StreamDatum index. A frames_per_event > 1 can be useful to have
+                frames from a faster detector able to be zipped with a single frame
+                from a slower detector. E.g. if number_of_triggers=10 and
+                frames_per_event=5 then the detector will take 10 frames, but publish
+                2 StreamDatum indices, and describe() will show a shape of (5, h, w)
+                for each.
         Returns:
             Output for ``describe()``
         """

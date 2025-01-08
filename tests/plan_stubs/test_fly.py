@@ -6,7 +6,11 @@ import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource # type: ignore
+from event_model import (  # type: ignore
+    ComposeStreamResourceBundle,
+    DataKey,
+    compose_stream_resource,
+)
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -52,7 +56,7 @@ class DummyWriter(DetectorWriter):
         return {
             self._name: DataKey(
                 source="soft://some-source",
-                shape=list((frames_per_event, *self._shape)),
+                shape=[frames_per_event, *self._shape],
                 dtype="number",
                 external="STREAM:",
             )
@@ -81,6 +85,7 @@ class DummyWriter(DetectorWriter):
                     parameters={
                         "path": "",
                         "swmr": False,
+                        "shape": (self._frames_per_event, *self._shape),
                     },
                     uid=None,
                     validate=True,

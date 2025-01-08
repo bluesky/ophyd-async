@@ -104,9 +104,7 @@ class PandaHDFWriter(DetectorWriter):
         self._datasets = [
             # TODO: Update chunk size to read signal once available in IOC
             # Currently PandA IOC sets chunk size to 1024 points per chunk
-            HDFDataset(
-                dataset_name, "/" + dataset_name, shape=(), chunk_shape=(1024,)
-            )
+            HDFDataset(dataset_name, "/" + dataset_name, shape=(), chunk_shape=(1024,))
             for dataset_name in capture_table.name
         ]
 

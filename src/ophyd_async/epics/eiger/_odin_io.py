@@ -2,7 +2,7 @@ import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
 
 from bluesky.protocols import StreamAsset
-from event_model import DataKey # type: ignore
+from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -102,7 +102,7 @@ class OdinWriter(DetectorWriter):
         return {
             "data": DataKey(
                 source=self._drv.file_name.source,
-                shape=list((self._frames_per_event, *data_shape)),
+                shape=[self._frames_per_event, *data_shape],
                 dtype="array",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
                 dtype_numpy="<u2",

@@ -185,9 +185,12 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                     data_key=self._name_provider(),
                     # Q: What are the parameters used for? Extra info?
                     parameters={
-                        # TODO: Validate this assumption and that it should not be self._frames_per_event
-                        # Assume that we always write self._frames_per_event frames per file/chunk
+                        # Assume that we always write self._frames_per_event
+                        # frames per file/chunk
+                        # TODO: Validate this assumption and that it should
+                        # not be self._frames_per_event
                         "chunk_shape": (self._frames_per_event, *frame_shape),
+                        "shape": (self._frames_per_event, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
                     },

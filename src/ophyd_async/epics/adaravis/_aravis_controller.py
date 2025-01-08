@@ -14,6 +14,7 @@ from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
 _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
 
+
 class AravisController(adcore.ADBaseController[AravisDriverIO]):
     GPIO_NUMBER = Literal[1, 2, 3, 4]
 

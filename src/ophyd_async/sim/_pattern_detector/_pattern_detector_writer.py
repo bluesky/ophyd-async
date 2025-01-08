@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator, AsyncIterator
 
-from event_model import DataKey # type: ignore
+from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import DEFAULT_TIMEOUT, DetectorWriter, NameProvider, PathProvider
 

@@ -74,7 +74,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         name = self._name_provider()
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
-        
+
         # Used by the base class
         self._frames_per_event = frames_per_event
 
@@ -86,7 +86,9 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
-                shape=(frames_per_event, *detector_shape) if frames_per_event > 1 or detector_shape else (),
+                shape=(frames_per_event, *detector_shape)
+                if frames_per_event > 1 or detector_shape
+                else (),
                 dtype_numpy=np_dtype,
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
