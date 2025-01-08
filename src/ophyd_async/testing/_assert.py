@@ -1,5 +1,6 @@
 import asyncio
 import time
+from collections.abc import Callable
 from contextlib import AbstractContextManager
 from typing import Any
 
@@ -144,10 +145,12 @@ class ApproxTable:
 
 
 class MonitorQueue(AbstractContextManager):
-    def __init__(self, signal: SignalR):
+    def __init__(self,
+                 signal: SignalR,
+                 timestamp_provider: Callable[[], float] | None = None):
         self.signal = signal
         self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
-        self.signal.subscribe(self.updates.put_nowait)
+        self._timestamp_provider = timestamp_provider or time.time
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
@@ -162,7 +165,7 @@ class MonitorQueue(AbstractContextManager):
         expected_reading = {
             self.signal.name: {
                 "value": expected_value,
-                "timestamp": pytest.approx(time.time(), rel=0.1),
+                "timestamp": pytest.approx(self._timestamp_provider(), rel=0.1),
                 "alarm_severity": 0,
             }
         }
