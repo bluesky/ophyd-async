@@ -117,7 +117,6 @@ class PatternGenerator:
 
         self._handle_for_h5_file = h5py.File(self.target_path, "w", libver="latest")
 
-        # assert self._handle_for_h5_file, "not loaded the file right"
         if not self._handle_for_h5_file:
             msg = f"Problem opening file {self.target_path}"
             raise OSError(msg)
@@ -190,7 +189,9 @@ class PatternGenerator:
             # cannot get the full filename the HDF writer will write
             # until the first frame comes in
             if not self._hdf_stream_provider:
-                assert self.target_path, "open file has not been called"
+                if self.target_path is None:
+                    msg = "open file has not been called"
+                    raise RuntimeError(msg)
                 self._hdf_stream_provider = HDFFile(
                     self.target_path,
                     self._datasets,
