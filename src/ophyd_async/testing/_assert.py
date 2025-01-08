@@ -148,7 +148,6 @@ class MonitorQueue(AbstractContextManager):
     def __init__(self, signal: SignalR):
         self.signal = signal
         self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
-        self.signal.subscribe(self.updates.put_nowait)
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
