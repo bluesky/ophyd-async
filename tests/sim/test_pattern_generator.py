@@ -1,6 +1,5 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 
 from ophyd_async.sim import PatternGenerator
@@ -48,3 +47,10 @@ def test_write_data_to_dataset_invalid_type(pattern_generator: PatternGenerator)
         TypeError, match="Expected test_path to be a dataset, got MagicMock"
     ):
         pattern_generator.write_data_to_dataset("test_path", (10,), MagicMock())
+
+
+@pytest.mark.asyncio
+async def test_open_file_not_loaded(pattern_generator: PatternGenerator):
+    with patch("h5py.File", return_value=None):
+        with pytest.raises(OSError, match=r"Problem opening file .*"):
+            await pattern_generator.open_file(MagicMock(), "test_name")
