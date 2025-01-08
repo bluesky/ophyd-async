@@ -67,6 +67,7 @@ async def test_can_read(test_adaravis: adaravis.AravisDetector):
     assert (await test_adaravis.read()) == {}
 
 
+@pytest.mark.parametrize("one_shot_trigger_info", [1, 2, 10, 100], indirect=True)
 async def test_decribe_describes_writer_dataset(
     test_adaravis: adaravis.AravisDetector, one_shot_trigger_info: TriggerInfo
 ):
@@ -76,7 +77,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_adaravis.describe() == {
         "test_adaravis1": {
             "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
-            "shape": [1, 10, 10],
+            "shape": [one_shot_trigger_info.frames_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -115,6 +116,7 @@ async def test_can_collect(
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
 
 
+@pytest.mark.parametrize("one_shot_trigger_info", [1, 2, 10, 100], indirect=True)
 async def test_can_decribe_collect(
     test_adaravis: adaravis.AravisDetector, one_shot_trigger_info: TriggerInfo
 ):
@@ -124,7 +126,7 @@ async def test_can_decribe_collect(
     assert (await test_adaravis.describe_collect()) == {
         "test_adaravis1": {
             "source": "mock+ca://ARAVIS1:HDF1:FullFileName_RBV",
-            "shape": [1, 10, 10],
+            "shape": [one_shot_trigger_info.frames_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
