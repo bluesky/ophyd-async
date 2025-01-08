@@ -134,7 +134,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         describe = {
             self._name_provider(): DataKey(
                 source=self._name_provider(),
-                shape=list((frames_per_event, *frame_shape)),
+                shape=[frames_per_event, *frame_shape],
                 dtype="array",
                 dtype_numpy=dtype_numpy,
                 external="STREAM:",

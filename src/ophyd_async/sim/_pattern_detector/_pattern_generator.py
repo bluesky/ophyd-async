@@ -139,21 +139,19 @@ class PatternGenerator:
             HDFDataset(
                 data_key=name,
                 dataset=DATA_PATH,
-                shape=(self.height, self.width),
-                frames_per_event=frames_per_event,
+                shape=(frames_per_event, self.height, self.width),
             ),
             HDFDataset(
                 f"{name}-sum",
                 dataset=SUM_PATH,
-                shape=(),
-                frames_per_event=frames_per_event,
+                shape=(frames_per_event,) if frames_per_event > 1 else (),
             ),
         ]
 
         describe = {
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
-                shape=list((self._frames_per_event, *ds.shape)),
+                shape=list(ds.shape),
                 dtype="array" if ds.shape else "number",
                 external="STREAM:",
             )

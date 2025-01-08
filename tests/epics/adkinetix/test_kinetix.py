@@ -100,6 +100,7 @@ async def test_can_collect(
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,
+        "shape": (1, 10, 10),
         "chunk_shape": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"

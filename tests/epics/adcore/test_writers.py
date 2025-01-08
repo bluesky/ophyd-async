@@ -177,7 +177,7 @@ async def test_stats_describe_when_plugin_configured(
         },
         "mydetector-sum": {
             "source": "mock+ca://HDF:FullFileName_RBV",
-            "shape": [1,],
+            "shape": [],
             "dtype": "number",
             "dtype_numpy": "<f8",
             "external": "STREAM:",
@@ -186,7 +186,7 @@ async def test_stats_describe_when_plugin_configured(
             "dtype": "number",
             "dtype_numpy": "<f4",
             "external": "STREAM:",
-            "shape": [1,],
+            "shape": [],
             "source": "mock+ca://HDF:FullFileName_RBV",
         },
     }

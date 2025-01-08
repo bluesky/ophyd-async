@@ -74,6 +74,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         name = self._name_provider()
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
+        
+        # Used by the base class
         self._frames_per_event = frames_per_event
 
         # Determine number of frames that will be saved per HDF chunk
@@ -84,9 +86,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
-                shape=detector_shape,
+                shape=(frames_per_event, *detector_shape) if frames_per_event > 1 or detector_shape else (),
                 dtype_numpy=np_dtype,
-                frames_per_event=frames_per_event,
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
@@ -111,9 +112,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                         HDFDataset(
                             datakey,
                             f"/entry/instrument/NDAttributes/{datakey}",
-                            (),
+                            (frames_per_event,) if frames_per_event > 1 else (),
                             np_datatype,
-                            frames_per_event,
                             # NDAttributes appear to always be configured with
                             # this chunk size
                             chunk_shape=(16384,),
@@ -123,7 +123,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         describe = {
             ds.data_key: DataKey(
                 source=self.fileio.full_file_name.source,
-                shape=list((frames_per_event, *ds.shape)),
+                shape=list(ds.shape),
                 dtype="array" if ds.shape else "number",
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",

@@ -125,9 +125,7 @@ async def test_open_returns_correct_descriptors(
         assert key == expected_key
         assert entry == {
             "source": mock_writer.panda_data_block.hdf_directory.source,
-            "shape": [
-                1, 1,
-            ],
+            "shape": [],
             "dtype": "number",
             "dtype_numpy": "<f8",
             "external": "STREAM:",
@@ -191,7 +189,8 @@ async def test_collect_stream_docs(
             "parameters": {
                 "dataset": f"/{name}",
                 "swmr": False,
-                "chunk_shape": (1, 1024),
+                "shape": (),
+                "chunk_shape": (1024,),
             },
         }
         assert os.path.join("mock_panda", "data.h5") in resource_doc["uri"]

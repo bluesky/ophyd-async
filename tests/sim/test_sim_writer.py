@@ -27,7 +27,7 @@ async def test_correct_descriptor_doc_after_open(writer: PatternDetectorWriter):
         },
         "NAME-sum": {
             "source": "sim://pattern-generator-hdf-file",
-            "shape": [1,],
+            "shape": [],
             "dtype": "number",
             "external": "STREAM:",
         },

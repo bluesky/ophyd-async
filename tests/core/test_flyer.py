@@ -67,7 +67,7 @@ class DummyWriter(DetectorWriter):
         return {
             self._name: DataKey(
                 source="soft://some-source",
-                shape=list((frames_per_event, *self._shape)),
+                shape=[frames_per_event, *self._shape],
                 dtype="number",
                 dtype_numpy="<u2",
                 external="STREAM:",
