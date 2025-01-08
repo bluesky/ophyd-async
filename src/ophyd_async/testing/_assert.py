@@ -145,9 +145,10 @@ class ApproxTable:
 
 
 class MonitorQueue(AbstractContextManager):
-    def __init__(self, signal: SignalR):
+    def __init__(self, signal: SignalR, monotonic=False):
         self.signal = signal
         self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
+        self._monotonic_timestamps = monotonic
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
@@ -159,10 +160,11 @@ class MonitorQueue(AbstractContextManager):
         # Check they match what we expected
         assert value == expected_value
         assert type(value) is expected_type
+        timestamp = time.monotonic() if self._monotonic_timestamps else time.time()
         expected_reading = {
             self.signal.name: {
                 "value": expected_value,
-                "timestamp": pytest.approx(time.time(), rel=0.1),
+                "timestamp": pytest.approx(timestamp, rel=0.1),
                 "alarm_severity": 0,
             }
         }
