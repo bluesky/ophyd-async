@@ -117,7 +117,10 @@ class PatternGenerator:
 
         self._handle_for_h5_file = h5py.File(self.target_path, "w", libver="latest")
 
-        assert self._handle_for_h5_file, "not loaded the file right"
+        # assert self._handle_for_h5_file, "not loaded the file right"
+        if not self._handle_for_h5_file:
+            msg = f"Problem opening file {self.target_path}"
+            raise OSError(msg)
 
         self._handle_for_h5_file.create_dataset(
             name=DATA_PATH,
