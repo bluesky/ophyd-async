@@ -40,6 +40,21 @@ async def hdf_writer(
         lambda: "test",
         DummyDatasetDescriber(),
         {},
+<<<<<<< HEAD
+=======
+    )
+
+
+@pytest.fixture
+async def tiff_writer(
+    RE, static_path_provider: StaticPathProvider
+) -> adcore.ADTIFFWriter:
+    async with init_devices(mock=True):
+        tiff = adcore.NDFileIO("TIFF:")
+
+    return adcore.ADTIFFWriter(
+        tiff, static_path_provider, lambda: "test", DummyDatasetDescriber(), {}
+>>>>>>> 4f4458c916071859c44b03b2f39a6a9af05d4aac
     )
 
     def on_set_file_path_callback(value: str, wait: bool = True):

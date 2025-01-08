@@ -152,37 +152,81 @@ CA_PVA_INFERRED = {
     ),
     "my_float": ExpectedData(3.141, 43.5, "number", "<f8", precision=1, units="mm"),
     "my_str": ExpectedData("hello", "goodbye", "string", "|S40"),
-    "enum": ExpectedData(
-        EpicsTestEnum.B,
-        EpicsTestEnum.C,
-        "string",
-        "|S40",
-        choices=["Aaa", "Bbb", "Ccc"],
+    "uint8a": ExpectedData(
+        np.array([0, 255], dtype=np.uint8),
+        np.array([218], dtype=np.uint8),
+        "array",
+        "|u1",
+        units="",
     ),
-    "subset_enum": ExpectedData(
-        EpicsTestSubsetEnum.B,
-        EpicsTestSubsetEnum.A,
-        "string",
-        "|S40",
-        choices=["Aaa", "Bbb", "Ccc"],
+    "int16a": ExpectedData(
+        np.array([-32768, 32767], dtype=np.int16),
+        np.array([-855], dtype=np.int16),
+        "array",
+        "<i2",
+        units="",
     ),
-    "uint8a": ExpectedData([0, 255], [218], "array", "|u1", units=""),
-    "int16a": ExpectedData([-32768, 32767], [-855], "array", "<i2", units=""),
-    "int32a": ExpectedData([-2147483648, 2147483647], [-2], "array", "<i4", units=""),
+    "int32a": ExpectedData(
+        np.array([-2147483648, 2147483647], dtype=np.int32),
+        np.array([-2], dtype=np.int32),
+        "array",
+        "<i4",
+        units="",
+    ),
     "float32a": ExpectedData(
-        [0.000002, -123.123], [1.0], "array", "<f4", units="", precision=0
+        np.array([0.000002, -123.123], dtype=np.float32),
+        np.array([1.0], dtype=np.float32),
+        "array",
+        "<f4",
+        units="",
+        precision=0,
     ),
     "float64a": ExpectedData(
-        [0.1, -12345678.123], [0.2], "array", "<f8", units="", precision=0
+        np.array([0.1, -12345678.123], dtype=np.float64),
+        np.array([0.2], dtype=np.float64),
+        "array",
+        "<f8",
+        units="",
+        precision=0,
     ),
     "stra": ExpectedData(["five", "six", "seven"], ["nine", "ten"], "array", "|S40"),
 }
 PVA_INFERRED = {
-    "int8a": ExpectedData([-128, 127], [-8, 3, 44], "array", "|i1", units=""),
-    "uint16a": ExpectedData([0, 65535], [5666], "array", "<u2", units=""),
-    "uint32a": ExpectedData([0, 4294967295], [1022233], "array", "<u4", units=""),
-    "int64a": ExpectedData([-2147483649, 2147483648], [-3], "array", "<i8", units=""),
-    "uint64a": ExpectedData([0, 4294967297], [995444], "array", "<u8", units=""),
+    "int8a": ExpectedData(
+        np.array([-128, 127], dtype=np.int8),
+        np.array([-8, 3, 44], dtype=np.int8),
+        "array",
+        "|i1",
+        units="",
+    ),
+    "uint16a": ExpectedData(
+        np.array([0, 65535], dtype=np.uint16),
+        np.array([5666], dtype=np.uint16),
+        "array",
+        "<u2",
+        units="",
+    ),
+    "uint32a": ExpectedData(
+        np.array([0, 4294967295], dtype=np.uint32),
+        np.array([1022233], dtype=np.uint32),
+        "array",
+        "<u4",
+        units="",
+    ),
+    "int64a": ExpectedData(
+        np.array([-2147483649, 2147483648], dtype=np.int64),
+        np.array([-3], dtype=np.int64),
+        "array",
+        "<i8",
+        units="",
+    ),
+    "uint64a": ExpectedData(
+        np.array([0, 4294967297], dtype=np.uint64),
+        np.array([995444], dtype=np.uint64),
+        "array",
+        "<u8",
+        units="",
+    ),
 }
 
 
@@ -222,6 +266,21 @@ CA_PVA_OVERRIDE = {
     ),
     "my_bool": ExpectedData(True, False, "boolean", dtype_numpy="|b1"),
     "bool_unnamed": ExpectedData(True, False, "boolean", dtype_numpy="|b1"),
+    "enum": ExpectedData(
+        EpicsTestEnum.B,
+        EpicsTestEnum.C,
+        "string",
+        "|S40",
+        choices=["Aaa", "Bbb", "Ccc"],
+    ),
+    "subset_enum": ExpectedData(
+        EpicsTestSubsetEnum.B,
+        EpicsTestSubsetEnum.A,
+        "string",
+        "|S40",
+        choices=["Aaa", "Bbb", "Ccc"],
+    ),
+    "float_prec_0": ExpectedData(3, 4, "integer", default_int_type, units="mm"),
 }
 PVA_OVERRIDE = {}
 
@@ -558,14 +617,6 @@ def test_signal_helpers():
 
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
-async def test_signals_created_for_prec_0_float_can_use_int(
-    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
-):
-    sig = epics_signal_rw(int, ioc_devices.get_pv(protocol, "float_prec_0"))
-    await sig.connect()
-
-
-@pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_signals_created_for_not_prec_0_float_cannot_use_int(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
 ):
@@ -650,6 +701,10 @@ async def test_retrieve_apply_store_settings(
         yield from store_settings(tmp_provider, "test_file", device)
         with open(tmp_path / "test_file.yaml") as actual_file:
             with open(HERE / f"test_yaml_save_{protocol}.yaml") as expected_file:
+                # If this test fails because you added a signal, then you can regenerate
+                # the test data with:
+                # cp /tmp/pytest-of-root/pytest-current/test_retrieve_apply_store_sett0/test_file.yaml tests/epics/signal/test_yaml_save_ca.yaml  # noqa: E501
+                # cp /tmp/pytest-of-root/pytest-current/test_retrieve_apply_store_sett1/test_file.yaml tests/epics/signal/test_yaml_save_pva.yaml  # noqa: E501
                 assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
 
     RE(my_plan())

@@ -16,7 +16,6 @@ _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
 
 AravisControllerT = TypeVar("AravisControllerT", bound="AravisController")
 
-
 class AravisController(adcore.ADBaseController[AravisDriverIO]):
     GPIO_NUMBER = Literal[1, 2, 3, 4]
 
