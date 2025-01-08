@@ -1,43 +1,45 @@
-from bluesky.protocols import Hints
+from collections.abc import Sequence
 
-from ophyd_async.core import PathProvider, StandardDetector
-from ophyd_async.epics.adcore import ADBaseDatasetDescriber, ADHDFWriter, NDFileHDFIO
+from ophyd_async.core import PathProvider
+from ophyd_async.core._signal import SignalR
+from ophyd_async.epics import adcore
 
 from ._andor_controller import Andor2Controller
 from ._andor_io import Andor2DriverIO
 
 
-class Andor2Detector(StandardDetector):
+class Andor2Detector(adcore.AreaDetector[Andor2Controller]):
     """
     Andor 2 area detector device (CCD detector 56fps with full chip readout).
     Andor model:DU897_BV.
     """
-
-    _controller: Andor2Controller
-    _writer: ADHDFWriter
 
     def __init__(
         self,
         prefix: str,
         path_provider: PathProvider,
         drv_suffix="cam1:",
-        hdf_suffix="HDF1:",
-        name="",
+        writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
+        fileio_suffix: str | None = None,
+        name: str = "",
+        config_sigs: Sequence[SignalR] = (),
+        plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
     ):
-        self.drv = Andor2DriverIO(prefix + drv_suffix)
-        self.hdf = NDFileHDFIO(prefix + hdf_suffix)
-        super().__init__(
-            Andor2Controller(self.drv),
-            ADHDFWriter(
-                self.hdf,
-                path_provider,
-                lambda: self.name,
-                ADBaseDatasetDescriber(self.drv),
-            ),
-            config_sigs=(self.drv.acquire_time,),
-            name=name,
+        driver = Andor2DriverIO(prefix + drv_suffix)
+        controller = Andor2Controller(driver)
+
+        writer = writer_cls.with_io(
+            prefix,
+            path_provider,
+            dataset_source=driver,
+            fileio_suffix=fileio_suffix,
+            plugins=plugins,
         )
 
-    @property
-    def hints(self) -> Hints:
-        return self._writer.hints
+        super().__init__(
+            controller=controller,
+            writer=writer,
+            plugins=plugins,
+            name=name,
+            config_sigs=config_sigs,
+        )

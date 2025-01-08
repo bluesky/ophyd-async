@@ -21,7 +21,7 @@ async def test_deadtime_from_exposure_time(
     exposure_time: float,
     test_adandor: adandor.Andor2Detector,
 ):
-    assert test_adandor.controller.get_deadtime(exposure_time) == exposure_time + 0.1
+    assert test_adandor._controller.get_deadtime(exposure_time) == exposure_time + 0.1
 
 
 async def test_hints_from_hdf_writer(test_adandor: adandor.Andor2Detector):
