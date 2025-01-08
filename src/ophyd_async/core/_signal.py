@@ -167,7 +167,10 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         if cached is None:
             cached = self._cache is not None
         if cached:
-            assert self._cache, f"{self.source} not being monitored"
+            if not self._cache:
+                msg = f"{self.source} not being monitored"
+                raise RuntimeError(msg)
+            # assert self._cache, f"{self.source} not being monitored"
             return self._cache
         else:
             return self._connector.backend

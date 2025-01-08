@@ -252,6 +252,15 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert (await signal.get_value()) == INITIAL_VALUE
 
 
+def test_signal_r_cached():
+    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
+    INITIAL_VALUE = "INITIAL"
+    signal = soft_signal_r_and_setter(str, INITIAL_VALUE, SIGNAL_NAME)[0]
+    assert signal._cache is None
+    with pytest.raises(RuntimeError, match=r".* not being monitored"):
+        signal._backend_or_cache(cached=True)
+
+
 class MockEnum(StrictEnum):
     GOOD = "Good"
     OK = "Ok"
