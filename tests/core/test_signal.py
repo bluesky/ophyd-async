@@ -3,7 +3,7 @@ import logging
 import re
 import time
 from asyncio import Event
-from unittest.mock import ANY, Mock
+from unittest.mock import ANY, AsyncMock, MagicMock, Mock
 
 import numpy as np
 import numpy.typing as npt
@@ -25,6 +25,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.core._signal import _SignalCache
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.testing import (
     assert_configuration,
@@ -459,3 +460,19 @@ async def test_soft_signal_ndarray_can_change_dtype():
     for dtype in (np.int32, np.float64):
         await sig.set(np.arange(4, dtype=dtype))
         assert (await sig.get_value()).dtype == dtype
+
+
+@pytest.mark.asyncio
+async def test_get_reading_runtime_error():
+    backend = MagicMock()
+    signal = MagicMock()
+    signal.source = "test_source"
+    signal.log.debug = MagicMock()
+    cache = _SignalCache(backend, signal)
+
+    # Mock the _valid event to simulate it being set
+    cache._valid = AsyncMock()
+    cache._valid.wait = AsyncMock()
+
+    with pytest.raises(RuntimeError, match="Monitor not working"):
+        await asyncio.wait_for(cache.get_reading(), timeout=1.0)
