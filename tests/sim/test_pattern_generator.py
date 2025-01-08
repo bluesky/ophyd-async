@@ -50,7 +50,18 @@ def test_write_data_to_dataset_invalid_type(pattern_generator: PatternGenerator)
 
 
 @pytest.mark.asyncio
-async def test_open_file_not_loaded(pattern_generator: PatternGenerator):
+async def test_open_file_not_loaded(pattern_generator: PatternGenerator) -> None:
     with patch("h5py.File", return_value=None):
         with pytest.raises(OSError, match=r"Problem opening file .*"):
             await pattern_generator.open_file(MagicMock(), "test_name")
+
+
+@pytest.mark.asyncio
+async def test_collect_stream_docs_runtime_error(pattern_generator: PatternGenerator):
+    pattern_generator._handle_for_h5_file = MagicMock()
+    pattern_generator._handle_for_h5_file.flush = MagicMock()
+    pattern_generator.target_path = None
+
+    with pytest.raises(RuntimeError, match="open file has not been called"):
+        async for _ in pattern_generator.collect_stream_docs(1):
+            pass
