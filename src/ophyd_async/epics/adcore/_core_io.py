@@ -54,6 +54,7 @@ class NDPluginBaseIO(NDArrayBaseIO):
         self.nd_array_address = epics_signal_rw_rbv(int, prefix + "NDArrayAddress")
         self.array_size0 = epics_signal_r(int, prefix + "ArraySize0_RBV")
         self.array_size1 = epics_signal_r(int, prefix + "ArraySize1_RBV")
+        self.queue_size = epics_signal_rw(int, prefix + "QueueSize")
         super().__init__(prefix, name)
 
 
