@@ -7,7 +7,9 @@ from ophyd_async.core import (
     Array1D,
     Device,
     DTypeScalar_co,
+    SignalR,
     SignalRW,
+    StandardReadable,
     StrictEnum,
     Table,
     soft_signal_r_and_setter,
@@ -30,14 +32,16 @@ class ExampleTable(Table):
     enum: Sequence[ExampleEnum]
 
 
-def int_array_signal(dtype: type[DTypeScalar_co]) -> SignalRW[Array1D[DTypeScalar_co]]:
+def int_array_signal(
+    dtype: type[DTypeScalar_co], name: str = ""
+) -> SignalRW[Array1D[DTypeScalar_co]]:
     iinfo = np.iinfo(dtype)  # type: ignore
     value = np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
-    return soft_signal_rw(Array1D[dtype], value)
+    return soft_signal_rw(Array1D[dtype], value, name)
 
 
 def float_array_signal(
-    dtype: type[DTypeScalar_co],
+    dtype: type[DTypeScalar_co], name: str = ""
 ) -> SignalRW[Array1D[DTypeScalar_co]]:
     finfo = np.finfo(dtype)  # type: ignore
     value = np.array(
@@ -53,10 +57,11 @@ def float_array_signal(
         ],
         dtype=dtype,
     )
-    return soft_signal_rw(Array1D[dtype], value)
+    return soft_signal_rw(Array1D[dtype], value, name)
 
 
-class OneOfEverythingDevice(Device):
+class OneOfEverythingDevice(StandardReadable):
+    # make a detector to test assert_configuration
     def __init__(self, name=""):
         self.int = soft_signal_rw(int, 1)
         self.float = soft_signal_rw(float, 1.234)
@@ -73,9 +78,13 @@ class OneOfEverythingDevice(Device):
         self.uint64a = int_array_signal(np.uint64)
         self.float32a = float_array_signal(np.float32)
         self.float64a = float_array_signal(np.float64)
-        self.stra = soft_signal_rw(Sequence[str], ["one", "two", "three"])
+        self.stra = soft_signal_rw(
+            Sequence[str],
+            ["one", "two", "three"],
+        )
         self.enuma = soft_signal_rw(
-            Sequence[ExampleEnum], [ExampleEnum.A, ExampleEnum.C]
+            Sequence[ExampleEnum],
+            [ExampleEnum.A, ExampleEnum.C],
         )
         self.table = soft_signal_rw(
             ExampleTable,
@@ -88,7 +97,11 @@ class OneOfEverythingDevice(Device):
             ),
         )
         self.ndarray = soft_signal_rw(np.ndarray, np.array(([1, 2, 3], [4, 5, 6])))
-        super().__init__(name=name)
+        # add all signals to configuration
+        self._read_config_funcs = tuple(  # type: ignore
+            sig.read for sig in self.__dict__.values() if isinstance(sig, SignalR)
+        )
+        super().__init__(name)
 
 
 async def _get_signal_values(child: Device) -> dict[SignalRW, Any]:
