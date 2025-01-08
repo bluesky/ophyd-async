@@ -131,6 +131,20 @@ async def test_soft_signal_backend_enum_value_equivalence():
     assert (await soft_backend.get_value()) is MyEnum.B
 
 
+async def test_soft_signal_backend_set_callback():
+    soft_backend = SoftSignalBackend(Array1D[np.float64])
+    updates: asyncio.Queue[Reading] = asyncio.Queue()
+    # set a callback, so that the subsequent set will fail
+    soft_backend.set_callback(updates.put_nowait)
+    assert soft_backend.callback is not None
+    with pytest.raises(
+        RuntimeError, match="Cannot set a callback when one is already set"
+    ):
+        soft_backend.set_callback(updates.put_nowait)
+    soft_backend.set_callback(None)
+    assert soft_backend.callback is None
+
+
 async def test_soft_signal_backend_with_numpy_typing():
     soft_backend = SoftSignalBackend(Array1D[np.float64])
     await soft_backend.connect(timeout=1)
