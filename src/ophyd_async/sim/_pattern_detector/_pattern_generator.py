@@ -67,11 +67,14 @@ class PatternGenerator:
 
     def write_data_to_dataset(self, path: str, data_shape: tuple[int, ...], data):
         """Write data to named dataset, resizing to fit and flushing after."""
-        assert self._handle_for_h5_file, "no file has been opened!"
+        if not self._handle_for_h5_file:
+            msg = "No file has been opened!"
+            raise OSError(msg)
+
         dset = self._handle_for_h5_file[path]
-        assert isinstance(
-            dset, h5py.Dataset
-        ), f"Expected {path} to be dataset, got {dset}"
+        if not isinstance(dset, h5py.Dataset):
+            msg = f"Expected {path} to be a dataset, got {type(dset).__name__}"
+            raise TypeError(msg)
         dset.resize((self.image_counter + 1,) + data_shape)
         dset[self.image_counter] = data
         dset.flush()
