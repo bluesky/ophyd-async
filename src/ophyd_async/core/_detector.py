@@ -110,7 +110,7 @@ class DetectorController(ABC):
                 deadtime Defaults to None. This is the minimum deadtime between
                 triggers.
                 frames_per_event The number of triggers grouped into a single
-                    StreamDatum index
+                StreamDatum index
         """
 
     @abstractmethod
