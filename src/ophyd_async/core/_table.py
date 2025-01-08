@@ -102,7 +102,10 @@ class Table(BaseModel):
             if array is None:
                 array = np.empty(v.shape, dtype=self.numpy_dtype())
             array[k] = v
-        assert array is not None
+        if array is None:
+            # TODO: discuss whether this code is actually reachable
+            msg = "No arrays found in table"
+            raise ValueError(msg)
         return array
 
     @model_validator(mode="before")
@@ -125,10 +128,12 @@ class Table(BaseModel):
                 # Convert to correct dtype, but only if we don't lose precision
                 # as a result
                 cast_value = np.array(data_value).astype(expected_dtype)
-                assert np.array_equal(data_value, cast_value), (
-                    f"{field_name}: Cannot cast {data_value} to {expected_dtype} "
-                    "without losing precision"
-                )
+                if not np.array_equal(data_value, cast_value):
+                    msg = (
+                        f"{field_name}: Cannot cast {data_value} to {expected_dtype} "
+                        "without losing precision"
+                    )
+                    raise ValueError(msg)
                 data_dict[field_name] = cast_value
         return data_dict
 
@@ -137,7 +142,9 @@ class Table(BaseModel):
         lengths: dict[int, set[str]] = {}
         for field_name, field_value in self:
             lengths.setdefault(len(field_value), set()).add(field_name)
-        assert len(lengths) <= 1, f"Columns should be same length, got {lengths=}"
+        if len(lengths) > 1:
+            msg = f"Columns should be same length, got {lengths=}"
+            raise ValueError(msg)
         return self
 
     def __len__(self) -> int:
