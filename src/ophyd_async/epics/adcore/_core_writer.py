@@ -122,10 +122,10 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             self.fileio.capture, True, wait_for_set_completion=False
         )
 
-    async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
         self._last_emitted = 0
-        self._batch_size = batch_size
+        self._frames_per_event = frames_per_event
         frame_shape = await self._dataset_describer.shape()
         dtype_numpy = await self._dataset_describer.np_datatype()
 
@@ -134,7 +134,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         describe = {
             self._name_provider(): DataKey(
                 source=self._name_provider(),
-                shape=list((batch_size, *frame_shape)),
+                shape=list((frames_per_event, *frame_shape)),
                 dtype="array",
                 dtype_numpy=dtype_numpy,
                 external="STREAM:",
@@ -147,11 +147,11 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected"""
         async for num_captured in observe_value(self.fileio.num_captured, timeout):
-            yield num_captured // self._batch_size
+            yield num_captured // self._frames_per_event
 
     async def get_indices_written(self) -> int:
         num_captured = await self.fileio.num_captured.get_value()
-        return num_captured // self._batch_size
+        return num_captured // self._frames_per_event
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -185,9 +185,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                     data_key=self._name_provider(),
                     # Q: What are the parameters used for? Extra info?
                     parameters={
-                        # TODO: Validate this assumption and that it should not be self._batch_size
-                        # Assume that we always write self._batch_size frames per file/chunk
-                        "chunk_shape": (self._batch_size, *frame_shape),
+                        # TODO: Validate this assumption and that it should not be self._frames_per_event
+                        # Assume that we always write self._frames_per_event frames per file/chunk
+                        "chunk_shape": (self._frames_per_event, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
                     },

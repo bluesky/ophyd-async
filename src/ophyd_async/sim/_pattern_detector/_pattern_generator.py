@@ -105,7 +105,7 @@ class PatternGenerator:
         self.y = value
 
     async def open_file(
-        self, path_provider: PathProvider, name: str, batch_size: int = 1
+        self, path_provider: PathProvider, name: str, frames_per_event: int = 1
     ) -> dict[str, DataKey]:
         await self.counter_signal.connect()
 
@@ -131,7 +131,7 @@ class PatternGenerator:
 
         # once datasets written, can switch the model to single writer multiple reader
         self._handle_for_h5_file.swmr_mode = True
-        self._batch_size = batch_size
+        self._frames_per_event = frames_per_event
 
         # cache state to self
         # Add the main data
@@ -140,20 +140,20 @@ class PatternGenerator:
                 data_key=name,
                 dataset=DATA_PATH,
                 shape=(self.height, self.width),
-                batch_size=batch_size,
+                frames_per_event=frames_per_event,
             ),
             HDFDataset(
                 f"{name}-sum",
                 dataset=SUM_PATH,
                 shape=(),
-                batch_size=batch_size,
+                frames_per_event=frames_per_event,
             ),
         ]
 
         describe = {
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
-                shape=list((self._batch_size, *ds.shape)),
+                shape=list((self._frames_per_event, *ds.shape)),
                 dtype="array" if ds.shape else "number",
                 external="STREAM:",
             )
@@ -202,4 +202,4 @@ class PatternGenerator:
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(self.counter_signal, timeout=timeout):
-            yield num_captured // self._batch_size
+            yield num_captured // self._frames_per_event

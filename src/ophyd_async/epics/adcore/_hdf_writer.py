@@ -48,7 +48,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._file: HDFFile | None = None
         self._include_file_number = False
 
-    async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         self._file = None
 
         # Setting HDF writer specific signals
@@ -74,7 +74,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         name = self._name_provider()
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
-        self._batch_size = batch_size
+        self._frames_per_event = frames_per_event
 
         # Determine number of frames that will be saved per HDF chunk
         frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
@@ -86,7 +86,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                 dataset="/entry/data/data",
                 shape=detector_shape,
                 dtype_numpy=np_dtype,
-                batch_size=batch_size,
+                frames_per_event=frames_per_event,
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
@@ -113,7 +113,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                             f"/entry/instrument/NDAttributes/{datakey}",
                             (),
                             np_datatype,
-                            batch_size,
+                            frames_per_event,
                             # NDAttributes appear to always be configured with
                             # this chunk size
                             chunk_shape=(16384,),
@@ -123,7 +123,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         describe = {
             ds.data_key: DataKey(
                 source=self.fileio.full_file_name.source,
-                shape=list((batch_size, *ds.shape)),
+                shape=list((frames_per_event, *ds.shape)),
                 dtype="array" if ds.shape else "number",
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",

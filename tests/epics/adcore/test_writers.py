@@ -1,5 +1,3 @@
-import os
-
 import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
@@ -40,21 +38,6 @@ async def hdf_writer(
         lambda: "test",
         DummyDatasetDescriber(),
         {},
-<<<<<<< HEAD
-=======
-    )
-
-
-@pytest.fixture
-async def tiff_writer(
-    RE, static_path_provider: StaticPathProvider
-) -> adcore.ADTIFFWriter:
-    async with init_devices(mock=True):
-        tiff = adcore.NDFileIO("TIFF:")
-
-    return adcore.ADTIFFWriter(
-        tiff, static_path_provider, lambda: "test", DummyDatasetDescriber(), {}
->>>>>>> 4f4458c916071859c44b03b2f39a6a9af05d4aac
     )
 
     def on_set_file_path_callback(value: str, wait: bool = True):
@@ -145,14 +128,14 @@ async def detectors(
 
 async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._file is None
-    _ = await hdf_writer.open(batch_size=1)
+    _ = await hdf_writer.open(frames_per_event=1)
     [item async for item in hdf_writer.collect_stream_docs(1)]
     assert hdf_writer._file
 
 
 async def test_tiff_writer_collect_stream_docs(tiff_writer: adcore.ADTIFFWriter):
     assert tiff_writer._emitted_resource is None
-    _ = await tiff_writer.open(batch_size=1)
+    _ = await tiff_writer.open(frames_per_event=1)
     [item async for item in tiff_writer.collect_stream_docs(1)]
     assert tiff_writer._emitted_resource
 

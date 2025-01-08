@@ -18,7 +18,7 @@ class HDFDataset:
     dataset: str
     shape: Sequence[int] = field(default_factory=tuple)
     dtype_numpy: str = ""
-    batch_size: int = 1
+    frames_per_event: int = 1
     swmr: bool = False
     # Represents explicit chunk size written to disk.
     chunk_shape: tuple[int, ...] = ()
@@ -67,7 +67,7 @@ class HDFFile:
                 parameters={
                     "dataset": ds.dataset,
                     "swmr": ds.swmr,
-                    "batch_size": ds.batch_size,
+                    "frames_per_event": ds.frames_per_event,
                     "chunk_shape": ds.chunk_shape,
                 },
                 uid=None,

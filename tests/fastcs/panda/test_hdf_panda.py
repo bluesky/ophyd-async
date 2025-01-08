@@ -146,8 +146,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
             "parameters": {
                 "dataset": f"/{dataset_name}",
                 "swmr": False,
-                "batch_size": 1,
-                "chunk_shape": (1024,),
+                "chunk_shape": (1, 1024),
             },
         }
         assert "test-panda.h5" in stream_resource["uri"]

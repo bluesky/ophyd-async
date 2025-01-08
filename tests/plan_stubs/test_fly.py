@@ -47,12 +47,12 @@ class DummyWriter(DetectorWriter):
         self.index = 0
         self.observe_indices_written_timeout_log = []
 
-    async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
-        self._batch_size = batch_size
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+        self._frames_per_event = frames_per_event
         return {
             self._name: DataKey(
                 source="soft://some-source",
-                shape=list((batch_size, *self._shape)),
+                shape=list((frames_per_event, *self._shape)),
                 dtype="number",
                 external="STREAM:",
             )
@@ -64,10 +64,10 @@ class DummyWriter(DetectorWriter):
         self.observe_indices_written_timeout_log.append(timeout)
         num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):
-            yield num_captured // self._batch_size
+            yield num_captured // self._frames_per_event
 
     async def get_indices_written(self) -> int:
-        return self.index // self._batch_size
+        return self.index // self._frames_per_event
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -81,7 +81,6 @@ class DummyWriter(DetectorWriter):
                     parameters={
                         "path": "",
                         "swmr": False,
-                        "batch_size": 1,
                     },
                     uid=None,
                     validate=True,

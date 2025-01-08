@@ -1,5 +1,5 @@
 import asyncio
-from typing import Literal, TypeVar
+from typing import Literal
 
 from ophyd_async.core import (
     DetectorTrigger,
@@ -13,8 +13,6 @@ from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
 _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
-
-AravisControllerT = TypeVar("AravisControllerT", bound="AravisController")
 
 class AravisController(adcore.ADBaseController[AravisDriverIO]):
     GPIO_NUMBER = Literal[1, 2, 3, 4]

@@ -36,7 +36,7 @@ class PandaHDFWriter(DetectorWriter):
         self._file: HDFFile | None = None
 
     # Triggered on PCAP arm
-    async def open(self, batch_size: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture"""
 
         # Ensure flushes are immediate
@@ -67,9 +67,9 @@ class PandaHDFWriter(DetectorWriter):
 
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_data_block.capture.set(True)
-        if batch_size > 1:
+        if frames_per_event > 1:
             raise ValueError(
-                "All PandA datasets should be scalar, batch_size should be 1"
+                "All PandA datasets should be scalar, frames_per_event should be 1"
             )
 
         return await self._describe()
@@ -83,7 +83,7 @@ class PandaHDFWriter(DetectorWriter):
         describe = {
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
-                # batch_size is always 1 for PandA
+                # frames_per_event is always 1 for PandA
                 shape=list((1, *ds.shape)),
                 dtype="array" if ds.shape != [1] else "number",
                 # PandA data should always be written as Float64
@@ -105,7 +105,7 @@ class PandaHDFWriter(DetectorWriter):
             # TODO: Update chunk size to read signal once available in IOC
             # Currently PandA IOC sets chunk size to 1024 points per chunk
             HDFDataset(
-                dataset_name, "/" + dataset_name, [1], batch_size=1, chunk_shape=(1024,)
+                dataset_name, "/" + dataset_name, [1], frames_per_event=1, chunk_shape=(1024,)
             )
             for dataset_name in capture_table.name
         ]
