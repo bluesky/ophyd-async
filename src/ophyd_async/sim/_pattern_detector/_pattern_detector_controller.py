@@ -27,8 +27,15 @@ class PatternDetectorController(DetectorController):
         )
 
     async def arm(self):
-        assert self._trigger_info.livetime
-        assert self.period
+        if not hasattr(self, "_trigger_info"):
+            msg = "TriggerInfo information is missing, has 'prepare' been called?"
+            raise RuntimeError(msg)
+        if not self._trigger_info.livetime:
+            msg = "Livetime information is missing in trigger info"
+            raise ValueError(msg)
+        if not self.period:
+            msg = "Period is not set"
+            raise ValueError(msg)
         self.task = asyncio.create_task(
             self._coroutine_for_image_writing(
                 self._trigger_info.livetime,

@@ -4,8 +4,10 @@ from collections import defaultdict
 import bluesky.plans as bp
 import h5py
 import numpy as np
+import pytest
 from bluesky.run_engine import RunEngine
 
+from ophyd_async.core import TriggerInfo
 from ophyd_async.plan_stubs import ensure_connected
 from ophyd_async.sim import PatternDetector
 from ophyd_async.testing import assert_emitted
@@ -24,6 +26,20 @@ async def test_detector_creates_controller_and_writer(
 ):
     assert sim_pattern_detector._writer
     assert sim_pattern_detector._controller
+
+
+async def test_detector_creates_controller_arm(
+    sim_pattern_detector: PatternDetector,
+) -> None:
+    await sim_pattern_detector.connect(mock=True)
+    with pytest.raises(
+        RuntimeError,
+        match="TriggerInfo information is missing, has 'prepare' been called?",
+    ):
+        await sim_pattern_detector.controller.arm()
+    # TODO: add more test if needed. A refactor of the `PatternDetectorController`
+    # should be considered in order to ensure class members `_trigger_info` and
+    # `period` are always present. Currently they are created by `prepare`.
 
 
 def test_writes_pattern_to_file(
