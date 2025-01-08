@@ -138,7 +138,9 @@ class _SignalCache(Generic[SignalDatatypeT]):
         function: Callback[dict[str, Reading[SignalDatatypeT]] | SignalDatatypeT],
         want_value: bool,
     ):
-        assert self._reading, "Monitor not working"
+        if not self._reading:
+            msg = "Monitor not working"
+            raise RuntimeError(msg)
         if want_value:
             function(self._reading["value"])
         else:
