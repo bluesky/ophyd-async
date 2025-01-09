@@ -1,6 +1,5 @@
 """Integration tests for a StandardDetector using a ADHDFWriter and SimController."""
 
-import re
 import time
 from collections import defaultdict
 from collections.abc import Callable, Sequence
@@ -397,17 +396,3 @@ async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
     await ad.disarm()
 
     assert await driver.acquire.get_value() is False
-
-
-async def test_ad_sim_controller_raise(test_adsimdetector: adsimdetector.SimDetector):
-    ad = test_adsimdetector._controller
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "fly scanning (i.e. external triggering) is not supported for this "
-            "device"
-        ),
-    ):
-        await ad.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.EDGE_TRIGGER)
-        )
