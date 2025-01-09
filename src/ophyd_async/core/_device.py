@@ -279,13 +279,20 @@ class DeviceProcessor:
             raise ValueError
         except ValueError:
             _, _, tb = sys.exc_info()
-            assert tb, "Can't get traceback, this shouldn't happen"
+            if not tb:
+                msg = "Can't get traceback, this shouldn't happen"
+                raise RuntimeError(msg)  # noqa: B904
             caller_frame = tb.tb_frame
             while caller_frame.f_locals.get("self", None) is self:
                 caller_frame = caller_frame.f_back
-                assert (
-                    caller_frame
-                ), "No previous frame to the one with self in it, this shouldn't happen"
+                if not caller_frame:
+                    msg = (
+                        "No previous frame to the one with self in it, "
+                        "this shouldn't happen"
+                    )
+                    raise RuntimeError(  # noqa: B904
+                        msg
+                    )
             return caller_frame.f_locals.copy()
 
     def __enter__(self) -> DeviceProcessor:
