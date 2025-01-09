@@ -253,3 +253,15 @@ async def test_no_reconnect_signals_if_not_forced():
         await parent.connect(mock=False, timeout=0.01, force_reconnect=True)
         assert parent.child1.connected
         assert parent.child1.connect.call_count == count
+
+
+def test_setitem_with_non_int_key():
+    device_vector = DeviceVector(children={})
+    with pytest.raises(TypeError, match="Expected int, got"):
+        device_vector["not_an_int"] = MagicMock(spec=Device)  # type: ignore
+
+
+def test_setitem_with_non_device_value():
+    device_vector = DeviceVector(children={})
+    with pytest.raises(TypeError, match="Expected Device, got"):
+        device_vector[1] = "not_a_device"
