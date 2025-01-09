@@ -209,6 +209,25 @@ def test_standard_readable_add_readables_adds_to_expected_attrs(
     assert_sr_has_attrs(sr, expected_attrs)
 
 
+@pytest.mark.parametrize(
+    "format",
+    [
+        Format.CONFIG_SIGNAL,
+        Format.HINTED_SIGNAL,
+        Format.UNCACHED_SIGNAL,
+        Format.HINTED_UNCACHED_SIGNAL,
+    ],
+)
+def test_standard_readable_add_readables_raises_signalr_typeerror(format) -> None:
+    # Mock a Device instance that is not a SignalR
+    mock_device = MagicMock(spec=Device)
+    sr = StandardReadable()
+
+    # Ensure it raises TypeError
+    with pytest.raises(TypeError, match=f"{mock_device} is not a SignalR"):
+        sr.add_readables([mock_device], format=format)
+
+
 def test_standard_readable_config_signal():
     signal_r = MagicMock(spec=SignalR)
     sr = StandardReadable()
