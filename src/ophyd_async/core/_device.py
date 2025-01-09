@@ -236,8 +236,12 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
     def __setitem__(self, key: int, value: DeviceT) -> None:
         # Check the types on entry to dict to make sure we can't accidentally
         # make a non-integer named child
-        assert isinstance(key, int), f"Expected int, got {key}"
-        assert isinstance(value, Device), f"Expected Device, got {value}"
+        if not isinstance(key, int):
+            msg = f"Expected int, got {key}"
+            raise TypeError(msg)
+        if not isinstance(value, Device):
+            msg = f"Expected Device, got {value}"
+            raise TypeError(msg)
         self._children[key] = value
         value.parent = self
 
