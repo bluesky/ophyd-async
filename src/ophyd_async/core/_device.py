@@ -158,10 +158,12 @@ class Device(HasName):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
-        assert hasattr(self, "_connector"), (
-            f"{self}: doesn't have attribute `_connector`,"
-            " did you call `super().__init__` in your `__init__` method?"
-        )
+        if not hasattr(self, "_connector"):
+            msg = (
+                f"{self}: doesn't have attribute `_connector`,"
+                " did you call `super().__init__` in your `__init__` method?"
+            )
+            raise RuntimeError(msg)
         if mock:
             # Always connect in mock mode serially
             if isinstance(mock, LazyMock):

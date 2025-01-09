@@ -67,6 +67,18 @@ class DeviceWithRefToSignal(Device):
         return self.signal_ref().source
 
 
+async def test_device_connect_missing_connector() -> None:
+    # create a Device instance w/o calling the initializer
+    device = object.__new__(Device)
+    # assert the init method wasn't called
+    assert hasattr(device, "_connector") is False
+    with pytest.raises(
+        RuntimeError,
+        match=r".* doesn't have attribute `_connector`.*",
+    ):
+        await device.connect(mock=True)
+
+
 def test_device_with_signal_ref_does_not_rename():
     device = DeviceWithNamedChild()
     device.set_name("bar")
