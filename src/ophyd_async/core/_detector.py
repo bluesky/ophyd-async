@@ -271,10 +271,20 @@ class StandardDetector(
                     frame_timeout=None,
                 )
             )
-        # TODO: check with core devs if this is actually still needed
-        # I see no way that self._trigger_info remains None
-        assert self._trigger_info
-        assert self._trigger_info.trigger is DetectorTrigger.INTERNAL
+
+        # make absolute sure we realy have a valid TriggerInfo ... mostly for pylance
+        def ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo:
+            if trigger_info is None:
+                raise RuntimeError(
+                    "Trigger info must be set before calling this method."
+                )
+            return trigger_info
+
+        self._trigger_info = ensure_trigger_info_exists(self._trigger_info)
+        if self._trigger_info.trigger is not DetectorTrigger.INTERNAL:
+            msg = "The trigger method can only be called with INTERNAL triggering"
+            raise ValueError(msg)
+
         # Arm the detector and wait for it to finish.
         indices_written = await self.writer.get_indices_written()
         await self.controller.arm()
