@@ -271,6 +271,8 @@ class StandardDetector(
                     frame_timeout=None,
                 )
             )
+        # TODO: check with core devs if this is actually still needed
+        # I see no way that self._trigger_info remains None
         assert self._trigger_info
         assert self._trigger_info.trigger is DetectorTrigger.INTERNAL
         # Arm the detector and wait for it to finish.
