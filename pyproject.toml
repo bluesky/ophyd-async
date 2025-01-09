@@ -172,6 +172,7 @@ lint.preview = true # so that preview mode PLC2701 is enabled
 "tests/**/*" = ["SLF001", "S101"]
 "src/ophyd_async/testing/**/*" = ["SLF001", "S101"]
 "system_tests/**/*" = ["SLF001", "S101"]
+"docs/examples/**/*" = ["SLF001", "S101"]
 
 
 [tool.importlinter]
