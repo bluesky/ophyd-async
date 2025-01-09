@@ -1,7 +1,7 @@
 import asyncio
 import time
 import traceback
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -68,7 +68,7 @@ class DeviceWithRefToSignal(Device):
 
 
 async def test_device_connect_missing_connector() -> None:
-    # create a Device instance w/o calling the initializer
+    # Create an instance of Device without calling __init__
     device = object.__new__(Device)
     # assert the init method wasn't called
     assert hasattr(device, "_connector") is False

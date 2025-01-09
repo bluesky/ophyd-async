@@ -184,7 +184,9 @@ class Device(HasName):
                 self._mock = None
                 coro = self._connector.connect_real(self, timeout, force_reconnect)
                 self._connect_task = asyncio.create_task(coro)
-            assert self._connect_task, "Connect task not created, this shouldn't happen"
+            if not self._connect_task:
+                msg = "Connect task not created, this shouldn't happen"
+                raise RuntimeError(msg)
             # Wait for it to complete
             await self._connect_task
 
