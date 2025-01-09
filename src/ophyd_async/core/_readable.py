@@ -123,30 +123,31 @@ class StandardReadable(
             # we want to combine them when they are Sequences, and ensure they are
             # identical when string values.
             for key, value in new_hint.hints.items():
+                # fail early for unkwon types
+                if not isinstance(value, str | Sequence):
+                    msg = (
+                        f"{new_hint.name}: Unknown type for value '{value}'"
+                        f" for key '{key}'"
+                    )
+                    raise TypeError(msg)
                 if isinstance(value, str):
                     if key in hints:
-                        assert (
-                            hints[key] == value  # type: ignore[literal-required]
-                        ), f"Hints key {key} value may not be overridden"
+                        if hints[key] != value:
+                            msg = f"Hints key {key} value may not be overridden"
+                            raise RuntimeError(msg)
                     else:
                         hints[key] = value  # type: ignore[literal-required]
                 elif isinstance(value, Sequence):
                     if key in hints:
                         for new_val in value:
-                            assert (
-                                new_val not in hints[key]  # type: ignore[literal-required]
-                            ), f"Hint {key} {new_val} overrides existing hint"
+                            if new_val in hints[key]:
+                                msg = f"Hint {key} {new_val} overrides existing hint"
+                                raise RuntimeError(msg)
                         hints[key] = (  # type: ignore[literal-required]
                             hints[key] + value  # type: ignore[literal-required]
                         )
                     else:
                         hints[key] = value  # type: ignore[literal-required]
-                else:
-                    raise TypeError(
-                        f"{new_hint.name}: Unknown type for value '{value}' "
-                        f" for key '{key}'"
-                    )
-
         return hints
 
     @contextmanager
