@@ -53,8 +53,8 @@ def setup_ndstats_sum(detector: Device):
     hdf = getattr(detector, "fileio", None)
     if not isinstance(hdf, NDFileHDFIO):
         msg = (
-            f"Expected {detector.name} to have 'fileio' attribute that is an NDFilHDFIO, "
-            f"got {hdf}"
+            f"Expected {detector.name} to have 'fileio' attribute that is an "
+            f"NDFilHDFIO, got {hdf}"
         )
         raise TypeError(msg)
     yield from (
