@@ -20,7 +20,7 @@ def test_setup_ndstats_raises_type_error(RE, parent_device: ParentOfEverythingDe
     with pytest.raises(
         TypeError,
         match=re.escape(
-            f"Expected {detector_name} to have 'hdf' attribute that is an NDFilHDFIO"
+            f"Expected {detector_name} to have 'fileio' attribute that is an NDFilHDFIO"
         ),
     ):
         RE(setup_ndstats_sum(detector))
