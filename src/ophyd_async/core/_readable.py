@@ -2,7 +2,7 @@ import warnings
 from collections.abc import Awaitable, Callable, Generator, Sequence
 from contextlib import contextmanager
 from enum import Enum
-from typing import Any, cast
+from typing import Any, TypeGuard, cast
 
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
@@ -205,6 +205,14 @@ class StandardReadable(
             `StandardReadableFormat` documentation
         """
 
+        def is_signalr(device: Device) -> TypeGuard[SignalR]:
+            return isinstance(device, SignalR)
+
+        def assert_device_is_signalr(device: Device) -> SignalR:
+            if not is_signalr(device):
+                raise TypeError(f"{device} is not a SignalR")
+            return device
+
         for device in devices:
             match format:
                 case StandardReadableFormat.CHILD:
@@ -219,24 +227,24 @@ class StandardReadable(
                     if isinstance(device, HasHints):
                         self._has_hints += (device,)
                 case StandardReadableFormat.CONFIG_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_config_funcs += (device.describe,)
-                    self._read_config_funcs += (device.read,)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_config_funcs += (signalr_device.describe,)
+                    self._read_config_funcs += (signalr_device.read,)
                 case StandardReadableFormat.HINTED_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_funcs += (device.describe,)
-                    self._read_funcs += (device.read,)
-                    self._stageables += (device,)
-                    self._has_hints += (_HintsFromName(device),)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_funcs += (signalr_device.describe,)
+                    self._read_funcs += (signalr_device.read,)
+                    self._stageables += (signalr_device,)
+                    self._has_hints += (_HintsFromName(signalr_device),)
                 case StandardReadableFormat.UNCACHED_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_funcs += (device.describe,)
-                    self._read_funcs += (_UncachedRead(device),)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_funcs += (signalr_device.describe,)
+                    self._read_funcs += (_UncachedRead(signalr_device),)
                 case StandardReadableFormat.HINTED_UNCACHED_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_funcs += (device.describe,)
-                    self._read_funcs += (_UncachedRead(device),)
-                    self._has_hints += (_HintsFromName(device),)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_funcs += (signalr_device.describe,)
+                    self._read_funcs += (_UncachedRead(signalr_device),)
+                    self._has_hints += (_HintsFromName(signalr_device),)
 
 
 class _UncachedRead:
