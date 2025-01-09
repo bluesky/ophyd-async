@@ -64,7 +64,7 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
         hint2,
     )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match=r"Hints key .* value may not be overridden"):
         sr.hints  # noqa: B018
 
 
@@ -82,7 +82,7 @@ def test_standard_readable_hints_raises_when_overriding_sequence():
         hint2,
     )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match=r"Hint fields .* overrides existing hint"):
         sr.hints  # noqa: B018
 
 
@@ -95,7 +95,7 @@ def test_standard_readable_hints_invalid_types(invalid_type):
 
     sr._has_hints = (hint1,)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=r"Unknown type for value .* for key .*"):
         sr.hints  # noqa: B018
 
 
