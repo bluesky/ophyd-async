@@ -2,20 +2,10 @@ name: "CodeQL"
 
 on:
   workflow_call:
-    inputs:
-      codeql:
-        description: "Specify the trigger type"
-        required: true
-        type: string
-        default: "push"
-    secrets:
-      codeql_token:
-        description: "Token for CodeQL"
-        required: true
 
 jobs:
   analyze:
-    name: Analyze (${{ matrix.language }})
+    name: Analyze (python)
     # Runner size impacts CodeQL analysis time. To learn more, please see:
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     runs-on: "ubuntu-latest"
@@ -37,17 +27,12 @@ jobs:
         include:
           - language: python
             build-mode: none
-        # To learn more about changing the languages that are analyzed or customizing the build mode for your analysis,
-        # see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build-mode }}
-          # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-          # queries: security-extended,security-and-quality
+          languages: python
+          build-mode: none
