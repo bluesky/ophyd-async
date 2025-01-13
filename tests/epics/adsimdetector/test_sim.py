@@ -230,7 +230,6 @@ async def test_two_detectors_step(
 
     assert event["data"] == {}
 
-
 @pytest.mark.parametrize("writer_cls", [adcore.ADHDFWriter, adcore.ADTIFFWriter])
 async def test_detector_writes_to_file(
     RE: RunEngine,
@@ -275,6 +274,15 @@ async def test_detector_writes_to_file(
         "event",
         "stop",
     ]
+
+
+async def test_invalid_color_mode(
+    test_adsimdetector: adsimdetector.SimDetector,
+):
+    set_mock_value(test_adsimdetector.driver.color_mode, "Bayer")
+    with pytest.raises(ValueError) as exc_info:
+        await test_adsimdetector._writer._dataset_describer.shape()
+    assert "not currently supported!" in str(exc_info.value)
 
 
 async def test_read_and_describe_detector(
