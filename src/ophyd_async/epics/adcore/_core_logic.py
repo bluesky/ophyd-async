@@ -35,9 +35,9 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         self._arm_status: AsyncStatus | None = None
 
     async def prepare(self, trigger_info: TriggerInfo) -> None:
-        assert (
-            trigger_info.trigger == DetectorTrigger.INTERNAL
-        ), "fly scanning (i.e. external triggering) is not supported for this device"
+        assert trigger_info.trigger == DetectorTrigger.INTERNAL, (
+            "fly scanning (i.e. external triggering) is not supported for this device"
+        )
         self.frame_timeout = (
             DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
