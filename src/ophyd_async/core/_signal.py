@@ -113,7 +113,7 @@ class _SignalCache(Generic[SignalDatatypeT]):
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         await self._valid.wait()
-        if self._reading:
+        if self._reading is not None:
             return self._reading
         else:
             msg = "Monitor not working"
