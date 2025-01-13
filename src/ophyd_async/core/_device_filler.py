@@ -157,8 +157,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield backend, extras
             signal = child_type(backend)
             for anno in extras:
-                self._check_device_annotation(annotation=anno)
-                anno(self._device, signal)
+                device_annotation = self._check_device_annotation(anno)
+                device_annotation(self._device, signal)
             setattr(self._device, name, signal)
             dest = self._filled_backends if filled else self._unfilled_backends
             dest[_logical(name)] = (backend, child_type)
