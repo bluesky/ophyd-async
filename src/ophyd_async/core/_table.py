@@ -103,7 +103,6 @@ class Table(BaseModel):
                 array = np.empty(v.shape, dtype=self.numpy_dtype())
             array[k] = v
         if array is None:
-            # TODO: discuss whether this code is actually reachable
             msg = "No arrays found in table"
             raise ValueError(msg)
         return array
