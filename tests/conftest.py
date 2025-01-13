@@ -93,6 +93,7 @@ def _error_and_kill_pending_tasks(
         task
         for task in asyncio.all_tasks(loop)
         if (coro := task.get_coro()) is not None
+        and hasattr(coro, "__name__")
         and coro.__name__ not in _ALLOWED_PYTEST_TASKS
         and not task.done()
     }
@@ -112,7 +113,7 @@ def _error_and_kill_pending_tasks(
 
 
 @pytest.fixture(autouse=True, scope="function")
-def fail_test_on_unclosed_tasks(request: FixtureRequest):
+async def fail_test_on_unclosed_tasks(request: FixtureRequest):
     """
     Used on every test to ensure failure if there are pending tasks
     by the end of the test.
