@@ -39,6 +39,13 @@ def _logical(name: UniqueName) -> LogicalName:
     return LogicalName(name.rstrip("_"))
 
 
+def _check_device_annotation(annotation: Any) -> DeviceAnnotation:
+    if not isinstance(annotation, DeviceAnnotation):
+        msg = f"Annotation {annotation} is not a DeviceAnnotation"
+        raise TypeError(msg)
+    return annotation
+
+
 @runtime_checkable
 class DeviceAnnotation(Protocol):
     @abstractmethod
@@ -137,13 +144,6 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 f"{self._device.name}: {uncreated} have not been created yet"
             )
 
-    @staticmethod
-    def _check_device_annotation(annotation: Any) -> DeviceAnnotation:
-        if not isinstance(annotation, DeviceAnnotation):
-            msg = f"Annotation {annotation} is not a DeviceAnnotation"
-            raise TypeError(msg)
-        return annotation
-
     def create_signals_from_annotations(
         self,
         filled=True,
@@ -157,7 +157,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield backend, extras
             signal = child_type(backend)
             for anno in extras:
-                device_annotation = self._check_device_annotation(anno)
+                device_annotation = _check_device_annotation(annotation=anno)
                 device_annotation(self._device, signal)
             setattr(self._device, name, signal)
             dest = self._filled_backends if filled else self._unfilled_backends
@@ -174,8 +174,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield connector, extras
             device = child_type(connector=connector)
             for anno in extras:
-                self._check_device_annotation(annotation=anno)
-                anno(self._device, device)
+                device_annotation = _check_device_annotation(annotation=anno)
+                device_annotation(self._device, device)
             setattr(self._device, name, device)
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
