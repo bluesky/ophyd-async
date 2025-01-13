@@ -41,7 +41,7 @@ def two_test_adsimdetectors(
     ad_standard_det_factory: Callable,
 ) -> Sequence[adsimdetector.SimDetector]:
     deta = ad_standard_det_factory(adsimdetector.SimDetector)
-    detb = ad_standard_det_factory(adsimdetector.SimDetector, number=2)
+    detb = ad_standard_det_factory(adsimdetector.SimDetector, number=2, color=True)
 
     return deta, detb
 
@@ -212,7 +212,7 @@ async def test_two_detectors_step(
         "test_adsim2-driver-acquire_time"
     ] == pytest.approx(1.8)
     assert descriptor["data_keys"]["test_adsim1"]["shape"] == [10, 10]
-    assert descriptor["data_keys"]["test_adsim2"]["shape"] == [11, 11]
+    assert descriptor["data_keys"]["test_adsim2"]["shape"] == [3, 11, 11]
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
     assert (

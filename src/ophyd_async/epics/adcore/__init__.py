@@ -1,5 +1,6 @@
 from ._core_detector import AreaDetector
 from ._core_io import (
+    ADBaseColorMode,
     ADBaseDatasetDescriber,
     ADBaseIO,
     DetectorState,
@@ -26,6 +27,7 @@ from ._utils import (
 )
 
 __all__ = [
+    "ADBaseColorMode",
     "ADBaseIO",
     "AreaDetector",
     "DetectorState",
