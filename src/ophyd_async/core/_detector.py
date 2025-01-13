@@ -173,6 +173,13 @@ DetectorControllerT = TypeVar("DetectorControllerT", bound=DetectorController)
 DetectorWriterT = TypeVar("DetectorWriterT", bound=DetectorWriter)
 
 
+def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo:
+    # make absolute sure we realy have a valid TriggerInfo ... mostly for pylance
+    if trigger_info is None:
+        raise RuntimeError("Trigger info must be set before calling this method.")
+    return trigger_info
+
+
 class StandardDetector(
     Device,
     Stageable,
@@ -267,12 +274,12 @@ class StandardDetector(
     async def describe(self) -> dict[str, DataKey]:
         return self._describe
 
-    @staticmethod
-    def ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo:
-        # make absolute sure we realy have a valid TriggerInfo ... mostly for pylance
-        if trigger_info is None:
-            raise RuntimeError("Trigger info must be set before calling this method.")
-        return trigger_info
+    # @staticmethod
+    # def ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo:
+    #     # make absolute sure we realy have a valid TriggerInfo ... mostly for pylance
+    #     if trigger_info is None:
+    #         raise RuntimeError("Trigger info must be set before calling this method.")
+    #     return trigger_info
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
@@ -287,7 +294,7 @@ class StandardDetector(
                 )
             )
 
-        self._trigger_info = self.ensure_trigger_info_exists(self._trigger_info)
+        self._trigger_info = _ensure_trigger_info_exists(self._trigger_info)
         if self._trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
             raise ValueError(msg)
@@ -362,7 +369,7 @@ class StandardDetector(
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        self._trigger_info = self.ensure_trigger_info_exists(self._trigger_info)
+        self._trigger_info = _ensure_trigger_info_exists(self._trigger_info)
         indices_written = self._writer.observe_indices_written(
             self._trigger_info.frame_timeout
             or (

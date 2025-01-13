@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from ophyd_async.core import DetectorTrigger, StandardDetector, TriggerInfo
+from ophyd_async.core._detector import _ensure_trigger_info_exists  # noqa: PLC2701
 
 
 @pytest.fixture
@@ -101,21 +102,19 @@ async def test_prepare_external_trigger_insufficient_deadtime(
         await standard_detector.prepare(trigger_info)
 
 
-def test_ensure_trigger_info_exists_success(
-    standard_detector: StandardDetector,
-) -> None:
+def test_ensure_trigger_info_exists_success() -> None:
     trigger_info = TriggerInfo(number_of_triggers=1)
     assert isinstance(
-        standard_detector.ensure_trigger_info_exists(trigger_info=trigger_info),
+        _ensure_trigger_info_exists(trigger_info=trigger_info),
         TriggerInfo,
     )
 
 
-def test_ensure_trigger_info_exists_raises(standard_detector: StandardDetector) -> None:
+def test_ensure_trigger_info_exists_raises() -> None:
     with pytest.raises(
         RuntimeError, match="Trigger info must be set before calling this method."
     ):
         assert isinstance(
-            standard_detector.ensure_trigger_info_exists(trigger_info=None),
+            _ensure_trigger_info_exists(trigger_info=None),
             TriggerInfo,
         )
