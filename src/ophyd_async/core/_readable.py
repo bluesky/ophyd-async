@@ -124,12 +124,6 @@ class StandardReadable(
             # identical when string values.
             for key, value in new_hint.hints.items():
                 # fail early for unkwon types
-                if not isinstance(value, str | Sequence):
-                    msg = (
-                        f"{new_hint.name}: Unknown type for value '{value}'"
-                        f" for key '{key}'"
-                    )
-                    raise TypeError(msg)
                 if isinstance(value, str):
                     if key in hints:
                         if hints[key] != value:
@@ -148,6 +142,13 @@ class StandardReadable(
                         )
                     else:
                         hints[key] = value  # type: ignore[literal-required]
+                else:
+                    msg = (
+                        f"{new_hint.name}: Unknown type for value '{value}'"
+                        f" for key '{key}'"
+                    )
+                    raise TypeError(msg)
+
         return hints
 
     @contextmanager
