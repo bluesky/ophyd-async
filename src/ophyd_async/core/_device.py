@@ -276,7 +276,8 @@ class DeviceProcessor:
             while caller_frame.f_locals.get("self", None) is self:
                 caller_frame = caller_frame.f_back
                 assert caller_frame, (
-                    "No previous frame to the one with self in it, this shouldn't happen"
+                    "No previous frame to the one with self in it, this shouldn't "
+                    "happen"
                 )
             return caller_frame.f_locals.copy()
 
