@@ -125,9 +125,9 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
     @AsyncStatus.wrap
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
-        assert (
-            self._fly_completed_position
-        ), "Motor must be prepared before attempting to kickoff"
+        assert self._fly_completed_position, (
+            "Motor must be prepared before attempting to kickoff"
+        )
 
         self._fly_status = self.set(
             self._fly_completed_position, timeout=self._fly_timeout

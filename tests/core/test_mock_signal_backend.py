@@ -320,9 +320,7 @@ async def test_reset_mock_put_calls(mock_signals):
     # Replacing spaces because they change between runners
     # (e.g the github actions runner has more)
     assert str(exc.value).replace(" ", "").replace("\n", "") == (
-        "expectedcallnotfound."
-        "Expected:put('test_value',wait=<ANY>)"
-        "Actual:notcalled."
+        "expectedcallnotfound.Expected:put('test_value',wait=<ANY>)Actual:notcalled."
     )
 
 

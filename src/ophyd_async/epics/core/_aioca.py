@@ -322,9 +322,9 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback:
-            assert (
-                not self.subscription
-            ), "Cannot set a callback when one is already set"
+            assert not self.subscription, (
+                "Cannot set a callback when one is already set"
+            )
             self.subscription = camonitor(
                 self.read_pv,
                 lambda v: callback(self._make_reading(v)),
