@@ -2,7 +2,7 @@ import warnings
 from collections.abc import Awaitable, Callable, Generator, Sequence
 from contextlib import contextmanager
 from enum import Enum
-from typing import Any, TypeGuard, cast
+from typing import Any, cast
 
 from bluesky.protocols import HasHints, Hints, Reading
 from event_model import DataKey
@@ -206,11 +206,8 @@ class StandardReadable(
             `StandardReadableFormat` documentation
         """
 
-        def is_signalr(device: Device) -> TypeGuard[SignalR]:
-            return isinstance(device, SignalR)
-
         def assert_device_is_signalr(device: Device) -> SignalR:
-            if not is_signalr(device):
+            if not isinstance(device, SignalR):
                 raise TypeError(f"{device} is not a SignalR")
             return device
 
