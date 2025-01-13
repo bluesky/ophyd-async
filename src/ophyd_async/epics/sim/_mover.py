@@ -52,15 +52,19 @@ class Mover(StandardReadable, Movable, Stoppable):
             self.precision.get_value(),
             self.velocity.get_value(),
         )
-        if timeout is CALCULATE_TIMEOUT and velocity != 0:
-            timeout = abs((new_position - old_position) / velocity) + DEFAULT_TIMEOUT
-        else:
-            msg = "Mover has zero velocity"
-            raise ValueError(msg)
+        if timeout is CALCULATE_TIMEOUT:
+            try:
+                timeout = (
+                    abs((new_position - old_position) / velocity) + DEFAULT_TIMEOUT
+                )
+            except ZeroDivisionError as error:
+                msg = "Mover has zero velocity"
+                raise ValueError(msg) from error
+
         # Make an Event that will be set on completion, and a Status that will
         # error if not done in time
         done = asyncio.Event()
-        done_status = AsyncStatus(asyncio.wait_for(done.wait(), timeout))
+        done_status = AsyncStatus(asyncio.wait_for(done.wait(), timeout))  # type: ignore
         # Wait for the value to set, but don't wait for put completion callback
         await self.setpoint.set(new_position, wait=False)
         async for current_position in observe_value(
