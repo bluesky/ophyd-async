@@ -254,9 +254,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We need to add a new entry to a DeviceVector
             vector = self._ensure_device_vector(name)
             vector_device_type = self._vector_device_type[name] or device_type
-            assert issubclass(
-                vector_device_type, Device
-            ), f"{vector_device_type} is not a Device"
+            assert issubclass(vector_device_type, Device), (
+                f"{vector_device_type} is not a Device"
+            )
             connector = self._device_connector_factory()
             vector[vector_index] = vector_device_type(connector=connector)
         elif child := getattr(self._device, name, None):
