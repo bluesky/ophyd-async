@@ -28,8 +28,6 @@ async def test_when_prepared_with_energy_then_energy_set_on_detector(detector):
             frame_timeout=None,
             number_of_triggers=1,
             trigger=DetectorTrigger.INTERNAL,
-            deadtime=None,
-            livetime=None,
             energy_ev=10000,
         )
     )

@@ -101,11 +101,11 @@ class StaticPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        directory_path: Path,
+        directory_path: Path | str,
         create_dir_depth: int = 0,
     ) -> None:
         self._filename_provider = filename_provider
-        self._directory_path = directory_path
+        self._directory_path = Path(directory_path)
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, device_name: str | None = None) -> PathInfo:
