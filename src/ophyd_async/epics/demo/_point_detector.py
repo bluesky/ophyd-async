@@ -1,5 +1,7 @@
 from typing import Annotated as A
 
+from bluesky.protocols import Triggerable
+
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
@@ -15,7 +17,7 @@ from ophyd_async.epics.core import EpicsDevice, PvSuffix
 from ._point_detector_channel import DemoPointDetectorChannel
 
 
-class DemoPointDetector(StandardReadable, EpicsDevice):
+class DemoPointDetector(StandardReadable, EpicsDevice, Triggerable):
     acquire_time: A[SignalRW[float], PvSuffix("AcquireTime"), Format.CONFIG_SIGNAL]
     start: A[SignalX, PvSuffix("Start.PROC")]
     acquiring: A[SignalR[bool], PvSuffix("Acquiring")]

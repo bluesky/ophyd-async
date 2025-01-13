@@ -14,10 +14,11 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import demo
 from ophyd_async.testing import (
+    StatusWatcher,
+    assert_configuration,
     assert_emitted,
     assert_reading,
     assert_value,
-    callback_on_mock_put,
     get_mock,
     get_mock_put,
     set_mock_value,
@@ -26,84 +27,43 @@ from ophyd_async.testing import (
 
 
 @pytest.fixture
-async def mock_motor() -> demo.DemoMotor:
+async def mock_motor():
     async with init_devices(mock=True):
         mock_motor = demo.DemoMotor("BLxxI-MO-TABLE-01:X:")
-        # Signals connected here
-
-    assert mock_motor.name == "mock_motor"
     set_mock_value(mock_motor.units, "mm")
     set_mock_value(mock_motor.precision, 3)
     set_mock_value(mock_motor.velocity, 1)
-    return mock_motor
+    yield mock_motor
 
 
 @pytest.fixture
-async def mock_point_detector() -> demo.DemoPointDetector:
+async def mock_point_detector():
     async with init_devices(mock=True):
         mock_point_detector = demo.DemoPointDetector("MOCK:DET:")
-        # Signals connected here
-
-    assert mock_point_detector.name == "mock_point_detector"
-    return mock_point_detector
+    yield mock_point_detector
 
 
 async def test_motor_stopped(mock_motor: demo.DemoMotor):
-    callbacks = []
-    callback_on_mock_put(
-        mock_motor.stop_, lambda v, *args, **kwargs: callbacks.append(v)
-    )
-
+    # Check it hasn't already been called
+    stop_mock = get_mock_put(mock_motor.stop_)
+    stop_mock.assert_not_called()
+    # Call stop and check it's called with the default value
     await mock_motor.stop()
-    assert callbacks == [None]
-
-
-class DemoWatcher:
-    def __init__(self) -> None:
-        self._event = asyncio.Event()
-        self._mock = Mock()
-
-    def __call__(
-        self,
-        *args,
-        current: float,
-        initial: float,
-        target: float,
-        name: str | None = None,
-        unit: str | None = None,
-        precision: float | None = None,
-        fraction: float | None = None,
-        time_elapsed: float | None = None,
-        time_remaining: float | None = None,
-        **kwargs,
-    ):
-        self._mock(
-            *args,
-            current=current,
-            initial=initial,
-            target=target,
-            name=name,
-            unit=unit,
-            precision=precision,
-            time_elapsed=time_elapsed,
-            **kwargs,
-        )
-        self._event.set()
-
-    async def wait_for_call(self, *args, **kwargs):
-        await asyncio.wait_for(self._event.wait(), timeout=1)
-        assert self._mock.call_count == 1
-        assert self._mock.call_args == call(*args, **kwargs)
-        self._mock.reset_mock()
-        self._event.clear()
+    stop_mock.assert_called_once_with(None, wait=True)
+    # We can also track all the mock puts that have happened on the device
+    parent_mock = get_mock(mock_motor)
+    await mock_motor.velocity.set(15)
+    assert parent_mock.mock_calls == [
+        call.stop_.put(None, wait=True),
+        call.velocity.put(15, wait=True),
+    ]
 
 
 async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
+    # Start it moving
     s = mock_motor.set(0.55)
-    watcher = DemoWatcher()
-    s.watch(watcher)
-    done = Mock()
-    s.add_callback(done)
+    # Watch for updates, and make sure the first update is the current position
+    watcher = StatusWatcher(s)
     await watcher.wait_for_call(
         name="mock_motor",
         current=0.0,
@@ -113,10 +73,9 @@ async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.08),
     )
-
     await assert_value(mock_motor.setpoint, 0.55)
     assert not s.done
-    done.assert_not_called()
+    # Wait a bit and give it an update, checking that the watcher is called with it
     await asyncio.sleep(0.1)
     set_mock_value(mock_motor.readback, 0.1)
     await watcher.wait_for_call(
@@ -128,14 +87,11 @@ async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.1, abs=0.08),
     )
+    # Make it almost get there and check that it completes
     set_mock_value(mock_motor.readback, 0.5499999)
     await wait_for_pending_wakeups()
     assert s.done
     assert s.success
-    done.assert_called_once_with(s)
-    done2 = Mock()
-    s.add_callback(done2)
-    done2.assert_called_once_with(s)
 
 
 async def test_retrieve_mock_and_assert(mock_motor: demo.DemoMotor):
@@ -184,18 +140,39 @@ async def test_mocks_in_device_share_parent():
 
 async def test_read_motor(mock_motor: demo.DemoMotor):
     await mock_motor.stage()
-    assert (await mock_motor.read())["mock_motor"]["value"] == 0.0
-    assert (await mock_motor.read_configuration())["mock_motor-velocity"]["value"] == 1
-    assert (await mock_motor.describe_configuration())["mock_motor-units"][
-        "shape"
-    ] == []
+    await assert_reading(
+        mock_motor,
+        {"mock_motor": {"value": 0.0, "timestamp": ANY, "alarm_severity": 0}},
+    )
+    await assert_configuration(
+        mock_motor,
+        {
+            "mock_motor-units": {
+                "value": "mm",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "mock_motor-velocity": {
+                "value": 1.0,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+        },
+    )
+    # Check that changing the readback value changes the reading
     set_mock_value(mock_motor.readback, 0.5)
-    assert (await mock_motor.read())["mock_motor"]["value"] == 0.5
+    await assert_value(mock_motor.readback, 0.5)
+    await assert_reading(
+        mock_motor,
+        {"mock_motor": {"value": 0.5, "timestamp": ANY, "alarm_severity": 0}},
+    )
+    # Check we can still read when not staged
     await mock_motor.unstage()
-    # Check we can still read and describe when not staged
     set_mock_value(mock_motor.readback, 0.1)
-    assert (await mock_motor.read())["mock_motor"]["value"] == 0.1
-    assert await mock_motor.describe()
+    await assert_reading(
+        mock_motor,
+        {"mock_motor": {"value": 0.1, "timestamp": ANY, "alarm_severity": 0}},
+    )
 
 
 async def test_set_velocity(mock_motor: demo.DemoMotor) -> None:
@@ -245,16 +222,20 @@ async def test_read_point_detector(mock_point_detector: demo.DemoPointDetector):
 async def test_point_detector_in_plan(
     RE: RunEngine, mock_point_detector: demo.DemoPointDetector
 ):
-    """Tests mock point_detector behavior within a RunEngine plan.
-
-    This test verifies that the point_detector emits the expected documents
-     when used in plan(count).
-    """
+    # Subscribe to new documents produce, putting them in a dict by type
     docs = defaultdict(list)
     RE.subscribe(lambda name, doc: docs[name].append(doc))
-
+    # Set the channel values to a known value
+    for i, channel in mock_point_detector.channel.items():
+        set_mock_value(channel.value, 100 + i)
+    # Run the plan and assert the right docs are produced
     RE(bp.count([mock_point_detector], num=2))
     assert_emitted(docs, start=1, descriptor=1, event=2, stop=1)
+    assert docs["event"][1]["data"] == {
+        "mock_point_detector-channel-1-value": 101,
+        "mock_point_detector-channel-2-value": 102,
+        "mock_point_detector-channel-3-value": 103,
+    }
 
 
 async def test_assembly_renaming() -> None:

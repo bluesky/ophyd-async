@@ -40,22 +40,28 @@ class DemoMotor(EpicsDevice, StandardReadable, Movable, Stoppable):
         self.readback.set_name(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, value: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT):
-        new_position = value
+    async def set(
+        self, new_position: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
+    ):
+        # The move should complete successfully unless stop(success=False) is called
         self._set_success = True
+        # Get some variables for the progress bar reporting
         old_position, units, precision, velocity = await asyncio.gather(
             self.setpoint.get_value(),
             self.units.get_value(),
             self.precision.get_value(),
             self.velocity.get_value(),
         )
+        # If not supplied, calculate a suitable timeout for the move
         if timeout == CALCULATE_TIMEOUT:
             timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
         # Wait for the value to set, but don't wait for put completion callback
         await self.setpoint.set(new_position, wait=False)
+        # Observe the readback Signal, and on each new position...
         async for current_position in observe_value(
             self.readback, done_timeout=timeout
         ):
+            # Emit a progress bar update
             yield WatcherUpdate(
                 current=current_position,
                 initial=old_position,
@@ -64,12 +70,13 @@ class DemoMotor(EpicsDevice, StandardReadable, Movable, Stoppable):
                 unit=units,
                 precision=precision,
             )
+            # If we are at the desired position the break
             if np.isclose(current_position, new_position):
                 break
+        # If we were told to stop and report an error then do so
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 
     async def stop(self, success=True):
         self._set_success = success
-        status = self.stop_.trigger()
-        await status
+        await self.stop_.trigger()

@@ -6,7 +6,7 @@ from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 
 class EnergyMode(StrictEnum):
-    """Energy mode for `Sensor`"""
+    """Energy mode for `DemoPointDetectorChannel`"""
 
     #: Low energy mode
     LOW = "Low Energy"
@@ -15,7 +15,7 @@ class EnergyMode(StrictEnum):
 
 
 class DemoPointDetectorChannel(StandardReadable, EpicsDevice):
-    """A demo sensor that produces a scalar value based on X and Y Movers"""
+    """A channel for `DemoPointDetector` with int value based on X and Y Motors"""
 
     value: A[SignalR[int], PvSuffix("Value"), Format.HINTED_UNCACHED_SIGNAL]
     mode: A[SignalRW[EnergyMode], PvSuffix("Mode"), Format.CONFIG_SIGNAL]
