@@ -138,7 +138,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             )
 
     @staticmethod
-    def check_device_annotation(annotation: Any) -> None:
+    def _check_device_annotation(annotation: Any) -> None:
         if not isinstance(annotation, DeviceAnnotation):
             msg = f"Annotation {annotation} is not a DeviceAnnotation"
             raise TypeError(msg)
@@ -156,7 +156,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield backend, extras
             signal = child_type(backend)
             for anno in extras:
-                self.check_device_annotation(annotation=anno)
+                self._check_device_annotation(annotation=anno)
                 anno(self._device, signal)
             setattr(self._device, name, signal)
             dest = self._filled_backends if filled else self._unfilled_backends
@@ -173,7 +173,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield connector, extras
             device = child_type(connector=connector)
             for anno in extras:
-                self.check_device_annotation(annotation=anno)
+                self._check_device_annotation(annotation=anno)
                 anno(self._device, device)
             setattr(self._device, name, device)
             dest = self._filled_connectors if filled else self._unfilled_connectors
