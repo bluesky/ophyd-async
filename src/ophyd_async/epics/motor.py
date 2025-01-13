@@ -157,15 +157,18 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
             self.velocity.get_value(),
             self.acceleration_time.get_value(),
         )
-        if timeout is CALCULATE_TIMEOUT and velocity != 0:
-            timeout = (
-                abs((new_position - old_position) / velocity)
-                + 2 * acceleration_time
-                + DEFAULT_TIMEOUT
-            )
-        else:
-            msg = "Mover has zero velocity"
-            raise ValueError(msg)
+
+        if timeout is CALCULATE_TIMEOUT:
+            try:
+                timeout = (
+                    abs((new_position - old_position) / velocity)
+                    + 2 * acceleration_time
+                    + DEFAULT_TIMEOUT
+                )
+            except ZeroDivisionError as error:
+                msg = "Mover has zero velocity"
+                raise ValueError(msg) from error
+
         move_status = self.user_setpoint.set(new_position, wait=True, timeout=timeout)
         async for current_position in observe_value(
             self.user_readback, done_status=move_status

@@ -197,10 +197,29 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
     assert q.empty()
 
 
-async def test_zero_velocity(sim_motor: motor.Motor) -> None:
+async def test_set_with_zero_velocity(sim_motor: motor.Motor) -> None:
     await sim_motor.velocity.set(0)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Mover has zero velocity"):
         await sim_motor.set(3.14)
+
+
+@pytest.mark.parametrize(
+    "setpoint, velocity, timeout",
+    [
+        (1, 1, CALCULATE_TIMEOUT),
+        (-1, -1, CALCULATE_TIMEOUT),
+        (1, -1, CALCULATE_TIMEOUT),
+        (-1, 1, CALCULATE_TIMEOUT),
+        (1, 1, 1),
+        (-1, -1, 1),
+        (1, -1, 1),
+        (-1, 1, 1),
+    ],
+)
+async def test_set(sim_motor: motor.Motor, setpoint, velocity, timeout) -> None:
+    await sim_motor.velocity.set(velocity)
+    await sim_motor.set(setpoint, timeout=timeout)
+    assert (await sim_motor.locate()).get("setpoint") == setpoint
 
 
 async def test_prepare_velocity_errors(sim_motor: motor.Motor):
