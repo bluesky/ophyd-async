@@ -138,10 +138,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             )
 
     @staticmethod
-    def _check_device_annotation(annotation: Any) -> None:
+    def _check_device_annotation(annotation: Any) -> DeviceAnnotation:
         if not isinstance(annotation, DeviceAnnotation):
             msg = f"Annotation {annotation} is not a DeviceAnnotation"
             raise TypeError(msg)
+        return annotation
 
     def create_signals_from_annotations(
         self,
