@@ -1,5 +1,3 @@
-import re
-
 import pytest
 
 from ophyd_async.plan_stubs import setup_ndstats_sum
@@ -19,8 +17,9 @@ def test_setup_ndstats_raises_type_error(RE, parent_device: ParentOfEverythingDe
     detector.set_name(detector_name)
     with pytest.raises(
         TypeError,
-        match=re.escape(
-            f"Expected {detector_name} to have 'fileio' attribute that is an NDFilHDFIO"
+        match=(
+            f"Expected {detector_name} to have 'fileio' attribute that is an "
+            "NDFileHDFIO"
         ),
     ):
         RE(setup_ndstats_sum(detector))
