@@ -230,6 +230,7 @@ async def test_two_detectors_step(
 
     assert event["data"] == {}
 
+
 @pytest.mark.parametrize("writer_cls", [adcore.ADHDFWriter, adcore.ADTIFFWriter])
 async def test_detector_writes_to_file(
     RE: RunEngine,
