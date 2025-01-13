@@ -1,11 +1,13 @@
-Device Collector Event-Loop Choice
-----------------------------------
+# Device connection strategies
+
+There are various ways you can connect an ophyd-async Device, depending on whether you are running under a RunEngine or not. This article details each of those modes and why you might want to connect in that mode
+
+## Up front connection 
 
 In a sync context, the ophyd-async :python:`init_devices` requires the bluesky event-loop
 to connect to devices. In an async context, it does not.
 
-Sync Context
-============
+## Sync Context
 
 In a sync context the run-engine must be initialized prior to connecting to devices.
 We enfore usage of the bluesky event-loop in this context.
@@ -22,8 +24,7 @@ The following will fail if :python:`RE = RunEngine()` has not been called alread
 The :python:`init_devices` connects to devices in the event-loop created in the run-engine.
 
 
-Async Context
-=============
+## Async Context
 
 In an async context device connection is decoupled from the run-engine.
 The following attempts connection to all the devices in the :python:`init_devices`

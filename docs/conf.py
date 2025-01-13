@@ -72,7 +72,7 @@ napoleon_numpy_docstring = True
 
 # If true, Sphinx will warn about all references where the target cannot
 # be found.
-# nitpicky = True
+nitpicky = True
 
 # A list of (type, target) tuples (by default empty) that should be ignored when
 # generating warnings in "nitpicky mode". Note that type should include the
@@ -98,7 +98,7 @@ autodoc_member_order = "bysource"
 autodoc_inherit_docstrings = False
 
 # Add some more modules to the top level autosummary
-ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs"]
+ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs", "testing"]
 
 # Document only what is in __all__
 autosummary_ignore_module_all = False
@@ -137,6 +137,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/devdocs/", None),
     "databroker": ("https://blueskyproject.io/databroker/", None),
     "event-model": ("https://blueskyproject.io/event-model/main", None),
+    "pytest": ("https://docs.pytest.org/en/stable/", None),
 }
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
@@ -229,6 +230,10 @@ html_show_copyright = False
 # Logo
 html_logo = "images/ophyd-async-logo.svg"
 html_favicon = "images/ophyd-favicon.svg"
+
+# Custom CSS
+html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
 # If False and a module has the __all__ attribute set, autosummary documents
 # every member listed in __all__ and no others. Default is True

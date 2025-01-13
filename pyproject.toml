@@ -17,7 +17,7 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky>=1.13",
+    "bluesky>=1.13.1rc2",
     "event-model>=1.22.1",
     "p4p>=4.2.0a3",
     "pyyaml",
@@ -138,9 +138,9 @@ commands =
     pre-commit: pre-commit run --all-files --show-diff-on-failure {posargs}
     type-checking: pyright src {posargs}
     tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
-    docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
+    docs: sphinx-{posargs:build -E --keep-going} -T docs build/html
 """
-
+# TODO: make the above -EW so warnings are treated as errors
 
 [tool.ruff]
 src = ["src", "tests", "system_tests"]

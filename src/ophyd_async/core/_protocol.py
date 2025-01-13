@@ -103,16 +103,15 @@ C = TypeVar("C", contravariant=True)
 
 
 class Watcher(Protocol, Generic[C]):
-    @staticmethod
     def __call__(
-        *,
-        current: C,
-        initial: C,
-        target: C,
-        name: str | None,
-        unit: str | None,
-        precision: float | None,
-        fraction: float | None,
-        time_elapsed: float | None,
-        time_remaining: float | None,
+        self,
+        current: C | None = None,
+        initial: C | None = None,
+        target: C | None = None,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: int | None = None,
+        fraction: float | None = None,
+        time_elapsed: float | None = None,
+        time_remaining: float | None = None,
     ) -> Any: ...

@@ -34,7 +34,7 @@ with init_devices():
     stage = sim.SimStage(pattern_generator)
     # Make a detector device that gives the point value of the pattern generator
     # when triggered
-    det1 = sim.SimPointDetector(pattern_generator)
+    pdet = sim.SimPointDetector(pattern_generator)
     # Make a detector device that gives a gaussian blob with intensity based
     # on the point value of the pattern generator when triggered
-    det2 = sim.SimBlobDetector(path_provider, pattern_generator)
+    bdet = sim.SimBlobDetector(path_provider, pattern_generator)

@@ -26,4 +26,4 @@ with init_devices():
     stage = demo.DemoStage(f"{prefix}STAGE:")
     # Create a multi channel counter with the same number
     # of counters as the IOC
-    det1 = demo.DemoPointDetector(f"{prefix}DET:")
+    pdet = demo.DemoPointDetector(f"{prefix}DET:", num_channels=3)

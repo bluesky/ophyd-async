@@ -1,7 +1,10 @@
+"""Utilities for testing devices."""
+
 from . import __pytest_assert_rewrite  # noqa: F401
 from ._assert import (
     ApproxTable,
     MonitorQueue,
+    StatusWatcher,
     approx_value,
     assert_configuration,
     assert_describe_signal,
@@ -14,7 +17,6 @@ from ._mock_signal_utils import (
     get_mock,
     get_mock_put,
     mock_puts_blocked,
-    reset_mock_put_calls,
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
@@ -27,21 +29,25 @@ from ._one_of_everything import (
 )
 from ._wait_for_pending import wait_for_pending_wakeups
 
+# The order of this list determines the order of the documentation,
+# so does not match the alphabetical order of the imports
 __all__ = [
     "approx_value",
+    # Assert functions
+    "assert_value",
+    "assert_reading",
     "assert_configuration",
     "assert_describe_signal",
     "assert_emitted",
-    "assert_reading",
-    "assert_value",
-    "callback_on_mock_put",
+    # Mocking utilities
     "get_mock",
-    "get_mock_put",
-    "mock_puts_blocked",
-    "reset_mock_put_calls",
-    "set_mock_put_proceeds",
     "set_mock_value",
     "set_mock_values",
+    "get_mock_put",
+    "callback_on_mock_put",
+    "mock_puts_blocked",
+    "set_mock_put_proceeds",
+    # Wait for pending wakeups
     "wait_for_pending_wakeups",
     "ExampleEnum",
     "ExampleTable",
@@ -49,4 +55,5 @@ __all__ = [
     "ParentOfEverythingDevice",
     "MonitorQueue",
     "ApproxTable",
+    "StatusWatcher",
 ]

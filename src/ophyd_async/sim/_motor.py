@@ -19,13 +19,11 @@ from ophyd_async.core import StandardReadableFormat as Format
 
 class SimMotor(StandardReadable, Movable, Stoppable):
     def __init__(self, name="", instant=True) -> None:
-        """
-        Simulated motor device
+        """Simulation of a motor, with optional velocity
 
-        args:
-        - prefix: str: Signal names prefix
-        - name: str: name of device
-        - instant: bool: whether to move instantly, or with a delay
+        Args:
+        - name: name of device
+        - instant: whether to move instantly or calculate move time using velocity
         """
         # Define some signals
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
@@ -42,6 +40,11 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         self._move_status: AsyncStatus | None = None
 
         super().__init__(name=name)
+
+    def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
+        super().set_name(name, child_name_separator=child_name_separator)
+        # Readback should be named the same as its parent in read()
+        self.user_readback.set_name(name)
 
     async def _move(self, old_position: float, new_position: float, move_time: float):
         start = time.monotonic()
