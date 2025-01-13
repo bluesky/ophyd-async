@@ -284,7 +284,7 @@ async def test_combining_top_level_signal_and_child_device():
 async def test_format_error_string_input():
     with pytest.raises(
         RuntimeError,
-        match=("Unexpected type `<class 'int'>` " "expected `str` or `dict`"),
+        match=("Unexpected type `<class 'int'>` expected `str` or `dict`"),
     ):
         not_connected = NotConnected(123)
         str(not_connected)

@@ -94,7 +94,7 @@ class NotConnected(Exception):
     def format_error_string(self, indent="") -> str:
         if not isinstance(self._errors, dict) and not isinstance(self._errors, str):
             raise RuntimeError(
-                f"Unexpected type `{type(self._errors)}` " "expected `str` or `dict`"
+                f"Unexpected type `{type(self._errors)}` expected `str` or `dict`"
             )
 
         if isinstance(self._errors, str):
