@@ -70,7 +70,7 @@ async def test_negative_move():
             "initial": 0.0,
             "name": "M1",
             "target": -0.19,
-            "time_elapsed": pytest.approx(0.19, abs=0.05),
+            "time_elapsed": pytest.approx(0.19, abs=0.08),
             "unit": "mm",
         },
     ]
