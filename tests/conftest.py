@@ -93,6 +93,7 @@ def _error_and_kill_pending_tasks(
         task
         for task in asyncio.all_tasks(loop)
         if (coro := task.get_coro()) is not None
+        and hasattr(coro, "__name__")
         and coro.__name__ not in _ALLOWED_PYTEST_TASKS
         and not task.done()
     }
@@ -112,7 +113,7 @@ def _error_and_kill_pending_tasks(
 
 
 @pytest.fixture(autouse=True, scope="function")
-def fail_test_on_unclosed_tasks(request: FixtureRequest):
+async def fail_test_on_unclosed_tasks(request: FixtureRequest):
     """
     Used on every test to ensure failure if there are pending tasks
     by the end of the test.
@@ -276,7 +277,7 @@ async def sim_detector(request: FixtureRequest):
 
 
 def pytest_collection_modifyitems(config, items):
-    tango_dir = "tests/tango"
+    tango_dir = os.path.join("tests", "tango")
 
     for item in items:
         if tango_dir in str(item.fspath):
@@ -284,6 +285,15 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(
                     pytest.mark.skip(
                         reason="Tango is currently not supported on Python 3.12: https://github.com/bluesky/ophyd-async/issues/681"
+                    )
+                )
+            elif "win" in sys.platform:
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason=(
+                            "Tango tests are currently not supported on Windows: "
+                            "https://github.com/bluesky/ophyd-async/issues/733"
+                        )
                     )
                 )
             else:

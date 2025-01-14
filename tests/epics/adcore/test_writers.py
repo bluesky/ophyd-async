@@ -92,7 +92,7 @@ async def detectors(
 
 async def test_hdf_writer_file_not_found(hdf_writer: adcore.ADHDFWriter):
     with pytest.raises(
-        FileNotFoundError, match=r"File path .* for hdf plugin does not exist"
+        FileNotFoundError, match=r"File path .* for file plugin does not exist"
     ):
         await hdf_writer.open()
 

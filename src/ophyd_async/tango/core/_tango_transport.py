@@ -210,11 +210,11 @@ class AttributeProxy(TangoProxy):
                             await asyncio.sleep(A_BIT)
                             if to and (time.time() - start_time > to):
                                 raise TimeoutError(
-                                    f"{self._name} attr put failed:" f" Timeout"
+                                    f"{self._name} attr put failed: Timeout"
                                 ) from exc
                         else:
                             raise RuntimeError(
-                                f"{self._name} device failure:" f" {exc.args[0].desc}"
+                                f"{self._name} device failure: {exc.args[0].desc}"
                             ) from exc
 
             return AsyncStatus(wait_for_reply(rid, timeout))
@@ -422,7 +422,7 @@ class CommandProxy(TangoProxy):
                 raise TimeoutError(f"{self._name} command failed: Timeout") from te
             except DevFailed as de:
                 raise RuntimeError(
-                    f"{self._name} device" f" failure: {de.args[0].desc}"
+                    f"{self._name} device failure: {de.args[0].desc}"
                 ) from de
 
         else:
@@ -446,8 +446,7 @@ class CommandProxy(TangoProxy):
                                 ) from de_exc
                         else:
                             raise RuntimeError(
-                                f"{self._name} device failure:"
-                                f" {de_exc.args[0].desc}"
+                                f"{self._name} device failure: {de_exc.args[0].desc}"
                             ) from de_exc
 
             return AsyncStatus(wait_for_reply(rid, timeout))
@@ -742,11 +741,11 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
                 self.proxies[self.read_trl].subscribe_callback(callback)  # type: ignore
             except AssertionError as ae:
                 raise RuntimeError(
-                    "Cannot set a callback when one" " is already set"
+                    "Cannot set a callback when one is already set"
                 ) from ae
             except RuntimeError as exc:
                 raise RuntimeError(
-                    f"Cannot set callback" f" for {self.read_trl}. {exc}"
+                    f"Cannot set callback for {self.read_trl}. {exc}"
                 ) from exc
 
         else:

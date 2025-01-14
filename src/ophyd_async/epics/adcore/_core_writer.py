@@ -113,7 +113,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if not await self.fileio.file_path_exists.get_value():
-            msg = f"File path {info.directory_path} for hdf plugin does not exist"
+            msg = f"File path {info.directory_path} for file plugin does not exist"
             raise FileNotFoundError(msg)
 
         # Overwrite num_capture to go forever

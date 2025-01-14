@@ -463,6 +463,9 @@ async def test_attribute_poll_stringsandarrays(tango_test_device, attr):
         await asyncio.sleep(0.5)
         assert val == "new label"
 
+    assert attr_proxy._poll_task
+    attr_proxy.unsubscribe_callback()
+
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
@@ -479,6 +482,7 @@ async def test_attribute_poll_exceptions(tango_test_device):
     attr_proxy.subscribe_callback(callback)
     await asyncio.sleep(0.2)
     assert "Could not poll the attribute" in str(attr_proxy.exception)
+    attr_proxy.unsubscribe_callback()
 
 
 # --------------------------------------------------------------------

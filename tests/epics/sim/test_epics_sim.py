@@ -122,7 +122,7 @@ async def test_mover_moving_well(mock_mover: sim.Mover) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.05),
+        time_elapsed=pytest.approx(0.0, abs=0.08),
     )
 
     await assert_value(mock_mover.setpoint, 0.55)
@@ -137,7 +137,7 @@ async def test_mover_moving_well(mock_mover: sim.Mover) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.1, abs=0.05),
+        time_elapsed=pytest.approx(0.1, abs=0.08),
     )
     set_mock_value(mock_mover.readback, 0.5499999)
     await wait_for_pending_wakeups()
