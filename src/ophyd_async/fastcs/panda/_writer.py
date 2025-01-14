@@ -84,8 +84,8 @@ class PandaHDFWriter(DetectorWriter):
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
                 # frames_per_event is always 1 for PandA
-                shape=[1, *ds.shape] if ds.shape else [],
-                dtype="array" if ds.shape else "number",
+                shape=list(ds.shape),
+                dtype="array" if len(ds.shape) > 1 else "number",
                 # PandA data should always be written as Float64
                 dtype_numpy="<f8",
                 external="STREAM:",
@@ -104,7 +104,7 @@ class PandaHDFWriter(DetectorWriter):
         self._datasets = [
             # TODO: Update chunk size to read signal once available in IOC
             # Currently PandA IOC sets chunk size to 1024 points per chunk
-            HDFDataset(dataset_name, "/" + dataset_name, shape=(), chunk_shape=(1024,))
+            HDFDataset(dataset_name, "/" + dataset_name, shape=(1,), chunk_shape=(1024,))
             for dataset_name in capture_table.name
         ]
 
