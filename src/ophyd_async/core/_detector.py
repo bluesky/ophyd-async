@@ -274,13 +274,6 @@ class StandardDetector(
     async def describe(self) -> dict[str, DataKey]:
         return self._describe
 
-    # @staticmethod
-    # def ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo:
-    #     # make absolute sure we realy have a valid TriggerInfo ... mostly for pylance
-    #     if trigger_info is None:
-    #         raise RuntimeError("Trigger info must be set before calling this method.")
-    #     return trigger_info
-
     @AsyncStatus.wrap
     async def trigger(self) -> None:
         if self._trigger_info is None:
