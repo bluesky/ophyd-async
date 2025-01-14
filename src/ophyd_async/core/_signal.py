@@ -97,17 +97,17 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
 
 class _SignalCache(Generic[SignalDatatypeT]):
-    def __init__(self, backend: SignalBackend[SignalDatatypeT], signal: Signal):
-        self._signal = signal
+    def __init__(self, backend: SignalBackend[SignalDatatypeT], signal: Signal) -> None:
+        self._signal: Signal[Any] = signal
         self._staged = False
         self._listeners: dict[Callback, bool] = {}
         self._valid = asyncio.Event()
         self._reading: Reading[SignalDatatypeT] | None = None
-        self.backend = backend
+        self.backend: SignalBackend[SignalDatatypeT] = backend
         signal.log.debug(f"Making subscription on source {signal.source}")
         backend.set_callback(self._callback)
 
-    def close(self):
+    def close(self) -> None:
         self.backend.set_callback(None)
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
@@ -122,10 +122,10 @@ class _SignalCache(Generic[SignalDatatypeT]):
         return self._ensure_reading()
 
     async def get_value(self) -> SignalDatatypeT:
-        reading = await self.get_reading()
+        reading: Reading[SignalDatatypeT] = await self.get_reading()
         return reading["value"]
 
-    def _callback(self, reading: Reading[SignalDatatypeT]):
+    def _callback(self, reading: Reading[SignalDatatypeT]) -> None:
         self._signal.log.debug(
             f"Updated subscription: reading of source {self._signal.source} changed "
             f"from {self._reading} to {reading}"
@@ -153,7 +153,7 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self._listeners.pop(function)
         return self._staged or bool(self._listeners)
 
-    def set_staged(self, staged: bool):
+    def set_staged(self, staged: bool) -> bool:
         self._staged = staged
         return self._staged or bool(self._listeners)
 
