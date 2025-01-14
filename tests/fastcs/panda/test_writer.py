@@ -189,7 +189,6 @@ async def test_collect_stream_docs(
             "parameters": {
                 "dataset": f"/{name}",
                 "swmr": False,
-                "shape": (),
                 "chunk_shape": (1024,),
             },
         }

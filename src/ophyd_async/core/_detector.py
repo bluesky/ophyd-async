@@ -21,7 +21,7 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
-from event_model import DataKey  # type: ignore
+from event_model import DataKey # type: ignore
 from pydantic import BaseModel, Field, NonNegativeInt, computed_field
 
 from ._device import Device, DeviceConnector

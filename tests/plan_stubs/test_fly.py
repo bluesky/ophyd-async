@@ -85,7 +85,6 @@ class DummyWriter(DetectorWriter):
                     parameters={
                         "path": "",
                         "swmr": False,
-                        "shape": (self._frames_per_event, *self._shape),
                     },
                     uid=None,
                     validate=True,

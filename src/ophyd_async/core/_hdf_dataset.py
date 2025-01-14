@@ -66,7 +66,6 @@ class HDFFile:
                 parameters={
                     "dataset": ds.dataset,
                     "swmr": ds.swmr,
-                    "shape": ds.shape,
                     "chunk_shape": ds.chunk_shape,
                 },
                 uid=None,

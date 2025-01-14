@@ -100,7 +100,6 @@ class DummyWriter(DetectorWriter):
                     parameters={
                         "path": "",
                         "dataset": "",
-                        "frames_per_event": self._frames_per_event,
                     },
                     uid=None,
                     validate=True,

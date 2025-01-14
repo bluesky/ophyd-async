@@ -180,17 +180,11 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                 self._emitted_resource = bundler_composer(
                     mimetype=self._mimetype,
                     uri=uri,
-                    # TODO: This is confusing, I expected this to be of type `DataKey`
-                    # but it is a string. Naming could be improved maybe?
                     data_key=self._name_provider(),
-                    # Q: What are the parameters used for? Extra info?
                     parameters={
-                        # Assume that we always write self._frames_per_event
-                        # frames per file/chunk
-                        # TODO: Validate this assumption and that it should
-                        # not be self._frames_per_event
-                        "chunk_shape": (self._frames_per_event, *frame_shape),
-                        "shape": (self._frames_per_event, *frame_shape),
+                        # Assume that we always write 1 frame per file/chunk, this
+                        # may change to self._frames_per_event in the future
+                        "chunk_shape": (1, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
                     },
