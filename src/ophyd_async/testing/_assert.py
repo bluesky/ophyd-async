@@ -79,12 +79,12 @@ async def assert_reading(
 
     """
     actual_reading = await readable.read()
-    assert _approx_readable_value(expected_reading) == actual_reading, (
-        _generate_assert_error_msg(
-            name=readable.name,
-            expected_result=expected_reading,
-            actual_result=actual_reading,
-        )
+    assert (
+        _approx_readable_value(expected_reading) == actual_reading
+    ), _generate_assert_error_msg(
+        name=readable.name,
+        expected_result=expected_reading,
+        actual_result=actual_reading,
     )
 
 
@@ -109,12 +109,12 @@ async def assert_configuration(
 
     """
     actual_configurable = await configurable.read_configuration()
-    assert _approx_readable_value(configuration) == actual_configurable, (
-        _generate_assert_error_msg(
-            name=configurable.name,
-            expected_result=configuration,
-            actual_result=actual_configurable,
-        )
+    assert (
+        _approx_readable_value(configuration) == actual_configurable
+    ), _generate_assert_error_msg(
+        name=configurable.name,
+        expected_result=configuration,
+        actual_result=actual_configurable,
     )
 
 
