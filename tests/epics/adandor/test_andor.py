@@ -1,4 +1,5 @@
 from typing import cast
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from event_model import StreamDatum, StreamResource
@@ -99,16 +100,24 @@ async def test_can_decribe_collect(
 
 
 async def test_unsupported_trigger_excepts(test_adandor: adandor.Andor2Detector):
-    with pytest.raises(
-        ValueError,
-        match=r"Andor2Controller only supports the following trigger types: .* but",
-    ):
-        await test_adandor.prepare(
-            TriggerInfo(
-                number_of_triggers=0,
-                trigger=DetectorTrigger.VARIABLE_GATE,
-                deadtime=1.1,
-                livetime=1,
-                frame_timeout=3,
+    with patch(
+        "ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open", new_callable=AsyncMock
+    ) as mock_open:
+        with pytest.raises(
+            ValueError,
+            # str(EnumClass.value) handling changed in Python 3.11
+            match=(
+                "Andor2Controller only supports the following trigger types: .* but"
+            ),
+        ):
+            await test_adandor.prepare(
+                TriggerInfo(
+                    number_of_triggers=0,
+                    trigger=DetectorTrigger.VARIABLE_GATE,
+                    deadtime=1.1,
+                    livetime=1,
+                    frame_timeout=3,
+                )
             )
-        )
+
+    mock_open.assert_called_once()
