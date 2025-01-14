@@ -69,9 +69,9 @@ class PatternGenerator:
         """Write data to named dataset, resizing to fit and flushing after."""
         assert self._handle_for_h5_file, "no file has been opened!"
         dset = self._handle_for_h5_file[path]
-        assert isinstance(
-            dset, h5py.Dataset
-        ), f"Expected {path} to be dataset, got {dset}"
+        assert isinstance(dset, h5py.Dataset), (
+            f"Expected {path} to be dataset, got {dset}"
+        )
         dset.resize((self.image_counter + 1,) + data_shape)
         dset[self.image_counter] = data
         dset.flush()
