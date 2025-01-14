@@ -125,7 +125,9 @@ async def test_open_returns_correct_descriptors(
         assert key == expected_key
         assert entry == {
             "source": mock_writer.panda_data_block.hdf_directory.source,
-            "shape": [1,],
+            "shape": [
+                1,
+            ],
             "dtype": "number",
             "dtype_numpy": "<f8",
             "external": "STREAM:",
