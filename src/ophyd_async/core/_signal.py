@@ -111,13 +111,15 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self.backend.set_callback(None)
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
-    async def get_reading(self) -> Reading[SignalDatatypeT]:
-        await self._valid.wait()
-        if self._reading is not None:
-            return self._reading
-        else:
+    def _ensure_reading(self) -> Reading[SignalDatatypeT]:
+        if not self._reading:
             msg = "Monitor not working"
             raise RuntimeError(msg)
+        return self._reading
+
+    async def get_reading(self) -> Reading[SignalDatatypeT]:
+        await self._valid.wait()
+        return self._ensure_reading()
 
     async def get_value(self) -> SignalDatatypeT:
         reading = await self.get_reading()
@@ -137,14 +139,10 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self,
         function: Callback[dict[str, Reading[SignalDatatypeT]] | SignalDatatypeT],
         want_value: bool,
-    ):
-        if not self._reading:
-            msg = "Monitor not working"
-            raise RuntimeError(msg)
-        if want_value:
-            function(self._reading["value"])
-        else:
-            function({self._signal.name: self._reading})
+    ) -> None:
+        function(self._ensure_reading()["value"]) if want_value else function(
+            {self._signal.name: self._ensure_reading()}
+        )
 
     def subscribe(self, function: Callback, want_value: bool) -> None:
         self._listeners[function] = want_value

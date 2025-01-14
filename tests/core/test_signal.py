@@ -483,6 +483,21 @@ async def test_get_reading_runtime_error(signal_cache: _SignalCache[Any]) -> Non
         await asyncio.wait_for(signal_cache.get_reading(), timeout=1.0)
 
 
+def test_notify_with_value(signal_cache):
+    mock_function = Mock()
+    signal_cache._reading = {"value": 42}
+    signal_cache._notify(mock_function, want_value=True)
+    mock_function.assert_called_once_with(42)
+
+
+def test_notify_without_value(signal_cache):
+    mock_function = Mock()
+    signal_cache._reading = {"value": 42}
+    signal_cache._signal.name = "test_signal"
+    signal_cache._notify(mock_function, want_value=False)
+    mock_function.assert_called_once_with({"test_signal": {"value": 42}})
+
+
 async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
     function = MagicMock()
 
