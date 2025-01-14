@@ -35,6 +35,8 @@ from ophyd_async.core import (
 
 from ._util import EpicsSignalBackend, format_datatype, get_supported_values
 
+logger = logging.getLogger("ophyd_async")
+
 
 def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
     def get_limits(limit: str) -> LimitsRange | None:
@@ -258,7 +260,7 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
                 pv, format=FORMAT_CTRL, timeout=timeout
             )
         except CANothing as exc:
-            logging.debug(f"signal ca://{pv} timed out")
+            logger.debug(f"signal ca://{pv} timed out")
             raise NotConnected(f"ca://{pv}") from exc
 
     async def connect(self, timeout: float):
@@ -322,9 +324,9 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         if callback:
-            assert (
-                not self.subscription
-            ), "Cannot set a callback when one is already set"
+            assert not self.subscription, (
+                "Cannot set a callback when one is already set"
+            )
             self.subscription = camonitor(
                 self.read_pv,
                 lambda v: callback(self._make_reading(v)),

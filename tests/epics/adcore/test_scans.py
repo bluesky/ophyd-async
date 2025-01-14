@@ -74,7 +74,7 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
     )
 
 
-@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.1)
+@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.01)
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: adcore.ADHDFWriter,
@@ -91,7 +91,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
     assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
-@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.1)
+@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.01)
 def test_hdf_writer_fails_on_timeout_with_flyscan(
     RE: RunEngine, writer: adcore.ADHDFWriter
 ):

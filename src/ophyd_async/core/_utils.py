@@ -16,6 +16,8 @@ Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
 ErrorText = str | Mapping[str, Exception]
 
+logger = logging.getLogger("ophyd_async")
+
 
 class StrictEnumMeta(EnumMeta):
     def __new__(metacls, *args, **kwargs):
@@ -94,7 +96,7 @@ class NotConnected(Exception):
     def format_error_string(self, indent="") -> str:
         if not isinstance(self._errors, dict) and not isinstance(self._errors, str):
             raise RuntimeError(
-                f"Unexpected type `{type(self._errors)}` " "expected `str` or `dict`"
+                f"Unexpected type `{type(self._errors)}` expected `str` or `dict`"
             )
 
         if isinstance(self._errors, str):
@@ -114,7 +116,7 @@ class NotConnected(Exception):
     ) -> NotConnected:
         for name, exception in exceptions.items():
             if not isinstance(exception, NotConnected):
-                logging.exception(
+                logger.exception(
                     f"device `{name}` raised unexpected exception "
                     f"{type(exception).__name__}",
                     exc_info=exception,
