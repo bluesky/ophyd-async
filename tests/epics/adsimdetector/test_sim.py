@@ -211,8 +211,8 @@ async def test_two_detectors_step(
     assert descriptor["configuration"]["test_adsim2"]["data"][
         "test_adsim2-driver-acquire_time"
     ] == pytest.approx(1.8)
-    assert descriptor["data_keys"]["test_adsim1"]["shape"] == [10, 10]
-    assert descriptor["data_keys"]["test_adsim2"]["shape"] == [11, 11]
+    assert descriptor["data_keys"]["test_adsim1"]["shape"] == [1, 10, 10]
+    assert descriptor["data_keys"]["test_adsim2"]["shape"] == [1, 11, 11]
     assert sda["stream_resource"] == sra["uid"]
     assert sdb["stream_resource"] == srb["uid"]
     assert (
@@ -260,6 +260,7 @@ async def test_detector_writes_to_file(
     assert docs[descriptor_index].get("data_keys").get(test_adsimdetector.name).get(
         "shape"
     ) == [
+        1,
         10,
         10,
     ]

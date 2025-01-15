@@ -3,8 +3,8 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 
 from bluesky.protocols import StreamAsset
-from event_model import DataKey
-from p4p.client.thread import Context
+from event_model import DataKey  # type: ignore
+from p4p.client.thread import Context  # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -34,10 +34,9 @@ class PandaHDFWriter(DetectorWriter):
         self._name_provider = name_provider
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
-        self._multiplier = 1
 
     # Triggered on PCAP arm
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture"""
 
         # Ensure flushes are immediate
@@ -68,9 +67,9 @@ class PandaHDFWriter(DetectorWriter):
 
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_data_block.capture.set(True)
-        if multiplier > 1:
+        if frames_per_event > 1:
             raise ValueError(
-                "All PandA datasets should be scalar, multiplier should be 1"
+                "All PandA datasets should be scalar, frames_per_event should be 1"
             )
 
         return await self._describe()
@@ -84,8 +83,9 @@ class PandaHDFWriter(DetectorWriter):
         describe = {
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
+                # frames_per_event is always 1 for PandA
                 shape=list(ds.shape),
-                dtype="array" if ds.shape != [1] else "number",
+                dtype="array" if len(ds.shape) > 1 else "number",
                 # PandA data should always be written as Float64
                 dtype_numpy="<f8",
                 external="STREAM:",
@@ -105,7 +105,7 @@ class PandaHDFWriter(DetectorWriter):
             # TODO: Update chunk size to read signal once available in IOC
             # Currently PandA IOC sets chunk size to 1024 points per chunk
             HDFDataset(
-                dataset_name, "/" + dataset_name, [1], multiplier=1, chunk_shape=(1024,)
+                dataset_name, "/" + dataset_name, shape=(1,), chunk_shape=(1024,)
             )
             for dataset_name in capture_table.name
         ]
@@ -141,7 +141,7 @@ class PandaHDFWriter(DetectorWriter):
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):
-            yield num_captured // self._multiplier
+            yield num_captured
 
     async def collect_stream_docs(
         self, indices_written: int
