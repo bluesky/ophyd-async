@@ -62,8 +62,7 @@ def test_seq_table_validation_errors():
     with pytest.raises(
         ValidationError,
         match=(
-            "1 validation error for SeqTable\n  "
-            "Value error, Length 4097 is too long."
+            "1 validation error for SeqTable\n  Value error, Length 4097 is too long."
         ),
     ):
         large_seq_table + SeqTable.row()
