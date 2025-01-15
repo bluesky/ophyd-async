@@ -64,7 +64,7 @@ def test_standard_readable_hints_raises_when_overriding_string_literal():
         hint2,
     )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match=r"Hints key .* value may not be overridden"):
         sr.hints  # noqa: B018
 
 
@@ -82,7 +82,7 @@ def test_standard_readable_hints_raises_when_overriding_sequence():
         hint2,
     )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match=r"Hint fields .* overrides existing hint"):
         sr.hints  # noqa: B018
 
 
@@ -95,7 +95,7 @@ def test_standard_readable_hints_invalid_types(invalid_type):
 
     sr._has_hints = (hint1,)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=r"Unknown type for value .* for key .*"):
         sr.hints  # noqa: B018
 
 
@@ -207,6 +207,25 @@ def test_standard_readable_add_readables_adds_to_expected_attrs(
     sr = StandardReadable()
     sr.add_readables([readable])
     assert_sr_has_attrs(sr, expected_attrs)
+
+
+@pytest.mark.parametrize(
+    "format",
+    [
+        Format.CONFIG_SIGNAL,
+        Format.HINTED_SIGNAL,
+        Format.UNCACHED_SIGNAL,
+        Format.HINTED_UNCACHED_SIGNAL,
+    ],
+)
+def test_standard_readable_add_readables_raises_signalr_typeerror(format) -> None:
+    # Mock a Device instance that is not a SignalR
+    mock_device = MagicMock(spec=Device)
+    sr = StandardReadable()
+
+    # Ensure it raises TypeError
+    with pytest.raises(TypeError, match=f"{mock_device} is not a SignalR"):
+        sr.add_readables([mock_device], format=format)
 
 
 def test_standard_readable_config_signal():

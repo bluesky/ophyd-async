@@ -39,6 +39,13 @@ def _logical(name: UniqueName) -> LogicalName:
     return LogicalName(name.rstrip("_"))
 
 
+def _check_device_annotation(annotation: Any) -> DeviceAnnotation:
+    if not isinstance(annotation, DeviceAnnotation):
+        msg = f"Annotation {annotation} is not a DeviceAnnotation"
+        raise TypeError(msg)
+    return annotation
+
+
 @runtime_checkable
 class DeviceAnnotation(Protocol):
     @abstractmethod
@@ -150,8 +157,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield backend, extras
             signal = child_type(backend)
             for anno in extras:
-                assert isinstance(anno, DeviceAnnotation), anno
-                anno(self._device, signal)
+                device_annotation = _check_device_annotation(annotation=anno)
+                device_annotation(self._device, signal)
             setattr(self._device, name, signal)
             dest = self._filled_backends if filled else self._unfilled_backends
             dest[_logical(name)] = (backend, child_type)
@@ -167,15 +174,17 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             yield connector, extras
             device = child_type(connector=connector)
             for anno in extras:
-                assert isinstance(anno, DeviceAnnotation), anno
-                anno(self._device, device)
+                device_annotation = _check_device_annotation(annotation=anno)
+                device_annotation(self._device, device)
             setattr(self._device, name, device)
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
 
     def create_device_vector_entries_to_mock(self, num: int):
         for name, cls in self._vector_device_type.items():
-            assert cls, "Shouldn't happen"
+            if not cls:
+                msg = "Malformed device vector"
+                raise TypeError(msg)
             for i in range(1, num + 1):
                 if issubclass(cls, Signal):
                     self.fill_child_signal(name, cls, i)
@@ -254,9 +263,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We need to add a new entry to a DeviceVector
             vector = self._ensure_device_vector(name)
             vector_device_type = self._vector_device_type[name] or device_type
-            assert issubclass(vector_device_type, Device), (
-                f"{vector_device_type} is not a Device"
-            )
+            if not issubclass(vector_device_type, Device):
+                msg = f"{vector_device_type} is not a Device"
+                raise TypeError(msg)
             connector = self._device_connector_factory()
             vector[vector_index] = vector_device_type(connector=connector)
         elif child := getattr(self._device, name, None):

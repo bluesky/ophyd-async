@@ -1,7 +1,7 @@
 import asyncio
 import time
 import traceback
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -65,6 +65,18 @@ class DeviceWithRefToSignal(Device):
 
     def get_source(self) -> str:
         return self.signal_ref().source
+
+
+async def test_device_connect_missing_connector() -> None:
+    # Create an instance of Device without calling __init__
+    device = object.__new__(Device)
+    # assert the init method wasn't called
+    assert hasattr(device, "_connector") is False
+    with pytest.raises(
+        RuntimeError,
+        match=r".* doesn't have attribute `_connector`.*",
+    ):
+        await device.connect(mock=True)
 
 
 def test_device_with_signal_ref_does_not_rename():
@@ -241,3 +253,15 @@ async def test_no_reconnect_signals_if_not_forced():
         await parent.connect(mock=False, timeout=0.01, force_reconnect=True)
         assert parent.child1.connected
         assert parent.child1.connect.call_count == count
+
+
+def test_setitem_with_non_int_key():
+    device_vector = DeviceVector(children={})
+    with pytest.raises(TypeError, match="Expected int, got"):
+        device_vector["not_an_int"] = MagicMock(spec=Device)  # type: ignore
+
+
+def test_setitem_with_non_device_value():
+    device_vector = DeviceVector(children={})
+    with pytest.raises(TypeError, match="Expected Device, got"):
+        device_vector[1] = "not_a_device"

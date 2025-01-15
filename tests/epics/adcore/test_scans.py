@@ -132,3 +132,13 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
         RE(flying_plan())
 
     assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
+
+
+async def test_ad_sim_controller_raise(controller: adsimdetector.SimController):
+    with pytest.raises(
+        TypeError,
+        match=r"fly scanning .* is not supported for this device",
+    ):
+        await controller.prepare(
+            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.EDGE_TRIGGER)
+        )

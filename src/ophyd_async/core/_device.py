@@ -158,10 +158,12 @@ class Device(HasName):
         timeout:
             Time to wait before failing with a TimeoutError.
         """
-        assert hasattr(self, "_connector"), (
-            f"{self}: doesn't have attribute `_connector`,"
-            " did you call `super().__init__` in your `__init__` method?"
-        )
+        if not hasattr(self, "_connector"):
+            msg = (
+                f"{self}: doesn't have attribute `_connector`,"
+                " did you call `super().__init__` in your `__init__` method?"
+            )
+            raise RuntimeError(msg)
         if mock:
             # Always connect in mock mode serially
             if isinstance(mock, LazyMock):
@@ -182,7 +184,9 @@ class Device(HasName):
                 self._mock = None
                 coro = self._connector.connect_real(self, timeout, force_reconnect)
                 self._connect_task = asyncio.create_task(coro)
-            assert self._connect_task, "Connect task not created, this shouldn't happen"
+            if not self._connect_task:
+                msg = "Connect task not created, this shouldn't happen"
+                raise RuntimeError(msg)
             # Wait for it to complete
             await self._connect_task
 
@@ -232,8 +236,12 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
     def __setitem__(self, key: int, value: DeviceT) -> None:
         # Check the types on entry to dict to make sure we can't accidentally
         # make a non-integer named child
-        assert isinstance(key, int), f"Expected int, got {key}"
-        assert isinstance(value, Device), f"Expected Device, got {value}"
+        if not isinstance(key, int):
+            msg = f"Expected int, got {key}"
+            raise TypeError(msg)
+        if not isinstance(value, Device):
+            msg = f"Expected Device, got {value}"
+            raise TypeError(msg)
         self._children[key] = value
         value.parent = self
 
@@ -271,14 +279,20 @@ class DeviceProcessor:
             raise ValueError
         except ValueError:
             _, _, tb = sys.exc_info()
-            assert tb, "Can't get traceback, this shouldn't happen"
+            if not tb:
+                msg = "Can't get traceback, this shouldn't happen"
+                raise RuntimeError(msg)  # noqa: B904
             caller_frame = tb.tb_frame
             while caller_frame.f_locals.get("self", None) is self:
                 caller_frame = caller_frame.f_back
-                assert caller_frame, (
-                    "No previous frame to the one with self in it, this shouldn't "
-                    "happen"
-                )
+                if not caller_frame:
+                    msg = (
+                        "No previous frame to the one with self in it, "
+                        "this shouldn't happen"
+                    )
+                    raise RuntimeError(  # noqa: B904
+                        msg
+                    )
             return caller_frame.f_locals.copy()
 
     def __enter__(self) -> DeviceProcessor:
