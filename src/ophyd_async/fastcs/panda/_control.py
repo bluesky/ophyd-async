@@ -18,10 +18,15 @@ class PandaPcapController(DetectorController):
         return 0.000000008
 
     async def prepare(self, trigger_info: TriggerInfo):
-        assert trigger_info.trigger in (
+        if trigger_info.trigger not in (
             DetectorTrigger.CONSTANT_GATE,
             DetectorTrigger.VARIABLE_GATE,
-        ), "Only constant_gate and variable_gate triggering is supported on the PandA"
+        ):
+            msg = (
+                "Only constant_gate and variable_gate triggering is supported on "
+                "the PandA",
+            )
+            raise TypeError(msg)
 
     async def arm(self):
         self._arm_status = self.pcap.arm.set(True)

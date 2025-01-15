@@ -3,7 +3,8 @@ import logging
 import re
 import time
 from asyncio import Event
-from unittest.mock import ANY, Mock
+from typing import Any
+from unittest.mock import ANY, AsyncMock, MagicMock, Mock
 
 import numpy as np
 import numpy.typing as npt
@@ -25,6 +26,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.core._signal import _SignalCache  # noqa: PLC2701
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.testing import (
     assert_configuration,
@@ -252,6 +254,15 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert (await signal.get_value()) == INITIAL_VALUE
 
 
+def test_signal_r_cached():
+    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
+    INITIAL_VALUE = "INITIAL"
+    signal = soft_signal_r_and_setter(str, INITIAL_VALUE, SIGNAL_NAME)[0]
+    assert signal._cache is None
+    with pytest.raises(RuntimeError, match=r".* not being monitored"):
+        signal._backend_or_cache(cached=True)
+
+
 class MockEnum(StrictEnum):
     GOOD = "Good"
     OK = "Ok"
@@ -450,3 +461,48 @@ async def test_soft_signal_ndarray_can_change_dtype():
     for dtype in (np.int32, np.float64):
         await sig.set(np.arange(4, dtype=dtype))
         assert (await sig.get_value()).dtype == dtype
+
+
+@pytest.fixture
+def signal_cache() -> _SignalCache[Any]:
+    backend = MagicMock()
+    signal = MagicMock()
+    signal.source = "test_source"
+    signal.log.debug = MagicMock()
+    cache = _SignalCache(backend, signal)
+
+    # Mock the _valid event to simulate it being set
+    cache._valid = AsyncMock()
+    cache._valid.wait = AsyncMock()
+
+    return cache
+
+
+async def test_get_reading_runtime_error(signal_cache: _SignalCache[Any]) -> None:
+    with pytest.raises(RuntimeError, match="Monitor not working"):
+        await asyncio.wait_for(signal_cache.get_reading(), timeout=1.0)
+
+
+def test_notify_with_value(signal_cache):
+    mock_function = Mock()
+    signal_cache._reading = {"value": 42}
+    signal_cache._notify(mock_function, want_value=True)
+    mock_function.assert_called_once_with(42)
+
+
+def test_notify_without_value(signal_cache):
+    mock_function = Mock()
+    signal_cache._reading = {"value": 42}
+    signal_cache._signal.name = "test_signal"
+    signal_cache._notify(mock_function, want_value=False)
+    mock_function.assert_called_once_with({"test_signal": {"value": 42}})
+
+
+async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
+    function = MagicMock()
+
+    with pytest.raises(RuntimeError, match="Monitor not working"):
+        await asyncio.wait_for(
+            signal_cache._notify(function, want_value=True),  # type: ignore
+            timeout=1.0,
+        )

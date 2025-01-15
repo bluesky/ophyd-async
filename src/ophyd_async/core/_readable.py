@@ -123,29 +123,31 @@ class StandardReadable(
             # we want to combine them when they are Sequences, and ensure they are
             # identical when string values.
             for key, value in new_hint.hints.items():
+                # fail early for unkwon types
                 if isinstance(value, str):
                     if key in hints:
-                        assert (
-                            hints[key] == value  # type: ignore[literal-required]
-                        ), f"Hints key {key} value may not be overridden"
+                        if hints[key] != value:
+                            msg = f"Hints key {key} value may not be overridden"
+                            raise RuntimeError(msg)
                     else:
                         hints[key] = value  # type: ignore[literal-required]
                 elif isinstance(value, Sequence):
                     if key in hints:
                         for new_val in value:
-                            assert (
-                                new_val not in hints[key]  # type: ignore[literal-required]
-                            ), f"Hint {key} {new_val} overrides existing hint"
+                            if new_val in hints[key]:
+                                msg = f"Hint {key} {new_val} overrides existing hint"
+                                raise RuntimeError(msg)
                         hints[key] = (  # type: ignore[literal-required]
                             hints[key] + value  # type: ignore[literal-required]
                         )
                     else:
                         hints[key] = value  # type: ignore[literal-required]
                 else:
-                    raise TypeError(
-                        f"{new_hint.name}: Unknown type for value '{value}' "
+                    msg = (
+                        f"{new_hint.name}: Unknown type for value '{value}'"
                         f" for key '{key}'"
                     )
+                    raise TypeError(msg)
 
         return hints
 
@@ -204,6 +206,11 @@ class StandardReadable(
             `StandardReadableFormat` documentation
         """
 
+        def assert_device_is_signalr(device: Device) -> SignalR:
+            if not isinstance(device, SignalR):
+                raise TypeError(f"{device} is not a SignalR")
+            return device
+
         for device in devices:
             match format:
                 case StandardReadableFormat.CHILD:
@@ -218,24 +225,24 @@ class StandardReadable(
                     if isinstance(device, HasHints):
                         self._has_hints += (device,)
                 case StandardReadableFormat.CONFIG_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_config_funcs += (device.describe,)
-                    self._read_config_funcs += (device.read,)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_config_funcs += (signalr_device.describe,)
+                    self._read_config_funcs += (signalr_device.read,)
                 case StandardReadableFormat.HINTED_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_funcs += (device.describe,)
-                    self._read_funcs += (device.read,)
-                    self._stageables += (device,)
-                    self._has_hints += (_HintsFromName(device),)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_funcs += (signalr_device.describe,)
+                    self._read_funcs += (signalr_device.read,)
+                    self._stageables += (signalr_device,)
+                    self._has_hints += (_HintsFromName(signalr_device),)
                 case StandardReadableFormat.UNCACHED_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_funcs += (device.describe,)
-                    self._read_funcs += (_UncachedRead(device),)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_funcs += (signalr_device.describe,)
+                    self._read_funcs += (_UncachedRead(signalr_device),)
                 case StandardReadableFormat.HINTED_UNCACHED_SIGNAL:
-                    assert isinstance(device, SignalR), f"{device} is not a SignalR"
-                    self._describe_funcs += (device.describe,)
-                    self._read_funcs += (_UncachedRead(device),)
-                    self._has_hints += (_HintsFromName(device),)
+                    signalr_device = assert_device_is_signalr(device=device)
+                    self._describe_funcs += (signalr_device.describe,)
+                    self._read_funcs += (_UncachedRead(signalr_device),)
+                    self._has_hints += (_HintsFromName(signalr_device),)
 
 
 class _UncachedRead:

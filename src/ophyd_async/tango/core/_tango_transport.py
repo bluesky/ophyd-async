@@ -732,21 +732,20 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
                 " for which polling is disabled."
             )
 
+        if callback and self.proxies[self.read_trl].has_subscription():  # type: ignore
+            msg = "Cannot set a callback when one is already set"
+            raise RuntimeError(msg)
+
+        if self.proxies[self.read_trl].has_subscription():  # type: ignore
+            self.proxies[self.read_trl].unsubscribe_callback()  # type: ignore
+
         if callback:
             try:
-                assert not self.proxies[self.read_trl].has_subscription()  # type: ignore
                 self.proxies[self.read_trl].subscribe_callback(callback)  # type: ignore
-            except AssertionError as ae:
-                raise RuntimeError(
-                    "Cannot set a callback when one is already set"
-                ) from ae
             except RuntimeError as exc:
                 raise RuntimeError(
                     f"Cannot set callback for {self.read_trl}. {exc}"
                 ) from exc
-
-        else:
-            self.proxies[self.read_trl].unsubscribe_callback()  # type: ignore
 
     def set_polling(
         self,

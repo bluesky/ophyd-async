@@ -83,5 +83,8 @@ class SeqTable(Table):
         """
 
         first_length = len(self)
-        assert first_length <= 4096, f"Length {first_length} is too long"
+        max_length = 4096
+        if first_length > max_length:
+            msg = f"Length {first_length} is too long"
+            raise ValueError(msg)
         return self

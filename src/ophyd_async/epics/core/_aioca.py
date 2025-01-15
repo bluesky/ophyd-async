@@ -323,16 +323,18 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         return self.converter.value(value)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
+        if callback and self.subscription:
+            msg = "Cannot set a callback when one is already set"
+            raise RuntimeError(msg)
+
+        if self.subscription:
+            self.subscription.close()
+            self.subscription = None
+
         if callback:
-            assert not self.subscription, (
-                "Cannot set a callback when one is already set"
-            )
             self.subscription = camonitor(
                 self.read_pv,
                 lambda v: callback(self._make_reading(v)),
                 datatype=self.converter.read_dbr,
                 format=FORMAT_TIME,
             )
-        elif self.subscription:
-            self.subscription.close()
-            self.subscription = None

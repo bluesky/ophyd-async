@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pytest
@@ -56,3 +57,17 @@ def test_table_coerces(kwargs):
     for k, v in t:
         assert v == pytest.approx(kwargs[k])
     assert t == pytest.approx(t)
+
+
+def test_validate_array_dtypes():
+    class TestTable(Table):
+        int_array: np.ndarray[Any, np.dtype[np.int32]]
+
+    with pytest.raises(ValueError, match=r"Cannot cast .* without losing precision"):
+        TestTable(int_array=[1.5, 2.5])  # type: ignore
+
+    table = TestTable(int_array=[1, 2])  # type: ignore
+    assert table.int_array.dtype == np.dtype(np.int32)
+
+    table = TestTable(int_array=[])  # type: ignore
+    assert table.int_array.dtype == np.dtype(np.int32)

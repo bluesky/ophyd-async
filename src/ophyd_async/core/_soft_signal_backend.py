@@ -175,7 +175,8 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         return self.reading["value"]
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
+        if callback and self.callback:
+            raise RuntimeError("Cannot set a callback when one is already set")
         if callback:
-            assert not self.callback, "Cannot set a callback when one is already set"
             callback(self.reading)
         self.callback = callback
