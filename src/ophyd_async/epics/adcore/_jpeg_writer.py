@@ -9,14 +9,14 @@ class ADJPEGWriter(ADWriter[NDFileIO]):
 
     def __init__(
         self,
-        prefix,
+        fileio: NDFileIO,
         path_provider: PathProvider,
         name_provider: NameProvider,
         dataset_describer: DatasetDescriber,
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         super().__init__(
-            prefix,
+            fileio,
             path_provider,
             name_provider,
             dataset_describer,
