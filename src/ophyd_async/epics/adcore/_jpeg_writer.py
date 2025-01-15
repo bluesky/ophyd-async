@@ -24,4 +24,3 @@ class ADJPEGWriter(ADWriter[NDFileIO]):
             file_extension=".jpg",
             mimetype="multipart/related;type=image/jpeg",
         )
-        self.jpeg = self.fileio

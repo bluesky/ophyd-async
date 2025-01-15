@@ -24,4 +24,3 @@ class ADTIFFWriter(ADWriter[NDFileIO]):
             file_extension=".tiff",
             mimetype="multipart/related;type=image/tiff",
         )
-        self.tiff = self.fileio
