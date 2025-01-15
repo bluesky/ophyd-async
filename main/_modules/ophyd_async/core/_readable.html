@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._readable &#8212; ophyd-async 0.9.0a2.dev13+gcaa0f5cc documentation</title>
+    <title>ophyd_async.core._readable &#8212; ophyd-async 0.9.0a2.dev14+ga59ddcf6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=35613786"></script>
+    <script src="../../../_static/documentation_options.js?v=d699a79c"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -135,8 +135,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev13+gcaa0f5cc documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev13+gcaa0f5cc documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev14+ga59ddcf6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev14+ga59ddcf6 documentation - Home"/>
   
   
 </a></div>
@@ -594,29 +594,31 @@ window.addEventListener("load", () => mermaid.run());
             <span class="c1"># we want to combine them when they are Sequences, and ensure they are</span>
             <span class="c1"># identical when string values.</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_hint</span><span class="o">.</span><span class="n">hints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># fail early for unkwon types</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">:</span>
-                        <span class="k">assert</span> <span class="p">(</span>
-                            <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
-                        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Hints key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> value may not be overridden&quot;</span>
+                        <span class="k">if</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Hints key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> value may not be overridden&quot;</span>
+                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
                 <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">:</span>
                         <span class="k">for</span> <span class="n">new_val</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
-                            <span class="k">assert</span> <span class="p">(</span>
-                                <span class="n">new_val</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="c1"># type: ignore[literal-required]</span>
-                            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Hint </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">new_val</span><span class="si">}</span><span class="s2"> overrides existing hint&quot;</span>
+                            <span class="k">if</span> <span class="n">new_val</span> <span class="ow">in</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Hint </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">new_val</span><span class="si">}</span><span class="s2"> overrides existing hint&quot;</span>
+                                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                         <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>  <span class="c1"># type: ignore[literal-required]</span>
                             <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># type: ignore[literal-required]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_hint</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: Unknown type for value &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_hint</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: Unknown type for value &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
                         <span class="sa">f</span><span class="s2">&quot; for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
                     <span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">hints</span>
 
@@ -680,6 +682,11 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            `StandardReadableFormat` documentation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="k">def</span><span class="w"> </span><span class="nf">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalR</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> is not a SignalR&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">device</span>
+
         <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">:</span>
             <span class="k">match</span> <span class="nb">format</span><span class="p">:</span>
                 <span class="k">case</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">CHILD</span><span class="p">:</span>
@@ -694,24 +701,24 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">HasHints</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="p">,)</span>
                 <span class="k">case</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> is not a SignalR&quot;</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_config_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">read</span><span class="p">,)</span>
+                    <span class="n">signalr_device</span> <span class="o">=</span> <span class="n">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_config_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">read</span><span class="p">,)</span>
                 <span class="k">case</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> is not a SignalR&quot;</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">read</span><span class="p">,)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="p">,)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_HintsFromName</span><span class="p">(</span><span class="n">device</span><span class="p">),)</span>
+                    <span class="n">signalr_device</span> <span class="o">=</span> <span class="n">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">read</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_HintsFromName</span><span class="p">(</span><span class="n">signalr_device</span><span class="p">),)</span>
                 <span class="k">case</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">UNCACHED_SIGNAL</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> is not a SignalR&quot;</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_UncachedRead</span><span class="p">(</span><span class="n">device</span><span class="p">),)</span>
+                    <span class="n">signalr_device</span> <span class="o">=</span> <span class="n">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_UncachedRead</span><span class="p">(</span><span class="n">signalr_device</span><span class="p">),)</span>
                 <span class="k">case</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">HINTED_UNCACHED_SIGNAL</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> is not a SignalR&quot;</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_UncachedRead</span><span class="p">(</span><span class="n">device</span><span class="p">),)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_HintsFromName</span><span class="p">(</span><span class="n">device</span><span class="p">),)</span></div>
+                    <span class="n">signalr_device</span> <span class="o">=</span> <span class="n">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">signalr_device</span><span class="o">.</span><span class="n">describe</span><span class="p">,)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_UncachedRead</span><span class="p">(</span><span class="n">signalr_device</span><span class="p">),)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_HintsFromName</span><span class="p">(</span><span class="n">signalr_device</span><span class="p">),)</span></div>
 </div>
 
 
