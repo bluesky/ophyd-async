@@ -6,7 +6,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adcore
 
-from ._andor_io import Andor2DriverIO, Andor2TriggerMode, ImageMode
+from ._andor_io import Andor2DriverIO, Andor2ImageMode, Andor2TriggerMode
 
 _MIN_DEAD_TIME = 0.1
 _MAX_NUM_IMAGE = 999_999
@@ -32,7 +32,7 @@ class Andor2Controller(adcore.ADBaseController[Andor2DriverIO]):
             self.driver.num_images.set(
                 trigger_info.total_number_of_triggers or _MAX_NUM_IMAGE
             ),
-            self.driver.image_mode.set(ImageMode.MULTIPLE),
+            self.driver.image_mode.set(Andor2ImageMode.MULTIPLE),
         )
 
     def _get_trigger_mode(self, trigger: DetectorTrigger) -> Andor2TriggerMode:

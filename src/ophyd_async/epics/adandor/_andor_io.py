@@ -1,4 +1,4 @@
-from ophyd_async.core import StrictEnum
+from ophyd_async.core import StrictEnum, SubsetEnum
 from ophyd_async.epics.adcore import ADBaseDataType, ADBaseIO
 from ophyd_async.epics.core import (
     epics_signal_r,
@@ -16,11 +16,18 @@ class Andor2TriggerMode(StrictEnum):
     SOFTWARE = "Software"
 
 
-class ImageMode(StrictEnum):
+class Andor2ImageMode(StrictEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"
     FAST_KINETICS = "Fast Kinetics"
+
+
+class Andor2DataType(SubsetEnum):
+    UINT16 = "UInt16"
+    UINT32 = "UInt32"
+    FLOAT32 = "Float32"
+    FLOAT64 = "Float64"
 
 
 class Andor2DriverIO(ADBaseIO):
@@ -29,10 +36,10 @@ class Andor2DriverIO(ADBaseIO):
     """
 
     def __init__(self, prefix: str, name: str = "") -> None:
+        super().__init__(prefix, name=name)
         self.trigger_mode = epics_signal_rw(Andor2TriggerMode, prefix + "TriggerMode")
         self.data_type = epics_signal_r(ADBaseDataType, prefix + "DataType_RBV")
         self.andor_accumulate_period = epics_signal_r(
             float, prefix + "AndorAccumulatePeriod_RBV"
         )
-        self.image_mode = epics_signal_rw_rbv(ImageMode, prefix + "ImageMode")
-        super().__init__(prefix, name=name)
+        self.image_mode = epics_signal_rw_rbv(Andor2ImageMode, prefix + "ImageMode")
