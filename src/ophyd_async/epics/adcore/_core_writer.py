@@ -112,9 +112,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             self.fileio.file_number.set(0),
         )
 
-        assert await self.fileio.file_path_exists.get_value(), (
-            f"File path {info.directory_path} for file plugin does not exist!"
-        )
+        if not await self.fileio.file_path_exists.get_value():
+            msg = f"File path {info.directory_path} for file plugin does not exist"
+            raise FileNotFoundError(msg)
 
         # Overwrite num_capture to go forever
         await self.fileio.num_capture.set(0)
