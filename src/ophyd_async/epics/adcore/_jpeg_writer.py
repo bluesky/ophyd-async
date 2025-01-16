@@ -4,8 +4,8 @@ from ._core_io import NDFileIO, NDPluginBaseIO
 from ._core_writer import ADWriter
 
 
-class ADTIFFWriter(ADWriter[NDFileIO]):
-    default_suffix: str = "TIFF1:"
+class ADJPEGWriter(ADWriter[NDFileIO]):
+    default_suffix: str = "JPEG1:"
 
     def __init__(
         self,
@@ -21,6 +21,6 @@ class ADTIFFWriter(ADWriter[NDFileIO]):
             name_provider,
             dataset_describer,
             plugins=plugins,
-            file_extension=".tiff",
-            mimetype="multipart/related;type=image/tiff",
+            file_extension=".jpg",
+            mimetype="multipart/related;type=image/jpeg",
         )

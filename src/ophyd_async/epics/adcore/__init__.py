@@ -12,6 +12,7 @@ from ._core_io import (
 from ._core_logic import DEFAULT_GOOD_STATES, ADBaseController
 from ._core_writer import ADWriter
 from ._hdf_writer import ADHDFWriter
+from ._jpeg_writer import ADJPEGWriter
 from ._single_trigger import SingleTriggerDetector
 from ._tiff_writer import ADTIFFWriter
 from ._utils import (
@@ -40,6 +41,7 @@ __all__ = [
     "ADWriter",
     "ADHDFWriter",
     "ADTIFFWriter",
+    "ADJPEGWriter",
     "SingleTriggerDetector",
     "ADBaseDataType",
     "FileWriteMode",
