@@ -8,11 +8,13 @@ from ophyd_async.core import (
     Device,
     DTypeScalar_co,
     SignalRW,
+    StandardReadable,
     StrictEnum,
     Table,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.core._device import DeviceVector
 
 
@@ -30,14 +32,16 @@ class ExampleTable(Table):
     enum: Sequence[ExampleEnum]
 
 
-def int_array_signal(dtype: type[DTypeScalar_co]) -> SignalRW[Array1D[DTypeScalar_co]]:
+def int_array_signal(
+    dtype: type[DTypeScalar_co], name: str = ""
+) -> SignalRW[Array1D[DTypeScalar_co]]:
     iinfo = np.iinfo(dtype)  # type: ignore
     value = np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
-    return soft_signal_rw(Array1D[dtype], value)
+    return soft_signal_rw(Array1D[dtype], value, name)
 
 
 def float_array_signal(
-    dtype: type[DTypeScalar_co],
+    dtype: type[DTypeScalar_co], name: str = ""
 ) -> SignalRW[Array1D[DTypeScalar_co]]:
     finfo = np.finfo(dtype)  # type: ignore
     value = np.array(
@@ -53,42 +57,49 @@ def float_array_signal(
         ],
         dtype=dtype,
     )
-    return soft_signal_rw(Array1D[dtype], value)
+    return soft_signal_rw(Array1D[dtype], value, name)
 
 
-class OneOfEverythingDevice(Device):
+class OneOfEverythingDevice(StandardReadable):
+    # make a detector to test assert_configuration
     def __init__(self, name=""):
-        self.int = soft_signal_rw(int, 1)
-        self.float = soft_signal_rw(float, 1.234)
-        self.str = soft_signal_rw(str, "test_string")
-        self.bool = soft_signal_rw(bool, True)
-        self.enum = soft_signal_rw(ExampleEnum, ExampleEnum.B)
-        self.int8a = int_array_signal(np.int8)
-        self.uint8a = int_array_signal(np.uint8)
-        self.int16a = int_array_signal(np.int16)
-        self.uint16a = int_array_signal(np.uint16)
-        self.int32a = int_array_signal(np.int32)
-        self.uint32a = int_array_signal(np.uint32)
-        self.int64a = int_array_signal(np.int64)
-        self.uint64a = int_array_signal(np.uint64)
-        self.float32a = float_array_signal(np.float32)
-        self.float64a = float_array_signal(np.float64)
-        self.stra = soft_signal_rw(Sequence[str], ["one", "two", "three"])
-        self.enuma = soft_signal_rw(
-            Sequence[ExampleEnum], [ExampleEnum.A, ExampleEnum.C]
-        )
-        self.table = soft_signal_rw(
-            ExampleTable,
-            ExampleTable(
-                bool=np.array([False, False, True, True], np.bool_),
-                int=np.array([1, 8, -9, 32], np.int32),
-                float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-                str=["Hello", "World", "Foo", "Bar"],
-                enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
-            ),
-        )
-        self.ndarray = soft_signal_rw(np.ndarray, np.array(([1, 2, 3], [4, 5, 6])))
-        super().__init__(name=name)
+        # add all signals to configuration
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
+            self.int = soft_signal_rw(int, 1)
+            self.float = soft_signal_rw(float, 1.234)
+            self.str = soft_signal_rw(str, "test_string")
+            self.bool = soft_signal_rw(bool, True)
+            self.enum = soft_signal_rw(ExampleEnum, ExampleEnum.B)
+            self.int8a = int_array_signal(np.int8)
+            self.uint8a = int_array_signal(np.uint8)
+            self.int16a = int_array_signal(np.int16)
+            self.uint16a = int_array_signal(np.uint16)
+            self.int32a = int_array_signal(np.int32)
+            self.uint32a = int_array_signal(np.uint32)
+            self.int64a = int_array_signal(np.int64)
+            self.uint64a = int_array_signal(np.uint64)
+            self.float32a = float_array_signal(np.float32)
+            self.float64a = float_array_signal(np.float64)
+            self.stra = soft_signal_rw(
+                Sequence[str],
+                ["one", "two", "three"],
+            )
+            self.enuma = soft_signal_rw(
+                Sequence[ExampleEnum],
+                [ExampleEnum.A, ExampleEnum.C],
+            )
+            self.table = soft_signal_rw(
+                ExampleTable,
+                ExampleTable(
+                    bool=np.array([False, False, True, True], np.bool_),
+                    int=np.array([1, 8, -9, 32], np.int32),
+                    float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+                    str=["Hello", "World", "Foo", "Bar"],
+                    enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+                ),
+            )
+            self.ndarray = soft_signal_rw(np.ndarray, np.array(([1, 2, 3], [4, 5, 6])))
+        super().__init__(name)
 
 
 async def _get_signal_values(child: Device) -> dict[SignalRW, Any]:
