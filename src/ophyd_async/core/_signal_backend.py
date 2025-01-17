@@ -10,7 +10,10 @@ from ._table import Table
 from ._utils import Callback, StrictEnum, T
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
-Array1D = np.ndarray[tuple[int], np.dtype[DTypeScalar_co]]
+# To be a 1D array shape should really be tuple[int], but np.array()
+# currently produces tuple[int, ...] even when it has 1D input args
+# https://github.com/numpy/numpy/issues/28077#issuecomment-2566485178
+Array1D = np.ndarray[tuple[int, ...], np.dtype[DTypeScalar_co]]
 Primitive = bool | int | float | str
 # NOTE: if you change this union then update the docs to match
 SignalDatatype = (

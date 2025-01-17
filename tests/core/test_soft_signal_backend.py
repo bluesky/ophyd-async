@@ -148,8 +148,10 @@ async def test_soft_signal_backend_set_callback():
 async def test_soft_signal_backend_with_numpy_typing():
     soft_backend = SoftSignalBackend(Array1D[np.float64])
     await soft_backend.connect(timeout=1)
+    await soft_backend.put(np.array([1, 2]), wait=True)
     array = await soft_backend.get_value()
-    assert array.shape == (0,)
+    assert array.shape == (2,)
+    assert array[0] == 1
 
 
 async def test_soft_signal_descriptor_fails_for_invalid_class():

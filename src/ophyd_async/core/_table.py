@@ -101,7 +101,7 @@ class Table(BaseModel):
                 v = v[selection]
             if array is None:
                 array = np.empty(v.shape, dtype=self.numpy_dtype())
-            array[k] = v
+            array[k] = v  # type: ignore
         if array is None:
             msg = "No arrays found in table"
             raise ValueError(msg)
