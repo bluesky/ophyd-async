@@ -33,6 +33,10 @@ class MyTable(Table):
             {"bool": [0, 1], "uint": [3, 4], "str": [44, ""]},
             "Input should be a valid string [type=string_type, input_value=44,",
         ),
+        (
+            {"bool": [0, 1], "uint": [[3], [4]], "str": ["", ""]},
+            "Array 2-dimensional; the target dimensions is 1",
+        ),
     ],
 )
 def test_table_wrong_types(kwargs, error_msg):

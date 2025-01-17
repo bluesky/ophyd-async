@@ -8,6 +8,7 @@ from typing import Generic, Literal, get_args
 
 import bluesky.plan_stubs as bps
 import numpy as np
+import numpy.typing as npt
 import pytest
 import yaml
 from aioca import purge_channel_caches
@@ -38,6 +39,7 @@ from ophyd_async.epics.core import (
     epics_signal_w,
     epics_signal_x,
 )
+from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
     EpicsTestEnum,
     EpicsTestIocAndDevices,
@@ -565,6 +567,18 @@ async def test_non_existent_errors(
     signal = epics_signal_rw(str, "non-existent")
     with pytest.raises(NotConnected):
         await signal.connect(timeout=0.1)
+
+
+@pytest.mark.parametrize(
+    "dt,expected",
+    [
+        (Array1D[np.int32], "Array1D[np.int32]"),
+        (np.ndarray, "ndarray"),
+        (npt.NDArray[np.float64], "Array1D[np.float64]"),
+    ],
+)
+def test_format_error_message(dt, expected):
+    assert format_datatype(dt) == expected
 
 
 def test_make_backend_fails_for_different_transports():
