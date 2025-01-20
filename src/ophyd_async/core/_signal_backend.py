@@ -15,9 +15,17 @@ DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 # https://github.com/numpy/numpy/issues/28077#issuecomment-2566485178
 Array1D = np.ndarray[tuple[int, ...], np.dtype[DTypeScalar_co]]
 Primitive = bool | int | float | str
-# NOTE: if you change this union then update the docs to match
+#: The supported `Signal` datatypes:
+#: - A python primitive `bool`, `int`, `float`, `str`
+#: - A `StrictEnum` or `SubsetEnum` subclass
+#: - A fixed datatype `Array1D` of numpy bool, signed and unsigned integers or float
+#: - A `np.ndarray` which can change dimensions and datatype at runtime
+#: - A `Sequence` of `str`
+#: - A `Sequence` of `StrictEnum` or `SubsetEnum` subclass
+#: - A `Table` subclass
 SignalDatatype = (
     Primitive
+    | StrictEnum
     | Array1D[np.bool_]
     | Array1D[np.int8]
     | Array1D[np.uint8]
@@ -30,7 +38,6 @@ SignalDatatype = (
     | Array1D[np.float32]
     | Array1D[np.float64]
     | np.ndarray
-    | StrictEnum
     | Sequence[str]
     | Sequence[StrictEnum]
     | Table

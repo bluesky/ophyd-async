@@ -34,9 +34,6 @@ async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDet
             TriggerInfo(
                 number_of_triggers=1,
                 trigger=DetectorTrigger.EDGE_TRIGGER,
-                livetime=None,
-                deadtime=None,
-                frame_timeout=None,
             )
         )
         # Prevent timeouts

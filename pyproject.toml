@@ -17,7 +17,7 @@ dependencies = [
     "numpy",
     "packaging",
     "pint",
-    "bluesky>=1.13",
+    "bluesky>=1.13.1rc2",
     "event-model>=1.22.1",
     "p4p>=4.2.0a3",
     "pyyaml",
@@ -190,7 +190,7 @@ type = "forbidden"
 forbidden_modules = ["ophyd_async.testing", "ophyd_async.sim"]
 source_modules = [
     "ophyd_async.plan_stubs",
-    "ophyd_async.fast.*",
+    "ophyd_async.fastcs",
     "ophyd_async.epics",
     "ophyd_async.tango",
 ]
