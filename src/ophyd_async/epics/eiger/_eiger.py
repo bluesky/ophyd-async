@@ -1,19 +1,20 @@
 from dataclasses import dataclass
-from enum import Enum
-from typing import Generic, TypeVar
 
-from numpy import interp, loadtxt
 from pydantic import Field
 
 from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
 
+from ._det_dim_constants import (
+    EIGER2_X_16M_SIZE,
+    DetectorSize,
+    DetectorSizeConstants,
+)
+from ._det_dist_to_beam_converter import (
+    DetectorDistanceToBeamXYConverter,
+)
 from ._eiger_controller import EigerController
 from ._eiger_io import EigerDriverIO
 from ._odin_io import Odin, OdinWriter
-
-ALL_DETECTORS: dict[str, "DetectorSizeConstants"] = {}
-T = TypeVar("T", bound=float | int)
-EIGER_TYPE_EIGER2_X_16M = "EIGER2_X_16M"
 
 
 @dataclass
@@ -23,130 +24,6 @@ class EigerTimeouts:
     meta_file_ready_timeout: int = 30
     all_frames_timeout: int = 120
     arming_timeout: int = 60
-
-
-@dataclass
-class DetectorSize(Generic[T]):
-    width: T
-    height: T
-
-
-@dataclass
-class DetectorSizeConstants:
-    det_type_string: str
-    det_dimension: DetectorSize[float]
-    det_size_pixels: DetectorSize[int]
-    roi_dimension: DetectorSize[float]
-    roi_size_pixels: DetectorSize[int]
-
-    def __post_init__(self):
-        ALL_DETECTORS[self.det_type_string] = self
-
-
-EIGER_TYPE_EIGER2_X_4M = "EIGER2_X_4M"
-EIGER2_X_4M_DIMENSION_X = 155.1
-EIGER2_X_4M_DIMENSION_Y = 162.15
-EIGER2_X_4M_DIMENSION = DetectorSize(EIGER2_X_4M_DIMENSION_X, EIGER2_X_4M_DIMENSION_Y)
-PIXELS_X_EIGER2_X_4M = 2068
-PIXELS_Y_EIGER2_X_4M = 2162
-PIXELS_EIGER2_X_4M = DetectorSize(PIXELS_X_EIGER2_X_4M, PIXELS_Y_EIGER2_X_4M)
-EIGER2_X_4M_SIZE = DetectorSizeConstants(
-    EIGER_TYPE_EIGER2_X_4M,
-    EIGER2_X_4M_DIMENSION,
-    PIXELS_EIGER2_X_4M,
-    EIGER2_X_4M_DIMENSION,
-    PIXELS_EIGER2_X_4M,
-)
-
-EIGER_TYPE_EIGER2_X_9M = "EIGER2_X_9M"
-EIGER2_X_9M_DIMENSION_X = 233.1
-EIGER2_X_9M_DIMENSION_Y = 244.65
-EIGER2_X_9M_DIMENSION = DetectorSize(EIGER2_X_9M_DIMENSION_X, EIGER2_X_9M_DIMENSION_Y)
-PIXELS_X_EIGER2_X_9M = 3108
-PIXELS_Y_EIGER2_X_9M = 3262
-PIXELS_EIGER2_X_9M = DetectorSize(PIXELS_X_EIGER2_X_9M, PIXELS_Y_EIGER2_X_9M)
-EIGER2_X_9M_SIZE = DetectorSizeConstants(
-    EIGER_TYPE_EIGER2_X_9M,
-    EIGER2_X_9M_DIMENSION,
-    PIXELS_EIGER2_X_9M,
-    EIGER2_X_9M_DIMENSION,
-    PIXELS_EIGER2_X_9M,
-)
-
-EIGER_TYPE_EIGER2_X_16M = "EIGER2_X_16M"
-EIGER2_X_16M_DIMENSION_X = 311.1
-EIGER2_X_16M_DIMENSION_Y = 327.15
-EIGER2_X_16M_DIMENSION = DetectorSize(
-    EIGER2_X_16M_DIMENSION_X, EIGER2_X_16M_DIMENSION_Y
-)
-PIXELS_X_EIGER2_X_16M = 4148
-PIXELS_Y_EIGER2_X_16M = 4362
-PIXELS_EIGER2_X_16M = DetectorSize(PIXELS_X_EIGER2_X_16M, PIXELS_Y_EIGER2_X_16M)
-EIGER2_X_16M_SIZE = DetectorSizeConstants(
-    EIGER_TYPE_EIGER2_X_16M,
-    EIGER2_X_16M_DIMENSION,
-    PIXELS_EIGER2_X_16M,
-    EIGER2_X_4M_DIMENSION,
-    PIXELS_EIGER2_X_4M,
-)
-
-
-class Axis(Enum):
-    X_AXIS = 1
-    Y_AXIS = 2
-
-
-class DetectorDistanceToBeamXYConverter:
-    def __init__(self, lookup_file: str):
-        self.lookup_file: str = lookup_file
-        self.lookup_table_values: list = self.parse_table()
-
-    def get_beam_xy_from_det_dist(self, det_dist_mm: float, beam_axis: Axis) -> float:
-        beam_axis_values = self.lookup_table_values[beam_axis.value]
-        det_dist_array = self.lookup_table_values[0]
-        return float(interp(det_dist_mm, det_dist_array, beam_axis_values))
-
-    def get_beam_axis_pixels(
-        self,
-        det_distance: float,
-        image_size_pixels: int,
-        det_dim: float,
-        beam_axis: Axis,
-    ) -> float:
-        beam_mm = self.get_beam_xy_from_det_dist(det_distance, beam_axis)
-        return beam_mm * image_size_pixels / det_dim
-
-    def get_beam_y_pixels(
-        self, det_distance: float, image_size_pixels: int, det_dim: float
-    ) -> float:
-        return self.get_beam_axis_pixels(
-            det_distance, image_size_pixels, det_dim, Axis.Y_AXIS
-        )
-
-    def get_beam_x_pixels(
-        self, det_distance: float, image_size_pixels: int, det_dim: float
-    ) -> float:
-        return self.get_beam_axis_pixels(
-            det_distance, image_size_pixels, det_dim, Axis.X_AXIS
-        )
-
-    def reload_lookup_table(self):
-        self.lookup_table_values = self.parse_table()
-
-    def parse_table(self) -> list:
-        rows = loadtxt(self.lookup_file, delimiter=" ", comments=["#", "Units"])
-        columns = list(zip(*rows, strict=False))
-
-        return columns
-
-    def __eq__(self, other):
-        if not isinstance(other, DetectorDistanceToBeamXYConverter):
-            return NotImplemented
-        if self.lookup_file != other.lookup_file:
-            return False
-        if self.lookup_table_values != other.lookup_table_values:
-            return False
-        return True
 
 
 class EigerTriggerInfo(TriggerInfo):
