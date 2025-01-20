@@ -4,17 +4,17 @@ from pydantic import Field
 
 from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
 
-from ._det_dim_constants import (
-    EIGER2_X_16M_SIZE,
-    DetectorSize,
-    DetectorSizeConstants,
-)
 from ._det_dist_to_beam_converter import (
     DetectorDistanceToBeamXYConverter,
 )
 from ._eiger_controller import EigerController
 from ._eiger_io import EigerDriverIO
 from ._odin_io import Odin, OdinWriter
+from .det_dim_constants import (
+    EIGER2_X_16M_SIZE,
+    DetectorSize,
+    DetectorSizeConstants,
+)
 
 
 @dataclass
@@ -94,6 +94,7 @@ class EigerDetector(StandardDetector):
 
     @AsyncStatus.wrap
     async def prepare(self, value: EigerTriggerInfo) -> None:  # type: ignore
+        self.detector_params = value
         await self._controller.set_energy(value.energy_ev)
         await super().prepare(value)
 

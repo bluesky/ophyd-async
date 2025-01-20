@@ -4,6 +4,7 @@ import pytest
 
 from ophyd_async.core import DetectorTrigger, init_devices
 from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
+from ophyd_async.epics.eiger.det_dim_constants import EIGER2_X_16M_SIZE
 from ophyd_async.testing import get_mock_put
 
 
@@ -31,7 +32,41 @@ async def test_when_prepared_with_energy_then_energy_set_on_detector(detector):
             deadtime=None,
             livetime=None,
             energy_ev=10000,
+            exposure_time=1.0,
+            detector_distance=1.0,
+            omega_start=0.0,
+            omega_increment=0.0,
+            use_roi_mode=False,
+            det_dist_to_beam_converter_path="tests/devices/unit_tests/test_lookup_table.txt",
+            detector_size_constants=EIGER2_X_16M_SIZE,
         )
     )
 
     get_mock_put(detector.drv.photon_energy).assert_called_once_with(10000, wait=ANY)
+
+
+async def test_set_mx_settings_sets_pvs_correctly(detector):
+    detector.detector_params = EigerTriggerInfo(
+        frame_timeout=None,
+        number_of_triggers=1,
+        trigger=DetectorTrigger.INTERNAL,
+        deadtime=None,
+        livetime=None,
+        energy_ev=10000,
+        exposure_time=1.0,
+        detector_distance=1.0,
+        omega_start=0.0,
+        omega_increment=0.0,
+        use_roi_mode=False,
+        det_dist_to_beam_converter_path="tests/epics/eiger/test_lookup_table.txt",
+        detector_size_constants=EIGER2_X_16M_SIZE,
+    )
+    beam_center_x_calculated = detector.detector_params.get_beam_position_pixels(
+        detector.detector_params.detector_distance
+    )[0]
+
+    assert await detector.drv.beam_centre_x.get_value() != beam_center_x_calculated
+
+    await detector.set_mx_settings_pvs()
+
+    assert await detector.drv.beam_centre_x.get_value() == beam_center_x_calculated
