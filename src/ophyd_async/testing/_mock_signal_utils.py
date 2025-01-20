@@ -22,9 +22,9 @@ def get_mock(device: Device | Signal) -> Mock:
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
     connector = signal._connector  # noqa: SLF001
     assert isinstance(connector, SignalConnector), f"Expected Signal, got {signal}"
-    assert isinstance(
-        connector.backend, MockSignalBackend
-    ), f"Signal {signal} not connected in mock mode"
+    assert isinstance(connector.backend, MockSignalBackend), (
+      f"Signal {signal} not connected in mock mode"
+    )
     return connector.backend
 
 

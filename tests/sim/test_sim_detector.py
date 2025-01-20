@@ -15,9 +15,9 @@ from ophyd_async.testing import assert_emitted
 async def test_sim_pattern_detector_initialization(
     sim_pattern_detector: PatternDetector,
 ):
-    assert (
-        sim_pattern_detector.pattern_generator
-    ), "PatternGenerator was not initialized correctly."
+    assert sim_pattern_detector.pattern_generator, (
+        "PatternGenerator was not initialized correctly."
+    )
 
 
 async def test_detector_creates_controller_and_writer(
