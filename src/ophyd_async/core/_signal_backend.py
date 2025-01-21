@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Sequence
+from enum import IntEnum
 from typing import Generic, TypedDict, TypeVar, get_origin
 
 import numpy as np
@@ -30,6 +31,7 @@ SignalDatatype = (
     | Array1D[np.float32]
     | Array1D[np.float64]
     | np.ndarray
+    | IntEnum
     | StrictEnum
     | Sequence[str]
     | Sequence[StrictEnum]
