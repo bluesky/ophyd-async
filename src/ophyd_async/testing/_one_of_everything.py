@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -7,6 +8,7 @@ from ophyd_async.core import (
     Array1D,
     Device,
     DTypeScalar_co,
+    SignalDatatype,
     SignalRW,
     StandardReadable,
     StrictEnum,
@@ -32,19 +34,14 @@ class ExampleTable(Table):
     enum: Sequence[ExampleEnum]
 
 
-def int_array_signal(
-    dtype: type[DTypeScalar_co], name: str = ""
-) -> SignalRW[Array1D[DTypeScalar_co]]:
+def int_array_value(dtype: type[DTypeScalar_co]) -> Array1D[DTypeScalar_co]:
     iinfo = np.iinfo(dtype)  # type: ignore
-    value = np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
-    return soft_signal_rw(Array1D[dtype], value, name)
+    return np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
 
 
-def float_array_signal(
-    dtype: type[DTypeScalar_co], name: str = ""
-) -> SignalRW[Array1D[DTypeScalar_co]]:
+def float_array_value(dtype: type[DTypeScalar_co]) -> Array1D[DTypeScalar_co]:
     finfo = np.finfo(dtype)  # type: ignore
-    value = np.array(
+    return np.array(
         [
             finfo.min,
             finfo.max,
@@ -57,7 +54,55 @@ def float_array_signal(
         ],
         dtype=dtype,
     )
-    return soft_signal_rw(Array1D[dtype], value, name)
+
+
+@dataclass
+class EverythingSignal:
+    name: str
+    dtype: type[SignalDatatype]
+    initial_value: Any = None
+
+
+def get_every_signal_data():
+    # list containing necessary info to construct a signal of each type for multiple
+    # transports e.g. soft/epics/tango
+    return [
+        EverythingSignal("int", int, 1),
+        EverythingSignal("float", float, 1.234),
+        EverythingSignal("str", str, "test_string"),
+        EverythingSignal("bool", bool, True),
+        EverythingSignal("enum", ExampleEnum, ExampleEnum.B),
+        EverythingSignal("int8a", Array1D[np.int8], int_array_value(np.int8)),
+        EverythingSignal("uint8a", Array1D[np.uint8], int_array_value(np.uint8)),
+        EverythingSignal("int16a", Array1D[np.int16], int_array_value(np.int16)),
+        EverythingSignal("uint16a", Array1D[np.uint16], int_array_value(np.uint16)),
+        EverythingSignal("int32a", Array1D[np.int32], int_array_value(np.int32)),
+        EverythingSignal("uint32a", Array1D[np.uint32], int_array_value(np.uint32)),
+        EverythingSignal("int64a", Array1D[np.int64], int_array_value(np.int64)),
+        EverythingSignal("uint64a", Array1D[np.uint64], int_array_value(np.uint64)),
+        EverythingSignal(
+            "float32a", Array1D[np.float32], float_array_value(np.float32)
+        ),
+        EverythingSignal(
+            "float64a", Array1D[np.float64], float_array_value(np.float64)
+        ),
+        EverythingSignal("stra", Sequence[str], ["one", "two", "three"]),
+        EverythingSignal(
+            "enuma", Sequence[ExampleEnum], [ExampleEnum.A, ExampleEnum.C]
+        ),
+        EverythingSignal(
+            "table",
+            ExampleTable,
+            ExampleTable(
+                bool=np.array([False, False, True, True], np.bool_),
+                int=np.array([1, 8, -9, 32], np.int32),
+                float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+                str=["Hello", "World", "Foo", "Bar"],
+                enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+            ),
+        ),
+        EverythingSignal("ndarray", np.ndarray, np.array(([1, 2, 3], [4, 5, 6]))),
+    ]
 
 
 class OneOfEverythingDevice(StandardReadable):
@@ -65,40 +110,8 @@ class OneOfEverythingDevice(StandardReadable):
     def __init__(self, name=""):
         # add all signals to configuration
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
-            self.int = soft_signal_rw(int, 1)
-            self.float = soft_signal_rw(float, 1.234)
-            self.str = soft_signal_rw(str, "test_string")
-            self.bool = soft_signal_rw(bool, True)
-            self.enum = soft_signal_rw(ExampleEnum, ExampleEnum.B)
-            self.int8a = int_array_signal(np.int8)
-            self.uint8a = int_array_signal(np.uint8)
-            self.int16a = int_array_signal(np.int16)
-            self.uint16a = int_array_signal(np.uint16)
-            self.int32a = int_array_signal(np.int32)
-            self.uint32a = int_array_signal(np.uint32)
-            self.int64a = int_array_signal(np.int64)
-            self.uint64a = int_array_signal(np.uint64)
-            self.float32a = float_array_signal(np.float32)
-            self.float64a = float_array_signal(np.float64)
-            self.stra = soft_signal_rw(
-                Sequence[str],
-                ["one", "two", "three"],
-            )
-            self.enuma = soft_signal_rw(
-                Sequence[ExampleEnum],
-                [ExampleEnum.A, ExampleEnum.C],
-            )
-            self.table = soft_signal_rw(
-                ExampleTable,
-                ExampleTable(
-                    bool=np.array([False, False, True, True], np.bool_),
-                    int=np.array([1, 8, -9, 32], np.int32),
-                    float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-                    str=["Hello", "World", "Foo", "Bar"],
-                    enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
-                ),
-            )
-            self.ndarray = soft_signal_rw(np.ndarray, np.array(([1, 2, 3], [4, 5, 6])))
+            for data in get_every_signal_data():
+                setattr(self, data.name, soft_signal_rw(data.dtype, data.initial_value))
         super().__init__(name)
 
 
