@@ -94,9 +94,30 @@ class EigerDetector(StandardDetector):
 
     @AsyncStatus.wrap
     async def prepare(self, value: EigerTriggerInfo) -> None:  # type: ignore
-        self.detector_params = value
+        self.set_detector_parameters(value)
         await self._controller.set_energy(value.energy_ev)
         await super().prepare(value)
+
+    def set_detector_parameters(self, detector_params: EigerTriggerInfo):
+        self.detector_params = detector_params
+        if self.detector_params is None:
+            raise ValueError("Parameters for scan must be specified")
+
+        to_check = [
+            (
+                self.detector_params.detector_size_constants is None,
+                "Detector Size must be set",
+            ),
+            (
+                self.detector_params.beam_xy_converter is None,
+                "Beam converter must be set",
+            ),
+        ]
+
+        errors = [message for check_result, message in to_check if check_result]
+
+        if errors:
+            raise Exception("\n".join(errors))
 
     @AsyncStatus.wrap
     async def set_mx_settings_pvs(self) -> None:
