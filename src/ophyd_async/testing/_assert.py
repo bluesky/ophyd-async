@@ -61,11 +61,19 @@ async def assert_reading(
 
     """
     actual_reading = await readable.read()
+    _assert_readings_approx_equal(expected_reading, actual_reading)
+
+
+def _assert_readings_approx_equal(expected, actual):
     approx_expected_reading = {
-        k: dict(v, value=approx_value(expected_reading[k]["value"]))
-        for k, v in expected_reading.items()
+        k: dict(
+            v,
+            value=approx_value(expected[k]["value"]),
+            timestamp=approx_value(expected[k]["timestamp"]),
+        )
+        for k, v in expected.items()
     }
-    assert actual_reading == approx_expected_reading
+    assert actual == approx_expected_reading
 
 
 async def assert_configuration(
@@ -89,11 +97,7 @@ async def assert_configuration(
 
     """
     actual_configuration = await configurable.read_configuration()
-    approx_expected_configuration = {
-        k: dict(v, value=approx_value(configuration[k]["value"]))
-        for k, v in configuration.items()
-    }
-    assert actual_configuration == approx_expected_configuration
+    _assert_readings_approx_equal(configuration, actual_configuration)
 
 
 async def assert_describe_signal(signal: SignalR, /, **metadata):
@@ -145,31 +149,26 @@ class ApproxTable:
 
 
 class MonitorQueue(AbstractContextManager):
-    def __init__(self,
-                 signal: SignalR,
-                 timestamp_provider: Callable[[], float] | None = None):
+    def __init__(
+        self, signal: SignalR, timestamp_provider: Callable[[], float] | None = None
+    ):
         self.signal = signal
         self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
         self._timestamp_provider = timestamp_provider or time.time
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
-        expected_type = type(expected_value)
-        expected_value = approx_value(expected_value)
         update = await self.updates.get()
-        value = await self.signal.get_value()
-        reading = await self.signal.read()
-        # Check they match what we expected
-        assert value == expected_value
-        assert type(value) is expected_type
-        expected_reading = {
+        await assert_value(self.signal, expected_value)
+        expected_reading: dict[str, Reading] = {
             self.signal.name: {
                 "value": expected_value,
-                "timestamp": pytest.approx(self._timestamp_provider(), rel=0.1),
+                "timestamp": self._timestamp_provider(),  # type: ignore
                 "alarm_severity": 0,
             }
         }
-        assert reading == update == expected_reading
+        await assert_reading(self.signal, expected_reading)
+        _assert_readings_approx_equal(expected_reading, update)
 
     def __enter__(self):
         self.signal.subscribe(self.updates.put_nowait)
