@@ -56,9 +56,9 @@ BASE_TYPES_SET = (
     ("char", "DevUChar", int, (1, 2, 3, 4, 5)),
     ("float", "DevFloat", float, (1.1, 2.2, 3.3, 4.4, 5.5)),
     ("double", "DevDouble", float, (1.1, 2.2, 3.3, 4.4, 5.5)),
-    # ("string", "DevString", str, ("aaa", "bbb", "ccc")),
-    # ("state", "DevState", DevState, (DevState.ON, DevState.MOVING, DevState.ALARM)),
-    # ("enum", "DevEnum", TestEnum, (TestEnum.A, TestEnum.B)),
+    ("string", "DevString", str, ("aaa", "bbb", "ccc")),
+    ("state", "DevState", DevState, (DevState.ON, DevState.MOVING, DevState.ALARM)),
+    ("enum", "DevEnum", TestEnum, (TestEnum.A, TestEnum.B)),
 )
 
 
@@ -79,49 +79,52 @@ for type_name, tango_type_name, py_type, values in BASE_TYPES_SET:
     # pytango test utils currently fail to handle bool pytest.approx
     if type_name == "boolean":
         continue
-    ATTRIBUTES_SET.extend(
-        [
-            AttributeData(
-                f"{type_name}_scalar_attr",
-                tango_type_name,
-                AttrDataFormat.SCALAR,
-                py_type,
-                choice(values),
-                choice(values),
+    ATTRIBUTES_SET.append(
+        AttributeData(
+            f"{type_name}_scalar_attr",
+            tango_type_name,
+            AttrDataFormat.SCALAR,
+            py_type,
+            choice(values),
+            choice(values),
+        )
+    )
+    ATTRIBUTES_SET.append(
+        AttributeData(
+            f"{type_name}_spectrum_attr",
+            tango_type_name,
+            AttrDataFormat.SPECTRUM,
+            npt.NDArray[py_type],
+            [choice(values), choice(values), choice(values)],
+            [choice(values), choice(values), choice(values)],
+        )
+    )
+
+    if type_name in ["state", "enum"]:
+        # TODO: state image and enum images don't currently work with assert_value etc
+        continue
+
+    ATTRIBUTES_SET.append(
+        AttributeData(
+            f"{type_name}_image_attr",
+            tango_type_name,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[py_type],
+            np.array(
+                [
+                    [choice(values), choice(values), choice(values)],
+                    [choice(values), choice(values), choice(values)],
+                ],
+                dtype=py_type,
             ),
-            AttributeData(
-                f"{type_name}_spectrum_attr",
-                tango_type_name,
-                AttrDataFormat.SPECTRUM,
-                npt.NDArray[py_type],
-                np.array(
-                    [choice(values), choice(values), choice(values)], dtype=py_type
-                ),
-                np.array(
-                    [choice(values), choice(values), choice(values)], dtype=py_type
-                ),
+            np.array(
+                [
+                    [choice(values), choice(values), choice(values)],
+                    [choice(values), choice(values), choice(values)],
+                ],
+                dtype=py_type,
             ),
-            AttributeData(
-                f"{type_name}_image_attr",
-                tango_type_name,
-                AttrDataFormat.IMAGE,
-                npt.NDArray[py_type],
-                np.array(
-                    [
-                        [choice(values), choice(values), choice(values)],
-                        [choice(values), choice(values), choice(values)],
-                    ],
-                    dtype=py_type,
-                ),
-                np.array(
-                    [
-                        [choice(values), choice(values), choice(values)],
-                        [choice(values), choice(values), choice(values)],
-                    ],
-                    dtype=py_type,
-                ),
-            ),
-        ]
+        ),
     )
 
     if tango_type_name == "DevUChar":
