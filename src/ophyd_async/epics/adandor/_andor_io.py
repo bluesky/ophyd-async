@@ -16,13 +16,6 @@ class Andor2TriggerMode(StrictEnum):
     SOFTWARE = "Software"
 
 
-class Andor2ImageMode(StrictEnum):
-    SINGLE = "Single"
-    MULTIPLE = "Multiple"
-    CONTINUOUS = "Continuous"
-    FAST_KINETICS = "Fast Kinetics"
-
-
 class Andor2DataType(SubsetEnum):
     UINT16 = "UInt16"
     UINT32 = "UInt32"
@@ -42,4 +35,3 @@ class Andor2DriverIO(ADBaseIO):
         self.andor_accumulate_period = epics_signal_r(
             float, prefix + "AndorAccumulatePeriod_RBV"
         )
-        self.image_mode = epics_signal_rw_rbv(Andor2ImageMode, prefix + "ImageMode")

@@ -6,6 +6,7 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     StrictEnum,
+    SubsetEnum,
     wait_for_value,
 )
 
@@ -84,7 +85,7 @@ class FileWriteMode(StrictEnum):
     STREAM = "Stream"
 
 
-class ImageMode(StrictEnum):
+class ImageMode(SubsetEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"
