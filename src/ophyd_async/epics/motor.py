@@ -63,6 +63,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.motor_egu = epics_signal_r(str, prefix + ".EGU")
             self.velocity = epics_signal_rw(float, prefix + ".VELO")
+            self.offset = epics_signal_rw(float, prefix + ".OFF")
 
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.user_readback = epics_signal_r(float, prefix + ".RBV")
