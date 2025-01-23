@@ -6,5 +6,8 @@ Tutorials for installation and typical usage. New users start here.
 :maxdepth: 1
 :glob:
 
-tutorials/*
+tutorials/installation
+tutorials/using-devices
+tutorials/implementing-devices
+tutorials/writing-tests-for-devices
 ```

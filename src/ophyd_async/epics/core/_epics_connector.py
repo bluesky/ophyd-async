@@ -10,6 +10,8 @@ from ._signal import EpicsSignalBackend, get_signal_backend_type, split_protocol
 
 @dataclass
 class PvSuffix:
+    """Define the PV suffix to be appended to the device prefix."""
+
     read_suffix: str
     write_suffix: str | None = None
 

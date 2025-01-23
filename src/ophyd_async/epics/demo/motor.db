@@ -10,7 +10,8 @@ record(ao, "$(P)Velocity") {
     field(PREC, "$(PREC=3)")
     field(PINI, "YES")
     field(EGU,  "$(EGU=mm)/s")
-    field(VAL,  "$(VELO=100)")
+    field(VAL,  "$(VELO=1)")
+    field(DRVL, "0")
 }
 
 record(calc, "$(P)VelocityDiv") {

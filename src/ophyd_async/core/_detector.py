@@ -60,7 +60,7 @@ class TriggerInfo(BaseModel):
     #: Sort of triggers that will be sent
     trigger: DetectorTrigger = Field(default=DetectorTrigger.INTERNAL)
     #: What is the minimum deadtime between triggers
-    deadtime: float | None = Field(default=None, ge=0)
+    deadtime: float = Field(default=0.0, ge=0)
     #: What is the maximum high time of the triggers
     livetime: float | None = Field(default=None, ge=0)
     #: What is the maximum timeout on waiting for a frame
@@ -281,9 +281,6 @@ class StandardDetector(
                 TriggerInfo(
                     number_of_triggers=1,
                     trigger=DetectorTrigger.INTERNAL,
-                    deadtime=None,
-                    livetime=None,
-                    frame_timeout=None,
                 )
             )
 
@@ -301,7 +298,7 @@ class StandardDetector(
         async for index in self._writer.observe_indices_written(
             DEFAULT_TIMEOUT
             + (self._trigger_info.livetime or 0)
-            + (self._trigger_info.deadtime or 0)
+            + self._trigger_info.deadtime
         ):
             if index >= end_observation:
                 break
@@ -332,17 +329,18 @@ class StandardDetector(
                 f"deadtime, but trigger logic provides only {value.deadtime}s"
             )
             raise ValueError(msg)
-
+        elif not value.deadtime:
+            value.deadtime = self._controller.get_deadtime(value.livetime)
         self._trigger_info = value
         self._number_of_triggers_iter = iter(
             self._trigger_info.number_of_triggers
             if isinstance(self._trigger_info.number_of_triggers, list)
             else [self._trigger_info.number_of_triggers]
         )
-        self._initial_frame = await self._writer.get_indices_written()
         self._describe, _ = await asyncio.gather(
             self._writer.open(value.multiplier), self._controller.prepare(value)
         )
+        self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
             self._fly_start = time.monotonic()

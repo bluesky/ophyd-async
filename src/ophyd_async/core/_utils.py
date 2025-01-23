@@ -11,6 +11,7 @@ from unittest.mock import Mock
 import numpy as np
 
 T = TypeVar("T")
+V = TypeVar("V")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
@@ -229,8 +230,9 @@ async def merge_gathered_dicts(
     return ret
 
 
-async def gather_list(coros: Iterable[Awaitable[T]]) -> list[T]:
-    return await asyncio.gather(*coros)
+async def gather_dict(coros: dict[T, Awaitable[V]]) -> dict[T, V]:
+    values = await asyncio.gather(*coros.values())
+    return dict(zip(coros, values, strict=True))
 
 
 def in_micros(t: float) -> int:

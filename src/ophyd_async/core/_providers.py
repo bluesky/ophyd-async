@@ -31,6 +31,8 @@ class FilenameProvider(Protocol):
 
 
 class PathProvider(Protocol):
+    """Abstract class that tells a detector where to write its data."""
+
     @abstractmethod
     def __call__(self, device_name: str | None = None) -> PathInfo:
         """Get the current directory to write files into"""
@@ -45,6 +47,8 @@ class StaticFilenameProvider(FilenameProvider):
 
 
 class UUIDFilenameProvider(FilenameProvider):
+    """Files will be have a UUID as a filename."""
+
     def __init__(
         self,
         uuid_call_func: Callable = uuid.uuid4,
@@ -98,14 +102,16 @@ class AutoIncrementFilenameProvider(FilenameProvider):
 
 
 class StaticPathProvider(PathProvider):
+    """All files will be within a static directory."""
+
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        directory_path: Path,
+        directory_path: Path | str,
         create_dir_depth: int = 0,
     ) -> None:
         self._filename_provider = filename_provider
-        self._directory_path = directory_path
+        self._directory_path = Path(directory_path)
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, device_name: str | None = None) -> PathInfo:

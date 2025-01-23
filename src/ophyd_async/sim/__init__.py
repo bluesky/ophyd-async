@@ -1,19 +1,15 @@
-from ._pattern_detector import (
-    DATA_PATH,
-    SUM_PATH,
-    PatternDetector,
-    PatternDetectorController,
-    PatternDetectorWriter,
-    PatternGenerator,
-)
-from ._sim_motor import SimMotor
+"""Some simulated devices to be used in tutorials and testing."""
+
+from ._blob_detector import SimBlobDetector
+from ._motor import SimMotor
+from ._pattern_generator import PatternGenerator
+from ._point_detector import SimPointDetector
+from ._stage import SimStage
 
 __all__ = [
-    "DATA_PATH",
-    "SUM_PATH",
-    "PatternGenerator",
-    "PatternDetector",
-    "PatternDetectorController",
-    "PatternDetectorWriter",
     "SimMotor",
+    "SimStage",
+    "PatternGenerator",
+    "SimPointDetector",
+    "SimBlobDetector",
 ]

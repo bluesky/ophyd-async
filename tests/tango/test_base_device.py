@@ -13,7 +13,7 @@ import tango
 from ophyd_async.core import Array1D, SignalRW, T, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_python_type
-from ophyd_async.tango.sim import (
+from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
     TangoDetector,

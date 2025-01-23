@@ -1,3 +1,18 @@
+"""The building blocks for making devices.
+
+.. data:: SignalDatatype
+
+    The supported `Signal` datatypes
+
+    - A python primitive `bool`, `int`, `float`, `str`
+    - A `StrictEnum` or `SubsetEnum` subclass
+    - A fixed datatype ``Array1D`` of numpy bool, signed and unsigned integers or float
+    - A numpy array which can change dimensions and datatype at runtime
+    - A `Sequence` of `str`
+    - A `Sequence` of `StrictEnum` or `SubsetEnum` subclass
+    - A `Table` subclass
+"""
+
 from ._detector import (
     DetectorController,
     DetectorControllerT,
@@ -12,7 +27,7 @@ from ._flyer import FlyerController, StandardFlyer
 from ._hdf_dataset import HDFDataset, HDFFile
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
-from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
+from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable, Watcher
 from ._providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
@@ -72,6 +87,7 @@ from ._utils import (
     SubsetEnum,
     T,
     WatcherUpdate,
+    gather_dict,
     get_dtype,
     get_enum_cls,
     get_unique,
@@ -154,6 +170,7 @@ __all__ = [
     "Table",
     "T",
     "WatcherUpdate",
+    "gather_dict",
     "get_dtype",
     "get_enum_cls",
     "get_unique",
@@ -161,4 +178,5 @@ __all__ = [
     "wait_for_connection",
     "completed_status",
     "YamlSettingsProvider",
+    "Watcher",
 ]

@@ -2,6 +2,7 @@ import asyncio
 import time
 from contextlib import AbstractContextManager
 from typing import Any
+from unittest.mock import Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -12,8 +13,11 @@ from ophyd_async.core import (
     AsyncReadable,
     SignalDatatypeT,
     SignalR,
+    T,
     Table,
+    Watcher,
 )
+from ophyd_async.core._status import WatchableAsyncStatus
 
 
 def approx_value(value: Any):
@@ -21,20 +25,14 @@ def approx_value(value: Any):
 
 
 async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
-    """Assert a signal's value and compare it an expected signal.
+    """Assert that a Signal has the given value.
 
     Parameters
     ----------
     signal:
-        signal with get_value.
+        Signal with get_value.
     value:
         The expected value from the signal.
-
-    Notes
-    -----
-    Example usage::
-        await assert_value(signal, value)
-
     """
     actual_value = await signal.get_value()
     assert approx_value(value) == actual_value
@@ -43,21 +41,14 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 async def assert_reading(
     readable: AsyncReadable, expected_reading: dict[str, Reading]
 ) -> None:
-    """Assert readings from readable.
+    """Assert that a readable Device has the given reading.
 
     Parameters
     ----------
     readable:
-        Callable with readable.read function that generate readings.
-
+        Device with an async ``read()`` method to get the reading from.
     reading:
-        The expected readings from the readable.
-
-    Notes
-    -----
-    Example usage::
-        await assert_reading(readable, reading)
-
+        The expected reading from the readable.
     """
     actual_reading = await readable.read()
     approx_expected_reading = {
@@ -71,21 +62,15 @@ async def assert_configuration(
     configurable: AsyncConfigurable,
     configuration: dict[str, Reading],
 ) -> None:
-    """Assert readings from Configurable.
+    """Assert that a configurable Device has the given configuration.
 
     Parameters
     ----------
     configurable:
-        Configurable with Configurable.read function that generate readings.
-
+        Device with an async ``read_configuration()`` method to get the configuration
+        from.
     configuration:
-        The expected readings from configurable.
-
-    Notes
-    -----
-    Example usage::
-        await assert_configuration(configurable configuration)
-
+        The expected configuration from the configurable.
     """
     actual_configuration = await configurable.read_configuration()
     approx_expected_configuration = {
@@ -108,15 +93,15 @@ def assert_emitted(docs: dict[str, list[dict]], **numbers: int):
 
     Parameters
     ----------
-    Doc:
-        A dictionary
-
+    docs:
+        A mapping of document type -> list of documents that have been emitted.
     numbers:
-        expected emission in kwarg from
+        The number of each document type expected.
 
-    Notes
-    -----
-    Example usage::
+    Examples
+    --------
+    .. code::
+
         docs = defaultdict(list)
         RE.subscribe(lambda name, doc: docs[name].append(doc))
         RE(my_plan())
@@ -174,3 +159,44 @@ class MonitorQueue(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.signal.clear_sub(self.updates.put_nowait)
+
+
+class StatusWatcher(Watcher[T]):
+    """Watches an `AsyncStatus`, storing the calls within."""
+
+    def __init__(self, status: WatchableAsyncStatus) -> None:
+        self._event = asyncio.Event()
+        self._mock = Mock()
+        status.watch(self._mock)
+
+    def __call__(
+        self,
+        current: T | None = None,
+        initial: T | None = None,
+        target: T | None = None,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: int | None = None,
+        fraction: float | None = None,
+        time_elapsed: float | None = None,
+        time_remaining: float | None = None,
+    ) -> Any:
+        self._mock(
+            current=current,
+            initial=initial,
+            target=target,
+            name=name,
+            unit=unit,
+            precision=precision,
+            fraction=fraction,
+            time_elapsed=time_elapsed,
+            time_remaining=time_remaining,
+        )
+        self._event.set()
+
+    async def wait_for_call(self, *args, **kwargs):
+        await asyncio.wait_for(self._event.wait(), timeout=1)
+        assert self._mock.call_count == 1
+        assert self._mock.call_args == call(*args, **kwargs)
+        self._mock.reset_mock()
+        self._event.clear()
