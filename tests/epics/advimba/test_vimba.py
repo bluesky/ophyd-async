@@ -88,7 +88,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_advimba.describe() == {
         "test_advimba1": {
             "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [1, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -96,6 +96,7 @@ async def test_decribe_describes_writer_dataset(
     }
 
 
+@pytest.mark.parametrize("one_shot_trigger_info", [1, 2, 10, 100], indirect=True)
 async def test_can_collect(
     test_advimba: advimba.VimbaDetector,
     static_path_provider: PathProvider,
@@ -118,7 +119,6 @@ async def test_can_collect(
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
         "swmr": False,
-        "multiplier": 1,
         "chunk_shape": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
@@ -128,6 +128,7 @@ async def test_can_collect(
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
 
 
+@pytest.mark.parametrize("one_shot_trigger_info", [1, 2, 10, 100], indirect=True)
 async def test_can_decribe_collect(
     test_advimba: advimba.VimbaDetector, one_shot_trigger_info: TriggerInfo
 ):
@@ -137,7 +138,7 @@ async def test_can_decribe_collect(
     assert (await test_advimba.describe_collect()) == {
         "test_advimba1": {
             "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [one_shot_trigger_info.frames_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
