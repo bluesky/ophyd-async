@@ -9,10 +9,9 @@ from typing import Generic
 import numpy as np
 import numpy.typing as npt
 import pytest
-from bluesky.protocols import Reading
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalBackend, SignalR, SignalRW, SignalW, SignalX, T
+from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.tango.core import (
     TangoSignalBackend,
     tango_signal_r,
@@ -20,6 +19,7 @@ from ophyd_async.tango.core import (
     tango_signal_w,
     tango_signal_x,
 )
+from ophyd_async.testing import MonitorQueue
 from tango import AttrDataFormat, AttrWriteType, DevState
 from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import set_global_executor
@@ -79,39 +79,52 @@ for type_name, tango_type_name, py_type, values in BASE_TYPES_SET:
     # pytango test utils currently fail to handle bool pytest.approx
     if type_name == "boolean":
         continue
-    ATTRIBUTES_SET.extend(
-        [
-            AttributeData(
-                f"{type_name}_scalar_attr",
-                tango_type_name,
-                AttrDataFormat.SCALAR,
-                py_type,
-                choice(values),
-                choice(values),
-            ),
-            AttributeData(
-                f"{type_name}_spectrum_attr",
-                tango_type_name,
-                AttrDataFormat.SPECTRUM,
-                npt.NDArray[py_type],
-                [choice(values), choice(values), choice(values)],
-                [choice(values), choice(values), choice(values)],
-            ),
-            AttributeData(
-                f"{type_name}_image_attr",
-                tango_type_name,
-                AttrDataFormat.IMAGE,
-                npt.NDArray[py_type],
+    ATTRIBUTES_SET.append(
+        AttributeData(
+            f"{type_name}_scalar_attr",
+            tango_type_name,
+            AttrDataFormat.SCALAR,
+            py_type,
+            choice(values),
+            choice(values),
+        )
+    )
+    ATTRIBUTES_SET.append(
+        AttributeData(
+            f"{type_name}_spectrum_attr",
+            tango_type_name,
+            AttrDataFormat.SPECTRUM,
+            npt.NDArray[py_type],
+            [choice(values), choice(values), choice(values)],
+            [choice(values), choice(values), choice(values)],
+        )
+    )
+
+    if type_name in ["state", "enum"]:
+        # TODO: state image and enum images don't currently work with assert_value etc
+        continue
+
+    ATTRIBUTES_SET.append(
+        AttributeData(
+            f"{type_name}_image_attr",
+            tango_type_name,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[py_type],
+            np.array(
                 [
                     [choice(values), choice(values), choice(values)],
                     [choice(values), choice(values), choice(values)],
                 ],
+                dtype=py_type,
+            ),
+            np.array(
                 [
                     [choice(values), choice(values), choice(values)],
                     [choice(values), choice(values), choice(values)],
                 ],
+                dtype=py_type,
             ),
-        ]
+        ),
     )
 
     if tango_type_name == "DevUChar":
@@ -278,33 +291,6 @@ async def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
 
 
 # --------------------------------------------------------------------
-class MonitorQueue:
-    def __init__(self, backend: SignalBackend):
-        self.updates: asyncio.Queue[Reading] = asyncio.Queue()
-        self.backend = backend
-        self.subscription = backend.set_callback(self.updates.put_nowait)
-
-    async def assert_updates(self, expected_value):
-        expected_reading = {
-            "timestamp": pytest.approx(time.time(), rel=0.1),
-            "alarm_severity": 0,
-        }
-        update_reading = dict(await asyncio.wait_for(self.updates.get(), timeout=5))
-        update_value = update_reading.pop("value")
-        assert_close(update_value, expected_value)
-        backend_reading = dict(
-            await asyncio.wait_for(self.backend.get_reading(), timeout=5)
-        )
-        backend_reading.pop("value")
-        backend_value = await asyncio.wait_for(self.backend.get_value(), timeout=5)
-        assert_close(backend_value, expected_value)
-        assert update_reading == expected_reading == backend_reading
-
-    def close(self):
-        self.backend.set_callback(None)
-
-
-# --------------------------------------------------------------------
 async def assert_monitor_then_put(
     echo_device: str,
     pv: str,
@@ -315,10 +301,11 @@ async def assert_monitor_then_put(
 ):
     await prepare_device(echo_device, pv, initial_value)
     source = echo_device + "/" + pv
-    backend = await make_backend(datatype, source, allow_events=True)
+    signal = tango_signal_rw(datatype, source)
+    backend = signal._connector.backend
+    await signal.connect()
     # Make a monitor queue that will monitor for updates
-    q = MonitorQueue(backend)
-    try:
+    with MonitorQueue(signal) as q:
         assert dict(source=source, **descriptor) == await backend.get_datakey("")
         # Check initial value
         await q.assert_updates(initial_value)
@@ -326,8 +313,6 @@ async def assert_monitor_then_put(
         await backend.put(put_value, wait=True)
         assert_close(put_value, await backend.get_setpoint())
         await q.assert_updates(put_value)
-    finally:
-        q.close()
 
 
 # --------------------------------------------------------------------
