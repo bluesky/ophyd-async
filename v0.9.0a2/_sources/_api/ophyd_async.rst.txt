@@ -1,0 +1,32 @@
+﻿.. note::
+
+    Ophyd async is considered experimental until the v1.0 release and
+    may change API on minor release numbers before then
+
+``ophyd_async``
+===============
+
+.. automodule:: ophyd_async
+    :members:
+
+    
+    
+    .. rubric:: Submodules
+
+    .. autosummary::
+        :toctree:
+        :template: custom-module-template.rst
+        :recursive:
+    
+        ophyd_async.core
+        ophyd_async.epics
+        ophyd_async.fastcs
+        ophyd_async.plan_stubs
+        ophyd_async.sim
+        ophyd_async.tango
+    
+    
+
+    
+    
+    
