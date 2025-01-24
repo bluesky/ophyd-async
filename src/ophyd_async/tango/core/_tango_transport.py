@@ -4,7 +4,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, ParamSpec, TypeVar, cast
+from typing import Any, Generic, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -16,6 +16,7 @@ from ophyd_async.core import (
     NotConnected,
     SignalBackend,
     SignalDatatypeT,
+    StrictEnum,
     get_dtype,
     get_unique,
     wait_for_connection,
@@ -628,6 +629,31 @@ async def get_tango_trl(
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
 
+class TangoConverter(Generic[SignalDatatypeT]):
+    def write_value(self, value: Any) -> Any:
+        return value
+
+    def value(self, value: Any) -> Any:
+        return value
+
+
+class TangoEnumConverter(TangoConverter):
+    def __init__(self, enum_cls: type[StrictEnum]):
+        self.enum_elements = list(enum_cls)
+
+    def write_value(self, value: StrictEnum):
+        return self.enum_elements.index(value)
+
+    def value(self, value: int):
+        return self.enum_elements[value]
+
+
+def make_converter(datatype: type | None) -> TangoConverter:
+    if datatype is not None and issubclass(datatype, StrictEnum):
+        return TangoEnumConverter(datatype)
+    return TangoConverter()
+
+
 class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     """Tango backend to connect signals over tango."""
 
@@ -655,6 +681,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
         self.support_events: bool = True
         self.status: AsyncStatus | None = None
+        self.converter = make_converter(datatype)
         super().__init__(datatype)
 
     @classmethod
@@ -705,6 +732,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
 
     async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None) -> None:
+        value = self.converter.write_value(value)
         if self.proxies[self.write_trl] is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
         self.status = None
@@ -725,7 +753,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         proxy = self.proxies[self.read_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
-        return cast(SignalDatatypeT, await proxy.get())
+        value = await proxy.get()
+        return cast(SignalDatatypeT, self.converter.value(value))
 
     async def get_setpoint(self) -> SignalDatatypeT:
         if self.proxies[self.write_trl] is None:
@@ -733,7 +762,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         proxy = self.proxies[self.write_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
-        return cast(SignalDatatypeT, await proxy.get_w_value())
+        w_value = await proxy.get_w_value()
+        return cast(SignalDatatypeT, self.converter.value(w_value))
 
     def set_callback(self, callback: Callback | None) -> None:
         if self.proxies[self.read_trl] is None:
