@@ -406,6 +406,19 @@ async def test_writing_to_ndarray_raises_typeerror(ioc_devices: EpicsTestIocAndD
         await signal.set(np.zeros((6,), dtype=np.int64))
 
 
+async def test_invalid_enum_choice_raises_valueerror(
+    ioc_devices: EpicsTestIocAndDevices,
+):
+    signal = ioc_devices.ca_device.enum_str_fallback
+    await signal.connect()
+    with pytest.raises(ValueError) as exc:
+        await signal.set("Ddd")
+    assert "Ddd is not a valid choice for" in str(exc.value)
+    assert "ca:enum_str_fallback, valid choices: ['Aaa', 'Bbb', 'Ccc']" in str(
+        exc.value
+    )
+
+
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_error_raised_on_disconnected_PV(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol

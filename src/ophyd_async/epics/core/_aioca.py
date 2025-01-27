@@ -293,13 +293,27 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             write_value = self.initial_values[self.write_pv]
         else:
             write_value = self.converter.write_value(value)
-        await caput(
-            self.write_pv,
-            write_value,
-            datatype=self.converter.write_dbr,
-            wait=wait,
-            timeout=None,
-        )
+        try:
+            await caput(
+                self.write_pv,
+                write_value,
+                datatype=self.converter.write_dbr,
+                wait=wait,
+                timeout=None,
+            )
+        except CANothing as exc:
+            # If we ran into a write error, check to see if there is a list
+            # of valid choices, and if the value we tried to write is in that list.
+            valid_choices = self.converter.metadata.get("choices")
+            if valid_choices is not None and len(valid_choices) > 0:
+                if value not in valid_choices:
+                    msg = (
+                        f"{value} is not a valid choice for {self.write_pv}, "
+                        f"valid choices: {self.converter.metadata.get('choices')}"
+                    )
+                    raise ValueError(msg) from exc
+            else:
+                raise
 
     async def get_datakey(self, source: str) -> DataKey:
         value = await self._caget(self.read_pv, FORMAT_CTRL)
