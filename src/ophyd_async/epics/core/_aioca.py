@@ -312,6 +312,8 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
                         f"valid choices: {self.converter.metadata.get('choices')}"
                     )
                     raise ValueError(msg) from exc
+                else:
+                    raise
             else:
                 raise
 
