@@ -1,4 +1,5 @@
 import time
+from math import ceil
 from typing import Any, Literal
 
 import numpy as np
@@ -14,10 +15,12 @@ from ophyd_async.core import (
 from ophyd_async.epics.pmac import Pmac, PmacMotor
 
 TICK_S = 0.000001
+MAX_MOVE_TIME = 4.0
 
 
 class PmacTrajInfo(BaseModel):
     spec: Spec[PmacMotor | Literal["DURATION"]] = Field(default=None)
+    combine_linear_points: bool = Field(default=False)
 
 
 class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
@@ -30,7 +33,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
     async def prepare(self, value: PmacTrajInfo):
         # initialise use_axis values to False
         for i in range(len("ABCUVWXYZ")):
-            self.pmac.use_axis[i + 1].set(False)
+            await self.pmac.use_axis[i + 1].set(False)
 
         path = Path(value.spec.calculate())
         chunk = path.consume()
@@ -94,32 +97,68 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                 user_array[start] = 1
                 user_array[start + 1] = 1
         start = 1
+        profile_index = 2 * start
         for gap in gaps:
-            profile_start = (2 * start) + added_point
+            profile_start = profile_index
             profile_gap = (2 * gap) + added_point
             for axis in scan_axes:
-                if axis != "DURATION":
-                    # Interleave Midpoints and upper points into position array
-                    positions[cs_axes[axis]][profile_start:profile_gap:2] = (
-                        chunk.midpoints[axis][start:gap]
-                    )
-                    positions[cs_axes[axis]][profile_start + 1 : profile_gap : 2] = (
-                        chunk.upper[axis][start:gap]
-                    )
-                    # Duplicate velocity values for interleaved positions
-                    velocities[cs_axes[axis]][profile_start:profile_gap] = np.repeat(
-                        (chunk.upper[axis][start:gap] - chunk.lower[axis][start:gap])
-                        / chunk.midpoints["DURATION"][start:gap],
-                        2,
-                        axis=0,
-                    )
+                if value.combine_linear_points:
+                    liner_move_time = sum(chunk.midpoints["DURATION"][start:gap])
+                    if liner_move_time > MAX_MOVE_TIME:
+                        nsplit = int(liner_move_time / MAX_MOVE_TIME) + 1
+                    else:
+                        nsplit = 2
+                    linear_step = (
+                        chunk.upper[axis][gap - 1] - chunk.midpoints[axis][start]
+                    ) / nsplit
+                    if axis != "DURATION":
+                        for index in range(nsplit):
+                            positions[cs_axes[axis]][profile_start + index] = (
+                                chunk.midpoints[axis][start]
+                                + (linear_step * (index + 1))
+                            )
+                        velocities[cs_axes[axis]][
+                            profile_start : profile_start + nsplit
+                        ] = np.repeat(
+                            (chunk.upper[axis][start] - chunk.lower[axis][start])
+                            / chunk.midpoints["DURATION"][start],
+                            nsplit,
+                        )
+                    else:
+                        time_array[profile_start : profile_start + nsplit] = ceil(
+                            liner_move_time / ((nsplit) * TICK_S)
+                        )
+                        user_array[profile_start : profile_start + nsplit] = 1
+                    profile_index = profile_start + nsplit
                 else:
-                    # Half the time per point and duplicate the values
-                    # for interleaved positions
-                    time_array[profile_start:profile_gap] = np.repeat(
-                        chunk.midpoints["DURATION"][start:gap] / (2 * TICK_S), 2
-                    )
-                    user_array[profile_start:profile_gap] = 1
+                    if axis != "DURATION":
+                        # Interleave Midpoints and upper points into position array
+                        positions[cs_axes[axis]][profile_start:profile_gap:2] = (
+                            chunk.midpoints[axis][start:gap]
+                        )
+                        positions[cs_axes[axis]][
+                            profile_start + 1 : profile_gap : 2
+                        ] = chunk.upper[axis][start:gap]
+                        # Duplicate velocity values for interleaved positions
+                        velocities[cs_axes[axis]][profile_start:profile_gap] = (
+                            np.repeat(
+                                (
+                                    chunk.upper[axis][start:gap]
+                                    - chunk.lower[axis][start:gap]
+                                )
+                                / chunk.midpoints["DURATION"][start:gap],
+                                2,
+                                axis=0,
+                            )
+                        )
+                    else:
+                        # Half the time per point and duplicate the values
+                        # for interleaved positions
+                        time_array[profile_start:profile_gap] = np.repeat(
+                            chunk.midpoints["DURATION"][start:gap] / (2 * TICK_S), 2
+                        )
+                        user_array[profile_start:profile_gap] = 1
+                    profile_index = profile_gap
             if gap < scan_size:
                 # Create Position, velocity and time arrays for the gap
                 pos_gap, vel_gap, time_gap = await get_gap_profile(chunk, gap)
@@ -127,25 +166,26 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                 for axis in scan_axes:
                     if axis != "DURATION":
                         positions[cs_axes[axis]][
-                            profile_gap : profile_gap + len_gap
+                            profile_index : profile_index + len_gap
                         ] = pos_gap[axis]
                         velocities[cs_axes[axis]][
-                            profile_gap : profile_gap + len_gap
+                            profile_index : profile_index + len_gap
                         ] = vel_gap[axis]
 
                     else:
-                        time_array[profile_gap : profile_gap + len_gap] = time_gap
-                        user_array[profile_gap : profile_gap + len_gap - 1] = 2
-                        user_array[profile_gap + len_gap - 1] = 1
+                        time_array[profile_index : profile_index + len_gap] = time_gap
+                        user_array[profile_index : profile_index + len_gap - 1] = 2
+                        user_array[profile_index + len_gap - 1] = 1
 
                 added_point += len_gap
+                profile_index += len_gap
             start = gap
 
         # Calculate Starting and end Position to allow ramp up and trail off velocity
         self.initial_pos = {}
         run_up_time = 0
         final_time = 0
-        profile_length = 2 * scan_size + added_point
+        profile_length = profile_index
         for axis in scan_axes:
             if axis != "DURATION":
                 run_up_disp, run_up_t = await ramp_up_velocity_pos(
@@ -181,8 +221,8 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
         self.scantime += run_up_time + final_time
         time_array[0] = int(run_up_time / TICK_S)
-        time_array[(profile_length)] = int(final_time / TICK_S)
-        user_array[(profile_length)] = 8
+        time_array[profile_length] = int(final_time / TICK_S)
+        user_array[profile_length] = 8
         profile_length += 1
 
         for axis in scan_axes:
@@ -212,7 +252,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
     async def kickoff(self):
         self.status = await self.pmac.execute_profile.set(
-            True, timeout=self.scantime + 10
+            True, timeout=self.scantime + 1
         )
 
     async def stop(self):
@@ -220,7 +260,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
     async def complete(self):
         await wait_for_value(
-            self.pmac.execute_profile, False, timeout=self.scantime + 10
+            self.pmac.execute_profile, False, timeout=self.scantime + 11
         )
 
     async def get_cs_info(self, motor: PmacMotor) -> tuple[str, int]:
