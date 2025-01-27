@@ -305,7 +305,7 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             # If we ran into a write error, check to see if there is a list
             # of valid choices, and if the value we tried to write is in that list.
             valid_choices = self.converter.metadata.get("choices")
-            if valid_choices is not None and len(valid_choices) > 0:
+            if valid_choices:
                 if value not in valid_choices:
                     msg = (
                         f"{value} is not a valid choice for {self.write_pv}, "
