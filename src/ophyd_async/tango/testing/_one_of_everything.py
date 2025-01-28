@@ -90,8 +90,8 @@ _initial_values = {
     AttrDataFormat.SCALAR: {
         "str": "test_string",
         "bool": True,
-        # "enum": ExampleIntEnum.B,
-        # "strenum": ExampleStrEnum.B,
+        "enum": ExampleIntEnum.B,
+        "strenum": 1,  # Tango devices must use ints for enums
         "int8": 1,
         "uint8": 1,
         "int16": 1,
@@ -106,8 +106,8 @@ _initial_values = {
     AttrDataFormat.SPECTRUM: {
         "str": ["one", "two", "three"],
         "bool": [False, True],
-        # "enum": [ExampleIntEnum.A, ExampleIntEnum.C],
-        # "strenum": [ExampleStrEnum.A, ExampleStrEnum.C],
+        "enum": [ExampleIntEnum.A, ExampleIntEnum.C],
+        "strenum": [0, 1, 2],  # Tango devices must use ints for enums
         "int8": int_spectrum_value(np.int8),
         "uint8": int_spectrum_value(np.uint8),
         "int16": int_spectrum_value(np.int16),
@@ -122,8 +122,12 @@ _initial_values = {
     AttrDataFormat.IMAGE: {
         # "str": # TODO
         # "bool": # TODO
-        # "enum": # TODO
-        # "strenum": # TODO
+        "enum": np.array(
+            [[ExampleIntEnum.A, ExampleIntEnum.C], [ExampleIntEnum.A, ExampleIntEnum.C]]
+        ),
+        "strenum": np.array(
+            [[0, 1, 2], [0, 1, 2]]
+        ),  # Tango devices must use ints for enums
         "int8": int_image_value(np.int8),
         "uint8": int_image_value(np.uint8),
         "int16": int_image_value(np.int16),
