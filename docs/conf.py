@@ -39,6 +39,7 @@ extensions = [
     "sphinxcontrib.autodoc_pydantic",
     # Use this for generating API docs
     "sphinx.ext.autodoc",
+    "sphinx_autodoc_typehints",
     # Not sure if this is still used?
     "sphinx.ext.doctest",
     # and making summary tables at the top of API docs
@@ -90,6 +91,16 @@ nitpick_ignore = [
     # typing
     ("py:class", "typing_extensions.Literal"),
 ]
+
+# Regex ignore for anything ending in capital T (typevar).
+# Needed until this is solved https://github.com/sphinx-doc/sphinx/issues/10974
+# nitpick_ignore_regex = [("py:class", r".*T$")]
+
+autodoc_default_options = {
+    "undoc": True,
+    "undoc-members": True,
+    "private-members": True,
+}
 
 # Order the members by the order they appear in the source code
 autodoc_member_order = "bysource"
