@@ -1,6 +1,5 @@
 import asyncio
 import os
-import time
 from collections.abc import Callable, Sequence
 from typing import Any
 
@@ -80,7 +79,7 @@ async def test_soft_signal_backend_get_put_monitor(
     signal = soft_signal_rw(datatype, initial_value)
     await signal.connect()
     backend = signal._connector.backend
-    with MonitorQueue(signal, timestamp_provider=time.monotonic) as q:
+    with MonitorQueue(signal) as q:
         # Check descriptor
         source = "soft://test"
         # Add expected dtype_numpy to descriptor

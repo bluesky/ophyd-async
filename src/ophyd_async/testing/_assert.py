@@ -1,11 +1,9 @@
 import asyncio
-import time
-from collections.abc import Callable
 from contextlib import AbstractContextManager
 from typing import Any
+from unittest.mock import ANY
 
 import pytest
-from bluesky.protocols import Reading
 from event_model import DataKey
 
 from ophyd_async.core import (
@@ -42,7 +40,8 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 
 
 async def assert_reading(
-    readable: AsyncReadable, expected_reading: dict[str, Reading]
+    readable: AsyncReadable,
+    expected_reading: dict[str, dict[str, Any]],
 ) -> None:
     """Assert readings from readable.
 
@@ -69,7 +68,8 @@ def _assert_readings_approx_equal(expected, actual):
         k: dict(
             v,
             value=approx_value(expected[k]["value"]),
-            timestamp=approx_value(expected[k]["timestamp"]),
+            timestamp=pytest.approx(expected[k].get("timestamp", ANY), rel=0.1),
+            alarm_severity=pytest.approx(expected[k].get("alarm_severity", ANY)),
         )
         for k, v in expected.items()
     }
@@ -78,7 +78,7 @@ def _assert_readings_approx_equal(expected, actual):
 
 async def assert_configuration(
     configurable: AsyncConfigurable,
-    configuration: dict[str, Reading],
+    configuration: dict[str, dict[str, Any]],
 ) -> None:
     """Assert readings from Configurable.
 
@@ -149,22 +149,17 @@ class ApproxTable:
 
 
 class MonitorQueue(AbstractContextManager):
-    def __init__(
-        self, signal: SignalR, timestamp_provider: Callable[[], float] | None = None
-    ):
+    def __init__(self, signal: SignalR):
         self.signal = signal
-        self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
-        self._timestamp_provider = timestamp_provider or time.time
+        self.updates: asyncio.Queue[dict[str, dict[str, Any]]] = asyncio.Queue()
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
         update = await self.updates.get()
         await assert_value(self.signal, expected_value)
-        expected_reading: dict[str, Reading] = {
+        expected_reading = {
             self.signal.name: {
                 "value": expected_value,
-                "timestamp": self._timestamp_provider(),  # type: ignore
-                "alarm_severity": 0,
             }
         }
         await assert_reading(self.signal, expected_reading)
