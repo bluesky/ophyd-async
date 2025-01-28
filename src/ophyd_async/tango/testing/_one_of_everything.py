@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import Enum, IntEnum
 
 import numpy as np
 
@@ -7,26 +7,14 @@ from ophyd_async.core import (
     DTypeScalar_co,
     StrictEnum,
 )
-from ophyd_async.testing import (
-    ExampleEnum,
-)
 from tango import AttrDataFormat, AttrWriteType
 from tango.server import Device, attribute
 
 
 class ExampleStrEnum(StrictEnum):
-    A = "Aaa"
-    B = "Bbb"
-    C = "Ccc"
-
-
-class ExampleIntEnum(IntEnum):
-    A = 0
-    B = 1
-    C = 2
-
-
-# We don't have tables in tango, though we do have (unsupported) pipes
+    A = "AAA"
+    B = "BBB"
+    C = "CCC"
 
 
 def int_spectrum_value(
@@ -90,7 +78,6 @@ _initial_values = {
     AttrDataFormat.SCALAR: {
         "str": "test_string",
         "bool": True,
-        "enum": ExampleIntEnum.B,
         "strenum": 1,  # Tango devices must use ints for enums
         "int8": 1,
         "uint8": 1,
@@ -106,7 +93,6 @@ _initial_values = {
     AttrDataFormat.SPECTRUM: {
         "str": ["one", "two", "three"],
         "bool": [False, True],
-        "enum": [ExampleIntEnum.A, ExampleIntEnum.C],
         "strenum": [0, 1, 2],  # Tango devices must use ints for enums
         "int8": int_spectrum_value(np.int8),
         "uint8": int_spectrum_value(np.uint8),
@@ -122,9 +108,6 @@ _initial_values = {
     AttrDataFormat.IMAGE: {
         # "str": # TODO
         # "bool": # TODO
-        "enum": np.array(
-            [[ExampleIntEnum.A, ExampleIntEnum.C], [ExampleIntEnum.A, ExampleIntEnum.C]]
-        ),
         "strenum": np.array(
             [[0, 1, 2], [0, 1, 2]]
         ),  # Tango devices must use ints for enums
@@ -156,6 +139,10 @@ class OneOfEverythingTangoDevice(Device):
             for prefix, value in initial_values.items():
                 name = prefix + suffix
                 self.attr_values[name] = value
+                if prefix == "strenum":
+                    labels = [e.value for e in ExampleStrEnum]
+                else:
+                    labels = []
                 attr = attribute(
                     name=name,
                     dtype=_dtypes[prefix],
@@ -165,7 +152,7 @@ class OneOfEverythingTangoDevice(Device):
                     fset=self.write,
                     max_dim_x=100,
                     max_dim_y=2,
-                    enum_labels=[member.name for member in ExampleEnum],
+                    enum_labels=labels,
                 )
                 self.add_attribute(attr)
                 self.set_change_event(name, True, False)

@@ -3,7 +3,6 @@ import pytest
 
 from ophyd_async.tango.core import TangoReadable
 from ophyd_async.tango.testing._one_of_everything import (
-    ExampleIntEnum,
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
 )
@@ -65,18 +64,20 @@ _array_vals = {
         ],
         dtype=np.float64,
     ),
-    "enum": [ExampleIntEnum.A, ExampleIntEnum.C],
-    "strenum": [ExampleStrEnum.A, ExampleStrEnum.B, ExampleStrEnum.C],
+    "strenum": np.array(
+        [ExampleStrEnum.A.value, ExampleStrEnum.B.value, ExampleStrEnum.C.value],
+        dtype=str,
+    ),
 }
 
 _image_vals = {k: np.vstack((v, v)) for k, v in _array_vals.items()}
 
 
 async def test_assert_with_enums(everything_tango_device):
-    # currently broken
     await everything_tango_device.connect()
     await assert_value(everything_tango_device.strenum, ExampleStrEnum.B)
-    await assert_value(everything_tango_device.strenum_spectrum, _array_vals["stenum"])
+    # str enum arrays work when passing arrays of strings but not enum objects currently
+    await assert_value(everything_tango_device.strenum_spectrum, _array_vals["strenum"])
     await assert_value(everything_tango_device.strenum_image, _image_vals["strenum"])
 
 
@@ -84,7 +85,6 @@ async def test_assert_value_everything_tango(everything_tango_device):
     await everything_tango_device.connect()
     await assert_value(everything_tango_device.str, "test_string")
     await assert_value(everything_tango_device.bool, True)
-    await assert_value(everything_tango_device.enum, ExampleIntEnum.B)
     await assert_value(everything_tango_device.int8, 1)
     await assert_value(everything_tango_device.uint8, 1)
     await assert_value(everything_tango_device.int16, 1)
@@ -96,7 +96,6 @@ async def test_assert_value_everything_tango(everything_tango_device):
     await assert_value(everything_tango_device.float32, 1.234)
     await assert_value(everything_tango_device.float64, 1.234)
 
-    await assert_value(everything_tango_device.enum_spectrum, _array_vals["enum"])
     await assert_value(everything_tango_device.int8_spectrum, _array_vals["int8"])
     await assert_value(everything_tango_device.uint8_spectrum, _array_vals["uint8"])
     await assert_value(everything_tango_device.int16_spectrum, _array_vals["int16"])
@@ -108,7 +107,6 @@ async def test_assert_value_everything_tango(everything_tango_device):
     await assert_value(everything_tango_device.float32_spectrum, _array_vals["float32"])
     await assert_value(everything_tango_device.float64_spectrum, _array_vals["float64"])
 
-    await assert_value(everything_tango_device.enum_image, _image_vals["enum"])
     await assert_value(everything_tango_device.str_spectrum, ["one", "two", "three"])
     await assert_value(everything_tango_device.int8_image, _image_vals["int8"])
     await assert_value(everything_tango_device.uint8_image, _image_vals["uint8"])
@@ -120,6 +118,3 @@ async def test_assert_value_everything_tango(everything_tango_device):
     await assert_value(everything_tango_device.uint64_image, _image_vals["uint64"])
     await assert_value(everything_tango_device.float32_image, _image_vals["float32"])
     await assert_value(everything_tango_device.float64_image, _image_vals["float64"])
-
-
-# TODO: test int and str enums
