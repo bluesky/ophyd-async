@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import itertools
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
@@ -638,19 +639,41 @@ class TangoConverter(Generic[SignalDatatypeT]):
 
 
 class TangoEnumConverter(TangoConverter):
-    def __init__(self, enum_cls: type[StrictEnum]):
-        self.enum_elements = list(enum_cls)
+    def __init__(self, labels: list[str]):
+        self._labels = labels
 
     def write_value(self, value: StrictEnum):
-        return self.enum_elements.index(value)
+        return self._labels.index(value)
 
     def value(self, value: int):
-        return self.enum_elements[value]
+        return self._labels[value]
 
 
-def make_converter(datatype: type | None) -> TangoConverter:
-    if datatype is not None and issubclass(datatype, StrictEnum):
-        return TangoEnumConverter(datatype)
+class TangoEnumArrayConverter(TangoEnumConverter):
+    def write_value(self, value: np.ndarray[Any, StrictEnum]):
+        # should return array of ints
+        cast_to_int_array = np.vectorize(self._labels.index)
+        result = cast_to_int_array(value)
+        return result
+
+    def value(self, value: np.ndarray[Any, int]):
+        # should return array of strs
+        if len(value.shape) == 1:  # spectrum
+            array = np.array([self._labels[v] for v in value])
+        else:  # image
+            array = np.vstack([[self._labels[v] for v in row] for row in value])
+        return array
+
+
+def make_converter(info: AttributeInfoEx | CommandInfo) -> TangoConverter:
+    if isinstance(info, AttributeInfoEx):
+        if info.enum_labels:  # enum_labels should be discarded for non enum types
+            if info.data_format == AttrDataFormat.SCALAR:
+                return TangoEnumConverter(info.enum_labels)
+            else:
+                return TangoEnumArrayConverter(info.enum_labels)
+
+    # default case return trivial converter
     return TangoConverter()
 
 
@@ -681,7 +704,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
         self.support_events: bool = True
         self.status: AsyncStatus | None = None
-        self.converter = make_converter(datatype)
+        self.converter = TangoConverter()  # gets replaced at connect
         super().__init__(datatype)
 
     @classmethod
@@ -727,6 +750,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             # The same, so only need to connect one
             await self._connect_and_store_config(self.read_trl, timeout)
         self.proxies[self.read_trl].set_polling(*self._polling)  # type: ignore
+        self.converter = make_converter(self.trl_configs[self.read_trl])
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
         )
