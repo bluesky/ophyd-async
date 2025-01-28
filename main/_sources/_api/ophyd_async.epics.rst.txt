@@ -18,6 +18,7 @@
         :template: custom-module-template.rst
         :recursive:
     
+        ophyd_async.epics.adandor
         ophyd_async.epics.adaravis
         ophyd_async.epics.adcore
         ophyd_async.epics.adkinetix

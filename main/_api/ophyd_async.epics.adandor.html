@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.advimba &#8212; ophyd-async 0.9.0a3.dev1+gc867932d documentation</title>
+    <title>ophyd_async.epics.adandor &#8212; ophyd-async 0.9.0a3.dev1+gc867932d documentation</title>
   
   
   
@@ -49,7 +49,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async.epics.advimba';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async.epics.adandor';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -60,8 +60,8 @@
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ophyd_async.epics.core" href="ophyd_async.epics.core.html" />
-    <link rel="prev" title="ophyd_async.epics.adsimdetector" href="ophyd_async.epics.adsimdetector.html" />
+    <link rel="next" title="ophyd_async.epics.adaravis" href="ophyd_async.epics.adaravis.html" />
+    <link rel="prev" title="ophyd_async.epics" href="ophyd_async.epics.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -414,13 +414,13 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="ophyd_async.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="ophyd_async.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adpilatus.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.advimba.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.eiger.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
@@ -495,7 +495,7 @@
     
     <li class="breadcrumb-item"><a href="ophyd_async.epics.html" class="nav-link"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></span></li>
   </ul>
 </nav>
 </div>
@@ -517,42 +517,34 @@
 <p>Ophyd async is considered experimental until the v1.0 release and
 may change API on minor release numbers before then</p>
 </div>
-<section id="module-ophyd_async.epics.advimba">
-<span id="ophyd-async-epics-advimba"></span><h1><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code><a class="headerlink" href="#module-ophyd_async.epics.advimba" title="Link to this heading">#</a></h1>
+<section id="module-ophyd_async.epics.adandor">
+<span id="ophyd-async-epics-adandor"></span><h1><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code><a class="headerlink" href="#module-ophyd_async.epics.adandor" title="Link to this heading">#</a></h1>
 <p class="rubric">Members</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaDetector" title="ophyd_async.epics.advimba.VimbaDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaDetector</span></code></a></p></td>
-<td><p>Ophyd-async implementation of an ADVimba Detector.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adandor.Andor2Detector" title="ophyd_async.epics.adandor.Andor2Detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Andor2Detector</span></code></a></p></td>
+<td><p>Andor 2 area detector device (CCD detector 56fps with full chip readout).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaController</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Andor2Controller</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaDriverIO" title="ophyd_async.epics.advimba.VimbaDriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaDriverIO</span></code></a></p></td>
-<td><p>This mirrors the interface provided by ADVimba/db/vimba.template.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaExposeOutMode</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaOnOff</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaTriggerSource</span></code></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adandor.Andor2DriverIO" title="ophyd_async.epics.adandor.Andor2DriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Andor2DriverIO</span></code></a></p></td>
+<td><p>Epics pv for andor model:DU897_BV as deployed on p99</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDetector">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_provider:</span> <span class="pre">~ophyd_async.core._providers.PathProvider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_suffix:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'cam1:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_cls:</span> <span class="pre">type[~ophyd_async.epics.adcore._core_writer.ADWriter]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'ophyd_async.epics.adcore._hdf_writer.ADHDFWriter'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileio_suffix:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugins:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~ophyd_async.epics.adcore._core_io.NDPluginBaseIO]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_sigs:</span> <span class="pre">~collections.abc.Sequence[~ophyd_async.core._signal.SignalR]</span> <span class="pre">=</span> <span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/advimba/_vimba.html#VimbaDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDetector" title="Link to this definition">#</a></dt>
-<dd><p>Ophyd-async implementation of an ADVimba Detector.</p>
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2Detector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adandor.</span></span><span class="sig-name descname"><span class="pre">Andor2Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_provider:</span> <span class="pre">~ophyd_async.core._providers.PathProvider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_suffix='cam1:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_cls:</span> <span class="pre">type[~ophyd_async.epics.adcore._core_writer.ADWriter]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'ophyd_async.epics.adcore._hdf_writer.ADHDFWriter'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileio_suffix:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_sigs:</span> <span class="pre">~collections.abc.Sequence[~ophyd_async.core._signal.SignalR]</span> <span class="pre">=</span> <span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugins:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~ophyd_async.epics.adcore._core_io.NDPluginBaseIO]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/adandor/_andor.html#Andor2Detector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2Detector" title="Link to this definition">#</a></dt>
+<dd><p>Andor 2 area detector device (CCD detector 56fps with full chip readout).
+Andor model:DU897_BV.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDriverIO">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/advimba/_vimba_io.html#VimbaDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO" title="Link to this definition">#</a></dt>
-<dd><p>This mirrors the interface provided by ADVimba/db/vimba.template.</p>
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2DriverIO">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adandor.</span></span><span class="sig-name descname"><span class="pre">Andor2DriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ophyd_async/epics/adandor/_andor_io.html#Andor2DriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2DriverIO" title="Link to this definition">#</a></dt>
+<dd><p>Epics pv for andor model:DU897_BV as deployed on p99</p>
 </dd></dl>
 
 </section>
@@ -568,20 +560,20 @@ may change API on minor release numbers before then</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.epics.adsimdetector.html"
+       href="ophyd_async.epics.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.epics.core.html"
+       href="ophyd_async.epics.adaravis.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -604,8 +596,8 @@ may change API on minor release numbers before then</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDetector"><code class="docutils literal notranslate"><span class="pre">VimbaDetector</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2Detector"><code class="docutils literal notranslate"><span class="pre">Andor2Detector</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2DriverIO"><code class="docutils literal notranslate"><span class="pre">Andor2DriverIO</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -613,7 +605,7 @@ may change API on minor release numbers before then</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/_api/ophyd_async.epics.advimba.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/_api/ophyd_async.epics.adandor.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -629,7 +621,7 @@ may change API on minor release numbers before then</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_api/ophyd_async.epics.advimba.rst.txt"
+      <li><a href="../_sources/_api/ophyd_async.epics.adandor.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>
