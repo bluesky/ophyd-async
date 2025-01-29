@@ -7,7 +7,7 @@ from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
 from ._table import Table
-from ._utils import Callback, StrictEnum, T
+from ._utils import Callback, StrictEnum
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 # To be a 1D array shape should really be tuple[int], but np.array()
@@ -82,7 +82,7 @@ class SignalBackend(Generic[SignalDatatypeT]):
         """The point that a signal was requested to move to."""
 
     @abstractmethod
-    def set_callback(self, callback: Callback[T] | None) -> None:
+    def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         """Observe changes to the current value, timestamp and severity"""
 
 

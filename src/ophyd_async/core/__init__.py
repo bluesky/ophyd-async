@@ -1,4 +1,5 @@
 """The building blocks for making devices."""
+from typing import TYPE_CHECKING
 
 from ._detector import (
     DetectorController,
@@ -72,7 +73,6 @@ from ._utils import (
     Reference,
     StrictEnum,
     SubsetEnum,
-    T,
     WatcherUpdate,
     gather_dict,
     get_dtype,
@@ -170,7 +170,6 @@ __all__ = [
     "NotConnected",
     "Reference",
     "Table",
-    "T",
     "WatcherUpdate",
     "gather_dict",
     "get_dtype",

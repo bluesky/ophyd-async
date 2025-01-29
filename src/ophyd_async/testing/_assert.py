@@ -13,11 +13,12 @@ from ophyd_async.core import (
     AsyncReadable,
     SignalDatatypeT,
     SignalR,
-    T,
     Table,
+    WatchableAsyncStatus,
     Watcher,
 )
-from ophyd_async.core._status import WatchableAsyncStatus
+
+from ._utils import T
 
 
 def approx_value(value: Any):
