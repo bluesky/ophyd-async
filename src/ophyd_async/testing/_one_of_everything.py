@@ -69,6 +69,9 @@ class OneOfEverythingDevice(StandardReadable):
             self.float = soft_signal_rw(float, 1.234)
             self.str = soft_signal_rw(str, "test_string")
             self.bool = soft_signal_rw(bool, True)
+            self.boola = soft_signal_rw(
+                Array1D[np.bool_], np.array([False, False, True])
+            )
             self.enum = soft_signal_rw(ExampleEnum, ExampleEnum.B)
             self.int8a = int_array_signal(np.int8)
             self.uint8a = int_array_signal(np.uint8)
