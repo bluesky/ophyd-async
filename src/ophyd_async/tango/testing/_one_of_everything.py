@@ -1,5 +1,3 @@
-from enum import Enum, IntEnum
-
 import numpy as np
 
 from ophyd_async.core import (
@@ -106,8 +104,8 @@ _initial_values = {
         "float64": float_spectrum_value(np.float64),
     },
     AttrDataFormat.IMAGE: {
-        # "str": # TODO
-        # "bool": # TODO
+        "str": np.array([["one", "two", "three"], ["one", "two", "three"]]),
+        "bool": np.array([[False, True], [False, True]]),
         "strenum": np.array(
             [[0, 1, 2], [0, 1, 2]]
         ),  # Tango devices must use ints for enums
