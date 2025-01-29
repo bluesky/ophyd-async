@@ -17,7 +17,7 @@ RE.subscribe(bec)
 
 # Start IOC with demo pvs in subprocess
 prefix = testing.generate_random_pv_prefix()
-demo.start_ioc_subprocess(prefix, num_channels=3)
+ioc = demo.start_ioc_subprocess(prefix, num_channels=3)
 
 # All Devices created within this block will be
 # connected and named at the end of the with block

@@ -6,7 +6,7 @@ from ophyd_async.epics.testing import TestingIOC
 HERE = Path(__file__).absolute().parent
 
 
-def start_ioc_subprocess(prefix: str, num_channels: int):
+def start_ioc_subprocess(prefix: str, num_channels: int) -> TestingIOC:
     """Start an IOC subprocess with EPICS database for sample stage and sensor
     with the same pv prefix
     """
@@ -27,3 +27,4 @@ def start_ioc_subprocess(prefix: str, num_channels: int):
     # Start IOC and register it to be stopped at exit
     ioc.start()
     atexit.register(ioc.stop)
+    return ioc

@@ -91,6 +91,7 @@ There are a few other things we may wish to do in tests:
 
 If we need to check that our Device performs correctly within a plan that calls multiple verbs, it is best to test it under an actual RunEngine. This allows you to check that when the verbs are called in the order that they are in the plan, the correct behavior occurs.
 
+(run-engine-fixture)=
 ### Create a RunEngine in a fixture
 
 First you need to define a RunEngine that could be used in any test. If you don't already have one in your project you could define one like this:

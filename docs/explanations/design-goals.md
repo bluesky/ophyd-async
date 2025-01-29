@@ -1,57 +1,67 @@
-Design Goals
-============
+# Design goals and differences with ophyd sync
 
+Ophyd-async was designed to be a library for asynchronously interfacing with hardware. As such it fulfils the same role in the bluesky ecosystem as [ophyd sync](https://github.com/bluesky/ophyd): an abstraction layer that enables experiment orchestration and data acquisition code to operate above the specifics of particular devices and control systems. This document details the design goals and the differences with ophyd sync.
 
-Parity with Ophyd
------------------
+## Asynchronous Signal access
 
-It should be possible to migrate applications that use ophyd_ to ophyd-async. Meaning it must support:
+A fundamental part of ophyd-async is [](#asyncio). This allows lightweight and deterministic control of multiple signals, making it possible to do the "put 2 PVs in parallel, then get from another PV" logic that is common in flyscanning without the performance and complexity overhead of multiple threads.
 
-- Definition of devices
-- Conformity to the bluesky protocols
-- Epics (ChannelAccess) as a backend
+For instance, the threaded version of the above looks something like this:
+```python
+def set_signal_thread(signal, value):
+    t = Thread(signal.set, value)
+    t.start()
+    return
 
-Ophyd-async should provide built-in support logic for controlling `the same set of devices as ophyd <https://blueskyproject.io/ophyd/user/reference/builtin-devices.html>`_. 
+def run():
+    t1 = set_signal_thread(signal1, value1)
+    t2 = set_signal_thread(signal2, value2)
+    t1.join()
+    t2.join()
+    value = signal3.get_value()
+```
+This gives the overhead of co-ordinating multiple OS threads, which requires events and locking for any more complicated example.
 
+Compare to the asyncio version:
+```python
+async def run():
+    await asyncio.gather(
+        signal1.set(value1),
+        signal2.set(value2)
+    )
+    value = await signal3.get_value()
+```
+This runs in a single OS thread, but has predictable interrupt behavior, allowing for a much more readable linear flow.
 
-Clean Device Definition
------------------------
+```{seealso}
+[](../how-to/interact-with-signals.md) for examples of the helpers that are easier to write with asyncio.
+```
 
-It should be easy to define devices with signals that talk to multiple backends and to cleanly organize device logic via composition.
+## Support for CA, PVA, Tango
 
-We need to be able to:
+As well as the tradition EPICS Channel Access, ophyd-async was written to allow other Control system protocols, like EPICS PV Access and Tango. An ophyd-async [](#Signal) contains no control system specific logic, but takes a [](#SignalBackend) that it uses whenever it needs to talk to the control system. Likewise at the [](#Device) level, a [](#DeviceConnector) allows control systems to fulfil the type hints of [declarative devices](./declarative-vs-procedural.md).
 
-- Separate the Device interface from the multiple pieces of logic that might use that Device in a particular way
-- Define that Signals of a particular type exist without creating them so backends like Tango or EPICS + PVI can fill them in
+```{seealso}
+[](./devices-signals-backends.md) for more information on how these fit together, and [](../tutorials/implementing-devices.md) for examples of Devices in different control systems.
+```
 
+## Clean Device Definition
 
-Parity with Malcolm
--------------------
+For highly customizable devices like [PandABox](https://quantumdetectors.com/products/pandabox) there are often different pieces of logic that can talk to the same underlying hardware interface. The Devices in ophyd-async are structured so that the logic and interface can be split, and thus can be cleanly organized via composition rather than inheritance. 
 
-.. seealso:: `./flyscanning`
+## Ease the implementation of flyscanning
 
-Ophyd-async should provide the same building blocks for defining flyscans scans as malcolm_. It should support PandA and Zebra as timing masters by default, but also provide easy helpers for developers to write support for their own devices.
+One of the major drivers for ophyd-async was to ease the implementation of flyscanning. A library of flyscanning helpers is being developed to aid such strategies as:
+- Definition of scan paths via [ScanSpec](https://github.com/dls-controls/scanspec)
+- PVT Trajectory scanning in [Delta Tau motion controllers](https://github.com/dls-controls/pmac)
+- Position compare and capture using a [PandABox](https://quantumdetectors.com/products/pandabox)
 
-It should enable motor trajectory scanning and multiple triggering rates based around a base rate, and pausing/resuming scans. Scans should be modelled using scanspec_, which serves as a universal language for defining trajectory and time-resolved scans, and converted to the underlying format of the given motion controller. It should also be possible to define an outer scan .
+These strategies will be ported from DLS's previous flyscanning software [Malcolm](https://github.com/dls-controls/pymalcolm) and improved to take advantage of the flexibility of bluesky's plan definitions.
 
+```{seealso}
+The documents on flyscanning in the [bluesky cookbook](http://blueskyproject.io/bluesky-cookbook/glossary/flyscanning.html)
+```
 
-Improved Trajectory Calculation
--------------------------------
+## Parity and interoperativity with ophyd sync
 
-Ophyd-async will provide and improve upon the algorithms that malcolm_ uses to calculate trajectories for supported hardware.
-
-The EPICS pmac_ module supports trajectory scanning, specifying a growing array of positions, velocities and time for axes to move through to perform a scan. 
-Ophyd-async will provide mechanisms for specifying these scans via a scanspec_, calculating run-ups and turnarounds based on motor parameters, keeping the trajectory scan arrays filled based on the ScanSpec, and allowing this scan to be paused and resumed.
-
-
-Outstanding Design Decisions
-----------------------------
-
-To view and contribute to discussions on outstanding decisions, please see the design_ label in our Github issues.
-
-
-.. _ophyd: https://github.com/bluesky/ophyd
-.. _malcolm: https://github.com/dls-controls/pymalcolm
-.. _scanspec: https://github.com/dls-controls/scanspec
-.. _design: https://github.com/bluesky/ophyd-async/issues?q=is%3Aissue+is%3Aopen+label%3Adesign
-.. _pmac: https://github.com/dls-controls/pmac
+Devices from both ophyd sync and ophyd-async can be used in the same RunEngine and even in the same scan. This allows a per-device migration where devices are reimplemented in ophyd-async one by one. Eventually ophyd sync will gain feature parity with ophyd sync, supporting [the same set of devices as ophyd](https://blueskyproject.io/ophyd/user/reference/builtin-devices.html)

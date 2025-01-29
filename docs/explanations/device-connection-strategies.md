@@ -2,50 +2,47 @@
 
 There are various ways you can connect an ophyd-async Device, depending on whether you are running under a RunEngine or not. This article details each of those modes and why you might want to connect in that mode
 
-## Up front connection 
+## Connections without a RunEngine
 
-In a sync context, the ophyd-async :python:`init_devices` requires the bluesky event-loop
-to connect to devices. In an async context, it does not.
+It's unlikely that ophyd-async Devices will be used without a RunEngine in production, so connections without a RunEngine should be confined to tests. Inside an async test or fixture you will see code that calls [](#Device.connect):
+```python
+@pytest.fixture
+async def my_device():
+    device = MyDevice(name="device")
+    await device.connect(mock=True)
+    return device
+```
+or equivalently uses [](#init_devices) as an async context manager:
+```python
+@pytest.fixture
+async def my_device():
+    async with init_devices():
+        device = MyDevice()
+    return device
+```
+The second form will be used when there are multiple devices to create as the connect is done in parallel. Both of these will run tasks in the current running event loop.
 
-## Sync Context
+## Connections with a RunEngine
 
-In a sync context the run-engine must be initialized prior to connecting to devices.
-We enfore usage of the bluesky event-loop in this context.
+In tests and in production, ophyd-async Devices will be connected in the RunEngine event-loop. This runs in a background thread, so the fixture or test will be synchronous.
 
-The following will fail if :python:`RE = RunEngine()` has not been called already:
+Assuming you have [created an RE fixture](#run-engine-fixture), then you can still use [](#init_devices), but as a sync context manager:
+```python
+@pytest.fixture
+def my_device(RE):
+    with init_devices():
+        device = MyDevice()
+    return device
+```
+This will use the RunEngine event loop in the background to connect the Devices, relying on the fact the RunEngine is a singleton to find it: if you don't create a RunEngine or use the RE fixture this will fail.
 
-.. code:: python
+Alternatively you can use the [](#ensure_connected) plan to connect the Device:
+```python
+@pytest.fixture
+def my_device(RE):
+    device = MyDevice(name="device")
+    RE(ensure_connected(device))
+    return device
+```
 
-  with init_devices():
-      device1 = Device1(prefix)
-      device2 = Device2(prefix)
-      device3 = Device3(prefix)
-
-The :python:`init_devices` connects to devices in the event-loop created in the run-engine.
-
-
-## Async Context
-
-In an async context device connection is decoupled from the run-engine.
-The following attempts connection to all the devices in the :python:`init_devices`
-before or after run-engine initialization.
-
-.. code:: python
-
-  async def connection_function() :
-      async with init_devices():
-          device1 = Device1(prefix)
-          device2 = Device2(prefix)
-          device3 = Device3(prefix)
-
-  asyncio.run(connection_function())
-
-The devices will be unable to be used in the run-engine unless they share the same event-loop.
-When the run-engine is initialised it will create a new background event-loop to use if one
-is not passed in with :python:`RunEngine(loop=loop)`.
-
-If the user wants to use devices in the async :python:`init_devices` within the run-engine
-they can either:
-
-* Run the :python:`init_devices` first and pass the event-loop into the run-engine.
-* Initialize the run-engine first and run the :python:`init_devices` using the bluesky event-loop.
+Both are equivalent, but you are more likely to use the latter directly in a test case rather than in a fixture.

@@ -1,3 +1,17 @@
+# How to implement a Device for an EPICS areaDetector
+
+This document will walk through the steps taken to implement an ophyd-async Device that talks to an EPICS areaDetector
+
+## Create a module to put the code in
+
+The first stage is to make a module in the `ophyd-async` repository to put the code in:
+
+- If you haven't already, `git clone git@github.com:bluesky/ophyd-async.git` and make a new branch to work in
+- Create a new directory under `src/ophyd_async/epics/` which is the lowercase version of the epics support module for the detector
+  - For example, for [`ADSimDetector`](https://github.com/areaDetector/ADSimDetector) make a directory `adsimdetector`
+- Make an empty `__init__.py` within that directory
+
+
 .. note::
 
    Ophyd async is included on a provisional basis until the v1.0 release and 
