@@ -1,6 +1,5 @@
 import asyncio
 import functools
-import itertools
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
@@ -769,7 +768,9 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         if self.proxies[self.read_trl] is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
-        return await self.proxies[self.read_trl].get_reading()  # type: ignore
+        reading = await self.proxies[self.read_trl].get_reading()  # type: ignore
+        reading["value"] = self.converter.value(reading["value"])
+        return reading
 
     async def get_value(self) -> SignalDatatypeT:
         if self.proxies[self.read_trl] is None:

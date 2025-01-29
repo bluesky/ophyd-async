@@ -119,7 +119,7 @@ async def test_retrieve_and_apply_settings(RE, parent_device: ParentOfEverything
         assert dict(settings) == serialized_values
         assert not m.mock_calls
         yield from apply_settings(settings)
-        assert len(m.mock_calls) == 59
+        assert len(m.mock_calls) == 62
         m.reset_mock()
         assert not m.mock_calls
         yield from apply_settings_if_different(settings, apply_settings)
