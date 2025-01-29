@@ -14,6 +14,9 @@ import requests
 
 import ophyd_async
 
+# Override location of typevars just for sphinx
+ophyd_async.core.SignalDatatypeT.__module__ = "ophyd_async.core"
+
 # -- General configuration ------------------------------------------------
 sys.path.insert(0, os.path.abspath("../../src"))
 # General information about the project.
@@ -61,7 +64,6 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "matplotlib.sphinxext.plot_directive",
     "myst_parser",
-    "numpydoc",
 ]
 
 # So we can use the ::: syntax

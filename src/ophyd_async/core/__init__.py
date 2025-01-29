@@ -1,17 +1,4 @@
-"""The building blocks for making devices.
-
-.. data:: SignalDatatype
-
-    The supported `Signal` datatypes
-
-    - A python primitive `bool`, `int`, `float`, `str`
-    - A `StrictEnum` or `SubsetEnum` subclass
-    - A fixed datatype ``Array1D`` of numpy bool, signed and unsigned integers or float
-    - A numpy array which can change dimensions and datatype at runtime
-    - A `Sequence` of `str`
-    - A `Sequence` of `StrictEnum` or `SubsetEnum` subclass
-    - A `Table` subclass
-"""
+"""The building blocks for making devices."""
 
 from ._detector import (
     DetectorController,
@@ -95,6 +82,21 @@ from ._utils import (
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
+
+# Docstrings must be added here for sphinx
+
+SignalDatatypeT = SignalDatatypeT
+"""The supported `Signal` datatypes:
+
+- A python primitive `bool`, `int`, `float`, `str`
+- A `StrictEnum` or `SubsetEnum` subclass
+- A fixed datatype `Array1D` of numpy bool, signed and unsigned integers or float
+- A `np.ndarray` which can change dimensions and datatype at runtime
+- A `Sequence` of `str`
+- A `Sequence` of `StrictEnum` or `SubsetEnum` subclass
+- A `Table` subclass
+"""
+
 
 __all__ = [
     "DetectorController",
