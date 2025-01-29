@@ -1,4 +1,5 @@
 """The building blocks for making devices."""
+
 from typing import TYPE_CHECKING
 
 from ._detector import (
@@ -84,18 +85,18 @@ from ._utils import (
 from ._yaml_settings import YamlSettingsProvider
 
 # Docstrings must be added here for sphinx
+if not TYPE_CHECKING:
+    SignalDatatypeT = SignalDatatypeT
+    """The supported `Signal` datatypes:
 
-SignalDatatypeT = SignalDatatypeT
-"""The supported `Signal` datatypes:
-
-- A python primitive `bool`, `int`, `float`, `str`
-- A `StrictEnum` or `SubsetEnum` subclass
-- A fixed datatype `Array1D` of numpy bool, signed and unsigned integers or float
-- A `np.ndarray` which can change dimensions and datatype at runtime
-- A `Sequence` of `str`
-- A `Sequence` of `StrictEnum` or `SubsetEnum` subclass
-- A `Table` subclass
-"""
+    - A python primitive `bool`, `int`, `float`, `str`
+    - A `StrictEnum` or `SubsetEnum` subclass
+    - A fixed datatype `Array1D` of numpy bool, signed and unsigned integers or float
+    - A `np.ndarray` which can change dimensions and datatype at runtime
+    - A `Sequence` of `str`
+    - A `Sequence` of `StrictEnum` or `SubsetEnum` subclass
+    - A `Table` subclass
+    """
 
 
 __all__ = [

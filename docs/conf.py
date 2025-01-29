@@ -5,20 +5,21 @@ list see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-import os
 import sys
 from pathlib import Path
 from subprocess import check_output
+from typing import TypeVar
 
 import requests
 
 import ophyd_async
 
 # Override location of typevars just for sphinx
-ophyd_async.core.SignalDatatypeT.__module__ = "ophyd_async.core"
+for k in ophyd_async.core.__all__:
+    v = getattr(ophyd_async.core, k)
+    if isinstance(v, TypeVar):
+        v.__module__ = "ophyd_async.core"
 
-# -- General configuration ------------------------------------------------
-sys.path.insert(0, os.path.abspath("../../src"))
 # General information about the project.
 project = "ophyd-async"
 copyright = "2014, Brookhaven National Lab"
@@ -81,16 +82,17 @@ nitpicky = True
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
-    # builtins
-    ("py:class", "NoneType"),
-    ("py:class", "'str'"),
-    ("py:class", "'float'"),
-    ("py:class", "'int'"),
-    ("py:class", "'bool'"),
-    ("py:class", "'object'"),
-    ("py:class", "'id'"),
-    # typing
-    ("py:class", "typing_extensions.Literal"),
+    ("py:class", "ophyd_async.core._utils.T"),
+    # # builtins
+    # ("py:class", "NoneType"),
+    # ("py:class", "'str'"),
+    # ("py:class", "'float'"),
+    # ("py:class", "'int'"),
+    # ("py:class", "'bool'"),
+    # ("py:class", "'object'"),
+    # ("py:class", "'id'"),
+    # # typing
+    # ("py:class", "typing_extensions.Literal"),
 ]
 
 # Order the members by the order they appear in the source code
