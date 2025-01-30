@@ -38,6 +38,7 @@ class PandaHDFWriter(DetectorWriter):
     # Triggered on PCAP arm
     async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture"""
+        self._frames_per_event = frames_per_event
 
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
@@ -67,10 +68,6 @@ class PandaHDFWriter(DetectorWriter):
 
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_data_block.capture.set(True)
-        if frames_per_event > 1:
-            raise ValueError(
-                "All PandA datasets should be scalar, frames_per_event should be 1"
-            )
 
         return await self._describe()
 
@@ -83,7 +80,6 @@ class PandaHDFWriter(DetectorWriter):
         describe = {
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
-                # frames_per_event is always 1 for PandA
                 shape=list(ds.shape),
                 dtype="array" if len(ds.shape) > 1 else "number",
                 # PandA data should always be written as Float64
@@ -105,7 +101,10 @@ class PandaHDFWriter(DetectorWriter):
             # TODO: Update chunk size to read signal once available in IOC
             # Currently PandA IOC sets chunk size to 1024 points per chunk
             HDFDataset(
-                dataset_name, "/" + dataset_name, shape=(1,), chunk_shape=(1024,)
+                dataset_name,
+                "/" + dataset_name,
+                shape=(self._frames_per_event,),
+                chunk_shape=(1024,),
             )
             for dataset_name in capture_table.name
         ]
@@ -124,7 +123,9 @@ class PandaHDFWriter(DetectorWriter):
     # StandardDetector behavior
     async def wait_for_index(self, index: int, timeout: float | None = DEFAULT_TIMEOUT):
         def matcher(value: int) -> bool:
-            return value >= index
+            # Index is already divided by frames_per_event, so we need to also
+            # divide the value by frames_per_event to get the correct index
+            return value // self._frames_per_event >= index
 
         matcher.__name__ = f"index_at_least_{index}"
         await wait_for_value(
@@ -132,7 +133,10 @@ class PandaHDFWriter(DetectorWriter):
         )
 
     async def get_indices_written(self) -> int:
-        return await self.panda_data_block.num_captured.get_value()
+        return (
+            await self.panda_data_block.num_captured.get_value()
+            // self._frames_per_event
+        )
 
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
@@ -141,7 +145,7 @@ class PandaHDFWriter(DetectorWriter):
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):
-            yield num_captured
+            yield num_captured // self._frames_per_event
 
     async def collect_stream_docs(
         self, indices_written: int

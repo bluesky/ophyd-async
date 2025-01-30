@@ -161,11 +161,12 @@ async def test_get_indices_written(mock_writer: PandaHDFWriter):
     assert written == 4
 
 
-async def test_wait_for_index(mock_writer: PandaHDFWriter):
-    await mock_writer.open()
-    set_mock_value(mock_writer.panda_data_block.num_captured, 3)
+@pytest.mark.parametrize("frames_per_event", [1, 2, 11])
+async def test_wait_for_index(mock_writer: PandaHDFWriter, frames_per_event: int):
+    await mock_writer.open(frames_per_event=frames_per_event)
+    set_mock_value(mock_writer.panda_data_block.num_captured, 3 * frames_per_event)
     await mock_writer.wait_for_index(3, timeout=1)
-    set_mock_value(mock_writer.panda_data_block.num_captured, 2)
+    set_mock_value(mock_writer.panda_data_block.num_captured, 2 * frames_per_event)
     with pytest.raises(asyncio.TimeoutError):
         await mock_writer.wait_for_index(3, timeout=0.1)
 

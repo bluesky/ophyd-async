@@ -21,8 +21,8 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
-from event_model import DataKey  # type: ignore
-from pydantic import BaseModel, Field, NonNegativeInt, computed_field
+from event_model import DataKey
+from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, computed_field
 
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
@@ -71,15 +71,15 @@ class TriggerInfo(BaseModel):
     #: number_of_triggers=10 and frames_per_event=5 then the detector will take
     #: 10 frames, but publish 2 StreamDatum indices, and describe() will show a
     #: shape of (5, h, w) for each.
-    frames_per_event: NonNegativeInt = 1
+    frames_per_event: PositiveInt = 1
 
     @computed_field
     @cached_property
     def total_number_of_triggers(self) -> int:
         return (
-            sum(self.number_of_triggers)
+            sum(self.number_of_triggers) * self.frames_per_event
             if isinstance(self.number_of_triggers, list)
-            else self.number_of_triggers
+            else self.number_of_triggers * self.frames_per_event
         )
 
 
