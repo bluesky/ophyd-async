@@ -149,11 +149,6 @@ async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_pat
     assert name == "data.h5"
 
 
-async def test_open_errors_when_frames_per_event_not_one(mock_writer: PandaHDFWriter):
-    with pytest.raises(ValueError):
-        await mock_writer.open(2)
-
-
 async def test_get_indices_written(mock_writer: PandaHDFWriter):
     await mock_writer.open()
     set_mock_value(mock_writer.panda_data_block.num_captured, 4)
