@@ -73,6 +73,68 @@ _array_vals = {
 _image_vals = {k: np.vstack((v, v)) for k, v in _array_vals.items()}
 
 
+async def test_set_with_converter(everything_tango_device):
+    await everything_tango_device.connect()
+    with pytest.raises(TypeError):
+        await everything_tango_device.strenum.set(0)
+    with pytest.raises(ValueError):
+        await everything_tango_device.strenum.set("NON_ENUM_VALUE")
+    await everything_tango_device.strenum.set("AAA")
+    await everything_tango_device.strenum.set(ExampleStrEnum.B)
+    await everything_tango_device.strenum.set(ExampleStrEnum.C.value)
+
+    # setting enum spectrum works with lists and arrays
+    await everything_tango_device.strenum_spectrum.set(["AAA", "BBB"])
+    await everything_tango_device.strenum_spectrum.set(np.array(["BBB", "CCC"]))
+    await everything_tango_device.strenum_spectrum.set(
+        [
+            ExampleStrEnum.B,
+            ExampleStrEnum.C,
+        ]
+    )
+    await everything_tango_device.strenum_spectrum.set(
+        np.array(
+            [
+                ExampleStrEnum.A,
+                ExampleStrEnum.B,
+            ],
+            dtype=ExampleStrEnum,  # doesn't work when dtype is str
+        )
+    )
+
+    await everything_tango_device.strenum_image.set([["AAA", "BBB"], ["AAA", "BBB"]])
+    await everything_tango_device.strenum_image.set(
+        np.array([["AAA", "BBB"], ["AAA", "BBB"]])
+    )
+    await everything_tango_device.strenum_image.set(
+        [
+            [
+                ExampleStrEnum.B,
+                ExampleStrEnum.C,
+            ],
+            [
+                ExampleStrEnum.B,
+                ExampleStrEnum.C,
+            ],
+        ]
+    )
+    await everything_tango_device.strenum_image.set(
+        np.array(
+            [
+                [
+                    ExampleStrEnum.B,
+                    ExampleStrEnum.C,
+                ],
+                [
+                    ExampleStrEnum.B,
+                    ExampleStrEnum.C,
+                ],
+            ],
+            dtype=ExampleStrEnum,
+        )
+    )
+
+
 async def test_assert_value_everything_tango(everything_tango_device):
     await everything_tango_device.connect()
     await assert_value(everything_tango_device.str, "test_string")

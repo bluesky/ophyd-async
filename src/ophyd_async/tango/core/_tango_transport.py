@@ -641,37 +641,44 @@ class TangoEnumConverter(TangoConverter):
     def __init__(self, labels: list[str]):
         self._labels = labels
 
-    def write_value(self, value: StrictEnum):
+    def write_value(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("TangoEnumConverter expects str value")
         return self._labels.index(value)
 
     def value(self, value: int):
         return self._labels[value]
 
 
-class TangoEnumArrayConverter(TangoEnumConverter):
-    def write_value(self, value: np.ndarray[Any, StrictEnum]):
+class TangoEnumSpectrumConverter(TangoEnumConverter):
+    def write_value(self, value: np.ndarray[Any, str | StrictEnum]):
         # should return array of ints
-        cast_to_int_array = np.vectorize(self._labels.index)
-        result = cast_to_int_array(value)
-        return result
+        return np.array([self._labels.index(v) for v in value])
 
     def value(self, value: np.ndarray[Any, int]):
         # should return array of strs
-        if len(value.shape) == 1:  # spectrum
-            array = np.array([self._labels[v] for v in value])
-        else:  # image
-            array = np.vstack([[self._labels[v] for v in row] for row in value])
-        return array
+        return np.array([self._labels[v] for v in value])
+
+
+class TangoEnumImageConverter(TangoEnumConverter):
+    def write_value(self, value: np.ndarray[Any, str | StrictEnum]):
+        # should return array of ints
+        return np.vstack([[self._labels.index(v) for v in row] for row in value])
+
+    def value(self, value: np.ndarray[Any, int]):
+        # should return array of strs
+        return np.vstack([[self._labels[v] for v in row] for row in value])
 
 
 def make_converter(info: AttributeInfoEx | CommandInfo) -> TangoConverter:
     if isinstance(info, AttributeInfoEx):
         if info.enum_labels:  # enum_labels should be discarded for non enum types
             if info.data_format == AttrDataFormat.SCALAR:
-                return TangoEnumConverter(info.enum_labels)
-            else:
-                return TangoEnumArrayConverter(info.enum_labels)
-
+                return TangoEnumConverter(list(info.enum_labels))
+            elif info.data_format == AttrDataFormat.SPECTRUM:
+                return TangoEnumSpectrumConverter(list(info.enum_labels))
+            elif info.data_format == AttrDataFormat.IMAGE:
+                return TangoEnumImageConverter(list(info.enum_labels))
     # default case return trivial converter
     return TangoConverter()
 
