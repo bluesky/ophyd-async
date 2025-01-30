@@ -104,6 +104,14 @@ record(mbbo, "$(device)subset_enum") {
   field(PINI, "YES")
 }
 
+record(mbbo, "$(device)enum_str_fallback") {
+  field(ZRST, "Aaa")
+  field(ONST, "Bbb")
+  field(TWST, "Ccc")
+  field(VAL, "1")
+  field(PINI, "YES")
+}
+
 record(waveform, "$(device)uint8a") {
   field(NELM, "3")
   field(FTVL, "UCHAR")

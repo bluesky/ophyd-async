@@ -3,7 +3,8 @@ import logging
 import re
 import time
 from asyncio import Event
-from unittest.mock import ANY, Mock
+from typing import Any
+from unittest.mock import ANY, AsyncMock, MagicMock, Mock
 
 import numpy as np
 import numpy.typing as npt
@@ -25,8 +26,12 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.core._signal import _SignalCache  # noqa: PLC2701
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.testing import (
+    ExampleEnum,
+    ExampleTable,
+    OneOfEverythingDevice,
     assert_configuration,
     assert_reading,
     assert_value,
@@ -34,6 +39,53 @@ from ophyd_async.testing import (
     set_mock_put_proceeds,
     set_mock_value,
 )
+
+_array_vals = {
+    "int8a": np.array([-128, 127, 0, 1, 2, 3, 4], dtype=np.int8),
+    "uint8a": np.array([0, 255, 0, 1, 2, 3, 4], dtype=np.uint8),
+    "int16a": np.array([-32768, 32767, 0, 1, 2, 3, 4], dtype=np.int16),
+    "uint16a": np.array([0, 65535, 0, 1, 2, 3, 4], dtype=np.uint16),
+    "int32a": np.array([-2147483648, 2147483647, 0, 1, 2, 3, 4], dtype=np.int32),
+    "uint32a": np.array([0, 4294967295, 0, 1, 2, 3, 4], dtype=np.uint32),
+    "int64a": np.array(
+        [-9223372036854775808, 9223372036854775807, 0, 1, 2, 3, 4],
+        dtype=np.int64,
+    ),
+    "uint64a": np.array([0, 18446744073709551615, 0, 1, 2, 3, 4], dtype=np.uint64),
+    "float32a": np.array(
+        [
+            -3.4028235e38,
+            3.4028235e38,
+            1.1754944e-38,
+            1.4012985e-45,
+            0.0000000e00,
+            1.2340000e00,
+            2.3400000e05,
+            3.4499999e-06,
+        ],
+        dtype=np.float32,
+    ),
+    "float64a": np.array(
+        [
+            -1.79769313e308,
+            1.79769313e308,
+            2.22507386e-308,
+            4.94065646e-324,
+            0.00000000e000,
+            1.23400000e000,
+            2.34000000e005,
+            3.45000000e-006,
+        ],
+        dtype=np.float64,
+    ),
+}
+
+
+@pytest.fixture
+async def one_of_everything_device():
+    device = OneOfEverythingDevice("everything-device")
+    await device.connect()
+    return device
 
 
 def num_occurrences(substring: str, string: str) -> int:
@@ -252,6 +304,15 @@ async def test_create_soft_signal(signal_method, signal_class):
     assert (await signal.get_value()) == INITIAL_VALUE
 
 
+def test_signal_r_cached():
+    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
+    INITIAL_VALUE = "INITIAL"
+    signal = soft_signal_r_and_setter(str, INITIAL_VALUE, SIGNAL_NAME)[0]
+    assert signal._cache is None
+    with pytest.raises(RuntimeError, match=r".* not being monitored"):
+        signal._backend_or_cache(cached=True)
+
+
 class MockEnum(StrictEnum):
     GOOD = "Good"
     OK = "Ok"
@@ -285,7 +346,7 @@ async def test_assert_value(mock_readable: DummyReadableArray):
     await assert_value(mock_readable.int_value, 168)
 
 
-async def test_assert_reaading(mock_readable: DummyReadableArray):
+async def test_assert_reading(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.int_value, 188)
     set_mock_value(mock_readable.int_array, np.array([1, 2, 4, 7]))
     set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
@@ -306,6 +367,313 @@ async def test_assert_reaading(mock_readable: DummyReadableArray):
         ),
     }
     await assert_reading(mock_readable, dummy_reading)
+
+
+async def test_assert_configuration_everything(
+    one_of_everything_device: OneOfEverythingDevice,
+):
+    await assert_configuration(
+        one_of_everything_device,
+        {
+            "everything-device-int": {
+                "value": 1,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-float": {
+                "value": 1.234,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-str": {
+                "value": "test_string",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-bool": {
+                "value": True,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-enum": {
+                "value": "Bbb",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-int8a": {
+                "value": _array_vals["int8a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-uint8a": {
+                "value": _array_vals["uint8a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-int16a": {
+                "value": _array_vals["int16a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-uint16a": {
+                "value": _array_vals["uint16a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-int32a": {
+                "value": _array_vals["int32a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-uint32a": {
+                "value": _array_vals["uint32a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-int64a": {
+                "value": _array_vals["int64a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-uint64a": {
+                "value": _array_vals["uint64a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-float32a": {
+                "value": _array_vals["float32a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-float64a": {
+                "value": _array_vals["float64a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-stra": {
+                "value": ["one", "two", "three"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-enuma": {
+                "value": [ExampleEnum.A, ExampleEnum.C],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-table": {
+                "value": ExampleTable(
+                    bool=np.array([False, False, True, True]),
+                    int=np.array([1, 8, -9, 32], dtype=np.int32),
+                    float=np.array([1.8, 8.2, -6.0, 32.9887]),
+                    str=["Hello", "World", "Foo", "Bar"],
+                    enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+                ),
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-ndarray": {
+                "value": np.array([[1, 2, 3], [4, 5, 6]]),
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+        },
+    )
+
+
+async def test_assert_reading_everything(
+    one_of_everything_device: OneOfEverythingDevice,
+):
+    await assert_reading(one_of_everything_device, {})
+    await assert_reading(
+        one_of_everything_device.int,
+        {"everything-device-int": {"value": 1, "timestamp": ANY, "alarm_severity": 0}},
+    )
+    await assert_reading(
+        one_of_everything_device.float,
+        {
+            "everything-device-float": {
+                "value": 1.234,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.str,
+        {
+            "everything-device-str": {
+                "value": "test_string",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.bool,
+        {
+            "everything-device-bool": {
+                "value": True,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.enum,
+        {
+            "everything-device-enum": {
+                "value": ExampleEnum.B,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.int8a,
+        {
+            "everything-device-int8a": {
+                "value": _array_vals["int8a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.uint8a,
+        {
+            "everything-device-uint8a": {
+                "value": _array_vals["uint8a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.int16a,
+        {
+            "everything-device-int16a": {
+                "value": _array_vals["int16a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.uint16a,
+        {
+            "everything-device-uint16a": {
+                "value": _array_vals["uint16a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.int32a,
+        {
+            "everything-device-int32a": {
+                "value": _array_vals["int32a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.uint32a,
+        {
+            "everything-device-uint32a": {
+                "value": _array_vals["uint32a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.int64a,
+        {
+            "everything-device-int64a": {
+                "value": _array_vals["int64a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.uint64a,
+        {
+            "everything-device-uint64a": {
+                "value": _array_vals["uint64a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.float32a,
+        {
+            "everything-device-float32a": {
+                "value": _array_vals["float32a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.float64a,
+        {
+            "everything-device-float64a": {
+                "value": _array_vals["float64a"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.stra,
+        {
+            "everything-device-stra": {
+                "value": ["one", "two", "three"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.enuma,
+        {
+            "everything-device-enuma": {
+                "value": [ExampleEnum.A, ExampleEnum.C],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.table,
+        {
+            "everything-device-table": {
+                "value": ExampleTable(
+                    bool=np.array([False, False, True, True], np.bool_),
+                    int=np.array([1, 8, -9, 32], np.int32),
+                    float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+                    str=["Hello", "World", "Foo", "Bar"],
+                    enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+                ),
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.ndarray,
+        {
+            "everything-device-ndarray": {
+                "value": np.array(([1, 2, 3], [4, 5, 6])),
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
 
 
 @pytest.mark.parametrize(
@@ -342,7 +710,7 @@ async def test_failed_assert_reading(
         await assert_reading(mock_readable, dummy_reading)
 
 
-async def test_assert_configuraion(mock_readable: DummyReadableArray):
+async def test_assert_configuration(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.str_value, "haha")
     set_mock_value(mock_readable.strictEnum_value, MockEnum.GOOD)
     dummy_reading = {
@@ -362,6 +730,44 @@ async def test_assert_configuraion(mock_readable: DummyReadableArray):
         ),
     }
     await assert_configuration(mock_readable, dummy_reading)
+
+
+async def test_assert_value_everything(
+    one_of_everything_device: OneOfEverythingDevice,
+):
+    await assert_value(one_of_everything_device.int, 1)
+    await assert_value(one_of_everything_device.float, 1.234)
+    await assert_value(one_of_everything_device.str, "test_string")
+    await assert_value(one_of_everything_device.bool, True)
+    await assert_value(one_of_everything_device.enum, ExampleEnum.B)
+    await assert_value(
+        one_of_everything_device.int8a,
+        _array_vals["int8a"],
+    )
+    await assert_value(one_of_everything_device.uint8a, _array_vals["uint8a"])
+    await assert_value(one_of_everything_device.int16a, _array_vals["int16a"])
+    await assert_value(one_of_everything_device.uint16a, _array_vals["uint16a"])
+    await assert_value(one_of_everything_device.int32a, _array_vals["int32a"])
+    await assert_value(one_of_everything_device.uint32a, _array_vals["uint32a"])
+    await assert_value(one_of_everything_device.int64a, _array_vals["int64a"])
+    await assert_value(one_of_everything_device.uint64a, _array_vals["uint64a"])
+    await assert_value(one_of_everything_device.float32a, _array_vals["float32a"])
+    await assert_value(one_of_everything_device.float64a, _array_vals["float64a"])
+    await assert_value(one_of_everything_device.stra, ["one", "two", "three"])
+    await assert_value(one_of_everything_device.enuma, [ExampleEnum.A, ExampleEnum.C])
+    await assert_value(
+        one_of_everything_device.table,
+        ExampleTable(
+            bool=np.array([False, False, True, True], np.bool_),
+            int=np.array([1, 8, -9, 32], np.int32),
+            float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+            str=["Hello", "World", "Foo", "Bar"],
+            enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+        ),
+    )
+    await assert_value(
+        one_of_everything_device.ndarray, np.array(([1, 2, 3], [4, 5, 6]))
+    )
 
 
 @pytest.mark.parametrize(
@@ -450,3 +856,48 @@ async def test_soft_signal_ndarray_can_change_dtype():
     for dtype in (np.int32, np.float64):
         await sig.set(np.arange(4, dtype=dtype))
         assert (await sig.get_value()).dtype == dtype
+
+
+@pytest.fixture
+def signal_cache() -> _SignalCache[Any]:
+    backend = MagicMock()
+    signal = MagicMock()
+    signal.source = "test_source"
+    signal.log.debug = MagicMock()
+    cache = _SignalCache(backend, signal)
+
+    # Mock the _valid event to simulate it being set
+    cache._valid = AsyncMock()
+    cache._valid.wait = AsyncMock()
+
+    return cache
+
+
+async def test_get_reading_runtime_error(signal_cache: _SignalCache[Any]) -> None:
+    with pytest.raises(RuntimeError, match="Monitor not working"):
+        await asyncio.wait_for(signal_cache.get_reading(), timeout=1.0)
+
+
+def test_notify_with_value(signal_cache):
+    mock_function = Mock()
+    signal_cache._reading = {"value": 42}
+    signal_cache._notify(mock_function, want_value=True)
+    mock_function.assert_called_once_with(42)
+
+
+def test_notify_without_value(signal_cache):
+    mock_function = Mock()
+    signal_cache._reading = {"value": 42}
+    signal_cache._signal.name = "test_signal"
+    signal_cache._notify(mock_function, want_value=False)
+    mock_function.assert_called_once_with({"test_signal": {"value": 42}})
+
+
+async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
+    function = MagicMock()
+
+    with pytest.raises(RuntimeError, match="Monitor not working"):
+        await asyncio.wait_for(
+            signal_cache._notify(function, want_value=True),  # type: ignore
+            timeout=1.0,
+        )

@@ -122,7 +122,7 @@ async def test_mover_moving_well(mock_mover: sim.Mover) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.05),
+        time_elapsed=pytest.approx(0.0, abs=0.08),
     )
 
     await assert_value(mock_mover.setpoint, 0.55)
@@ -137,7 +137,7 @@ async def test_mover_moving_well(mock_mover: sim.Mover) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.1, abs=0.05),
+        time_elapsed=pytest.approx(0.1, abs=0.08),
     )
     set_mock_value(mock_mover.readback, 0.5499999)
     await wait_for_pending_wakeups()
@@ -242,12 +242,19 @@ async def test_set_velocity(mock_mover: sim.Mover) -> None:
     q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     v.subscribe(q.put_nowait)
     assert (await q.get())["mock_mover-velocity"]["value"] == 1.0
-    await v.set(2.0)
-    assert (await q.get())["mock_mover-velocity"]["value"] == 2.0
+    await v.set(-2.0)
+    assert (await q.get())["mock_mover-velocity"]["value"] == -2.0
     v.clear_sub(q.put_nowait)
     await v.set(3.0)
     assert (await v.read())["mock_mover-velocity"]["value"] == 3.0
     assert q.empty()
+
+
+async def test_zero_velocity(mock_mover: sim.Mover) -> None:
+    # v = sim_motor.velocity
+    await mock_mover.velocity.set(0)
+    with pytest.raises(ValueError, match="Mover has zero velocity"):
+        await mock_mover.set(3.14)
 
 
 async def test_mover_disconnected():

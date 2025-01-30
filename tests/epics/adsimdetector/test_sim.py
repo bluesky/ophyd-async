@@ -231,7 +231,9 @@ async def test_two_detectors_step(
     assert event["data"] == {}
 
 
-@pytest.mark.parametrize("writer_cls", [adcore.ADHDFWriter, adcore.ADTIFFWriter])
+@pytest.mark.parametrize(
+    "writer_cls", [adcore.ADHDFWriter, adcore.ADTIFFWriter, adcore.ADJPEGWriter]
+)
 async def test_detector_writes_to_file(
     RE: RunEngine,
     ad_standard_det_factory: Callable,

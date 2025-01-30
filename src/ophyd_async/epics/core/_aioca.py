@@ -35,6 +35,8 @@ from ophyd_async.core import (
 
 from ._util import EpicsSignalBackend, format_datatype, get_supported_values
 
+logger = logging.getLogger("ophyd_async")
+
 
 def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
     def get_limits(limit: str) -> LimitsRange | None:
@@ -258,7 +260,7 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
                 pv, format=FORMAT_CTRL, timeout=timeout
             )
         except CANothing as exc:
-            logging.debug(f"signal ca://{pv} timed out")
+            logger.debug(f"signal ca://{pv} timed out")
             raise NotConnected(f"ca://{pv}") from exc
 
     async def connect(self, timeout: float):
@@ -291,13 +293,27 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             write_value = self.initial_values[self.write_pv]
         else:
             write_value = self.converter.write_value(value)
-        await caput(
-            self.write_pv,
-            write_value,
-            datatype=self.converter.write_dbr,
-            wait=wait,
-            timeout=None,
-        )
+        try:
+            await caput(
+                self.write_pv,
+                write_value,
+                datatype=self.converter.write_dbr,
+                wait=wait,
+                timeout=None,
+            )
+        except CANothing as exc:
+            # If we ran into a write error, check to see if there is a list
+            # of valid choices, and if the value we tried to write is in that list.
+            valid_choices = self.converter.metadata.get("choices")
+            if valid_choices:
+                if value not in valid_choices:
+                    msg = (
+                        f"{value} is not a valid choice for {self.write_pv}, "
+                        f"valid choices: {self.converter.metadata.get('choices')}"
+                    )
+                    raise ValueError(msg) from exc
+                raise
+            raise
 
     async def get_datakey(self, source: str) -> DataKey:
         value = await self._caget(self.read_pv, FORMAT_CTRL)
@@ -321,16 +337,18 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         return self.converter.value(value)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
+        if callback and self.subscription:
+            msg = "Cannot set a callback when one is already set"
+            raise RuntimeError(msg)
+
+        if self.subscription:
+            self.subscription.close()
+            self.subscription = None
+
         if callback:
-            assert not self.subscription, (
-                "Cannot set a callback when one is already set"
-            )
             self.subscription = camonitor(
                 self.read_pv,
                 lambda v: callback(self._make_reading(v)),
                 datatype=self.converter.read_dbr,
                 format=FORMAT_TIME,
             )
-        elif self.subscription:
-            self.subscription.close()
-            self.subscription = None

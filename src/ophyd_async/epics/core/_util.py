@@ -47,7 +47,7 @@ def get_supported_values(
 
 
 def format_datatype(datatype: Any) -> str:
-    if get_origin(datatype) is np.ndarray and get_args(datatype)[0] == tuple[int]:
+    if get_origin(datatype) is np.ndarray and get_args(datatype):
         dtype = get_dtype(datatype)
         return f"Array1D[np.{dtype.name}]"
     elif get_origin(datatype) is Sequence:

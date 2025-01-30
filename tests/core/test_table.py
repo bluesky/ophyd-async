@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pytest
@@ -32,6 +33,10 @@ class MyTable(Table):
             {"bool": [0, 1], "uint": [3, 4], "str": [44, ""]},
             "Input should be a valid string [type=string_type, input_value=44,",
         ),
+        (
+            {"bool": [0, 1], "uint": [[3], [4]], "str": ["", ""]},
+            "Array 2-dimensional; the target dimensions is 1",
+        ),
     ],
 )
 def test_table_wrong_types(kwargs, error_msg):
@@ -56,3 +61,17 @@ def test_table_coerces(kwargs):
     for k, v in t:
         assert v == pytest.approx(kwargs[k])
     assert t == pytest.approx(t)
+
+
+def test_validate_array_dtypes():
+    class TestTable(Table):
+        int_array: np.ndarray[Any, np.dtype[np.int32]]
+
+    with pytest.raises(ValueError, match=r"Cannot cast .* without losing precision"):
+        TestTable(int_array=[1.5, 2.5])  # type: ignore
+
+    table = TestTable(int_array=[1, 2])  # type: ignore
+    assert table.int_array.dtype == np.dtype(np.int32)
+
+    table = TestTable(int_array=[])  # type: ignore
+    assert table.int_array.dtype == np.dtype(np.int32)

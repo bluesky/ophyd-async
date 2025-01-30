@@ -31,6 +31,8 @@ from ophyd_async.core import (
 
 from ._util import EpicsSignalBackend, format_datatype, get_supported_values
 
+logger = logging.getLogger("ophyd_async")
+
 
 def _limits_from_value(value: Any) -> Limits:
     def get_limits(
@@ -321,7 +323,7 @@ async def pvget_with_timeout(pv: str, timeout: float) -> Any:
     try:
         return await asyncio.wait_for(context().get(pv), timeout=timeout)
     except asyncio.TimeoutError as exc:
-        logging.debug(f"signal pva://{pv} timed out", exc_info=True)
+        logger.debug(f"signal pva://{pv} timed out", exc_info=True)
         raise NotConnected(f"pva://{pv}") from exc
 
 
@@ -403,10 +405,15 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         return self.converter.value(value)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
+        if callback and self.subscription:
+            msg = "Cannot set a callback when one is already set"
+            raise RuntimeError(msg)
+
+        if self.subscription:
+            self.subscription.close()
+            self.subscription = None
+
         if callback:
-            assert not self.subscription, (
-                "Cannot set a callback when one is already set"
-            )
 
             async def async_callback(v):
                 callback(self._make_reading(v))
@@ -417,6 +424,3 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             self.subscription = context().monitor(
                 self.read_pv, async_callback, request=request
             )
-        elif self.subscription:
-            self.subscription.close()
-            self.subscription = None

@@ -179,6 +179,13 @@ DetectorControllerT = TypeVar("DetectorControllerT", bound=DetectorController)
 DetectorWriterT = TypeVar("DetectorWriterT", bound=DetectorWriter)
 
 
+def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo:
+    # make absolute sure we realy have a valid TriggerInfo ... mostly for pylance
+    if trigger_info is None:
+        raise RuntimeError("Trigger info must be set before calling this method.")
+    return trigger_info
+
+
 class StandardDetector(
     Device,
     Stageable,
@@ -285,8 +292,12 @@ class StandardDetector(
                     frame_timeout=None,
                 )
             )
-        assert self._trigger_info
-        assert self._trigger_info.trigger is DetectorTrigger.INTERNAL
+
+        self._trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+        if self._trigger_info.trigger is not DetectorTrigger.INTERNAL:
+            msg = "The trigger method can only be called with INTERNAL triggering"
+            raise ValueError(msg)
+
         # Arm the detector and wait for it to finish.
         indices_written = await self._writer.get_indices_written()
         await self._controller.arm()
@@ -317,16 +328,17 @@ class StandardDetector(
         Args:
             value: TriggerInfo describing how to trigger the detector
         """
-        if value.trigger != DetectorTrigger.INTERNAL:
-            assert value.deadtime, (
-                "Deadtime must be supplied when in externally triggered mode"
+        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
+            msg = "Deadtime must be supplied when in externally triggered mode"
+            raise ValueError(msg)
+        required_deadtime = self._controller.get_deadtime(value.livetime)
+        if value.deadtime and required_deadtime > value.deadtime:
+            msg = (
+                f"Detector {self._controller} needs at least {required_deadtime}s "
+                f"deadtime, but trigger logic provides only {value.deadtime}s"
             )
-        if value.deadtime:
-            required = self._controller.get_deadtime(value.livetime)
-            assert required <= value.deadtime, (
-                f"Detector {self._controller} needs at least {required}s deadtime, "
-                f"but trigger logic provides only {value.deadtime}s"
-            )
+            raise ValueError(msg)
+
         self._trigger_info = value
         self._number_of_triggers_iter = iter(
             self._trigger_info.number_of_triggers
@@ -358,7 +370,7 @@ class StandardDetector(
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        assert self._trigger_info
+        self._trigger_info = _ensure_trigger_info_exists(self._trigger_info)
         indices_written = self._writer.observe_indices_written(
             self._trigger_info.frame_timeout
             or (

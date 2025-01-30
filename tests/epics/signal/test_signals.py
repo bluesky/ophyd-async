@@ -8,6 +8,7 @@ from typing import Generic, Literal, get_args
 
 import bluesky.plan_stubs as bps
 import numpy as np
+import numpy.typing as npt
 import pytest
 import yaml
 from aioca import purge_channel_caches
@@ -38,6 +39,7 @@ from ophyd_async.epics.core import (
     epics_signal_w,
     epics_signal_x,
 )
+from ophyd_async.epics.core._util import format_datatype  # noqa: PLC2701
 from ophyd_async.epics.testing import (
     EpicsTestEnum,
     EpicsTestIocAndDevices,
@@ -404,6 +406,19 @@ async def test_writing_to_ndarray_raises_typeerror(ioc_devices: EpicsTestIocAndD
         await signal.set(np.zeros((6,), dtype=np.int64))
 
 
+async def test_invalid_enum_choice_raises_valueerror(
+    ioc_devices: EpicsTestIocAndDevices,
+):
+    signal = ioc_devices.ca_device.enum_str_fallback
+    await signal.connect()
+    with pytest.raises(ValueError) as exc:
+        await signal.set("Ddd")
+    assert "Ddd is not a valid choice for" in str(exc.value)
+    assert "ca:enum_str_fallback, valid choices: ['Aaa', 'Bbb', 'Ccc']" in str(
+        exc.value
+    )
+
+
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_error_raised_on_disconnected_PV(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -565,6 +580,18 @@ async def test_non_existent_errors(
     signal = epics_signal_rw(str, "non-existent")
     with pytest.raises(NotConnected):
         await signal.connect(timeout=0.1)
+
+
+@pytest.mark.parametrize(
+    "dt,expected",
+    [
+        (Array1D[np.int32], "Array1D[np.int32]"),
+        (np.ndarray, "ndarray"),
+        (npt.NDArray[np.float64], "Array1D[np.float64]"),
+    ],
+)
+def test_format_error_message(dt, expected):
+    assert format_datatype(dt) == expected
 
 
 def test_make_backend_fails_for_different_transports():

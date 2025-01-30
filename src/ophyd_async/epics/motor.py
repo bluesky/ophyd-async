@@ -63,6 +63,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.motor_egu = epics_signal_r(str, prefix + ".EGU")
             self.velocity = epics_signal_rw(float, prefix + ".VELO")
+            self.offset = epics_signal_rw(float, prefix + ".OFF")
 
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.user_readback = epics_signal_r(float, prefix + ".RBV")
@@ -125,9 +126,9 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
     @AsyncStatus.wrap
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
-        assert self._fly_completed_position, (
-            "Motor must be prepared before attempting to kickoff"
-        )
+        if not self._fly_completed_position:
+            msg = "Motor must be prepared before attempting to kickoff"
+            raise RuntimeError(msg)
 
         self._fly_status = self.set(
             self._fly_completed_position, timeout=self._fly_timeout
@@ -135,7 +136,9 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
-        assert self._fly_status, "kickoff not called"
+        if not self._fly_status:
+            msg = "kickoff not called"
+            raise RuntimeError(msg)
         return self._fly_status
 
     @WatchableAsyncStatus.wrap
@@ -155,13 +158,18 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
             self.velocity.get_value(),
             self.acceleration_time.get_value(),
         )
+
         if timeout is CALCULATE_TIMEOUT:
-            assert velocity > 0, "Motor has zero velocity"
-            timeout = (
-                abs(new_position - old_position) / velocity
-                + 2 * acceleration_time
-                + DEFAULT_TIMEOUT
-            )
+            try:
+                timeout = (
+                    abs((new_position - old_position) / velocity)
+                    + 2 * acceleration_time
+                    + DEFAULT_TIMEOUT
+                )
+            except ZeroDivisionError as error:
+                msg = "Mover has zero velocity"
+                raise ValueError(msg) from error
+
         move_status = self.user_setpoint.set(new_position, wait=True, timeout=timeout)
         async for current_position in observe_value(
             self.user_readback, done_status=move_status

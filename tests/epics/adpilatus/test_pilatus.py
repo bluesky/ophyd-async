@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import Awaitable, Callable
 from typing import cast
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -103,19 +103,24 @@ async def test_hints_from_hdf_writer(test_adpilatus: adpilatus.PilatusDetector):
 
 
 async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDetector):
-    with pytest.raises(
-        ValueError,
-        # str(EnumClass.value) handling changed in Python 3.11
-        match=r"PilatusController only supports the following trigger types: .* but",
-    ):
-        await test_adpilatus.prepare(
-            TriggerInfo(
-                number_of_triggers=1,
-                trigger=DetectorTrigger.EDGE_TRIGGER,
-                deadtime=1.0,
-                livetime=1.0,
+    open = "ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open"
+    with patch(open, new_callable=AsyncMock) as mock_open:
+        with pytest.raises(
+            ValueError,
+            # str(EnumClass.value) handling changed in Python 3.11
+            match=(
+                "PilatusController only supports the following trigger types: .* but"
+            ),
+        ):
+            await test_adpilatus.prepare(
+                TriggerInfo(
+                    number_of_triggers=1,
+                    trigger=DetectorTrigger.EDGE_TRIGGER,
+                    deadtime=1.0,
+                    livetime=1.0,
+                )
             )
-        )
+    mock_open.assert_called_once()
 
 
 async def test_exposure_time_and_acquire_period_set(
