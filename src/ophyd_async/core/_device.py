@@ -209,8 +209,7 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
     Defines device components with indices.
 
     In the below example, foos becomes a dictionary on the parent device
-    at runtime, so parent.foos[2] returns a FooDevice. For example usage see
-    :class:`~ophyd_async.epics.sim.DynamicSensorGroup`
+    at runtime, so parent.foos[2] returns a FooDevice.
     """
 
     def __init__(

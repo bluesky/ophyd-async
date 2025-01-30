@@ -84,7 +84,7 @@ class TriggerInfo(BaseModel):
 class DetectorController(ABC):
     """
     Classes implementing this interface should hold the logic for
-    arming and disarming a detector
+    arming and disarming a detector.
     """
 
     @abstractmethod
