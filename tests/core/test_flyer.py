@@ -9,7 +9,11 @@ import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource
+from event_model import (  # type: ignore
+    ComposeStreamResourceBundle,
+    DataKey,
+    compose_stream_resource,
+)
 from pydantic import ValidationError
 
 from ophyd_async.core import (
@@ -62,11 +66,12 @@ class DummyWriter(DetectorWriter):
         self._last_emitted = 0
         self.index = 0
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+        self._frames_per_event = frames_per_event
         return {
             self._name: DataKey(
                 source="soft://some-source",
-                shape=self._shape,
+                shape=[frames_per_event, *self._shape],
                 dtype="number",
                 dtype_numpy="<u2",
                 external="STREAM:",
@@ -78,10 +83,10 @@ class DummyWriter(DetectorWriter):
     ) -> AsyncGenerator[int, None]:
         num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):
-            yield num_captured
+            yield num_captured // self._frames_per_event
 
     async def get_indices_written(self) -> int:
-        return self.index
+        return self.index // self._frames_per_event
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -95,7 +100,6 @@ class DummyWriter(DetectorWriter):
                     parameters={
                         "path": "",
                         "dataset": "",
-                        "multiplier": False,
                     },
                     uid=None,
                     validate=True,

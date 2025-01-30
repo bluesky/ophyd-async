@@ -5,7 +5,7 @@ from typing import Generic, TypeVar, get_args
 from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
-from event_model import (
+from event_model import (  # type: ignore
     ComposeStreamResource,
     DataKey,
     StreamRange,
@@ -59,7 +59,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._emitted_resource = None
 
         self._capture_status: AsyncStatus | None = None
-        self._multiplier = 1
         self._filename_template = "%s%s_%6.6d"
 
     @classmethod
@@ -123,10 +122,10 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             self.fileio.capture, True, wait_for_set_completion=False
         )
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
         self._last_emitted = 0
-        self._multiplier = multiplier
+        self._frames_per_event = frames_per_event
         frame_shape = await self._dataset_describer.shape()
         dtype_numpy = await self._dataset_describer.np_datatype()
 
@@ -135,7 +134,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         describe = {
             self._name_provider(): DataKey(
                 source=self._name_provider(),
-                shape=list(frame_shape),
+                shape=[frames_per_event, *frame_shape],
                 dtype="array",
                 dtype_numpy=dtype_numpy,
                 external="STREAM:",
@@ -148,11 +147,11 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected"""
         async for num_captured in observe_value(self.fileio.num_captured, timeout):
-            yield num_captured // self._multiplier
+            yield num_captured // self._frames_per_event
 
     async def get_indices_written(self) -> int:
         num_captured = await self.fileio.num_captured.get_value()
-        return num_captured // self._multiplier
+        return num_captured // self._frames_per_event
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -183,7 +182,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                     uri=uri,
                     data_key=self._name_provider(),
                     parameters={
-                        # Assume that we always write 1 frame per file/chunk
+                        # Assume that we always write 1 frame per file/chunk, this
+                        # may change to self._frames_per_event in the future
                         "chunk_shape": (1, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
