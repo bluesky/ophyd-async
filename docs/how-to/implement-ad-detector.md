@@ -8,71 +8,68 @@ The first stage is to make a module in the `ophyd-async` repository to put the c
 
 - If you haven't already, `git clone git@github.com:bluesky/ophyd-async.git` and make a new branch to work in
 - Create a new directory under `src/ophyd_async/epics/` which is the lowercase version of the epics support module for the detector
-  - For example, for [`ADSimDetector`](https://github.com/areaDetector/ADSimDetector) make a directory `adsimdetector`
+  - For example, for [`ADAravis`](https://github.com/areaDetector/ADAravis) make a directory `adaravis`
 - Make an empty `__init__.py` within that directory
 
+## Add an IO class for the PV interface
 
-.. note::
+Now you need an IO class that subclasses [](#ADBaseIO). This should add the PVs that are detector driver specific that are required to setup triggering. 
 
-   Ophyd async is included on a provisional basis until the v1.0 release and 
-   may change API on minor release numbers before then
+For example for ADAravis this is in the file `_aravis_io.py`:
+```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis_io.py
+:language: python
+```
 
-Make a StandardDetector
-=======================
+## Add a Controller that knows how to setup the driver
 
-`StandardDetector` is an abstract class to assist in creating Device classes for hardware that writes its own data e.g. an AreaDetector implementation, or a PandA writing motor encoder positions to file.
-The `StandardDetector` is a simple compound device, with 2 standard components: 
+Now you need a class that subclasses [](#ADBaseController). This should implement at least:
+- `get_deadtime()` to give the amount of time required between triggers for a given exposure
+- `prepare()` to set the camera up for a given trigger mode, number of frames and exposure 
 
-- `DetectorWriter` to handle data persistence, i/o and pass information about data to the RunEngine (usually an instance of :py:class:`ADHDFWriter`)
-- `DetectorController` with logic for arming and disarming the detector. This will be unique to the StandardDetector implementation.
+For example for ADAravis this is in the file `_aravis_controller.py`:
+```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis_controller.py
+:language: python
+```
 
-Writing an AreaDetector StandardDetector
-----------------------------------------
+## Add a Detector that puts it all together
 
-For an AreaDetector implementation of the StandardDetector, two entity objects which are subdevices of the `StandardDetector` are used to map to AreaDetector plugins:
+Now you need to make a [](#StandardDetector) subclass that uses your IO and Controller with the standard file IO and Writer classes that come with ADCore. The `__init__` method should take the following:
+- `prefix`: The PV prefix for the driver and plugins
+- `path_provider`: A [](#PathProvider) that tells the detector where to write data
+- `drv_suffix`: A PV suffix for the driver, defaulting to `"cam1:"`
+- `writer_cls`: An [](#ADWriter) class to instantiate, defaulting to [](#adcore.ADHDFWriter)
+- `fileio_suffix`: An optional PV suffix for the fileio, if not given it will default to the writer class default
+- `name`: An optional name for the device
+- `config_sigs`: Optionally the signals to report as configuration
+- `plugins`: An optional mapping of {`name`: [](#adcore.NDPluginBase)} for each additional plugin that might contribute data to the resulting file
 
-- An NDPluginFile instance (for :py:class:`ADHDFWriter` an instance of :py:class:`NDFileHDFIO`)
-- An :py:class:`ADBaseIO` instance mapping to NDArray for the "driver" of the detector implementation
+For example for ADAravis this is in the file `_aravis.py`:
+```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis.py
+:language: python
+```
+
+## Make it importable
+
+Now you should take all the classes you've made and add it to the top level `__init__.py` to declare the public interface for this module. Typically you should also include any Enum types you have made to support the IO.
+
+For example for ADAravis this is:
+```{literalinclude} ../../src/ophyd_async/epics/adaravis/__init__.py
+:language: python
+```
+
+## Conclusion
+
+You have now made a detector, and can import and create it like this:
+
+```python
+from ophyd_async.epics import adaravis, adcore
 
 
-Define a :py:class:`FooDriver` if the NDArray requires fields in addition to those on :py:class:`ADBaseIO` to be exposed. It should extend :py:class:`ADBaseIO`.
-Enumeration fields should be named to prevent namespace collision, i.e. for a Signal named "TriggerSource" use the enum "FooTriggerSource"
-
-.. literalinclude:: ../examples/foo_detector.py
-   :language: python
-   :pyobject: FooDriver
-
-Define a :py:class:`FooController` with handling for converting the standard pattern of :py:meth:`ophyd_async.core.DetectorController.arm` and :py:meth:`ophyd_async.core.DetectorController.disarm` to required state of :py:class:`FooDriver` e.g. setting a compatible "FooTriggerSource" for a given `DetectorTrigger`, or raising an exception if incompatible with the `DetectorTrigger`.
-
-The :py:meth:`ophyd_async.core.DetectorController.get_deadtime` method is used when constructing sequence tables for hardware controlled scanning. Details on how to calculate the deadtime may be only available from technical manuals or otherwise complex. **If it requires fetching from signals, it is recommended to cache the value during the StandardDetector `prepare` method.**
-
-.. literalinclude:: ../examples/foo_detector.py
-   :pyobject: FooController
-
-:py:class:`FooDetector` ties the Driver, Controller and data persistence layer together. The example :py:class:`FooDetector` writes h5 files using the standard NDPlugin. It additionally supports the :py:class:`HasHints` protocol which is optional but recommended.
-
-Its initialiser assumes the NSLS-II AreaDetector plugin EPICS address suffixes as defaults but allows overriding: **this pattern is recommended for consistency**.
-If the :py:class:`FooDriver` signals that should be read as configuration, they should be added to the "config_sigs" passed to the super.
-
-.. literalinclude:: ../examples/foo_detector.py
-   :pyobject: FooDetector
-
-
-Writing a non-AreaDetector StandardDetector
--------------------------------------------
-
-A non-AreaDetector `StandardDetector` should implement `DetectorController` and `DetectorWriter` directly.
-Here we construct a `DetectorController` that co-ordinates signals on a PandA PositionCapture block - a child device "pcap" of the `StandardDetector` implementation, analogous to the :py:class:`FooDriver`.
-
-.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_control.py
-   :pyobject: PandaPcapController
-
-The PandA may write a number of fields, and the :py:class:`PandaHDFWriter` co-ordinates those, configures the filewriter and describes the data for the RunEngine.
-
-.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_writer.py
-   :pyobject: PandaHDFWriter
-
-The PandA StandardDetector implementation simply ties the component parts and its child devices together.
-
-.. literalinclude:: ../../src/ophyd_async/fastcs/panda/_hdf_panda.py
-   :pyobject: HDFPanda
+det = adaravis.AravisDetector(
+   "PREFIX:", 
+   path_provider, 
+   drv_suffix="DRV:", 
+   writer_cls=adcore.ADHDFWriter, 
+   fileio_suffix="HDF:",
+)
+```
