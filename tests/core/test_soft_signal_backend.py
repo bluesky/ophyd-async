@@ -2,7 +2,7 @@ import asyncio
 import os
 import time
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Any, TypeVar
 
 import numpy as np
 import pytest
@@ -13,9 +13,10 @@ from ophyd_async.core import (
     SignalBackend,
     SoftSignalBackend,
     StrictEnum,
-    T,
     soft_signal_rw,
 )
+
+T = TypeVar("T")
 
 
 class MyEnum(StrictEnum):

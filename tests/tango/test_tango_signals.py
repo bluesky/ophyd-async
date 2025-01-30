@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 from random import choice
-from typing import Generic
+from typing import Generic, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -12,7 +12,7 @@ import pytest
 from bluesky.protocols import Reading
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalBackend, SignalR, SignalRW, SignalW, SignalX, T
+from ophyd_async.core import SignalBackend, SignalR, SignalRW, SignalW, SignalX
 from ophyd_async.tango.core import (
     TangoSignalBackend,
     tango_signal_r,
@@ -26,6 +26,8 @@ from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
+
+T = TypeVar("T")
 
 
 def __tango_signal_auto(*args, **kwargs):

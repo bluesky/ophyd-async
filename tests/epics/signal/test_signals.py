@@ -4,7 +4,7 @@ import time
 from collections.abc import Awaitable, Callable
 from enum import Enum
 from pathlib import Path
-from typing import Generic, Literal, get_args
+from typing import Generic, Literal, TypeVar, get_args
 
 import bluesky.plan_stubs as bps
 import numpy as np
@@ -25,7 +25,6 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
     SubsetEnum,
-    T,
     Table,
     YamlSettingsProvider,
     observe_value,
@@ -54,6 +53,7 @@ from ophyd_async.plan_stubs import (
 )
 from ophyd_async.testing import MonitorQueue, assert_describe_signal
 
+T = TypeVar("T")
 Protocol = Literal["ca", "pva"]
 
 
