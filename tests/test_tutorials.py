@@ -1,4 +1,5 @@
 import importlib
+import os
 import re
 import time
 from pathlib import Path
@@ -29,6 +30,9 @@ def expected_scan_output():
 
 @pytest.mark.parametrize("module", ["ophyd_async.sim", "ophyd_async.epics.demo"])
 def test_implementing_devices(module, capsys, expected_scan_output):
+    # We want the text output of the best effort callback, but the plotting takes
+    # too much time for CI, even if headless, so disable it
+    os.environ.pop("MPLBACKEND", None)
     with patch("bluesky.run_engine.autoawait_in_bluesky_event_loop") as autoawait:
         main = importlib.import_module(f"{module}.__main__")
         autoawait.assert_called_once_with()
@@ -37,7 +41,7 @@ def test_implementing_devices(module, capsys, expected_scan_output):
         RE(main.bps.mv(motor.velocity, 1000))
     start = time.monotonic()
     RE(main.bp.grid_scan([main.pdet], main.stage.x, 1, 2, 3, main.stage.y, 2, 3, 3))
-    assert time.monotonic() - start == pytest.approx(20.0, abs=1.0)
+    assert time.monotonic() - start == pytest.approx(2.5, abs=2.0)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert SCAN_LINE.findall(captured.out) == expected_scan_output
