@@ -21,6 +21,8 @@ from ._block import CaptureMode, DataBlock
 
 
 class PandaHDFWriter(DetectorWriter):
+    """For writing for PandA data from the `DataBlock`."""
+
     _ctxt: Context | None = None
 
     def __init__(

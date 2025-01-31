@@ -13,7 +13,10 @@ DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 # To be a 1D array shape should really be tuple[int], but np.array()
 # currently produces tuple[int, ...] even when it has 1D input args
 # https://github.com/numpy/numpy/issues/28077#issuecomment-2566485178
+
 Array1D = np.ndarray[tuple[int, ...], np.dtype[DTypeScalar_co]]
+"""A type alias for a 1D numpy array with a specific scalar data type."""
+
 Primitive = bool | int | float | str
 SignalDatatype = (
     Primitive

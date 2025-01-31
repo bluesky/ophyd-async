@@ -13,6 +13,8 @@ _MAX_NUM_IMAGE = 999_999
 
 
 class Andor2Controller(adcore.ADBaseController[Andor2DriverIO]):
+    """For controlling the Andor 2 detector."""
+
     def __init__(
         self,
         driver: Andor2DriverIO,

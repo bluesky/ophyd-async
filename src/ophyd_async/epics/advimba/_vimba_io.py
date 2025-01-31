@@ -20,6 +20,8 @@ class VimbaConvertFormat(StrictEnum):
 
 
 class VimbaTriggerSource(StrictEnum):
+    """Mode for the source of triggers on the Vimbda."""
+
     FREERUN = "Freerun"
     LINE1 = "Line1"
     LINE2 = "Line2"
@@ -35,11 +37,15 @@ class VimbaOverlap(StrictEnum):
 
 
 class VimbaOnOff(StrictEnum):
+    """On/Off modes on the Vimba detector."""
+
     ON = "On"
     OFF = "Off"
 
 
 class VimbaExposeOutMode(StrictEnum):
+    """Modes for exposure on the Vimba detector."""
+
     TIMED = "Timed"  # Use ExposureTime PV
     TRIGGER_WIDTH = "TriggerWidth"  # Expose for length of high signal
 

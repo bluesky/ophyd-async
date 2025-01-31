@@ -24,6 +24,8 @@ EXPOSE_OUT_MODE = {
 
 
 class VimbaController(adcore.ADBaseController[VimbaDriverIO]):
+    """Controller for the Vimba detector."""
+
     def __init__(
         self,
         driver: VimbaDriverIO,

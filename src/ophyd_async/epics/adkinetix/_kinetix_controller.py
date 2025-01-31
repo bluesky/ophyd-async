@@ -17,6 +17,8 @@ KINETIX_TRIGGER_MODE_MAP = {
 
 
 class KinetixController(adcore.ADBaseController[KinetixDriverIO]):
+    """Controller for adkinetix detector."""
+
     def __init__(
         self,
         driver: KinetixDriverIO,
