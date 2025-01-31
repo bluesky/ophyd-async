@@ -11,7 +11,7 @@ from tango.test_context import MultiDeviceTestContext
 
 
 @pytest.fixture(scope="module")  # module level scope doesn't work properly...
-def everything_tango_device():
+def everything_device():
     with MultiDeviceTestContext(
         [
             {
@@ -73,26 +73,31 @@ _array_vals = {
 _image_vals = {k: np.vstack((v, v)) for k, v in _array_vals.items()}
 
 
-async def test_set_with_converter(everything_tango_device):
-    await everything_tango_device.connect()
+async def assert_val_reading(signal, value, name=""):
+    await assert_value(signal, value)
+    await assert_reading(signal, {name: {"value": value}})
+
+
+async def test_set_with_converter(everything_device):
+    await everything_device.connect()
     with pytest.raises(TypeError):
-        await everything_tango_device.strenum.set(0)
+        await everything_device.strenum.set(0)
     with pytest.raises(ValueError):
-        await everything_tango_device.strenum.set("NON_ENUM_VALUE")
-    await everything_tango_device.strenum.set("AAA")
-    await everything_tango_device.strenum.set(ExampleStrEnum.B)
-    await everything_tango_device.strenum.set(ExampleStrEnum.C.value)
+        await everything_device.strenum.set("NON_ENUM_VALUE")
+    await everything_device.strenum.set("AAA")
+    await everything_device.strenum.set(ExampleStrEnum.B)
+    await everything_device.strenum.set(ExampleStrEnum.C.value)
 
     # setting enum spectrum works with lists and arrays
-    await everything_tango_device.strenum_spectrum.set(["AAA", "BBB"])
-    await everything_tango_device.strenum_spectrum.set(np.array(["BBB", "CCC"]))
-    await everything_tango_device.strenum_spectrum.set(
+    await everything_device.strenum_spectrum.set(["AAA", "BBB"])
+    await everything_device.strenum_spectrum.set(np.array(["BBB", "CCC"]))
+    await everything_device.strenum_spectrum.set(
         [
             ExampleStrEnum.B,
             ExampleStrEnum.C,
         ]
     )
-    await everything_tango_device.strenum_spectrum.set(
+    await everything_device.strenum_spectrum.set(
         np.array(
             [
                 ExampleStrEnum.A,
@@ -102,11 +107,11 @@ async def test_set_with_converter(everything_tango_device):
         )
     )
 
-    await everything_tango_device.strenum_image.set([["AAA", "BBB"], ["AAA", "BBB"]])
-    await everything_tango_device.strenum_image.set(
+    await everything_device.strenum_image.set([["AAA", "BBB"], ["AAA", "BBB"]])
+    await everything_device.strenum_image.set(
         np.array([["AAA", "BBB"], ["AAA", "BBB"]])
     )
-    await everything_tango_device.strenum_image.set(
+    await everything_device.strenum_image.set(
         [
             [
                 ExampleStrEnum.B,
@@ -118,7 +123,7 @@ async def test_set_with_converter(everything_tango_device):
             ],
         ]
     )
-    await everything_tango_device.strenum_image.set(
+    await everything_device.strenum_image.set(
         np.array(
             [
                 [
@@ -135,149 +140,46 @@ async def test_set_with_converter(everything_tango_device):
     )
 
 
-async def test_assert_value_everything_tango(everything_tango_device):
-    await everything_tango_device.connect()
-    await assert_value(everything_tango_device.str, "test_string")
-    await assert_value(everything_tango_device.bool, True)
-    await assert_value(everything_tango_device.strenum, ExampleStrEnum.B)
-    await assert_value(everything_tango_device.int8, 1)
-    await assert_value(everything_tango_device.uint8, 1)
-    await assert_value(everything_tango_device.int16, 1)
-    await assert_value(everything_tango_device.uint16, 1)
-    await assert_value(everything_tango_device.int32, 1)
-    await assert_value(everything_tango_device.uint32, 1)
-    await assert_value(everything_tango_device.int64, 1)
-    await assert_value(everything_tango_device.uint64, 1)
-    await assert_value(everything_tango_device.float32, 1.234)
-    await assert_value(everything_tango_device.float64, 1.234)
+async def test_assert_val_reading_everything_tango(everything_device):
+    await everything_device.connect()
+    await assert_val_reading(everything_device.str, "test_string")
+    await assert_val_reading(everything_device.bool, True)
+    await assert_val_reading(everything_device.strenum, ExampleStrEnum.B)
+    await assert_val_reading(everything_device.int8, 1)
+    await assert_val_reading(everything_device.uint8, 1)
+    await assert_val_reading(everything_device.int16, 1)
+    await assert_val_reading(everything_device.uint16, 1)
+    await assert_val_reading(everything_device.int32, 1)
+    await assert_val_reading(everything_device.uint32, 1)
+    await assert_val_reading(everything_device.int64, 1)
+    await assert_val_reading(everything_device.uint64, 1)
+    await assert_val_reading(everything_device.float32, 1.234)
+    await assert_val_reading(everything_device.float64, 1.234)
 
-    await assert_value(everything_tango_device.str_spectrum, _array_vals["str"])
-    await assert_value(everything_tango_device.bool_spectrum, _array_vals["bool"])
-    await assert_value(everything_tango_device.strenum_spectrum, _array_vals["strenum"])
-    await assert_value(everything_tango_device.int8_spectrum, _array_vals["int8"])
-    await assert_value(everything_tango_device.uint8_spectrum, _array_vals["uint8"])
-    await assert_value(everything_tango_device.int16_spectrum, _array_vals["int16"])
-    await assert_value(everything_tango_device.uint16_spectrum, _array_vals["uint16"])
-    await assert_value(everything_tango_device.int32_spectrum, _array_vals["int32"])
-    await assert_value(everything_tango_device.uint32_spectrum, _array_vals["uint32"])
-    await assert_value(everything_tango_device.int64_spectrum, _array_vals["int64"])
-    await assert_value(everything_tango_device.uint64_spectrum, _array_vals["uint64"])
-    await assert_value(everything_tango_device.float32_spectrum, _array_vals["float32"])
-    await assert_value(everything_tango_device.float64_spectrum, _array_vals["float64"])
+    await assert_val_reading(everything_device.str_spectrum, _array_vals["str"])
+    await assert_val_reading(everything_device.bool_spectrum, _array_vals["bool"])
+    await assert_val_reading(everything_device.strenum_spectrum, _array_vals["strenum"])
+    await assert_val_reading(everything_device.int8_spectrum, _array_vals["int8"])
+    await assert_val_reading(everything_device.uint8_spectrum, _array_vals["uint8"])
+    await assert_val_reading(everything_device.int16_spectrum, _array_vals["int16"])
+    await assert_val_reading(everything_device.uint16_spectrum, _array_vals["uint16"])
+    await assert_val_reading(everything_device.int32_spectrum, _array_vals["int32"])
+    await assert_val_reading(everything_device.uint32_spectrum, _array_vals["uint32"])
+    await assert_val_reading(everything_device.int64_spectrum, _array_vals["int64"])
+    await assert_val_reading(everything_device.uint64_spectrum, _array_vals["uint64"])
+    await assert_val_reading(everything_device.float32_spectrum, _array_vals["float32"])
+    await assert_val_reading(everything_device.float64_spectrum, _array_vals["float64"])
 
-    await assert_value(everything_tango_device.str_image, _image_vals["str"])
-    await assert_value(everything_tango_device.bool_image, _image_vals["bool"])
-    await assert_value(everything_tango_device.strenum_image, _image_vals["strenum"])
-    await assert_value(everything_tango_device.int8_image, _image_vals["int8"])
-    await assert_value(everything_tango_device.uint8_image, _image_vals["uint8"])
-    await assert_value(everything_tango_device.int16_image, _image_vals["int16"])
-    await assert_value(everything_tango_device.uint16_image, _image_vals["uint16"])
-    await assert_value(everything_tango_device.int32_image, _image_vals["int32"])
-    await assert_value(everything_tango_device.uint32_image, _image_vals["uint32"])
-    await assert_value(everything_tango_device.int64_image, _image_vals["int64"])
-    await assert_value(everything_tango_device.uint64_image, _image_vals["uint64"])
-    await assert_value(everything_tango_device.float32_image, _image_vals["float32"])
-    await assert_value(everything_tango_device.float64_image, _image_vals["float64"])
-
-
-async def test_assert_reading_everything_tango(everything_tango_device):
-    await everything_tango_device.connect()
-
-    await assert_reading(everything_tango_device.str, {"": {"value": "test_string"}})
-    await assert_reading(everything_tango_device.bool, {"": {"value": True}})
-    await assert_reading(
-        everything_tango_device.strenum, {"": {"value": ExampleStrEnum.B}}
-    )
-    await assert_reading(everything_tango_device.int8, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.uint8, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.int16, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.uint16, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.int32, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.uint32, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.int64, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.uint64, {"": {"value": 1}})
-    await assert_reading(everything_tango_device.float32, {"": {"value": 1.234}})
-    await assert_reading(everything_tango_device.float64, {"": {"value": 1.234}})
-
-    await assert_reading(
-        everything_tango_device.str_spectrum, {"": {"value": _array_vals["str"]}}
-    )
-    await assert_reading(
-        everything_tango_device.bool_spectrum, {"": {"value": _array_vals["bool"]}}
-    )
-    await assert_reading(
-        everything_tango_device.strenum_spectrum,
-        {"": {"value": _array_vals["strenum"]}},
-    )
-    await assert_reading(
-        everything_tango_device.int8_spectrum, {"": {"value": _array_vals["int8"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint8_spectrum, {"": {"value": _array_vals["uint8"]}}
-    )
-    await assert_reading(
-        everything_tango_device.int16_spectrum, {"": {"value": _array_vals["int16"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint16_spectrum, {"": {"value": _array_vals["uint16"]}}
-    )
-    await assert_reading(
-        everything_tango_device.int32_spectrum, {"": {"value": _array_vals["int32"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint32_spectrum, {"": {"value": _array_vals["uint32"]}}
-    )
-    await assert_reading(
-        everything_tango_device.int64_spectrum, {"": {"value": _array_vals["int64"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint64_spectrum, {"": {"value": _array_vals["uint64"]}}
-    )
-    await assert_reading(
-        everything_tango_device.float32_spectrum,
-        {"": {"value": _array_vals["float32"]}},
-    )
-    await assert_reading(
-        everything_tango_device.float64_spectrum,
-        {"": {"value": _array_vals["float64"]}},
-    )
-
-    await assert_reading(
-        everything_tango_device.str_image, {"": {"value": _image_vals["str"]}}
-    )
-    await assert_reading(
-        everything_tango_device.bool_image, {"": {"value": _image_vals["bool"]}}
-    )
-    await assert_reading(
-        everything_tango_device.strenum_image, {"": {"value": _image_vals["strenum"]}}
-    )
-    await assert_reading(
-        everything_tango_device.int8_image, {"": {"value": _image_vals["int8"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint8_image, {"": {"value": _image_vals["uint8"]}}
-    )
-    await assert_reading(
-        everything_tango_device.int16_image, {"": {"value": _image_vals["int16"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint16_image, {"": {"value": _image_vals["uint16"]}}
-    )
-    await assert_reading(
-        everything_tango_device.int32_image, {"": {"value": _image_vals["int32"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint32_image, {"": {"value": _image_vals["uint32"]}}
-    )
-    await assert_reading(
-        everything_tango_device.int64_image, {"": {"value": _image_vals["int64"]}}
-    )
-    await assert_reading(
-        everything_tango_device.uint64_image, {"": {"value": _image_vals["uint64"]}}
-    )
-    await assert_reading(
-        everything_tango_device.float32_image, {"": {"value": _image_vals["float32"]}}
-    )
-    await assert_reading(
-        everything_tango_device.float64_image, {"": {"value": _image_vals["float64"]}}
-    )
+    await assert_val_reading(everything_device.str_image, _image_vals["str"])
+    await assert_val_reading(everything_device.bool_image, _image_vals["bool"])
+    await assert_val_reading(everything_device.strenum_image, _image_vals["strenum"])
+    await assert_val_reading(everything_device.int8_image, _image_vals["int8"])
+    await assert_val_reading(everything_device.uint8_image, _image_vals["uint8"])
+    await assert_val_reading(everything_device.int16_image, _image_vals["int16"])
+    await assert_val_reading(everything_device.uint16_image, _image_vals["uint16"])
+    await assert_val_reading(everything_device.int32_image, _image_vals["int32"])
+    await assert_val_reading(everything_device.uint32_image, _image_vals["uint32"])
+    await assert_val_reading(everything_device.int64_image, _image_vals["int64"])
+    await assert_val_reading(everything_device.uint64_image, _image_vals["uint64"])
+    await assert_val_reading(everything_device.float32_image, _image_vals["float32"])
+    await assert_val_reading(everything_device.float64_image, _image_vals["float64"])
