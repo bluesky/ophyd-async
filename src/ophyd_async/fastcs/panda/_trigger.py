@@ -9,6 +9,8 @@ from ._table import SeqTable
 
 
 class SeqTableInfo(BaseModel):
+    """Info for the PandA `SeqTable` for flyscanning."""
+
     sequence_table: SeqTable = Field(strict=True)
     repeats: int = Field(ge=0)
     prescale_as_us: float = Field(default=1, ge=0)  # microseconds
@@ -44,6 +46,8 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
 
 
 class PcompInfo(BaseModel):
+    """Info for the PandA `Pcomp` for flyscanning."""
+
     start_postion: int = Field(description="start position in counts")
     pulse_width: int = Field(description="width of a single pulse in counts", gt=0)
     rising_edge_step: int = Field(

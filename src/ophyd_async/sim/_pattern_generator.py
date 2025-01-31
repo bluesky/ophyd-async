@@ -71,6 +71,8 @@ class PatternFile:
 
 
 class PatternGenerator:
+    """Generates pattern images in files."""
+
     def __init__(self):
         self._x = 0.0
         self._y = 0.0

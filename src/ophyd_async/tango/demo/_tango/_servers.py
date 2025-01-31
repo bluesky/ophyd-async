@@ -8,6 +8,8 @@ from tango.server import Device, attribute, command
 
 
 class DemoMover(Device):
+    """Demo tango moving device."""
+
     green_mode = GreenMode.Asyncio
     _position = 0.0
     _setpoint = 0.0
@@ -65,6 +67,8 @@ class DemoMover(Device):
 
 
 class DemoCounter(Device):
+    """Demo tango counting device."""
+
     green_mode = GreenMode.Asyncio
     _counts = 0
     _sample_time = 1.0

@@ -46,6 +46,8 @@ R = TypeVar("R")
 def ensure_proper_executor(
     func: Callable[..., Coroutine[Any, Any, R]],
 ) -> Callable[..., Coroutine[Any, Any, R]]:
+    """Ensures decorated method has a proper asyncio executor."""
+
     @functools.wraps(func)
     async def wrapper(self: Any, *args: Any, **kwargs: Any) -> R:
         current_executor: AsyncioExecutor = get_global_executor()  # type: ignore
@@ -57,6 +59,7 @@ def ensure_proper_executor(
 
 
 def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
+    """For converting between recieved tango types and python primatives."""
     array = is_array(tango_type)
     if is_int(tango_type, True):
         return array, int, "integer"
@@ -138,6 +141,8 @@ class TangoProxy:
 
 
 class AttributeProxy(TangoProxy):
+    """Used by the tango transport."""
+
     _callback: Callback | None = None
     _eid: int | None = None
     _poll_task: asyncio.Task | None = None
@@ -386,6 +391,8 @@ class AttributeProxy(TangoProxy):
 
 
 class CommandProxy(TangoProxy):
+    """Tango proxy for commands."""
+
     _last_reading: Reading = Reading(value=None, timestamp=0, alarm_severity=0)
 
     def subscribe_callback(self, callback: Callback | None) -> None:
@@ -474,6 +481,7 @@ class CommandProxy(TangoProxy):
 
 
 def get_dtype_extended(datatype) -> object | None:
+    """For converting tango types to numpy datatype formats."""
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
@@ -487,6 +495,8 @@ def get_trl_descriptor(
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
 ) -> Descriptor:
+    """Creates a descriptor from a tango resource locator."""
+
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
@@ -583,6 +593,8 @@ def get_trl_descriptor(
 async def get_tango_trl(
     full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float
 ) -> TangoProxy:
+    """Gets the tango resource locator."""
+
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
     device_trl, trl_name = full_trl.rsplit("/", 1)
@@ -618,6 +630,8 @@ async def get_tango_trl(
 
 
 class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
+    """Tango backend to connect signals over tango."""
+
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,

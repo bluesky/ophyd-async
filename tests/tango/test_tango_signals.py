@@ -266,6 +266,8 @@ async def make_backend(
     connect: bool = True,
     allow_events: bool | None = True,
 ) -> TangoSignalBackend:
+    """Wrapper for making the tango signal backend."""
+
     backend = TangoSignalBackend(typ, pv, pv)
     backend.allow_events(allow_events)
     if connect:
@@ -281,6 +283,8 @@ async def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
 
 # --------------------------------------------------------------------
 class MonitorQueue:
+    """For monitoring updates in tests."""
+
     def __init__(self, backend: SignalBackend):
         self.updates: asyncio.Queue[Reading] = asyncio.Queue()
         self.backend = backend

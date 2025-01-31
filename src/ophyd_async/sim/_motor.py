@@ -18,6 +18,8 @@ from ophyd_async.core import StandardReadableFormat as Format
 
 
 class SimMotor(StandardReadable, Movable, Stoppable):
+    """For usage when simulating a motor."""
+
     def __init__(self, name="", instant=True) -> None:
         """Simulation of a motor, with optional velocity
 
