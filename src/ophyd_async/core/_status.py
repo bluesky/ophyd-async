@@ -157,6 +157,7 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
 @AsyncStatus.wrap
 async def completed_status(exception: Exception | None = None):
+    """For raising the exception from a completed asyncio task if one exists."""
     if exception:
         raise exception
     return None

@@ -9,6 +9,11 @@ from ._utils import T
 
 
 class FlyerController(ABC, Generic[T]):
+    """
+    Base class for controlling 'flyable' devices
+    :class:`~bluesky.protocols.Flyable`
+    """
+
     @abstractmethod
     async def prepare(self, value: T) -> Any:
         """Move to the start of the flyscan"""
@@ -33,6 +38,11 @@ class StandardFlyer(
     Flyable,
     Generic[T],
 ):
+    """
+    Base class for 'flyable' devices
+    :class:`~bluesky.protocols.Flyable`
+    """
+
     def __init__(
         self,
         trigger_logic: FlyerController[T],

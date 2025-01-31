@@ -95,6 +95,8 @@ _primitive_dtype: dict[type[Primitive], Dtype] = {
 
 
 class SignalMetadata(TypedDict, total=False):
+    """Metadata for a signal. No field is required."""
+
     limits: Limits
     choices: list[str]
     precision: int
@@ -155,6 +157,8 @@ def make_datakey(
     source: str,
     metadata: SignalMetadata,
 ) -> DataKey:
+    """Makes a `DataKey` for a given datatype."""
+
     dtn = _datakey_dtype_numpy(datatype, value)
     return DataKey(
         dtype=_datakey_dtype(datatype),

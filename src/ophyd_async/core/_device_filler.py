@@ -53,6 +53,8 @@ class DeviceAnnotation(Protocol):
 
 
 class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
+    """For filling signals on introspected devices."""
+
     def __init__(
         self,
         device: Device,
