@@ -12,6 +12,8 @@ _HIGHEST_POSSIBLE_DEADTIME = 1961e-6
 
 
 class AravisController(adcore.ADBaseController[AravisDriverIO]):
+    """`DetectorController` for an `AravisDriverIO`."""
+
     def get_deadtime(self, exposure: float | None) -> float:
         return _HIGHEST_POSSIBLE_DEADTIME
 
