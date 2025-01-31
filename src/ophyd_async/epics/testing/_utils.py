@@ -7,10 +7,13 @@ from pathlib import Path
 
 
 def generate_random_pv_prefix() -> str:
+    """For generating random PV names in test devices."""
     return "".join(random.choice(string.ascii_lowercase) for _ in range(12)) + ":"
 
 
 class TestingIOC:
+    """For initialising an IOC in tests."""
+
     def __init__(self):
         self._db_macros: list[tuple[Path, dict[str, str]]] = []
         self.output = ""

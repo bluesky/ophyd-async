@@ -4,6 +4,8 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw_rbv
 
 
 class PilatusTriggerMode(StrictEnum):
+    """Trigger modes for ADPilatus detector."""
+
     INTERNAL = "Internal"
     EXT_ENABLE = "Ext. Enable"
     EXT_TRIGGER = "Ext. Trigger"

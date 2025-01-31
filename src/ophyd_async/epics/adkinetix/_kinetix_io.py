@@ -4,6 +4,8 @@ from ophyd_async.epics.core import epics_signal_rw_rbv
 
 
 class KinetixTriggerMode(StrictEnum):
+    """Trigger mode for ADKinetix detector."""
+
     INTERNAL = "Internal"
     EDGE = "Rising Edge"
     GATE = "Exp. Gate"

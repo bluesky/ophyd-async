@@ -15,6 +15,8 @@ class SeqTableInfo(BaseModel):
 
 
 class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
+    """For controlling the PandA `SeqTable` when flyscanning."""
+
     def __init__(self, seq: SeqBlock) -> None:
         self.seq = seq
 
@@ -64,6 +66,8 @@ class PcompInfo(BaseModel):
 
 
 class StaticPcompTriggerLogic(FlyerController[PcompInfo]):
+    """For controlling the PandA `PcompBlock` when flyscanning."""
+
     def __init__(self, pcomp: PcompBlock) -> None:
         self.pcomp = pcomp
 

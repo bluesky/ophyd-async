@@ -31,6 +31,8 @@ PilatusControllerT = TypeVar("PilatusControllerT", bound="PilatusController")
 
 
 class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
+    """Controller for ADPilatus detector."""
+
     _supported_trigger_types = {
         DetectorTrigger.INTERNAL: PilatusTriggerMode.INTERNAL,
         DetectorTrigger.CONSTANT_GATE: PilatusTriggerMode.EXT_ENABLE,

@@ -240,6 +240,8 @@ def _use_pyepics_context_if_imported():
 
 
 class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
+    """Backend for a signal to interact with PVs over channel access."""
+
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,

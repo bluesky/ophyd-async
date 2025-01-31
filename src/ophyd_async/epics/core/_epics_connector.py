@@ -38,6 +38,8 @@ def fill_backend_with_prefix(
 
 
 class EpicsDeviceConnector(DeviceConnector):
+    """Used for connecting signals to static EPICS pvs."""
+
     def __init__(self, prefix: str) -> None:
         self.prefix = prefix
 
