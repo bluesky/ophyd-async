@@ -168,7 +168,7 @@ class StatusWatcher(Watcher[T]):
     def __init__(self, status: WatchableAsyncStatus) -> None:
         self._event = asyncio.Event()
         self._mock = Mock()
-        status.watch(self._mock)
+        status.watch(self)
 
     def __call__(
         self,
@@ -195,9 +195,31 @@ class StatusWatcher(Watcher[T]):
         )
         self._event.set()
 
-    async def wait_for_call(self, *args, **kwargs):
+    async def wait_for_call(
+        self,
+        current: T | None = None,
+        initial: T | None = None,
+        target: T | None = None,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: int | None = None,
+        fraction: float | None = None,
+        # Any so we can use pytest.approx
+        time_elapsed: float | Any = None,
+        time_remaining: float | Any = None,
+    ):
         await asyncio.wait_for(self._event.wait(), timeout=1)
         assert self._mock.call_count == 1
-        assert self._mock.call_args == call(*args, **kwargs)
+        assert self._mock.call_args == call(
+            current=current,
+            initial=initial,
+            target=target,
+            name=name,
+            unit=unit,
+            precision=precision,
+            fraction=fraction,
+            time_elapsed=time_elapsed,
+            time_remaining=time_remaining,
+        )
         self._mock.reset_mock()
         self._event.clear()

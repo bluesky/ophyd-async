@@ -57,6 +57,10 @@ For example for ADAravis this is:
 :language: python
 ```
 
+## Write tests
+
+TODO
+
 ## Conclusion
 
 You have now made a detector, and can import and create it like this:

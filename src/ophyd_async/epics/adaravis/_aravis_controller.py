@@ -31,7 +31,7 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
             await self.driver.trigger_mode.set(AravisTriggerMode.ON)
             await self.driver.trigger_source.set(AravisTriggerSource.LINE1)
         else:
-            raise ValueError(f"{self} does not support trigger {trigger_info.trigger}")
+            raise ValueError(f"ADAravis does not support {trigger_info.trigger}")
 
         if trigger_info.total_number_of_triggers == 0:
             image_mode = adcore.ImageMode.CONTINUOUS

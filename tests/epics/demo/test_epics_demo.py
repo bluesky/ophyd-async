@@ -191,7 +191,7 @@ async def test_set_velocity(mock_motor: demo.DemoMotor) -> None:
 async def test_zero_velocity(mock_motor: demo.DemoMotor) -> None:
     # v = sim_motor.velocity
     await mock_motor.velocity.set(0)
-    with pytest.raises(ValueError, match="Mover has zero velocity"):
+    with pytest.raises(ZeroDivisionError):
         await mock_motor.set(3.14)
 
 

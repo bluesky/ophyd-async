@@ -62,4 +62,4 @@ class VimbaDriverIO(adcore.ADBaseIO):
         self.exposure_mode = epics_signal_rw_rbv(
             VimbaExposeOutMode, prefix + "ExposureMode"
         )
-        super().__init__(prefix, name)
+        super().__init__(prefix, name=name)

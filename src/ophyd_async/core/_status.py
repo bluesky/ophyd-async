@@ -1,24 +1,19 @@
 """Equivalent of bluesky.protocols.Status for asynchronous tasks."""
 
+from __future__ import annotations
+
 import asyncio
 import functools
 import time
 from collections.abc import AsyncIterator, Callable, Coroutine
 from dataclasses import asdict, replace
-from typing import (
-    Generic,
-    TypeVar,
-    cast,
-)
+from typing import Generic
 
 from bluesky.protocols import Status
 
 from ._device import Device
 from ._protocol import Watcher
 from ._utils import Callback, P, T, WatcherUpdate
-
-AS = TypeVar("AS", bound="AsyncStatus")
-WAS = TypeVar("WAS", bound="WatchableAsyncStatus")
 
 
 class AsyncStatusBase(Status):
@@ -91,11 +86,11 @@ class AsyncStatus(AsyncStatusBase):
     """Convert asyncio awaitable to bluesky Status interface"""
 
     @classmethod
-    def wrap(cls: type[AS], f: Callable[P, Coroutine]) -> Callable[P, AS]:
+    def wrap(cls, f: Callable[P, Coroutine]) -> Callable[P, AsyncStatus]:
         """Wrap an async function in an AsyncStatus."""
 
         @functools.wraps(f)
-        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AS:
+        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AsyncStatus:
             if args and isinstance(args[0], Device):
                 name = args[0].name
             else:
@@ -104,7 +99,7 @@ class AsyncStatus(AsyncStatusBase):
 
         # type is actually functools._Wrapped[P, Awaitable, P, AS]
         # but functools._Wrapped is not necessarily available
-        return cast(Callable[P, AS], wrap_f)
+        return wrap_f
 
 
 class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
@@ -120,12 +115,14 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
     async def _notify_watchers_from(self, iterator: AsyncIterator[WatcherUpdate[T]]):
         async for update in iterator:
+            print("got", update)
             self._last_update = (
                 update
                 if update.time_elapsed is not None
                 else replace(update, time_elapsed=time.monotonic() - self._start)
             )
             for watcher in self._watchers:
+                print("update watcher", watcher)
                 self._update_watcher(watcher, self._last_update)
 
     def _update_watcher(self, watcher: Watcher, update: WatcherUpdate[T]):
@@ -136,25 +133,26 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
     def watch(self, watcher: Watcher):
         self._watchers.append(watcher)
+        print("Add watcher", self._last_update)
         if self._last_update:
             self._update_watcher(watcher, self._last_update)
 
     @classmethod
     def wrap(
-        cls: type[WAS],
+        cls,
         f: Callable[P, AsyncIterator[WatcherUpdate[T]]],
-    ) -> Callable[P, WAS]:
+    ) -> Callable[P, WatchableAsyncStatus[T]]:
         """Wrap an AsyncIterator in a WatchableAsyncStatus."""
 
         @functools.wraps(f)
-        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WAS:
+        def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WatchableAsyncStatus[T]:
             if args and isinstance(args[0], Device):
                 name = args[0].name
             else:
                 name = None
             return cls(f(*args, **kwargs), name=name)
 
-        return cast(Callable[P, WAS], wrap_f)
+        return wrap_f
 
 
 @AsyncStatus.wrap

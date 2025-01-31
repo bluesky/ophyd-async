@@ -2,7 +2,7 @@ from typing import Annotated as A
 
 from ophyd_async.core import SignalRW, StrictEnum, SubsetEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core import EpicsDevice, PvSuffix
+from ophyd_async.epics.core import PvSuffix
 
 
 class AravisTriggerMode(StrictEnum):
@@ -20,7 +20,7 @@ class AravisTriggerSource(SubsetEnum):
     LINE1 = "Line1"
 
 
-class AravisDriverIO(EpicsDevice, adcore.ADBaseIO):
+class AravisDriverIO(adcore.ADBaseIO):
     """Generic Driver supporting all GiGE cameras
 
     This mirrors the interface provided by ADAravis/db/aravisCamera.template.

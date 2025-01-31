@@ -838,7 +838,7 @@ class SomeClass:
         (SomeClass, "Can't make converter for %s"),
         (object, "Can't make converter for %s"),
         (dict, "Can't make converter for %s"),
-        (npt.NDArray[np.float64], "Expected Array1D[dtype], got %s"),
+        (npt.NDArray[np.str_], "Expected Array1D[dtype], got %s"),
     ],
 )
 async def test_signal_unknown_datatype(datatype, err):

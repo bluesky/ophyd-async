@@ -27,4 +27,4 @@ class KinetixDriverIO(adcore.ADBaseIO):
         self.readout_port_idx = epics_signal_rw_rbv(
             KinetixReadoutMode, prefix + "ReadoutPortIdx"
         )
-        super().__init__(prefix, name)
+        super().__init__(prefix, name=name)

@@ -40,7 +40,7 @@ class DemoMotor(EpicsDevice, StandardReadable, Movable, Stoppable):
         self.readback.set_name(name)
 
     @WatchableAsyncStatus.wrap
-    async def set(
+    async def set(  # type: ignore
         self, new_position: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
     ):
         # The move should complete successfully unless stop(success=False) is called

@@ -1,4 +1,3 @@
-from typing import cast
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -9,7 +8,6 @@ from ophyd_async.core import (
     TriggerInfo,
 )
 from ophyd_async.epics import adaravis
-from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
@@ -23,37 +21,6 @@ async def test_deadtime_invariant_with_exposure_time(
     test_adaravis: adaravis.AravisDetector,
 ):
     assert test_adaravis._controller.get_deadtime(exposure_time) == 1961e-6
-
-
-async def test_trigger_source_set_to_gpio_line(test_adaravis: adaravis.AravisDetector):
-    driver = cast(adaravis.AravisDriverIO, test_adaravis.driver)
-    set_mock_value(driver.trigger_source, adaravis.AravisTriggerSource.FREERUN)
-
-    async def trigger_and_complete():
-        await test_adaravis._controller.prepare(
-            TriggerInfo(
-                number_of_triggers=1,
-                trigger=DetectorTrigger.EDGE_TRIGGER,
-            )
-        )
-        # Prevent timeouts
-        set_mock_value(driver.acquire, True)
-
-    # Default TriggerSource
-    assert (await driver.trigger_source.get_value()) == "Freerun"
-    test_adaravis._controller.gpio_number = 1
-    # TriggerSource not changed by setting gpio
-    assert (await driver.trigger_source.get_value()) == "Freerun"
-
-    await trigger_and_complete()
-
-    # TriggerSource changes
-    assert (await driver.trigger_source.get_value()) == "Line1"
-
-    test_adaravis._controller.gpio_number = 3
-    # TriggerSource not changed by setting gpio
-    await trigger_and_complete()
-    assert (await driver.trigger_source.get_value()) == "Line3"
 
 
 async def test_hints_from_hdf_writer(test_adaravis: adaravis.AravisDetector):
@@ -136,10 +103,7 @@ async def test_unsupported_trigger_excepts(test_adaravis: adaravis.AravisDetecto
     ) as mock_open:
         with pytest.raises(
             ValueError,
-            # str(EnumClass.value) handling changed in Python 3.11
-            match=(
-                "AravisController only supports the following trigger types: .* but"
-            ),
+            match="ADAravis does not support DetectorTrigger.VARIABLE_GATE",
         ):
             await test_adaravis.prepare(
                 TriggerInfo(

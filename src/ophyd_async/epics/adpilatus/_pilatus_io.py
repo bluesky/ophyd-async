@@ -19,4 +19,4 @@ class PilatusDriverIO(adcore.ADBaseIO):
             PilatusTriggerMode, prefix + "TriggerMode"
         )
         self.armed = epics_signal_r(bool, prefix + "Armed")
-        super().__init__(prefix, name)
+        super().__init__(prefix, name=name)
