@@ -115,14 +115,12 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
     async def _notify_watchers_from(self, iterator: AsyncIterator[WatcherUpdate[T]]):
         async for update in iterator:
-            print("got", update)
             self._last_update = (
                 update
                 if update.time_elapsed is not None
                 else replace(update, time_elapsed=time.monotonic() - self._start)
             )
             for watcher in self._watchers:
-                print("update watcher", watcher)
                 self._update_watcher(watcher, self._last_update)
 
     def _update_watcher(self, watcher: Watcher, update: WatcherUpdate[T]):
@@ -133,7 +131,7 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
     def watch(self, watcher: Watcher):
         self._watchers.append(watcher)
-        print("Add watcher", self._last_update)
+
         if self._last_update:
             self._update_watcher(watcher, self._last_update)
 
