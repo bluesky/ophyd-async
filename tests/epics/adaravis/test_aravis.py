@@ -103,7 +103,8 @@ async def test_unsupported_trigger_excepts(test_adaravis: adaravis.AravisDetecto
     ) as mock_open:
         with pytest.raises(
             ValueError,
-            match="ADAravis does not support DetectorTrigger.VARIABLE_GATE",
+            # str(EnumClass.value) handling changed in Python 3.11
+            match="ADAravis does not support (DetectorTrigger.)?VARIABLE_GATE",
         ):
             await test_adaravis.prepare(
                 TriggerInfo(

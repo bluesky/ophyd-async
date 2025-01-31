@@ -4,6 +4,7 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
+from enum import Enum
 from functools import cached_property
 from typing import (
     Generic,
@@ -28,20 +29,20 @@ from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 
-class DetectorTrigger(StrictEnum):
+class DetectorTrigger(Enum):
     """Type of mechanism for triggering a detector to take frames"""
 
     #: Detector generates internal trigger for given rate
-    INTERNAL = "internal"
+    INTERNAL = "INTERNAL"
     #: Expect a series of arbitrary length trigger signals
-    EDGE_TRIGGER = "edge_trigger"
+    EDGE_TRIGGER = "EDGE_TRIGGER"
     #: Expect a series of constant width external gate signals
-    CONSTANT_GATE = "constant_gate"
+    CONSTANT_GATE = "CONSTANT_GATE"
     #: Expect a series of variable width external gate signals
-    VARIABLE_GATE = "variable_gate"
+    VARIABLE_GATE = "VARIABLE_GATE"
 
 
 class TriggerInfo(BaseModel):
