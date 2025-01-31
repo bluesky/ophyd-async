@@ -34,19 +34,21 @@ class ExampleTable(Table):
     a_enum: Sequence[ExampleEnum]
 
 
+def int_array_value(dtype: type[DTypeScalar_co]):
+    iinfo = np.iinfo(dtype)  # type: ignore
+    return np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
+
+
 def int_array_signal(
     dtype: type[DTypeScalar_co], name: str = ""
 ) -> SignalRW[Array1D[DTypeScalar_co]]:
-    iinfo = np.iinfo(dtype)  # type: ignore
-    value = np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
+    value = int_array_value(dtype)
     return soft_signal_rw(Array1D[dtype], value, name)
 
 
-def float_array_signal(
-    dtype: type[DTypeScalar_co], name: str = ""
-) -> SignalRW[Array1D[DTypeScalar_co]]:
+def float_array_value(dtype: type[DTypeScalar_co]):
     finfo = np.finfo(dtype)  # type: ignore
-    value = np.array(
+    return np.array(
         [
             finfo.min,
             finfo.max,
@@ -59,6 +61,12 @@ def float_array_signal(
         ],
         dtype=dtype,
     )
+
+
+def float_array_signal(
+    dtype: type[DTypeScalar_co], name: str = ""
+) -> SignalRW[Array1D[DTypeScalar_co]]:
+    value = float_array_value(dtype)
     return soft_signal_rw(Array1D[dtype], value, name)
 
 

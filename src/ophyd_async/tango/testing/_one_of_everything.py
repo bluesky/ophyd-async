@@ -1,10 +1,10 @@
 import numpy as np
 
 from ophyd_async.core import (
-    Array1D,
     DTypeScalar_co,
     StrictEnum,
 )
+from ophyd_async.testing import float_array_value, int_array_value
 from tango import AttrDataFormat, AttrWriteType
 from tango.server import Device, attribute
 
@@ -15,43 +15,19 @@ class ExampleStrEnum(StrictEnum):
     C = "CCC"
 
 
-def int_spectrum_value(
-    dtype: type[DTypeScalar_co],
-) -> Array1D[DTypeScalar_co]:  # import from .testing?
-    iinfo = np.iinfo(dtype)  # type: ignore
-    return np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
-
-
 def int_image_value(
     dtype: type[DTypeScalar_co],
 ):
     # how do we type this?
-    array_1d = int_spectrum_value(dtype)
+    array_1d = int_array_value(dtype)
     return np.vstack((array_1d, array_1d))
-
-
-def float_spectrum_value(dtype: type[DTypeScalar_co]) -> Array1D[DTypeScalar_co]:
-    finfo = np.finfo(dtype)  # type: ignore
-    return np.array(
-        [
-            finfo.min,
-            finfo.max,
-            finfo.smallest_normal,
-            finfo.smallest_subnormal,
-            0,
-            1.234,
-            2.34e5,
-            3.45e-6,
-        ],
-        dtype=dtype,
-    )
 
 
 def float_image_value(
     dtype: type[DTypeScalar_co],
 ):
     # how do we type this?
-    array_1d = float_spectrum_value(dtype)
+    array_1d = float_array_value(dtype)
     return np.vstack((array_1d, array_1d))
 
 
@@ -92,16 +68,16 @@ _initial_values = {
         "str": ["one", "two", "three"],
         "bool": [False, True],
         "strenum": [0, 1, 2],  # Tango devices must use ints for enums
-        "int8": int_spectrum_value(np.int8),
-        "uint8": int_spectrum_value(np.uint8),
-        "int16": int_spectrum_value(np.int16),
-        "uint16": int_spectrum_value(np.uint16),
-        "int32": int_spectrum_value(np.int32),
-        "uint32": int_spectrum_value(np.uint32),
-        "int64": int_spectrum_value(np.int64),
-        "uint64": int_spectrum_value(np.uint64),
-        "float32": float_spectrum_value(np.float32),
-        "float64": float_spectrum_value(np.float64),
+        "int8": int_array_value(np.int8),
+        "uint8": int_array_value(np.uint8),
+        "int16": int_array_value(np.int16),
+        "uint16": int_array_value(np.uint16),
+        "int32": int_array_value(np.int32),
+        "uint32": int_array_value(np.uint32),
+        "int64": int_array_value(np.int64),
+        "uint64": int_array_value(np.uint64),
+        "float32": float_array_value(np.float32),
+        "float64": float_array_value(np.float64),
     },
     AttrDataFormat.IMAGE: {
         "str": np.array([["one", "two", "three"], ["one", "two", "three"]]),
