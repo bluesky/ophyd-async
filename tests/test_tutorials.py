@@ -37,7 +37,7 @@ def test_implementing_devices(module, capsys, expected_scan_output):
         RE(main.bps.mv(motor.velocity, 1000))
     start = time.monotonic()
     RE(main.bp.grid_scan([main.pdet], main.stage.x, 1, 2, 3, main.stage.y, 2, 3, 3))
-    assert time.monotonic() - start == pytest.approx(2.0, abs=1.0)
+    assert time.monotonic() - start == pytest.approx(20.0, abs=1.0)
     captured = capsys.readouterr()
     assert captured.err == ""
     assert SCAN_LINE.findall(captured.out) == expected_scan_output

@@ -68,6 +68,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         """
         Asynchronously move the motor to a new position.
         """
+        start = time.time()
         new_position = value
         # Make sure any existing move tasks are stopped
         await self.stop()
@@ -96,6 +97,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
                         name=self.name,
                         unit=units,
                     )
+        print("Move took", time.time() - start)
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 
