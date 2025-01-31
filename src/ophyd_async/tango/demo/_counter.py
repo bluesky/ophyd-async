@@ -6,6 +6,8 @@ from ophyd_async.tango.core import TangoPolling, TangoReadable
 
 
 class TangoCounter(TangoReadable):
+    """Tango counting device."""
+
     # Enter the name and type of the signals you want to use
     # If the server doesn't support events, the TangoPolling annotation gives
     # the parameters for ophyd to poll instead

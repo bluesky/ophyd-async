@@ -19,6 +19,8 @@ from ophyd_async.core._device import DeviceVector
 
 
 class ExampleEnum(StrictEnum):
+    """Example of a strict Enum datatype."""
+
     A = "Aaa"
     B = "Bbb"
     C = "Ccc"
@@ -61,6 +63,8 @@ def float_array_signal(
 
 
 class OneOfEverythingDevice(StandardReadable):
+    """A device with one of every datatype allowed on signals."""
+
     # make a detector to test assert_configuration
     def __init__(self, name=""):
         # add all signals to configuration
@@ -112,6 +116,8 @@ async def _get_signal_values(child: Device) -> dict[SignalRW, Any]:
 
 
 class ParentOfEverythingDevice(Device):
+    """Device containing subdevices with one of every datatype allowed on signals."""
+
     def __init__(self, name=""):
         self.child = OneOfEverythingDevice()
         self.vector = DeviceVector(

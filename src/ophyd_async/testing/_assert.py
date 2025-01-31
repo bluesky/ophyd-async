@@ -22,6 +22,7 @@ from ._utils import T
 
 
 def approx_value(value: Any):
+    """For appoximating values on signals. `Table`s cant use `pytest.approx`"""
     return ApproxTable(value) if isinstance(value, Table) else pytest.approx(value)
 
 
@@ -82,6 +83,8 @@ async def assert_configuration(
 
 
 async def assert_describe_signal(signal: SignalR, /, **metadata):
+    """Asserts the describe of a signal matches the expected metadata."""
+
     actual_describe = await signal.describe()
     assert list(actual_describe) == [signal.name]
     (actual_datakey,) = actual_describe.values()
@@ -114,6 +117,11 @@ def assert_emitted(docs: dict[str, list[dict]], **numbers: int):
 
 
 class ApproxTable:
+    """
+    For approximating two tables are equivalent, up to
+    some relative or absolute difference.
+    """
+
     def __init__(self, expected: Table, rel=None, abs=None, nan_ok: bool = False):
         self.expected = expected
         self.rel = rel

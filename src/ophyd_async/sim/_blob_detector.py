@@ -8,6 +8,8 @@ from ._pattern_generator import PatternGenerator
 
 
 class SimBlobDetector(StandardDetector):
+    """Simulates a detector and writes Blobs to file."""
+
     def __init__(
         self,
         path_provider: PathProvider,

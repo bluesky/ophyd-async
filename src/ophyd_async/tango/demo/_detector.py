@@ -11,6 +11,8 @@ from ._mover import TangoMover
 
 
 class TangoDetector(StandardReadable):
+    """For use with tango detector devices."""
+
     def __init__(self, mover_trl: str, counter_trls: list[str], name=""):
         # A detector device may be composed of tango sub-devices
         self.mover = TangoMover(mover_trl)

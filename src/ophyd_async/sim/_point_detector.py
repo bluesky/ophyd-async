@@ -37,6 +37,8 @@ class SimPointDetectorChannel(StandardReadable):
 
 
 class SimPointDetector(StandardReadable):
+    """Simalutes a point detector with multiple channels"""
+
     def __init__(
         self, generator: PatternGenerator, num_channels: int = 3, name: str = ""
     ) -> None:
