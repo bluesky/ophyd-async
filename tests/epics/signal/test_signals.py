@@ -108,7 +108,7 @@ async def assert_monitor_then_put(
 
 
 # Can be removed once numpy >=2 is pinned.
-default_int_type = (
+scalar_int_dtype = (
     "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
 )
 CA_PVA_INFERRED = {
@@ -116,7 +116,7 @@ CA_PVA_INFERRED = {
         42,
         43,
         "integer",
-        default_int_type,
+        scalar_int_dtype,
         limits=Limits(
             control=LimitsRange(low=10, high=90),
             warning=LimitsRange(low=5, high=96),
@@ -129,7 +129,7 @@ CA_PVA_INFERRED = {
         42,
         43,
         "integer",
-        default_int_type,
+        scalar_int_dtype,
         limits=Limits(
             control=LimitsRange(low=10.0, high=90.0),
             alarm=LimitsRange(low=2.0, high=98.0),
@@ -141,7 +141,7 @@ CA_PVA_INFERRED = {
         42,
         43,
         "integer",
-        default_int_type,
+        scalar_int_dtype,
         limits=Limits(
             # control = display if DRVL, DRVH not set
             control=LimitsRange(low=0.0, high=100.0),
@@ -282,7 +282,7 @@ CA_PVA_OVERRIDE = {
         "|S40",
         choices=["Aaa", "Bbb", "Ccc"],
     ),
-    "float_prec_0": ExpectedData(3, 4, "integer", default_int_type, units="mm"),
+    "float_prec_0": ExpectedData(3, 4, "integer", scalar_int_dtype, units="mm"),
 }
 PVA_OVERRIDE = {}
 

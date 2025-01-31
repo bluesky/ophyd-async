@@ -1,7 +1,9 @@
 import asyncio
+import os
 from collections import defaultdict
 from unittest.mock import ANY, Mock, call
 
+import numpy as np
 import pytest
 from bluesky import plans as bp
 from bluesky.protocols import Reading
@@ -23,6 +25,11 @@ from ophyd_async.testing import (
     get_mock_put,
     set_mock_value,
     wait_for_pending_wakeups,
+)
+
+# Can be removed once numpy >=2 is pinned.
+scalar_int_dtype = (
+    "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
 )
 
 
@@ -312,19 +319,19 @@ async def test_point_detector_read_and_describe(
     assert description == {
         "mock_point_detector-channel-1-value": {
             "dtype": "integer",
-            "dtype_numpy": "<i8",
+            "dtype_numpy": scalar_int_dtype,
             "shape": [],
             "source": "mock+ca://MOCK:DET:1:Value",
         },
         "mock_point_detector-channel-2-value": {
             "dtype": "integer",
-            "dtype_numpy": "<i8",
+            "dtype_numpy": scalar_int_dtype,
             "shape": [],
             "source": "mock+ca://MOCK:DET:2:Value",
         },
         "mock_point_detector-channel-3-value": {
             "dtype": "integer",
-            "dtype_numpy": "<i8",
+            "dtype_numpy": scalar_int_dtype,
             "shape": [],
             "source": "mock+ca://MOCK:DET:3:Value",
         },
