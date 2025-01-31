@@ -44,6 +44,7 @@ class EpicsTestCaDevice(EpicsDevice):
     enum: A[SignalRW[EpicsTestEnum], PvSuffix("enum")]
     enum2: A[SignalRW[EpicsTestEnum], PvSuffix("enum2")]
     subset_enum: A[SignalRW[EpicsTestSubsetEnum], PvSuffix("subset_enum")]
+    enum_str_fallback: A[SignalRW[str], PvSuffix("enum_str_fallback")]
     bool_unnamed: A[SignalRW[bool], PvSuffix("bool_unnamed")]
     partialint: A[SignalRW[int], PvSuffix("partialint")]
     lessint: A[SignalRW[int], PvSuffix("lessint")]
