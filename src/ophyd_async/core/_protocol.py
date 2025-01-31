@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 
 @runtime_checkable
 class AsyncReadable(HasName, Protocol):
+    """For async implementations of the bluesky sync `bluesky.protocols.Readable`."""
+
     @abstractmethod
     async def read(self) -> dict[str, Reading]:
         """Return an OrderedDict mapping string field name(s) to dictionaries
@@ -56,6 +58,9 @@ class AsyncReadable(HasName, Protocol):
 
 @runtime_checkable
 class AsyncConfigurable(HasName, Protocol):
+    """For async implementations of the bluesky sync
+    `bluesky.protocols.Configurable`."""
+
     @abstractmethod
     async def read_configuration(self) -> dict[str, Reading]:
         """Same API as ``read`` but for slow-changing fields related to configuration.
@@ -71,6 +76,8 @@ class AsyncConfigurable(HasName, Protocol):
 
 @runtime_checkable
 class AsyncPausable(Protocol):
+    """For async implementations of the bluesky sync `bluesky.protocols.Pausable`."""
+
     @abstractmethod
     async def pause(self) -> None:
         """Perform device-specific work when the RunEngine pauses."""
@@ -82,6 +89,8 @@ class AsyncPausable(Protocol):
 
 @runtime_checkable
 class AsyncStageable(Protocol):
+    """For async implementations of the bluesky sync `bluesky.protocols.Stageable`."""
+
     @abstractmethod
     def stage(self) -> AsyncStatus:
         """An optional hook for "setting up" the device for acquisition.
@@ -103,6 +112,8 @@ C = TypeVar("C", contravariant=True)
 
 
 class Watcher(Protocol, Generic[C]):
+    """Protocol for watching changes in values."""
+
     def __call__(
         self,
         current: C | None = None,

@@ -231,6 +231,9 @@ async def merge_gathered_dicts(
 
 
 async def gather_dict(coros: dict[T, Awaitable[V]]) -> dict[T, V]:
+    """Gathers given coroutines and returns a dictionary of coroutines
+    to return values."""
+
     values = await asyncio.gather(*coros.values())
     return dict(zip(coros, values, strict=True))
 
