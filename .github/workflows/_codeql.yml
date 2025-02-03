@@ -23,3 +23,7 @@ jobs:
         with:
           languages: python
           build-mode: none
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
