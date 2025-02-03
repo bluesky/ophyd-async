@@ -1,0 +1,59 @@
+record(ao, "$(P)AcquireTime") {
+    field(DESC, "Time to acquire for")
+    field(VAL, "0.1")
+    field(OUT, "$(P)Start.DLY2")
+    field(PINI, "YES")
+}
+
+record(seq, "$(P)Start") {
+    field(DESC, "Start sequence")
+    # Grab the start time
+    field(LNK0, "$(P)StartTime.PROC")
+    # Set it to be acquiring
+    field(LNK1, "$(P)Acquiring PP")
+    field(DO1, "1")
+    # Set it back to idle
+    field(LNK2, "$(P)Acquiring PP")
+    field(DO2, "0")
+    # Set the elapsed time to the full acquire time
+    field(LNK3, "$(P)Elapsed PP")
+    field(DOL3, "$(P)AcquireTime")
+}
+
+record(ai, "$(P)StartTime") {
+    field(DTYP, "Soft Timestamp")
+}
+
+record(bi, "$(P)Acquiring") {
+    field(DESC, "Currently acquiring")
+    field(ZNAM, "Idle")
+    field(ONAM, "Acquiring")
+    field(PINI, "YES")
+}
+
+record(ai, "$(P)CurrentTime") {
+    field(DTYP, "Soft Timestamp")
+}
+
+record(calcout, "$(P)Process") {
+    field(DESC, "Process elapsed time if acquiring")
+    field(INPA, "$(P)StartTime")
+    field(INPB, "$(P)CurrentTime PP")
+    field(SCAN, ".1 second")
+    field(CALC, "B-A")
+    field(OUT, "$(P)Elapsed PP")
+    field(SDIS, "$(P)Acquiring")
+    field(DISV, "0")
+}
+
+record(ai, "$(P)Elapsed") {
+    field(DESC, "Elapsed time")
+    field(EGU,  "s")
+    field(PREC, "1")
+    field(PINI, "YES")
+}
+
+record(calcout, "$(P)Reset") {
+    field(OUT, "$(P)Elapsed PP")
+    field(CALC, "0")
+}

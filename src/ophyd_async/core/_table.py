@@ -110,6 +110,9 @@ class Table(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def validate_array_dtypes(cls, data: Any) -> Any:
+        """Validates that array datatypes given in the table are of the
+        correct format."""
+
         if isinstance(data, dict):
             data_dict = data
         elif isinstance(data, Table):
@@ -138,6 +141,8 @@ class Table(BaseModel):
 
     @model_validator(mode="after")
     def validate_lengths(self) -> Table:
+        """Validates the lengths of columns."""
+
         lengths: dict[int, set[str]] = {}
         for field_name, field_value in self:
             lengths.setdefault(len(field_value), set()).add(field_name)

@@ -15,12 +15,16 @@ PVA_RECORDS = Path(__file__).parent / "test_records_pva.db"
 
 
 class EpicsTestEnum(StrictEnum):
+    """For testing strict enum values in test IOCs."""
+
     A = "Aaa"
     B = "Bbb"
     C = "Ccc"
 
 
 class EpicsTestSubsetEnum(SubsetEnum):
+    """For testing subset enum values in test IOCs."""
+
     A = "Aaa"
     B = "Bbb"
 
@@ -34,6 +38,8 @@ class EpicsTestTable(Table):
 
 
 class EpicsTestCaDevice(EpicsDevice):
+    """Device for use in a channel access test IOC."""
+
     my_int: A[SignalRW[int], PvSuffix("int")]
     my_float: A[SignalRW[float], PvSuffix("float")]
     float_prec_0: A[SignalRW[int], PvSuffix("float_prec_0")]
@@ -57,6 +63,8 @@ class EpicsTestCaDevice(EpicsDevice):
 
 
 class EpicsTestPvaDevice(EpicsTestCaDevice):
+    """Device for use in a pv access test IOC."""
+
     # pva can support all signal types that ca can
     int8a: A[SignalRW[Array1D[np.int8]], PvSuffix("int8a")]
     uint16a: A[SignalRW[Array1D[np.uint16]], PvSuffix("uint16a")]
@@ -68,6 +76,8 @@ class EpicsTestPvaDevice(EpicsTestCaDevice):
 
 
 class EpicsTestIocAndDevices:
+    """Test IOC with ca and pva devices."""
+
     def __init__(self):
         self.prefix = generate_random_pv_prefix()
         self.ioc = TestingIOC()

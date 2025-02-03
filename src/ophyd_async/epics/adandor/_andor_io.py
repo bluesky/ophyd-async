@@ -30,7 +30,7 @@ class Andor2DriverIO(ADBaseIO):
     def __init__(self, prefix: str, name: str = "") -> None:
         super().__init__(prefix, name=name)
         self.trigger_mode = epics_signal_rw(Andor2TriggerMode, prefix + "TriggerMode")
-        self.data_type = epics_signal_r(Andor2DataType, prefix + "DataType_RBV")
+        self.data_type = epics_signal_r(Andor2DataType, prefix + "DataType_RBV")  # type: ignore
         self.andor_accumulate_period = epics_signal_r(
             float, prefix + "AndorAccumulatePeriod_RBV"
         )

@@ -5,17 +5,21 @@ list see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-import os
 import sys
 from pathlib import Path
 from subprocess import check_output
+from typing import TypeVar
 
 import requests
 
 import ophyd_async
 
-# -- General configuration ------------------------------------------------
-sys.path.insert(0, os.path.abspath("../../src"))
+# Override location of typevars just for sphinx
+for k in ophyd_async.core.__all__:
+    v = getattr(ophyd_async.core, k)
+    if isinstance(v, TypeVar):
+        v.__module__ = "ophyd_async.core"
+
 # General information about the project.
 project = "ophyd-async"
 copyright = "2014, Brookhaven National Lab"
@@ -61,7 +65,6 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "matplotlib.sphinxext.plot_directive",
     "myst_parser",
-    "numpydoc",
 ]
 
 # So we can use the ::: syntax
@@ -72,23 +75,26 @@ napoleon_numpy_docstring = True
 
 # If true, Sphinx will warn about all references where the target cannot
 # be found.
-# nitpicky = True
+nitpicky = True
 
 # A list of (type, target) tuples (by default empty) that should be ignored when
 # generating warnings in "nitpicky mode". Note that type should include the
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
-    # builtins
-    ("py:class", "NoneType"),
-    ("py:class", "'str'"),
-    ("py:class", "'float'"),
-    ("py:class", "'int'"),
-    ("py:class", "'bool'"),
-    ("py:class", "'object'"),
-    ("py:class", "'id'"),
-    # typing
-    ("py:class", "typing_extensions.Literal"),
+    ("py:class", "ophyd_async.core._utils.T"),
+    ("py:class", "ophyd_async.core._utils.V"),
+    ("py:class", "ophyd_async.core._device.DeviceT"),
+    # # builtins
+    # ("py:class", "NoneType"),
+    # ("py:class", "'str'"),
+    # ("py:class", "'float'"),
+    # ("py:class", "'int'"),
+    # ("py:class", "'bool'"),
+    # ("py:class", "'object'"),
+    # ("py:class", "'id'"),
+    # # typing
+    # ("py:class", "typing_extensions.Literal"),
 ]
 
 # Order the members by the order they appear in the source code
@@ -98,7 +104,7 @@ autodoc_member_order = "bysource"
 autodoc_inherit_docstrings = False
 
 # Add some more modules to the top level autosummary
-ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs"]
+ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs", "testing"]
 
 # Document only what is in __all__
 autosummary_ignore_module_all = False
@@ -137,6 +143,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/devdocs/", None),
     "databroker": ("https://blueskyproject.io/databroker/", None),
     "event-model": ("https://blueskyproject.io/event-model/main", None),
+    "pytest": ("https://docs.pytest.org/en/stable/", None),
 }
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
@@ -230,6 +237,10 @@ html_show_copyright = False
 html_logo = "images/ophyd-async-logo.svg"
 html_favicon = "images/ophyd-favicon.svg"
 
+# Custom CSS
+html_static_path = ["_static"]
+html_css_files = ["custom.css"]
+
 # If False and a module has the __all__ attribute set, autosummary documents
 # every member listed in __all__ and no others. Default is True
 autosummary_ignore_module_all = False
@@ -249,8 +260,11 @@ numpydoc_show_class_members = False
 # Don't show config summary as it's not relevant
 autodoc_pydantic_model_show_config_summary = False
 
-# Show the fields in source order
-autodoc_pydantic_model_summary_list_order = "bysource"
+# Don't show JSON schema
+autodoc_pydantic_model_show_json = False
+
+# Don't show field summary, as links break in reimported models
+autodoc_pydantic_model_show_field_summary = False
 
 # Where to put Ipython savefigs
 ipython_savefig_dir = "../build/savefig"

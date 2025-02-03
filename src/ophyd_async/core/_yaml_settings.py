@@ -28,6 +28,8 @@ def enum_representer(dumper: yaml.Dumper, enum: Enum) -> yaml.Node:
 
 
 class YamlSettingsProvider(SettingsProvider):
+    """For providing settings from yaml to signals."""
+
     def __init__(self, directory: Path | str):
         self._directory = Path(directory)
 

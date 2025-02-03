@@ -4,6 +4,7 @@ import asyncio
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
+from enum import Enum
 from functools import cached_property
 from typing import (
     Generic,
@@ -28,39 +29,41 @@ from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 
-class DetectorTrigger(StrictEnum):
+class DetectorTrigger(Enum):
     """Type of mechanism for triggering a detector to take frames"""
 
     #: Detector generates internal trigger for given rate
-    INTERNAL = "internal"
+    INTERNAL = "INTERNAL"
     #: Expect a series of arbitrary length trigger signals
-    EDGE_TRIGGER = "edge_trigger"
+    EDGE_TRIGGER = "EDGE_TRIGGER"
     #: Expect a series of constant width external gate signals
-    CONSTANT_GATE = "constant_gate"
+    CONSTANT_GATE = "CONSTANT_GATE"
     #: Expect a series of variable width external gate signals
-    VARIABLE_GATE = "variable_gate"
+    VARIABLE_GATE = "VARIABLE_GATE"
 
 
 class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
     #: Number of triggers that will be sent, (0 means infinite) Can be:
-    #  - A single integer or
-    #  - A list of integers for multiple triggers
-    # Example for tomography: TriggerInfo(number=[2,3,100,3])
-    #:     This would trigger:
-    #:     - 2 times for dark field images
-    #:     - 3 times for initial flat field images
-    #:     - 100 times for projections
-    #:     - 3 times for final flat field images
+    #:
+    #: - A single integer or
+    #: - A list of integers for multiple triggers
+    #: Example for tomography: ``TriggerInfo(number=[2,3,100,3])``.
+    #: This would trigger:
+    #:
+    #: - 2 times for dark field images
+    #: - 3 times for initial flat field images
+    #: - 100 times for projections
+    #: - 3 times for final flat field images
     number_of_triggers: NonNegativeInt | list[NonNegativeInt]
     #: Sort of triggers that will be sent
     trigger: DetectorTrigger = Field(default=DetectorTrigger.INTERNAL)
     #: What is the minimum deadtime between triggers
-    deadtime: float | None = Field(default=None, ge=0)
+    deadtime: float = Field(default=0.0, ge=0)
     #: What is the maximum high time of the triggers
     livetime: float | None = Field(default=None, ge=0)
     #: What is the maximum timeout on waiting for a frame
@@ -84,7 +87,7 @@ class TriggerInfo(BaseModel):
 class DetectorController(ABC):
     """
     Classes implementing this interface should hold the logic for
-    arming and disarming a detector
+    arming and disarming a detector.
     """
 
     @abstractmethod
@@ -281,9 +284,6 @@ class StandardDetector(
                 TriggerInfo(
                     number_of_triggers=1,
                     trigger=DetectorTrigger.INTERNAL,
-                    deadtime=None,
-                    livetime=None,
-                    frame_timeout=None,
                 )
             )
 
@@ -301,7 +301,7 @@ class StandardDetector(
         async for index in self._writer.observe_indices_written(
             DEFAULT_TIMEOUT
             + (self._trigger_info.livetime or 0)
-            + (self._trigger_info.deadtime or 0)
+            + self._trigger_info.deadtime
         ):
             if index >= end_observation:
                 break
@@ -332,17 +332,18 @@ class StandardDetector(
                 f"deadtime, but trigger logic provides only {value.deadtime}s"
             )
             raise ValueError(msg)
-
+        elif not value.deadtime:
+            value.deadtime = self._controller.get_deadtime(value.livetime)
         self._trigger_info = value
         self._number_of_triggers_iter = iter(
             self._trigger_info.number_of_triggers
             if isinstance(self._trigger_info.number_of_triggers, list)
             else [self._trigger_info.number_of_triggers]
         )
-        self._initial_frame = await self._writer.get_indices_written()
         self._describe, _ = await asyncio.gather(
             self._writer.open(value.multiplier), self._controller.prepare(value)
         )
+        self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
             self._fly_start = time.monotonic()

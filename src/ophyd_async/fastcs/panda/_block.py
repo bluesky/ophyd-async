@@ -11,12 +11,16 @@ from ._table import DatasetTable, SeqTable
 
 
 class CaptureMode(StrictEnum):
+    """Capture mode for the `DataBlock` on the PandA."""
+
     FIRST_N = "FIRST_N"
     LAST_N = "LAST_N"
     FOREVER = "FOREVER"
 
 
 class DataBlock(Device):
+    """Data block for the PandA. Used for writing data through the IOC."""
+
     # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
     hdf_file_name: SignalRW[str]
@@ -31,22 +35,30 @@ class DataBlock(Device):
 
 
 class PulseBlock(Device):
+    """Used for configuring pulses in the PandA."""
+
     delay: SignalRW[float]
     width: SignalRW[float]
 
 
 class PcompDirection(StrictEnum):
+    """Direction options for position compare in the PandA."""
+
     POSITIVE = "Positive"
     NEGATIVE = "Negative"
     EITHER = "Either"
 
 
 class BitMux(SubsetEnum):
+    """Bit input with configurable delay in the PandA."""
+
     ZERO = "ZERO"
     ONE = "ONE"
 
 
 class PcompBlock(Device):
+    """Position compare block in the PandA."""
+
     active: SignalR[bool]
     dir: SignalRW[PcompDirection]
     enable: SignalRW[BitMux]
@@ -57,6 +69,8 @@ class PcompBlock(Device):
 
 
 class TimeUnits(StrictEnum):
+    """Options for units of time in the PandA."""
+
     MIN = "min"
     S = "s"
     MS = "ms"
@@ -64,6 +78,8 @@ class TimeUnits(StrictEnum):
 
 
 class SeqBlock(Device):
+    """Sequencer block in the PandA."""
+
     table: SignalRW[SeqTable]
     active: SignalR[bool]
     repeats: SignalRW[int]
@@ -73,11 +89,15 @@ class SeqBlock(Device):
 
 
 class PcapBlock(Device):
+    """Position capture block in the PandA."""
+
     active: SignalR[bool]
     arm: SignalRW[bool]
 
 
 class CommonPandaBlocks(Device):
+    """Pandablocks device with blocks which are common and required on introspection."""
+
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcomp: DeviceVector[PcompBlock]

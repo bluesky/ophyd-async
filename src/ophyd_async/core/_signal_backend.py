@@ -7,17 +7,20 @@ from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
 from ._table import Table
-from ._utils import Callback, StrictEnum, T
+from ._utils import Callback, StrictEnum
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 # To be a 1D array shape should really be tuple[int], but np.array()
 # currently produces tuple[int, ...] even when it has 1D input args
 # https://github.com/numpy/numpy/issues/28077#issuecomment-2566485178
+
 Array1D = np.ndarray[tuple[int, ...], np.dtype[DTypeScalar_co]]
+"""A type alias for a 1D numpy array with a specific scalar data type."""
+
 Primitive = bool | int | float | str
-# NOTE: if you change this union then update the docs to match
 SignalDatatype = (
     Primitive
+    | StrictEnum
     | Array1D[np.bool_]
     | Array1D[np.int8]
     | Array1D[np.uint8]
@@ -30,7 +33,6 @@ SignalDatatype = (
     | Array1D[np.float32]
     | Array1D[np.float64]
     | np.ndarray
-    | StrictEnum
     | Sequence[str]
     | Sequence[StrictEnum]
     | Table
@@ -83,7 +85,7 @@ class SignalBackend(Generic[SignalDatatypeT]):
         """The point that a signal was requested to move to."""
 
     @abstractmethod
-    def set_callback(self, callback: Callback[T] | None) -> None:
+    def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
         """Observe changes to the current value, timestamp and severity"""
 
 
@@ -96,6 +98,8 @@ _primitive_dtype: dict[type[Primitive], Dtype] = {
 
 
 class SignalMetadata(TypedDict, total=False):
+    """Metadata for a signal. No field is required."""
+
     limits: Limits
     choices: list[str]
     precision: int
@@ -156,6 +160,8 @@ def make_datakey(
     source: str,
     metadata: SignalMetadata,
 ) -> DataKey:
+    """Makes a `DataKey` for a given datatype."""
+
     dtn = _datakey_dtype_numpy(datatype, value)
     return DataKey(
         dtype=_datakey_dtype(datatype),

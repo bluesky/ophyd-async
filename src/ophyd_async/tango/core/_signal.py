@@ -147,6 +147,8 @@ def tango_signal_x(
 async def infer_python_type(
     trl: str = "", proxy: DeviceProxy | None = None
 ) -> object | npt.NDArray | type[DevState] | IntEnum:
+    """Infers the python type from the TRL."""
+
     # TODO: work out if this is still needed
     device_trl, tr_name = trl.rsplit("/", 1)
     if proxy is None:

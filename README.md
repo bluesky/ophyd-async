@@ -13,16 +13,19 @@ Asynchronous Bluesky hardware abstraction code, compatible with control systems 
 | Documentation |      <https://bluesky.github.io/ophyd-async>      |
 |   Releases    | <https://github.com/bluesky/ophyd-async/releases> |
 
-Ophyd-async is a Python library for asynchronously interfacing with hardware, intended to
-be used as an abstraction layer that enables experiment orchestration and data acquisition code to operate above the specifics of particular devices and control
-systems.
+Ophyd-async is a Python library for asynchronously interfacing with hardware, intended to be used as an abstraction layer that enables experiment orchestration and data acquisition code to operate above the specifics of particular devices and control systems.
 
-Both ophyd and ophyd-async are typically used with the [Bluesky Run Engine][] for experiment orchestration and data acquisition.
+Both ophyd sync and ophyd-async are typically used with the [Bluesky Run Engine][] for experiment orchestration and data acquisition.
 
-While [EPICS][] is the most common control system layer that ophyd-async can interface with, support for other control systems like [Tango][] will be supported in the future. The focus of ophyd-async is:
+The main differences from ophyd sync are:
 
-* Asynchronous signal access, opening the possibility for hardware-triggered scanning (also known as fly-scanning)
-* Simpler instantiation of devices (groupings of signals) with less reliance upon complex class hierarchies
+- Asynchronous Signal access, simplifying the parallel control of multiple Signals
+- Support for [EPICS][] PVA and [Tango][] as well as the traditional EPICS CA
+- Better library support for splitting the logic from the hardware interface to avoid complex class heirarchies
+
+It was written with the aim of implementing flyscanning in a generic and extensible way with highly customizable devices like PandABox and the Delta Tau PMAC products. Using async code makes it possible to do the "put 3 PVs in parallel, then get from another PV" logic that is common in flyscanning without the performance and complexity overhead of multiple threads.
+
+Devices from both ophyd sync and ophyd-async can be used in the same RunEngine and even in the same scan. This allows a per-device migration where devices are reimplemented in ophyd-async one by one.
 
 [Bluesky Run Engine]: http://blueskyproject.io/bluesky
 [EPICS]: http://www.aps.anl.gov/epics/

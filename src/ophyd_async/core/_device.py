@@ -35,6 +35,11 @@ class DeviceConnector:
         """
 
     async def connect_mock(self, device: Device, mock: LazyMock):
+        """Used during `Device.connect` with ``mock=True``.
+
+        This is called when there is no cached connect done in ``mock=True``
+        mode. It connects the Device and all its children in mock mode.
+        """
         # Connect serially, no errors to gather up as in mock mode
         exceptions: dict[str, Exception] = {}
         for name, child_device in device.children():
@@ -46,11 +51,10 @@ class DeviceConnector:
             raise NotConnected.with_other_exceptions_logged(exceptions)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        """Used during ``Device.connect``.
+        """Used during `Device.connect` with ``mock=False``.
 
-        This is called when a previous connect has not been done, or has been
-        done in a different mock more. It should connect the Device and all its
-        children.
+        This is called when there is no cached connect done in ``mock=False``
+        mode. It connects the Device and all its children in real mode in parallel.
         """
         # Connect in parallel, gathering up NotConnected errors
         coros = {
@@ -149,14 +153,20 @@ class Device(HasName):
     ) -> None:
         """Connect self and all child Devices.
 
-        Contains a timeout that gets propagated to child.connect methods.
+        Successful connects will be cached so subsequent calls will return
+        immediately. Contains a timeout that gets propagated to child.connect
+        methods.
 
         Parameters
         ----------
         mock:
-            If True then use ``MockSignalBackend`` for all Signals
+            If True then use `MockSignalBackend` for all Signals. If passed a
+            `LazyMock` then pass this down for use within the Signals, otherwise
+            create one.
         timeout:
             Time to wait before failing with a TimeoutError.
+        force_reconnect:
+            If True then force a reconnect, even if the last connect succeeded
         """
         if not hasattr(self, "_connector"):
             msg = (
@@ -205,12 +215,11 @@ DeviceT = TypeVar("DeviceT", bound=Device)
 
 
 class DeviceVector(MutableMapping[int, DeviceT], Device):
-    """
-    Defines device components with indices.
+    """Defines a dictionary of Device children with arbitrary integer keys.
 
-    In the below example, foos becomes a dictionary on the parent device
-    at runtime, so parent.foos[2] returns a FooDevice. For example usage see
-    :class:`~ophyd_async.epics.sim.DynamicSensorGroup`
+    See Also
+    --------
+    :ref:`implementing-devices`
     """
 
     def __init__(
@@ -341,8 +350,8 @@ def init_devices(
     connect=True,
     mock=False,
     timeout: float = 10.0,
-) -> DeviceProcessor:
-    """Auto initialise top level Device instances to be used as a context manager
+):
+    """Auto initialise top level Device instances: to be used as a context manager
 
     Parameters
     ----------
@@ -359,9 +368,9 @@ def init_devices(
     timeout:
         How long to wait for connect before logging an exception
 
-    Notes
-    -----
-    Example usage::
+    Example
+    -------
+    To connect and name 2 motors in parallel::
 
         [async] with init_devices():
             t1x = motor.Motor("BLxxI-MO-TABLE-01:X")

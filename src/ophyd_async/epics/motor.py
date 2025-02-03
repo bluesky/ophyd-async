@@ -24,10 +24,14 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal
 
 
 class MotorLimitsException(Exception):
+    """Exception for invalid motor limits."""
+
     pass
 
 
 class InvalidFlyMotorException(Exception):
+    """Exception for invalid motor."""
+
     pass
 
 

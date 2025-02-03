@@ -55,6 +55,8 @@ def _add_timeout(func):
 
 
 class SignalConnector(DeviceConnector):
+    """Used for connecting signals with a given backend."""
+
     def __init__(self, backend: SignalBackend):
         self.backend = self._init_backend = backend
 
@@ -92,7 +94,13 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def source(self) -> str:
-        """Like ca://PV_PREFIX:SIGNAL, or "" if not set"""
+        """
+        Returns the source of the signal.
+
+        Example:
+            "ca://PV_PREFIX:SIGNAL", or "" if not set
+
+        """
         return self._connector.backend.source(self.name, read=True)
 
 
@@ -459,7 +467,7 @@ async def wait_for_value(
     signal: SignalR[SignalDatatypeT],
     match: SignalDatatypeT | Callable[[SignalDatatypeT], bool],
     timeout: float | None,
-):
+) -> None:
     """Wait for a signal to have a matching value.
 
     Parameters
