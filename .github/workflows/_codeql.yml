@@ -27,3 +27,9 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:python"
+      - name: Debug SARIF File
+        run: cat results/python.sarif
+      - name: Upload CodeQL Analysis Results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results/python.sarif
