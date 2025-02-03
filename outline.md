@@ -18,7 +18,7 @@
   x design goals - differences to ophyd sync
   - devices, signals and their backends
   x declarative vs procedural devices
-  - where should device logic live
+  x where should device logic live
   x device connection strategies
 
 

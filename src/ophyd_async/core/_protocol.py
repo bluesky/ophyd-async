@@ -26,33 +26,25 @@ class AsyncReadable(HasName, Protocol):
         """Return an OrderedDict mapping string field name(s) to dictionaries
         of values and timestamps and optional per-point metadata.
 
-        Example return value:
+        For example::
 
-        .. code-block:: python
-
-            OrderedDict(('channel1',
-                         {'value': 5, 'timestamp': 1472493713.271991}),
-                         ('channel2',
-                         {'value': 16, 'timestamp': 1472493713.539238}))
+            {
+                "channel1": {"value": 5, "timestamp": 1472493713.271991},
+                "channel2": {"value": 16, "timestamp": 1472493713.539238},
+            }
         """
 
     @abstractmethod
     async def describe(self) -> dict[str, DataKey]:
-        """Return an OrderedDict with exactly the same keys as the ``read``
+        """Return an OrderedDict with exactly the same keys as the `read`
         method, here mapped to per-scan metadata about each field.
 
-        Example return value:
+        For example::
 
-        .. code-block:: python
-
-            OrderedDict(('channel1',
-                         {'source': 'XF23-ID:SOME_PV_NAME',
-                          'dtype': 'number',
-                          'shape': []}),
-                        ('channel2',
-                         {'source': 'XF23-ID:SOME_PV_NAME',
-                          'dtype': 'number',
-                          'shape': []}))
+            {
+                "channel1": {"source": "SOME_PV1", "dtype": "number", "shape": []},
+                "channel2": {"source": "SOME_PV2", "dtype": "number", "shape": []},
+            }
         """
 
 
@@ -63,8 +55,9 @@ class AsyncConfigurable(HasName, Protocol):
 
     @abstractmethod
     async def read_configuration(self) -> dict[str, Reading]:
-        """Same API as ``read`` but for slow-changing fields related to configuration.
-        e.g., exposure time. These will typically be read only once per run.
+        """Same API as `AsyncReadable.read` but for slow-changing fields related to
+        configuration. e.g., exposure time. These will typically be read only
+        once per run.
         """
 
     @abstractmethod

@@ -13,7 +13,7 @@ The first stage is to make a module in the `ophyd-async` repository to put the c
 
 ## Add an IO class for the PV interface
 
-Now you need an IO class that subclasses [](#ADBaseIO). This should add the PVs that are detector driver specific that are required to setup triggering. 
+Now you need an IO class that subclasses [](#adcore.ADBaseIO). This should add the PVs that are detector driver specific that are required to setup triggering. 
 
 For example for ADAravis this is in the file `_aravis_io.py`:
 ```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis_io.py
@@ -22,7 +22,7 @@ For example for ADAravis this is in the file `_aravis_io.py`:
 
 ## Add a Controller that knows how to setup the driver
 
-Now you need a class that subclasses [](#ADBaseController). This should implement at least:
+Now you need a class that subclasses [](#adcore.ADBaseController). This should implement at least:
 - `get_deadtime()` to give the amount of time required between triggers for a given exposure
 - `prepare()` to set the camera up for a given trigger mode, number of frames and exposure 
 
@@ -37,7 +37,7 @@ Now you need to make a [](#StandardDetector) subclass that uses your IO and Cont
 - `prefix`: The PV prefix for the driver and plugins
 - `path_provider`: A [](#PathProvider) that tells the detector where to write data
 - `drv_suffix`: A PV suffix for the driver, defaulting to `"cam1:"`
-- `writer_cls`: An [](#ADWriter) class to instantiate, defaulting to [](#adcore.ADHDFWriter)
+- `writer_cls`: An [](#adcore.ADWriter) class to instantiate, defaulting to [](#adcore.ADHDFWriter)
 - `fileio_suffix`: An optional PV suffix for the fileio, if not given it will default to the writer class default
 - `name`: An optional name for the device
 - `config_sigs`: Optionally the signals to report as configuration

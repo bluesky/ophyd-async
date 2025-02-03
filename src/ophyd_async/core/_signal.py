@@ -467,7 +467,7 @@ async def wait_for_value(
     signal: SignalR[SignalDatatypeT],
     match: SignalDatatypeT | Callable[[SignalDatatypeT], bool],
     timeout: float | None,
-):
+) -> None:
     """Wait for a signal to have a matching value.
 
     Parameters

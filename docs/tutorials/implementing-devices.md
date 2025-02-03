@@ -1,3 +1,4 @@
+(implementing-devices)=
 # Implementing Devices
 
 In [](./using-devices.md) we learned how to instantiate some existing ophyd-async Devices. These Devices were ophyd level simulations, so did not talk to any underlying control system. In this tutorial we will instantiate some demo Devices that talk to underlying control system implementations, then explore how the Devices themselves are implemented.
@@ -166,7 +167,7 @@ Let's start with the lowest level sort of Device, a single channel of our point 
 We specify to the Device baseclass that we would like a Signal of a given type (e.g. `SignalR[int]`) via a type hint, and it will create that signal for us in a control system specific way. The type of `value` is the python builtin `int`, and the type of `mode` is an [enum](#StrictEnum) we have declared ourselves, where the string values must exactly match what the control system produces.
 
 ```{seealso}
-[](#SignalDatatype) defines the list of all possible datatypes you can use for Signals
+[](#SignalDatatypeT) defines the list of all possible datatypes you can use for Signals
 ```
 
 We also [annotate](#typing.Annotated) this type hint with some additional information, like [`Format`](#StandardReadableFormat). This will tell the [](#StandardReadable) baseclass which Signals are important in a plan like `bp.grid_scan`. In this case we specify that `mode` should be reported as a [configuration parameter](#StandardReadableFormat.CONFIG_SIGNAL) once at the start of the scan, and `value` should be [fetched without caching and plotted](#StandardReadableFormat.HINTED_UNCACHED_SIGNAL) at each point of the scan.

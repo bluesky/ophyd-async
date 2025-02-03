@@ -83,6 +83,8 @@ nitpicky = True
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
     ("py:class", "ophyd_async.core._utils.T"),
+    ("py:class", "ophyd_async.core._utils.V"),
+    ("py:class", "ophyd_async.core._device.DeviceT"),
     # # builtins
     # ("py:class", "NoneType"),
     # ("py:class", "'str'"),
@@ -258,8 +260,11 @@ numpydoc_show_class_members = False
 # Don't show config summary as it's not relevant
 autodoc_pydantic_model_show_config_summary = False
 
-# Show the fields in source order
-autodoc_pydantic_model_summary_list_order = "bysource"
+# Don't show JSON schema
+autodoc_pydantic_model_show_json = False
+
+# Don't show field summary, as links break in reimported models
+autodoc_pydantic_model_show_field_summary = False
 
 # Where to put Ipython savefigs
 ipython_savefig_dir = "../build/savefig"

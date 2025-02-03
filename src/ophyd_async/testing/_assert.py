@@ -22,7 +22,13 @@ from ._utils import T
 
 
 def approx_value(value: Any):
-    """For appoximating values on signals. `Table`s cant use `pytest.approx`"""
+    """Allow any value to be compared to another in tests.
+
+    This is needed because numpy arrays give a numpy array back when compared,
+    not a bool. This means that you can't ``assert array1==array2``. Numpy
+    arrays can be wrapped with `pytest.approx`, but this doesn't work for
+    `Table` instances: in this case we use `ApproxTable`.
+    """
     return ApproxTable(value) if isinstance(value, Table) else pytest.approx(value)
 
 
@@ -117,9 +123,8 @@ def assert_emitted(docs: dict[str, list[dict]], **numbers: int):
 
 
 class ApproxTable:
-    """
-    For approximating two tables are equivalent, up to
-    some relative or absolute difference.
+    """For approximating two tables are equivalent, up to some relative or
+    absolute difference.
     """
 
     def __init__(self, expected: Table, rel=None, abs=None, nan_ok: bool = False):
@@ -138,6 +143,8 @@ class ApproxTable:
 
 
 class MonitorQueue(AbstractContextManager):
+    """Monitors a `Signal` and stores its updates."""
+
     def __init__(self, signal: SignalR):
         self.signal = signal
         self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()

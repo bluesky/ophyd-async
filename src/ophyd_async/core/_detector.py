@@ -49,14 +49,16 @@ class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector"""
 
     #: Number of triggers that will be sent, (0 means infinite) Can be:
-    #  - A single integer or
-    #  - A list of integers for multiple triggers
-    # Example for tomography: TriggerInfo(number=[2,3,100,3])
-    #:     This would trigger:
-    #:     - 2 times for dark field images
-    #:     - 3 times for initial flat field images
-    #:     - 100 times for projections
-    #:     - 3 times for final flat field images
+    #:
+    #: - A single integer or
+    #: - A list of integers for multiple triggers
+    #: Example for tomography: ``TriggerInfo(number=[2,3,100,3])``.
+    #: This would trigger:
+    #:
+    #: - 2 times for dark field images
+    #: - 3 times for initial flat field images
+    #: - 100 times for projections
+    #: - 3 times for final flat field images
     number_of_triggers: NonNegativeInt | list[NonNegativeInt]
     #: Sort of triggers that will be sent
     trigger: DetectorTrigger = Field(default=DetectorTrigger.INTERNAL)

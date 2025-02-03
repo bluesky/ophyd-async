@@ -2,8 +2,8 @@
 
 {%- set filtered_members = [] %}
 {%- for item in members %}
-    {%- if item in functions + classes + exceptions + attributes %}
-        {% set _ = filtered_members.append(item) %}
+    {%- if fullname + "." + item not in modules and not item.startswith("_") %}
+        {%- set _ = filtered_members.append(item) %}
     {%- endif %}
 {%- endfor %}
 
