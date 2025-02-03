@@ -5,8 +5,8 @@ from ophyd_async.core import (
     StrictEnum,
 )
 from ophyd_async.testing import float_array_value, int_array_value
-from tango import AttrDataFormat, AttrWriteType
-from tango.server import Device, attribute
+from tango import AttrDataFormat, AttrWriteType, DevState
+from tango.server import Device, attribute, command
 
 
 class ExampleStrEnum(StrictEnum):
@@ -46,6 +46,7 @@ _dtypes = {
     "uint64": "DevULong64",
     "float32": "DevFloat",
     "float64": "DevDouble",
+    "my_state": "DevState",
 }
 
 _initial_values = {
@@ -63,6 +64,7 @@ _initial_values = {
         "uint64": 1,
         "float32": 1.234,
         "float64": 1.234,
+        "my_state": DevState.INIT,
     },
     AttrDataFormat.SPECTRUM: {
         "str": ["one", "two", "three"],
@@ -78,6 +80,9 @@ _initial_values = {
         "uint64": int_array_value(np.uint64),
         "float32": float_array_value(np.float32),
         "float64": float_array_value(np.float64),
+        "my_state": np.array(
+            [DevState.INIT, DevState.ON, DevState.MOVING], dtype=DevState
+        ),
     },
     AttrDataFormat.IMAGE: {
         "str": np.array([["one", "two", "three"], ["one", "two", "three"]]),
@@ -95,6 +100,13 @@ _initial_values = {
         "uint64": int_image_value(np.uint64),
         "float32": float_image_value(np.float32),
         "float64": float_image_value(np.float64),
+        "my_state": np.array(
+            [
+                [DevState.INIT, DevState.ON, DevState.MOVING],
+                [DevState.INIT, DevState.ON, DevState.MOVING],
+            ],
+            dtype=DevState,
+        ),
     },
 }
 
@@ -130,6 +142,15 @@ class OneOfEverythingTangoDevice(Device):
                 )
                 self.add_attribute(attr)
                 self.set_change_event(name, True, False)
+
+    @command
+    def reset_values(self):
+        for name, value in _initial_values[AttrDataFormat.SCALAR].items():
+            self.attr_values[name] = value
+        for name, value in _initial_values[AttrDataFormat.SPECTRUM].items():
+            self.attr_values[name + "_spectrum"] = value
+        for name, value in _initial_values[AttrDataFormat.IMAGE].items():
+            self.attr_values[name + "_image"] = value
 
     def read(self, attr):
         value = self.attr_values[attr.get_name()]

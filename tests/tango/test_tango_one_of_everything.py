@@ -1,3 +1,5 @@
+from collections.abc import Generator
+
 import numpy as np
 import pytest
 
@@ -7,11 +9,12 @@ from ophyd_async.tango.testing import (
     OneOfEverythingTangoDevice,
 )
 from ophyd_async.testing import assert_reading, assert_value
+from tango import DeviceProxy, DevState
 from tango.test_context import MultiDeviceTestContext
 
 
 @pytest.fixture(scope="module")  # module level scope doesn't work properly...
-def everything_device():
+def ophyd_and_tango_device() -> Generator[tuple[TangoReadable, DeviceProxy]]:
     with MultiDeviceTestContext(
         [
             {
@@ -21,9 +24,35 @@ def everything_device():
         ],
         process=True,
     ) as context:
-        yield TangoReadable(context.get_device_access("everything/device/1"))
+        yield (
+            TangoReadable(context.get_device_access("everything/device/1")),
+            context.get_device("everything/device/1"),
+        )
 
 
+@pytest.fixture
+async def everything_device(ophyd_and_tango_device) -> TangoReadable:
+    ophyd_device, tango_device = ophyd_and_tango_device
+    tango_device.reset_values()
+    return ophyd_device
+
+
+_scalar_vals = {
+    "str": "test_string",
+    "bool": True,
+    "strenum": ExampleStrEnum.B,
+    "int8": 1,
+    "uint8": 1,
+    "int16": 1,
+    "uint16": 1,
+    "int32": 1,
+    "uint32": 1,
+    "int64": 1,
+    "uint64": 1,
+    "float32": 1.234,
+    "float64": 1.234,
+    "my_state": DevState.INIT,
+}
 _array_vals = {
     "int8": np.array([-128, 127, 0, 1, 2, 3, 4], dtype=np.int8),
     "uint8": np.array([0, 255, 0, 1, 2, 3, 4], dtype=np.uint8),
@@ -68,6 +97,9 @@ _array_vals = {
     ),
     "str": ["one", "two", "three"],
     "bool": np.array([False, True]),
+    "my_state": np.array(
+        [DevState.INIT, DevState.ON, DevState.MOVING]
+    ),  # fails if we specify dtype
 }
 
 _image_vals = {k: np.vstack((v, v)) for k, v in _array_vals.items()}
@@ -142,19 +174,20 @@ async def test_set_with_converter(everything_device):
 
 async def test_assert_val_reading_everything_tango(everything_device):
     await everything_device.connect()
-    await assert_val_reading(everything_device.str, "test_string")
-    await assert_val_reading(everything_device.bool, True)
-    await assert_val_reading(everything_device.strenum, ExampleStrEnum.B)
-    await assert_val_reading(everything_device.int8, 1)
-    await assert_val_reading(everything_device.uint8, 1)
-    await assert_val_reading(everything_device.int16, 1)
-    await assert_val_reading(everything_device.uint16, 1)
-    await assert_val_reading(everything_device.int32, 1)
-    await assert_val_reading(everything_device.uint32, 1)
-    await assert_val_reading(everything_device.int64, 1)
-    await assert_val_reading(everything_device.uint64, 1)
-    await assert_val_reading(everything_device.float32, 1.234)
-    await assert_val_reading(everything_device.float64, 1.234)
+    await assert_val_reading(everything_device.str, _scalar_vals["str"])
+    await assert_val_reading(everything_device.bool, _scalar_vals["bool"])
+    await assert_val_reading(everything_device.strenum, _scalar_vals["strenum"])
+    await assert_val_reading(everything_device.int8, _scalar_vals["int8"])
+    await assert_val_reading(everything_device.uint8, _scalar_vals["uint8"])
+    await assert_val_reading(everything_device.int16, _scalar_vals["int16"])
+    await assert_val_reading(everything_device.uint16, _scalar_vals["uint16"])
+    await assert_val_reading(everything_device.int32, _scalar_vals["int32"])
+    await assert_val_reading(everything_device.uint32, _scalar_vals["uint32"])
+    await assert_val_reading(everything_device.int64, _scalar_vals["int64"])
+    await assert_val_reading(everything_device.uint64, _scalar_vals["uint64"])
+    await assert_val_reading(everything_device.float32, _scalar_vals["float32"])
+    await assert_val_reading(everything_device.float64, _scalar_vals["float64"])
+    await assert_val_reading(everything_device.my_state, _scalar_vals["my_state"])
 
     await assert_val_reading(everything_device.str_spectrum, _array_vals["str"])
     await assert_val_reading(everything_device.bool_spectrum, _array_vals["bool"])
@@ -169,6 +202,9 @@ async def test_assert_val_reading_everything_tango(everything_device):
     await assert_val_reading(everything_device.uint64_spectrum, _array_vals["uint64"])
     await assert_val_reading(everything_device.float32_spectrum, _array_vals["float32"])
     await assert_val_reading(everything_device.float64_spectrum, _array_vals["float64"])
+    await assert_val_reading(
+        everything_device.my_state_spectrum, _array_vals["my_state"]
+    )
 
     await assert_val_reading(everything_device.str_image, _image_vals["str"])
     await assert_val_reading(everything_device.bool_image, _image_vals["bool"])
@@ -183,3 +219,4 @@ async def test_assert_val_reading_everything_tango(everything_device):
     await assert_val_reading(everything_device.uint64_image, _image_vals["uint64"])
     await assert_val_reading(everything_device.float32_image, _image_vals["float32"])
     await assert_val_reading(everything_device.float64_image, _image_vals["float64"])
+    await assert_val_reading(everything_device.my_state_image, _image_vals["my_state"])
