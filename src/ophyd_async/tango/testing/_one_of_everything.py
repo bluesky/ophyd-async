@@ -1,8 +1,14 @@
+import textwrap
+from dataclasses import dataclass
+from typing import Generic
+
 import numpy as np
 
 from ophyd_async.core import (
+    Array1D,
     DTypeScalar_co,
     StrictEnum,
+    T,
 )
 from ophyd_async.testing import float_array_value, int_array_value
 from tango import AttrDataFormat, AttrWriteType, DevState
@@ -31,132 +37,144 @@ def float_image_value(
     return np.vstack((array_1d, array_1d))
 
 
-_dtypes = {
-    "str": "DevString",
-    "bool": "DevBoolean",
-    "enum": "DevEnum",
-    "strenum": "DevEnum",
-    "int8": "DevShort",
-    "uint8": "DevUChar",
-    "int16": "DevShort",
-    "uint16": "DevUShort",
-    "int32": "DevLong",
-    "uint32": "DevULong",
-    "int64": "DevLong64",
-    "uint64": "DevULong64",
-    "float32": "DevFloat",
-    "float64": "DevDouble",
-    "my_state": "DevState",
-}
+@dataclass
+class AttributeData(Generic[T]):
+    type_name: str
+    tango_type: str
+    dtype: type
+    initial_scalar: T
+    initial_spectrum: Array1D[T]  # type: ignore
 
-_initial_values = {
-    AttrDataFormat.SCALAR: {
-        "str": "test_string",
-        "bool": True,
-        "strenum": 1,  # Tango devices must use ints for enums
-        "int8": 1,
-        "uint8": 1,
-        "int16": 1,
-        "uint16": 1,
-        "int32": 1,
-        "uint32": 1,
-        "int64": 1,
-        "uint64": 1,
-        "float32": 1.234,
-        "float64": 1.234,
-        "my_state": DevState.INIT,
-    },
-    AttrDataFormat.SPECTRUM: {
-        "str": ["one", "two", "three"],
-        "bool": [False, True],
-        "strenum": [0, 1, 2],  # Tango devices must use ints for enums
-        "int8": int_array_value(np.int8),
-        "uint8": int_array_value(np.uint8),
-        "int16": int_array_value(np.int16),
-        "uint16": int_array_value(np.uint16),
-        "int32": int_array_value(np.int32),
-        "uint32": int_array_value(np.uint32),
-        "int64": int_array_value(np.int64),
-        "uint64": int_array_value(np.uint64),
-        "float32": float_array_value(np.float32),
-        "float64": float_array_value(np.float64),
-        "my_state": np.array(
-            [DevState.INIT, DevState.ON, DevState.MOVING], dtype=DevState
-        ),
-    },
-    AttrDataFormat.IMAGE: {
-        "str": np.array([["one", "two", "three"], ["one", "two", "three"]]),
-        "bool": np.array([[False, True], [False, True]]),
-        "strenum": np.array(
-            [[0, 1, 2], [0, 1, 2]]
-        ),  # Tango devices must use ints for enums
-        "int8": int_image_value(np.int8),
-        "uint8": int_image_value(np.uint8),
-        "int16": int_image_value(np.int16),
-        "uint16": int_image_value(np.uint16),
-        "int32": int_image_value(np.int32),
-        "uint32": int_image_value(np.uint32),
-        "int64": int_image_value(np.int64),
-        "uint64": int_image_value(np.uint64),
-        "float32": float_image_value(np.float32),
-        "float64": float_image_value(np.float64),
-        "my_state": np.array(
-            [
-                [DevState.INIT, DevState.ON, DevState.MOVING],
-                [DevState.INIT, DevState.ON, DevState.MOVING],
-            ],
-            dtype=DevState,
-        ),
-    },
-}
+    @property
+    def initial_image(self):
+        # return a (2, N) np array with two of the initial spectrum values stacked
+        return np.vstack((self.initial_spectrum, self.initial_spectrum))
+
+    @property
+    def spectrum_name(self) -> str:
+        return f"{self.type_name}_spectrum"
+
+    @property
+    def image_name(self) -> str:
+        return f"{self.type_name}_image"
+
+
+attribute_datas = [
+    AttributeData(
+        "str",
+        "DevString",
+        str,
+        "test_string",
+        np.array(["one", "two", "three"], dtype=str),
+    ),
+    AttributeData(
+        "bool", "DevBoolean", bool, True, np.array([False, True], dtype=bool)
+    ),
+    AttributeData("strenum", "DevEnum", int, 1, np.array([0, 1, 2])),  # right dtype?
+    AttributeData("int8", "DevShort", np.int8, 1, int_array_value(np.int8)),
+    AttributeData("uint8", "DevUChar", np.uint8, 1, int_array_value(np.uint8)),
+    AttributeData("int16", "DevShort", np.int16, 1, int_array_value(np.int16)),
+    AttributeData("uint16", "DevUShort", np.uint16, 1, int_array_value(np.uint16)),
+    AttributeData("int32", "DevLong", np.int32, 1, int_array_value(np.int32)),
+    AttributeData("uint32", "DevULong", np.uint32, 1, int_array_value(np.uint32)),
+    AttributeData("int64", "DevLong64", np.int64, 1, int_array_value(np.int64)),
+    AttributeData("uint64", "DevULong64", np.uint64, 1, int_array_value(np.uint64)),
+    AttributeData(
+        "float32", "DevFloat", np.float32, 1.234, float_array_value(np.float32)
+    ),
+    AttributeData(
+        "float64", "DevDouble", np.float64, 1.234, float_array_value(np.float64)
+    ),
+    AttributeData(
+        "my_state",
+        "DevState",
+        DevState,
+        DevState.INIT,
+        np.array([DevState.INIT, DevState.ON, DevState.MOVING], dtype=DevState),
+    ),
+]
 
 
 class OneOfEverythingTangoDevice(Device):
     attr_values = {}
 
     def initialize_dynamic_attributes(self):
-        for dformat, initial_values in _initial_values.items():
-            if dformat == AttrDataFormat.SPECTRUM:
-                suffix = "_spectrum"
-            elif dformat == AttrDataFormat.IMAGE:
-                suffix = "_image"
-            else:
-                suffix = ""  # scalar
-            for prefix, value in initial_values.items():
-                name = prefix + suffix
-                self.attr_values[name] = value
-                if prefix == "strenum":
-                    labels = [e.value for e in ExampleStrEnum]
-                else:
-                    labels = []
-                attr = attribute(
-                    name=name,
-                    dtype=_dtypes[prefix],
-                    dformat=dformat,
-                    access=AttrWriteType.READ_WRITE,
-                    fget=self.read,
-                    fset=self.write,
-                    max_dim_x=100,
-                    max_dim_y=2,
-                    enum_labels=labels,
-                )
+        attr_args = {
+            "access": AttrWriteType.READ_WRITE,
+            "fget": self.read,
+            "fset": self.write,
+            "max_dim_x": 100,
+            "max_dim_y": 2,
+            "enum_labels": [e.value for e in ExampleStrEnum],
+        }
+        for attr_data in attribute_datas:
+            attr_args["dtype"] = attr_data.tango_type
+            self.attr_values[attr_data.type_name] = attr_data.initial_scalar
+            self.attr_values[attr_data.spectrum_name] = attr_data.initial_spectrum
+            self.attr_values[attr_data.image_name] = attr_data.initial_image
+            scalar_attr = attribute(
+                name=attr_data.type_name, dformat=AttrDataFormat.SCALAR, **attr_args
+            )
+            spectrum_attr = attribute(
+                name=attr_data.spectrum_name,
+                dformat=AttrDataFormat.SPECTRUM,
+                **attr_args,
+            )
+            image_attr = attribute(
+                name=attr_data.image_name, dformat=AttrDataFormat.IMAGE, **attr_args
+            )
+            for attr in (scalar_attr, spectrum_attr, image_attr):
                 self.add_attribute(attr)
-                self.set_change_event(name, True, False)
+                self.set_change_event(attr.name, True, False)
+
+            if attr_data.tango_type == "DevUChar":
+                continue
+            self.add_command(
+                command(
+                    f=getattr(self, f"{attr_data.type_name}_cmd"),
+                    dtype_in=attr_data.tango_type,
+                    dtype_out=attr_data.tango_type,
+                    dformat_in=AttrDataFormat.SCALAR,
+                    dformat_out=AttrDataFormat.SCALAR,
+                )
+            )
+            if attr_data.tango_type in ["DevState", "DevEnum"]:
+                continue
+            self.add_command(
+                command(
+                    f=getattr(self, f"{attr_data.type_name}_spectrum_cmd"),
+                    dtype_in=attr_data.tango_type,
+                    dtype_out=attr_data.tango_type,
+                    dformat_in=AttrDataFormat.SPECTRUM,
+                    dformat_out=AttrDataFormat.SPECTRUM,
+                )
+            )
 
     @command
     def reset_values(self):
-        for name, value in _initial_values[AttrDataFormat.SCALAR].items():
-            self.attr_values[name] = value
-        for name, value in _initial_values[AttrDataFormat.SPECTRUM].items():
-            self.attr_values[name + "_spectrum"] = value
-        for name, value in _initial_values[AttrDataFormat.IMAGE].items():
-            self.attr_values[name + "_image"] = value
+        for attr_data in attribute_datas:
+            self.attr_values[attr_data.type_name] = attr_data.initial_scalar
+            self.attr_values[attr_data.type_name + "_spectrum"] = (
+                attr_data.initial_spectrum
+            )
+            self.attr_values[attr_data.type_name + "_image"] = attr_data.initial_image
 
     def read(self, attr):
         value = self.attr_values[attr.get_name()]
-        attr.set_value(value)  # fails with enums
+        attr.set_value(value)
 
     def write(self, attr):
         new_value = attr.get_write_value()
         self.attr_values[attr.get_name()] = new_value
         self.push_change_event(attr.get_name(), new_value)
+
+    echo_command_code = textwrap.dedent(
+        """\
+            def {}(self, arg):
+                return arg
+            """
+    )
+
+    for attr_data in attribute_datas:
+        exec(echo_command_code.format(f"{attr_data.type_name}_cmd"))
+        exec(echo_command_code.format(f"{attr_data.type_name}_spectrum_cmd"))
