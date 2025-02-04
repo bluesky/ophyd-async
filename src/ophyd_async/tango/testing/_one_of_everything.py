@@ -1,5 +1,6 @@
 import textwrap
 from dataclasses import dataclass
+from random import choice
 from typing import Generic
 
 import numpy as np
@@ -44,6 +45,7 @@ class AttributeData(Generic[T]):
     dtype: type
     initial_scalar: T
     initial_spectrum: Array1D[T]  # type: ignore
+    random_put_values: tuple[T, ...]
 
     @property
     def initial_image(self):
@@ -58,6 +60,22 @@ class AttributeData(Generic[T]):
     def image_name(self) -> str:
         return f"{self.type_name}_image"
 
+    @property
+    def random_scalar(self) -> T:
+        return self.dtype(choice(self.random_put_values))
+
+    @property
+    def random_spectrum(self) -> Array1D[T]:
+        array = self.initial_spectrum.copy()
+        for idx in range(len(array)):
+            array[idx] = self.random_scalar
+        return array  # pretty ugly
+
+    @property
+    def random_image(self):  # how to type this?
+        array_1d = self.random_spectrum
+        return np.vstack((array_1d, array_1d))
+
 
 attribute_datas = [
     AttributeData(
@@ -66,24 +84,63 @@ attribute_datas = [
         str,
         "test_string",
         np.array(["one", "two", "three"], dtype=str),
+        ("four", "five", "six"),
     ),
     AttributeData(
-        "bool", "DevBoolean", bool, True, np.array([False, True], dtype=bool)
-    ),
-    AttributeData("strenum", "DevEnum", int, 1, np.array([0, 1, 2])),  # right dtype?
-    AttributeData("int8", "DevShort", np.int8, 1, int_array_value(np.int8)),
-    AttributeData("uint8", "DevUChar", np.uint8, 1, int_array_value(np.uint8)),
-    AttributeData("int16", "DevShort", np.int16, 1, int_array_value(np.int16)),
-    AttributeData("uint16", "DevUShort", np.uint16, 1, int_array_value(np.uint16)),
-    AttributeData("int32", "DevLong", np.int32, 1, int_array_value(np.int32)),
-    AttributeData("uint32", "DevULong", np.uint32, 1, int_array_value(np.uint32)),
-    AttributeData("int64", "DevLong64", np.int64, 1, int_array_value(np.int64)),
-    AttributeData("uint64", "DevULong64", np.uint64, 1, int_array_value(np.uint64)),
-    AttributeData(
-        "float32", "DevFloat", np.float32, 1.234, float_array_value(np.float32)
+        "bool",
+        "DevBoolean",
+        bool,
+        True,
+        np.array([False, True], dtype=bool),
+        (False, True),
     ),
     AttributeData(
-        "float64", "DevDouble", np.float64, 1.234, float_array_value(np.float64)
+        "strenum", "DevEnum", int, 1, np.array([0, 1, 2]), (0, 1, 2)
+    ),  # right dtype?
+    AttributeData(
+        "int8", "DevShort", int, 1, int_array_value(np.int8), (1, 2, 3, 4, 5)
+    ),
+    AttributeData(
+        "uint8", "DevUChar", int, 1, int_array_value(np.uint8), (1, 2, 3, 4, 5)
+    ),
+    AttributeData(
+        "int16", "DevShort", int, 1, int_array_value(np.int16), (1, 2, 3, 4, 5)
+    ),
+    AttributeData(
+        "uint16", "DevUShort", int, 1, int_array_value(np.uint16), (1, 2, 3, 4, 5)
+    ),
+    AttributeData(
+        "int32", "DevLong", int, 1, int_array_value(np.int32), (1, 2, 3, 4, 5)
+    ),
+    AttributeData(
+        "uint32", "DevULong", int, 1, int_array_value(np.uint32), (1, 2, 3, 4, 5)
+    ),
+    AttributeData(
+        "int64", "DevLong64", int, 1, int_array_value(np.int64), (1, 2, 3, 4, 5)
+    ),
+    AttributeData(
+        "uint64",
+        "DevULong64",
+        int,
+        1,
+        int_array_value(np.uint64),
+        (1, 2, 3, 4, 5),
+    ),
+    AttributeData(
+        "float32",
+        "DevFloat",
+        float,
+        1.234,
+        float_array_value(np.float32),
+        (1.234, 2.345, 3.456),
+    ),
+    AttributeData(
+        "float64",
+        "DevDouble",
+        float,
+        1.234,
+        float_array_value(np.float64),
+        (1.234, 2.345, 3.456),
     ),
     AttributeData(
         "my_state",
@@ -91,6 +148,7 @@ attribute_datas = [
         DevState,
         DevState.INIT,
         np.array([DevState.INIT, DevState.ON, DevState.MOVING], dtype=DevState),
+        (DevState.INIT, DevState.ON, DevState.MOVING),
     ),
 ]
 
@@ -107,11 +165,9 @@ class OneOfEverythingTangoDevice(Device):
             "max_dim_y": 2,
             "enum_labels": [e.value for e in ExampleStrEnum],
         }
+        self.reset_values()
         for attr_data in attribute_datas:
             attr_args["dtype"] = attr_data.tango_type
-            self.attr_values[attr_data.type_name] = attr_data.initial_scalar
-            self.attr_values[attr_data.spectrum_name] = attr_data.initial_spectrum
-            self.attr_values[attr_data.image_name] = attr_data.initial_image
             scalar_attr = attribute(
                 name=attr_data.type_name, dformat=AttrDataFormat.SCALAR, **attr_args
             )
