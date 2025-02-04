@@ -1,3 +1,9 @@
+from ._derived_signal import (
+    DerivedBackend,
+    DerivedSignalBackend,
+    Transform,
+    TransformArgument,
+)
 from ._detector import (
     DetectorController,
     DetectorControllerT,
@@ -81,6 +87,10 @@ from ._utils import (
 from ._yaml_settings import YamlSettingsProvider
 
 __all__ = [
+    "DerivedBackend",
+    "DerivedSignalBackend",
+    "Transform",
+    "TransformArgument",
     "DetectorController",
     "DetectorControllerT",
     "DetectorTrigger",
