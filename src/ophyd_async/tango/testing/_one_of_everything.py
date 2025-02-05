@@ -42,7 +42,7 @@ def float_image_value(
 class AttributeData(Generic[T]):
     name: str
     tango_type: str
-    dtype: type
+    py_type: type
     initial_value: T
     random_put_values: tuple[T, ...]
     dformat = AttrDataFormat.SCALAR
@@ -80,22 +80,22 @@ def add_ads(
     my_list: list[AttributeData],
     name: str,
     tango_type: str,
-    dtype: type,
+    py_type: type,
     initial_scalar,
     initial_spectrum,
     choices,
 ):
-    my_list.append(AttributeData(name, tango_type, dtype, initial_scalar, choices))
+    my_list.append(AttributeData(name, tango_type, py_type, initial_scalar, choices))
     my_list.append(
         SpectrumData(
-            f"{name}_spectrum", tango_type, Array1D[dtype], initial_spectrum, choices
+            f"{name}_spectrum", tango_type, Array1D[py_type], initial_spectrum, choices
         )
     )
     my_list.append(
         ImageData(
             f"{name}_image",
             tango_type,
-            None,  # TODO should we fix this? YES WE SHOULD
+            np.ndarray[Any, np.dtype[py_type]],
             np.vstack((initial_spectrum, initial_spectrum)),
             choices,
         )
@@ -121,8 +121,8 @@ add_ads(
     (False, True),
 )
 add_ads(
-    attribute_datas, "strenum", "DevEnum", int, 1, np.array([0, 1, 2]), (0, 1, 2)
-)  # right dtype?
+    attribute_datas, "strenum", "DevEnum", StrictEnum, 1, np.array([0, 1, 2]), (0, 1, 2)
+)  # right py_type?
 add_ads(
     attribute_datas,
     "int8",
