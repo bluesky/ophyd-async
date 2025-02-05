@@ -6,7 +6,6 @@ import numpy.typing as npt
 import pytest
 from test_base_device import TestDevice
 from test_tango_signals import (
-    EchoDevice,
     make_backend,
     prepare_device,
 )
@@ -24,6 +23,7 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     get_trl_descriptor,
 )
+from ophyd_async.tango.testing import OneOfEverythingTangoDevice
 from tango import (
     CmdArgType,
     DevState,
@@ -50,7 +50,8 @@ def tango_test_device():
 @pytest.fixture(scope="module")
 def echo_device():
     with MultiDeviceTestContext(
-        [{"class": EchoDevice, "devices": [{"name": "test/device/1"}]}], process=True
+        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/1"}]}],
+        process=True,
     ) as context:
         yield context.get_device_access("test/device/1")
 
@@ -322,8 +323,8 @@ async def test_attribute_has_subscription(tango_test_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_attribute_subscribe_callback(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     backend = await make_backend(float, source)
     attr_proxy = backend.proxies[source]
     val = None
@@ -351,8 +352,8 @@ async def test_attribute_subscribe_callback(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_attribute_unsubscribe_callback(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     backend = await make_backend(float, source)
     attr_proxy = backend.proxies[source]
 
@@ -584,8 +585,8 @@ async def test_command_set_polling(tango_test_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_init(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
     assert transport is not None
 
@@ -593,8 +594,8 @@ async def test_tango_transport_init(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_source(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source)
     transport_source = transport.source("", True)
     assert transport_source == source
@@ -603,8 +604,8 @@ async def test_tango_transport_source(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_datatype_allowed(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     backend = await make_backend(float, source)
 
     assert backend.datatype_allowed(int)
@@ -620,8 +621,8 @@ async def test_tango_transport_datatype_allowed(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_connect(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     backend = await make_backend(float, source, connect=False)
     assert backend is not None
     await backend.connect(1)
@@ -634,8 +635,8 @@ async def test_tango_transport_connect(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_connect_and_store_config(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
     await transport._connect_and_store_config(source, 1)
     assert transport.trl_configs[source] is not None
@@ -648,8 +649,8 @@ async def test_tango_transport_connect_and_store_config(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_put(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -666,8 +667,8 @@ async def test_tango_transport_put(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_get_datakey(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
     await transport.connect(1)
     datakey = await transport.get_datakey(source)
@@ -679,8 +680,8 @@ async def test_tango_transport_get_datakey(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_get_reading(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -695,8 +696,8 @@ async def test_tango_transport_get_reading(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_get_value(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -711,8 +712,8 @@ async def test_tango_transport_get_value(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_get_setpoint(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -729,8 +730,8 @@ async def test_tango_transport_get_setpoint(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_set_callback(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -776,8 +777,8 @@ async def test_set_callback(echo_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_set_polling(echo_device):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
     transport.set_polling(True, 0.1, 1, 0.1)
     assert transport._polling == (True, 0.1, 1, 0.1)
@@ -787,8 +788,8 @@ async def test_tango_transport_set_polling(echo_device):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("allow", [True, False])
 async def test_tango_transport_allow_events(echo_device, allow):
-    await prepare_device(echo_device, "float_scalar_attr", 1.0)
-    source = echo_device + "/" + "float_scalar_attr"
+    await prepare_device(echo_device, "float32", 1.0)
+    source = echo_device + "/" + "float32"
     transport = await make_backend(float, source, connect=False)
     transport.allow_events(allow)
     assert transport.support_events == allow
