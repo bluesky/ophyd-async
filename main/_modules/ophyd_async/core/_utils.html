@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.9.0a3.dev1+gc867932d documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.9.0a3.dev2+ga16130c4 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=d48f1cae"></script>
+    <script src="../../../_static/documentation_options.js?v=c974a1ed"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -135,8 +135,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev1+gc867932d documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev1+gc867932d documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev2+ga16130c4 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev2+ga16130c4 documentation - Home"/>
   
   
 </a></div>
@@ -503,6 +503,20 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="k">class</span><span class="w"> </span><span class="nc">SubsetEnumMeta</span><span class="p">(</span><span class="n">StrictEnumMeta</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns given value if it is a string and not a member of the enum.</span>
+<span class="sd">        If the value is not a string or is an enum member, default enum behavior</span>
+<span class="sd">        is applied. Type checking will complain if provided arbitrary string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Union[str, SubsetEnum]: If the value is a string and not a member of the</span>
+<span class="sd">            enum, the string is returned as is. Otherwise, the corresponding enum</span>
+<span class="sd">            member is returned.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the value is not a string and cannot be converted to an enum</span>
+<span class="sd">            member.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">value</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
