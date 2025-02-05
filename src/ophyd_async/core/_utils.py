@@ -34,6 +34,20 @@ class StrictEnum(str, Enum, metaclass=StrictEnumMeta):
 
 class SubsetEnumMeta(StrictEnumMeta):
     def __call__(self, value, *args, **kwargs):  # type: ignore
+        """
+        Returns given value if it is a string and not a member of the enum.
+        If the value is not a string or is an enum member, default enum behavior
+        is applied. Type checking will complain if provided arbitrary string.
+
+        Returns:
+            Union[str, SubsetEnum]: If the value is a string and not a member of the
+            enum, the string is returned as is. Otherwise, the corresponding enum
+            member is returned.
+
+        Raises:
+            ValueError: If the value is not a string and cannot be converted to an enum
+            member.
+        """
         if isinstance(value, str) and not isinstance(value, self):
             return value
         return super().__call__(value, *args, **kwargs)
