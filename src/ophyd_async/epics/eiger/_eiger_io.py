@@ -20,6 +20,7 @@ class EigerDriverIO(Device):
 
         self.num_images = epics_signal_rw_rbv(int, f"{prefix}Nimages")
         self.num_triggers = epics_signal_rw_rbv(int, f"{prefix}Ntrigger")
+        self.num_exposures = epics_signal_rw_rbv(int, f"{prefix}Nexpi")  # Check PV name
 
         # TODO: Should be EigerTriggerMode enum, see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
         self.trigger_mode = epics_signal_rw_rbv(str, f"{prefix}TriggerMode")
