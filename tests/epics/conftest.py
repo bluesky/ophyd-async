@@ -20,6 +20,7 @@ def ad_standard_det_factory(
         detector_cls: type[adcore.AreaDetector],
         writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         number=1,
+        color=False,
         **kwargs,
     ) -> adcore.AreaDetector:
         # Dynamically generate a name based on the class of controller
@@ -63,6 +64,9 @@ def ad_standard_det_factory(
 
         if isinstance(test_adstandard_det.fileio, adcore.NDFileHDFIO):
             set_mock_value(test_adstandard_det.fileio.num_frames_chunks, 1)
+
+        if color:
+            set_mock_value(test_adstandard_det.driver.color_mode, adcore.ADBaseColorMode.RGB)
 
         return test_adstandard_det
 

@@ -1,6 +1,6 @@
 import asyncio
 
-from ophyd_async.core import Device, StrictEnum
+from ophyd_async.core import Device, StrictEnum, SubsetEnum
 from ophyd_async.core._providers import DatasetDescriber
 from ophyd_async.epics.core import (
     epics_signal_r,
@@ -16,6 +16,12 @@ class Callback(StrictEnum):
     DISABLE = "Disable"
 
 
+# For now, only support mono and RGB1
+class ADBaseColorMode(SubsetEnum):
+    MONO = "Mono"
+    RGB = "RGB1"
+
+
 class NDArrayBaseIO(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.unique_id = epics_signal_r(int, prefix + "UniqueId_RBV")
@@ -24,6 +30,7 @@ class NDArrayBaseIO(Device):
         self.array_size_x = epics_signal_r(int, prefix + "ArraySizeX_RBV")
         self.array_size_y = epics_signal_r(int, prefix + "ArraySizeY_RBV")
         self.data_type = epics_signal_r(ADBaseDataType, prefix + "DataType_RBV")
+        self.color_mode = epics_signal_r(ADBaseColorMode, prefix + "ColorMode_RBV")
         self.array_counter = epics_signal_rw_rbv(int, prefix + "ArrayCounter")
         # There is no _RBV for this one
         self.wait_for_plugins = epics_signal_rw(bool, prefix + "WaitForPlugins")
@@ -37,11 +44,18 @@ class ADBaseDatasetDescriber(DatasetDescriber):
     async def np_datatype(self) -> str:
         return convert_ad_dtype_to_np(await self._driver.data_type.get_value())
 
-    async def shape(self) -> tuple[int, int]:
+    async def shape(self) -> tuple[int, int] | tuple[int, int, int]:
+        current_color_mode = await self._driver.color_mode.get_value()
+        if current_color_mode not in ADBaseColorMode:
+            raise ValueError(f"Current color mode {current_color_mode} not currently supported!")
+
         shape = await asyncio.gather(
             self._driver.array_size_y.get_value(),
             self._driver.array_size_x.get_value(),
         )
+        if current_color_mode == ADBaseColorMode.RGB:
+            shape = (3, *shape)
+
         return shape
 
 
