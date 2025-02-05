@@ -1,7 +1,7 @@
 import textwrap
 from dataclasses import dataclass
 from random import choice
-from typing import Generic
+from typing import Any, Generic
 
 import numpy as np
 
@@ -40,180 +40,237 @@ def float_image_value(
 
 @dataclass
 class AttributeData(Generic[T]):
-    type_name: str
+    name: str
     tango_type: str
     dtype: type
-    initial_scalar: T
-    initial_spectrum: Array1D[T]  # type: ignore
+    initial_value: T
     random_put_values: tuple[T, ...]
+    dformat = AttrDataFormat.SCALAR
+    # initial_spectrum: Array1D[T]  # type: ignore
 
-    @property
-    def initial_image(self):
-        # return a (2, N) np array with two of the initial spectrum values stacked
-        return np.vstack((self.initial_spectrum, self.initial_spectrum))
+    def random_value(self):
+        return choice(self.random_put_values)
 
-    @property
-    def spectrum_name(self) -> str:
-        return f"{self.type_name}_spectrum"
 
-    @property
-    def image_name(self) -> str:
-        return f"{self.type_name}_image"
+class SpectrumData(AttributeData):
+    dformat = AttrDataFormat.SPECTRUM
 
-    @property
-    def random_scalar(self) -> T:
-        return self.dtype(choice(self.random_put_values))
-
-    @property
-    def random_spectrum(self) -> Array1D[T]:
-        array = self.initial_spectrum.copy()
+    def random_value(self):
+        array = self.initial_value.copy()
         for idx in range(len(array)):
-            array[idx] = self.random_scalar
-        return array  # pretty ugly
-
-    @property
-    def random_image(self):  # how to type this?
-        array_1d = self.random_spectrum
-        return np.vstack((array_1d, array_1d))
+            array[idx] = choice(self.random_put_values)
+        return array
 
 
-attribute_datas = [
-    AttributeData(
-        "str",
-        "DevString",
-        str,
-        "test_string",
-        np.array(["one", "two", "three"], dtype=str),
-        ("four", "five", "six"),
-    ),
-    AttributeData(
-        "bool",
-        "DevBoolean",
-        bool,
-        True,
-        np.array([False, True], dtype=bool),
-        (False, True),
-    ),
-    AttributeData(
-        "strenum", "DevEnum", int, 1, np.array([0, 1, 2]), (0, 1, 2)
-    ),  # right dtype?
-    AttributeData(
-        "int8", "DevShort", int, 1, int_array_value(np.int8), (1, 2, 3, 4, 5)
-    ),
-    AttributeData(
-        "uint8", "DevUChar", int, 1, int_array_value(np.uint8), (1, 2, 3, 4, 5)
-    ),
-    AttributeData(
-        "int16", "DevShort", int, 1, int_array_value(np.int16), (1, 2, 3, 4, 5)
-    ),
-    AttributeData(
-        "uint16", "DevUShort", int, 1, int_array_value(np.uint16), (1, 2, 3, 4, 5)
-    ),
-    AttributeData(
-        "int32", "DevLong", int, 1, int_array_value(np.int32), (1, 2, 3, 4, 5)
-    ),
-    AttributeData(
-        "uint32", "DevULong", int, 1, int_array_value(np.uint32), (1, 2, 3, 4, 5)
-    ),
-    AttributeData(
-        "int64", "DevLong64", int, 1, int_array_value(np.int64), (1, 2, 3, 4, 5)
-    ),
-    AttributeData(
-        "uint64",
-        "DevULong64",
-        int,
-        1,
-        int_array_value(np.uint64),
-        (1, 2, 3, 4, 5),
-    ),
-    AttributeData(
-        "float32",
-        "DevFloat",
-        float,
-        1.234,
-        float_array_value(np.float32),
-        (1.234, 2.345, 3.456),
-    ),
-    AttributeData(
-        "float64",
-        "DevDouble",
-        float,
-        1.234,
-        float_array_value(np.float64),
-        (1.234, 2.345, 3.456),
-    ),
-    AttributeData(
-        "my_state",
-        "DevState",
-        DevState,
-        DevState.INIT,
-        np.array([DevState.INIT, DevState.ON, DevState.MOVING], dtype=DevState),
-        (DevState.INIT, DevState.ON, DevState.MOVING),
-    ),
-]
+class ImageData(AttributeData):
+    dformat = AttrDataFormat.IMAGE
+
+    def random_value(self):
+        array = self.initial_value.copy()
+        for idx in range(array.shape[1]):
+            array[0, idx] = choice(self.random_put_values)
+            array[1, idx] = choice(self.random_put_values)
+        return array
+
+
+attribute_datas = []
+
+
+def add_ads(
+    my_list: list[AttributeData],
+    name: str,
+    tango_type: str,
+    dtype: type,
+    initial_scalar,
+    initial_spectrum,
+    choices,
+):
+    my_list.append(AttributeData(name, tango_type, dtype, initial_scalar, choices))
+    my_list.append(
+        SpectrumData(
+            f"{name}_spectrum", tango_type, Array1D[dtype], initial_spectrum, choices
+        )
+    )
+    my_list.append(
+        ImageData(
+            f"{name}_image",
+            tango_type,
+            None,  # TODO should we fix this? YES WE SHOULD
+            np.vstack((initial_spectrum, initial_spectrum)),
+            choices,
+        )
+    )
+
+
+add_ads(
+    attribute_datas,
+    "str",
+    "DevString",
+    str,
+    "test_string",
+    np.array(["one", "two", "three"], dtype=str),
+    ("four", "five", "six"),
+)
+add_ads(
+    attribute_datas,
+    "bool",
+    "DevBoolean",
+    bool,
+    True,
+    np.array([False, True], dtype=bool),
+    (False, True),
+)
+add_ads(
+    attribute_datas, "strenum", "DevEnum", int, 1, np.array([0, 1, 2]), (0, 1, 2)
+)  # right dtype?
+add_ads(
+    attribute_datas,
+    "int8",
+    "DevShort",
+    int,
+    1,
+    int_array_value(np.int8),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "uint8",
+    "DevUChar",
+    int,
+    1,
+    int_array_value(np.uint8),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "int16",
+    "DevShort",
+    int,
+    1,
+    int_array_value(np.int16),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "uint16",
+    "DevUShort",
+    int,
+    1,
+    int_array_value(np.uint16),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "int32",
+    "DevLong",
+    int,
+    1,
+    int_array_value(np.int32),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "uint32",
+    "DevULong",
+    int,
+    1,
+    int_array_value(np.uint32),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "int64",
+    "DevLong64",
+    int,
+    1,
+    int_array_value(np.int64),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "uint64",
+    "DevULong64",
+    int,
+    1,
+    int_array_value(np.uint64),
+    (1, 2, 3, 4, 5),
+)
+add_ads(
+    attribute_datas,
+    "float32",
+    "DevFloat",
+    float,
+    1.234,
+    float_array_value(np.float32),
+    (1.234, 2.345, 3.456),
+)
+add_ads(
+    attribute_datas,
+    "float64",
+    "DevDouble",
+    float,
+    1.234,
+    float_array_value(np.float64),
+    (1.234, 2.345, 3.456),
+)
+add_ads(
+    attribute_datas,
+    "my_state",
+    "DevState",
+    DevState,
+    DevState.INIT,
+    np.array([DevState.INIT, DevState.ON, DevState.MOVING], dtype=DevState),
+    (DevState.INIT, DevState.ON, DevState.MOVING),
+)
 
 
 class OneOfEverythingTangoDevice(Device):
     attr_values = {}
 
     def initialize_dynamic_attributes(self):
-        attr_args = {
-            "access": AttrWriteType.READ_WRITE,
-            "fget": self.read,
-            "fset": self.write,
-            "max_dim_x": 100,
-            "max_dim_y": 2,
-            "enum_labels": [e.value for e in ExampleStrEnum],
-        }
         self.reset_values()
         for attr_data in attribute_datas:
-            attr_args["dtype"] = attr_data.tango_type
-            scalar_attr = attribute(
-                name=attr_data.type_name, dformat=AttrDataFormat.SCALAR, **attr_args
+            attr = attribute(
+                name=attr_data.name,
+                dtype=attr_data.tango_type,
+                dformat=attr_data.dformat,
+                access=AttrWriteType.READ_WRITE,
+                fget=self.read,
+                fset=self.write,
+                max_dim_x=0
+                if attr_data.dformat == AttrDataFormat.SCALAR
+                else attr_data.initial_value.shape[-1],
+                max_dim_y=2,
+                enum_labels=[e.value for e in ExampleStrEnum],
             )
-            spectrum_attr = attribute(
-                name=attr_data.spectrum_name,
-                dformat=AttrDataFormat.SPECTRUM,
-                **attr_args,
-            )
-            image_attr = attribute(
-                name=attr_data.image_name, dformat=AttrDataFormat.IMAGE, **attr_args
-            )
-            for attr in (scalar_attr, spectrum_attr, image_attr):
-                self.add_attribute(attr)
-                self.set_change_event(attr.name, True, False)
+            self.add_attribute(attr)
+            self.set_change_event(attr.name, True, False)
 
-            if attr_data.tango_type == "DevUChar":
+            if (
+                attr_data.tango_type == "DevUChar"
+                or attr_data.dformat == AttrDataFormat.IMAGE
+            ):
+                continue  # TODO: refactor this
+            elif (
+                attr_data.tango_type in ["DevState", "DevEnum"]
+                and attr_data.dformat == AttrDataFormat.SPECTRUM
+            ):
                 continue
+
             self.add_command(
                 command(
-                    f=getattr(self, f"{attr_data.type_name}_cmd"),
+                    f=getattr(self, f"{attr_data.name}_cmd"),
                     dtype_in=attr_data.tango_type,
                     dtype_out=attr_data.tango_type,
-                    dformat_in=AttrDataFormat.SCALAR,
-                    dformat_out=AttrDataFormat.SCALAR,
-                )
-            )
-            if attr_data.tango_type in ["DevState", "DevEnum"]:
-                continue
-            self.add_command(
-                command(
-                    f=getattr(self, f"{attr_data.type_name}_spectrum_cmd"),
-                    dtype_in=attr_data.tango_type,
-                    dtype_out=attr_data.tango_type,
-                    dformat_in=AttrDataFormat.SPECTRUM,
-                    dformat_out=AttrDataFormat.SPECTRUM,
+                    dformat_in=attr_data.dformat,
+                    dformat_out=attr_data.dformat,
                 )
             )
 
     @command
     def reset_values(self):
         for attr_data in attribute_datas:
-            self.attr_values[attr_data.type_name] = attr_data.initial_scalar
-            self.attr_values[attr_data.type_name + "_spectrum"] = (
-                attr_data.initial_spectrum
-            )
-            self.attr_values[attr_data.type_name + "_image"] = attr_data.initial_image
+            self.attr_values[attr_data.name] = attr_data.initial_value
 
     def read(self, attr):
         value = self.attr_values[attr.get_name()]
@@ -232,5 +289,5 @@ class OneOfEverythingTangoDevice(Device):
     )
 
     for attr_data in attribute_datas:
-        exec(echo_command_code.format(f"{attr_data.type_name}_cmd"))
-        exec(echo_command_code.format(f"{attr_data.type_name}_spectrum_cmd"))
+        if attr_data.dformat != AttrDataFormat.IMAGE:
+            exec(echo_command_code.format(f"{attr_data.name}_cmd"))
