@@ -1,16 +1,13 @@
 import asyncio
 import time
-from collections.abc import Generator
-from dataclasses import dataclass
-from enum import Enum, IntEnum
-from random import choice
-from typing import Generic, TypeVar
+from enum import Enum
+from typing import TypeVar
 
 import numpy as np
 import pytest
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalBackend, SignalR, SignalRW, SignalW, SignalX
+from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX
 from ophyd_async.tango.core import (
     TangoReadable,
     TangoSignalBackend,
@@ -18,11 +15,6 @@ from ophyd_async.tango.core import (
     tango_signal_rw,
     tango_signal_w,
     tango_signal_x,
-)
-from ophyd_async.tango.core._tango_transport import (
-    TangoEnumConverter,
-    TangoEnumImageConverter,
-    TangoEnumSpectrumConverter,
 )
 from ophyd_async.tango.testing._one_of_everything import (
     ExampleStrEnum,
@@ -32,7 +24,6 @@ from ophyd_async.tango.testing._one_of_everything import (
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
 from tango import AttrDataFormat, DevState
 from tango.asyncio import DeviceProxy
-from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
 
 T = TypeVar("T")
@@ -47,11 +38,11 @@ def __tango_signal_auto(*args, **kwargs):
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device():
-    with MultiDeviceTestContext(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True
+def tango_test_device(subprocess_helper):
+    with subprocess_helper(
+        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
-        yield context.get_device_access("test/device/1")
+        yield context.trls["test/device/1"]
 
 
 # --------------------------------------------------------------------
@@ -69,12 +60,11 @@ def assert_enum(initial_value, readout_value):
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def echo_device():
-    with MultiDeviceTestContext(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/1"}]}],
-        process=True,
+def everything_device_trl(subprocess_helper):
+    with subprocess_helper(
+        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
     ) as context:
-        yield context.get_device_access("test/device/1")
+        yield context.trls["test/device/2"]
 
 
 # --------------------------------------------------------------------
@@ -118,27 +108,27 @@ async def make_backend(
 
 
 # --------------------------------------------------------------------
-async def prepare_device(echo_device: str, pv: str, put_value: T) -> None:
-    proxy = await DeviceProxy(echo_device)
+async def prepare_device(trl: str, pv: str, put_value: T) -> None:
+    proxy = await DeviceProxy(trl)
     setattr(proxy, pv, put_value)
 
 
 # --------------------------------------------------------------------
 async def assert_monitor_then_put(
-    echo_device: str,
+    trl: str,
     pv: str,
     initial_value: T,
     put_value: T,
     descriptor: dict,
     datatype: type[T] | None = None,
 ):
-    source = echo_device + "/" + pv
+    source = trl + "/" + pv
     signal = tango_signal_rw(datatype, source)
     backend = signal._connector.backend
     await signal.connect()
     converter = signal._connector.backend.converter  # type: ignore
     converted_initial = converter.value(initial_value)
-    await prepare_device(echo_device, pv, converted_initial)
+    await prepare_device(trl, pv, converted_initial)
     converted_put = converter.value(put_value)
     # Make a monitor queue that will monitor for updates
     with MonitorQueue(signal) as q:
@@ -153,7 +143,7 @@ async def assert_monitor_then_put(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_backend_get_put_monitor_attr(echo_device: str):
+async def test_backend_get_put_monitor_attr(everything_device_trl: str):
     try:
         for attr_data in attribute_datas:
             if "state" in attr_data.name:
@@ -162,7 +152,7 @@ async def test_backend_get_put_monitor_attr(echo_device: str):
             # Set a timeout for the operation to prevent it from running indefinitely
             await asyncio.wait_for(
                 assert_monitor_then_put(
-                    echo_device,
+                    everything_device_trl,
                     attr_data.name,
                     attr_data.initial_value,
                     attr_data.random_value(),
@@ -181,13 +171,13 @@ async def test_backend_get_put_monitor_attr(echo_device: str):
 
 # --------------------------------------------------------------------
 async def assert_put_read(
-    echo_device: str,
+    trl: str,
     pv: str,
     put_value: T,
     descriptor: dict,
     datatype: type[T] | None = None,
 ):
-    source = echo_device + "/" + pv
+    source = trl + "/" + pv
     backend = await make_backend(datatype, source)
     # Make a monitor queue that will monitor for updates
     assert dict(source=source, **descriptor) == await backend.get_datakey("")
@@ -209,7 +199,7 @@ async def assert_put_read(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_backend_get_put_monitor_cmd(
-    echo_device: str,
+    everything_device_trl: str,
 ):
     for cmd_data in attribute_datas:
         if (
@@ -232,10 +222,10 @@ async def test_backend_get_put_monitor_cmd(
         name = f"{cmd_data.name}_cmd"
         descriptor = get_test_descriptor(cmd_data.py_type, cmd_data.initial_value, True)
         await assert_put_read(
-            echo_device, name, put_value, descriptor, cmd_data.py_type
+            everything_device_trl, name, put_value, descriptor, cmd_data.py_type
         )
         # # With guessed datatype, check we can set it back to the initial value
-        await assert_put_read(echo_device, name, put_value, descriptor)
+        await assert_put_read(everything_device_trl, name, put_value, descriptor)
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
         await asyncio.gather(*tasks)
 
@@ -243,16 +233,16 @@ async def test_backend_get_put_monitor_cmd(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_signal_r(
-    echo_device: str,
+    everything_device_trl: str,
 ):
     timeout = 0.2
     for use_proxy in [True, False]:
-        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
         for attr_data in attribute_datas:
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
-            source = echo_device + "/" + attr_data.name
+            source = everything_device_trl + "/" + attr_data.name
             signal = tango_signal_r(
                 datatype=attr_data.py_type,
                 read_trl=source,
@@ -271,16 +261,16 @@ async def test_tango_signal_r(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_signal_w(
-    echo_device: str,
+    everything_device_trl: str,
 ):
     for use_proxy in [True, False]:
-        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
         timeout = 0.2
         for attr_data in attribute_datas:
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
-            source = echo_device + "/" + attr_data.name
+            source = everything_device_trl + "/" + attr_data.name
             signal = tango_signal_w(
                 datatype=attr_data.py_type,
                 write_trl=source,
@@ -291,7 +281,7 @@ async def test_tango_signal_w(
             await signal.connect()  # have to connect to get correct converter
             converter = signal._connector.backend.converter  # type: ignore
             initial = converter.value(attr_data.initial_value)
-            await prepare_device(echo_device, attr_data.name, initial)
+            await prepare_device(everything_device_trl, attr_data.name, initial)
 
             put_value = converter.value(attr_data.random_value())
             status = signal.set(put_value, wait=True, timeout=timeout)
@@ -314,17 +304,17 @@ async def test_tango_signal_w(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_signal_rw(
-    echo_device: str,
+    everything_device_trl: str,
 ):
     timeout = 0.2
     for use_proxy in [True, False]:
-        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
         for attr_data in attribute_datas:
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
 
-            source = echo_device + "/" + attr_data.name
+            source = everything_device_trl + "/" + attr_data.name
             signal = tango_signal_rw(
                 datatype=attr_data.py_type,
                 read_trl=source,
@@ -337,7 +327,7 @@ async def test_tango_signal_rw(
             converter = signal._connector.backend.converter  # type: ignore
             initial = converter.value(attr_data.initial_value)
             put_value = converter.value(attr_data.random_value())
-            await prepare_device(echo_device, attr_data.name, initial)
+            await prepare_device(everything_device_trl, attr_data.name, initial)
             reading = await signal.read()
             assert_close(reading["test_signal"]["value"], initial)
             await signal.set(put_value)
@@ -368,14 +358,16 @@ async def test_tango_signal_x(tango_test_device: str):
 @pytest.mark.asyncio
 @pytest.mark.skip("Not sure if we need tango_signal_auto")
 async def test_tango_signal_auto_attrs(
-    echo_device: str,
+    everything_device_trl: str,
 ):
     timeout = 0.2
     for use_proxy in [True, False]:
-        proxy = await DeviceProxy(echo_device) if use_proxy else None
+        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
         for attr_data in attribute_datas:
-            await prepare_device(echo_device, attr_data.name, attr_data.initial_value)
-            source = echo_device + "/" + attr_data.name
+            await prepare_device(
+                everything_device_trl, attr_data.name, attr_data.initial_value
+            )
+            source = everything_device_trl + "/" + attr_data.name
 
             async def _test_signal(dtype, proxy, source, initial_value, put_value):
                 signal = await __tango_signal_auto(
@@ -421,15 +413,15 @@ async def test_tango_signal_auto_attrs(
     ],
 )
 async def test_tango_signal_auto_cmds(
-    echo_device: str,
+    everything_device_trl: str,
     use_dtype: bool,
     use_proxy: bool,
 ):
     timeout = 0.2
-    proxy = await DeviceProxy(echo_device) if use_proxy else None
+    proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
 
     for cmd_data in attribute_datas:
-        source = echo_device + "/" + cmd_data.name + "_cmd"
+        source = everything_device_trl + "/" + cmd_data.name + "_cmd"
 
         async def _test_signal(dtype, proxy, source, put_value):
             signal = await __tango_signal_auto(
@@ -485,28 +477,6 @@ async def test_tango_signal_auto_badtrl(tango_test_device: str):
             device_proxy=proxy,
         )
     assert f"Cannot find badtrl in {tango_test_device}" in str(exc_info.value)
-
-
-@pytest.fixture(scope="module")  # module level scope doesn't work properly...
-def everything_device_trl() -> Generator[str]:
-    with MultiDeviceTestContext(
-        [
-            {
-                "class": OneOfEverythingTangoDevice,
-                "devices": [{"name": "everything/device/1"}],
-            }
-        ],
-        process=True,
-    ) as context:
-        yield context.get_device_access("everything/device/1")
-
-
-@pytest.fixture
-async def everything_device(everything_device_trl) -> TangoReadable:
-    ophyd_device = TangoReadable(everything_device_trl)
-    await ophyd_device.connect()  # TODO: this is fine because we are forking
-    await ophyd_device.reset_values.trigger()  # type: ignore
-    return ophyd_device
 
 
 _scalar_vals = {
@@ -582,7 +552,9 @@ async def assert_val_reading(signal, value, name=""):
     await assert_reading(signal, {name: {"value": value}})
 
 
-async def test_set_with_converter(everything_device):
+async def test_set_with_converter(everything_device_trl):
+    everything_device = TangoReadable(everything_device_trl)
+    await everything_device.connect()
     with pytest.raises(TypeError):
         await everything_device.strenum.set(0)
     with pytest.raises(ValueError):
@@ -643,7 +615,9 @@ async def test_set_with_converter(everything_device):
     )
 
 
-async def test_assert_val_reading_everything_tango(everything_device):
+async def test_assert_val_reading_everything_tango(everything_device_trl):
+    everything_device = TangoReadable(everything_device_trl)
+    await everything_device.connect()
     await assert_val_reading(everything_device.str, _scalar_vals["str"])
     await assert_val_reading(everything_device.bool, _scalar_vals["bool"])
     await assert_val_reading(everything_device.strenum, _scalar_vals["strenum"])
@@ -690,3 +664,10 @@ async def test_assert_val_reading_everything_tango(everything_device):
     await assert_val_reading(everything_device.float32_image, _image_vals["float32"])
     await assert_val_reading(everything_device.float64_image, _image_vals["float64"])
     await assert_val_reading(everything_device.my_state_image, _image_vals["my_state"])
+
+
+@pytest.fixture(autouse=True)
+async def reset_values(everything_device_trl):
+    proxy = await DeviceProxy(everything_device_trl)
+    yield
+    proxy.reset_values()

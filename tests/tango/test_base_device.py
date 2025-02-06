@@ -28,7 +28,6 @@ from tango import (
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.server import Device, attribute, command
-from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
 
 T = TypeVar("T")
@@ -269,17 +268,17 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device():
-    with MultiDeviceTestContext(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True
+def tango_test_device(subprocess_helper):
+    with subprocess_helper(
+        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
-        yield context.get_device_access("test/device/1")
+        yield context.trls["test/device/1"]
 
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def sim_test_context():
-    content = (
+def sim_test_context_trls(subprocess_helper):
+    args = (
         {
             "class": DemoMover,
             "devices": [{"name": "sim/motor/1"}],
@@ -289,7 +288,8 @@ def sim_test_context():
             "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
         },
     )
-    yield MultiDeviceTestContext(content, process=True)
+    with subprocess_helper(args) as context:
+        yield context.trls
 
 
 # --------------------------------------------------------------------
@@ -359,30 +359,32 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_sim(sim_test_context):
-    with sim_test_context:
-        detector = TangoDetector(
-            name="detector",
-            mover_trl="sim/motor/1",
-            counter_trls=["sim/counter/1", "sim/counter/2"],
-        )
-        await detector.connect()
-        await detector.trigger()
-        await detector.mover.velocity.set(0.5)
+async def test_tango_sim(sim_test_context_trls):
+    detector = TangoDetector(
+        name="detector",
+        mover_trl=sim_test_context_trls["sim/motor/1"],
+        counter_trls=[
+            sim_test_context_trls["sim/counter/1"],
+            sim_test_context_trls["sim/counter/2"],
+        ],
+    )
+    await detector.connect()
+    await detector.trigger()
+    await detector.mover.velocity.set(0.5)
 
-        RE = RunEngine()
+    RE = RunEngine()
 
-        RE(bps.read(detector))
-        RE(bps.mv(detector, 0))
-        RE(bp.count(list(detector.counters.values())))
+    RE(bps.read(detector))
+    RE(bps.mv(detector, 0))
+    RE(bp.count(list(detector.counters.values())))
 
-        set_status = detector.set(1.0)
-        await asyncio.sleep(1.0)
-        stop_status = detector.stop()
-        await set_status
-        await stop_status
-        assert all([set_status.done, stop_status.done])
-        assert all([set_status.success, stop_status.success])
+    set_status = detector.set(1.0)
+    await asyncio.sleep(1.0)
+    stop_status = detector.stop()
+    await set_status
+    await stop_status
+    assert all([set_status.done, stop_status.done])
+    assert all([set_status.success, stop_status.success])
 
 
 @pytest.mark.asyncio

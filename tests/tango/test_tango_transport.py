@@ -1,4 +1,5 @@
 import asyncio
+import os
 from enum import Enum
 
 import numpy as np
@@ -33,26 +34,24 @@ from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
 )
-from tango.test_context import MultiDeviceTestContext
 
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device():
-    with MultiDeviceTestContext(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True
+def tango_test_device(subprocess_helper):
+    with subprocess_helper(
+        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
-        yield context.get_device_access("test/device/1")
+        yield context.trls["test/device/1"]
 
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def echo_device():
-    with MultiDeviceTestContext(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/1"}]}],
-        process=True,
+def echo_device(subprocess_helper):
+    with subprocess_helper(
+        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
-        yield context.get_device_access("test/device/1")
+        yield context.trls["test/device/1"]
 
 
 # --------------------------------------------------------------------
@@ -199,10 +198,12 @@ async def test_get_tango_trl(
     tango_test_device, trl, proxy_needed, expected_type, should_raise
 ):
     proxy = await DeviceProxy(tango_test_device) if proxy_needed else None
+    os.environ["TANGO_HOST"] = tango_test_device.split("/")[2]  # ugh
     if should_raise:
         with pytest.raises(RuntimeError):
             await get_tango_trl(trl, proxy, 1)
     else:
+        await asyncio.sleep(0.1)
         result = await get_tango_trl(trl, proxy, 1)
         assert isinstance(result, expected_type)
 
@@ -237,6 +238,9 @@ async def test_attribute_proxy_put(tango_test_device, attr, wait):
     else:
         if not wait:
             raise AssertionError("If wait is False, put should return a status object")
+    await asyncio.sleep(
+        0.1
+    )  # for some reason this is required otherwise justvalue fails???
     updated_value = await attr_proxy.get()
     if isinstance(new_value, np.ndarray):
         assert np.all(updated_value == new_value)
