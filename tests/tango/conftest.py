@@ -34,8 +34,6 @@ def pytest_collection_modifyitems(config, items):
                         )
                     )
                 )
-            else:
-                item.add_marker(pytest.mark.forked)
 
 
 class TangoSubprocessHelper:
