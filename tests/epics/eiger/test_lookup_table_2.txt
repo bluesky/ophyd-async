@@ -1,0 +1,5 @@
+# Beam converter lookup table for testing
+
+Units det_dist beam_x beam_y
+100.0 150.0 160.0
+200.0 151.0 165.0
