@@ -32,7 +32,6 @@ from ophyd_async.tango.testing._one_of_everything import (
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
 from tango import AttrDataFormat, DevState
 from tango.asyncio import DeviceProxy
-from tango.asyncio_executor import set_global_executor
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
 
@@ -76,12 +75,6 @@ def echo_device():
         process=True,
     ) as context:
         yield context.get_device_access("test/device/1")
-
-
-# --------------------------------------------------------------------
-@pytest.fixture(autouse=True)
-def reset_tango_asyncio():
-    set_global_executor(None)
 
 
 # --------------------------------------------------------------------

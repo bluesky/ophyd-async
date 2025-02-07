@@ -32,7 +32,6 @@ from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
-    set_global_executor,
 )
 from tango.test_context import MultiDeviceTestContext
 
@@ -54,12 +53,6 @@ def echo_device():
         process=True,
     ) as context:
         yield context.get_device_access("test/device/1")
-
-
-# --------------------------------------------------------------------
-@pytest.fixture(autouse=True)
-def reset_tango_asyncio():
-    set_global_executor(None)
 
 
 # --------------------------------------------------------------------
