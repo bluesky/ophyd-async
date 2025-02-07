@@ -1,6 +1,5 @@
 import asyncio
 from enum import Enum
-from typing import TypeVar, get_args
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -27,9 +26,6 @@ class PilatusReadoutTime(float, Enum):
     PILATUS3 = 0.95e-3
 
 
-PilatusControllerT = TypeVar("PilatusControllerT", bound="PilatusController")
-
-
 class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
     """Controller for ADPilatus detector."""
 
@@ -42,24 +38,11 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
     def __init__(
         self,
         driver: PilatusDriverIO,
-        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.ADState] = adcore.DEFAULT_GOOD_STATES,
         readout_time: float = PilatusReadoutTime.PILATUS3,
     ) -> None:
         super().__init__(driver, good_states=good_states)
         self._readout_time = readout_time
-
-    @classmethod
-    def controller_and_drv(
-        cls: type[PilatusControllerT],
-        prefix: str,
-        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
-        name: str = "",
-        readout_time: float = PilatusReadoutTime.PILATUS3,
-    ) -> tuple[PilatusControllerT, PilatusDriverIO]:
-        driver_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
-        driver = driver_cls(prefix, name=name)
-        controller = cls(driver, good_states=good_states, readout_time=readout_time)
-        return controller, driver
 
     def get_deadtime(self, exposure: float | None) -> float:
         return self._readout_time

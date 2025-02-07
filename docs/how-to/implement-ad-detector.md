@@ -41,7 +41,7 @@ Now you need to make a [](#StandardDetector) subclass that uses your IO and Cont
 - `fileio_suffix`: An optional PV suffix for the fileio, if not given it will default to the writer class default
 - `name`: An optional name for the device
 - `config_sigs`: Optionally the signals to report as configuration
-- `plugins`: An optional mapping of {`name`: [](#adcore.NDPluginBase)} for each additional plugin that might contribute data to the resulting file
+- `plugins`: An optional mapping of {`name`: [](#adcore.NDPluginBaseIO)} for each additional plugin that might contribute data to the resulting file
 
 For example for ADAravis this is in the file `_aravis.py`:
 ```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis.py

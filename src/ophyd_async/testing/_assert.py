@@ -154,7 +154,7 @@ class MonitorQueue(AbstractContextManager):
         # Get an update, value and reading
         expected_type = type(expected_value)
         expected_value = approx_value(expected_value)
-        update = await self.updates.get()
+        update = await asyncio.wait_for(self.updates.get(), timeout=1)
         value = await self.signal.get_value()
         reading = await self.signal.read()
         # Check they match what we expected

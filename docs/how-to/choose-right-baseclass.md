@@ -30,4 +30,4 @@ It is possible to create [procedural devices](../explanations/declarative-vs-pro
 - [](#EpicsDevice) for EPICS CA and PVA devices
 - [](#TangoDevice) for Tango devices
 
-If you are creating a [](#StandardDetector) then multiple inheritance of that and the control system specific baseclass makes initialization order tricky, so you should use [](#TangoConnector), [](#EpicsConnector), [](#PviConnector) or [](#fastcs_connector) and pass it into the `super().__init__` rather than using the control system specific baseclass. An example of this is [](#HDFPanda).
+If you are creating a [](#StandardDetector) then multiple inheritance of that and the control system specific baseclass makes initialization order tricky, so you should use [](#TangoDeviceConnector), [](#EpicsDeviceConnector), [](#PviDeviceConnector) or [](#fastcs_connector) and pass it into the `super().__init__` rather than using the control system specific baseclass. An example of this is [](#HDFPanda).

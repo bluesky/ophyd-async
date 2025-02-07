@@ -112,7 +112,7 @@ scalar_int_dtype = (
     "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
 )
 CA_PVA_INFERRED = {
-    "my_int": ExpectedData(
+    "a_int": ExpectedData(
         42,
         43,
         "integer",
@@ -152,8 +152,8 @@ CA_PVA_INFERRED = {
         ),
         units="",
     ),
-    "my_float": ExpectedData(3.141, 43.5, "number", "<f8", precision=1, units="mm"),
-    "my_str": ExpectedData("hello", "goodbye", "string", "|S40"),
+    "a_float": ExpectedData(3.141, 43.5, "number", "<f8", precision=1, units="mm"),
+    "a_str": ExpectedData("hello", "goodbye", "string", "|S40"),
     "uint8a": ExpectedData(
         np.array([0, 255], dtype=np.uint8),
         np.array([218], dtype=np.uint8),
@@ -266,7 +266,7 @@ CA_PVA_OVERRIDE = {
         "string",
         "|S40",
     ),
-    "my_bool": ExpectedData(True, False, "boolean", dtype_numpy="|b1"),
+    "a_bool": ExpectedData(True, False, "boolean", dtype_numpy="|b1"),
     "bool_unnamed": ExpectedData(True, False, "boolean", dtype_numpy="|b1"),
     "enum": ExpectedData(
         EpicsTestEnum.B,
@@ -321,25 +321,25 @@ def _example_table_dtype_numpy(guess: bool) -> list:
 
 async def test_pva_table(ioc_devices: EpicsTestIocAndDevices):
     initial = EpicsTestTable(
-        bool=np.array([False, False, True, True], np.bool_),
-        int=np.array([1, 8, -9, 32], np.int32),
-        float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-        str=["Hello", "World", "Foo", "Bar"],
-        enum=[EpicsTestEnum.A, EpicsTestEnum.B, EpicsTestEnum.A, EpicsTestEnum.C],
+        a_bool=np.array([False, False, True, True], np.bool_),
+        a_int=np.array([1, 8, -9, 32], np.int32),
+        a_float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+        a_str=["Hello", "World", "Foo", "Bar"],
+        a_enum=[EpicsTestEnum.A, EpicsTestEnum.B, EpicsTestEnum.A, EpicsTestEnum.C],
     )
     put = EpicsTestTable(
-        bool=np.array([True, False], np.bool_),
-        int=np.array([-5, 32], np.int32),
-        float=np.array([8.5, -6.97], np.float64),
-        str=["Hello", "Bat"],
-        enum=[EpicsTestEnum.C, EpicsTestEnum.B],
+        a_bool=np.array([True, False], np.bool_),
+        a_int=np.array([-5, 32], np.int32),
+        a_float=np.array([8.5, -6.97], np.float64),
+        a_str=["Hello", "Bat"],
+        a_enum=[EpicsTestEnum.C, EpicsTestEnum.B],
     )
     dtype_numpy = [
-        ("bool", "|b1"),
-        ("int", "<i4"),
-        ("float", "<f8"),
-        ("str", "|S40"),
-        ("enum", "|S40"),
+        ("a_bool", "|b1"),
+        ("a_int", "<i4"),
+        ("a_float", "<f8"),
+        ("a_str", "|S40"),
+        ("a_enum", "|S40"),
     ]
     signal = ioc_devices.pva_device.table
     await assert_monitor_then_put(
@@ -349,27 +349,27 @@ async def test_pva_table(ioc_devices: EpicsTestIocAndDevices):
         {"dtype": "array", "dtype_numpy": dtype_numpy},
     )
     initial_plain_table = Table(
-        bool=np.array([0, 0, 1, 1], np.uint8),
-        int=np.array([1, 8, -9, 32], np.int32),
-        float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-        str=["Hello", "World", "Foo", "Bar"],
-        enum=["Aaa", "Bbb", "Aaa", "Ccc"],
+        a_bool=np.array([0, 0, 1, 1], np.uint8),
+        a_int=np.array([1, 8, -9, 32], np.int32),
+        a_float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+        a_str=["Hello", "World", "Foo", "Bar"],
+        a_enum=["Aaa", "Bbb", "Aaa", "Ccc"],
     )
     put_plain_table = Table(
-        bool=np.array([1, 0], np.uint8),
-        int=np.array([-5, 32], np.int32),
-        float=np.array([8.5, -6.97], np.float64),
-        str=["Hello", "Bat"],
-        enum=["Ccc", "Bbb"],
+        a_bool=np.array([1, 0], np.uint8),
+        a_int=np.array([-5, 32], np.int32),
+        a_float=np.array([8.5, -6.97], np.float64),
+        a_str=["Hello", "Bat"],
+        a_enum=["Ccc", "Bbb"],
     )
     dtype_numpy_plain_table = [
         # Plain tables will use the underlying epics datatype, in this
         # case uint8
-        ("bool", "|u1"),
-        ("int", "<i4"),
-        ("float", "<f8"),
-        ("str", "|S40"),
-        ("enum", "|S40"),
+        ("a_bool", "|u1"),
+        ("a_int", "<i4"),
+        ("a_float", "<f8"),
+        ("a_str", "|S40"),
+        ("a_enum", "|S40"),
     ]
     await assert_monitor_then_put(
         epics_signal_rw(None, signal.source),  # type: ignore
@@ -672,11 +672,11 @@ async def test_can_read_using_ophyd_async_then_ophyd(
     ophyd_signal = EpicsSignal(ioc_devices.get_pv("ca", "float_prec_0").split("://")[1])
     ophyd_signal.wait_for_connection(timeout=5)
 
-    def my_plan():
+    def a_plan():
         yield from bps.rd(ophyd_async_sig)
         yield from bps.rd(ophyd_signal)
 
-    RE(my_plan())
+    RE(a_plan())
 
 
 def test_signal_module_emits_deprecation_warning():
@@ -719,7 +719,7 @@ async def test_retrieve_apply_store_settings(
     expected_provider = YamlSettingsProvider(HERE)
     device = ioc_devices.get_device(protocol)
 
-    def my_plan():
+    def a_plan():
         yield from ensure_connected(device)
         settings = yield from retrieve_settings(
             expected_provider, f"test_yaml_save_{protocol}", device
@@ -734,4 +734,4 @@ async def test_retrieve_apply_store_settings(
                 # cp /tmp/pytest-of-root/pytest-current/test_retrieve_apply_store_sett1/test_file.yaml tests/epics/signal/test_yaml_save_pva.yaml  # noqa: E501
                 assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
 
-    RE(my_plan())
+    RE(a_plan())

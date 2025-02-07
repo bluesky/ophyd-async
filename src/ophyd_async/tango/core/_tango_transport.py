@@ -7,7 +7,8 @@ from enum import Enum
 from typing import Any, TypeVar, cast
 
 import numpy as np
-from bluesky.protocols import Descriptor, Reading
+from bluesky.protocols import Reading
+from event_model import DataKey
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -494,7 +495,7 @@ def get_trl_descriptor(
     datatype: type | None,
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
-) -> Descriptor:
+) -> DataKey:
     """Creates a descriptor from a tango resource locator."""
 
     tr_dtype = {}
@@ -554,11 +555,9 @@ def get_trl_descriptor(
                 raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
 
         if tr_format == AttrDataFormat.SPECTRUM:
-            return Descriptor(source=tango_resource, dtype="array", shape=[max_x])
+            return DataKey(source=tango_resource, dtype="array", shape=[max_x])
         elif tr_format == AttrDataFormat.IMAGE:
-            return Descriptor(
-                source=tango_resource, dtype="array", shape=[max_y, max_x]
-            )
+            return DataKey(source=tango_resource, dtype="array", shape=[max_y, max_x])
 
     else:
         if tr_dtype in (Enum, CmdArgType.DevState):
@@ -578,14 +577,14 @@ def get_trl_descriptor(
                 #                 f"{tango_resource} has choices {trl_choices} "
                 #                 f"not {choices}"
                 #             )
-            return Descriptor(source=tango_resource, dtype="string", shape=[])
+            return DataKey(source=tango_resource, dtype="string", shape=[])
         else:
             if datatype and not issubclass(tr_dtype, datatype):
                 raise TypeError(
                     f"{tango_resource} has type {tr_dtype.__name__} "
                     f"not {datatype.__name__}"
                 )
-            return Descriptor(source=tango_resource, dtype=tr_dtype_desc, shape=[])
+            return DataKey(source=tango_resource, dtype=tr_dtype_desc, shape=[])
 
     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
 
@@ -647,7 +646,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             write_trl: self.device_proxy,
         }
         self.trl_configs: dict[str, AttributeInfoEx] = {}
-        self.descriptor: Descriptor = {}  # type: ignore
+        self.descriptor: DataKey = {}  # type: ignore
         self._polling: tuple[bool, float, float | None, float | None] = (
             False,
             0.1,
@@ -712,7 +711,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         put_status = await self.proxies[self.write_trl].put(value, wait, timeout)  # type: ignore
         self.status = put_status
 
-    async def get_datakey(self, source: str) -> Descriptor:
+    async def get_datakey(self, source: str) -> DataKey:
         return self.descriptor
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:

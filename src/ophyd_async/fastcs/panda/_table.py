@@ -84,7 +84,7 @@ class SeqTable(Table):
     @model_validator(mode="after")
     def validate_max_length(self) -> "SeqTable":
         """
-        Used to check max_length. Unfortunately trying the `max_length` arg in
+        Used to check max_length. Unfortunately trying the ``max_length`` arg in
         the pydantic field doesn't work
         """
 

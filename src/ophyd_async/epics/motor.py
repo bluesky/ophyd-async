@@ -22,6 +22,8 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
+__all__ = ["MotorLimitsException", "FlyMotorInfo", "Motor"]
+
 
 class MotorLimitsException(Exception):
     """Exception for invalid motor limits."""

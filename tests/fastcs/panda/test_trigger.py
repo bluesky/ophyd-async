@@ -8,7 +8,7 @@ from ophyd_async.core import init_devices
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
-    PcompDirection,
+    PandaPcompDirection,
     PcompInfo,
     SeqTable,
     SeqTableInfo,
@@ -58,7 +58,7 @@ async def test_pcomp_trigger_logic(mock_panda):
         pulse_width=1,
         rising_edge_step=1,
         number_of_pulses=5,
-        direction=PcompDirection.POSITIVE,
+        direction=PandaPcompDirection.POSITIVE,
     )
 
     async def set_active(value: bool):

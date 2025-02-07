@@ -30,23 +30,24 @@ class EpicsTestSubsetEnum(SubsetEnum):
 
 
 class EpicsTestTable(Table):
-    bool: Array1D[np.bool_]
-    int: Array1D[np.int32]
-    float: Array1D[np.float64]
-    str: Sequence[str]
-    enum: Sequence[EpicsTestEnum]
+    a_bool: Array1D[np.bool_]
+    a_int: Array1D[np.int32]
+    a_float: Array1D[np.float64]
+    a_str: Sequence[str]
+    a_enum: Sequence[EpicsTestEnum]
 
 
 class EpicsTestCaDevice(EpicsDevice):
     """Device for use in a channel access test IOC."""
 
-    my_int: A[SignalRW[int], PvSuffix("int")]
-    my_float: A[SignalRW[float], PvSuffix("float")]
+    a_int: A[SignalRW[int], PvSuffix("int")]
+    """A thing"""
+    a_float: A[SignalRW[float], PvSuffix("float")]
     float_prec_0: A[SignalRW[int], PvSuffix("float_prec_0")]
-    my_str: A[SignalRW[str], PvSuffix("str")]
+    a_str: A[SignalRW[str], PvSuffix("str")]
     longstr: A[SignalRW[str], PvSuffix("longstr")]
     longstr2: A[SignalRW[str], PvSuffix("longstr2.VAL$")]
-    my_bool: A[SignalRW[bool], PvSuffix("bool")]
+    a_bool: A[SignalRW[bool], PvSuffix("bool")]
     enum: A[SignalRW[EpicsTestEnum], PvSuffix("enum")]
     enum2: A[SignalRW[EpicsTestEnum], PvSuffix("enum2")]
     subset_enum: A[SignalRW[EpicsTestSubsetEnum], PvSuffix("subset_enum")]

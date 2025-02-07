@@ -13,13 +13,9 @@ classifiers = [
 ]
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
-    "networkx>=2.0",
     "numpy",
-    "packaging",
-    "pint",
     "bluesky>=1.13.1rc2",
     "event-model>=1.22.1",
-    "p4p>=4.2.0a3",
     "pyyaml",
     "colorlog",
     "pydantic>=2.0",
@@ -48,13 +44,10 @@ dev = [
     "myst-parser",
     "numpydoc",
     "ophyd",
-    "pickleshare",
     "pipdeptree",
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
-    "pyepics>=3.4.2",
     "pyright",
-    "pyside6==6.7.0",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
@@ -63,13 +56,11 @@ dev = [
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
-    "sphinx<7.4.0",              # https://github.com/bluesky/ophyd-async/issues/459
     "sphinx-autobuild",
-    "autodoc-pydantic",
+    "sphinx-autodoc2",
     "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",
-    "super_state_machine",
     "tox-direct",
     "types-mock",
     "types-pyyaml",
@@ -138,7 +129,7 @@ commands =
     pre-commit: pre-commit run --all-files --show-diff-on-failure {posargs}
     type-checking: pyright src {posargs}
     tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
-    docs: sphinx-{posargs:build -E --keep-going} -T docs build/html
+    docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
 """
 # TODO: make the above -EW so warnings are treated as errors
 
@@ -182,7 +173,7 @@ type = "layers"
 containers = ["ophyd_async"]
 layers = ["plan_stubs", "fastcs", "epics | tango | sim", "core"]
 exhaustive = true
-exhaustive_ignores = ["testing", "_version", "__main__"]
+exhaustive_ignores = ["testing", "_version", "__main__", "_docs_parser"]
 
 [[tool.importlinter.contracts]]
 name = "Testing and sim modules are not used at runtime"

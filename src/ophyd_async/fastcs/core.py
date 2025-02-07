@@ -8,3 +8,6 @@ def fastcs_connector(device: Device, uri: str, error_hint: str = "") -> DeviceCo
     connector = PviDeviceConnector(uri, error_hint)
     connector.create_children_from_annotations(device)
     return connector
+
+
+__all__ = ["fastcs_connector"]

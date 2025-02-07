@@ -166,7 +166,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         (backend, extras):
             The `SignalBackend` that has been created for this Signal, and the
             list of extra annotations that could be used to customize it. For
-            example an `EpicsConnector` consumes `PvSuffix` extras to set the
+            example an `EpicsDeviceConnector` consumes `PvSuffix` extras to set the
             write_pv of the backend. Any unhandled extras should be left on the
             list so this class can handle them, e.g. `StandardReadableFormat`
             instances.
@@ -274,7 +274,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         name:
             The name without trailing underscore, the name in the control system
         signal_type:
-            One of the types `SignalR`, `SignalW`, `SignalRX` or `SignalX`
+            One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
         vector_index:
             If the child is in a `DeviceVector` then what index is it
         """

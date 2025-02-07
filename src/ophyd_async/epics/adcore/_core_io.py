@@ -7,7 +7,7 @@ from ophyd_async.epics.core import EpicsDevice, PvSuffix
 from ._utils import ADBaseDataType, FileWriteMode, ImageMode, convert_ad_dtype_to_np
 
 
-class Callback(StrictEnum):
+class ADCallbacks(StrictEnum):
     ENABLE = "Enable"
     DISABLE = "Disable"
 
@@ -41,7 +41,7 @@ class ADBaseDatasetDescriber(DatasetDescriber):
 
 class NDPluginBaseIO(NDArrayBaseIO):
     nd_array_port: A[SignalRW[str], PvSuffix.rbv("NDArrayPort")]
-    enable_callbacks: A[SignalRW[Callback], PvSuffix.rbv("EnableCallbacks")]
+    enable_callbacks: A[SignalRW[ADCallbacks], PvSuffix.rbv("EnableCallbacks")]
     nd_array_address: A[SignalRW[int], PvSuffix.rbv("NDArrayAddress")]
     array_size0: A[SignalR[int], PvSuffix("ArraySize0_RBV")]
     array_size1: A[SignalR[int], PvSuffix("ArraySize1_RBV")]
@@ -73,7 +73,7 @@ class NDPluginStatsIO(NDPluginBaseIO):
     hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax")]
 
 
-class DetectorState(StrictEnum):
+class ADState(StrictEnum):
     """
     Default set of states of an AreaDetector driver.
     See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore
@@ -97,10 +97,10 @@ class ADBaseIO(NDArrayBaseIO):
     acquire_period: A[SignalRW[float], PvSuffix.rbv("AcquirePeriod")]
     num_images: A[SignalRW[int], PvSuffix.rbv("NumImages")]
     image_mode: A[SignalRW[ImageMode], PvSuffix.rbv("ImageMode")]
-    detector_state: A[SignalR[DetectorState], PvSuffix("DetectorState_RBV")]
+    detector_state: A[SignalR[ADState], PvSuffix("DetectorState_RBV")]
 
 
-class Compression(StrictEnum):
+class ADCompression(StrictEnum):
     NONE = "None"
     NBIT = "N-bit"
     SZIP = "szip"
@@ -130,7 +130,7 @@ class NDFileIO(NDPluginBaseIO):
 
 class NDFileHDFIO(NDFileIO):
     position_mode: A[SignalRW[bool], PvSuffix.rbv("PositionMode")]
-    compression: A[SignalRW[Compression], PvSuffix.rbv("Compression")]
+    compression: A[SignalRW[ADCompression], PvSuffix.rbv("Compression")]
     num_extra_dims: A[SignalRW[int], PvSuffix.rbv("NumExtraDims")]
     swmr_mode: A[SignalRW[bool], PvSuffix.rbv("SWMRMode")]
     flush_now: A[SignalRW[bool], PvSuffix("FlushNow")]

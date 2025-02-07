@@ -29,7 +29,7 @@ class VimbaController(adcore.ADBaseController[VimbaDriverIO]):
     def __init__(
         self,
         driver: VimbaDriverIO,
-        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.ADState] = adcore.DEFAULT_GOOD_STATES,
     ) -> None:
         super().__init__(driver, good_states=good_states)
 

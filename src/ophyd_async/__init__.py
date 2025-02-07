@@ -1,12 +1,9 @@
-"""Top level API.
-
-.. data:: __version__
-    :type: str
-
-    Version number as calculated by https://github.com/pypa/setuptools_scm
-"""
+"""Top level API."""
 
 from . import core
-from ._version import __version__
+from ._version import version
+
+__version__ = version
+"""Version number as calculated by https://github.com/pypa/setuptools_scm"""
 
 __all__ = ["__version__", "core"]

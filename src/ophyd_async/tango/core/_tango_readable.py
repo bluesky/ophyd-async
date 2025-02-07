@@ -18,7 +18,7 @@ class TangoReadable(TangoDevice, StandardReadable):
     ----------
     trl : str
         Tango resource locator, typically of the device server.
-    proxy : AsyncDeviceProxy
+    proxy :
         AsyncDeviceProxy object for the device. This is created when the
         device is connected.
     """

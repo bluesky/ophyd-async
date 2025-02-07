@@ -15,7 +15,6 @@ V = TypeVar("V")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
-ErrorText = str | Mapping[str, Exception]
 
 logger = logging.getLogger("ophyd_async")
 
@@ -60,14 +59,14 @@ class NotConnected(Exception):
 
     _indent_width = "    "
 
-    def __init__(self, errors: ErrorText):
+    def __init__(self, errors: str | Mapping[str, Exception]):
         """
         NotConnected holds a mapping of device/signal names to
         errors.
 
         Parameters
         ----------
-        errors: ErrorText
+        errors:
             Mapping of device name to Exception or another NotConnected.
             Alternatively a string with the signal error text.
         """
@@ -248,7 +247,7 @@ def in_micros(t: float) -> int:
     Raises:
         ValueError: if t < 0
     Returns:
-        t (int): A time in microseconds, rounded up to the nearest whole microsecond,
+        A time in microseconds, rounded up to the nearest whole microsecond,
     """
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")

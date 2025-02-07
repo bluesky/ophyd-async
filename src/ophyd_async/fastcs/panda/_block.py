@@ -10,7 +10,7 @@ from ophyd_async.core import (
 from ._table import DatasetTable, SeqTable
 
 
-class CaptureMode(StrictEnum):
+class PandaCaptureMode(StrictEnum):
     """Capture mode for the `DataBlock` on the PandA."""
 
     FIRST_N = "FIRST_N"
@@ -28,7 +28,7 @@ class DataBlock(Device):
     num_captured: SignalR[int]
     create_directory: SignalRW[int]
     directory_exists: SignalR[bool]
-    capture_mode: SignalRW[CaptureMode]
+    capture_mode: SignalRW[PandaCaptureMode]
     capture: SignalRW[bool]
     flush_period: SignalRW[float]
     datasets: SignalR[DatasetTable]
@@ -41,7 +41,7 @@ class PulseBlock(Device):
     width: SignalRW[float]
 
 
-class PcompDirection(StrictEnum):
+class PandaPcompDirection(StrictEnum):
     """Direction options for position compare in the PandA."""
 
     POSITIVE = "Positive"
@@ -49,7 +49,7 @@ class PcompDirection(StrictEnum):
     EITHER = "Either"
 
 
-class BitMux(SubsetEnum):
+class PandaBitMux(SubsetEnum):
     """Bit input with configurable delay in the PandA."""
 
     ZERO = "ZERO"
@@ -60,15 +60,15 @@ class PcompBlock(Device):
     """Position compare block in the PandA."""
 
     active: SignalR[bool]
-    dir: SignalRW[PcompDirection]
-    enable: SignalRW[BitMux]
+    dir: SignalRW[PandaPcompDirection]
+    enable: SignalRW[PandaBitMux]
     pulses: SignalRW[int]
     start: SignalRW[int]
     step: SignalRW[int]
     width: SignalRW[int]
 
 
-class TimeUnits(StrictEnum):
+class PandaTimeUnits(StrictEnum):
     """Options for units of time in the PandA."""
 
     MIN = "min"
@@ -84,8 +84,8 @@ class SeqBlock(Device):
     active: SignalR[bool]
     repeats: SignalRW[int]
     prescale: SignalRW[float]
-    prescale_units: SignalRW[TimeUnits]
-    enable: SignalRW[BitMux]
+    prescale_units: SignalRW[PandaTimeUnits]
+    enable: SignalRW[PandaBitMux]
 
 
 class PcapBlock(Device):

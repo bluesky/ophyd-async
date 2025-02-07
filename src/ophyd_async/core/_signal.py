@@ -10,6 +10,7 @@ from bluesky.protocols import (
     Locatable,
     Location,
     Movable,
+    Reading,
     Status,
     Subscribable,
 )
@@ -17,16 +18,8 @@ from event_model import DataKey
 
 from ._device import Device, DeviceConnector
 from ._mock_signal_backend import MockSignalBackend
-from ._protocol import (
-    AsyncReadable,
-    AsyncStageable,
-    Reading,
-)
-from ._signal_backend import (
-    SignalBackend,
-    SignalDatatypeT,
-    SignalDatatypeV,
-)
+from ._protocol import AsyncReadable, AsyncStageable
+from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, completed_status
 from ._utils import (

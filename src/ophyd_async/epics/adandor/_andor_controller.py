@@ -18,7 +18,7 @@ class Andor2Controller(adcore.ADBaseController[Andor2DriverIO]):
     def __init__(
         self,
         driver: Andor2DriverIO,
-        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.ADState] = adcore.DEFAULT_GOOD_STATES,
     ) -> None:
         super().__init__(driver, good_states=good_states)
 
