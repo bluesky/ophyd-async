@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, StrictEnum, T
+from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX, T
 from ophyd_async.tango.core import (
     TangoReadable,
     TangoSignalBackend,
@@ -16,15 +16,10 @@ from ophyd_async.tango.core import (
     tango_signal_w,
     tango_signal_x,
 )
-from ophyd_async.tango.core._tango_transport import (
-    TangoEnumConverter,
-    TangoEnumImageConverter,
-    TangoEnumSpectrumConverter,
-)
-from ophyd_async.tango.testing._one_of_everything import (
+from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
-    attribute_datas,
+    everything_attrs,
 )
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
 from tango import AttrDataFormat, DevState
@@ -148,7 +143,7 @@ async def assert_monitor_then_put(
 @pytest.mark.asyncio
 async def test_backend_get_put_monitor_attr(echo_device: str):
     try:
-        for attr_data in attribute_datas:
+        for attr_data in everything_attrs:
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
@@ -204,7 +199,7 @@ async def assert_put_read(
 async def test_backend_get_put_monitor_cmd(
     echo_device: str,
 ):
-    for cmd_data in attribute_datas:
+    for cmd_data in everything_attrs:
         if (
             cmd_data.dformat == AttrDataFormat.IMAGE
             or cmd_data.tango_type == "DevUChar"
@@ -241,7 +236,7 @@ async def test_tango_signal_r(
     timeout = 0.2
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(echo_device) if use_proxy else None
-        for attr_data in attribute_datas:
+        for attr_data in everything_attrs:
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
@@ -269,7 +264,7 @@ async def test_tango_signal_w(
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(echo_device) if use_proxy else None
         timeout = 0.2
-        for attr_data in attribute_datas:
+        for attr_data in everything_attrs:
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
@@ -312,7 +307,7 @@ async def test_tango_signal_rw(
     timeout = 0.2
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(echo_device) if use_proxy else None
-        for attr_data in attribute_datas:
+        for attr_data in everything_attrs:
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
@@ -366,7 +361,7 @@ async def test_tango_signal_auto_attrs(
     timeout = 0.2
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(echo_device) if use_proxy else None
-        for attr_data in attribute_datas:
+        for attr_data in everything_attrs:
             await prepare_device(echo_device, attr_data.name, attr_data.initial_value)
             source = echo_device + "/" + attr_data.name
 
@@ -421,7 +416,7 @@ async def test_tango_signal_auto_cmds(
     timeout = 0.2
     proxy = await DeviceProxy(echo_device) if use_proxy else None
 
-    for cmd_data in attribute_datas:
+    for cmd_data in everything_attrs:
         source = echo_device + "/" + cmd_data.name + "_cmd"
 
         async def _test_signal(dtype, proxy, source, put_value):
