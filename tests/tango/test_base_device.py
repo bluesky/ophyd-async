@@ -27,7 +27,6 @@ from tango import (
     DevState,
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
-from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
@@ -291,12 +290,6 @@ def sim_test_context():
         },
     )
     yield MultiDeviceTestContext(content, process=True)
-
-
-# --------------------------------------------------------------------
-@pytest.fixture(autouse=True)
-def reset_tango_asyncio():
-    set_global_executor(None)
 
 
 # --------------------------------------------------------------------
