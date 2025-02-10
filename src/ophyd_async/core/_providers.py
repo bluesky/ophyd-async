@@ -51,7 +51,7 @@ class StaticFilenameProvider(FilenameProvider):
 
 
 class UUIDFilenameProvider(FilenameProvider):
-    """Files will be have a UUID as a filename."""
+    """Files will have a UUID as a filename."""
 
     def __init__(
         self,
@@ -230,7 +230,7 @@ class NameProvider(Protocol):
 
 
 class DatasetDescriber(Protocol):
-    """For descring datasets in file writing."""
+    """For describing datasets in file writing."""
 
     @abstractmethod
     async def np_datatype(self) -> str:
