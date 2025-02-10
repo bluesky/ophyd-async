@@ -74,6 +74,11 @@ Or you can pass a function that returns True if the value matches a given condit
 await wait_for_value(device.num_captured, lambda v: v > 45, timeout=1)
 ```
 
+Which you can use to implement a tolerance check using [](#numpy.isclose):
+```python
+await wait_for_value(device.temperature, lambda v: numpy.isclose(v, 32.79, atol=0.01), timeout=1)
+```
+
 Some control systems (like some EPICS StreamDevice implementations) return immediately when a signal is set, and require you to wait for that signal to match the value to know when it is complete. You can use [](#set_and_wait_for_value) and [](#set_and_wait_for_other_value) to do this:
 ```python
 await set_and_wait_for_value(signal, value)
